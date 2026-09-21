@@ -6,10 +6,14 @@ package evaka.core.varda
 
 import evaka.core.OphEnv
 import evaka.core.VardaEnv
+import evaka.core.invoicing.service.generator.getChildFamilyRelations
 import evaka.core.pis.updateOphPersonOid
+import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.data.DateMap
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
@@ -19,6 +23,7 @@ import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
+import java.math.BigDecimal
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
@@ -269,6 +274,7 @@ class VardaUpdater(
         val guardians = tx.getVardaGuardians(childIds)
         val serviceNeeds = tx.getVardaServiceNeeds(childIds, vardaEnabledRange)
         val feeData = tx.getVardaFeeData(childIds, vardaEnabledRange)
+        val freeServiceNeeds = tx.getVardaFreeServiceNeeds(childIds, vardaEnabledRange)
         val updateStates = tx.getVardaUpdateState<EvakaHenkiloNode>(childIds)
         return children.entries.mapNotNull { (childId, child) ->
             computeEvakaState(
@@ -276,7 +282,15 @@ class VardaUpdater(
                     child,
                     guardians[childId] ?: emptyList(),
                     serviceNeeds[childId] ?: emptyList(),
-                    feeData[childId] ?: emptyList(),
+                    (feeData[childId] ?: emptyList()).let { decisionFeeData ->
+                        decisionFeeData +
+                            getFreeOfChargeFeeData(
+                                tx,
+                                childId,
+                                decisionFeeData,
+                                freeServiceNeeds[childId] ?: emptyList(),
+                            )
+                    },
                 )
                 ?.let { evakaState ->
                     Triple(
@@ -287,6 +301,63 @@ class VardaUpdater(
                     )
                 }
         }
+    }
+
+    /**
+     * No fee decision is made for a service need that is free of charge for everyone, so its fee
+     * data is built from the family relations in the same way as finance decisions do
+     */
+    private fun getFreeOfChargeFeeData(
+        tx: Database.Read,
+        childId: ChildId,
+        decisionFeeData: List<VardaFeeData>,
+        freeServiceNeeds: List<VardaFreeServiceNeed>,
+    ): List<VardaFeeData> {
+        if (freeServiceNeeds.isEmpty()) return emptyList()
+
+        data class FreeOfChargeFamily(
+            val headOfFamilyId: PersonId,
+            val partnerId: PersonId?,
+            val placementType: PlacementType,
+            val familySize: Int,
+            val ophOrganizerOid: String,
+        )
+
+        val familyRelations = getChildFamilyRelations(tx, childId)
+        return DateMap.of(
+                freeServiceNeeds.flatMap { serviceNeed ->
+                    familyRelations.mapNotNull { family ->
+                        val headOfFamilyId = family.headOfChild ?: return@mapNotNull null
+                        family.finiteRange.intersection(serviceNeed.range)?.let { range ->
+                            range to
+                                FreeOfChargeFamily(
+                                    headOfFamilyId = headOfFamilyId,
+                                    partnerId = family.partner,
+                                    placementType = serviceNeed.placementType,
+                                    familySize = family.familySize,
+                                    ophOrganizerOid = serviceNeed.ophOrganizerOid,
+                                )
+                        }
+                    }
+                }
+            )
+            .removeAll(decisionFeeData.map { it.validDuring })
+            .entries()
+            .map { (range, family) ->
+                VardaFeeData(
+                    childId = childId,
+                    validDuring = range,
+                    headOfFamilyId = family.headOfFamilyId,
+                    partnerId = family.partnerId,
+                    placementType = family.placementType,
+                    familySize = family.familySize,
+                    childFee = 0,
+                    ophOrganizerOid = family.ophOrganizerOid,
+                    voucherValue = null,
+                    serviceNeedFeeCoefficient = BigDecimal.ZERO,
+                )
+            }
+            .toList()
     }
 
     private fun computeEvakaState(
