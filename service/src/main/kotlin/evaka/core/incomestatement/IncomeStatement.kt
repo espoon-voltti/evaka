@@ -6,6 +6,7 @@ package evaka.core.incomestatement
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import evaka.core.AuditContext
 import evaka.core.ConstList
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.associateOrphanAttachments
@@ -171,28 +172,31 @@ fun createValidatedIncomeStatement(
     personId: PersonId, // may be either the user or their child
     body: IncomeStatementBody,
     draft: Boolean,
-): IncomeStatementId {
+    audit: AuditContext,
+) {
     if (!draft && !validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
 
     if (tx.unhandledIncomeStatementExistsForStartDate(personId, body.startDate)) {
         throw BadRequest("An income statement for this start date already exists")
     }
 
-    val incomeStatementId = tx.insertIncomeStatement(user.evakaUserId, now, personId, body, draft)
+    val incomeStatementId =
+        tx.insertIncomeStatement(user.evakaUserId, now, personId, body, draft).also {
+            audit.add(it)
+        }
 
     when (body) {
         is IncomeStatementBody.Income -> body.attachmentIds
         is IncomeStatementBody.ChildIncome -> body.attachmentIds
         else -> null
     }?.also { attachmentIds ->
+        audit.add(attachmentIds)
         tx.associateOrphanAttachments(
             user.evakaUserId,
             AttachmentParent.IncomeStatement(incomeStatementId),
             attachmentIds,
         )
     }
-
-    return incomeStatementId
 }
 
 private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean =
@@ -343,3 +347,11 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         val attachments: List<IncomeStatementAttachment>,
     ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)
 }
+
+val IncomeStatement.attachmentIds: List<AttachmentId>
+    get() =
+        when (this) {
+            is IncomeStatement.HighestFee -> emptyList()
+            is IncomeStatement.Income -> attachments.map { it.id }
+            is IncomeStatement.ChildIncome -> attachments.map { it.id }
+        }

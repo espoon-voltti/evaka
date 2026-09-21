@@ -220,8 +220,8 @@ fun Database.Transaction.endEarlierOverlappingIncome(
     personId: PersonId,
     period: DateRange,
     modifiedBy: EvakaUserId,
-) {
-    val update = createUpdate {
+): List<Pair<IncomeId, LocalDate>> {
+    val update = createQuery {
         sql(
             """
             UPDATE income SET
@@ -232,11 +232,14 @@ fun Database.Transaction.endEarlierOverlappingIncome(
                 person_id = ${bind(personId)}
                 AND valid_from < ${bind(period.start)}
                 AND (valid_to IS NULL OR valid_to >= ${bind(period.start)})
+            RETURNING id, valid_from
             """
         )
     }
 
-    handlingExceptions { update.execute() }
+    return handlingExceptions {
+        update.toList { column<IncomeId>("id") to column<LocalDate>("valid_from") }
+    }
 }
 
 fun Row.toIncome(

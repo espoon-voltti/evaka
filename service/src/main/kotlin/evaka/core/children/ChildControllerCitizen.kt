@@ -5,6 +5,7 @@
 package evaka.core.children
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.CitizenCalendarEnv
 import evaka.core.absence.AbsenceCategory
@@ -45,6 +46,7 @@ class ChildControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<ChildAndPermittedActions> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -60,7 +62,7 @@ class ChildControllerCitizen(
                             clock.today(),
                             citizenCalendarEnv.calendarOpenBeforePlacementDays,
                         )
-                    val childIds = children.map { it.id }
+                    val childIds = children.map { it.id }.also { audit.add(it) }
                     val serviceApplicationPossible =
                         tx.getChildrenWithServiceApplicationPossibleOnSomeDate(
                             childIds.toSet(),
@@ -88,12 +90,7 @@ class ChildControllerCitizen(
                     }
                 }
             }
-            .also {
-                Audit.CitizenChildrenRead.log(
-                    targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.CitizenChildrenRead, clock) }
     }
 
     @GetMapping("/{childId}/service-needs")
