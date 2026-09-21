@@ -1997,9 +1997,6 @@ const en: Translations = {
     loginDetailsSection: {
       title: 'Email login',
       weakLoginCredentials: 'Login with email',
-      status: {
-        enabled: 'Enabled'
-      },
       weakLoginUsername: 'Username',
       password: 'Password',
       unverifiedEmailWarning:

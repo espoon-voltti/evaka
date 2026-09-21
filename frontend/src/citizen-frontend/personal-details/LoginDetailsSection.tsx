@@ -12,7 +12,6 @@ import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-t
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import { isPasswordStructureValid } from 'lib-common/password'
 import { useQueryResult } from 'lib-common/query'
-import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   FixedSpaceColumn,
@@ -26,7 +25,7 @@ import BaseModal, {
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label, LabelLike, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faCheck, faLockAlt, faTrash } from 'lib-icons'
+import { faCheck, faLockAlt, faRefresh, faTrash } from 'lib-icons'
 
 import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
@@ -93,15 +92,6 @@ export default React.memo(function LoginDetailsSection({
 
       {user.weakLoginUsername ? (
         <>
-          <Chip
-            colorPalette="green"
-            icon={faCheck}
-            label={t.status.enabled}
-            iconCircle
-            size="small"
-            data-qa="weak-login-enabled"
-          />
-          <Gap $size="xs" />
           <DataRow>
             <DataRowLabel>{t.weakLoginUsername}</DataRowLabel>
             <DataRowValue>
@@ -120,14 +110,14 @@ export default React.memo(function LoginDetailsSection({
               appearance="inline"
               data-qa="update-password"
               text={t.updatePassword}
-              icon={canEdit ? undefined : faLockAlt}
+              icon={canEdit ? faRefresh : faLockAlt}
               onClick={canEdit ? openModal : navigateToLogin}
             />
             <Button
               appearance="inline"
               data-qa="disable-credentials"
               text={t.disableCredentials}
-              icon={canEdit ? undefined : faLockAlt}
+              icon={canEdit ? faTrash : faLockAlt}
               onClick={canEdit ? openDisableModal : navigateToLogin}
             />
           </MobileFixedSpaceRow>

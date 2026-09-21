@@ -2258,9 +2258,6 @@ const sv: Translations = {
     loginDetailsSection: {
       title: 'E-postinloggning',
       weakLoginCredentials: 'Inloggning med e-post',
-      status: {
-        enabled: 'Aktiverad'
-      },
       weakLoginUsername: 'Användarnamn',
       password: 'Lösenord',
       unverifiedEmailWarning:

@@ -84,7 +84,6 @@ test.describe('Citizen weak credentials', () => {
     // two clicks because there's a separate confirmation page
     await modal.ok.click()
     await modal.ok.click()
-    await expect(section.weakLoginEnabled).toBeVisible()
     await expect(section.username).toHaveText(email)
   })
 
@@ -110,7 +109,7 @@ test.describe('Citizen weak credentials', () => {
     await modal.confirmPassword.fill(validPassword)
     await modal.ok.click()
     await modal.ok.click()
-    await expect(section.weakLoginEnabled).toBeVisible()
+    await expect(section.updatePassword).toBeVisible()
 
     await new CitizenHeader(evaka).logout()
 
@@ -148,7 +147,6 @@ test.describe('Citizen weak credentials', () => {
       personalDetailsPage.contactDetailsSection.verifiedEmailStatus
     ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
-    await expect(section.weakLoginEnabled).toBeVisible()
     await expect(section.username).toHaveText(email)
     await section.updatePassword.click()
 
@@ -173,7 +171,7 @@ test.describe('Citizen weak credentials', () => {
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
     const section = personalDetailsPage.loginDetailsSection
-    await expect(section.weakLoginEnabled).toBeVisible()
+    await expect(section.username).toHaveText(email)
     await section.disableCredentials.click()
 
     const modal = new DisableCredentialsModal(evaka)
@@ -182,7 +180,7 @@ test.describe('Citizen weak credentials', () => {
     await modal.ok.click()
     await expect(modal).toBeHidden()
 
-    await expect(section.weakLoginEnabled).toBeHidden()
+    await expect(section.username).toBeHidden()
     await expect(section.activateCredentials).toBeVisible()
 
     await new CitizenHeader(evaka).logout()
@@ -304,7 +302,7 @@ test.describe('Citizen weak credentials', () => {
       personalDetailsPage.contactDetailsSection.verifiedEmailStatus
     ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
-    await expect(section.weakLoginEnabled).toBeVisible()
+    await expect(section.username).toHaveText(email)
     await section.updatePassword.click()
 
     const modal = new WeakCredentialsModal(evaka)
@@ -356,7 +354,6 @@ test.describe('Citizen weak credentials', () => {
     })
     const personalDetailsPage = new CitizenPersonalDetailsPage(strongSession)
     const section = personalDetailsPage.loginDetailsSection
-    await expect(section.weakLoginEnabled).toBeVisible()
     await expect(section.username).toHaveText(email)
     await section.updatePassword.click()
 

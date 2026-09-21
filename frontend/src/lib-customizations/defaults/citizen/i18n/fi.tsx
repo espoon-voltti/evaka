@@ -2268,9 +2268,6 @@ export default {
     loginDetailsSection: {
       title: 'Sähköpostikirjautuminen',
       weakLoginCredentials: 'Sähköpostilla kirjautuminen',
-      status: {
-        enabled: 'Otettu käyttöön'
-      },
       weakLoginUsername: 'Käyttäjätunnus',
       password: 'Salasana',
       unverifiedEmailWarning:

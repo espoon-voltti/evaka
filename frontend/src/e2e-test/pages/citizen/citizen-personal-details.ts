@@ -180,7 +180,6 @@ export class DeletePasskeyModal extends Element {
 export class LoginDetailsSection extends Element {
   username: Element
   activateCredentials: Element
-  weakLoginEnabled: Element
   weakLoginDisabled: Element
   updatePassword: Element
   disableCredentials: Element
@@ -189,7 +188,6 @@ export class LoginDetailsSection extends Element {
     super(element)
     this.username = element.findByDataQa('username')
     this.activateCredentials = element.findByDataQa('activate-credentials')
-    this.weakLoginEnabled = element.findByDataQa('weak-login-enabled')
     this.weakLoginDisabled = element.findByDataQa('weak-login-disabled')
     this.updatePassword = element.findByDataQa('update-password')
     this.disableCredentials = element.findByDataQa('disable-credentials')
