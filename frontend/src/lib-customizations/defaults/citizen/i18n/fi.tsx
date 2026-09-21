@@ -2233,7 +2233,7 @@ export default {
         'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.',
       contactEmailInfo: 'Tähän osoitteeseen saat kaikki ilmoitukset eVakasta.',
       emailVerified: 'Vahvistettu',
-      emailUnverified: 'Sähköpostia ei ole vahvistettu',
+      emailUnverified: 'Ei vahvistettu',
       sendVerificationCode: 'Vahvista sähköposti',
       verifyEmail: {
         section: 'Sähköpostin vahvistaminen',

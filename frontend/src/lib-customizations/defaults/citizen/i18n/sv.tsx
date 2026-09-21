@@ -2223,7 +2223,7 @@ const sv: Translations = {
       contactEmailInfo:
         'Detta är den adress där du kan få alla dina meddelanden från eVaka',
       emailVerified: 'Bekräftad',
-      emailUnverified: 'E-postadressen är inte bekräftad',
+      emailUnverified: 'Inte bekräftad',
       sendVerificationCode: 'Bekräfta e-postadress',
       verifyEmail: {
         section: 'Verifiering av e-post',
