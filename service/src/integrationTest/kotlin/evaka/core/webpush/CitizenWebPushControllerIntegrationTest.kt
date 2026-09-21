@@ -32,9 +32,8 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
     private val otherAdult = DevPerson()
 
     private val endpoint = URI("https://push.example.com/subscription/1234")
-    private val mockEndpoint by lazy {
-        URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234")
-    }
+    private val mockEndpoint by lazy { mockEndpoint("1234") }
+    private val otherMockEndpoint by lazy { mockEndpoint("5678") }
     private val userAgent =
         "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1"
 
@@ -139,42 +138,33 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `a test notification is sent to the owner's device`() {
-        val device = subscribe(adult, mockEndpoint)
+    fun `a test notification is sent to every device of the owner`() {
+        subscribe(adult, mockEndpoint)
+        subscribe(adult, otherMockEndpoint)
 
-        controller.sendTestPushNotification(
-            dbInstance(),
-            user(adult),
-            clock,
-            CitizenWebPushController.PushTestRequest(device.id),
-        )
+        controller.sendTestPushNotification(dbInstance(), user(adult), clock)
 
         assertEquals(1, mockWebPushEndpoint.getCapturedRequests("1234").size)
+        assertEquals(1, mockWebPushEndpoint.getCapturedRequests("5678").size)
         assertEquals(
-            clock.now(),
-            controller
-                .getPushSettings(dbInstance(), user(adult), clock)
-                .devices
-                .single()
-                .lastSentAt,
+            listOf(clock.now(), clock.now()),
+            controller.getPushSettings(dbInstance(), user(adult), clock).devices.map {
+                it.lastSentAt
+            },
         )
     }
 
     @Test
-    fun `another person cannot send a test notification to a device`() {
-        val device = subscribe(adult, mockEndpoint)
+    fun `a test notification is not sent to another person's device`() {
+        subscribe(adult, mockEndpoint)
 
-        assertThrows<NotFound> {
-            controller.sendTestPushNotification(
-                dbInstance(),
-                user(otherAdult),
-                clock,
-                CitizenWebPushController.PushTestRequest(device.id),
-            )
-        }
+        controller.sendTestPushNotification(dbInstance(), user(otherAdult), clock)
 
         assertEquals(emptyList(), mockWebPushEndpoint.getCapturedRequests("1234"))
     }
+
+    private fun mockEndpoint(id: String) =
+        URI("http://localhost:$httpPort/public/mock-web-push/subscription/$id")
 
     private fun user(person: DevPerson) =
         AuthenticatedUser.Citizen(person.id, CitizenAuthLevel.WEAK)

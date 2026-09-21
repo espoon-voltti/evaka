@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import type { DeviceClass } from 'lib-common/generated/api-types/user'
 import type { CitizenPushDevice } from 'lib-common/generated/api-types/webpush'
+import { maxOf } from 'lib-common/ordered'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import TextOnlyChip from 'lib-components/atoms/TextOnlyChip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -67,6 +68,11 @@ export default React.memo(
 
         const currentDevice = devices.find((d) => d.id === thisDevice) ?? null
 
+        const sendTimes = devices
+          .map((device) => device.lastSentAt)
+          .filter((sentAt) => sentAt !== null)
+        const lastSentAt = sendTimes.length > 0 ? sendTimes.reduce(maxOf) : null
+
         const revoke = async (device: CitizenPushDevice) => {
           const deleted = await deleteDevice({ id: device.id })
           if (deleted.isSuccess && device.id === currentDevice?.id) {
@@ -94,53 +100,57 @@ export default React.memo(
               </TitleRow>
               <P>{t.description}</P>
 
-              {availability.kind === 'blocked' ? (
-                <AlertBox
-                  noMargin
-                  title={t.blockedOnThisDevice}
-                  message={t.blockedInstructions[platform()]}
-                  data-qa="push-this-device-state"
-                />
-              ) : currentDevice ? (
-                <ThisDeviceStrip data-qa="push-this-device-state">
-                  <InformationText>
-                    {currentDevice.lastSentAt
-                      ? t.lastSent(currentDevice.lastSentAt.format())
-                      : t.neverSent}
-                  </InformationText>
-                  <MutateButton
-                    appearance="inline"
-                    text={t.sendTest}
-                    mutation={sendTestPushNotificationMutation}
-                    onClick={() => ({ body: { deviceId: currentDevice.id } })}
-                    data-qa="send-test-push-notification"
+              <FixedSpaceColumn $spacing="s">
+                {devices.length > 0 && (
+                  <TestSendStrip data-qa="push-test-send">
+                    <InformationText data-qa="push-last-sent">
+                      {lastSentAt
+                        ? t.lastSent(lastSentAt.format())
+                        : t.neverSent}
+                    </InformationText>
+                    <MutateButton
+                      appearance="inline"
+                      text={t.sendTest}
+                      mutation={sendTestPushNotificationMutation}
+                      onClick={() => undefined}
+                      data-qa="send-test-push-notification"
+                    />
+                  </TestSendStrip>
+                )}
+
+                {availability.kind === 'blocked' ? (
+                  <AlertBox
+                    noMargin
+                    title={t.blockedOnThisDevice}
+                    message={t.blockedInstructions[platform()]}
+                    data-qa="push-this-device-state"
                   />
-                </ThisDeviceStrip>
-              ) : (
-                <InfoBox
-                  noMargin
-                  darkBackground
-                  message={
-                    <FixedSpaceColumn $spacing="s" $alignItems="flex-start">
-                      <span>{t.notEnabledOnThisDevice}</span>
-                      {availability.kind === 'subscribable' &&
-                        (devices.length >= maxDevices ? (
-                          <span data-qa="push-device-limit-reached">
-                            {t.deviceLimitReached}
-                          </span>
-                        ) : (
-                          <Button
-                            appearance="inline"
-                            text={t.enable}
-                            onClick={() => void subscribe()}
-                            data-qa="enable-push-notifications"
-                          />
-                        ))}
-                    </FixedSpaceColumn>
-                  }
-                  data-qa="push-this-device-state"
-                />
-              )}
+                ) : !currentDevice ? (
+                  <InfoBox
+                    noMargin
+                    darkBackground
+                    message={
+                      <FixedSpaceColumn $spacing="s" $alignItems="flex-start">
+                        <span>{t.notEnabledOnThisDevice}</span>
+                        {availability.kind === 'subscribable' &&
+                          (devices.length >= maxDevices ? (
+                            <span data-qa="push-device-limit-reached">
+                              {t.deviceLimitReached}
+                            </span>
+                          ) : (
+                            <Button
+                              appearance="inline"
+                              text={t.enable}
+                              onClick={() => void subscribe()}
+                              data-qa="enable-push-notifications"
+                            />
+                          ))}
+                      </FixedSpaceColumn>
+                    }
+                    data-qa="push-this-device-state"
+                  />
+                ) : null}
+              </FixedSpaceColumn>
 
               <Gap $size="s" />
               <FixedSpaceColumn $spacing="xs">
@@ -218,7 +228,7 @@ const TitleRow = styled.div`
   gap: ${defaultMargins.s};
 `
 
-const ThisDeviceStrip = styled.div`
+const TestSendStrip = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;

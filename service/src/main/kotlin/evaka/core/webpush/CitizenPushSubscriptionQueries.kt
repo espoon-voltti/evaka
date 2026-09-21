@@ -177,18 +177,3 @@ fun Database.Transaction.deleteCitizenPushSubscription(
     sql("DELETE FROM citizen_push_subscription WHERE id = ${bind(subscription)}")
 }
     .executeAndReturnCount()
-
-fun Database.Read.citizenOwnsPushDevice(
-    person: PersonId,
-    id: CitizenPushSubscriptionId,
-): Boolean = createQuery {
-    sql(
-        """
-SELECT EXISTS(
-    SELECT FROM citizen_push_subscription
-    WHERE id = ${bind(id)} AND person_id = ${bind(person)}
-)
-"""
-    )
-}
-    .exactlyOne()

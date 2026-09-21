@@ -17,18 +17,13 @@ import { useTranslation } from '../localization'
 
 import { PushStatusChip } from './PushStatusChip'
 import { Banner, SuggestionNote, useSuggestionStage } from './SuggestionBanner'
-import {
-  usePushAvailability,
-  useSubscribeToPush,
-  useThisPushDevice
-} from './pushNotifications'
+import { usePushAvailability, useSubscribeToPush } from './pushNotifications'
 import { sendTestPushNotificationMutation } from './queries'
 
 export const PushSuggestion = React.memo(function PushSuggestion() {
   const i18n = useTranslation()
   const t = i18n.pwa.pushSuggestion
   const availability = usePushAvailability()
-  const thisDevice = useThisPushDevice()
   const subscribe = useSubscribeToPush()
   const { stage, showNote, dismiss } = useSuggestionStage('push')
   const [enableClicked, setEnableClicked] = useState(false)
@@ -89,15 +84,13 @@ export const PushSuggestion = React.memo(function PushSuggestion() {
           <>
             <P $noMargin>{t.enabledText}</P>
             <Actions>
-              {thisDevice && (
-                <MutateButton
-                  appearance="inline"
-                  text={t.sendTest}
-                  mutation={sendTestPushNotificationMutation}
-                  onClick={() => ({ body: { deviceId: thisDevice } })}
-                  data-qa="push-suggestion-test"
-                />
-              )}
+              <MutateButton
+                appearance="inline"
+                text={t.sendTest}
+                mutation={sendTestPushNotificationMutation}
+                onClick={() => undefined}
+                data-qa="push-suggestion-test"
+              />
               <Button
                 appearance="inline"
                 text={t.close}
