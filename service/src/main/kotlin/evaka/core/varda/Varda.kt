@@ -168,8 +168,8 @@ data class Varhaiskasvatussuhde(
 
 enum class MaksunPerusteKoodi(val code: String) {
     FREE_OF_CHARGE("MP01"),
-    FIVE_YEAR_OLDS_DAYCARE("MP02"),
-    DAYCARE("MP03"),
+    PARTIALLY_FREE_OF_CHARGE("MP02"),
+    FEE("MP03"),
 }
 
 data class Maksutieto(
@@ -212,8 +212,8 @@ data class Maksutieto(
                         freeOfCharge -> MaksunPerusteKoodi.FREE_OF_CHARGE
                         data.placementType == PlacementType.DAYCARE_FIVE_YEAR_OLDS ||
                             data.placementType == PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
-                            MaksunPerusteKoodi.FIVE_YEAR_OLDS_DAYCARE
-                        else -> MaksunPerusteKoodi.DAYCARE
+                            MaksunPerusteKoodi.PARTIALLY_FREE_OF_CHARGE
+                        else -> MaksunPerusteKoodi.FEE
                     }.code,
                 perheen_koko = data.familySize,
                 asiakasmaksu = data.childFee.toDouble() / 100,

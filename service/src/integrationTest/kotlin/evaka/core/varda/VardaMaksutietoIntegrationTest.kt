@@ -168,9 +168,17 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `free of charge voucher value decision is sent without voucher value`() {
-        insertPlacement(voucherUnit, PlacementType.DAYCARE)
-        insertVoucherValueDecision(finalCoPayment = 0)
+    fun `voucher value decision of a free service need is sent as free of charge without voucher value`() {
+        insertPlacement(
+            voucherUnit,
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            snFreeFiveYearOldsPartDay,
+        )
+        insertVoucherValueDecision(
+            placementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            serviceNeedFeeCoefficient = snFreeFiveYearOldsPartDay.feeCoefficient,
+            finalCoPayment = 0,
+        )
 
         assertEquals(
             listOf(
@@ -185,16 +193,45 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `voucher value decision is not free of charge when co-payment is not zero`() {
-        insertPlacement(voucherUnit, PlacementType.DAYCARE)
+    fun `voucher value decision of a free service need is not free of charge when co-payment is not zero`() {
+        insertPlacement(
+            voucherUnit,
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            snFreeFiveYearOldsPartDay,
+        )
         // e.g. an increasing fee alteration makes the co-payment non-zero
-        insertVoucherValueDecision(finalCoPayment = 5000)
+        insertVoucherValueDecision(
+            placementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            serviceNeedFeeCoefficient = snFreeFiveYearOldsPartDay.feeCoefficient,
+            finalCoPayment = 5000,
+        )
+
+        assertEquals(
+            listOf(
+                maksutieto(
+                    maksun_peruste_koodi = "MP02",
+                    asiakasmaksu = 50.0,
+                    palveluseteli_arvo = 1000.0,
+                )
+            ),
+            evakaMaksutiedot(),
+        )
+    }
+
+    @Test
+    fun `zero co-payment due to income is not free of charge fee basis`() {
+        insertPlacement(voucherUnit, PlacementType.DAYCARE)
+        insertVoucherValueDecision(
+            placementType = PlacementType.DAYCARE,
+            serviceNeedFeeCoefficient = snDaycareFullDay35.feeCoefficient,
+            finalCoPayment = 0,
+        )
 
         assertEquals(
             listOf(
                 maksutieto(
                     maksun_peruste_koodi = "MP03",
-                    asiakasmaksu = 50.0,
+                    asiakasmaksu = 0.0,
                     palveluseteli_arvo = 1000.0,
                 )
             ),
@@ -274,7 +311,11 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun insertVoucherValueDecision(finalCoPayment: Int) {
+    private fun insertVoucherValueDecision(
+        placementType: PlacementType,
+        serviceNeedFeeCoefficient: BigDecimal,
+        finalCoPayment: Int,
+    ) {
         db.transaction { tx ->
             tx.insert(
                 DevVoucherValueDecision(
@@ -284,7 +325,8 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     validFrom = range.start,
                     validTo = range.end,
                     status = VoucherValueDecisionStatus.SENT,
-                    serviceNeedFeeCoefficient = BigDecimal("0.00"),
+                    placementType = placementType,
+                    serviceNeedFeeCoefficient = serviceNeedFeeCoefficient,
                     voucherValue = 100000,
                     finalCoPayment = finalCoPayment,
                 )
