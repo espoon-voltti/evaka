@@ -15,9 +15,11 @@ import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.koski.freezeKoskiSync
 import evaka.core.messaging.DeletedMessageThreadBatch
 import evaka.core.messaging.deleteExpiredBulletinThreads
+import evaka.core.messaging.deleteExpiredFinanceThreads
 import evaka.core.messaging.deleteExpiredMessageDrafts
 import evaka.core.messaging.deleteExpiredServiceWorkerThreads
 import evaka.core.messaging.deleteMessageThreadsOfExpiredChildren
+import evaka.core.messaging.personIdsWithFinanceThreads
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
 import evaka.core.shared.ApplicationId
@@ -207,23 +209,32 @@ class DataRemovalService(
 
         deleteExpiredChildImages(dbc, now, expireDate = today.minusMonths(1), limit)
 
-        val financeNoteExpireDate = today.minusYears(5)
+        val financeExpiresBefore = now.minusYears(5)
         val citizenUserExpireDate = today.minusYears(1)
 
-        deleteExpiredFinanceNotes(dbc, expireDate = financeNoteExpireDate, limit)
+        deleteExpiredFinanceNotes(dbc, expireDate = financeExpiresBefore.toLocalDate(), limit)
+
+        deleteExpiredFinanceThreads(
+            dbc,
+            now,
+            expiredChildIdsQuery = expiredChildIdsQuery(),
+            expiresBefore = financeExpiresBefore,
+            limit = limit,
+        )
 
         deleteExpiredCitizenUsers(dbc, expireDate = citizenUserExpireDate, limit)
 
         // Guardian and foster parent relationships are the links used above to discover expired
-        // citizen users and finance notes, so guardian and foster parent records are deleted only
-        // after citizen users and finance notes are deleted, and skipped for persons whose citizen
-        // user or finance note removal is still pending
+        // citizen users and finance data, so guardian and foster parent records are deleted only
+        // after citizen users, finance notes and finance threads are deleted. They are skipped for
+        // persons whose citizen user or finance note removal is still pending, and for persons who
+        // have any finance thread, because a finance thread concerns every child of the family.
         deleteExpiredGuardians(
             dbc,
             now,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = citizenUserExpireDate,
-            financeNoteExpireDate = financeNoteExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = limit,
         )
 
@@ -231,7 +242,7 @@ class DataRemovalService(
             dbc,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = citizenUserExpireDate,
-            financeNoteExpireDate = financeNoteExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = limit,
         )
 
@@ -457,6 +468,27 @@ class DataRemovalService(
                 tx.deleteExpiredServiceWorkerThreads(limit)
             }
         logger.info { "Deleted $deletedCount expired service worker thread(s)" }
+    }
+
+    fun deleteExpiredFinanceThreads(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        expiredChildIdsQuery: QuerySql,
+        expiresBefore: HelsinkiDateTime,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit expired finance threads" }
+        val auditMeta = mapOf("expiresBefore" to expiresBefore)
+        val deletedCount =
+            deleteMessageThreads(dbc, now, auditMeta = auditMeta) { tx ->
+                tx.deleteExpiredFinanceThreads(
+                    financeConnectionsQuery(),
+                    expiredChildIdsQuery,
+                    expiresBefore,
+                    limit,
+                )
+            }
+        logger.info { "Deleted $deletedCount expired finance thread(s)" }
     }
 
     private fun deleteMessageThreads(
@@ -1197,7 +1229,7 @@ fun deleteExpiredGuardians(
     now: HelsinkiDateTime,
     expireDate: LocalDate,
     citizenUserExpireDate: LocalDate,
-    financeNoteExpireDate: LocalDate,
+    financeExpiresBefore: HelsinkiDateTime,
     limit: Int,
 ) {
     logger.info { "Deleting at most $limit expired guardian relationships" }
@@ -1207,7 +1239,7 @@ fun deleteExpiredGuardians(
                 expireDate,
                 now,
                 citizenUserExpireDate,
-                financeNoteExpireDate,
+                financeExpiresBefore,
                 limit,
             )
         ExpiredGuardianRemoval(
@@ -1238,7 +1270,7 @@ private fun Database.Transaction.deleteExpiredGuardiansBatch(
     expireDate: LocalDate,
     now: HelsinkiDateTime,
     citizenUserExpireDate: LocalDate,
-    financeNoteExpireDate: LocalDate,
+    financeExpiresBefore: HelsinkiDateTime,
     limit: Int,
 ): List<DeletedGuardian> = createUpdate {
     sql(
@@ -1250,7 +1282,8 @@ WITH del_batch AS (
         child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))}) AND
         ${predicate(childPastSafeDataRemovalAge(now.toLocalDate()).forTable("guardian"))} AND
         NOT guardian_id = ANY(${subquery(citizenUserIdsWithPlacementsEndingBefore(citizenUserExpireDate))}) AND
-        NOT guardian_id = ANY(${subquery(personIdsWithPendingFinanceNoteRemoval(financeNoteExpireDate))})
+        NOT guardian_id = ANY(${subquery(personIdsWithFinanceNotes())}) AND
+        NOT guardian_id = ANY(${subquery(personIdsWithFinanceThreads())})
     FOR UPDATE
     LIMIT ${bind(limit)}
 )
@@ -1268,7 +1301,7 @@ fun deleteExpiredFosterParents(
     dbc: Database.Connection,
     expireDate: LocalDate,
     citizenUserExpireDate: LocalDate,
-    financeNoteExpireDate: LocalDate,
+    financeExpiresBefore: HelsinkiDateTime,
     limit: Int,
 ) {
     logger.info { "Deleting at most $limit expired foster parent relationships" }
@@ -1276,7 +1309,7 @@ fun deleteExpiredFosterParents(
         tx.deleteExpiredFosterParentsBatch(
             expireDate,
             citizenUserExpireDate,
-            financeNoteExpireDate,
+            financeExpiresBefore,
             limit,
         )
     }
@@ -1303,7 +1336,7 @@ private data class DeletedFosterParent(
 private fun Database.Transaction.deleteExpiredFosterParentsBatch(
     expireDate: LocalDate,
     citizenUserExpireDate: LocalDate,
-    financeNoteExpireDate: LocalDate,
+    financeExpiresBefore: HelsinkiDateTime,
     limit: Int,
 ): List<DeletedFosterParent> = createUpdate {
     sql(
@@ -1314,7 +1347,8 @@ WITH del_batch AS (
     WHERE
         child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))}) AND
         NOT parent_id = ANY(${subquery(citizenUserIdsWithPlacementsEndingBefore(citizenUserExpireDate))}) AND
-        NOT parent_id = ANY(${subquery(personIdsWithPendingFinanceNoteRemoval(financeNoteExpireDate))})
+        NOT parent_id = ANY(${subquery(personIdsWithFinanceNotes())}) AND
+        NOT parent_id = ANY(${subquery(personIdsWithFinanceThreads())})
     FOR UPDATE
     LIMIT ${bind(limit)}
 )
@@ -1371,15 +1405,7 @@ RETURNING guardian_blocklist.guardian_id, guardian_blocklist.child_id
     .executeAndReturnGeneratedKeys()
     .toList()
 
-private fun personIdsWithPendingFinanceNoteRemoval(expireDate: LocalDate) = QuerySql {
-    sql(
-        """
-SELECT person_id
-FROM finance_note
-WHERE person_id = ANY(${subquery(personIdsWithExpiredFinanceConnections(expireDate))})
-"""
-    )
-}
+private fun personIdsWithFinanceNotes() = QuerySql { sql("SELECT person_id FROM finance_note") }
 
 private fun citizenUserIdsWithPlacementsEndingBefore(date: LocalDate) = QuerySql {
     sql(
@@ -1399,27 +1425,35 @@ HAVING max(p.end_date) < ${bind(date)}
     )
 }
 
+private fun financeConnectionsQuery() = QuerySql {
+    sql(
+        """
+SELECT g.guardian_id AS person_id, g.child_id
+FROM guardian g
+UNION ALL
+SELECT fp.parent_id AS person_id, fp.child_id
+FROM foster_parent fp
+UNION ALL
+SELECT fc.head_of_child AS person_id, fc.child_id
+FROM fridge_child fc
+WHERE fc.conflict = false
+UNION ALL
+SELECT partner.person_id AS person_id, fc.child_id
+FROM fridge_child fc
+JOIN fridge_partner partner_head ON partner_head.person_id = fc.head_of_child
+JOIN fridge_partner partner
+    ON partner.partnership_id = partner_head.partnership_id
+    AND partner.person_id <> partner_head.person_id
+WHERE fc.conflict = false AND partner_head.conflict = false AND partner.conflict = false
+"""
+    )
+}
+
 private fun personIdsWithExpiredFinanceConnections(date: LocalDate) = QuerySql {
     sql(
         """
 WITH finance_connection AS (
-    SELECT g.guardian_id AS person_id, g.child_id
-    FROM guardian g
-    UNION ALL
-    SELECT fp.parent_id AS person_id, fp.child_id
-    FROM foster_parent fp
-    UNION ALL
-    SELECT fc.head_of_child AS person_id, fc.child_id
-    FROM fridge_child fc
-    WHERE fc.conflict = false
-    UNION ALL
-    SELECT partner.person_id AS person_id, fc.child_id
-    FROM fridge_child fc
-    JOIN fridge_partner partner_head ON partner_head.person_id = fc.head_of_child
-    JOIN fridge_partner partner
-        ON partner.partnership_id = partner_head.partnership_id
-        AND partner.person_id <> partner_head.person_id
-    WHERE fc.conflict = false AND partner_head.conflict = false AND partner.conflict = false
+    ${subquery(financeConnectionsQuery())}
 )
 SELECT fconn.person_id
 FROM finance_connection fconn
@@ -1431,7 +1465,19 @@ HAVING max(p.end_date) < ${bind(date)}
 }
 
 /**
- * Selects the ids of the children whose data can be removed altogether. The rule that decides this
- * is not known yet, so no child expires.
+ * Selects the ids of the children whose data can be removed altogether. A child can be removed only
+ * once every other row depending on the child can be removed, and the data that is kept for as long
+ * as the child is kept, such as their message threads, is removed together with the child. Child
+ * removal is not implemented yet, so no child expires.
  */
+private fun personIdsWithExpiredFinanceNotes(expireDate: LocalDate) = QuerySql {
+    sql(
+        """
+SELECT person_id
+FROM finance_note
+WHERE person_id = ANY(${subquery(personIdsWithExpiredFinanceConnections(expireDate))})
+"""
+    )
+}
+
 private fun expiredChildIdsQuery() = QuerySql { sql("SELECT id FROM child WHERE FALSE") }

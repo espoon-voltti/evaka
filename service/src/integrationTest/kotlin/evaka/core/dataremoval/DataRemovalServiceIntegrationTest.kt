@@ -142,6 +142,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val leafExpireDate = today.minusYears(1)
     private val imageExpireDate = today.minusMonths(1)
     private val financeExpireDate = today.minusYears(5)
+    private val financeExpiresBefore = now.minusYears(5)
     private val tenYearExpireDate = today.minusYears(10)
     private val applicationExpireDate = today.minusYears(10)
     private val incomeStatementExpireDate = today.minusYears(1)
@@ -1155,7 +1156,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1173,7 +1174,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1191,7 +1192,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1213,7 +1214,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1231,7 +1232,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1249,7 +1250,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1261,7 +1262,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1283,7 +1284,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1303,7 +1304,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1315,7 +1316,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1337,7 +1338,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 2,
         )
 
@@ -1354,7 +1355,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1371,7 +1372,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1387,7 +1388,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1404,7 +1405,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1419,7 +1420,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1437,7 +1438,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1452,7 +1453,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1473,7 +1474,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 2,
         )
 
@@ -2350,7 +2351,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
             now.plusDays(1),
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeNoteExpireDate = financeExpireDate,
+            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
