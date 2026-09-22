@@ -3415,6 +3415,7 @@ export const sv: typeof fi = {
     modifiedByStaff: 'Personal',
     modifiedByCitizen: (name: string) => `${name} (vårdnadshavare)`,
     modal: {
+      title: 'Anteckning om frånvaro',
       absenceSectionLabel: 'Orsak till frånvaro',
       placementSectionLabel: 'Verksamhetsform som frånvaron gäller',
       saveButton: 'Spara',
