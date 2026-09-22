@@ -18,8 +18,7 @@ import { faTimes } from 'lib-icons'
 
 import ModalBackground from './ModalBackground'
 
-export interface ModalBaseProps {
-  title: string
+export interface ModalCommonProps {
   text?: React.ReactNode
   className?: string
   icon?: IconProp
@@ -32,9 +31,15 @@ export interface ModalBaseProps {
   padding?: SpacingSize
 }
 
+export type ModalName =
+  | { title: string; 'aria-label'?: never }
+  | { title?: never; 'aria-label': string }
+
+export type ModalBaseProps = ModalCommonProps & ModalName
+
 export type ModalType = 'info' | 'success' | 'warning' | 'danger'
 
-interface Props extends ModalBaseProps {
+type Props = ModalBaseProps & {
   close: () => void
   closeLabel: string
 }
@@ -52,7 +57,8 @@ export default React.memo(function BaseModal(props: Props) {
         <ModalContainer
           role="dialog"
           aria-modal="true"
-          aria-labelledby={props.title ? titleId : undefined}
+          aria-labelledby={props.title !== undefined ? titleId : undefined}
+          aria-label={props['aria-label']}
           $mobileFullScreen={props.mobileFullScreen}
           $margin="auto"
           data-qa="modal"
@@ -68,7 +74,7 @@ export default React.memo(function BaseModal(props: Props) {
                 <Gap $size="m" />
               </>
             )}
-            {!!props.title && (
+            {props.title !== undefined && (
               <ModalHeader
                 headingComponent={(headingProps) => (
                   <H1 $hyphenate {...headingProps} id={titleId} data-qa="title">
@@ -242,7 +248,7 @@ const StaticallyPositionedModal = styled(ModalWrapper)`
 `
 
 type PlainModalProps = Pick<
-  ModalBaseProps,
+  ModalCommonProps,
   'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children' | 'width'
 > & {
   margin: string

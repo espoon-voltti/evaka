@@ -3384,6 +3384,7 @@ export const fi = {
     modifiedByStaff: 'Henkilökunta',
     modifiedByCitizen: (name: string) => `${name} (huoltaja)`,
     modal: {
+      title: 'Poissaolon merkintä',
       absenceSectionLabel: 'Poissaolon syy',
       placementSectionLabel: 'Toimintamuoto, jota poissaolo koskee',
       saveButton: 'Tallenna',

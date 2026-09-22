@@ -62,7 +62,7 @@ export default React.memo(function AbsenceModal({
 
   return (
     <AsyncFormModal
-      title=""
+      aria-label={i18n.absences.modal.title}
       resolveAction={() =>
         onSave(
           selectedAbsenceType.type === 'missingHolidayReservation'
