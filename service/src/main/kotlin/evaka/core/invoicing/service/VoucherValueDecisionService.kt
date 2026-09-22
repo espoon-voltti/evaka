@@ -4,6 +4,7 @@
 
 package evaka.core.invoicing.service
 
+import evaka.core.AuditContext
 import evaka.core.EmailEnv
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.getCaseProcessByVoucherValueDecisionId
@@ -22,6 +23,7 @@ import evaka.core.invoicing.data.setVoucherValueDecisionType
 import evaka.core.invoicing.data.updateVoucherValueDecisionDocumentKey
 import evaka.core.invoicing.data.updateVoucherValueDecisionStatus
 import evaka.core.invoicing.domain.FinanceDecisionType
+import evaka.core.invoicing.domain.VoucherValueDecision
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType
@@ -88,11 +90,18 @@ class VoucherValueDecisionService(
     fun getDecisionPdfResponse(
         dbc: Database.Connection,
         decisionId: VoucherValueDecisionId,
+        audit: AuditContext,
     ): ResponseEntity<Any> {
         val (documentKey, fileName) =
             dbc.read { tx ->
                 val decision =
                     tx.getVoucherValueDecision(decisionId) ?: throw NotFound("Decision not found")
+                audit
+                    .add(decision.headOfFamily.id)
+                    .add(listOfNotNull(decision.partner?.id))
+                    .add(decision.child.id)
+                    .add(decision.placement.unit.id)
+                    .observeDate(decision.validFrom)
                 if (decision.documentKey == null)
                     throw NotFound("Document key not found for decision $decisionId")
                 val lang = getDecisionLanguage(decision)
@@ -196,8 +205,10 @@ class VoucherValueDecisionService(
         tx: Database.Transaction,
         ids: List<VoucherValueDecisionId>,
         today: LocalDate,
+        audit: AuditContext,
     ) {
         tx.getValueDecisionsByIds(ids)
+            .onEach { audit.observeDate(it.validFrom) }
             .map { decision ->
                 if (decision.status != VoucherValueDecisionStatus.DRAFT) {
                     throw BadRequest(
@@ -214,8 +225,13 @@ class VoucherValueDecisionService(
             .forEach { tx.setVoucherValueDecisionToIgnored(it.id) }
     }
 
-    fun unignoreDrafts(tx: Database.Transaction, ids: List<VoucherValueDecisionId>): Set<PersonId> {
+    fun unignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<VoucherValueDecisionId>,
+        audit: AuditContext,
+    ): Set<PersonId> {
         return tx.getValueDecisionsByIds(ids)
+            .onEach { audit.addDecision(it) }
             .map { decision ->
                 if (decision.status != VoucherValueDecisionStatus.IGNORED) {
                     throw BadRequest("Error with decision ${decision.id}: not ignored")
@@ -253,10 +269,16 @@ class VoucherValueDecisionService(
         tx: Database.Transaction,
         decisionId: VoucherValueDecisionId,
         type: VoucherValueDecisionType,
+        audit: AuditContext,
     ) {
         val decision =
             tx.getVoucherValueDecision(decisionId)
                 ?: throw BadRequest("Decision not found with id $decisionId")
+        audit
+            .add(decision.headOfFamily.id)
+            .add(listOfNotNull(decision.partner?.id))
+            .add(decision.child.id)
+            .observeDate(decision.validFrom)
         if (decision.status != VoucherValueDecisionStatus.DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")
         }
@@ -319,3 +341,10 @@ class VoucherValueDecisionService(
         }
     }
 }
+
+@IgnorableReturnValue
+internal fun AuditContext.addDecision(decision: VoucherValueDecision): AuditContext =
+    add(decision.headOfFamilyId)
+        .add(listOfNotNull(decision.partnerId))
+        .add(decision.child.id)
+        .observeDate(decision.validFrom)

@@ -11,6 +11,8 @@ import evaka.core.application.ApplicationType
 import evaka.core.decision.DecisionType
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.childdocument.getChildDocument
+import evaka.core.invoicing.data.getFeeDecisionsByIds
+import evaka.core.invoicing.data.getValueDecisionsByIds
 import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildDocumentId
@@ -256,6 +258,7 @@ class ProcessMetadataController(
         clock: EvakaClock,
         @PathVariable feeDecisionId: FeeDecisionId,
     ): ProcessMetadataResponse {
+        val audit = AuditContext().add(feeDecisionId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -268,6 +271,16 @@ class ProcessMetadataController(
                     val process =
                         tx.getCaseProcessByFeeDecisionId(feeDecisionId)
                             ?: return@read ProcessMetadataResponse(null)
+                    audit
+                        .add(process.id)
+                        .observeDate(process.history.minOfOrNull { it.enteredAt.toLocalDate() })
+                    tx.getFeeDecisionsByIds(listOf(feeDecisionId)).forEach { decision ->
+                        audit
+                            .add(decision.headOfFamilyId)
+                            .add(listOfNotNull(decision.partnerId))
+                            .add(decision.children.map { child -> child.child.id })
+                            .add(decision.children.map { child -> child.placement.unitId })
+                    }
                     val decisionDocument =
                         tx.getFeeDecisionDocumentMetadata(feeDecisionId, isCitizen = false)
 
@@ -283,12 +296,7 @@ class ProcessMetadataController(
                     )
                 }
             }
-            .also { response ->
-                Audit.FeeDecisionReadMetadata.log(
-                    targetId = AuditId(feeDecisionId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke),
-                )
-            }
+            .also { audit.log(Audit.FeeDecisionReadMetadata, clock) }
     }
 
     @GetMapping("/voucher-value-decisions/{voucherValueDecisionId}")
@@ -298,6 +306,7 @@ class ProcessMetadataController(
         clock: EvakaClock,
         @PathVariable voucherValueDecisionId: VoucherValueDecisionId,
     ): ProcessMetadataResponse {
+        val audit = AuditContext().add(voucherValueDecisionId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -310,6 +319,16 @@ class ProcessMetadataController(
                     val process =
                         tx.getCaseProcessByVoucherValueDecisionId(voucherValueDecisionId)
                             ?: return@read ProcessMetadataResponse(null)
+                    audit
+                        .add(process.id)
+                        .observeDate(process.history.minOfOrNull { it.enteredAt.toLocalDate() })
+                    tx.getValueDecisionsByIds(listOf(voucherValueDecisionId)).forEach { decision ->
+                        audit
+                            .add(decision.headOfFamilyId)
+                            .add(listOfNotNull(decision.partnerId))
+                            .add(decision.child.id)
+                            .add(listOfNotNull(decision.placement?.unitId))
+                    }
                     val decisionDocument =
                         tx.getVoucherValueDecisionDocumentMetadata(
                             voucherValueDecisionId,
@@ -328,11 +347,6 @@ class ProcessMetadataController(
                     )
                 }
             }
-            .also { response ->
-                Audit.VoucherValueDecisionReadMetadata.log(
-                    targetId = AuditId(voucherValueDecisionId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke),
-                )
-            }
+            .also { audit.log(Audit.VoucherValueDecisionReadMetadata, clock) }
     }
 }

@@ -41,6 +41,17 @@ import evaka.core.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.*
 
+/**
+ * What [generateAndInsertFeeDecisionsV2] did: the drafts it wrote, and the existing drafts it
+ * removed for good. An unchanged draft keeps its id (see [withMetadataFromExisting]) and is
+ * re-inserted, so it counts as written, not removed.
+ */
+data class GeneratedFeeDecisions(
+    val written: List<FeeDecision>,
+    val removed: List<FeeDecision>,
+)
+
+@IgnorableReturnValue
 fun generateAndInsertFeeDecisionsV2(
     tx: Database.Transaction,
     incomeTypesProvider: IncomeTypesProvider,
@@ -48,7 +59,7 @@ fun generateAndInsertFeeDecisionsV2(
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
     retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
-) {
+): GeneratedFeeDecisions {
     val existingDecisions =
         tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId = headOfFamilyId, lockForUpdate = true)
 
@@ -74,6 +85,12 @@ fun generateAndInsertFeeDecisionsV2(
 
     tx.deleteFeeDecisions(existingDrafts.map { it.id })
     tx.insertFeeDecisions(newDrafts)
+
+    val writtenIds = newDrafts.map { it.id }.toSet()
+    return GeneratedFeeDecisions(
+        written = newDrafts,
+        removed = existingDrafts.filterNot { writtenIds.contains(it.id) },
+    )
 }
 
 fun generateFeeDecisionsDrafts(

@@ -6,7 +6,8 @@ package evaka.core.caseprocess
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
+import evaka.core.invoicing.data.getFeeDecisionsByIds
+import evaka.core.invoicing.data.getValueDecisionsByIds
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.FeeDecisionId
@@ -73,6 +74,7 @@ class ProcessMetadataControllerCitizen(
         clock: EvakaClock,
         @PathVariable feeDecisionId: FeeDecisionId,
     ): ProcessMetadataResponse {
+        val audit = AuditContext().add(feeDecisionId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -85,6 +87,16 @@ class ProcessMetadataControllerCitizen(
                     val process =
                         tx.getCaseProcessByFeeDecisionId(feeDecisionId)
                             ?: return@read ProcessMetadataResponse(null)
+                    audit
+                        .add(process.id)
+                        .observeDate(process.history.minOfOrNull { it.enteredAt.toLocalDate() })
+                    tx.getFeeDecisionsByIds(listOf(feeDecisionId)).forEach { decision ->
+                        audit
+                            .add(decision.headOfFamilyId)
+                            .add(listOfNotNull(decision.partnerId))
+                            .add(decision.children.map { child -> child.child.id })
+                            .add(decision.children.map { child -> child.placement.unitId })
+                    }
                     val decisionDocument =
                         tx.getFeeDecisionDocumentMetadata(feeDecisionId, isCitizen = true)
 
@@ -101,12 +113,7 @@ class ProcessMetadataControllerCitizen(
                     )
                 }
             }
-            .also { response ->
-                Audit.FeeDecisionReadMetadata.log(
-                    targetId = AuditId(feeDecisionId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke),
-                )
-            }
+            .also { audit.log(Audit.FeeDecisionReadMetadata, clock) }
     }
 
     @GetMapping("/voucher-value-decisions/{voucherValueDecisionId}")
@@ -116,6 +123,7 @@ class ProcessMetadataControllerCitizen(
         clock: EvakaClock,
         @PathVariable voucherValueDecisionId: VoucherValueDecisionId,
     ): ProcessMetadataResponse {
+        val audit = AuditContext().add(voucherValueDecisionId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -128,6 +136,16 @@ class ProcessMetadataControllerCitizen(
                     val process =
                         tx.getCaseProcessByVoucherValueDecisionId(voucherValueDecisionId)
                             ?: return@read ProcessMetadataResponse(null)
+                    audit
+                        .add(process.id)
+                        .observeDate(process.history.minOfOrNull { it.enteredAt.toLocalDate() })
+                    tx.getValueDecisionsByIds(listOf(voucherValueDecisionId)).forEach { decision ->
+                        audit
+                            .add(decision.headOfFamilyId)
+                            .add(listOfNotNull(decision.partnerId))
+                            .add(decision.child.id)
+                            .add(listOfNotNull(decision.placement?.unitId))
+                    }
                     val decisionDocument =
                         tx.getVoucherValueDecisionDocumentMetadata(
                             voucherValueDecisionId,
@@ -147,11 +165,6 @@ class ProcessMetadataControllerCitizen(
                     )
                 }
             }
-            .also { response ->
-                Audit.VoucherValueDecisionReadMetadata.log(
-                    targetId = AuditId(voucherValueDecisionId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke),
-                )
-            }
+            .also { audit.log(Audit.VoucherValueDecisionReadMetadata, clock) }
     }
 }

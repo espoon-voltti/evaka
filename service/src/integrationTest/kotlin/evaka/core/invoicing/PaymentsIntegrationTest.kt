@@ -4,6 +4,7 @@
 
 package evaka.core.invoicing
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.caseprocess.CaseProcessMetadataService
 import evaka.core.daycare.domain.ProviderType
@@ -567,6 +568,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ids = listOf(decision.id),
                 decisionHandlerId = null,
                 alwaysUseDaycareFinanceDecisionHandler,
+                AuditContext(),
             )
             decision.id
         }

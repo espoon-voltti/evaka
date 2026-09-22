@@ -6,7 +6,6 @@ package evaka.core.invoicing.controller
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.ConstList
 import evaka.core.EvakaEnv
 import evaka.core.caseprocess.CaseProcessMetadataService
@@ -90,6 +89,16 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest,
     ): PagedVoucherValueDecisionSummaries {
+        val audit =
+            AuditContext()
+                .add(listOfNotNull(body.unit))
+                .add(listOfNotNull(body.financeDecisionHandlerId))
+                .observeDate(body.startDate)
+        body.statuses.takeIf { it.isNotEmpty() }?.let { audit.addMeta("statuses", it) }
+        body.area?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("areas", it) }
+        body.distinctions?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("distinctions", it) }
+        body.difference?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("difference", it) }
+        if (body.searchByStartDate) audit.addMeta("searchByStartDate", true)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -99,26 +108,30 @@ class VoucherValueDecisionController(
                         Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS,
                     )
                     tx.searchValueDecisions(
-                        clock,
-                        featureConfig.postOffice,
-                        body.page,
-                        pageSize = 200,
-                        body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
-                        body.sortDirection ?: SortDirection.DESC,
-                        body.statuses,
-                        body.area ?: emptyList(),
-                        body.unit,
-                        body.searchTerms ?: "",
-                        body.startDate,
-                        body.endDate,
-                        body.searchByStartDate,
-                        body.financeDecisionHandlerId,
-                        body.difference ?: emptySet(),
-                        body.distinctions ?: emptyList(),
-                    )
+                            clock,
+                            featureConfig.postOffice,
+                            body.page,
+                            pageSize = 200,
+                            body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
+                            body.sortDirection ?: SortDirection.DESC,
+                            body.statuses,
+                            body.area ?: emptyList(),
+                            body.unit,
+                            body.searchTerms ?: "",
+                            body.startDate,
+                            body.endDate,
+                            body.searchByStartDate,
+                            body.financeDecisionHandlerId,
+                            body.difference ?: emptySet(),
+                            body.distinctions ?: emptyList(),
+                        )
+                        .also { page ->
+                            audit.addMeta("count", page.data.size)
+                            audit.add(page.data.map { it.headOfFamily.id })
+                        }
                 }
             }
-            .also { Audit.VoucherValueDecisionSearch.log(meta = mapOf("total" to it.total)) }
+            .also { audit.log(Audit.VoucherValueDecisionSearch, clock) }
     }
 
     data class VoucherValueDecisionResponse(
@@ -133,6 +146,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId,
     ): VoucherValueDecisionResponse {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -145,13 +159,19 @@ class VoucherValueDecisionController(
                     val decision =
                         it.getVoucherValueDecision(id)
                             ?: throw NotFound("No voucher value decision found with given ID ($id)")
+                    audit
+                        .add(decision.headOfFamily.id)
+                        .add(listOfNotNull(decision.partner?.id))
+                        .add(decision.child.id)
+                        .add(decision.placement.unit.id)
+                        .observeDate(decision.validFrom)
                     VoucherValueDecisionResponse(
                         data = decision,
                         permittedActions = accessControl.getPermittedActions(it, user, clock, id),
                     )
                 }
             }
-            .also { Audit.VoucherValueDecisionRead.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.VoucherValueDecisionRead, clock) }
     }
 
     data class VoucherValueDecisionSummaryWithPermittedActions(
@@ -166,6 +186,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId,
     ): List<VoucherValueDecisionSummaryWithPermittedActions> {
+        val audit = AuditContext().add(headOfFamilyId)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -175,7 +196,13 @@ class VoucherValueDecisionController(
                         Action.Person.READ_VOUCHER_VALUE_DECISIONS,
                         headOfFamilyId,
                     )
-                    val decisions = it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId)
+                    val decisions =
+                        it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId).onEach { decision ->
+                            audit
+                                .add(decision.id)
+                                .add(decision.child.id)
+                                .observeDate(decision.validFrom)
+                        }
                     val permittedActions =
                         accessControl.getPermittedActions<
                             VoucherValueDecisionId,
@@ -194,9 +221,7 @@ class VoucherValueDecisionController(
                     }
                 }
             }
-            .also {
-                Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = AuditId(headOfFamilyId))
-            }
+            .also { audit.log(Audit.VoucherValueDecisionHeadOfFamilyRead, clock) }
     }
 
     @PostMapping("/send")
@@ -207,6 +232,7 @@ class VoucherValueDecisionController(
         @RequestBody decisionIds: List<VoucherValueDecisionId>,
         @RequestParam decisionHandlerId: EmployeeId?,
     ) {
+        val audit = AuditContext().add(decisionIds).add(listOfNotNull(decisionHandlerId))
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -226,10 +252,11 @@ class VoucherValueDecisionController(
                     ids = decisionIds,
                     decisionHandlerId = decisionHandlerId,
                     featureConfig.alwaysUseDaycareFinanceDecisionHandler,
+                    audit,
                 )
             }
         }
-        Audit.VoucherValueDecisionSend.log(targetId = AuditId(decisionIds))
+        audit.log(Audit.VoucherValueDecisionSend, clock)
     }
 
     @PostMapping("/mark-sent")
@@ -239,6 +266,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody ids: List<VoucherValueDecisionId>,
     ) {
+        val audit = AuditContext().add(ids)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -248,7 +276,8 @@ class VoucherValueDecisionController(
                     Action.VoucherValueDecision.UPDATE,
                     ids,
                 )
-                val decisions = tx.getValueDecisionsByIds(ids)
+                val decisions =
+                    tx.getValueDecisionsByIds(ids).onEach { audit.observeDate(it.validFrom) }
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
                     throw BadRequest("Voucher value decision cannot be marked sent")
                 }
@@ -274,7 +303,7 @@ class VoucherValueDecisionController(
                 )
             }
         }
-        Audit.VoucherValueDecisionMarkSent.log(targetId = AuditId(ids))
+        audit.log(Audit.VoucherValueDecisionMarkSent, clock)
     }
 
     @GetMapping("/pdf/{decisionId}")
@@ -284,6 +313,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable decisionId: VoucherValueDecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(decisionId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -315,9 +345,9 @@ class VoucherValueDecisionController(
                     }
                 }
 
-                valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
+                valueDecisionService.getDecisionPdfResponse(dbc, decisionId, audit)
             }
-            .also { Audit.VoucherValueDecisionPdfRead.log(targetId = AuditId(decisionId)) }
+            .also { audit.log(Audit.VoucherValueDecisionPdfRead, clock) }
     }
 
     @PostMapping("/ignore")
@@ -327,6 +357,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>,
     ) {
+        val audit = AuditContext().add(voucherValueDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -336,10 +367,10 @@ class VoucherValueDecisionController(
                     Action.VoucherValueDecision.IGNORE,
                     voucherValueDecisionIds,
                 )
-                valueDecisionService.ignoreDrafts(tx, voucherValueDecisionIds, clock.today())
+                valueDecisionService.ignoreDrafts(tx, voucherValueDecisionIds, clock.today(), audit)
             }
         }
-        Audit.VoucherValueDecisionIgnore.log(targetId = AuditId(voucherValueDecisionIds))
+        audit.log(Audit.VoucherValueDecisionIgnore, clock)
     }
 
     @PostMapping("/unignore")
@@ -349,6 +380,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>,
     ) {
+        val audit = AuditContext().add(voucherValueDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -359,7 +391,7 @@ class VoucherValueDecisionController(
                     voucherValueDecisionIds,
                 )
                 val headsOfFamilies =
-                    valueDecisionService.unignoreDrafts(tx, voucherValueDecisionIds)
+                    valueDecisionService.unignoreDrafts(tx, voucherValueDecisionIds, audit)
                 asyncJobRunner.plan(
                     tx,
                     headsOfFamilies.map { personId ->
@@ -372,7 +404,7 @@ class VoucherValueDecisionController(
                 )
             }
         }
-        Audit.VoucherValueDecisionUnignore.log(targetId = AuditId(voucherValueDecisionIds))
+        audit.log(Audit.VoucherValueDecisionUnignore, clock)
     }
 
     @PostMapping("/set-type/{id}")
@@ -383,6 +415,7 @@ class VoucherValueDecisionController(
         @PathVariable id: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest,
     ) {
+        val audit = AuditContext().add(id).addMeta("type", request.type)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -392,10 +425,10 @@ class VoucherValueDecisionController(
                     Action.VoucherValueDecision.UPDATE,
                     id,
                 )
-                valueDecisionService.setType(it, id, request.type)
+                valueDecisionService.setType(it, id, request.type, audit)
             }
         }
-        Audit.VoucherValueDecisionSetType.log(targetId = AuditId(id))
+        audit.log(Audit.VoucherValueDecisionSetType, clock)
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
@@ -406,6 +439,7 @@ class VoucherValueDecisionController(
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody,
     ) {
+        val audit = AuditContext().add(id).observeDate(body.from)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -415,10 +449,10 @@ class VoucherValueDecisionController(
                     Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS,
                     id,
                 )
-                generator.createRetroactiveValueDecisions(it, id, body.from)
+                generator.createRetroactiveValueDecisions(it, id, body.from, audit)
             }
         }
-        Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = AuditId(id))
+        audit.log(Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive, clock)
     }
 
     @PostMapping("/{id}/archive")
@@ -478,9 +512,10 @@ fun sendVoucherValueDecisions(
     ids: List<VoucherValueDecisionId>,
     decisionHandlerId: EmployeeId?,
     alwaysUseDaycareFinanceDecisionHandler: Boolean,
+    audit: AuditContext,
 ) {
     tx.lockValueDecisions(ids)
-    val decisions = tx.getValueDecisionsByIds(ids)
+    val decisions = tx.getValueDecisionsByIds(ids).onEach { audit.observeDate(it.validFrom) }
     if (decisions.isEmpty()) return
 
     if (decisions.any { it.status != DRAFT }) {
@@ -523,9 +558,9 @@ fun sendVoucherValueDecisions(
         error("Some children have overlapping value decisions still waiting for sending")
 
     val (annulled, updatedDates) =
-        updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts).partition {
-            it.status == ANNULLED
-        }
+        updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
+            .onEach { audit.add(it.id).observeDate(it.validFrom) }
+            .partition { it.status == ANNULLED }
     tx.annulVoucherValueDecisions(annulled.map { it.id }, now)
     tx.updateVoucherValueDecisionEndDates(updatedDates, now)
 
