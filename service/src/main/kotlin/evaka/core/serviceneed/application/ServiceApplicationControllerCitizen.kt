@@ -5,6 +5,7 @@
 package evaka.core.serviceneed.application
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.daycare.getDaycare
 import evaka.core.placement.getPlacementsForChildDuring
@@ -93,6 +94,7 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
         @RequestParam childId: ChildId,
         @RequestParam date: LocalDate,
     ): List<ServiceNeedOptionBasics> {
+        val audit = AuditContext().add(childId).observeDate(date)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -105,6 +107,7 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                     val placement =
                         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
                             ?: return@read emptyList()
+                    audit.add(placement.id).add(placement.unitId)
                     val _ =
                         tx.getDaycare(placement.unitId)?.takeIf {
                             it.enabledPilotFeatures.contains(PilotFeature.SERVICE_APPLICATIONS)
@@ -130,7 +133,7 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                         }
                 }
             }
-            .also { Audit.CitizenChildServiceNeedOptionsRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.CitizenChildServiceNeedOptionsRead, clock) }
     }
 
     data class ServiceApplicationCreateRequest(

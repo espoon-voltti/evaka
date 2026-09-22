@@ -5,7 +5,7 @@
 package evaka.core.placement
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.absence.generateAbsencesFromIrregularDailyServiceTimes
 import evaka.core.daycare.controllers.AdditionalInformation
 import evaka.core.daycare.controllers.Child
@@ -54,6 +54,7 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): PlacementResponse {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -105,6 +106,11 @@ class PlacementController(
                                     serviceNeed.id
                                 }
                             }
+                            audit
+                                .add(placementIds)
+                                .add(serviceNeedIds)
+                                .add(placements.map { it.daycare.id })
+                                .observeDate(placements.minOfOrNull { it.startDate })
                             val responsePlacements =
                                 if (canReadServiceNeeds) placements
                                 else placements.map { it.copy(serviceNeedDetail = null) }.toSet()
@@ -128,12 +134,7 @@ class PlacementController(
                         }
                 }
             }
-            .also {
-                Audit.PlacementSearch.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("count" to it.placements.size),
-                )
-            }
+            .also { audit.log(Audit.PlacementSearch, clock) }
     }
 
     @PostMapping("/employee/placements")
@@ -146,58 +147,60 @@ class PlacementController(
         if (body.startDate > body.endDate)
             throw BadRequest("Placement start date cannot be after the end date")
         val now = clock.now()
+        val audit = AuditContext().add(body.childId).add(body.unitId).observeDate(body.startDate)
 
-        val placements = db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.CREATE_PLACEMENT,
-                    body.unitId,
-                )
-                if (tx.getChild(body.childId) == null) {
-                    tx.createChild(
-                        Child(id = body.childId, additionalInformation = AdditionalInformation()),
-                        clock.now(),
-                    )
-                }
-
-                createPlacement(
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
                         tx,
-                        childId = body.childId,
-                        unitId = body.unitId,
-                        period = FiniteDateRange(body.startDate, body.endDate),
-                        type = body.type,
-                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                        placeGuarantee = body.placeGuarantee,
-                        now = now,
-                        userId = user.evakaUserId,
-                        source = PlacementSource.MANUAL,
+                        user,
+                        clock,
+                        Action.Unit.CREATE_PLACEMENT,
+                        body.unitId,
                     )
-                    .also {
-                        tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
-                            body.childId,
-                            now.toLocalDate(),
-                        )
-                        generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
-                        asyncJobRunner.plan(
-                            tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    body.childId,
-                                    DateRange(body.startDate, body.endDate),
-                                )
+                    if (tx.getChild(body.childId) == null) {
+                        tx.createChild(
+                            Child(
+                                id = body.childId,
+                                additionalInformation = AdditionalInformation(),
                             ),
-                            runAt = now,
+                            clock.now(),
                         )
                     }
+
+                    createPlacement(
+                            tx,
+                            childId = body.childId,
+                            unitId = body.unitId,
+                            period = FiniteDateRange(body.startDate, body.endDate),
+                            type = body.type,
+                            useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                            placeGuarantee = body.placeGuarantee,
+                            now = now,
+                            userId = user.evakaUserId,
+                            source = PlacementSource.MANUAL,
+                        )
+                        .also { placements ->
+                            audit.add(placements.map { it.id })
+                            tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                                body.childId,
+                                now.toLocalDate(),
+                            )
+                            generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.GenerateFinanceDecisions.forChild(
+                                        body.childId,
+                                        DateRange(body.startDate, body.endDate),
+                                    )
+                                ),
+                                runAt = now,
+                            )
+                        }
+                }
             }
-        }
-        Audit.PlacementCreate.log(
-            targetId = AuditId(listOf(body.childId, body.unitId)),
-            objectId = AuditId(placements.map { it.id }),
-        )
+            .also { audit.log(Audit.PlacementCreate, clock) }
     }
 
     @PutMapping("/employee/placements/{placementId}")
@@ -209,6 +212,12 @@ class PlacementController(
         @RequestBody body: PlacementUpdateRequestBody,
     ) {
         val now = clock.now()
+        val audit =
+            AuditContext()
+                .add(placementId)
+                .observeDate(body.startDate)
+                .addMeta("startDate", body.startDate)
+                .addMeta("endDate", body.endDate)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -241,6 +250,7 @@ class PlacementController(
                             useFiveYearsOldDaycare,
                             clock.now(),
                             user.evakaUserId,
+                            audit,
                         )
 
                     tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
@@ -264,13 +274,7 @@ class PlacementController(
                     oldPlacement
                 }
             }
-            .also {
-                Audit.PlacementUpdate.log(
-                    targetId = AuditId(placementId),
-                    objectId = AuditId(listOf(it.childId, it.unitId)),
-                    meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate),
-                )
-            }
+            .also { audit.log(Audit.PlacementUpdate, clock) }
     }
 
     @DeleteMapping("/employee/placements/{placementId}")
@@ -281,6 +285,7 @@ class PlacementController(
         @PathVariable placementId: PlacementId,
     ) {
         val now = clock.now()
+        val audit = AuditContext().add(placementId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -292,6 +297,13 @@ class PlacementController(
                     )
 
                     tx.cancelPlacement(now, user.evakaUserId, placementId).also {
+                        audit
+                            .add(it.childId)
+                            .add(it.unitId)
+                            .observeDate(it.startDate)
+                            .addMeta("type", it.type)
+                            .addMeta("startDate", it.startDate)
+                            .addMeta("endDate", it.endDate)
                         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                             it.childId,
                             now.toLocalDate(),
@@ -310,12 +322,7 @@ class PlacementController(
                     }
                 }
             }
-            .also {
-                Audit.PlacementCancel.log(
-                    targetId = AuditId(placementId),
-                    objectId = AuditId(listOf(it.childId, it.unitId)),
-                )
-            }
+            .also { audit.log(Audit.PlacementCancel, clock) }
     }
 
     @PostMapping("/employee/placements/{placementId}/group-placements")
@@ -326,6 +333,7 @@ class PlacementController(
         @PathVariable placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody,
     ): GroupPlacementId {
+        val audit = AuditContext().add(placementId).add(body.groupId).observeDate(body.startDate)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -336,20 +344,16 @@ class PlacementController(
                         placementId,
                     )
                     tx.checkAndCreateGroupPlacement(
-                        daycarePlacementId = placementId,
-                        groupId = body.groupId,
-                        startDate = body.startDate,
-                        endDate = body.endDate,
-                    )
+                            daycarePlacementId = placementId,
+                            groupId = body.groupId,
+                            startDate = body.startDate,
+                            endDate = body.endDate,
+                            audit = audit,
+                        )
+                        .also { audit.add(it) }
                 }
             }
-            .also { groupPlacementId ->
-                Audit.DaycareGroupPlacementCreate.log(
-                    targetId = AuditId(placementId),
-                    objectId = AuditId(groupPlacementId),
-                    meta = mapOf("groupId" to body.groupId),
-                )
-            }
+            .also { audit.log(Audit.DaycareGroupPlacementCreate, clock) }
     }
 
     @DeleteMapping("/employee/group-placements/{groupPlacementId}")
@@ -359,19 +363,20 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable groupPlacementId: GroupPlacementId,
     ) {
+        val audit = AuditContext().add(groupPlacementId)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.GroupPlacement.DELETE,
-                    groupPlacementId,
-                )
-                it.deleteGroupPlacement(groupPlacementId)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.GroupPlacement.DELETE,
+                        groupPlacementId,
+                    )
+                    tx.deleteGroupPlacement(groupPlacementId, audit)
+                }
             }
-        }
-        Audit.DaycareGroupPlacementDelete.log(targetId = AuditId(groupPlacementId))
+            .also { audit.log(Audit.DaycareGroupPlacementDelete, clock) }
     }
 
     @PostMapping("/employee/group-placements/{groupPlacementId}/transfer")
@@ -382,22 +387,21 @@ class PlacementController(
         @PathVariable groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody,
     ) {
+        val audit =
+            AuditContext().add(groupPlacementId).add(body.groupId).observeDate(body.startDate)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.GroupPlacement.UPDATE,
-                    groupPlacementId,
-                )
-                it.transferGroup(groupPlacementId, body.groupId, body.startDate)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.GroupPlacement.UPDATE,
+                        groupPlacementId,
+                    )
+                    tx.transferGroup(groupPlacementId, body.groupId, body.startDate, audit)
+                }
             }
-        }
-        Audit.DaycareGroupPlacementTransfer.log(
-            targetId = AuditId(groupPlacementId),
-            objectId = AuditId(body.groupId),
-        )
+            .also { audit.log(Audit.DaycareGroupPlacementTransfer, clock) }
     }
 
     @GetMapping("/employee/placements/child-placement-periods/{adultId}")
@@ -407,6 +411,7 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable adultId: PersonId,
     ): List<FiniteDateRange> {
+        val audit = AuditContext().add(adultId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -430,23 +435,27 @@ WITH all_fridge_children AS (
     JOIN fridge_partner fp2 ON fp2.partnership_id = fp1.partnership_id AND fp2.indx != fp1.indx AND fp1.person_id = ${bind(adultId)}
     JOIN fridge_child fc ON fc.head_of_child = fp2.person_id AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp2.start_date, fp2.end_date, '[]')
 )
-SELECT greatest(p.start_date, fc.start_date) AS start, least(p.end_date, fc.end_date) AS end
+SELECT fc.child_id, daterange(greatest(p.start_date, fc.start_date), least(p.end_date, fc.end_date), '[]') AS range
 FROM placement p
 JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(fc.start_date, fc.end_date, '[]')
 """
                             )
                         }
-                        .toList { FiniteDateRange(column("start"), column("end")) }
+                        .toList<ChildPlacementPeriod>()
+                        .also { rows ->
+                            audit
+                                .add(rows.map { it.childId })
+                                .observeDate(rows.minOfOrNull { it.range.start })
+                                .addMeta("count", rows.size)
+                        }
+                        .map { it.range }
                 }
             }
-            .also {
-                Audit.PlacementChildPlacementPeriodsRead.log(
-                    targetId = AuditId(adultId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.PlacementChildPlacementPeriodsRead, clock) }
     }
 }
+
+private data class ChildPlacementPeriod(val childId: ChildId, val range: FiniteDateRange)
 
 data class PlacementCreateRequestBody(
     val type: PlacementType,

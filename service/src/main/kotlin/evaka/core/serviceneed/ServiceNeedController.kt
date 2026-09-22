@@ -5,7 +5,7 @@
 package evaka.core.serviceneed
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.absence.ChildServiceNeedInfo
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
@@ -53,37 +53,37 @@ class ServiceNeedController(
         clock: EvakaClock,
         @RequestBody body: ServiceNeedCreateRequest,
     ) {
-        val serviceNeedId = db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Placement.CREATE_SERVICE_NEED,
-                    body.placementId,
-                )
-
-                createServiceNeed(
-                        tx = tx,
-                        user = user,
-                        placementId = body.placementId,
-                        startDate = body.startDate,
-                        endDate = body.endDate,
-                        optionId = body.optionId,
-                        shiftCare = body.shiftCare,
-                        partWeek = body.partWeek,
-                        confirmedAt = HelsinkiDateTime.now(),
+        val audit =
+            AuditContext().add(body.placementId).add(body.optionId).observeDate(body.startDate)
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Placement.CREATE_SERVICE_NEED,
+                        body.placementId,
                     )
-                    .also { id ->
-                        val range = tx.getServiceNeedChildRange(id)
-                        notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
-                    }
+
+                    createServiceNeed(
+                            tx = tx,
+                            user = user,
+                            placementId = body.placementId,
+                            startDate = body.startDate,
+                            endDate = body.endDate,
+                            optionId = body.optionId,
+                            shiftCare = body.shiftCare,
+                            partWeek = body.partWeek,
+                            confirmedAt = HelsinkiDateTime.now(),
+                        )
+                        .also { id ->
+                            val range = tx.getServiceNeedChildRange(id)
+                            audit.add(id).add(range.childId)
+                            notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
+                        }
+                }
             }
-        }
-        Audit.PlacementServiceNeedCreate.log(
-            targetId = AuditId(body.placementId),
-            objectId = AuditId(serviceNeedId),
-        )
+            .also { audit.log(Audit.PlacementServiceNeedCreate, clock) }
     }
 
     data class ServiceNeedUpdateRequest(
@@ -102,38 +102,47 @@ class ServiceNeedController(
         @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest,
     ) {
+        val audit = AuditContext().add(id).add(body.optionId).observeDate(body.startDate)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(tx, user, clock, Action.ServiceNeed.UPDATE, id)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ServiceNeed.UPDATE,
+                        id,
+                    )
 
-                val oldRange = tx.getServiceNeedChildRange(id)
-                updateServiceNeed(
-                    tx = tx,
-                    user = user,
-                    id = id,
-                    startDate = body.startDate,
-                    endDate = body.endDate,
-                    optionId = body.optionId,
-                    shiftCare = body.shiftCare,
-                    partWeek = body.partWeek,
-                    confirmedAt = HelsinkiDateTime.now(),
-                )
-                notifyServiceNeedUpdated(
-                    tx,
-                    clock,
-                    asyncJobRunner,
-                    ServiceNeedChildRange(
-                        childId = oldRange.childId,
-                        dateRange =
-                            FiniteDateRange(
-                                minOf(oldRange.dateRange.start, body.startDate),
-                                maxOf(oldRange.dateRange.end, body.endDate),
-                            ),
-                    ),
-                )
+                    val oldRange = tx.getServiceNeedChildRange(id)
+                    audit.add(oldRange.childId)
+                    updateServiceNeed(
+                        tx = tx,
+                        user = user,
+                        id = id,
+                        startDate = body.startDate,
+                        endDate = body.endDate,
+                        optionId = body.optionId,
+                        shiftCare = body.shiftCare,
+                        partWeek = body.partWeek,
+                        confirmedAt = HelsinkiDateTime.now(),
+                        audit = audit,
+                    )
+                    notifyServiceNeedUpdated(
+                        tx,
+                        clock,
+                        asyncJobRunner,
+                        ServiceNeedChildRange(
+                            childId = oldRange.childId,
+                            dateRange =
+                                FiniteDateRange(
+                                    minOf(oldRange.dateRange.start, body.startDate),
+                                    maxOf(oldRange.dateRange.end, body.endDate),
+                                ),
+                        ),
+                    )
+                }
             }
-        }
-        Audit.PlacementServiceNeedUpdate.log(targetId = AuditId(id))
+            .also { audit.log(Audit.PlacementServiceNeedUpdate, clock) }
     }
 
     @DeleteMapping("/employee/service-needs/{id}")
@@ -143,16 +152,31 @@ class ServiceNeedController(
         clock: EvakaClock,
         @PathVariable id: ServiceNeedId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(tx, user, clock, Action.ServiceNeed.DELETE, id)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ServiceNeed.DELETE,
+                        id,
+                    )
 
-                val childRange = tx.getServiceNeedChildRange(id)
-                tx.deleteServiceNeed(id)
-                notifyServiceNeedUpdated(tx, clock, asyncJobRunner, childRange)
+                    val childRange = tx.getServiceNeedChildRange(id)
+                    val deleted = tx.getServiceNeed(id)
+                    audit
+                        .add(childRange.childId)
+                        .add(deleted.placementId)
+                        .add(deleted.option.id)
+                        .observeDate(deleted.startDate)
+                        .addMeta("startDate", deleted.startDate)
+                        .addMeta("endDate", deleted.endDate)
+                    tx.deleteServiceNeed(id)
+                    notifyServiceNeedUpdated(tx, clock, asyncJobRunner, childRange)
+                }
             }
-        }
-        Audit.PlacementServiceNeedDelete.log(targetId = AuditId(id))
+            .also { audit.log(Audit.PlacementServiceNeedDelete, clock) }
     }
 
     @GetMapping("/employee/service-needs/options")
@@ -161,18 +185,19 @@ class ServiceNeedController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): List<ServiceNeedOption> {
+        val audit = AuditContext()
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Global.READ_SERVICE_NEED_OPTIONS,
                     )
-                    it.getServiceNeedOptions()
+                    tx.getServiceNeedOptions().also { audit.addMeta("count", it.size) }
                 }
             }
-            .also { Audit.ServiceNeedOptionsRead.log(meta = mapOf("count" to it.size)) }
+            .also { audit.log(Audit.ServiceNeedOptionsRead, clock) }
     }
 
     @GetMapping(
@@ -193,6 +218,7 @@ class ServiceNeedController(
         @PathVariable childId: ChildId,
         @RequestParam from: LocalDate,
     ): List<ChildServiceNeedInfo> {
+        val audit = AuditContext().add(childId).observeDate(from)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -205,6 +231,6 @@ class ServiceNeedController(
                     tx.getChildServiceNeedInfos(childId, from)
                 }
             }
-            .also { Audit.ChildServiceNeedsRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.ChildServiceNeedsRead, clock) }
     }
 }

@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
@@ -170,6 +171,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -218,6 +220,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -266,6 +269,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -317,6 +321,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -368,6 +373,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -412,6 +418,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 useFiveYearsOldDaycare = false,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
