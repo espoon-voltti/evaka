@@ -308,16 +308,11 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 ColumnRef("case_process_history", "entered_by"),
-                ColumnRef("child_document_read", "person_id"),
                 ColumnRef("daycare", "finance_decision_handler"),
-                ColumnRef("daycare_assistance", "modified_by"),
                 ColumnRef("decision", "resolved_by"),
-                ColumnRef("fridge_child", "created_by_application"),
                 ColumnRef("fridge_child", "created_by_user"),
                 ColumnRef("fridge_child", "modified_by_user"),
                 ColumnRef("holiday_questionnaire_answer", "modified_by"),
-                ColumnRef("message_thread_participant", "folder_id"),
-                ColumnRef("other_assistance_measure", "modified_by"),
                 ColumnRef("pairing", "employee_id"),
                 ColumnRef("pairing", "mobile_device_id"),
                 ColumnRef("pairing", "unit_id"),
@@ -325,7 +320,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 // million)
                 ColumnRef("password_blacklist", "source"),
                 ColumnRef("payment", "sent_by"),
-                ColumnRef("preschool_assistance", "modified_by"),
             )
         val violations =
             foreignKeys
