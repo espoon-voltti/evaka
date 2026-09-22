@@ -13,6 +13,7 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -43,9 +44,10 @@ class KoskiErrorReport(private val accessControl: AccessControl) {
 private fun Database.Read.getKoskiErrors(): List<KoskiErrorReportRow> = createQuery {
     sql(
         """
-SELECT e.child_id, e.unit_id, d.name AS unit_name, e.type, e.error, e.errored_at, e.errored_since
+SELECT e.child_id, e.unit_id, d.name AS unit_name, e.type, e.error, e.errored_at, e.errored_since, p.date_of_birth
 FROM koski_upload_error e
 JOIN daycare d ON d.id = e.unit_id
+JOIN person p ON e.child_id = p.id
 ORDER BY e.errored_at DESC
     """
     )
@@ -67,4 +69,5 @@ data class KoskiErrorReportRow(
     val error: String,
     val erroredAt: HelsinkiDateTime,
     val erroredSince: HelsinkiDateTime,
+    val dateOfBirth: LocalDate,
 )

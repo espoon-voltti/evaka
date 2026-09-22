@@ -26,7 +26,7 @@ import { resetVardaChildMutation, vardaChildErrorsQuery } from './queries'
 export default React.memo(function VardaChildErrors() {
   const { i18n } = useTranslation()
   const [includeMa003, setIncludeMa003] = useState(false)
-  const [include8yAndOlder, setInclude8yAndOlder] = useState(false)
+  const [includeOver8y, setIncludeOver8y] = useState(false)
   const vardaErrorsResult = useQueryResult(vardaChildErrorsQuery())
 
   const filteredRows = useMemo(() => {
@@ -35,10 +35,10 @@ export default React.memo(function VardaChildErrors() {
       rows.filter(
         (row) =>
           (includeMa003 || !row.error.includes('MA003')) &&
-          (include8yAndOlder || today.differenceInYears(row.dateOfBirth) < 8)
+          (includeOver8y || today.differenceInYears(row.dateOfBirth) <= 8)
       )
     )
-  }, [vardaErrorsResult, includeMa003, include8yAndOlder])
+  }, [vardaErrorsResult, includeMa003, includeOver8y])
 
   const ageInDays = (timestamp: HelsinkiDateTime): number =>
     LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
@@ -56,9 +56,9 @@ export default React.memo(function VardaChildErrors() {
         />
         <Gap $size="xxs" />
         <Checkbox
-          label={i18n.reports.vardaChildErrors.include8yAndOlder}
-          checked={include8yAndOlder}
-          onChange={setInclude8yAndOlder}
+          label={i18n.reports.vardaChildErrors.includeOver8y}
+          checked={includeOver8y}
+          onChange={setIncludeOver8y}
         />
         <Gap $size="s" />
         {renderResult(filteredRows, (rows) => (

@@ -4177,6 +4177,7 @@ export const fi = {
     koskiErrors: {
       title: 'Koski-virheet',
       description: 'Koski-tiedonsiirroissa tapahtuneet virheet',
+      includeOver8y: 'Näytä yli 8-vuotiaat lapset',
       age: 'Virheen ikä (päivää)',
       child: 'Lapsi',
       unit: 'Yksikkö',
@@ -4191,7 +4192,7 @@ export const fi = {
     vardaChildErrors: {
       title: 'Varda-lapsivirheet',
       showMA003Errors: 'Näytä MA003-virheet',
-      include8yAndOlder: 'Näytä 8v ja vanhemmat lapset',
+      includeOver8y: 'Näytä yli 8-vuotiaat lapset',
       description: 'Varda-lasten päivityksissä tapahtuneet virheet',
       updated: 'Päivitetty viimeksi',
       age: 'Ikä (päivää)',

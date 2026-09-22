@@ -4210,6 +4210,7 @@ export const sv: typeof fi = {
     koskiErrors: {
       title: 'Koski-fel',
       description: 'Fel som inträffat vid Koski-dataöverföringar',
+      includeOver8y: 'Visa barn över 8 år',
       age: 'Felets ålder (dagar)',
       child: 'Barn',
       unit: 'Enhet',
@@ -4224,7 +4225,7 @@ export const sv: typeof fi = {
     vardaChildErrors: {
       title: 'Varda-barnfel',
       showMA003Errors: 'Visa MA003-fel',
-      include8yAndOlder: 'Visa barn som är 8 år eller äldre',
+      includeOver8y: 'Visa barn över 8 år',
       description: 'Fel som inträffat vid uppdatering av Varda-barn',
       updated: 'Senast uppdaterad',
       age: 'Ålder (dagar)',

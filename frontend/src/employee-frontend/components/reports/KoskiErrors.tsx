@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
@@ -12,6 +12,7 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
@@ -23,7 +24,17 @@ import { koskiErrorsQuery } from './queries'
 
 export default React.memo(function KoskiErrors() {
   const { i18n } = useTranslation()
+  const [includeOver8y, setIncludeOver8y] = useState(false)
   const koskiErrorsResult = useQueryResult(koskiErrorsQuery())
+
+  const filteredRows = useMemo(() => {
+    const today = LocalDate.todayInHelsinkiTz()
+    return koskiErrorsResult.map((rows) =>
+      rows.filter(
+        (row) => includeOver8y || today.differenceInYears(row.dateOfBirth) <= 8
+      )
+    )
+  }, [koskiErrorsResult, includeOver8y])
 
   const ageInDays = (timestamp: HelsinkiDateTime): number =>
     LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
@@ -33,8 +44,14 @@ export default React.memo(function KoskiErrors() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea $opaque>
         <Title size={1}>{i18n.reports.koskiErrors.title}</Title>
+        <Gap $size="xxs" />
+        <Checkbox
+          label={i18n.reports.koskiErrors.includeOver8y}
+          checked={includeOver8y}
+          onChange={setIncludeOver8y}
+        />
         <Gap $size="s" />
-        {renderResult(koskiErrorsResult, (rows) => (
+        {renderResult(filteredRows, (rows) => (
           <Table data-qa="koski-errors-table">
             <Thead>
               <Tr>
