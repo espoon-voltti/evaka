@@ -4,11 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useRef, useState } from 'react'
+import { FocusOn } from 'react-focus-on'
 import styled, { css } from 'styled-components'
 import { Link } from 'wouter'
 
 import { useQuery } from 'lib-common/query'
+import { useMediaQuery } from 'lib-common/utils/useMediaQuery'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { desktopMin, zoomedMobileMax } from 'lib-components/breakpoints'
@@ -75,6 +77,8 @@ export default React.memo(function MobileNav() {
     []
   )
   const closeMenu = useCallback(() => setMenuOpen(undefined), [])
+  const bottomBarRef = useRef<HTMLElement>(null)
+  const bottomBarHidden = useMediaQuery(hiddenAtDesktopWidth)
 
   const currentUser = user.getOrElse(undefined)
   if (!currentUser) {
@@ -83,7 +87,7 @@ export default React.memo(function MobileNav() {
 
   return (
     <>
-      <BottomBar>
+      <BottomBar ref={bottomBarRef}>
         {currentUser.accessibleFeatures.reservations && (
           <BottomBarLink
             to="/calendar"
@@ -107,10 +111,15 @@ export default React.memo(function MobileNav() {
           />
         )}
         <ChildrenLink
+          menuOpen={menuOpen === 'children'}
           toggleChildrenMenu={toggleChildrenMenu}
           closeMenu={closeMenu}
         />
-        <StyledButton onClick={toggleSubMenu} data-qa="sub-nav-menu-mobile">
+        <StyledButton
+          onClick={toggleSubMenu}
+          aria-expanded={menuOpen === 'submenu'}
+          data-qa="sub-nav-menu-mobile"
+        >
           <AttentionIndicator
             toggled={hasSubMenuAttention({
               hasPersonalDetailsTasks,
@@ -126,18 +135,29 @@ export default React.memo(function MobileNav() {
           {t.header.nav.subNavigationMenu}
         </StyledButton>
       </BottomBar>
-      {menuOpen === 'submenu' ? (
-        <Menu
-          user={currentUser}
-          closeMenu={closeMenu}
-          unreadDecisions={unreadDecisions}
-        />
-      ) : menuOpen === 'children' ? (
-        <ChildrenMenu closeMenu={closeMenu} />
-      ) : null}
+      {menuOpen !== undefined && !bottomBarHidden && (
+        <FocusOn
+          onEscapeKey={closeMenu}
+          shards={[bottomBarRef]}
+          // Scroll lock screws up page layout when menu is visible
+          scrollLock={false}
+        >
+          {menuOpen === 'submenu' ? (
+            <Menu
+              user={currentUser}
+              closeMenu={closeMenu}
+              unreadDecisions={unreadDecisions}
+            />
+          ) : (
+            <ChildrenMenu closeMenu={closeMenu} />
+          )}
+        </FocusOn>
+      )}
     </>
   )
 })
+
+const hiddenAtDesktopWidth = `(min-width: ${desktopMin})`
 
 const BottomBar = styled.nav`
   z-index: 25;
@@ -160,7 +180,7 @@ const BottomBar = styled.nav`
     flex: none;
   }
 
-  @media (min-width: ${desktopMin}) {
+  @media ${hiddenAtDesktopWidth} {
     display: none;
   }
 
@@ -263,9 +283,11 @@ const ResponsiveLanguageRow = styled(FixedSpaceRow)`
 `
 
 const ChildrenLink = React.memo(function ChildrenLink({
+  menuOpen,
   toggleChildrenMenu,
   closeMenu
 }: {
+  menuOpen: boolean
   toggleChildrenMenu: () => void
   closeMenu: () => void
 }) {
@@ -297,6 +319,7 @@ const ChildrenLink = React.memo(function ChildrenLink({
     <StyledButton
       className={classNames({ active })}
       onClick={toggleChildrenMenu}
+      aria-expanded={menuOpen}
       data-qa="nav-children-mobile"
     >
       <AttentionIndicator
@@ -462,10 +485,6 @@ const MenuContainer = styled.div`
   html[data-standalone] & {
     position: absolute;
     overflow-y: auto;
-  }
-
-  @media (min-width: ${desktopMin}) {
-    display: none;
   }
 `
 
