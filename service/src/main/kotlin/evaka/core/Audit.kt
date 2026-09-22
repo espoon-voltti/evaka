@@ -617,6 +617,7 @@ enum class Audit(
     PersonSensitiveDetailsRead,
     PisFamilyRead,
     PlacementDesktopDaycaresRead,
+    PlacementGuaranteeReportRead,
     PlacementPlanCreate,
     PlacementPlanDraftRead,
     PlacementPlanRespond,
