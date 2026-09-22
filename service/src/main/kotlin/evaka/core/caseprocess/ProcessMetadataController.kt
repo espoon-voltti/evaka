@@ -6,7 +6,6 @@ package evaka.core.caseprocess
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.application.ApplicationType
 import evaka.core.decision.DecisionType
 import evaka.core.document.ChildDocumentType
