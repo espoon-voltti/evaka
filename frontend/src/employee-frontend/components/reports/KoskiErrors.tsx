@@ -46,6 +46,7 @@ export default React.memo(function KoskiErrors() {
         <Title size={1}>{i18n.reports.koskiErrors.title}</Title>
         <Gap $size="xxs" />
         <Checkbox
+          data-qa="include-over-8y"
           label={i18n.reports.koskiErrors.includeOver8y}
           checked={includeOver8y}
           onChange={setIncludeOver8y}

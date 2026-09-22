@@ -89,6 +89,7 @@ import {
   createIncomeNotification,
   createIncomeStatement,
   createInvoices,
+  createKoskiUploadError,
   createNekkuCustomer,
   createNekkuSpecialDiets,
   createOtherAssistanceMeasures,
@@ -140,6 +141,7 @@ import type {
   DevIncomeStatement,
   DevInvoice,
   DevInvoiceRow,
+  DevKoskiUploadError,
   DevParentship,
   DevPayment,
   DevPedagogicalDocument,
@@ -1006,6 +1008,26 @@ export class Fixture {
       ...value,
       async save() {
         await createFeeThresholds({ body: value })
+        return value
+      }
+    }
+  }
+
+  static koskiUploadError(
+    initial: SemiPartial<DevKoskiUploadError, 'childId' | 'unitId'>
+  ) {
+    const value: DevKoskiUploadError = {
+      type: 'PRESCHOOL',
+      error: '{}',
+      statusCode: 400,
+      erroredAt: HelsinkiDateTime.now(),
+      erroredSince: HelsinkiDateTime.now(),
+      ...initial
+    }
+    return {
+      ...value,
+      async save() {
+        await createKoskiUploadError({ body: value })
         return value
       }
     }

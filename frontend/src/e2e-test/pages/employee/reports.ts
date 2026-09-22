@@ -44,6 +44,11 @@ export default class ReportsPage {
     return new NonSsnChildrenReport(this.page)
   }
 
+  async openKoskiErrorsReport() {
+    await this.page.findByDataQa('report-koski-errors').click()
+    return new KoskiErrorsReport(this.page)
+  }
+
   async openPlacementGuaranteeReport() {
     await this.page.findByDataQa('report-placement-guarantee').click()
     return new PlacementGuaranteeReport(this.page)
@@ -169,6 +174,23 @@ export class NonSsnChildrenReport {
       await expect(row.findByDataQa('last-sent-to-varda')).toHaveText(
         data.lastSentToVarda
       )
+    }
+  }
+}
+
+export class KoskiErrorsReport {
+  readonly includeOver8y: Checkbox
+
+  constructor(private page: Page) {
+    this.includeOver8y = new Checkbox(page.findByDataQa('include-over-8y'))
+  }
+
+  async assertChildren(childIds: string[]) {
+    await expect(this.page.findAllByDataQa('koski-error-row')).toHaveCount(
+      childIds.length
+    )
+    for (const childId of childIds) {
+      await expect(this.page.findByDataQa(`child-${childId}`)).toBeVisible()
     }
   }
 }

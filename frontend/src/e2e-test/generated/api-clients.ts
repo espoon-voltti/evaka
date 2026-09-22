@@ -66,6 +66,7 @@ import type { DevGuardian } from './api-types'
 import type { DevIncome } from './api-types'
 import type { DevIncomeStatement } from './api-types'
 import type { DevInvoice } from './api-types'
+import type { DevKoskiUploadError } from './api-types'
 import type { DevMobileDevice } from './api-types'
 import type { DevOtherAssistanceMeasure } from './api-types'
 import type { DevParentship } from './api-types'
@@ -1274,6 +1275,27 @@ export async function createInvoices(
       url: uri`/invoices`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevInvoice[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from evaka.core.shared.dev.DevApi.createKoskiUploadError
+*/
+export async function createKoskiUploadError(
+  request: {
+    body: DevKoskiUploadError
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/koski-upload-error`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevKoskiUploadError>
     })
     return json
   } catch (e) {
