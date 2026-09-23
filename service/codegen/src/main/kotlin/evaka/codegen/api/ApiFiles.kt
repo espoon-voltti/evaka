@@ -15,7 +15,8 @@ import org.springframework.web.util.UriComponentsBuilder
 private val logger = KotlinLogging.logger {}
 
 fun generateApiFiles(): Map<TsFile, String> {
-    val allEndpoints = scanEndpoints("evaka.core")
+    // The MCP employee endpoints only exist when the enable_mcp profile is active
+    val allEndpoints = scanEndpoints("evaka.core", profiles = listOf("enable_mcp"))
     allEndpoints.forEach { it.validate() }
 
     val endpoints = allEndpoints.filterNot {
