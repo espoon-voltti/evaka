@@ -15,6 +15,8 @@ import evaka.core.attachment.AttachmentsController
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.controller.SortDirection
 import evaka.core.invoicing.domain.IncomeEffect
+import evaka.core.pis.Creator
+import evaka.core.pis.createParentship
 import evaka.core.pis.service.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.shared.AttachmentId
@@ -912,6 +914,33 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         assertEquals(listOf(expected), getIncomeStatementsAwaitingHandler().data)
         assertEquals(listOf(expected), searchByArea(area1))
+    }
+
+    @Test
+    fun `list income statements awaiting handler - care area ignores a conflicting parentship`() {
+        db.transaction { tx ->
+            tx.createParentship(
+                childId = child1.id,
+                headOfChildId = adult1.id,
+                startDate = today.minusYears(2),
+                endDate = today.plusYears(1),
+                creator = Creator.DVV,
+                conflict = true,
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare1.id,
+                    startDate = today.minusDays(30),
+                    endDate = today.plusDays(30),
+                )
+            )
+        }
+        val incomeStatement = createTestIncomeStatement(adult1.id)
+        val expected = expectedRow(incomeStatement, adult1, careAreas = emptyList())
+
+        assertEquals(listOf(expected), getIncomeStatementsAwaitingHandler().data)
+        assertEquals(emptyList(), searchByArea(area1))
     }
 
     @Test
