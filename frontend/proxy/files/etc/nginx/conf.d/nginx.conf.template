@@ -27,7 +27,7 @@ map $sent_http_content_type $expires {
   text/html                  -1;
   text/css                   max;
   application/javascript     max;
-  application/woff2          max;
+  font/woff2                 max;
   ~image/                    max;
 }
 
