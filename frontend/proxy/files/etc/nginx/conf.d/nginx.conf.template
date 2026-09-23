@@ -272,6 +272,9 @@ server {
     if ($content_type_not_ok) {
       return 404;
     }
+    if ($uri ~ ^/assets/) {
+      return 404;
+    }
 
     rewrite     /employee/mobile/(.*) /employee/mobile/index.html break;
     rewrite     /employee/(.*) /employee/index.html break;
