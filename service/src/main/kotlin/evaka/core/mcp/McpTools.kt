@@ -5,6 +5,8 @@
 package evaka.core.mcp
 
 import evaka.core.AuditContext
+import evaka.core.application.ApplicationStateService
+import evaka.core.messaging.MessageService
 import evaka.core.placement.PlacementType
 import evaka.core.serviceneed.getServiceNeedOptions
 import evaka.core.shared.AreaId
@@ -104,7 +106,11 @@ class McpToolDefinition<T : Any>(
 
 @Component
 @Profile("enable_mcp")
-class McpTools {
+class McpTools(
+    applicationStateService: ApplicationStateService,
+    messageService: MessageService,
+    jsonMapper: JsonMapper,
+) {
     data class ListTestDataInput(
         @McpDoc("If given, also lists the individual entities of this batch (your own batches)")
         val batchName: String? = null,
@@ -151,7 +157,10 @@ class McpTools {
             ) { ctx, input ->
                 deleteTestData(ctx, input)
             },
-        )
+        ) +
+            McpToolsSearch.tools() +
+            McpToolsRows(jsonMapper).tools() +
+            McpToolsApplications(applicationStateService, messageService).tools()
 
     fun findTool(name: String): McpToolDefinition<*>? = tools.find { it.name == name }
 
