@@ -4,8 +4,16 @@
 
 import React from 'react'
 
+import { localDate, string } from 'lib-common/form/fields'
+import { nullBlank, object, required, validated } from 'lib-common/form/form'
+import { nonBlank } from 'lib-common/form/validators'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
+
+const todoItemForm = object({
+  description: validated(required(string()), nonBlank),
+  deadline: nullBlank(localDate())
+})
 
 export default React.memo(function TodoItemsPage() {
   return (
