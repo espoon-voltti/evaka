@@ -13,6 +13,7 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -68,8 +69,10 @@ SELECT
     vs.child_id,
     vs.errored_at,
     vs.errored_since,
-    vs.error
+    vs.error,
+    p.date_of_birth
 FROM varda_state vs
+JOIN person p ON p.id = vs.child_id
 LEFT JOIN child c ON c.id = vs.child_id
 WHERE vs.errored_at IS NOT NULL
 AND c.varda_data_first_removed_at IS NULL
@@ -84,6 +87,7 @@ data class VardaChildErrorReportRow(
     val erroredAt: HelsinkiDateTime,
     val erroredSince: HelsinkiDateTime,
     val error: String,
+    val dateOfBirth: LocalDate,
 )
 
 private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> = createQuery {

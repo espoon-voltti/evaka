@@ -13,7 +13,7 @@ import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Select from 'lib-components/atoms/dropdowns/Select'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
@@ -25,20 +25,20 @@ import { resetVardaChildMutation, vardaChildErrorsQuery } from './queries'
 
 export default React.memo(function VardaChildErrors() {
   const { i18n } = useTranslation()
-  const [ma003, setMa003] = useState<'exclude' | 'include' | 'only'>('exclude')
+  const [includeMa003, setIncludeMa003] = useState(false)
+  const [includeOver8y, setIncludeOver8y] = useState(false)
   const vardaErrorsResult = useQueryResult(vardaChildErrorsQuery())
 
-  const filteredRows = useMemo(
-    () =>
-      ma003 === 'include'
-        ? vardaErrorsResult
-        : vardaErrorsResult.map((rows) =>
-            rows.filter(
-              (row) => row.error.includes('"MA003"') === (ma003 === 'only')
-            )
-          ),
-    [vardaErrorsResult, ma003]
-  )
+  const filteredRows = useMemo(() => {
+    const today = LocalDate.todayInHelsinkiTz()
+    return vardaErrorsResult.map((rows) =>
+      rows.filter(
+        (row) =>
+          (includeMa003 || !row.error.includes('MA003')) &&
+          (includeOver8y || today.differenceInYears(row.dateOfBirth) <= 8)
+      )
+    )
+  }, [vardaErrorsResult, includeMa003, includeOver8y])
 
   const ageInDays = (timestamp: HelsinkiDateTime): number =>
     LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
@@ -49,13 +49,16 @@ export default React.memo(function VardaChildErrors() {
       <ContentArea $opaque>
         <Title size={1}>{i18n.reports.vardaChildErrors.title}</Title>
         <Gap $size="xxs" />
-        <Select
-          items={['exclude', 'include', 'only'] as const}
-          getItemLabel={(item) => i18n.reports.vardaChildErrors.ma003[item]}
-          selectedItem={ma003}
-          onChange={(value) => {
-            if (value !== null) setMa003(value)
-          }}
+        <Checkbox
+          label={i18n.reports.vardaChildErrors.showMA003Errors}
+          checked={includeMa003}
+          onChange={setIncludeMa003}
+        />
+        <Gap $size="xxs" />
+        <Checkbox
+          label={i18n.reports.vardaChildErrors.includeOver8y}
+          checked={includeOver8y}
+          onChange={setIncludeOver8y}
         />
         <Gap $size="s" />
         {renderResult(filteredRows, (rows) => (

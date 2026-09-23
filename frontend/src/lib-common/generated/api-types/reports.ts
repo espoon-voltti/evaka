@@ -574,6 +574,7 @@ export interface InvoiceReportRow {
 */
 export interface KoskiErrorReportRow {
   childId: PersonId
+  dateOfBirth: LocalDate
   error: string
   erroredAt: HelsinkiDateTime
   erroredSince: HelsinkiDateTime
@@ -1219,6 +1220,7 @@ export interface UnitsReportRow {
 */
 export interface VardaChildErrorReportRow {
   childId: PersonId
+  dateOfBirth: LocalDate
   error: string
   erroredAt: HelsinkiDateTime
   erroredSince: HelsinkiDateTime
@@ -1374,6 +1376,7 @@ export function deserializeJsonIncompleteIncomeDbRow(json: JsonOf<IncompleteInco
 export function deserializeJsonKoskiErrorReportRow(json: JsonOf<KoskiErrorReportRow>): KoskiErrorReportRow {
   return {
     ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     erroredAt: HelsinkiDateTime.parseIso(json.erroredAt),
     erroredSince: HelsinkiDateTime.parseIso(json.erroredSince)
   }
@@ -1536,6 +1539,7 @@ export function deserializeJsonTitaniaErrorUnit(json: JsonOf<TitaniaErrorUnit>):
 export function deserializeJsonVardaChildErrorReportRow(json: JsonOf<VardaChildErrorReportRow>): VardaChildErrorReportRow {
   return {
     ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     erroredAt: HelsinkiDateTime.parseIso(json.erroredAt),
     erroredSince: HelsinkiDateTime.parseIso(json.erroredSince)
   }

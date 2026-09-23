@@ -647,6 +647,11 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
+    @PostMapping("/koski-upload-error")
+    fun createKoskiUploadError(db: Database, @RequestBody body: DevKoskiUploadError) {
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    }
+
     @PostMapping("/income-notifications")
     fun createIncomeNotification(db: Database, @RequestBody body: IncomeNotification) {
         db.connect { dbc ->

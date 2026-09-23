@@ -29,6 +29,7 @@ import evaka.core.invoicing.domain.InvoiceStatus
 import evaka.core.invoicing.service.ProductKey
 import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.placement.PlacementType
+import evaka.core.reports.KoskiStudyRightType
 import evaka.core.serviceneed.ServiceNeedOption
 import evaka.core.serviceneed.ServiceNeedOptionFee
 import evaka.core.shared.AbsenceApplicationId
@@ -2055,3 +2056,23 @@ RETURNING id
 }
     .executeAndReturnGeneratedKeys()
     .exactlyOne<DecisionIndividualReasoningId>()
+
+data class DevKoskiUploadError(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val type: KoskiStudyRightType = KoskiStudyRightType.PRESCHOOL,
+    val error: String = "{}",
+    val statusCode: Int = 400,
+    val erroredAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val erroredSince: HelsinkiDateTime = HelsinkiDateTime.now(),
+)
+
+fun Database.Transaction.insert(row: DevKoskiUploadError) = createUpdate {
+    sql(
+        """
+INSERT INTO koski_upload_error (child_id, unit_id, type, error, status_code, errored_at, errored_since)
+VALUES (${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.type)}::koski_study_right_type, ${bind(row.error)}, ${bind(row.statusCode)}, ${bind(row.erroredAt)}, ${bind(row.erroredSince)})
+"""
+    )
+}
+    .execute()

@@ -74,6 +74,7 @@ import type { InvoiceId } from 'lib-common/generated/api-types/shared'
 import type { InvoiceRowId } from 'lib-common/generated/api-types/shared'
 import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import type { JsonOf } from 'lib-common/json'
+import type { KoskiStudyRightType } from 'lib-common/generated/api-types/reports'
 import type { Language } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -778,6 +779,19 @@ export interface DevInvoiceRow {
   product: string
   unitId: DaycareId
   unitPrice: number
+}
+
+/**
+* Generated from evaka.core.shared.dev.DevKoskiUploadError
+*/
+export interface DevKoskiUploadError {
+  childId: PersonId
+  error: string
+  erroredAt: HelsinkiDateTime
+  erroredSince: HelsinkiDateTime
+  statusCode: number
+  type: KoskiStudyRightType
+  unitId: DaycareId
 }
 
 /**
@@ -1594,6 +1608,15 @@ export function deserializeJsonDevInvoiceRow(json: JsonOf<DevInvoiceRow>): DevIn
     ...json,
     periodEnd: LocalDate.parseIso(json.periodEnd),
     periodStart: LocalDate.parseIso(json.periodStart)
+  }
+}
+
+
+export function deserializeJsonDevKoskiUploadError(json: JsonOf<DevKoskiUploadError>): DevKoskiUploadError {
+  return {
+    ...json,
+    erroredAt: HelsinkiDateTime.parseIso(json.erroredAt),
+    erroredSince: HelsinkiDateTime.parseIso(json.erroredSince)
   }
 }
 
