@@ -44,10 +44,20 @@ if (pwaEnabled) {
 const root = createRoot(document.getElementById('app')!)
 root.render(<Root />)
 
-const serviceWorker = pwaEnabled
-  ? registerServiceWorker()
-  : unregisterServiceWorker()
-serviceWorker.catch((err) => Sentry.captureException(err))
+// The service worker is not needed for the initial page load, so it is set up
+// only after the load has finished to keep its script fetch off the critical
+// path.
+function setupServiceWorker() {
+  const serviceWorker = pwaEnabled
+    ? registerServiceWorker()
+    : unregisterServiceWorker()
+  serviceWorker.catch((err) => Sentry.captureException(err))
+}
+if (document.readyState === 'complete') {
+  setupServiceWorker()
+} else {
+  window.addEventListener('load', setupServiceWorker, { once: true })
+}
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {
