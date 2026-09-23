@@ -65,7 +65,8 @@ export const sv: typeof fi = {
     clubTerms: 'Klubbterminer',
     placementTool: 'Optimeringsverktyg',
     outOfOffice: 'Frånvaromeddelande',
-    decisionReasonings: 'Beslutsmotiveringar'
+    decisionReasonings: 'Beslutsmotiveringar',
+    todoItems: 'Att göra-lista'
   },
   common: {
     yes: 'Ja',
@@ -5354,6 +5355,14 @@ export const sv: typeof fi = {
     validationErrors: {
       endBeforeToday: 'Kan inte upphöra i det förflutna'
     }
+  },
+  todoItems: {
+    title: 'Att göra-lista',
+    addNew: 'Lägg till ny uppgift',
+    description: 'Beskrivning',
+    deadline: 'Förfallodag',
+    createdAt: 'Skapad',
+    noItems: 'Inga uppgifter'
   },
   decisionReasonings: {
     tabs: {

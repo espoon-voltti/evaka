@@ -481,7 +481,7 @@ const routes: EmployeeRoute[] = [
     title: 'placementTool'
   },
   { path: '/out-of-office', component: OutOfOfficePage, title: 'outOfOffice' },
-  { path: '/todo-items', component: TodoItemsPage },
+  { path: '/todo-items', component: TodoItemsPage, title: 'todoItems' },
   {
     path: '/close-after-login',
     component: CloseAfterLogin,

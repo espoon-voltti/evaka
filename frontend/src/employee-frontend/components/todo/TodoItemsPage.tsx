@@ -39,20 +39,21 @@ const todoItemForm = object({
 })
 
 export default React.memo(function TodoItemsPage() {
+  const { i18n } = useTranslation()
   const todoItems = useQueryResult(todoItemsQuery())
   const [addingNew, setAddingNew] = useState(false)
 
   return (
     <Container>
       <ContentArea $opaque>
-        <H1>Tehtävälista</H1>
+        <H1>{i18n.todoItems.title}</H1>
         {addingNew ? (
           <TodoItemForm onClose={() => setAddingNew(false)} />
         ) : (
           <Button
             appearance="inline"
             icon={faPlus}
-            text="Lisää uusi tehtävä"
+            text={i18n.todoItems.addNew}
             onClick={() => setAddingNew(true)}
             data-qa="add-new-button"
           />
@@ -60,14 +61,14 @@ export default React.memo(function TodoItemsPage() {
         <Gap $size="L" />
         {renderResult(todoItems, (items) =>
           items.length === 0 ? (
-            <P>Ei tehtäviä</P>
+            <P>{i18n.todoItems.noItems}</P>
           ) : (
             <Table>
               <Thead>
                 <Tr>
-                  <Th>Kuvaus</Th>
-                  <Th $minimalWidth>Luotu</Th>
-                  <Th $minimalWidth>Määräpäivä</Th>
+                  <Th>{i18n.todoItems.description}</Th>
+                  <Th $minimalWidth>{i18n.todoItems.createdAt}</Th>
+                  <Th $minimalWidth>{i18n.todoItems.deadline}</Th>
                   <Th $minimalWidth />
                 </Tr>
               </Thead>
@@ -84,7 +85,7 @@ export default React.memo(function TodoItemsPage() {
                     <Td $minimalWidth>
                       <MutateIconOnlyButton
                         icon={faTrash}
-                        aria-label="Poista"
+                        aria-label={i18n.common.remove}
                         mutation={deleteTodoItemMutation}
                         onClick={() => ({ id: item.id })}
                         data-qa="delete-button"
@@ -118,7 +119,7 @@ const TodoItemForm = React.memo(function TodoItemForm({
     <FixedSpaceColumn>
       <FixedSpaceRow $spacing="L">
         <FixedSpaceColumn $spacing="zero">
-          <Label>Kuvaus</Label>
+          <Label>{i18n.todoItems.description}</Label>
           <InputFieldF
             bind={description}
             width="L"
@@ -128,7 +129,7 @@ const TodoItemForm = React.memo(function TodoItemForm({
           />
         </FixedSpaceColumn>
         <FixedSpaceColumn $spacing="zero">
-          <Label>Määräpäivä</Label>
+          <Label>{i18n.todoItems.deadline}</Label>
           <DatePickerF
             bind={deadline}
             locale={lang}
@@ -140,14 +141,18 @@ const TodoItemForm = React.memo(function TodoItemForm({
       <FixedSpaceRow>
         <MutateButton
           primary
-          text="Tallenna"
+          text={i18n.common.save}
           disabled={!form.isValid()}
           mutation={createTodoItemMutation}
           onClick={() => ({ body: form.value() })}
           onSuccess={onClose}
           data-qa="save-button"
         />
-        <Button text="Peruuta" onClick={onClose} data-qa="cancel-button" />
+        <Button
+          text={i18n.common.cancel}
+          onClick={onClose}
+          data-qa="cancel-button"
+        />
       </FixedSpaceRow>
     </FixedSpaceColumn>
   )

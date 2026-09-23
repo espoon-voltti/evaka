@@ -64,7 +64,8 @@ export const fi = {
     clubTerms: 'Kerhojen lukukaudet',
     placementTool: 'Optimointityökalu',
     outOfOffice: 'Poissaoloviesti',
-    decisionReasonings: 'Päätösten perustelut'
+    decisionReasonings: 'Päätösten perustelut',
+    todoItems: 'Tehtävälista'
   },
   common: {
     yes: 'Kyllä',
@@ -5325,6 +5326,14 @@ export const fi = {
     validationErrors: {
       endBeforeToday: 'Ei voi päättyä menneisyydessä'
     }
+  },
+  todoItems: {
+    title: 'Tehtävälista',
+    addNew: 'Lisää uusi tehtävä',
+    description: 'Kuvaus',
+    deadline: 'Määräpäivä',
+    createdAt: 'Luotu',
+    noItems: 'Ei tehtäviä'
   },
   decisionReasonings: {
     tabs: {
