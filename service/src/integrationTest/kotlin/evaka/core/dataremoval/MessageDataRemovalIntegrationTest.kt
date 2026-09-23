@@ -1235,7 +1235,6 @@ RETURNING id
             db,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = today.minusYears(1),
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1251,7 +1250,6 @@ RETURNING id
             db,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = today.minusYears(1),
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1266,7 +1264,6 @@ RETURNING id
             db,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = today.minusYears(1),
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1284,7 +1281,6 @@ RETURNING id
             now,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = today.minusYears(1),
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1296,7 +1292,6 @@ RETURNING id
             now,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = today.minusYears(1),
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1316,7 +1311,6 @@ RETURNING id
             now,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = today.minusYears(1),
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1332,7 +1326,6 @@ RETURNING id
             db,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = today.minusYears(1),
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
