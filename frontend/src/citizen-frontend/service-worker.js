@@ -40,24 +40,36 @@ serviceWorker.addEventListener('activate', (event) => {
 })
 
 serviceWorker.addEventListener('fetch', (event) => {
-  if (event.request.mode !== 'navigate') return
+  const url = new URL(event.request.url)
+  if (url.origin !== serviceWorker.location.origin) return
 
-  // This service worker is registered at the origin root, so its scope also
-  // covers the employee frontends, which are separate applications and must
-  // never be served the citizen offline page.
-  if (new URL(event.request.url).pathname.startsWith('/employee')) return
+  if (event.request.mode === 'navigate') {
+    // This service worker is registered at the origin root, so its scope also
+    // covers the employee frontends, which are separate applications and must
+    // never be served the citizen offline page.
+    if (url.pathname.startsWith('/employee')) return
 
-  event.respondWith(
-    (async () => {
-      try {
-        return await fetch(event.request)
-      } catch (_e) {
-        const cache = await caches.open(cacheName)
-        const cached = await cache.match(offlinePage)
-        return cached ?? Response.error()
-      }
-    })()
-  )
+    event.respondWith(
+      (async () => {
+        try {
+          return await fetch(event.request)
+        } catch (_e) {
+          const cache = await caches.open(cacheName)
+          const cached = await cache.match(offlinePage)
+          return cached ?? Response.error()
+        }
+      })()
+    )
+    return
+  }
+
+  // Every cacheable request must be answered with respondWith:
+  // https://bugs.webkit.org/show_bug.cgi?id=315995
+
+  // Responses to these are never cached
+  if (event.request.method !== 'GET' || url.pathname.startsWith('/api/')) return
+
+  event.respondWith(fetch(event.request))
 })
 
 // Backend sends the push payload in the Declarative Web Push format,
