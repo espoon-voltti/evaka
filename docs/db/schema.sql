@@ -4032,6 +4032,16 @@ CREATE TABLE public.titania_errors (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL
 );
 
+-- Name: todo_item; Type: TABLE; Schema: public
+
+CREATE TABLE public.todo_item (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    employee_id uuid NOT NULL,
+    description text NOT NULL,
+    deadline date
+);
+
 -- Name: vapid_jwt; Type: TABLE; Schema: public
 
 CREATE TABLE public.vapid_jwt (
@@ -4996,6 +5006,11 @@ ALTER TABLE ONLY public.system_notification
 ALTER TABLE ONLY public.titania_errors
     ADD CONSTRAINT titania_errors_pkey PRIMARY KEY (id);
 
+-- Name: todo_item todo_item_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.todo_item
+    ADD CONSTRAINT todo_item_pkey PRIMARY KEY (id);
+
 -- Name: absence uniq$absence_child_date_category; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.absence
@@ -5422,6 +5437,10 @@ CREATE INDEX "fk$terminated_by" ON public.placement USING btree (terminated_by);
 -- Name: fk$titania_errors_employee_id; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$titania_errors_employee_id" ON public.titania_errors USING btree (employee_id);
+
+-- Name: fk$todo_item_employee_id; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$todo_item_employee_id" ON public.todo_item USING btree (employee_id);
 
 -- Name: fk$voucher_value_decision_process_id; Type: INDEX; Schema: public
 
@@ -8222,6 +8241,11 @@ ALTER TABLE ONLY public.staff_attendance_realtime
 
 ALTER TABLE ONLY public.titania_errors
     ADD CONSTRAINT titania_errors_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES public.employee(id);
+
+-- Name: todo_item todo_item_employee_id_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.todo_item
+    ADD CONSTRAINT todo_item_employee_id_fkey FOREIGN KEY (employee_id) REFERENCES public.employee(id);
 
 -- Name: varda_state varda_state_child_id_fkey; Type: FK CONSTRAINT; Schema: public
 
