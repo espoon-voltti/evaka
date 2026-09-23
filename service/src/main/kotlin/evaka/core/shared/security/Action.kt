@@ -58,6 +58,7 @@ import evaka.core.shared.PreschoolTermId
 import evaka.core.shared.ServiceApplicationId
 import evaka.core.shared.ServiceNeedId
 import evaka.core.shared.TitaniaConflictId
+import evaka.core.shared.TodoItemId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.auth.UserRole.ADMIN
 import evaka.core.shared.auth.UserRole.DIRECTOR
@@ -343,7 +344,9 @@ sealed interface Action {
         READ_DRAFT_OCCUPANCIES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_CHILD_ABSENCE_REPORT_FOR_AREA(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA(HasGlobalRole(ADMIN)),
-        WRITE_DECISION_REASONINGS(HasGlobalRole(ADMIN));
+        WRITE_DECISION_REASONINGS(HasGlobalRole(ADMIN)),
+        READ_TODO_ITEMS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        CREATE_TODO_ITEM(HasGlobalRole(ADMIN, SERVICE_WORKER));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1949,6 +1952,13 @@ sealed interface Action {
         override vararg val defaultRules: ScopedActionRule<in TitaniaConflictId>
     ) : ScopedAction<TitaniaConflictId> {
         DELETE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnitOfTitaniaErrorEmployee());
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class TodoItem(override vararg val defaultRules: ScopedActionRule<in TodoItemId>) :
+        ScopedAction<TodoItemId> {
+        DELETE(IsEmployee.ownerOfTodoItem());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

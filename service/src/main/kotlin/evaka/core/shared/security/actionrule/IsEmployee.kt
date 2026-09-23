@@ -14,6 +14,7 @@ import evaka.core.shared.Id
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.PairingId
+import evaka.core.shared.TodoItemId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -183,6 +184,18 @@ WHERE employee_id = ${bind(user.id)}
                 """
 SELECT id
 FROM pairing
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun ownerOfTodoItem() =
+        rule<TodoItemId> { user, _ ->
+            sql(
+                """
+SELECT id
+FROM todo_item
 WHERE employee_id = ${bind(user.id)}
             """
                     .trimIndent()
