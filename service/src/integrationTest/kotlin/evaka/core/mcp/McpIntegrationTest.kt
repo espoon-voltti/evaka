@@ -5,22 +5,35 @@
 package evaka.core.mcp
 
 import evaka.core.FullApplicationTest
+import evaka.core.application.ApplicationType
+import evaka.core.application.persistence.daycare.Adult
+import evaka.core.application.persistence.daycare.Apply
+import evaka.core.application.persistence.daycare.Child
+import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.shared.EmployeeId
 import evaka.core.shared.Id
 import evaka.core.shared.McpClientId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareGroup
+import evaka.core.shared.dev.DevDaycareGroupPlacement
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.security.PilotFeature
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalTime
@@ -41,6 +54,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var oauthController: McpOAuthController
     @Autowired private lateinit var employeeController: McpEmployeeController
     @Autowired private lateinit var serverController: McpServerController
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val today = LocalDate.of(2026, 9, 23)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
@@ -424,6 +438,169 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf("https://foo.espoonvarhaiskasvatus.fi"),
             resource["authorization_servers"],
+        )
+    }
+
+    @Test
+    fun `search tools find units, persons and employees`() {
+        val token = authorizeAndGetToken(registerClient())
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id, name = "Testipäiväkoti")
+        val group = DevDaycareGroup(daycareId = unit.id, name = "Menninkäiset")
+        val guardian = DevPerson(firstName = "Anna", lastName = "Ankka")
+        val child = DevPerson(firstName = "Hupu", lastName = "Ankka")
+        val employee = DevEmployee(firstName = "Olli", lastName = "Ohjaaja")
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = unit.id,
+                startDate = today,
+                endDate = today.plusYears(1),
+            )
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(group)
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(placement)
+            tx.insert(employee)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placement.id,
+                    daycareGroupId = group.id,
+                    startDate = placement.startDate,
+                    endDate = placement.endDate,
+                )
+            )
+        }
+
+        val units = callTool(token, "search_units", """{"query":"testipäivä"}""").path("units")
+        assertEquals(unit.id.toString(), units.single().path("id").asString())
+        // Last name first, as names are often written in Finnish registers
+        val foundChild =
+            callTool(token, "search_persons", """{"query":"ankka anna"}""")
+                .path("persons")
+                .single()
+                .path("children")
+                .single()
+        assertEquals(child.id.toString(), foundChild.path("id").asString())
+        assertEquals(
+            "Menninkäiset",
+            foundChild
+                .path("placements")
+                .single()
+                .path("groups")
+                .single()
+                .path("groupName")
+                .asString(),
+        )
+        assertEquals(
+            employee.id.toString(),
+            callTool(token, "search_employees", """{"query":"ohjaaja"}""")
+                .path("employees")
+                .single()
+                .path("id")
+                .asString(),
+        )
+    }
+
+    @Test
+    fun `workflow tools act only on applications and employees created via MCP`() {
+        val token = authorizeAndGetToken(registerClient())
+        val area = DevCareArea()
+        val unit =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val group = DevDaycareGroup(daycareId = unit.id)
+        val guardian = DevPerson()
+        val child = DevPerson()
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = unit.id,
+                startDate = today,
+                endDate = today.plusYears(1),
+            )
+        val supervisor = DevEmployee()
+        fun insertApplication(tx: Database.Transaction) =
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                guardianId = guardian.id,
+                childId = child.id,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = Child(dateOfBirth = child.dateOfBirth),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(unit.id)),
+                        preferredStartDate = today.plusMonths(1),
+                    ),
+            )
+        val (realApplicationId, testApplicationId) =
+            db.transaction { tx ->
+                tx.insert(area)
+                tx.insert(unit)
+                tx.insert(guardian, DevPersonType.ADULT)
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+                tx.insert(group)
+                tx.insert(placement)
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placement.id,
+                        daycareGroupId = group.id,
+                        startDate = placement.startDate,
+                        endDate = placement.endDate,
+                    )
+                )
+                tx.insert(supervisor, unitRoles = mapOf(unit.id to UserRole.UNIT_SUPERVISOR))
+                val testApplicationId = insertApplication(tx)
+                tx.track("demo", "application" to testApplicationId, "employee" to supervisor.id)
+                insertApplication(tx) to testApplicationId
+            }
+
+        assertTrue(
+            callToolExpectingError(
+                    token,
+                    "advance_application",
+                    """{"applicationId":"$realApplicationId","action":"MOVE_TO_WAITING_PLACEMENT"}""",
+                )
+                .startsWith("Forbidden:")
+        )
+        fun advance(action: String) =
+            callTool(
+                    token,
+                    "advance_application",
+                    """{"applicationId":"$testApplicationId","action":"$action"}""",
+                )
+                .path("status")
+                .asString()
+        assertEquals("WAITING_PLACEMENT", advance("MOVE_TO_WAITING_PLACEMENT"))
+        assertEquals("WAITING_DECISION", advance("CREATE_PLACEMENT_PLAN"))
+
+        fun sendMessage(sender: EmployeeId) =
+            """{"batch":"demo","senderEmployeeId":"$sender","childIds":["${child.id}"],"title":"x","content":"y"}"""
+        assertTrue(
+            callToolExpectingError(token, "send_message", sendMessage(serviceWorker.id))
+                .startsWith("Forbidden:")
+        )
+        assertEquals(
+            1,
+            callTool(token, "send_message", sendMessage(supervisor.id))
+                .path("recipientCount")
+                .asInt(),
+        )
+        // Delivering the message adds the recipients to the thread
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        // Rows the workflows created were tracked too, so they don't count as created outside MCP
+        assertEquals(
+            emptyMap(),
+            callTool(token, "delete_test_data", """{"batchName":"demo","dryRun":true}""")
+                .path("untrackedRowCounts")
+                .properties()
+                .associate { it.key to it.value.asInt() },
         )
     }
 

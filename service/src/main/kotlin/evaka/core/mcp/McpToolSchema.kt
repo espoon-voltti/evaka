@@ -12,8 +12,10 @@ import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.jvmErasure
+import tools.jackson.databind.JsonNode
 
 /** Human-readable description for a tool input class or parameter, shown to the AI assistant */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.VALUE_PARAMETER)
@@ -75,6 +77,7 @@ object McpToolSchema {
                     type.arguments.firstOrNull()?.type ?: error("Missing collection item type")
                 mapOf("type" to "array", "items" to typeSchema(itemType))
             }
+            clazz.isSubclassOf(JsonNode::class) -> mapOf("type" to "object")
             clazz.isData -> objectSchema(clazz)
             else -> error("Unsupported tool parameter type: $type")
         }
