@@ -129,6 +129,7 @@ export interface EmployeeFeatureConfig {
   decisionReasoningGenericRemoval: boolean
   decisionReasoningsEnabled: boolean
   decisionsWithoutReasonings: DecisionType[]
+  mcpServerEnabled: boolean
   messageSupportEmail: string | null
   openRangesHolidayQuestionnaire: boolean
   placementDecisionSwedishLanguageEnabled: boolean
@@ -210,6 +211,12 @@ export type InvoiceCorrectionId = Id<'InvoiceCorrection'>
 export type InvoiceId = Id<'Invoice'>
 
 export type InvoiceRowId = Id<'InvoiceRow'>
+
+export type McpAuthorizationId = Id<'McpAuthorization'>
+
+export type McpClientId = Id<'McpClient'>
+
+export type McpTestDataBatchId = Id<'McpTestDataBatch'>
 
 export type MessageAccountId = Id<'MessageAccount'>
 
