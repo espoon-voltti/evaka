@@ -33,3 +33,4 @@ This guide helps developers to discover and understand the custom frameworks, ut
 - **[Logging](service/logging.md)** - Application logging and audit logging for compliance
 - **[Security Events](service/security-events.md)** - When an audit event is a security event, and at what level
 - **[Async & Scheduled Jobs](service/async-jobs.md)** - Background task execution
+- **[MCP Server](mcp-server.md)** - AI-assistant test data generation in non-production environments
