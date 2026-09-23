@@ -190,6 +190,8 @@ sealed interface DatabaseTable {
 
     sealed class TitaniaErrors : DatabaseTable
 
+    sealed class TodoItem : DatabaseTable
+
     sealed class VoucherValueDecision : DatabaseTable
 
     sealed class SfiMessage : DatabaseTable
@@ -374,6 +376,8 @@ typealias StaffAttendanceRealtimeId = Id<DatabaseTable.StaffAttendanceRealtime>
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>
 
 typealias TitaniaConflictId = Id<DatabaseTable.TitaniaErrors>
+
+typealias TodoItemId = Id<DatabaseTable.TodoItem>
 
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 
