@@ -8,21 +8,25 @@ import { localDate, string } from 'lib-common/form/fields'
 import { nullBlank, object, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
+import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
-import { H1, Label } from 'lib-components/typography'
+import { H1, Label, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 
-import { createTodoItemMutation } from './queries'
+import { createTodoItemMutation, todoItemsQuery } from './queries'
 
 const todoItemForm = object({
   description: validated(required(string()), nonBlank),
@@ -30,6 +34,7 @@ const todoItemForm = object({
 })
 
 export default React.memo(function TodoItemsPage() {
+  const todoItems = useQueryResult(todoItemsQuery())
   const [addingNew, setAddingNew] = useState(false)
 
   return (
@@ -46,6 +51,35 @@ export default React.memo(function TodoItemsPage() {
             onClick={() => setAddingNew(true)}
             data-qa="add-new-button"
           />
+        )}
+        <Gap $size="L" />
+        {renderResult(todoItems, (items) =>
+          items.length === 0 ? (
+            <P>Ei tehtäviä</P>
+          ) : (
+            <Table>
+              <Thead>
+                <Tr>
+                  <Th>Kuvaus</Th>
+                  <Th $minimalWidth>Luotu</Th>
+                  <Th $minimalWidth>Määräpäivä</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {items.map((item) => (
+                  <Tr key={item.id} data-qa="todo-item">
+                    <Td data-qa="todo-item-description">{item.description}</Td>
+                    <Td $minimalWidth data-qa="todo-item-created-at">
+                      {item.createdAt.format()}
+                    </Td>
+                    <Td $minimalWidth data-qa="todo-item-deadline">
+                      {item.deadline?.format() ?? '–'}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          )
         )}
       </ContentArea>
     </Container>
