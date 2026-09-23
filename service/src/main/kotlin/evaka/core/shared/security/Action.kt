@@ -334,6 +334,10 @@ sealed interface Action {
         UPDATE_SYSTEM_NOTIFICATION(HasGlobalRole(ADMIN)),
         SEND_JAMIX_ORDERS(HasGlobalRole(ADMIN)),
         PLACEMENT_TOOL(HasGlobalRole(ADMIN)),
+        // MCP server for AI-assisted test data generation (non-production only)
+        MCP_PAGE(HasGlobalRole(ADMIN)),
+        MANAGE_MCP_AUTHORIZATIONS(HasGlobalRole(ADMIN)),
+        MANAGE_MCP_TEST_DATA(HasGlobalRole(ADMIN)),
         OUT_OF_OFFICE_PAGE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.MESSAGING).inAnyUnit(),

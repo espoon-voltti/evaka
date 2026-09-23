@@ -19,4 +19,5 @@ data class EmployeeFeatureConfig(
     val openRangesHolidayQuestionnaire: Boolean,
     val allowEnglishChildDocumentsForAllTypes: Boolean,
     val messageSupportEmail: String?,
+    val mcpServerEnabled: Boolean,
 )

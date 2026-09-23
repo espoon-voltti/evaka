@@ -612,3 +612,4 @@ V613__missing_fk_indexes_and_primary_keys.sql
 V614__assistance_action_option_swedish.sql
 V615__sfi_message_cascade.sql
 V616__titania_error_type.sql
+V617__mcp_server.sql
