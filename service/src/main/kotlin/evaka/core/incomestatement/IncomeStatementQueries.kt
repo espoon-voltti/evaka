@@ -718,16 +718,20 @@ JOIN LATERAL (
         FROM fridge_child fc_head
         WHERE fc_head.head_of_child = i.person_id
           AND ${bind(today)} BETWEEN fc_head.start_date AND fc_head.end_date
+          AND NOT fc_head.conflict
         UNION ALL
         SELECT fc_spouse.child_id, false
         FROM fridge_partner fp
         JOIN fridge_partner fp_spouse ON fp_spouse.partnership_id = fp.partnership_id
           AND fp_spouse.person_id <> fp.person_id
           AND ${bind(today)} BETWEEN fp_spouse.start_date AND coalesce(fp_spouse.end_date, 'infinity')
+          AND NOT fp_spouse.conflict
         JOIN fridge_child fc_spouse ON fc_spouse.head_of_child = fp_spouse.person_id
           AND ${bind(today)} BETWEEN fc_spouse.start_date AND fc_spouse.end_date
+          AND NOT fc_spouse.conflict
         WHERE fp.person_id = i.person_id
           AND ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity')
+          AND NOT fp.conflict
         UNION ALL
         SELECT g.child_id, true
         FROM guardian g
