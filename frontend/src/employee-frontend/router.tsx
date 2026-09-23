@@ -100,6 +100,7 @@ import VoucherServiceProviders from './components/reports/VoucherServiceProvider
 import SettingsPage from './components/settings/SettingsPage'
 import SystemNotificationsPage from './components/system-notifications/SystemNotificationsPage'
 import TimelinePage from './components/timeline/TimelinePage'
+import TodoItemsPage from './components/todo/TodoItemsPage'
 import UnitFeaturesPage from './components/unit-features/UnitFeaturesPage'
 import GroupCaretakers from './components/unit/group-caretakers/GroupCaretakers'
 import DiscussionReservationSurveyWrapper from './components/unit/tab-calendar/discussion-surveys/DiscussionSurveyWrapper'
@@ -480,6 +481,7 @@ const routes: EmployeeRoute[] = [
     title: 'placementTool'
   },
   { path: '/out-of-office', component: OutOfOfficePage, title: 'outOfOffice' },
+  { path: '/todo-items', component: TodoItemsPage },
   {
     path: '/close-after-login',
     component: CloseAfterLogin,
