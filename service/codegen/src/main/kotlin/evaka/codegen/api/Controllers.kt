@@ -292,7 +292,11 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
             paths
                 .flatMap { path -> methods.map { method -> Pair(path, method) } }
                 .mapNotNull { (path, method) ->
-                    if (kotlinMethod.hasAnnotation<ExcludeCodeGen>()) return@mapNotNull null
+                    if (
+                        kotlinMethod.hasAnnotation<ExcludeCodeGen>() ||
+                            controllerClass.hasAnnotation<ExcludeCodeGen>()
+                    )
+                        return@mapNotNull null
 
                     EndpointMetadata(
                         controllerClass = controllerClass,
