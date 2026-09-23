@@ -11,6 +11,7 @@ import { nonBlank } from 'lib-common/form/validators'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
+import { MutateIconOnlyButton } from 'lib-components/atoms/buttons/MutateIconOnlyButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -21,12 +22,16 @@ import {
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faPlus } from 'lib-icons'
+import { faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import { createTodoItemMutation, todoItemsQuery } from './queries'
+import {
+  createTodoItemMutation,
+  deleteTodoItemMutation,
+  todoItemsQuery
+} from './queries'
 
 const todoItemForm = object({
   description: validated(required(string()), nonBlank),
@@ -63,6 +68,7 @@ export default React.memo(function TodoItemsPage() {
                   <Th>Kuvaus</Th>
                   <Th $minimalWidth>Luotu</Th>
                   <Th $minimalWidth>Määräpäivä</Th>
+                  <Th $minimalWidth />
                 </Tr>
               </Thead>
               <Tbody>
@@ -74,6 +80,15 @@ export default React.memo(function TodoItemsPage() {
                     </Td>
                     <Td $minimalWidth data-qa="todo-item-deadline">
                       {item.deadline?.format() ?? '–'}
+                    </Td>
+                    <Td $minimalWidth>
+                      <MutateIconOnlyButton
+                        icon={faTrash}
+                        aria-label="Poista"
+                        mutation={deleteTodoItemMutation}
+                        onClick={() => ({ id: item.id })}
+                        data-qa="delete-button"
+                      />
                     </Td>
                   </Tr>
                 ))}
