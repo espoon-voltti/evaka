@@ -12,8 +12,6 @@ import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { appConfig } from 'lib-customizations/citizen'
 
-import 'leaflet/dist/leaflet.css'
-
 import { pwaEnabled } from './pwa/enabled'
 import { listenForInstallPrompt } from './pwa/installPrompt'
 import { applyPwaMetadata } from './pwa/metadata'

@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { Suspense } from 'react'
 import { Route, Router, Switch } from 'wouter'
 
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import AccessibilityStatement from './AccessibilityStatement'
@@ -29,13 +30,16 @@ import IncomeStatementView from './income-statements/IncomeStatementView'
 import IncomeStatements from './income-statements/IncomeStatements'
 import LoginPage from './login/LoginPage'
 import LoginFormPage from './login/WeakLoginFormPage'
-import MapPage from './map/MapPage'
 import MessagesPage from './messages/MessagesPage'
 import PersonalDetails from './personal-details/PersonalDetails'
 
+// The map page pulls in Leaflet, which nothing else needs, so it is loaded on
+// demand to keep it out of the initial download
+const MapPage = React.lazy(() => import('./map/MapPage'))
+
 interface CitizenRoute {
   path: string
-  component: React.FunctionComponent
+  component: React.ComponentType
   auth?: 'STRONG' | 'WEAK' | null // STRONG auth is required by default
   disabled?: boolean
 }
@@ -92,7 +96,9 @@ function renderRoute({
   if (disabled) return null
   const inner = (
     <ScrollToTop>
-      <Component />
+      <Suspense fallback={<SpinnerSegment />}>
+        <Component />
+      </Suspense>
     </ScrollToTop>
   )
   const outer =
