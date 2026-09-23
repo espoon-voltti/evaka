@@ -27,7 +27,7 @@ map $sent_http_content_type $expires {
   text/html                  -1;
   text/css                   max;
   application/javascript     max;
-  application/woff2          max;
+  font/woff2                 max;
   ~image/                    max;
 }
 
@@ -194,6 +194,7 @@ server {
   # Gzipping to minimize network traffic
   gzip          on;
   gzip_vary     on;
+  gzip_comp_level 6;
   gzip_types    text/plain text/css application/javascript text/xml application/xml image/svg+xml;
 
   {{ if env.Getenv "LIMIT_CONFIGURATION" "" }}
@@ -270,6 +271,9 @@ server {
 
   location @indexPage {
     if ($content_type_not_ok) {
+      return 404;
+    }
+    if ($uri ~ ^/assets/) {
       return 404;
     }
 
