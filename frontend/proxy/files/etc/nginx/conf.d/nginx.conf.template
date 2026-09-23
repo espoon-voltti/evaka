@@ -194,6 +194,7 @@ server {
   # Gzipping to minimize network traffic
   gzip          on;
   gzip_vary     on;
+  gzip_comp_level 6;
   gzip_types    text/plain text/css application/javascript text/xml application/xml image/svg+xml;
 
   {{ if env.Getenv "LIMIT_CONFIGURATION" "" }}
