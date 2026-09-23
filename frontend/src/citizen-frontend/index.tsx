@@ -12,6 +12,7 @@ import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { appConfig } from 'lib-customizations/citizen'
 
+import { systemNotificationsQuery } from './login/queries'
 import { pwaEnabled } from './pwa/enabled'
 import { listenForInstallPrompt } from './pwa/installPrompt'
 import { applyPwaMetadata } from './pwa/metadata'
@@ -19,6 +20,7 @@ import {
   registerServiceWorker,
   unregisterServiceWorker
 } from './pwa/serviceWorker'
+import { queryClient } from './query'
 import Root from './router'
 import './index.css'
 
@@ -39,6 +41,12 @@ smoothScrollPolyfill()
 if (pwaEnabled) {
   applyPwaMetadata()
   listenForInstallPrompt()
+}
+
+// The login page is shown only after the auth status is known. Start its own
+// request right away so the two do not run one after the other.
+if (['/', '/login', '/login/form'].includes(window.location.pathname)) {
+  void queryClient.prefetchQuery(systemNotificationsQuery())
 }
 
 const root = createRoot(document.getElementById('app')!)
