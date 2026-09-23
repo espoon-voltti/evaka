@@ -325,6 +325,16 @@ server {
     proxy_pass $enduserUrl;
   }
 
+  # OAuth 2.1 metadata for the MCP server (non-production only; apigw returns 404 when disabled).
+  # RFC 8414 / RFC 9728 require these documents at the site root, so they are forwarded to apigw
+  # under the /api prefix.
+  location ~ ^/\.well-known/oauth-(authorization-server|protected-resource)(/.*)?$ {
+    access_log /dev/stdout json_access;
+    include    proxy_params;
+    rewrite    ^/(.*)$ /api/$1 break;
+    proxy_pass $enduserUrl;
+  }
+
   # Fox X-Accel-Redirect to S3
   location ~* ^/internal_redirect/(.*) {
     internal;

@@ -66,6 +66,7 @@ function serveIndexHtml(): Plugin {
         // Skip api, source code and vite internal paths
         if (
           req.originalUrl?.startsWith('/api/') ||
+          req.originalUrl?.startsWith('/.well-known/oauth-') ||
           req.originalUrl?.startsWith('/src/') ||
           req.originalUrl?.startsWith('/node_modules/') ||
           req.originalUrl?.startsWith('/@')
@@ -233,7 +234,12 @@ export default defineConfig(async (): Promise<UserConfig> => {
         clientFiles: ['src/**/index.html']
       },
       proxy: {
-        '/api': `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`
+        '/api': `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`,
+        // OAuth metadata for the MCP server must be served from the site root
+        '/.well-known/oauth-': {
+          target: `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`,
+          rewrite: (path) => `/api${path}`
+        }
       }
     },
     resolve: {

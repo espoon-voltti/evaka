@@ -58,6 +58,8 @@ module.exports = {
       EVAKA_MUNICIPALITY: process.env.EVAKA_MUNICIPALITY,
       EVAKA_INTEGRATION_VTJ_MOCK_URL: `http://localhost:${ports.idp}`,
       EVAKA_WEBAUTHN_ORIGIN: `http://localhost:${ports.frontend}`,
+      EVAKA_FRONTEND_BASE_URL_FI: `http://localhost:${ports.frontend}`,
+      EVAKA_FRONTEND_BASE_URL_SV: `http://localhost:${ports.frontend}`,
     },
     ...defaults
   }, /*{

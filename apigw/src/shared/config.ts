@@ -26,6 +26,14 @@ const envVariables = {
    * **Do not enable in production**
    */
   ENABLE_DEV_API: false,
+  /**
+   * If true, adds proxy routes for the evaka-service MCP (Model Context Protocol) server and its
+   * OAuth endpoints, which let AI assistants generate test data. The service must also have the
+   * `enable_mcp` Spring profile active.
+   *
+   * **Do not enable in production**
+   */
+  ENABLE_MCP: false,
 
   // ----- Session configuration -----
   /**
@@ -347,6 +355,7 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
     ? {
         VOLTTI_ENV: 'local',
         ENABLE_DEV_API: true,
+        ENABLE_MCP: true,
 
         CITIZEN_COOKIE_SECRET: 'A very hush hush citizen cookie secret.',
         EMPLOYEE_COOKIE_SECRET: 'A very hush hush employee cookie secret.',
@@ -672,6 +681,7 @@ export const pinSessionTimeoutSeconds = required(
 )
 
 export const enableDevApi = required('ENABLE_DEV_API', parseBoolean)
+export const enableMcp = required('ENABLE_MCP', parseBoolean)
 
 const titaniaUsername = optional('EVAKA_TITANIA_USERNAME', unchanged)
 export const titaniaConfig = titaniaUsername
