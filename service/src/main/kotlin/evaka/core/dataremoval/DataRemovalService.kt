@@ -212,7 +212,7 @@ class DataRemovalService(
         val financeExpiresBefore = now.minusYears(5)
         val citizenUserExpireDate = today.minusYears(1)
 
-        deleteExpiredFinanceNotes(dbc, expireDate = financeExpiresBefore.toLocalDate(), limit)
+        deleteExpiredFinanceNotes(dbc, expiresBefore = financeExpiresBefore, limit)
 
         deleteExpiredFinanceThreads(
             dbc,
@@ -227,14 +227,13 @@ class DataRemovalService(
         // Guardian and foster parent relationships are the links used above to discover expired
         // citizen users and finance data, so guardian and foster parent records are deleted only
         // after citizen users, finance notes and finance threads are deleted. They are skipped for
-        // persons whose citizen user or finance note removal is still pending, and for persons who
-        // have any finance thread, because a finance thread concerns every child of the family.
+        // persons whose citizen user removal is still pending, and for persons who have any finance
+        // note or finance thread, because finance data concerns every child of the family.
         deleteExpiredGuardians(
             dbc,
             now,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = citizenUserExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = limit,
         )
 
@@ -242,7 +241,6 @@ class DataRemovalService(
             dbc,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = citizenUserExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = limit,
         )
 
@@ -899,28 +897,44 @@ GROUP BY a.id
     return deletableRows to unsetReferences
 }
 
-fun deleteExpiredFinanceNotes(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
+fun deleteExpiredFinanceNotes(
+    dbc: Database.Connection,
+    expiresBefore: HelsinkiDateTime,
+    limit: Int,
+) {
     logger.info { "Deleting at most $limit expired finance notes" }
-    val deleted = dbc.transaction { tx -> tx.deleteExpiredFinanceNotesBatch(expireDate, limit) }
+    val deleted = dbc.transaction { tx -> tx.deleteExpiredFinanceNotesBatch(expiresBefore, limit) }
     deleted.forEach { id ->
         auditExpiredDelete(
             entity = "finance_note",
             targetId = AuditId(id),
-            meta = mapOf("expireDate" to expireDate),
+            meta = mapOf("expiresBefore" to expiresBefore),
         )
     }
 }
 
+/**
+ * Deletes the finance notes of persons whose finance connections have all expired. A person with no
+ * finance connections at all has nothing to anchor the expiry to, so their notes expire once they
+ * have not been modified during the retention period.
+ */
 private fun Database.Transaction.deleteExpiredFinanceNotesBatch(
-    expireDate: LocalDate,
+    expiresBefore: HelsinkiDateTime,
     limit: Int,
 ): List<FinanceNoteId> = createUpdate {
     sql(
         """
-WITH del_batch AS (
-    SELECT id
-    FROM finance_note
-    WHERE person_id = ANY(${subquery(personIdsWithExpiredFinanceConnections(expireDate))})
+WITH finance_connection AS (
+    ${subquery(financeConnectionsQuery())}
+), del_batch AS (
+    SELECT fn.id
+    FROM finance_note fn
+    WHERE
+        fn.person_id = ANY(${subquery(personIdsWithExpiredFinanceConnections(expiresBefore.toLocalDate()))}) OR
+        (
+            NOT EXISTS (SELECT 1 FROM finance_connection fconn WHERE fconn.person_id = fn.person_id) AND
+            fn.modified_at < ${bind(expiresBefore)}
+        )
     FOR UPDATE
     LIMIT ${bind(limit)}
 )
@@ -1229,7 +1243,6 @@ fun deleteExpiredGuardians(
     now: HelsinkiDateTime,
     expireDate: LocalDate,
     citizenUserExpireDate: LocalDate,
-    financeExpiresBefore: HelsinkiDateTime,
     limit: Int,
 ) {
     logger.info { "Deleting at most $limit expired guardian relationships" }
@@ -1239,7 +1252,6 @@ fun deleteExpiredGuardians(
                 expireDate,
                 now,
                 citizenUserExpireDate,
-                financeExpiresBefore,
                 limit,
             )
         ExpiredGuardianRemoval(
@@ -1270,7 +1282,6 @@ private fun Database.Transaction.deleteExpiredGuardiansBatch(
     expireDate: LocalDate,
     now: HelsinkiDateTime,
     citizenUserExpireDate: LocalDate,
-    financeExpiresBefore: HelsinkiDateTime,
     limit: Int,
 ): List<DeletedGuardian> = createUpdate {
     sql(
@@ -1301,7 +1312,6 @@ fun deleteExpiredFosterParents(
     dbc: Database.Connection,
     expireDate: LocalDate,
     citizenUserExpireDate: LocalDate,
-    financeExpiresBefore: HelsinkiDateTime,
     limit: Int,
 ) {
     logger.info { "Deleting at most $limit expired foster parent relationships" }
@@ -1309,7 +1319,6 @@ fun deleteExpiredFosterParents(
         tx.deleteExpiredFosterParentsBatch(
             expireDate,
             citizenUserExpireDate,
-            financeExpiresBefore,
             limit,
         )
     }
@@ -1336,7 +1345,6 @@ private data class DeletedFosterParent(
 private fun Database.Transaction.deleteExpiredFosterParentsBatch(
     expireDate: LocalDate,
     citizenUserExpireDate: LocalDate,
-    financeExpiresBefore: HelsinkiDateTime,
     limit: Int,
 ): List<DeletedFosterParent> = createUpdate {
     sql(
@@ -1470,14 +1478,4 @@ HAVING max(p.end_date) < ${bind(date)}
  * as the child is kept, such as their message threads, is removed together with the child. Child
  * removal is not implemented yet, so no child expires.
  */
-private fun personIdsWithExpiredFinanceNotes(expireDate: LocalDate) = QuerySql {
-    sql(
-        """
-SELECT person_id
-FROM finance_note
-WHERE person_id = ANY(${subquery(personIdsWithExpiredFinanceConnections(expireDate))})
-"""
-    )
-}
-
 private fun expiredChildIdsQuery() = QuerySql { sql("SELECT id FROM child WHERE FALSE") }

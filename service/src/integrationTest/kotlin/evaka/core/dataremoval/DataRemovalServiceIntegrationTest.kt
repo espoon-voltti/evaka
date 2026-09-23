@@ -818,7 +818,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
         insertFinanceNote(guardian)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(0, financeNoteCount(guardian))
     }
@@ -830,7 +830,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate.plusDays(1))
         insertFinanceNote(guardian)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(guardian))
     }
@@ -842,7 +842,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate)
         insertFinanceNote(guardian)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(guardian))
     }
@@ -858,7 +858,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(recentChild.id, financeExpireDate.plusDays(1))
         insertFinanceNote(guardian)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(guardian))
     }
@@ -869,19 +869,29 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertGuardianship(guardian, child.id)
         insertFinanceNote(guardian)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(guardian))
     }
 
     @Test
-    fun `deleteExpiredFinanceNotes keeps note of adult with no family or finance connection to any placed child`() {
+    fun `deleteExpiredFinanceNotes keeps note of adult with no family or finance connection while it has been modified within five years`() {
         val person = insertAdult()
-        insertFinanceNote(person)
+        insertFinanceNote(person, modifiedAt = financeExpiresBefore)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(person))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes deletes note of adult with no family or finance connection once it has not been modified in five years`() {
+        val person = insertAdult()
+        insertFinanceNote(person, modifiedAt = financeExpiresBefore.minusDays(1))
+
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
+
+        assertEquals(0, financeNoteCount(person))
     }
 
     @Test
@@ -891,7 +901,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
         insertFinanceNote(head)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(0, financeNoteCount(head))
     }
@@ -903,7 +913,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, today.plusYears(1))
         insertFinanceNote(head)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(head))
     }
@@ -917,7 +927,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
         insertFinanceNote(partner)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(0, financeNoteCount(partner))
     }
@@ -931,7 +941,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, today.plusYears(1))
         insertFinanceNote(partner)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(partner))
     }
@@ -943,7 +953,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
         insertFinanceNote(head)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(head))
     }
@@ -957,7 +967,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
         insertFinanceNote(partner)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(partner))
     }
@@ -969,7 +979,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
         insertFinanceNote(fosterParent)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(0, financeNoteCount(fosterParent))
     }
@@ -985,7 +995,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, today.plusYears(1))
         insertFinanceNote(fosterParent)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(fosterParent))
     }
@@ -1000,7 +1010,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         )
         insertFinanceNote(fosterParent)
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
 
         assertEquals(1, financeNoteCount(fosterParent))
     }
@@ -1012,7 +1022,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
         repeat(5) { insertFinanceNote(guardian) }
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 2)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 2)
 
         assertEquals(3, financeNoteCount(guardian))
     }
@@ -1156,7 +1166,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1174,7 +1183,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1192,7 +1200,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1214,7 +1221,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1232,7 +1238,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1250,7 +1255,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1262,7 +1266,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1284,7 +1287,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1304,23 +1306,45 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
         assertEquals(1, rowCount("guardian"), "guardianship is kept while a finance note exists")
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
         deleteExpiredGuardians(
             db,
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
         assertEquals(0, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians keeps guardianship while the guardian has a finance note that has not expired`() {
+        // A finance note concerns every child of the family, so it keeps the relationships of
+        // expired children too
+        val guardian = insertAdult()
+        val recentChild = DevPerson()
+        db.transaction { it.insert(recentChild, DevPersonType.CHILD) }
+        insertGuardianship(guardian, child.id)
+        insertGuardianship(guardian, recentChild.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertPlacementEnding(recentChild.id, financeExpireDate.plusDays(1))
+        insertFinanceNote(guardian)
+
+        deleteExpiredGuardians(
+            db,
+            now,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(2, rowCount("guardian"))
     }
 
     @Test
@@ -1338,7 +1362,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 2,
         )
 
@@ -1355,7 +1378,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1372,7 +1394,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1388,7 +1409,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1405,7 +1425,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1420,7 +1439,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1438,7 +1456,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
@@ -1448,16 +1465,36 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             "foster parenthood is kept while a finance note exists",
         )
 
-        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFinanceNotes(db, expiresBefore = financeExpiresBefore, limit = 100)
         deleteExpiredFosterParents(
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
         assertEquals(0, rowCount("foster_parent"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents keeps foster parenthood while the parent has a finance note that has not expired`() {
+        val fosterParent = insertAdult()
+        val recentChild = DevPerson()
+        db.transaction { it.insert(recentChild, DevPersonType.CHILD) }
+        insertFosterParenthood(fosterParent, child.id)
+        insertGuardianship(fosterParent, recentChild.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertPlacementEnding(recentChild.id, financeExpireDate.plusDays(1))
+        insertFinanceNote(fosterParent)
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("foster_parent"))
     }
 
     @Test
@@ -1474,7 +1511,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             db,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 2,
         )
 
@@ -1550,7 +1586,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `deleteExpiredData single pass on a mixed data set removes guardianships, blocklist rows and finance notes only for children whose placements ended over ten years ago`() {
+    fun `deleteExpiredData single pass on a mixed data set removes guardianships, blocklist rows and finance notes only for children whose placements ended over ten years ago and whose guardians have no finance note left`() {
         val expiredChild1 = DevPerson()
         val expiredChild2 = DevPerson()
         val boundaryChild = DevPerson()
@@ -1584,8 +1620,8 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertGuardianship(guardian1, unplacedChild.id)
         insertFinanceNote(guardian1)
 
-        // guardian2 has one expired and one recent child -> only the expired guardianship is
-        // removed and the finance note is kept
+        // guardian2 has one expired and one recent child -> the finance note is kept, and it keeps
+        // the expired guardianship too
         val guardian2 = insertAdult()
         insertGuardianship(guardian2, expiredChild2.id)
         insertGuardianship(guardian2, recentChild.id)
@@ -1597,8 +1633,8 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertGuardianship(guardian3, boundaryChild.id)
         insertFinanceNote(guardian3)
 
-        // guardian4 is the second guardian of an expired child -> that guardianship is removed
-        // for both guardians, while the multi-placement child keeps guardian4's other rows
+        // guardian4 is the second guardian of an expired child -> the multi-placement child keeps
+        // guardian4's finance note, which keeps both of guardian4's guardianships
         val guardian4 = insertAdult()
         insertGuardianship(guardian4, expiredChild1.id)
         insertGuardianship(guardian4, multiPlacementChild.id)
@@ -1617,9 +1653,11 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(
             setOf(
                 guardian1 to unplacedChild.id,
+                guardian2 to expiredChild2.id,
                 guardian2 to recentChild.id,
                 guardian3 to recentChild.id,
                 guardian3 to boundaryChild.id,
+                guardian4 to expiredChild1.id,
                 guardian4 to multiPlacementChild.id,
             ),
             guardianChildPairs("guardian"),
@@ -1692,8 +1730,8 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         return adult.id
     }
 
-    private fun insertFinanceNote(personId: PersonId) {
-        db.transaction { it.createFinanceNote(personId, "note", admin.user, now) }
+    private fun insertFinanceNote(personId: PersonId, modifiedAt: HelsinkiDateTime = now) {
+        db.transaction { it.createFinanceNote(personId, "note", admin.user, modifiedAt) }
     }
 
     private fun insertHeadOfChild(
@@ -2351,7 +2389,6 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
             now.plusDays(1),
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
-            financeExpiresBefore = financeExpiresBefore,
             limit = 100,
         )
 
