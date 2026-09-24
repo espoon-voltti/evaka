@@ -34,9 +34,7 @@ class BiCsvUtilsTest {
     @Test
     fun `includes all columns when includePII=true and includeLegacyColumns=true`() {
         val out =
-            render(
-                BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60)
-            )
+            render(BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60))
         assertEquals("id,keep,legacy,name\r\n", out[0])
         assertEquals("1,K,,Alice\r\n", out[1])
     }
@@ -48,7 +46,7 @@ class BiCsvUtilsTest {
                 BiExportConfig(
                     includePII = false,
                     includeLegacyColumns = true,
-                    deltaWindowDays = 60,
+                    windowDays = 60,
                 )
             )
         assertEquals("id,keep,legacy\r\n", out[0])
@@ -62,7 +60,7 @@ class BiCsvUtilsTest {
                 BiExportConfig(
                     includePII = true,
                     includeLegacyColumns = false,
-                    deltaWindowDays = 60,
+                    windowDays = 60,
                 )
             )
         assertEquals("id,keep,name\r\n", out[0])
@@ -76,7 +74,7 @@ class BiCsvUtilsTest {
                 BiExportConfig(
                     includePII = false,
                     includeLegacyColumns = false,
-                    deltaWindowDays = 60,
+                    windowDays = 60,
                 )
             )
         assertEquals("id,keep\r\n", out[0])
@@ -93,7 +91,7 @@ class BiCsvUtilsTest {
                     BiExportConfig(
                         includePII = false,
                         includeLegacyColumns = true,
-                        deltaWindowDays = 60,
+                        windowDays = 60,
                     ),
                 )
                 .toList()
@@ -111,7 +109,7 @@ class BiCsvUtilsTest {
                     BiExportConfig(
                         includePII = true,
                         includeLegacyColumns = false,
-                        deltaWindowDays = 60,
+                        windowDays = 60,
                     ),
                 )
                 .toList()
@@ -129,7 +127,7 @@ class BiCsvUtilsTest {
                     BiExportConfig(
                         includePII = false,
                         includeLegacyColumns = true,
-                        deltaWindowDays = 60,
+                        windowDays = 60,
                     ),
                 )
                 .toList()

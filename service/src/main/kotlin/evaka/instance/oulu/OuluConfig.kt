@@ -245,7 +245,7 @@ class OuluConfig {
     fun ouluBiJob(biExportClient: BiExportClient): BiExportJob =
         BiExportJob(
             biExportClient,
-            BiExportConfig(includePII = false, includeLegacyColumns = false, deltaWindowDays = 730),
+            BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 730),
         )
 
     @Bean

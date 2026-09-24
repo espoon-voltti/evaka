@@ -35,9 +35,9 @@ import org.junit.jupiter.api.Test
 
 class BiDeltaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val config =
-        BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 7)
+        BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 7)
     private val now = HelsinkiDateTime.now()
-    private val past = now.minusDays((config.deltaWindowDays + 30).toLong())
+    private val past = now.minusDays((config.windowDays + 30).toLong())
     private val systemUser = AuthenticatedUser.SystemInternalUser.evakaUserId
 
     @Test
