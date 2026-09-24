@@ -137,6 +137,19 @@ test.describe('Mobile employee daily notes', () => {
     await otherChild.assertDailyNoteDoesNotContainText(stickyNote)
   })
 
+  test('The daily note modal is a dialog that the escape key closes', async () => {
+    await unitPage.navigateToUnit(daycare.id)
+    const groupsSection = await unitPage.openGroupsPage()
+    const group = await groupsSection.openGroupCollapsible(daycareGroup.id)
+    const noteModal = await group.childRow(testChild.id).openDailyNoteModal()
+
+    await expect(noteModal).toHaveAttribute('role', 'dialog')
+
+    await page.keyboard.press('Escape')
+
+    await expect(noteModal).toBeHidden()
+  })
+
   test('Group daycare daily notes can be written and are shown on group notes tab', async () => {
     const childId1 = testChild.id
     const childId2 = testChild2.id

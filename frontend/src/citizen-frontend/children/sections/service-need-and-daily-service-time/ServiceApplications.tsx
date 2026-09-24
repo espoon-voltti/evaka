@@ -38,7 +38,6 @@ import { faLockAlt } from 'lib-icons'
 import { faTrash, faFile } from 'lib-icons'
 import { faTimes } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../../../ModalAccessibilityWrapper'
 import { AuthContext } from '../../../auth/state'
 import {
   CalendarModalBackground,
@@ -310,101 +309,98 @@ const ServiceApplicationsDetails = React.memo(
     const [lang] = useLang()
 
     return (
-      <ModalAccessibilityWrapper>
-        <PlainModal
-          mobileFullScreen
-          margin="auto"
-          data-qa="service-application-modal"
-          onEscapeKey={onClose}
-        >
-          <CalendarModalBackground>
-            <CalendarModalSection>
-              <Gap $size="L" $sizeOnMobile="zero" />
-              <ModalHeader
-                headingComponent={(props) => (
-                  <H1 $noMargin data-qa="title" {...props}>
-                    {props.children}
-                  </H1>
-                )}
-              >
-                {i18n.children.serviceApplication.createTitle}
-              </ModalHeader>
-            </CalendarModalSection>
+      <PlainModal
+        mobileFullScreen
+        margin="auto"
+        data-qa="service-application-modal"
+        onEscapeKey={onClose}
+        aria-label={i18n.children.serviceApplication.createTitle}
+      >
+        <CalendarModalBackground>
+          <CalendarModalSection>
+            <Gap $size="L" $sizeOnMobile="zero" />
+            <ModalHeader
+              headingComponent={(props) => (
+                <H1 $noMargin data-qa="title" {...props}>
+                  {props.children}
+                </H1>
+              )}
+            >
+              {i18n.children.serviceApplication.createTitle}
+            </ModalHeader>
+          </CalendarModalSection>
 
-            <Gap $size="zero" $sizeOnMobile="s" />
+          <Gap $size="zero" $sizeOnMobile="s" />
 
-            <CalendarModalSection>
-              <H2>{application.childName}</H2>
-              <FixedSpaceColumn>
-                <FixedSpaceColumn $spacing="xxs">
-                  <Label>{i18n.children.serviceApplication.sentAt}</Label>
-                  <div>{application.sentAt.format()}</div>
-                  <div>{application.personName}</div>
-                </FixedSpaceColumn>
-                <FixedSpaceColumn $spacing="xxs">
-                  <Label>{i18n.children.serviceApplication.startDate}</Label>
-                  <div>{application.startDate.format()}</div>
-                </FixedSpaceColumn>
-                <FixedSpaceColumn $spacing="xxs">
-                  <Label>{i18n.children.serviceApplication.serviceNeed}</Label>
-                  <div>
-                    {getServiceNeedName(application.serviceNeedOption, lang)}
+          <CalendarModalSection>
+            <H2>{application.childName}</H2>
+            <FixedSpaceColumn>
+              <FixedSpaceColumn $spacing="xxs">
+                <Label>{i18n.children.serviceApplication.sentAt}</Label>
+                <div>{application.sentAt.format()}</div>
+                <div>{application.personName}</div>
+              </FixedSpaceColumn>
+              <FixedSpaceColumn $spacing="xxs">
+                <Label>{i18n.children.serviceApplication.startDate}</Label>
+                <div>{application.startDate.format()}</div>
+              </FixedSpaceColumn>
+              <FixedSpaceColumn $spacing="xxs">
+                <Label>{i18n.children.serviceApplication.serviceNeed}</Label>
+                <div>
+                  {getServiceNeedName(application.serviceNeedOption, lang)}
+                </div>
+              </FixedSpaceColumn>
+              <FixedSpaceColumn $spacing="xxs">
+                <Label>{i18n.children.serviceApplication.additionalInfo}</Label>
+                <div data-qa="additional-info">
+                  {application.additionalInfo}
+                </div>
+              </FixedSpaceColumn>
+              <FixedSpaceColumn $spacing="xxs">
+                <Label>{i18n.children.serviceApplication.status}</Label>
+                {application.decision === null ? (
+                  <div data-qa="decision-status">
+                    {
+                      i18n.children.serviceApplication.decision.statuses
+                        .undecided
+                    }
                   </div>
-                </FixedSpaceColumn>
+                ) : (
+                  <div data-qa="decision-status">
+                    {
+                      i18n.children.serviceApplication.decision.statuses[
+                        application.decision.status
+                      ]
+                    }{' '}
+                    ({application.decision.decidedByName},{' '}
+                    {application.decision.decidedAt.toLocalDate().format()})
+                  </div>
+                )}
+              </FixedSpaceColumn>
+              {!!application.decision?.rejectedReason && (
                 <FixedSpaceColumn $spacing="xxs">
                   <Label>
-                    {i18n.children.serviceApplication.additionalInfo}
+                    {i18n.children.serviceApplication.decision.rejectedReason}
                   </Label>
-                  <div data-qa="additional-info">
-                    {application.additionalInfo}
+                  <div data-qa="rejected-reason">
+                    {application.decision.rejectedReason}
                   </div>
                 </FixedSpaceColumn>
-                <FixedSpaceColumn $spacing="xxs">
-                  <Label>{i18n.children.serviceApplication.status}</Label>
-                  {application.decision === null ? (
-                    <div data-qa="decision-status">
-                      {
-                        i18n.children.serviceApplication.decision.statuses
-                          .undecided
-                      }
-                    </div>
-                  ) : (
-                    <div data-qa="decision-status">
-                      {
-                        i18n.children.serviceApplication.decision.statuses[
-                          application.decision.status
-                        ]
-                      }{' '}
-                      ({application.decision.decidedByName},{' '}
-                      {application.decision.decidedAt.toLocalDate().format()})
-                    </div>
-                  )}
-                </FixedSpaceColumn>
-                {!!application.decision?.rejectedReason && (
-                  <FixedSpaceColumn $spacing="xxs">
-                    <Label>
-                      {i18n.children.serviceApplication.decision.rejectedReason}
-                    </Label>
-                    <div data-qa="rejected-reason">
-                      {application.decision.rejectedReason}
-                    </div>
-                  </FixedSpaceColumn>
-                )}
-                <FixedSpaceRow $justifyContent="space-evenly">
-                  <Button text={i18n.common.close} onClick={onClose} />
-                </FixedSpaceRow>
-              </FixedSpaceColumn>
-              <Gap $sizeOnMobile="zero" />
-            </CalendarModalSection>
-          </CalendarModalBackground>
-          <CalendarModalCloseButton
-            onClick={onClose}
-            aria-label={i18n.common.closeModal}
-            icon={faTimes}
-            data-qa="close-btn"
-          />
-        </PlainModal>
-      </ModalAccessibilityWrapper>
+              )}
+              <FixedSpaceRow $justifyContent="space-evenly">
+                <Button text={i18n.common.close} onClick={onClose} />
+              </FixedSpaceRow>
+            </FixedSpaceColumn>
+            <Gap $sizeOnMobile="zero" />
+          </CalendarModalSection>
+        </CalendarModalBackground>
+        <CalendarModalCloseButton
+          onClick={onClose}
+          aria-label={i18n.common.closeModal}
+          icon={faTimes}
+          data-qa="close-btn"
+        />
+      </PlainModal>
     )
   }
 )

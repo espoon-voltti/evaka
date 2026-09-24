@@ -11,7 +11,7 @@ import {
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -113,5 +113,39 @@ test.describe('Citizen page', () => {
 
     await page.goto(`${config.enduserUrl}/?lang=sv`)
     await header.assertSubNavMenuHasText('Valikko')
+  })
+})
+
+test.describe('Citizen mobile navigation menu', () => {
+  test.use({ viewport: { width: 375, height: 812 } })
+
+  let page: Page
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+
+    page = evaka
+    await enduserLogin(page, testAdult, '/')
+  })
+
+  test('hides the page behind it and closes with the escape key', async () => {
+    const subNavMenu = page.findByDataQa('sub-nav-menu-mobile')
+    const pageBehindMenu = page.find('header')
+
+    await subNavMenu.click()
+    await expect(
+      page.findByDataQa('sub-nav-menu-personal-details')
+    ).toBeVisible()
+    await expect(subNavMenu).toHaveAttribute('aria-expanded', 'true')
+    await expect(pageBehindMenu).toHaveAttribute('aria-hidden', 'true')
+
+    await page.keyboard.press('Escape')
+
+    await expect(
+      page.findByDataQa('sub-nav-menu-personal-details')
+    ).toBeHidden()
+    await expect(subNavMenu).toHaveAttribute('aria-expanded', 'false')
+    await expect(pageBehindMenu).not.toHaveAttribute('aria-hidden')
   })
 })

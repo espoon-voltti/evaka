@@ -25,7 +25,7 @@ import { headerHeightDesktop, headerHeightMobile } from './const'
 import { LanguageMenu } from './shared-components'
 import { useUnreadDecisions } from './utils'
 
-export default React.memo(function Header(props: { ariaHidden: boolean }) {
+export default React.memo(function Header() {
   const loggedIn = useUser() !== undefined
 
   const { data: unreadMessagesCount } = useQuery(unreadMessagesCountQuery(), {
@@ -39,7 +39,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
 
   return (
     <>
-      <HeaderContainer aria-hidden={props.ariaHidden} $narrow={isLoginPage}>
+      <HeaderContainer $narrow={isLoginPage}>
         <CityLogo />
         <EvakaLogo />
         {isLoginPage && (

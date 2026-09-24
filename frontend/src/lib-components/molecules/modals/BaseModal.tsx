@@ -5,7 +5,7 @@
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { FocusEventHandler } from 'react'
-import React, { useState } from 'react'
+import React, { useId, useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -18,8 +18,7 @@ import { faTimes } from 'lib-icons'
 
 import ModalBackground from './ModalBackground'
 
-export interface ModalBaseProps {
-  title: string
+export interface ModalCommonProps {
   text?: React.ReactNode
   className?: string
   icon?: IconProp
@@ -32,14 +31,21 @@ export interface ModalBaseProps {
   padding?: SpacingSize
 }
 
+export type ModalName =
+  | { title: string; 'aria-label'?: never }
+  | { title?: never; 'aria-label': string }
+
+export type ModalBaseProps = ModalCommonProps & ModalName
+
 export type ModalType = 'info' | 'success' | 'warning' | 'danger'
 
-interface Props extends ModalBaseProps {
+type Props = ModalBaseProps & {
   close: () => void
   closeLabel: string
 }
 
 export default React.memo(function BaseModal(props: Props) {
+  const titleId = useId()
   return (
     <ModalBackground zIndex={props.zIndex} onEscapeKey={props.close}>
       <ModalWrapper
@@ -49,6 +55,10 @@ export default React.memo(function BaseModal(props: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <ModalContainer
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={props.title !== undefined ? titleId : undefined}
+          aria-label={props['aria-label']}
           $mobileFullScreen={props.mobileFullScreen}
           $margin="auto"
           data-qa="modal"
@@ -64,11 +74,11 @@ export default React.memo(function BaseModal(props: Props) {
                 <Gap $size="m" />
               </>
             )}
-            {!!props.title && (
+            {props.title !== undefined && (
               <ModalHeader
-                headingComponent={(props) => (
-                  <H1 $hyphenate {...props} data-qa="title">
-                    {props.children}
+                headingComponent={(headingProps) => (
+                  <H1 $hyphenate {...headingProps} id={titleId} data-qa="title">
+                    {headingProps.children}
                   </H1>
                 )}
               >
@@ -238,11 +248,12 @@ const StaticallyPositionedModal = styled(ModalWrapper)`
 `
 
 type PlainModalProps = Pick<
-  ModalBaseProps,
+  ModalCommonProps,
   'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children' | 'width'
 > & {
   margin: string
-  onEscapeKey?: () => void
+  onEscapeKey: () => void
+  'aria-label': string
 }
 
 export const PlainModal = React.memo(function PlainModal(
@@ -256,6 +267,9 @@ export const PlainModal = React.memo(function PlainModal(
         data-qa={props['data-qa']}
       >
         <ModalContainer
+          role="dialog"
+          aria-modal="true"
+          aria-label={props['aria-label']}
           $noPadding
           $mobileFullScreen={props.mobileFullScreen}
           $margin={props.margin}

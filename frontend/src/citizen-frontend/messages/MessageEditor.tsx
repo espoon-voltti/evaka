@@ -4,7 +4,7 @@
 
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
-import FocusLock from 'react-focus-lock'
+import { FocusOn } from 'react-focus-on'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
@@ -47,13 +47,11 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { getAttachmentUrl, messageAttachment } from '../attachments/attachments'
 import { deleteAttachmentMutation } from '../attachments/queries'
 import { useUser } from '../auth/state'
 import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
-import { useOnEscape } from '../navigation/utils'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import { isPrimaryRecipient } from './utils'
@@ -90,8 +88,6 @@ export default React.memo(function MessageEditor({
 }: Props) {
   const i18n = useTranslation()
   const user = useUser()
-
-  const closeOnEscape = useOnEscape(onClose)
 
   const childIds = useMemo(
     () =>
@@ -197,275 +193,269 @@ export default React.memo(function MessageEditor({
     isChildSelectionTouched && message.children.length === 0
 
   return (
-    <ModalAccessibilityWrapper>
-      <FocusLock>
-        <Container data-qa="message-editor" onKeyDown={closeOnEscape}>
-          <TopBar>
-            <Title>{title}</Title>
-            <IconOnlyButton
-              icon={faTimes}
-              onClick={() => onClose()}
-              color="white"
-              data-qa="close-message-editor-btn"
-              aria-label={i18n.common.close}
-            />
-          </TopBar>
-          <FormArea>
-            {user && (
-              <>
-                <Bold>{i18n.messages.sender}</Bold>
-                <Gap $size="xs" />
-                <P $noMargin>
-                  <PersonName person={user} format="First Last" />
-                </P>
-              </>
-            )}
-            <Gap $size="s" />
-            {childIds && childIds.length > 1 && (
-              <>
-                <div
-                  role="group"
-                  aria-labelledby="children-group-label"
-                  aria-invalid={isInvalidChildSelection}
-                >
-                  <Bold id="children-group-label">
-                    {required(i18n.messages.messageEditor.children)}
-                  </Bold>
-                  <FixedSpaceColumn>
-                    <ChipContainer
-                      $horizontalSpacing="xs"
-                      ref={chipGroupContainerRef}
-                    >
-                      {children_
-                        .filter((child) => childIds.includes(child.id))
-                        .map((child) => (
-                          <div key={child.id} data-qa="relevant-child">
-                            <SelectionChip
-                              key={child.id}
-                              text={`${formatPersonName(child, 'FirstFirst')}${
-                                duplicateChildInfo[child.id] !== undefined
-                                  ? ` ${duplicateChildInfo[child.id]}`
-                                  : ''
-                              }`}
-                              translate="no"
-                              selected={message.children.includes(child.id)}
-                              onChange={(selected) => {
-                                setChildSelectionTouched.on()
-                                const children = selected
-                                  ? [...message.children, child.id]
-                                  : message.children.filter(
-                                      (id) => id !== child.id
-                                    )
-                                const recipients = message.recipients.filter(
-                                  (accountId) =>
-                                    children.every(
-                                      (childId) =>
-                                        recipientOptions.childrenToMessageAccounts
-                                          .find(
-                                            (value) => value.childId === childId
-                                          )
-                                          ?.newMessage.includes(accountId) ??
-                                        false
-                                    )
-                                )
-                                setMessage((message) => ({
-                                  ...message,
-                                  children,
-                                  recipients
-                                }))
-                              }}
-                              onBlur={(e) => {
-                                const focusTargetOutsideThisSelector =
-                                  chipGroupContainerRef.current &&
-                                  !chipGroupContainerRef.current.contains(
-                                    e.relatedTarget
-                                  )
-
-                                if (focusTargetOutsideThisSelector) {
-                                  setChildSelectionTouched.on()
-                                }
-                              }}
-                              data-qa={`child-${child.id}`}
-                            />
-                          </div>
-                        ))}
-                    </ChipContainer>
-                    {isInvalidChildSelection && (
-                      <ErrorMessageBox
-                        text={i18n.calendar.childSelectionMissingError}
-                      />
-                    )}
-                  </FixedSpaceColumn>
-                </div>
-                <Gap $size="s" />
-              </>
-            )}
-
-            <label>
-              <Bold>{required(i18n.messages.messageEditor.recipients)}</Bold>
+    <FocusOn onEscapeKey={onClose}>
+      <Container data-qa="message-editor">
+        <TopBar>
+          <Title>{title}</Title>
+          <IconOnlyButton
+            icon={faTimes}
+            onClick={() => onClose()}
+            color="white"
+            data-qa="close-message-editor-btn"
+            aria-label={i18n.common.close}
+          />
+        </TopBar>
+        <FormArea>
+          {user && (
+            <>
+              <Bold>{i18n.messages.sender}</Bold>
               <Gap $size="xs" />
-              <MultiSelect
-                placeholder={i18n.messages.messageEditor.search}
-                value={recipients.primary}
-                options={validAccounts.primary}
-                onChange={(primary) =>
-                  setMessage((message) => ({
-                    ...message,
-                    recipients: [...primary, ...recipients.secondary].map(
-                      ({ id }) => id
-                    )
-                  }))
-                }
-                noOptionsMessage={i18n.messages.messageEditor.noResults}
-                getOptionId={({ id }) => id}
-                getOptionLabel={({ name, type }) =>
-                  type === 'GROUP'
-                    ? `${name} (${i18n.messages.staffAnnotation})`
-                    : name
-                }
-                data-qa="select-recipient"
-                required
-              />
-            </label>
-
-            <OutOfOfficeInfo
-              selectedAccountIds={recipients.primary.map((a) => a.id)}
-              accounts={recipientOptions.messageAccounts}
-            />
-
-            {showSecondaryRecipientSelection && (
-              <>
-                <Gap $size="xs" />
-                <div
-                  role="group"
-                  aria-labelledby="message-editor-secondary-recipients"
-                >
-                  <label htmlFor="secondary-recipients-list">
-                    <Bold id="message-editor-secondary-recipients">
-                      {i18n.messages.messageEditor.secondaryRecipients}
-                    </Bold>
-                  </label>
-                  <Gap $size="xs" $horizontal={true} />
-                  <SecondaryRecipients id="secondary-recipients-list">
-                    {validAccounts.secondary.map((recipient) => (
-                      <ToggleableRecipient
-                        key={recipient.id}
-                        recipient={{
-                          ...recipient,
-                          toggleable: true,
-                          selected: recipients.secondary.some(
-                            (acc) => acc.id === recipient.id
-                          ),
-                          outOfOffice: null
-                        }}
-                        onToggleRecipient={(_, selected) =>
-                          setMessage((message) => ({
-                            ...message,
-                            recipients: selected
-                              ? [...message.recipients, recipient.id]
-                              : message.recipients.filter(
-                                  (accountId) => accountId !== recipient.id
+              <P $noMargin>
+                <PersonName person={user} format="First Last" />
+              </P>
+            </>
+          )}
+          <Gap $size="s" />
+          {childIds && childIds.length > 1 && (
+            <>
+              <div
+                role="group"
+                aria-labelledby="children-group-label"
+                aria-invalid={isInvalidChildSelection}
+              >
+                <Bold id="children-group-label">
+                  {required(i18n.messages.messageEditor.children)}
+                </Bold>
+                <FixedSpaceColumn>
+                  <ChipContainer
+                    $horizontalSpacing="xs"
+                    ref={chipGroupContainerRef}
+                  >
+                    {children_
+                      .filter((child) => childIds.includes(child.id))
+                      .map((child) => (
+                        <div key={child.id} data-qa="relevant-child">
+                          <SelectionChip
+                            key={child.id}
+                            text={`${formatPersonName(child, 'FirstFirst')}${
+                              duplicateChildInfo[child.id] !== undefined
+                                ? ` ${duplicateChildInfo[child.id]}`
+                                : ''
+                            }`}
+                            translate="no"
+                            selected={message.children.includes(child.id)}
+                            onChange={(selected) => {
+                              setChildSelectionTouched.on()
+                              const children = selected
+                                ? [...message.children, child.id]
+                                : message.children.filter(
+                                    (id) => id !== child.id
+                                  )
+                              const recipients = message.recipients.filter(
+                                (accountId) =>
+                                  children.every(
+                                    (childId) =>
+                                      recipientOptions.childrenToMessageAccounts
+                                        .find(
+                                          (value) => value.childId === childId
+                                        )
+                                        ?.newMessage.includes(accountId) ??
+                                      false
+                                  )
+                              )
+                              setMessage((message) => ({
+                                ...message,
+                                children,
+                                recipients
+                              }))
+                            }}
+                            onBlur={(e) => {
+                              const focusTargetOutsideThisSelector =
+                                chipGroupContainerRef.current &&
+                                !chipGroupContainerRef.current.contains(
+                                  e.relatedTarget
                                 )
-                          }))
-                        }
-                        labelAdd={i18n.common.add}
-                      />
-                    ))}
-                  </SecondaryRecipients>
-                </div>
-              </>
-            )}
 
-            {!selectedChildrenInSameUnit && (
-              <InfoBox
-                message={i18n.messages.messageEditor.singleUnitRequired}
-              />
-            )}
-
-            <Gap $size="s" />
-
-            <label>
-              <Bold>{required(i18n.messages.messageEditor.subject)}</Bold>
-              <InputField
-                type="text"
-                value={message.title ?? ''}
-                onChange={(updated) =>
-                  setMessage((message) => ({ ...message, title: updated }))
-                }
-                data-qa="input-title"
-                required
-              />
-            </label>
-
-            <Gap $size="s" />
-
-            <TextAreaLabel htmlFor="message-editor-content">
-              <Bold>{required(i18n.messages.messageEditor.message)}</Bold>
+                              if (focusTargetOutsideThisSelector) {
+                                setChildSelectionTouched.on()
+                              }
+                            }}
+                            data-qa={`child-${child.id}`}
+                          />
+                        </div>
+                      ))}
+                  </ChipContainer>
+                  {isInvalidChildSelection && (
+                    <ErrorMessageBox
+                      text={i18n.calendar.childSelectionMissingError}
+                    />
+                  )}
+                </FixedSpaceColumn>
+              </div>
               <Gap $size="s" />
-              <StyledTextArea
-                id="message-editor-content"
-                value={message.content}
-                onChange={(updated) =>
-                  setMessage((message) => ({
-                    ...message,
-                    content: updated.target.value
-                  }))
-                }
-                data-qa="input-content"
-                required
-              />
-            </TextAreaLabel>
+            </>
+          )}
 
-            {messageAttachmentsAllowed && (
-              <>
-                <Gap $size="xs" />
-                <FileUpload
-                  slimSingleFile
-                  files={attachments}
-                  uploadHandler={messageAttachment(deleteAttachment)}
-                  onUploaded={(attachment) =>
-                    setAttachments((prev) => [...prev, attachment])
-                  }
-                  onDeleted={(id) =>
-                    setAttachments((prev) => prev.filter((a) => a.id !== id))
-                  }
-                  onStateChange={setUploadStatus}
-                  getDownloadUrl={getAttachmentUrl}
-                  data-qa="upload-message-attachment"
-                  buttonText={
-                    i18n.messages.messageEditor.addShiftCareAttachment
-                  }
-                />
-                <Gap $size="m" />
-              </>
-            )}
+          <label>
+            <Bold>{required(i18n.messages.messageEditor.recipients)}</Bold>
+            <Gap $size="xs" />
+            <MultiSelect
+              placeholder={i18n.messages.messageEditor.search}
+              value={recipients.primary}
+              options={validAccounts.primary}
+              onChange={(primary) =>
+                setMessage((message) => ({
+                  ...message,
+                  recipients: [...primary, ...recipients.secondary].map(
+                    ({ id }) => id
+                  )
+                }))
+              }
+              noOptionsMessage={i18n.messages.messageEditor.noResults}
+              getOptionId={({ id }) => id}
+              getOptionLabel={({ name, type }) =>
+                type === 'GROUP'
+                  ? `${name} (${i18n.messages.staffAnnotation})`
+                  : name
+              }
+              data-qa="select-recipient"
+              required
+            />
+          </label>
 
+          <OutOfOfficeInfo
+            selectedAccountIds={recipients.primary.map((a) => a.id)}
+            accounts={recipientOptions.messageAccounts}
+          />
+
+          {showSecondaryRecipientSelection && (
+            <>
+              <Gap $size="xs" />
+              <div
+                role="group"
+                aria-labelledby="message-editor-secondary-recipients"
+              >
+                <label htmlFor="secondary-recipients-list">
+                  <Bold id="message-editor-secondary-recipients">
+                    {i18n.messages.messageEditor.secondaryRecipients}
+                  </Bold>
+                </label>
+                <Gap $size="xs" $horizontal={true} />
+                <SecondaryRecipients id="secondary-recipients-list">
+                  {validAccounts.secondary.map((recipient) => (
+                    <ToggleableRecipient
+                      key={recipient.id}
+                      recipient={{
+                        ...recipient,
+                        toggleable: true,
+                        selected: recipients.secondary.some(
+                          (acc) => acc.id === recipient.id
+                        ),
+                        outOfOffice: null
+                      }}
+                      onToggleRecipient={(_, selected) =>
+                        setMessage((message) => ({
+                          ...message,
+                          recipients: selected
+                            ? [...message.recipients, recipient.id]
+                            : message.recipients.filter(
+                                (accountId) => accountId !== recipient.id
+                              )
+                        }))
+                      }
+                      labelAdd={i18n.common.add}
+                    />
+                  ))}
+                </SecondaryRecipients>
+              </div>
+            </>
+          )}
+
+          {!selectedChildrenInSameUnit && (
+            <InfoBox message={i18n.messages.messageEditor.singleUnitRequired} />
+          )}
+
+          <Gap $size="s" />
+
+          <label>
+            <Bold>{required(i18n.messages.messageEditor.subject)}</Bold>
+            <InputField
+              type="text"
+              value={message.title ?? ''}
+              onChange={(updated) =>
+                setMessage((message) => ({ ...message, title: updated }))
+              }
+              data-qa="input-title"
+              required
+            />
+          </label>
+
+          <Gap $size="s" />
+
+          <TextAreaLabel htmlFor="message-editor-content">
+            <Bold>{required(i18n.messages.messageEditor.message)}</Bold>
             <Gap $size="s" />
-            {displaySendError && (
-              <ErrorMessage>
-                {i18n.messages.messageEditor.messageSendError}
-              </ErrorMessage>
-            )}
-          </FormArea>
-          <BottomRow>
-            <Button
-              text={i18n.messages.messageEditor.discard}
-              onClick={onClose}
+            <StyledTextArea
+              id="message-editor-content"
+              value={message.content}
+              onChange={(updated) =>
+                setMessage((message) => ({
+                  ...message,
+                  content: updated.target.value
+                }))
+              }
+              data-qa="input-content"
+              required
             />
-            <span />
-            <AsyncButton
-              primary
-              text={i18n.messages.messageEditor.send}
-              disabled={!sendEnabled}
-              onClick={send}
-              onSuccess={onSuccess}
-              onFailure={onFailure}
-              data-qa="send-message-btn"
-            />
-          </BottomRow>
-        </Container>
-      </FocusLock>
-    </ModalAccessibilityWrapper>
+          </TextAreaLabel>
+
+          {messageAttachmentsAllowed && (
+            <>
+              <Gap $size="xs" />
+              <FileUpload
+                slimSingleFile
+                files={attachments}
+                uploadHandler={messageAttachment(deleteAttachment)}
+                onUploaded={(attachment) =>
+                  setAttachments((prev) => [...prev, attachment])
+                }
+                onDeleted={(id) =>
+                  setAttachments((prev) => prev.filter((a) => a.id !== id))
+                }
+                onStateChange={setUploadStatus}
+                getDownloadUrl={getAttachmentUrl}
+                data-qa="upload-message-attachment"
+                buttonText={i18n.messages.messageEditor.addShiftCareAttachment}
+              />
+              <Gap $size="m" />
+            </>
+          )}
+
+          <Gap $size="s" />
+          {displaySendError && (
+            <ErrorMessage>
+              {i18n.messages.messageEditor.messageSendError}
+            </ErrorMessage>
+          )}
+        </FormArea>
+        <BottomRow>
+          <Button
+            text={i18n.messages.messageEditor.discard}
+            onClick={onClose}
+          />
+          <span />
+          <AsyncButton
+            primary
+            text={i18n.messages.messageEditor.send}
+            disabled={!sendEnabled}
+            onClick={send}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
+            data-qa="send-message-btn"
+          />
+        </BottomRow>
+      </Container>
+    </FocusOn>
   )
 })
 

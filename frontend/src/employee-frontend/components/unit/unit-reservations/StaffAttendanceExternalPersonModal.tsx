@@ -178,6 +178,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
       margin="auto"
       data-qa="staff-attendance-add-person-modal"
       onEscapeKey={onClose}
+      aria-label={i18n.unit.staffAttendance.addPerson}
     >
       <Content>
         <Centered>

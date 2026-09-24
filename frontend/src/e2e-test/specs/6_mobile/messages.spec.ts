@@ -583,6 +583,15 @@ test.describe('Messages page', () => {
     await messageEditor.fillMessage(message)
     await messageEditor.send.click()
     await expect(messageEditor.manyRecipientsWarning).toBeVisible()
+
+    await expect(
+      messageEditor.manyRecipientsWarning.findByDataQa('modal')
+    ).toHaveAttribute('role', 'dialog')
+    await page.keyboard.press('Escape')
+    await expect(messageEditor.manyRecipientsWarning).toBeHidden()
+
+    await messageEditor.send.click()
+    await expect(messageEditor.manyRecipientsWarning).toBeVisible()
     await messageEditor.manyRecipientsConfirm.click()
     await expect(messageEditor).toBeHidden()
     await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))

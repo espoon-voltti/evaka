@@ -22,7 +22,7 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -184,6 +184,22 @@ for (const env of ['desktop', 'mobile'] as const) {
       await dayView.close()
 
       await calendarPage.assertDayIsFocusedAndStyled(todayId)
+    })
+
+    test('The day view is a dialog that the escape key closes', async ({
+      evaka
+    }) => {
+      const { calendarPage } = await setupPageObjects(evaka, env)
+      const dayView = await calendarPage.openDayView(today)
+
+      await expect(dayView.findByDataQa('modal')).toHaveAttribute(
+        'role',
+        'dialog'
+      )
+
+      await evaka.keyboard.press('Escape')
+
+      await expect(dayView).toBeHidden()
     })
   })
 }

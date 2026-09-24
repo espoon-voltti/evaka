@@ -14,6 +14,7 @@ import {
   testDaycare
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -134,6 +135,41 @@ test.describe('Citizen PWA install suggestion', () => {
 
     await answerInstallPrompt(evaka, { outcome: 'accepted' })
     await expect(evaka.findByDataQa('pwa-install-suggestion')).toBeHidden()
+  })
+
+  test('waits for the citizen to dismiss the application sent dialog', async ({
+    evaka
+  }) => {
+    await setUpFamily(false)
+    await enduserLogin(evaka, testAdult, '/applications')
+    await fireInstallPrompt(evaka)
+
+    const applicationsPage = new CitizenApplicationsPage(evaka)
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'DAYCARE'
+    )
+    await editorPage.fillData({
+      serviceNeed: {
+        preferredStartDate: today.addMonths(1).format(),
+        startTime: '09:00',
+        endTime: '17:00'
+      },
+      unitPreference: {
+        preferredUnits: [{ id: testDaycare.id, name: testDaycare.name }]
+      },
+      contactInfo: {
+        guardianPhone: '(+358) 50-1234567',
+        noGuardianEmail: true
+      }
+    })
+    await editorPage.send({ hasOtherGuardian: false })
+
+    await expect(evaka.findByDataQa('pwa-install-suggestion')).toBeHidden()
+
+    await editorPage.dismissApplicationSentModal()
+
+    await expect(evaka.findByDataQa('pwa-install-suggestion')).toBeVisible()
   })
 
   test('stays dismissed after the citizen closes it', async ({ evaka }) => {
