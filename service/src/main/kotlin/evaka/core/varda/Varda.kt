@@ -5,6 +5,7 @@
 package evaka.core.varda
 
 import evaka.core.placement.PlacementType
+import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 
@@ -166,8 +167,9 @@ data class Varhaiskasvatussuhde(
 }
 
 enum class MaksunPerusteKoodi(val code: String) {
-    FIVE_YEAR_OLDS_DAYCARE("MP02"),
-    DAYCARE("MP03"),
+    FREE_OF_CHARGE("MP01"),
+    PARTIALLY_FREE_OF_CHARGE("MP02"),
+    FEE("MP03"),
 }
 
 data class Maksutieto(
@@ -199,23 +201,26 @@ data class Maksutieto(
                 return null
             }
 
+            val freeOfCharge =
+                data.serviceNeedFeeCoefficient.compareTo(BigDecimal.ZERO) == 0 && data.childFee == 0
             return Maksutieto(
                 huoltajat = huoltajat,
                 alkamis_pvm = data.validDuring.start,
                 paattymis_pvm = data.validDuring.end,
                 maksun_peruste_koodi =
-                    if (
-                            data.placementType == PlacementType.DAYCARE_FIVE_YEAR_OLDS ||
-                                data.placementType == PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
-                        ) {
-                            MaksunPerusteKoodi.FIVE_YEAR_OLDS_DAYCARE
-                        } else {
-                            MaksunPerusteKoodi.DAYCARE
-                        }
-                        .code,
+                    when {
+                        freeOfCharge -> MaksunPerusteKoodi.FREE_OF_CHARGE
+                        data.placementType == PlacementType.DAYCARE_FIVE_YEAR_OLDS ||
+                            data.placementType == PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+                            MaksunPerusteKoodi.PARTIALLY_FREE_OF_CHARGE
+                        else -> MaksunPerusteKoodi.FEE
+                    }.code,
                 perheen_koko = data.familySize,
                 asiakasmaksu = data.childFee.toDouble() / 100,
-                palveluseteli_arvo = (data.voucherValue ?: 0).toDouble() / 100,
+                // Varda stores palveluseteli_arvo as 0 for MP01 regardless of the sent value, so
+                // send 0 to keep the eVaka and Varda states equal
+                palveluseteli_arvo =
+                    if (freeOfCharge) 0.0 else (data.voucherValue ?: 0).toDouble() / 100,
             )
         }
 

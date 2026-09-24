@@ -219,8 +219,7 @@ private fun getVoucherBases(
 
         val family = familyRelations.find { it.range.contains(range) } ?: return@mapNotNull null
         val headOfChild = family.headOfChild ?: return@mapNotNull null
-        val partnerCount = if (family.partner != null) 1 else 0
-        val familySize = 1 + partnerCount + family.childrenInFamily.size
+        val familySize = family.familySize
 
         val feeThresholds =
             allFeeThresholds.find { it.range.contains(range) }?.thresholds
@@ -402,14 +401,17 @@ data class VoucherBasis(
     }
 }
 
-private data class ChildFamilyRelations(
+data class ChildFamilyRelations(
     override val finiteRange: FiniteDateRange,
     val headOfChild: PersonId?,
     val partner: PersonId?,
     val childrenInFamily: List<Child>,
-) : WithFiniteRange
+) : WithFiniteRange {
+    val familySize: Int
+        get() = 1 + (if (partner != null) 1 else 0) + childrenInFamily.size
+}
 
-private fun getChildFamilyRelations(
+fun getChildFamilyRelations(
     tx: Database.Read,
     targetChildId: ChildId,
 ): List<ChildFamilyRelations> {
