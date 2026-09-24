@@ -53,6 +53,7 @@ const prod: FeatureFlags = {
   showMetadataToCitizen: true,
   placementDesktop: true,
   employeeLanguageSelection: true,
+  sharedApplicationEditor: true,
   citizenPwa: false
 }
 
@@ -66,14 +67,12 @@ const features: Features = {
     forceUnpublishDocumentTemplate: true,
     serviceApplications: true,
     showCitizenApplicationPreschoolTerms: true,
-    sharedApplicationEditor: true,
     citizenPwa: true
   },
   staging: {
     ...prod,
     environmentLabel: 'Staging',
     forceUnpublishDocumentTemplate: true,
-    sharedApplicationEditor: true,
     citizenPwa: true
   },
   prod
