@@ -160,7 +160,8 @@ class McpTools(
         ) +
             McpToolsSearch.tools() +
             McpToolsRows(jsonMapper).tools() +
-            McpToolsApplications(applicationStateService, messageService).tools()
+            McpToolsApplications(applicationStateService, messageService).tools() +
+            createUploadUrlTool
 
     fun findTool(name: String): McpToolDefinition<*>? = tools.find { it.name == name }
 

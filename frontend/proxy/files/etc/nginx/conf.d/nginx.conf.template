@@ -317,6 +317,11 @@ server {
       client_max_body_size 100m;
       proxy_pass  $internalUrl;
     }
+
+    location /api/mcp/uploads/ {
+      client_max_body_size 100m;
+      proxy_pass  $enduserUrl;
+    }
   }
 
   location = /ready {

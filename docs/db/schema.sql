@@ -3362,6 +3362,17 @@ CREATE TABLE public.mcp_test_data_entity (
     description text DEFAULT ''::text NOT NULL
 );
 
+-- Name: mcp_upload; Type: TABLE; Schema: public
+
+CREATE TABLE public.mcp_upload (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    authorization_id uuid NOT NULL,
+    token_hash text NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    used_at timestamp with time zone
+);
+
 -- Name: meal_texture; Type: TABLE; Schema: public
 
 CREATE TABLE public.meal_texture (
@@ -4691,6 +4702,11 @@ ALTER TABLE ONLY public.mcp_test_data_batch
 ALTER TABLE ONLY public.mcp_test_data_entity
     ADD CONSTRAINT mcp_test_data_entity_pkey PRIMARY KEY (id);
 
+-- Name: mcp_upload mcp_upload_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_upload
+    ADD CONSTRAINT mcp_upload_pkey PRIMARY KEY (id);
+
 -- Name: meal_texture meal_texture_pkey; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.meal_texture
@@ -5140,6 +5156,11 @@ ALTER TABLE ONLY public.mcp_test_data_batch
 
 ALTER TABLE ONLY public.mcp_test_data_entity
     ADD CONSTRAINT "uniq$mcp_test_data_entity" UNIQUE (table_name, entity_id);
+
+-- Name: mcp_upload uniq$mcp_upload_token_hash; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_upload
+    ADD CONSTRAINT "uniq$mcp_upload_token_hash" UNIQUE (token_hash);
 
 -- Name: password_blacklist_source uniq$password_blacklist_source_name; Type: CONSTRAINT; Schema: public
 
@@ -6086,6 +6107,10 @@ CREATE INDEX "idx$mcp_test_data_batch_authorization_id" ON public.mcp_test_data_
 -- Name: idx$mcp_test_data_entity_batch_id; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$mcp_test_data_entity_batch_id" ON public.mcp_test_data_entity USING btree (batch_id);
+
+-- Name: idx$mcp_upload_authorization_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$mcp_upload_authorization_id" ON public.mcp_upload USING btree (authorization_id);
 
 -- Name: idx$message_content_author; Type: INDEX; Schema: public
 
@@ -7395,6 +7420,11 @@ ALTER TABLE ONLY public.invoice
 
 ALTER TABLE ONLY public.mcp_test_data_batch
     ADD CONSTRAINT "fk$authorization" FOREIGN KEY (authorization_id) REFERENCES public.mcp_authorization(id) ON DELETE SET NULL;
+
+-- Name: mcp_upload fk$authorization; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_upload
+    ADD CONSTRAINT "fk$authorization" FOREIGN KEY (authorization_id) REFERENCES public.mcp_authorization(id) ON DELETE CASCADE;
 
 -- Name: mcp_test_data_entity fk$batch; Type: FK CONSTRAINT; Schema: public
 
