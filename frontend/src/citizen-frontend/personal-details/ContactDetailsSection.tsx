@@ -21,8 +21,8 @@ import type {
   EmailVerificationStatusResponse
 } from 'lib-common/generated/api-types/pis'
 import { NotificationsContext } from 'lib-components/Notifications'
-import { Chip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import IconChip from 'lib-components/atoms/IconChip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -32,12 +32,13 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { InformationText, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
-import { faCheck, faCheckCircle, faExclamation, faLockAlt } from 'lib-icons'
+import { faCheckCircle, faCircleExclamation, faLockAlt } from 'lib-icons'
 
 import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
+import * as chipColors from './chipColors'
 import {
   DataRow,
   DataRowLabel,
@@ -302,13 +303,14 @@ const EmailVerificationStatusView = React.memo(
     }
     if (!problem) {
       return (
-        <Chip
-          colorPalette="green"
-          icon={faCheck}
+        <IconChip
+          icon={faCheckCircle}
+          iconColor={chipColors.green.fg}
+          iconBackgroundColor={chipColors.green.bg}
+          textColor={chipColors.green.fg}
+          backgroundColor={chipColors.green.bg}
           label={t.personalDetails.detailsSection.emailVerified}
           data-qa="verified-email-status"
-          iconCircle
-          size="small"
         />
       )
     }
@@ -351,13 +353,14 @@ const VerificationActionButton = React.memo(function VerificationActionButton({
 const UnverifiedChip = React.memo(function UnverifiedChip() {
   const t = useTranslation()
   return (
-    <Chip
-      colorPalette="orange"
+    <IconChip
+      icon={faCircleExclamation}
+      iconColor={chipColors.orange.fg}
+      iconBackgroundColor={chipColors.orange.bg}
+      textColor={chipColors.orange.fg}
+      backgroundColor={chipColors.orange.bg}
       label={t.personalDetails.detailsSection.emailUnverified}
       data-qa="unverified-email-status"
-      iconCircle
-      icon={faExclamation}
-      size="small"
     />
   )
 })

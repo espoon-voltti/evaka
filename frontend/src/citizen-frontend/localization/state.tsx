@@ -29,11 +29,29 @@ import { useUser } from '../auth/state'
 
 import { updatePreferredUiLanguageMutation } from './queries'
 
+const validateLang = (value: string | null): value is Lang => {
+  for (const lang of langs) {
+    if (lang === value) return true
+  }
+  return false
+}
+
+const langStorageKey = 'evaka-citizen.lang'
+
+// Landing with e.g. ?lang=sv switches the language to Swedish
+const langInUrl = new URLSearchParams(window.location.search).get('lang')
+
+if (validateLang(langInUrl)) {
+  try {
+    window.localStorage.setItem(langStorageKey, langInUrl)
+  } catch {
+    // without storage, getDefaultLanguage still returns the URL language
+  }
+}
+
 const getDefaultLanguage: () => Lang = () => {
-  const params = new URLSearchParams(window.location.search)
-  const lang = params.get('lang')
-  if (lang && langs.includes(lang as Lang)) {
-    return lang as Lang
+  if (validateLang(langInUrl)) {
+    return langInUrl
   } else {
     const language = window.navigator.language.split('-')[0]
     if ((language === 'fi' || language === 'sv') && langs.includes(language)) {
@@ -57,13 +75,6 @@ const defaultState = {
 export const LocalizationContext =
   createContext<LocalizationState>(defaultState)
 
-const validateLang = (value: string | null): value is Lang => {
-  for (const lang of langs) {
-    if (lang === value) return true
-  }
-  return false
-}
-
 export const langByUiLanguage: Record<UiLanguage, Lang> = {
   FI: 'fi',
   SV: 'sv',
@@ -83,7 +94,7 @@ export const LocalizationContextProvider = React.memo(
     children: React.ReactNode
   }) {
     const [lang, setLangInBrowser] = useLocalStorage(
-      'evaka-citizen.lang',
+      langStorageKey,
       defaultState.lang,
       validateLang
     )

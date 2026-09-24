@@ -1962,7 +1962,7 @@ const en: Translations = {
       contactEmailInfo:
         'You will receive all notifications from eVaka to this address.',
       emailVerified: 'Verified',
-      emailUnverified: 'Email has not been verified',
+      emailUnverified: 'Not verified',
       sendVerificationCode: 'Verify email',
       verifyEmail: {
         section: 'Email verification',
@@ -1997,9 +1997,6 @@ const en: Translations = {
     loginDetailsSection: {
       title: 'Email login',
       weakLoginCredentials: 'Login with email',
-      status: {
-        enabled: 'Enabled'
-      },
       weakLoginUsername: 'Username',
       password: 'Password',
       unverifiedEmailWarning:

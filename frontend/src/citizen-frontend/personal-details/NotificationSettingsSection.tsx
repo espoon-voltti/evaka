@@ -141,145 +141,142 @@ export interface Props {
   initialData: NotificationSettings
 }
 
-export default React.memo(
-  React.forwardRef(function NotificationSettingsSection(
-    { initialData }: Props,
-    ref: React.Ref<HTMLDivElement>
-  ) {
-    const t = useTranslation()
-    const tn = t.personalDetails.notificationsSection
-    const [editing, useEditing] = useBoolean(false)
-    const firstCheckboxRef = useRef<HTMLDivElement>(null)
+export default React.memo(function NotificationSettingsSection({
+  initialData
+}: Props) {
+  const t = useTranslation()
+  const tn = t.personalDetails.notificationsSection
+  const [editing, useEditing] = useBoolean(false)
+  const firstCheckboxRef = useRef<HTMLDivElement>(null)
 
-    const form = useForm(
-      notificationSettingsForm,
-      () => getInitialState(initialData),
-      t.validationErrors
-    )
-    const {
-      message,
-      bulletin,
-      income,
-      calendarEvent,
-      decision,
-      document,
-      informalDocument,
-      attendanceReservation,
-      discussionTime
-    } = useFormFields(form)
+  const form = useForm(
+    notificationSettingsForm,
+    () => getInitialState(initialData),
+    t.validationErrors
+  )
+  const {
+    message,
+    bulletin,
+    income,
+    calendarEvent,
+    decision,
+    document,
+    informalDocument,
+    attendanceReservation,
+    discussionTime
+  } = useFormFields(form)
 
-    useEffect(() => {
-      if (editing) {
-        const input = firstCheckboxRef.current?.querySelector('input')
-        input?.focus()
-      }
-    }, [editing])
+  useEffect(() => {
+    if (editing) {
+      const input = firstCheckboxRef.current?.querySelector('input')
+      input?.focus()
+    }
+  }, [editing])
 
-    const rows: NotificationRow[] = [
-      { dataQa: 'message', bind: message, label: tn.message },
-      { dataQa: 'bulletin', bind: bulletin, label: tn.bulletin },
-      { dataQa: 'income', bind: income, label: tn.income, info: tn.incomeInfo },
-      {
-        dataQa: 'calendar-event',
-        bind: calendarEvent,
-        label: tn.calendarEvent
-      },
-      { dataQa: 'decision', bind: decision, label: tn.decision },
-      {
-        dataQa: 'document',
-        bind: document,
-        label: tn.document,
-        info: tn.documentInfo
-      },
-      {
-        dataQa: 'informal-document',
-        bind: informalDocument,
-        label: tn.informalDocument,
-        info: tn.informalDocumentInfo
-      },
-      {
-        dataQa: 'attendance-reservation',
-        bind: attendanceReservation,
-        label: tn.attendanceReservation,
-        info: tn.attendanceReservationInfo
-      },
-      ...(featureFlags.discussionReservations
-        ? [
-            {
-              dataQa: 'discussion-time',
-              bind: discussionTime,
-              label: tn.discussionTime,
-              info: tn.discussionTimeInfo
-            }
-          ]
-        : [])
-    ]
+  const rows: NotificationRow[] = [
+    { dataQa: 'message', bind: message, label: tn.message },
+    { dataQa: 'bulletin', bind: bulletin, label: tn.bulletin },
+    { dataQa: 'income', bind: income, label: tn.income, info: tn.incomeInfo },
+    {
+      dataQa: 'calendar-event',
+      bind: calendarEvent,
+      label: tn.calendarEvent
+    },
+    { dataQa: 'decision', bind: decision, label: tn.decision },
+    {
+      dataQa: 'document',
+      bind: document,
+      label: tn.document,
+      info: tn.documentInfo
+    },
+    {
+      dataQa: 'informal-document',
+      bind: informalDocument,
+      label: tn.informalDocument,
+      info: tn.informalDocumentInfo
+    },
+    {
+      dataQa: 'attendance-reservation',
+      bind: attendanceReservation,
+      label: tn.attendanceReservation,
+      info: tn.attendanceReservationInfo
+    },
+    ...(featureFlags.discussionReservations
+      ? [
+          {
+            dataQa: 'discussion-time',
+            bind: discussionTime,
+            label: tn.discussionTime,
+            info: tn.discussionTimeInfo
+          }
+        ]
+      : [])
+  ]
 
-    return (
-      <div data-qa="notification-settings-section" ref={ref}>
-        <EditableSectionHeader
-          title={tn.title}
-          editing={editing}
-          onStartEditing={useEditing.on}
-          onCancel={() => {
-            form.set(getInitialState(initialData))
-            useEditing.off()
-          }}
-          mutation={updateNotificationSettingsMutation}
-          onSave={() => ({
-            body: {
-              ...initialData,
-              disabledEmailTypes: notificationCategories.filter(
-                (type) => !isEnabled(form.state, type)
-              )
-            }
-          })}
-          onSaveSuccess={useEditing.off}
-        />
+  return (
+    <div data-qa="notification-settings-section">
+      <EditableSectionHeader
+        title={tn.title}
+        editing={editing}
+        onStartEditing={useEditing.on}
+        onCancel={() => {
+          form.set(getInitialState(initialData))
+          useEditing.off()
+        }}
+        mutation={updateNotificationSettingsMutation}
+        onSave={() => ({
+          body: {
+            ...initialData,
+            disabledEmailTypes: notificationCategories.filter(
+              (type) => !isEnabled(form.state, type)
+            )
+          }
+        })}
+        onSaveSuccess={useEditing.off}
+      />
 
-        <Gap $size="xs" />
+      <Gap $size="xs" />
 
-        <TableHeaderRow>
-          <div>{tn.subtitle}</div>
-          <ChannelHeader>
-            <FontAwesomeIcon size="lg" icon={faEnvelope} />
-            {tn.email}
-          </ChannelHeader>
-        </TableHeaderRow>
-        <div ref={firstCheckboxRef}>
-          {rows.map((row) => (
-            <React.Fragment key={row.dataQa}>
-              <SettingRow>
-                <div>{row.label}</div>
-                <ChannelCell>
-                  <CheckboxF
-                    bind={row.bind}
-                    label={row.label}
-                    hiddenLabel
-                    disabled={!editing}
-                    data-qa={row.dataQa}
-                  />
-                </ChannelCell>
-                {row.info !== undefined && (
-                  <RowInfoCell>
-                    <RowInfo info={row.info} />
-                  </RowInfoCell>
-                )}
-              </SettingRow>
-              {row.dataQa === 'income' && income.state === false ? (
-                <>
-                  <Gap $size="s" />
-                  <AlertBox noMargin message={tn.incomeWarning} />
-                  <Gap $size="s" />
-                </>
-              ) : null}
-            </React.Fragment>
-          ))}
-        </div>
+      <TableHeaderRow>
+        <div>{tn.subtitle}</div>
+        <ChannelHeader>
+          <FontAwesomeIcon size="lg" icon={faEnvelope} />
+          {tn.email}
+        </ChannelHeader>
+      </TableHeaderRow>
+      <div ref={firstCheckboxRef}>
+        {rows.map((row) => (
+          <React.Fragment key={row.dataQa}>
+            <SettingRow>
+              <div>{row.label}</div>
+              <ChannelCell>
+                <CheckboxF
+                  bind={row.bind}
+                  label={row.label}
+                  hiddenLabel
+                  disabled={!editing}
+                  data-qa={row.dataQa}
+                />
+              </ChannelCell>
+              {row.info !== undefined && (
+                <RowInfoCell>
+                  <RowInfo info={row.info} />
+                </RowInfoCell>
+              )}
+            </SettingRow>
+            {row.dataQa === 'income' && income.state === false ? (
+              <>
+                <Gap $size="s" />
+                <AlertBox noMargin message={tn.incomeWarning} />
+                <Gap $size="s" />
+              </>
+            ) : null}
+          </React.Fragment>
+        ))}
       </div>
-    )
-  })
-)
+    </div>
+  )
+})
 
 const InfoToggleContainer = styled.div<{ $open: boolean }>`
   margin-top: ${defaultMargins.s};

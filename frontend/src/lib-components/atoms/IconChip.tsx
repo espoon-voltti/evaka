@@ -49,13 +49,12 @@ const Container = styled.div<{ $backgroundColor: string; $textColor: string }>`
   flex-wrap: nowrap;
   gap: ${defaultMargins.xxs};
   align-items: center;
-  padding: ${defaultMargins.xxs} ${defaultMargins.xs} ${defaultMargins.xxs}
-    ${defaultMargins.xxs};
-  border-radius: ${defaultMargins.s};
+  padding: 0 10px 0 4px;
+  border-radius: 1000px;
   background-color: ${(props) => props.$backgroundColor};
   color: ${(props) => props.$textColor};
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 24px;
   font-weight: 600;
   white-space: nowrap;
   width: fit-content;
