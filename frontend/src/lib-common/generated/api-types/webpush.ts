@@ -74,13 +74,6 @@ export interface PushSubscriptionCheckResponse {
 }
 
 /**
-* Generated from evaka.core.webpush.CitizenWebPushController.PushTestRequest
-*/
-export interface PushTestRequest {
-  deviceId: CitizenPushSubscriptionId
-}
-
-/**
 * Generated from evaka.core.webpush.WebPushSubscription
 */
 export interface WebPushSubscription {

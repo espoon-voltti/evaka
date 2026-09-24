@@ -39,6 +39,7 @@ import { headerHeightMobile, mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
+import { PushSuggestion } from './pwa/PushSuggestion'
 import { useStandaloneAttribute } from './pwa/installed'
 import { useNotificationClickRouting } from './pwa/notificationRouting'
 import { queryClient, QueryClientProvider } from './query'
@@ -187,6 +188,7 @@ const Content = React.memo(function Content({
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <InstallSuggestion />
+      <PushSuggestion />
       <Notifications apiVersion={apiVersion} sticky offsetTop />
       <ScrollArea ref={scrollAreaRef} data-qa="scroll-area">
         <FullPageContainer>

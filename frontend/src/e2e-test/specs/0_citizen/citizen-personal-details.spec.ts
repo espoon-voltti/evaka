@@ -224,6 +224,40 @@ test.describe('Citizen notification settings', () => {
     await section.checkboxes.attendanceReservation.waitUntilChecked(true)
     await section.checkboxes.discussionTime.waitUntilChecked(true)
   })
+
+  test('Push and email channels are saved separately', async () => {
+    await section.assertAllChecked(true)
+    await section.startEditing.click()
+    await section.pushCheckboxes.message.uncheck()
+    await section.pushCheckboxes.calendarEvent.uncheck()
+    await section.save.click()
+    await section.assertEditable(false)
+
+    await section.checkboxes.message.waitUntilChecked(true)
+    await section.checkboxes.calendarEvent.waitUntilChecked(true)
+    await section.pushCheckboxes.message.waitUntilChecked(false)
+    await section.pushCheckboxes.bulletin.waitUntilChecked(true)
+    await section.pushCheckboxes.calendarEvent.waitUntilChecked(false)
+
+    await page.reload()
+    await section.pushCheckboxes.message.waitUntilChecked(false)
+    await section.pushCheckboxes.calendarEvent.waitUntilChecked(false)
+    await section.checkboxes.message.waitUntilChecked(true)
+  })
+
+  test('Income warning is shown when either income channel is off', async () => {
+    await section.startEditing.click()
+    await expect(section.incomeWarning).toBeHidden()
+
+    await section.pushCheckboxes.income.uncheck()
+    await expect(section.incomeWarning).toBeVisible()
+
+    await section.pushCheckboxes.income.check()
+    await expect(section.incomeWarning).toBeHidden()
+
+    await section.checkboxes.income.uncheck()
+    await expect(section.incomeWarning).toBeVisible()
+  })
 })
 
 test.describe('Citizen family size', () => {

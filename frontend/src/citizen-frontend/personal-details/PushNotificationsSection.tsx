@@ -4,12 +4,12 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 
 import type { DeviceClass } from 'lib-common/generated/api-types/user'
 import type { CitizenPushDevice } from 'lib-common/generated/api-types/webpush'
+import { maxOf } from 'lib-common/ordered'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import IconChip from 'lib-components/atoms/IconChip'
 import TextOnlyChip from 'lib-components/atoms/TextOnlyChip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -19,17 +19,12 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { InformationText, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import {
-  faCheckCircle,
-  faExclamation,
-  faLaptop,
-  faMobileButton,
-  faTabletButton,
-  faTrash
-} from 'lib-icons'
+import { faLaptop, faMobileButton, faTabletButton, faTrash } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
+import * as chipColors from '../chipColors'
 import { useTranslation } from '../localization'
+import { PushStatusChip } from '../pwa/PushStatusChip'
 import { platform } from '../pwa/platform'
 import {
   usePushAvailability,
@@ -43,7 +38,6 @@ import {
   sendTestPushNotificationMutation
 } from '../pwa/queries'
 
-import * as chipColors from './chipColors'
 import { SectionTitle } from './components'
 
 export default React.memo(
@@ -53,7 +47,6 @@ export default React.memo(
   ) {
     const i18n = useTranslation()
     const t = i18n.pwa.pushSection
-    const { colors } = useTheme()
     const settings = useQueryResult(pushSettingsQuery())
     const availability = usePushAvailability()
     const thisDevice = useThisPushDevice()
@@ -75,6 +68,11 @@ export default React.memo(
 
         const currentDevice = devices.find((d) => d.id === thisDevice) ?? null
 
+        const sendTimes = devices
+          .map((device) => device.lastSentAt)
+          .filter((sentAt) => sentAt !== null)
+        const lastSentAt = sendTimes.length > 0 ? sendTimes.reduce(maxOf) : null
+
         const revoke = async (device: CitizenPushDevice) => {
           const deleted = await deleteDevice({ id: device.id })
           if (deleted.isSuccess && device.id === currentDevice?.id) {
@@ -94,66 +92,65 @@ export default React.memo(
               <TitleRow>
                 <SectionTitle $noMargin>{t.title}</SectionTitle>
                 {devices.length > 0 && (
-                  <IconChip
-                    label={t.enabled}
-                    icon={faCheckCircle}
-                    textColor={chipColors.green.fg}
-                    backgroundColor={chipColors.green.bg}
-                    iconColor={chipColors.green.fg}
-                    iconBackgroundColor="transparent"
+                  <PushStatusChip
+                    status="enabled"
                     data-qa="push-account-status"
                   />
                 )}
               </TitleRow>
               <P>{t.description}</P>
 
-              {currentDevice ? (
-                <ThisDeviceStrip data-qa="push-this-device-state">
-                  <InformationText>
-                    {currentDevice.lastSentAt
-                      ? t.lastSent(currentDevice.lastSentAt.format())
-                      : t.neverSent}
-                  </InformationText>
-                  <MutateButton
-                    appearance="inline"
-                    text={t.sendTest}
-                    mutation={sendTestPushNotificationMutation}
-                    onClick={() => ({ body: { deviceId: currentDevice.id } })}
-                    data-qa="send-test-push-notification"
+              <FixedSpaceColumn $spacing="s">
+                {devices.length > 0 && (
+                  <TestSendStrip data-qa="push-test-send">
+                    <InformationText data-qa="push-last-sent">
+                      {lastSentAt
+                        ? t.lastSent(lastSentAt.format())
+                        : t.neverSent}
+                    </InformationText>
+                    <MutateButton
+                      appearance="inline"
+                      text={t.sendTest}
+                      mutation={sendTestPushNotificationMutation}
+                      onClick={() => undefined}
+                      data-qa="send-test-push-notification"
+                    />
+                  </TestSendStrip>
+                )}
+
+                {availability.kind === 'blocked' ? (
+                  <AlertBox
+                    noMargin
+                    title={t.blockedOnThisDevice}
+                    message={t.blockedInstructions[platform()]}
+                    data-qa="push-this-device-state"
                   />
-                </ThisDeviceStrip>
-              ) : availability.kind === 'blocked' ? (
-                <AlertBox
-                  noMargin
-                  title={t.blockedOnThisDevice}
-                  message={t.blockedInstructions[platform()]}
-                  data-qa="push-this-device-state"
-                />
-              ) : (
-                <InfoBox
-                  noMargin
-                  darkBackground
-                  message={
-                    <FixedSpaceColumn $spacing="s" $alignItems="flex-start">
-                      <span>{t.notEnabledOnThisDevice}</span>
-                      {availability.kind === 'subscribable' &&
-                        (devices.length >= maxDevices ? (
-                          <span data-qa="push-device-limit-reached">
-                            {t.deviceLimitReached}
-                          </span>
-                        ) : (
-                          <Button
-                            appearance="inline"
-                            text={t.enable}
-                            onClick={() => void subscribe()}
-                            data-qa="enable-push-notifications"
-                          />
-                        ))}
-                    </FixedSpaceColumn>
-                  }
-                  data-qa="push-this-device-state"
-                />
-              )}
+                ) : !currentDevice ? (
+                  <InfoBox
+                    noMargin
+                    darkBackground
+                    message={
+                      <FixedSpaceColumn $spacing="s" $alignItems="flex-start">
+                        <span>{t.notEnabledOnThisDevice}</span>
+                        {availability.kind === 'subscribable' &&
+                          (devices.length >= maxDevices ? (
+                            <span data-qa="push-device-limit-reached">
+                              {t.deviceLimitReached}
+                            </span>
+                          ) : (
+                            <Button
+                              appearance="inline"
+                              text={t.enable}
+                              onClick={() => void subscribe()}
+                              data-qa="enable-push-notifications"
+                            />
+                          ))}
+                      </FixedSpaceColumn>
+                    }
+                    data-qa="push-this-device-state"
+                  />
+                ) : null}
+              </FixedSpaceColumn>
 
               <Gap $size="s" />
               <FixedSpaceColumn $spacing="xs">
@@ -185,14 +182,7 @@ export default React.memo(
                         )}
                         {device.id === currentDevice?.id &&
                           availability.kind === 'blocked' && (
-                            <IconChip
-                              label={t.blocked}
-                              icon={faExclamation}
-                              textColor={colors.accents.a2orangeDark}
-                              backgroundColor={colors.status.warningBackground}
-                              iconColor={colors.grayscale.g0}
-                              iconBackgroundColor={colors.status.warning}
-                            />
+                            <PushStatusChip status="blocked" />
                           )}
                       </Chips>
                       <InformationText>
@@ -238,7 +228,7 @@ const TitleRow = styled.div`
   gap: ${defaultMargins.s};
 `
 
-const ThisDeviceStrip = styled.div`
+const TestSendStrip = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;

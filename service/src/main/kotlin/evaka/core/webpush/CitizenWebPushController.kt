@@ -10,7 +10,6 @@ import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
-import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.UiLanguage
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
@@ -144,40 +143,37 @@ class CitizenWebPushController(
             .also { audit.log(Audit.CitizenPushSubscriptionCheck, clock) }
     }
 
-    data class PushTestRequest(val deviceId: CitizenPushSubscriptionId)
-
     @PostMapping("/citizen/push-test")
-    fun sendTestPushNotification(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @RequestBody body: PushTestRequest,
-    ) {
-        val audit = AuditContext().add(body.deviceId)
+    fun sendTestPushNotification(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock) {
+        val audit = AuditContext()
         db.connect { dbc ->
-            val language = dbc.read { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Citizen.Person.SEND_TEST_PUSH_NOTIFICATION,
-                    user.id,
-                )
-                if (!tx.citizenOwnsPushDevice(user.id, body.deviceId))
-                    throw NotFound("Push device not found")
-                tx.getPreferredUiLanguage(user.id) ?: UiLanguage.FI
-            }
+            val (devices, language) =
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.SEND_TEST_PUSH_NOTIFICATION,
+                        user.id,
+                    )
+                    Pair(
+                        tx.getCitizenPushDevices(user.id).map { it.id },
+                        tx.getPreferredUiLanguage(user.id) ?: UiLanguage.FI,
+                    )
+                }
             val content = messageProvider.testNotification(language)
-            pushNotifications.send(
-                dbc,
-                clock,
-                body.deviceId,
-                category = null,
-                content = content,
-                path = "/",
-                tag = "test",
-                ttl = TEST_NOTIFICATION_TTL,
-            )
+            devices.forEach { device ->
+                pushNotifications.send(
+                    dbc,
+                    clock,
+                    device,
+                    category = null,
+                    content = content,
+                    path = "/",
+                    tag = "test",
+                    ttl = TEST_NOTIFICATION_TTL,
+                )
+            }
         }
         audit.log(Audit.CitizenPushTestSend, clock)
     }

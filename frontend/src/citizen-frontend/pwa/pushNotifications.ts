@@ -54,28 +54,37 @@ const subscribeToBrowserState = (onChange: () => void) => {
 
 async function readBrowserState(): Promise<void> {
   const registration = await navigator.serviceWorker.ready
-  browserState = {
-    permission: Notification.permission,
-    subscription: await registration.pushManager.getSubscription()
-  }
+  const permission = Notification.permission
+  const subscription = await registration.pushManager.getSubscription()
+  if (
+    browserState?.permission === permission &&
+    browserState.subscription?.endpoint === subscription?.endpoint
+  )
+    return
+  browserState = { permission, subscription }
   listeners.forEach((listener) => listener())
+}
+
+function refreshBrowserState(): void {
+  if (reading || !pwaEnabled || !pushSupported()) return
+  reading = true
+  readBrowserState()
+    .catch((err) => Sentry.captureException(err))
+    .finally(() => {
+      reading = false
+    })
 }
 
 function useBrowserPushState(): BrowserPushState | undefined {
   useEffect(() => {
-    if (
-      browserState === undefined &&
-      !reading &&
-      pwaEnabled &&
-      pushSupported()
-    ) {
-      reading = true
-      readBrowserState()
-        .catch((err) => Sentry.captureException(err))
-        .finally(() => {
-          reading = false
-        })
+    if (browserState === undefined) refreshBrowserState()
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshBrowserState()
     }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () =>
+      document.removeEventListener('visibilitychange', onVisibilityChange)
   }, [])
   return useSyncExternalStore(subscribeToBrowserState, () => browserState)
 }

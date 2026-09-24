@@ -11,12 +11,14 @@ export default class CitizenPersonalDetails {
   contactDetailsSection: ContactDetailsSection
   loginDetailsSection: LoginDetailsSection
   notificationSettingsSection: CitizenNotificationSettingsSection
+  pushNotificationsSection: PushNotificationsSection
   familySizeSection: FamilySizeSection
   addEmailTask: Element
   passkeysSection: PasskeysSection
   verifyEmailTask: Element
   addPhoneTask: Element
   addWeakLoginTask: Element
+  enablePushNotificationsTask: Element
 
   constructor(page: Page) {
     this.personDetailsSection = new PersonDetailsSection(
@@ -31,6 +33,9 @@ export default class CitizenPersonalDetails {
     this.notificationSettingsSection = new CitizenNotificationSettingsSection(
       page.findByDataQa('notification-settings-section')
     )
+    this.pushNotificationsSection = new PushNotificationsSection(
+      page.findByDataQa('push-notifications-section')
+    )
     this.familySizeSection = new FamilySizeSection(
       page.findByDataQa('family-size-section')
     )
@@ -41,6 +46,9 @@ export default class CitizenPersonalDetails {
     this.verifyEmailTask = page.findByDataQa('task-verify-email')
     this.addPhoneTask = page.findByDataQa('task-add-phone')
     this.addWeakLoginTask = page.findByDataQa('task-add-weak-login')
+    this.enablePushNotificationsTask = page.findByDataQa(
+      'task-enable-push-notifications'
+    )
   }
 }
 
@@ -228,33 +236,72 @@ export class WeakCredentialsModal extends Element {
   }
 }
 
+export class PushNotificationsSection extends Element {
+  accountStatus = this.findByDataQa('push-account-status')
+  thisDeviceState = this.findByDataQa('push-this-device-state')
+  enable = this.findByDataQa('enable-push-notifications')
+  sendTest = this.findByDataQa('send-test-push-notification')
+  devices = this.findAllByDataQa('push-device')
+
+  deviceName(nth: number) {
+    return this.devices.nth(nth).findByDataQa('push-device-name')
+  }
+
+  deviceIsCurrent(nth: number) {
+    return this.devices.nth(nth).findByDataQa('push-device-current')
+  }
+
+  revokeDevice(nth: number) {
+    return this.devices.nth(nth).findByDataQa('revoke-push-device')
+  }
+}
+
+const notificationChannelCheckboxes = (
+  section: Element,
+  channel: 'email' | 'push'
+) => ({
+  message: new Checkbox(section.findByDataQa(`message-${channel}`)),
+  bulletin: new Checkbox(section.findByDataQa(`bulletin-${channel}`)),
+  income: new Checkbox(section.findByDataQa(`income-${channel}`)),
+  calendarEvent: new Checkbox(
+    section.findByDataQa(`calendar-event-${channel}`)
+  ),
+  decision: new Checkbox(section.findByDataQa(`decision-${channel}`)),
+  document: new Checkbox(section.findByDataQa(`document-${channel}`)),
+  informalDocument: new Checkbox(
+    section.findByDataQa(`informal-document-${channel}`)
+  ),
+  attendanceReservation: new Checkbox(
+    section.findByDataQa(`attendance-reservation-${channel}`)
+  ),
+  discussionTime: new Checkbox(
+    section.findByDataQa(`discussion-time-${channel}`)
+  )
+})
+
 export class CitizenNotificationSettingsSection extends Element {
   startEditing = this.findByDataQa('start-editing')
   cancel = this.findByDataQa('cancel')
   save = this.findByDataQa('save')
+  incomeWarning = this.findByDataQa('income-warning')
 
-  checkboxes = {
-    message: new Checkbox(this.findByDataQa('message')),
-    bulletin: new Checkbox(this.findByDataQa('bulletin')),
-    income: new Checkbox(this.findByDataQa('income')),
-    calendarEvent: new Checkbox(this.findByDataQa('calendar-event')),
-    decision: new Checkbox(this.findByDataQa('decision')),
-    document: new Checkbox(this.findByDataQa('document')),
-    informalDocument: new Checkbox(this.findByDataQa('informal-document')),
-    attendanceReservation: new Checkbox(
-      this.findByDataQa('attendance-reservation')
-    ),
-    discussionTime: new Checkbox(this.findByDataQa('discussion-time'))
-  }
+  checkboxes = notificationChannelCheckboxes(this, 'email')
+  pushCheckboxes = notificationChannelCheckboxes(this, 'push')
 
   async assertEditable(editable: boolean) {
-    for (const checkbox of Object.values(this.checkboxes)) {
+    for (const checkbox of [
+      ...Object.values(this.checkboxes),
+      ...Object.values(this.pushCheckboxes)
+    ]) {
       await checkbox.assertDisabled(!editable)
     }
   }
 
   async assertAllChecked(checked: boolean) {
-    for (const checkbox of Object.values(this.checkboxes)) {
+    for (const checkbox of [
+      ...Object.values(this.checkboxes),
+      ...Object.values(this.pushCheckboxes)
+    ]) {
       await checkbox.waitUntilChecked(checked)
     }
   }
