@@ -157,6 +157,7 @@ export interface MissingGroupPlacement {
   childId: PersonId
   dateOfBirth: LocalDate
   defaultServiceNeedOptionNameFi: string | null
+  defaultServiceNeedOptionNameSv: string | null
   firstName: string
   gap: FiniteDateRange
   lastName: string
@@ -172,6 +173,7 @@ export interface MissingGroupPlacement {
 export interface MissingGroupPlacementServiceNeed {
   endDate: LocalDate
   nameFi: string
+  nameSv: string
   startDate: LocalDate
 }
 

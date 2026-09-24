@@ -43,7 +43,7 @@ const FeeDecisionMetadataSection = React.memo(
 export default React.memo(function FeeDecisionDetailsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const id = useIdRouteParam<FeeDecisionId>('id')
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const decisionResponse = useQueryResult(feeDecisionQuery({ id }))
   const { mutateAsync: confirmFeeDecisionDrafts } = useMutationResult(
     confirmFeeDecisionDraftsMutation
@@ -124,14 +124,19 @@ export default React.memo(function FeeDecisionDetailsPage() {
                     child,
                     placementType,
                     placementUnit,
-                    serviceNeedDescriptionFi
+                    serviceNeedDescriptionFi,
+                    serviceNeedDescriptionSv
                   }) => (
                     <ChildSection
                       key={child.id}
                       child={child}
                       placementType={placementType}
                       placementUnit={placementUnit}
-                      serviceNeedDescription={serviceNeedDescriptionFi}
+                      serviceNeedDescription={
+                        lang === 'sv'
+                          ? serviceNeedDescriptionSv
+                          : serviceNeedDescriptionFi
+                      }
                     />
                   )
                 )}

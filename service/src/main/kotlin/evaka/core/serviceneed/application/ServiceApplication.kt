@@ -72,8 +72,10 @@ data class UndecidedServiceApplicationSummary(
     val childName: String,
     val startDate: LocalDate,
     val placementEndDate: LocalDate,
-    val currentNeed: String?,
-    val newNeed: String,
+    val currentNeedFi: String?,
+    val currentNeedSv: String?,
+    val newNeedFi: String,
+    val newNeedSv: String,
 )
 
 fun isPlacementTypeChangeAllowed(old: PlacementType, new: PlacementType): Boolean {

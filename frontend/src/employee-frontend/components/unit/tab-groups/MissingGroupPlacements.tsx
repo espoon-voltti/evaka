@@ -124,12 +124,16 @@ const ServiceNeedTooltipLabel = ({
 }: {
   placement: MissingGroupPlacement
 }) => {
+  const { lang } = useTranslation()
   const serviceNeeds = placement.serviceNeeds.reduce<
-    { range: FiniteDateRange; nameFi: string }[]
+    { range: FiniteDateRange; name: string }[]
   >((arr, sn) => {
     const snRange = new FiniteDateRange(sn.startDate, sn.endDate)
     if (placement.gap.overlaps(snRange)) {
-      arr.push({ range: snRange, nameFi: sn.nameFi })
+      arr.push({
+        range: snRange,
+        name: lang === 'sv' ? sn.nameSv : sn.nameFi
+      })
     }
     return arr
   }, [])
@@ -137,7 +141,10 @@ const ServiceNeedTooltipLabel = ({
     .getGaps(serviceNeeds.map((sn) => sn.range))
     .map((gap) => ({
       range: gap,
-      nameFi: placement.defaultServiceNeedOptionNameFi ?? ''
+      name:
+        (lang === 'sv'
+          ? placement.defaultServiceNeedOptionNameSv
+          : placement.defaultServiceNeedOptionNameFi) ?? ''
     }))
   return (
     <>
@@ -149,7 +156,7 @@ const ServiceNeedTooltipLabel = ({
             key={`service-need-option-${sn.range.start.formatIso()}`}
             style={{ whiteSpace: 'nowrap' }}
           >
-            {sn.nameFi}:
+            {sn.name}:
             <br />
             {sn.range.format()}
           </p>
