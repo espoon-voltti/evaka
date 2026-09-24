@@ -347,6 +347,21 @@ RETURNING id
             .toList<MessageThreadId>()
     }
 
+    // Staff copies were made of regular messages too until 2024, but only bulletins get one now
+    private fun turnIntoLegacyRegularMessage(sent: SentMessage) {
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    """
+UPDATE message_thread
+SET message_type = 'MESSAGE'
+WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.contentId)})
+"""
+                )
+            }
+        }
+    }
+
     private fun setThreadApplication(threadId: MessageThreadId, applicationId: ApplicationId) {
         db.transaction { tx ->
             tx.execute {
@@ -668,6 +683,50 @@ RETURNING id
             sentAt = sendTimeOverFiveYearsAgo,
             recipients = listOf(MessageRecipient.Group(daycareGroup.id)),
         )
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(2, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads deletes a staff copy of a regular message once the message it copies is gone`() {
+        createGroupMessageAccount()
+        insertGroupPlacement(child.id, ongoingPlacementPeriod)
+        val sent =
+            sendMessage(
+                sentAt = sendTimeWithinFiveYears,
+                recipients = listOf(MessageRecipient.Group(daycareGroup.id)),
+                attachmentCount = 1,
+            )
+        turnIntoLegacyRegularMessage(sent)
+        val copyId = staffCopyThreadIds().single()
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id))
+
+        assertEquals(listOf(copyId), survivingMessageThreadIds())
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+        assertEquals(
+            sent.attachmentIds.map { it.toString() }.toSet(),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps a staff copy of a regular message while the message it copies is retained`() {
+        createGroupMessageAccount()
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val sent =
+            sendMessage(
+                sentAt = sendTimeOverFiveYearsAgo,
+                recipients = listOf(MessageRecipient.Group(daycareGroup.id)),
+            )
+        turnIntoLegacyRegularMessage(sent)
 
         deleteExpiredBulletinThreads()
 
