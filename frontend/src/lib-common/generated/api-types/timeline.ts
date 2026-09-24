@@ -128,7 +128,8 @@ export interface TimelinePlacementUnit {
 */
 export interface TimelineServiceNeed {
   id: ServiceNeedId
-  name: string
+  nameFi: string
+  nameSv: string
   range: DateRange
 }
 

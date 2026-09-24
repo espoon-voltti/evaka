@@ -12,6 +12,7 @@ import evaka.core.insertServiceNeedOptions
 import evaka.core.shared.GroupId
 import evaka.core.shared.GroupPlacementId
 import evaka.core.shared.PlacementId
+import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevBackupCare
 import evaka.core.shared.dev.DevCareArea
@@ -28,6 +29,7 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.security.PilotFeature
+import evaka.core.snDaycareFullDay35
 import evaka.core.snDefaultDaycare
 import evaka.core.user.EvakaUser
 import evaka.core.user.EvakaUserType
@@ -1335,16 +1337,72 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     child1.lastName,
                     child1.dateOfBirth,
                     listOf(),
-                    "Kokopäiväinen",
-                    FiniteDateRange(
-                        evakaLaunch.plusMonths(6).plusDays(1),
-                        evakaLaunch.plusYears(1),
-                    ),
+                    defaultServiceNeedOptionNameFi = "Kokopäiväinen",
+                    defaultServiceNeedOptionNameSv = "Kokopäiväinen",
+                    gap =
+                        FiniteDateRange(
+                            evakaLaunch.plusMonths(6).plusDays(1),
+                            evakaLaunch.plusYears(1),
+                        ),
                 )
             ),
             group,
         )
         assertEquals(emptyList(), backup)
+    }
+
+    @Test
+    fun `missing group placements include Swedish service need names`() {
+        val option =
+            snDaycareFullDay35.copy(
+                id = ServiceNeedOptionId(UUID.randomUUID()),
+                nameFi = "Kokopäiväinen, vähintään 35h",
+                nameSv = "Heldag, minst 35h",
+            )
+        val serviceNeedEnd = placementStart.plusDays(4)
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE service_need_option SET name_sv = 'Heldag' WHERE id = ${bind(snDefaultDaycare.id)}"
+                )
+            }
+            tx.insert(option)
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child2.id,
+                        unitId = daycare1.id,
+                        startDate = placementStart,
+                        endDate = placementEnd,
+                    )
+                )
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = placementStart,
+                    endDate = serviceNeedEnd,
+                    optionId = option.id,
+                    confirmedBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        val (group, _) = db.read { tx -> getMissingGroupPlacements(tx, daycare1.id) }
+
+        assertEquals(
+            listOf(
+                MissingGroupPlacementServiceNeed(
+                    placementStart,
+                    serviceNeedEnd,
+                    "Kokopäiväinen, vähintään 35h",
+                    "Heldag, minst 35h",
+                )
+            ),
+            group.single().serviceNeeds,
+        )
+        assertEquals("Kokopäiväinen", group.single().defaultServiceNeedOptionNameFi)
+        assertEquals("Heldag", group.single().defaultServiceNeedOptionNameSv)
     }
 
     @Test

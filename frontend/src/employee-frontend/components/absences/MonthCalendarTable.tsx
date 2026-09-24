@@ -63,6 +63,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
   selectedDate,
   reservationEnabled
 }: MonthCalendarRow) {
+  const { lang } = useTranslation()
   const theme = useTheme()
   const contractDayServiceNeeds = child.actualServiceNeeds.filter(
     (c) => c.hasContractDays
@@ -109,7 +110,9 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
                   <PersonName person={child} format="Last, First" />
                 </p>
                 {child.actualServiceNeeds.map((need, i) => (
-                  <p key={`service-need-option-${i}`}>{need.optionName}</p>
+                  <p key={`service-need-option-${i}`}>
+                    {lang === 'sv' ? need.optionNameSv : need.optionNameFi}
+                  </p>
                 ))}
               </div>
             }

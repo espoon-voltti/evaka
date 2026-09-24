@@ -343,7 +343,8 @@ ORDER BY pl.start_date
 data class TimelineServiceNeed(
     val id: ServiceNeedId,
     override val range: DateRange,
-    val name: String,
+    val nameFi: String,
+    val nameSv: String,
 ) : WithRange
 
 private fun Database.Read.getServiceNeeds(personId: PersonId, range: FiniteDateRange) =
@@ -353,7 +354,8 @@ private fun Database.Read.getServiceNeeds(personId: PersonId, range: FiniteDateR
 SELECT
     sn.id,
     daterange(sn.start_date, sn.end_date, '[]') as range, 
-    sno.name_fi AS name
+    sno.name_fi,
+    sno.name_sv
 FROM service_need sn
 JOIN placement pl on sn.placement_id = pl.id
 JOIN service_need_option sno on sn.option_id = sno.id

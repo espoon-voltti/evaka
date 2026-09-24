@@ -51,7 +51,7 @@ const DetailsModal = React.memo(function DetailsModal({
   application: ServiceApplication
   onClose: () => void
 }) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   return (
     <InfoModal
@@ -75,7 +75,11 @@ const DetailsModal = React.memo(function DetailsModal({
             <Label>
               {i18n.childInformation.serviceApplications.serviceNeed}
             </Label>
-            <div>{application.serviceNeedOption.nameFi}</div>
+            <div>
+              {lang === 'sv'
+                ? application.serviceNeedOption.nameSv
+                : application.serviceNeedOption.nameFi}
+            </div>
           </FixedSpaceColumn>
           <FixedSpaceColumn $spacing="xxs">
             <Label>
@@ -322,7 +326,7 @@ const UndecidedServiceApplication = React.memo(
   }: {
     application: EmployeeServiceApplication
   }) {
-    const { i18n } = useTranslation()
+    const { i18n, lang } = useTranslation()
     const [
       rejectionModalOpen,
       { on: openRejectionModal, off: closeRejectionModal }
@@ -365,7 +369,9 @@ const UndecidedServiceApplication = React.memo(
                 {i18n.childInformation.serviceApplications.serviceNeed}
               </Label>
               <div data-qa="service-need">
-                {application.serviceNeedOption.nameFi}
+                {lang === 'sv'
+                  ? application.serviceNeedOption.nameSv
+                  : application.serviceNeedOption.nameFi}
               </div>
             </FixedSpaceColumn>
             <FixedSpaceColumn $spacing="xs">
@@ -409,7 +415,7 @@ export default React.memo(function ServiceApplications({
 }: {
   childId: ChildId
 }) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const applications = useQueryResult(
     childServiceApplicationsQuery({ childId })
   )
@@ -464,7 +470,9 @@ export default React.memo(function ServiceApplications({
                   <Td>{application.sentAt.toLocalDate().format()}</Td>
                   <Td data-qa="start-date">{application.startDate.format()}</Td>
                   <Td data-qa="service-need">
-                    {application.serviceNeedOption.nameFi}
+                    {lang === 'sv'
+                      ? application.serviceNeedOption.nameSv
+                      : application.serviceNeedOption.nameFi}
                   </Td>
                   <Td>{application.personName}</Td>
                   <Td>

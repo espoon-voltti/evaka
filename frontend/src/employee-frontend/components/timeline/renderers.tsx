@@ -461,13 +461,19 @@ export const placementRenderer: EventRenderer<TimelinePlacement> = {
 
 export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
   color: () => '#5fdaa3',
-  Summary: ({ elem }) => elem.name,
-  Tooltip: ({ elem }) => (
-    <FixedSpaceColumn $spacing="xxs">
-      <span>{elem.range.format()}</span>
-      <span>{elem.name}</span>
-    </FixedSpaceColumn>
-  ),
+  Summary: ({ elem }) => {
+    const { lang } = useTranslation()
+    return lang === 'sv' ? elem.nameSv : elem.nameFi
+  },
+  Tooltip: ({ elem }) => {
+    const { lang } = useTranslation()
+    return (
+      <FixedSpaceColumn $spacing="xxs">
+        <span>{elem.range.format()}</span>
+        <span>{lang === 'sv' ? elem.nameSv : elem.nameFi}</span>
+      </FixedSpaceColumn>
+    )
+  },
   eventType: 'service-need'
 }
 

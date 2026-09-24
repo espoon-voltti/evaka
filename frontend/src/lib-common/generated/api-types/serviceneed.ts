@@ -250,9 +250,11 @@ export type ShiftCareType = typeof shiftCareType[number]
 export interface UndecidedServiceApplicationSummary {
   childId: PersonId
   childName: string
-  currentNeed: string | null
+  currentNeedFi: string | null
+  currentNeedSv: string | null
   id: ServiceApplicationId
-  newNeed: string
+  newNeedFi: string
+  newNeedSv: string
   placementEndDate: LocalDate
   sentAt: HelsinkiDateTime
   startDate: LocalDate

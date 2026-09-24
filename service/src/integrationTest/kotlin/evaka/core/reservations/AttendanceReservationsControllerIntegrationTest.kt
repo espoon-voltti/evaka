@@ -28,6 +28,7 @@ import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.GroupId
 import evaka.core.shared.MobileDeviceId
+import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
@@ -69,6 +70,7 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
@@ -364,7 +366,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             optionId = snDaycareContractDays15.id,
                             hasContractDays = true,
                             daycareHoursPerMonth = null,
-                            optionName = snDaycareContractDays15.nameFi,
+                            optionNameFi = snDaycareContractDays15.nameFi,
+                            optionNameSv = snDaycareContractDays15.nameSv,
                             validDuring = FiniteDateRange(mon, thu),
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
@@ -374,7 +377,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             optionId = snDaycareFullDay35.id,
                             hasContractDays = false,
                             daycareHoursPerMonth = null,
-                            optionName = snDaycareFullDay35.nameFi,
+                            optionNameFi = snDaycareFullDay35.nameFi,
+                            optionNameSv = snDaycareFullDay35.nameSv,
                             validDuring = FiniteDateRange(fri, fri),
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
@@ -396,7 +400,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             optionId = snDaycareContractDays15.id,
                             hasContractDays = true,
                             daycareHoursPerMonth = null,
-                            optionName = snDaycareContractDays15.nameFi,
+                            optionNameFi = snDaycareContractDays15.nameFi,
+                            optionNameSv = snDaycareContractDays15.nameSv,
                             validDuring = monFri,
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
@@ -705,6 +710,41 @@ class AttendanceReservationsControllerIntegrationTest :
                     friChildren.first { it.childId == child6.id },
                 )
             }
+    }
+
+    @Test
+    fun `service needs include Swedish service need names`() {
+        val option =
+            snDaycareFullDay35.copy(
+                id = ServiceNeedOptionId(UUID.randomUUID()),
+                nameFi = "Kokopäiväinen, vähintään 35h",
+                nameSv = "Heldag, minst 35h",
+            )
+        db.transaction { tx ->
+            tx.insert(option)
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = daycare.id,
+                        startDate = mon,
+                        endDate = fri,
+                    )
+                )
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = mon,
+                    endDate = fri,
+                    optionId = option.id,
+                    confirmedBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        val serviceNeed = getAttendanceReservations().children.single().serviceNeeds.single()
+        assertEquals("Kokopäiväinen, vähintään 35h", serviceNeed.optionNameFi)
+        assertEquals("Heldag, minst 35h", serviceNeed.optionNameSv)
     }
 
     @Test

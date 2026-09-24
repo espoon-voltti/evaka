@@ -75,8 +75,10 @@ fun Database.Read.getUndecidedServiceApplicationsByUnit(
         ch.last_name || ' ' || ch.first_name AS child_name,
         sa.start_date,
         pl.end_date AS placement_end_date,
-        old_sno.name_fi AS current_need,
-        new_sno.name_fi AS new_need
+        old_sno.name_fi AS current_need_fi,
+        old_sno.name_sv AS current_need_sv,
+        new_sno.name_fi AS new_need_fi,
+        new_sno.name_sv AS new_need_sv
     FROM service_application sa
     JOIN person ch ON ch.id = sa.child_id
     JOIN placement pl ON pl.child_id = sa.child_id

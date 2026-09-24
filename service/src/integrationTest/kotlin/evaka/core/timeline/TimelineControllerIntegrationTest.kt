@@ -10,17 +10,23 @@ import evaka.core.pis.CreationModificationMetadata
 import evaka.core.shared.IncomeId
 import evaka.core.shared.ParentshipId
 import evaka.core.shared.PersonId
+import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevIncome
 import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.DevPlacement
+import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.snDaycareFullDay35
 import java.time.LocalDate
 import java.util.*
 import kotlin.test.assertEquals
@@ -143,6 +149,54 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             ),
             timeline,
         )
+    }
+
+    @Test
+    fun `child service needs include Swedish service need names`() {
+        val childRange = FiniteDateRange(LocalDate.of(2022, 3, 1), LocalDate.of(2022, 6, 1))
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val option =
+            snDaycareFullDay35.copy(
+                id = ServiceNeedOptionId(UUID.randomUUID()),
+                nameFi = "Kokopäiväinen, vähintään 35h",
+                nameSv = "Heldag, minst 35h",
+            )
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(option)
+            tx.insert(
+                DevParentship(
+                    childId = child.id,
+                    headOfChildId = adult.id,
+                    startDate = childRange.start,
+                    endDate = childRange.end,
+                )
+            )
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = childRange.start,
+                        endDate = childRange.end,
+                    )
+                )
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = childRange.start,
+                    endDate = childRange.end,
+                    optionId = option.id,
+                    confirmedBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        val serviceNeed = getTimeline(adult.id).children.single().serviceNeeds.single()
+        assertEquals("Kokopäiväinen, vähintään 35h", serviceNeed.nameFi)
+        assertEquals("Heldag, minst 35h", serviceNeed.nameSv)
     }
 
     private fun getTimeline(personId: PersonId): Timeline {
