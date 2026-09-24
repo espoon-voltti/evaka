@@ -434,6 +434,8 @@ private fun translate(action: Global) =
             Global.READ_CHILD_ABSENCE_REPORT_FOR_AREA -> "Lasten poissaoloraportti alueittain"
             Global.READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA ->
                 "Esiopetuksen poissaoloraportti alueittain"
+            Global.READ_TODO_ITEMS -> "Tehtävälistan luku"
+            Global.CREATE_TODO_ITEM -> "Tehtävän luonti"
         }
 
 private fun translate(entry: Enum<*>) =

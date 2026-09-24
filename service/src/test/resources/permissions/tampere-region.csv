@@ -85,6 +85,8 @@
 ;"Talouden maksuasetuksien luonti";CREATE_FEE_THRESHOLDS;x;;;x;;;;;;;
 ;"Talouden päätöksen käsittelijöiden luku";"READ_FINANCE_DECISION_HANDLERS";x;;x;x;x;x;;x;;;x
 ;"Talouden päätöksen käsittelijöiden luku";"READ_SELECTABLE_FINANCE_DECISION_HANDLERS";x;;;x;x;;;;;;
+;"Tehtävälistan luku";READ_TODO_ITEMS;x;;;;;x;;;;;
+;"Tehtävän luonti";CREATE_TODO_ITEM;x;;;;;x;;;;;
 ;"Tilapäisten ilmoitusten luku";"READ_SYSTEM_NOTIFICATIONS";x;;;;;;;;;;
 ;"Tilapäisten ilmoitusten luonti";"UPDATE_SYSTEM_NOTIFICATION";x;;;;;;;;;;
 ;"Tukitoimivaihtoehtojen luku";"READ_ASSISTANCE_ACTION_OPTIONS";x;x;x;x;x;x;;x;x;x;x

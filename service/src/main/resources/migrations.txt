@@ -609,3 +609,4 @@ V610__rename_email_message_type.sql
 V611__citizen_push_subscription.sql
 V612__drop_cascades_from_evaka_user_and_employee.sql
 V613__missing_fk_indexes_and_primary_keys.sql
+V614__todo_item.sql

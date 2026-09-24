@@ -321,6 +321,8 @@ export type StaffAttendanceRealtimeId = Id<'StaffAttendanceRealtime'>
 
 export type TitaniaErrorsId = Id<'TitaniaErrors'>
 
+export type TodoItemId = Id<'TodoItem'>
+
 /**
 * Generated from evaka.core.shared.domain.Translatable
 */
