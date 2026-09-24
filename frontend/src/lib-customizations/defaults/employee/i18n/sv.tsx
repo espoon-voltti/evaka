@@ -2310,7 +2310,7 @@ export const sv: typeof fi = {
           attendees: 'Händelsens deltagare',
           attendeesPlaceholder: 'Välj...',
           eventTitle: 'Händelsens rubrik',
-          eventTitlePlaceholder: 'Max. 30 tecken',
+          eventTitlePlaceholder: 'Max. 50 tecken',
           description: 'Händelsens beskrivning',
           descriptionPlaceholder:
             'Korta instruktioner till vårdnadshavaren, t.ex. klockslag, vad som ska packas med',
@@ -2343,7 +2343,7 @@ export const sv: typeof fi = {
           surveySummaryCalendarLabel: 'Ytterligare information',
           surveySummaryInfo:
             'Denna text visas för vårdnadshavaren i samband med förfrågan. Du kan berätta ytterligare information om samtalen, till exempel ankomstinstruktioner eller den tid som reserverats för samtalet.',
-          surveySubjectPlaceholder: 'Högst 30 tecken',
+          surveySubjectPlaceholder: 'Högst 50 tecken',
           surveySummaryPlaceholder: 'Skriv ytterligare information',
           surveyDiscussionTimesTitle: 'Samtalstider',
           surveyInviteeTitle: 'Deltagare',

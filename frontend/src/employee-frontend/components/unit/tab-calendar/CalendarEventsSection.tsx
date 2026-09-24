@@ -769,7 +769,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
         value={form.title}
         onChange={(val) => updateForm('title', val)}
         placeholder={i18n.unit.calendar.events.create.eventTitlePlaceholder}
-        maxLength={30}
+        maxLength={50}
         width="full"
         data-qa="title-input"
       />
@@ -931,7 +931,7 @@ const EditEventModal = React.memo(function EditEventModal({
             value={form.title}
             onChange={(val) => updateForm('title', val)}
             placeholder={i18n.unit.calendar.events.create.eventTitlePlaceholder}
-            maxLength={30}
+            maxLength={50}
             width="full"
             data-qa="title-input"
           />

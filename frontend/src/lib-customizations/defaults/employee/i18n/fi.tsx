@@ -2294,7 +2294,7 @@ export const fi = {
           attendees: 'Tapahtuman osallistujat',
           attendeesPlaceholder: 'Valitse...',
           eventTitle: 'Tapahtuman otsikko',
-          eventTitlePlaceholder: 'Max. 30 merkkiä',
+          eventTitlePlaceholder: 'Max. 50 merkkiä',
           description: 'Tapahtuman kuvaus',
           descriptionPlaceholder:
             'Lyhyet ohjeet huoltajalle, esim. kellonaika, mitä pakata mukaan',
@@ -2327,7 +2327,7 @@ export const fi = {
           surveySummaryCalendarLabel: 'Lisätietoja',
           surveySummaryInfo:
             'Tämä teksti näytetään huoltajalle kyselyn yhteydessä. Voit kertoa siinä lisätietoja keskusteluista, esimerkiksi saapumisohjeet tai keskusteluun varattavan ajan.',
-          surveySubjectPlaceholder: 'Enintään 30 merkkiä',
+          surveySubjectPlaceholder: 'Enintään 50 merkkiä',
           surveySummaryPlaceholder: 'Kirjoita lisätiedot',
           surveyDiscussionTimesTitle: 'Keskusteluajat',
           surveyInviteeTitle: 'Osallistujat',
