@@ -82,3 +82,18 @@ ALTER TABLE mcp_test_data_entity
     ADD CONSTRAINT uniq$mcp_test_data_entity UNIQUE (table_name, entity_id);
 
 CREATE INDEX idx$mcp_test_data_entity_batch_id ON mcp_test_data_entity (batch_id);
+
+CREATE TABLE mcp_upload (
+    id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    authorization_id uuid NOT NULL,
+    token_hash text NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    used_at timestamp with time zone
+);
+
+ALTER TABLE mcp_upload
+    ADD CONSTRAINT fk$authorization FOREIGN KEY (authorization_id) REFERENCES mcp_authorization (id) ON DELETE CASCADE,
+    ADD CONSTRAINT uniq$mcp_upload_token_hash UNIQUE (token_hash);
+
+CREATE INDEX idx$mcp_upload_authorization_id ON mcp_upload (authorization_id);
