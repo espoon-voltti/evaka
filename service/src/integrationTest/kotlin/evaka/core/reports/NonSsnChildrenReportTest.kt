@@ -86,7 +86,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = today.plusYears(1),
                 )
             )
-            tx.addNewChildrenForVardaUpdate()
+            tx.addNewChildrenForVardaUpdate(today)
 
             val mockState =
                 VardaUpdater.EvakaHenkiloNode(
