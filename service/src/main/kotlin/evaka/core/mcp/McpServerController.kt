@@ -82,16 +82,7 @@ class McpServerController(
                 is AuthResult.Success -> auth
             }
 
-        // apigw sends no X-User for MCP requests, so the user identity is added to the logs here
-        // like RequestToAuthenticatedUser does for normal requests
-        MdcKey.USER_ID.set(session.user.rawId().toString())
-        MdcKey.USER_ID_HASH.set(session.user.rawIdHash.toString())
-        MdcKey.USER_ROLES.set(
-            (session.user.globalRoles + session.user.allScopedRoles)
-                .map { it.name }
-                .sorted()
-                .joinToString("|", "|", "|")
-        )
+        setUserMdc(session.user)
         try {
             return when {
                 body.isArray -> {
@@ -116,13 +107,30 @@ class McpServerController(
                         )
             }
         } finally {
-            MdcKey.USER_ROLES.unset()
-            MdcKey.USER_ID_HASH.unset()
-            MdcKey.USER_ID.unset()
+            clearUserMdc()
         }
     }
 
-    private sealed interface AuthResult {
+    // apigw sends no X-User for MCP requests, so the user identity is added to the logs here
+    // like RequestToAuthenticatedUser does for normal requests
+    fun setUserMdc(user: AuthenticatedUser.Employee) {
+        MdcKey.USER_ID.set(user.rawId().toString())
+        MdcKey.USER_ID_HASH.set(user.rawIdHash.toString())
+        MdcKey.USER_ROLES.set(
+            (user.globalRoles + user.allScopedRoles)
+                .map { it.name }
+                .sorted()
+                .joinToString("|", "|", "|")
+        )
+    }
+
+    fun clearUserMdc() {
+        MdcKey.USER_ROLES.unset()
+        MdcKey.USER_ID_HASH.unset()
+        MdcKey.USER_ID.unset()
+    }
+
+    sealed interface AuthResult {
         data class Success(
             val user: AuthenticatedUser.Employee,
             val authorization: McpAuthorization,
@@ -146,11 +154,21 @@ class McpServerController(
         if (token.isNullOrEmpty()) {
             return AuthResult.Failure(HttpStatus.UNAUTHORIZED, null, "Missing bearer token")
         }
+        return authenticate(db, clock) {
+            getMcpAuthorizationByAccessTokenHash(sha256Base64Url(token))
+        }
+    }
+
+    fun authenticate(
+        db: Database,
+        clock: EvakaClock,
+        findAuthorization: Database.Transaction.() -> McpAuthorization?,
+    ): AuthResult {
         val now = clock.now()
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val authorization =
-                    tx.getMcpAuthorizationByAccessTokenHash(sha256Base64Url(token))
+                    tx.findAuthorization()
                         ?: return@transaction AuthResult.Failure(
                             HttpStatus.UNAUTHORIZED,
                             "invalid_token",
@@ -203,7 +221,7 @@ class McpServerController(
         }
     }
 
-    private fun unauthorized(failure: AuthResult.Failure): ResponseEntity<Any> {
+    fun unauthorized(failure: AuthResult.Failure): ResponseEntity<Any> {
         Audit.McpUnauthorizedRequest.log(meta = mapOf("reason" to failure.description))
         val challenge = buildString {
             append("Bearer realm=\"evaka-mcp\"")
@@ -318,39 +336,11 @@ data sets with create_upload_url. delete_test_data removes a batch.
                 ?: throw BadRequest("Missing tool name")
         val tool = tools.findTool(name) ?: throw BadRequest("Unknown tool: $name")
         val arguments = params.get("arguments")?.takeUnless { it.isNull }
-        val audit = AuditContext().add(session.authorization.id)
-        val result: Any =
+        val result =
             try {
-                db.connect { dbc ->
-                    dbc.transaction { tx ->
-                        val ctx =
-                            McpToolContext(
-                                tx,
-                                session.user,
-                                clock,
-                                session.authorization.id,
-                                config,
-                                audit,
-                            )
-                        tool.call(ctx, arguments, jsonMapper)
-                    }
-                }
-            } catch (e: BadRequest) {
-                return toolError("Invalid input: ${e.message}")
-            } catch (e: NotFound) {
-                return toolError("Not found: ${e.message}")
-            } catch (e: Conflict) {
-                return toolError("Conflict: ${e.message}")
-            } catch (e: Forbidden) {
-                return toolError("Forbidden: ${e.message}")
-            } catch (e: Exception) {
-                logger.warn(e) { "MCP tool $name failed" }
-                return toolError("Tool failed: ${e.message}")
-            } finally {
-                audit
-                    .addMeta("tool", name)
-                    .addMeta("client", session.clientName)
-                    .log(Audit.McpToolCall, clock)
+                runTool(db, clock, session, tool, arguments, via = "json-rpc")
+            } catch (e: McpToolFailure) {
+                return toolError(e.message)
             }
         val json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result)
         return mapOf(
@@ -358,6 +348,53 @@ data sets with create_upload_url. delete_test_data removes a batch.
             "structuredContent" to jsonMapper.valueToTree<JsonNode>(result),
             "isError" to false,
         )
+    }
+
+    class McpToolFailure(val status: HttpStatus, override val message: String) :
+        RuntimeException(message)
+
+    fun runTool(
+        db: Database,
+        clock: EvakaClock,
+        session: AuthResult.Success,
+        tool: McpToolDefinition<*>,
+        arguments: JsonNode?,
+        via: String,
+    ): Any {
+        val audit = AuditContext().add(session.authorization.id)
+        try {
+            return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val ctx =
+                        McpToolContext(
+                            tx,
+                            session.user,
+                            clock,
+                            session.authorization.id,
+                            config,
+                            audit,
+                        )
+                    tool.call(ctx, arguments, jsonMapper)
+                }
+            }
+        } catch (e: BadRequest) {
+            throw McpToolFailure(HttpStatus.BAD_REQUEST, "Invalid input: ${e.message}")
+        } catch (e: NotFound) {
+            throw McpToolFailure(HttpStatus.NOT_FOUND, "Not found: ${e.message}")
+        } catch (e: Conflict) {
+            throw McpToolFailure(HttpStatus.CONFLICT, "Conflict: ${e.message}")
+        } catch (e: Forbidden) {
+            throw McpToolFailure(HttpStatus.FORBIDDEN, "Forbidden: ${e.message}")
+        } catch (e: Exception) {
+            logger.warn(e) { "MCP tool ${tool.name} failed" }
+            throw McpToolFailure(HttpStatus.INTERNAL_SERVER_ERROR, "Tool failed: ${e.message}")
+        } finally {
+            audit
+                .addMeta("tool", tool.name)
+                .addMeta("client", session.clientName)
+                .addMeta("via", via)
+                .log(Audit.McpToolCall, clock)
+        }
     }
 
     private fun toolError(message: String): Any =
