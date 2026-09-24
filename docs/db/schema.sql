@@ -3302,6 +3302,77 @@ CREATE VIEW public.location_view AS
     club_apply_period
    FROM public.daycare;
 
+-- Name: mcp_authorization; Type: TABLE; Schema: public
+
+CREATE TABLE public.mcp_authorization (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    client_id uuid NOT NULL,
+    employee_id uuid NOT NULL,
+    scope text NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    revoked_at timestamp with time zone,
+    code_hash text,
+    code_expires_at timestamp with time zone,
+    code_challenge text NOT NULL,
+    redirect_uri text NOT NULL,
+    resource text,
+    access_token_hash text,
+    token_issued_at timestamp with time zone,
+    last_used_at timestamp with time zone
+);
+
+-- Name: mcp_client; Type: TABLE; Schema: public
+
+CREATE TABLE public.mcp_client (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    client_name text NOT NULL,
+    client_uri text,
+    software_id text,
+    software_version text,
+    redirect_uris text[] NOT NULL,
+    token_endpoint_auth_method text NOT NULL,
+    client_secret_hash text,
+    registration_ip text
+);
+
+-- Name: mcp_test_data_batch; Type: TABLE; Schema: public
+
+CREATE TABLE public.mcp_test_data_batch (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_by uuid NOT NULL,
+    authorization_id uuid,
+    name text NOT NULL,
+    description text DEFAULT ''::text NOT NULL
+);
+
+-- Name: mcp_test_data_entity; Type: TABLE; Schema: public
+
+CREATE TABLE public.mcp_test_data_entity (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    batch_id uuid NOT NULL,
+    table_name text NOT NULL,
+    entity_id uuid NOT NULL,
+    description text DEFAULT ''::text NOT NULL
+);
+
+-- Name: mcp_upload; Type: TABLE; Schema: public
+
+CREATE TABLE public.mcp_upload (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    authorization_id uuid NOT NULL,
+    token_hash text NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    used_at timestamp with time zone
+);
+
 -- Name: meal_texture; Type: TABLE; Schema: public
 
 CREATE TABLE public.meal_texture (
@@ -4611,6 +4682,31 @@ ALTER TABLE ONLY public.invoiced_fee_decision
 ALTER TABLE ONLY public.koski_upload_error
     ADD CONSTRAINT koski_upload_error_pkey PRIMARY KEY (id);
 
+-- Name: mcp_authorization mcp_authorization_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_authorization
+    ADD CONSTRAINT mcp_authorization_pkey PRIMARY KEY (id);
+
+-- Name: mcp_client mcp_client_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_client
+    ADD CONSTRAINT mcp_client_pkey PRIMARY KEY (id);
+
+-- Name: mcp_test_data_batch mcp_test_data_batch_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_test_data_batch
+    ADD CONSTRAINT mcp_test_data_batch_pkey PRIMARY KEY (id);
+
+-- Name: mcp_test_data_entity mcp_test_data_entity_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_test_data_entity
+    ADD CONSTRAINT mcp_test_data_entity_pkey PRIMARY KEY (id);
+
+-- Name: mcp_upload mcp_upload_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_upload
+    ADD CONSTRAINT mcp_upload_pkey PRIMARY KEY (id);
+
 -- Name: meal_texture meal_texture_pkey; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.meal_texture
@@ -5040,6 +5136,31 @@ ALTER TABLE ONLY public.invoice_row
 
 ALTER TABLE ONLY public.koski_study_right
     ADD CONSTRAINT "uniq$koski_study_right_child_unit_type" UNIQUE (child_id, unit_id, type);
+
+-- Name: mcp_authorization uniq$mcp_authorization_access_token_hash; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_authorization
+    ADD CONSTRAINT "uniq$mcp_authorization_access_token_hash" UNIQUE (access_token_hash);
+
+-- Name: mcp_authorization uniq$mcp_authorization_code_hash; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_authorization
+    ADD CONSTRAINT "uniq$mcp_authorization_code_hash" UNIQUE (code_hash);
+
+-- Name: mcp_test_data_batch uniq$mcp_test_data_batch_created_by_name; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_test_data_batch
+    ADD CONSTRAINT "uniq$mcp_test_data_batch_created_by_name" UNIQUE (created_by, name);
+
+-- Name: mcp_test_data_entity uniq$mcp_test_data_entity; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_test_data_entity
+    ADD CONSTRAINT "uniq$mcp_test_data_entity" UNIQUE (table_name, entity_id);
+
+-- Name: mcp_upload uniq$mcp_upload_token_hash; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_upload
+    ADD CONSTRAINT "uniq$mcp_upload_token_hash" UNIQUE (token_hash);
 
 -- Name: password_blacklist_source uniq$password_blacklist_source_name; Type: CONSTRAINT; Schema: public
 
@@ -5971,6 +6092,26 @@ CREATE INDEX "idx$koski_study_right_unit" ON public.koski_study_right USING btre
 
 CREATE INDEX "idx$koski_upload_error_unit_id" ON public.koski_upload_error USING btree (unit_id);
 
+-- Name: idx$mcp_authorization_client_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$mcp_authorization_client_id" ON public.mcp_authorization USING btree (client_id);
+
+-- Name: idx$mcp_authorization_employee_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$mcp_authorization_employee_id" ON public.mcp_authorization USING btree (employee_id);
+
+-- Name: idx$mcp_test_data_batch_authorization_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$mcp_test_data_batch_authorization_id" ON public.mcp_test_data_batch USING btree (authorization_id);
+
+-- Name: idx$mcp_test_data_entity_batch_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$mcp_test_data_entity_batch_id" ON public.mcp_test_data_entity USING btree (batch_id);
+
+-- Name: idx$mcp_upload_authorization_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$mcp_upload_authorization_id" ON public.mcp_upload USING btree (authorization_id);
+
 -- Name: idx$message_content_author; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$message_content_author" ON public.message_content USING btree (author_id);
@@ -6679,6 +6820,18 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.koski_study_right FOR EACH 
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.koski_upload_error FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
+-- Name: mcp_authorization set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mcp_authorization FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
+
+-- Name: mcp_client set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mcp_client FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
+
+-- Name: mcp_test_data_batch set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mcp_test_data_batch FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
+
 -- Name: message set_timestamp; Type: TRIGGER; Schema: public
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
@@ -7263,6 +7416,21 @@ ALTER TABLE ONLY public.voucher_value_decision
 ALTER TABLE ONLY public.invoice
     ADD CONSTRAINT "fk$area" FOREIGN KEY (area_id) REFERENCES public.care_area(id);
 
+-- Name: mcp_test_data_batch fk$authorization; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_test_data_batch
+    ADD CONSTRAINT "fk$authorization" FOREIGN KEY (authorization_id) REFERENCES public.mcp_authorization(id) ON DELETE SET NULL;
+
+-- Name: mcp_upload fk$authorization; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_upload
+    ADD CONSTRAINT "fk$authorization" FOREIGN KEY (authorization_id) REFERENCES public.mcp_authorization(id) ON DELETE CASCADE;
+
+-- Name: mcp_test_data_entity fk$batch; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_test_data_entity
+    ADD CONSTRAINT "fk$batch" FOREIGN KEY (batch_id) REFERENCES public.mcp_test_data_batch(id) ON DELETE CASCADE;
+
 -- Name: daycare fk$care_area; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.daycare
@@ -7353,6 +7521,11 @@ ALTER TABLE ONLY public.evaka_user
 ALTER TABLE ONLY public.citizen_passkey
     ADD CONSTRAINT "fk$citizen_user" FOREIGN KEY (citizen_user_id) REFERENCES public.citizen_user(id) ON DELETE CASCADE;
 
+-- Name: mcp_authorization fk$client; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_authorization
+    ADD CONSTRAINT "fk$client" FOREIGN KEY (client_id) REFERENCES public.mcp_client(id) ON DELETE CASCADE;
+
 -- Name: service_need fk$confirmed_by; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.service_need
@@ -7376,6 +7549,11 @@ ALTER TABLE ONLY public.decision
 -- Name: income fk$created_by; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.income
+    ADD CONSTRAINT "fk$created_by" FOREIGN KEY (created_by) REFERENCES public.evaka_user(id);
+
+-- Name: mcp_test_data_batch fk$created_by; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_test_data_batch
     ADD CONSTRAINT "fk$created_by" FOREIGN KEY (created_by) REFERENCES public.evaka_user(id);
 
 -- Name: pedagogical_document fk$created_by; Type: FK CONSTRAINT; Schema: public
@@ -7427,6 +7605,11 @@ ALTER TABLE ONLY public.evaka_user
 
 ALTER TABLE ONLY public.income_statement
     ADD CONSTRAINT "fk$employee" FOREIGN KEY (handler_id) REFERENCES public.employee(id);
+
+-- Name: mcp_authorization fk$employee; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.mcp_authorization
+    ADD CONSTRAINT "fk$employee" FOREIGN KEY (employee_id) REFERENCES public.employee(id) ON DELETE CASCADE;
 
 -- Name: staff_occupancy_coefficient fk$employee; Type: FK CONSTRAINT; Schema: public
 

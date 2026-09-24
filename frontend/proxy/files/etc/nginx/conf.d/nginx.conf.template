@@ -317,11 +317,26 @@ server {
       client_max_body_size 100m;
       proxy_pass  $internalUrl;
     }
+
+    location /api/mcp/uploads/ {
+      client_max_body_size 100m;
+      proxy_pass  $enduserUrl;
+    }
   }
 
   location = /ready {
     access_log off;
     include    proxy_params;
+    proxy_pass $enduserUrl;
+  }
+
+  # OAuth 2.1 metadata for the MCP server (non-production only; apigw returns 404 when disabled).
+  # RFC 8414 / RFC 9728 require these documents at the site root, so they are forwarded to apigw
+  # under the /api prefix.
+  location ~ ^/\.well-known/oauth-(authorization-server|protected-resource)(/.*)?$ {
+    access_log /dev/stdout json_access;
+    include    proxy_params;
+    rewrite    ^/(.*)$ /api/$1 break;
     proxy_pass $enduserUrl;
   }
 

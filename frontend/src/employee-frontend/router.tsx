@@ -41,6 +41,8 @@ import IncomeStatementPage from './components/income-statements/IncomeStatementP
 import IncomeStatementsPage from './components/income-statements/IncomeStatementsPage'
 import InvoicePage from './components/invoice/InvoicePage'
 import InvoicesPage from './components/invoices/InvoicesPage'
+import McpAuthorizePage from './components/mcp/McpAuthorizePage'
+import McpPage from './components/mcp/McpPage'
 import MessagesPage from './components/messages/MessagesPage'
 import OutOfOfficePage from './components/out-of-office/OutOfOfficePage'
 import PaymentsPage from './components/payments/PaymentsPage'
@@ -416,6 +418,9 @@ const routes: EmployeeRoute[] = [
     component: PersonalMobileDevicesPage,
     title: 'personalMobileDevices'
   },
+  // MCP server for AI-assisted test data generation (non-production only)
+  { path: '/mcp', component: McpPage },
+  { path: '/mcp/authorize', component: McpAuthorizePage, auth: false },
   {
     path: '/pin-code',
     component: EmployeePinCodePage,

@@ -19,8 +19,10 @@ spring:
       integration-test:
         - enable_varda_mock_integration_endpoint
         - enable_mock_dvv_api
+        - enable_mcp
       local:
         - enable_dev_api
+        - enable_mcp
         - enable_varda_mock_integration_endpoint
   main:
     banner-mode: "off"

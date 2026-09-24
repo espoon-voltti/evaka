@@ -61,6 +61,7 @@ class HttpFilterConfig {
         private val devApiEnabled = env.activeProfiles.contains("enable_dev_api")
         private val mockIntegrationEnabled =
             env.activeProfiles.contains("enable_varda_mock_integration_endpoint")
+        private val mcpEnabled = env.activeProfiles.contains("enable_mcp")
 
         override fun doFilter(
             request: HttpServletRequest,
@@ -87,6 +88,7 @@ class HttpFilterConfig {
                 requestURI.startsWith("/public/") -> false
                 mockIntegrationEnabled && requestURI.startsWith("/mock-integration/") -> false
                 devApiEnabled && requestURI.startsWith("/dev-api/") -> false
+                mcpEnabled && (requestURI == "/mcp" || requestURI.startsWith("/mcp/")) -> false
                 else -> true
             }
 

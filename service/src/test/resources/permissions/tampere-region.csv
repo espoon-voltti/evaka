@@ -9,6 +9,7 @@
 ;"Raportit-sivu";REPORTS_PAGE;x;x;x;x;x;x;;x;x;x;x
 ;"Talouden maksuasetukset-sivu";FINANCE_BASICS_PAGE;x;;;x;;;;;;;
 ;"Talous-sivu";FINANCE_PAGE;x;;x;x;x;;;;;;
+;"Tekoälytyökalut (MCP) -sivu";MCP_PAGE;x;;;;;;;;;;
 ;"Toimintojen avaukset -sivu";UNIT_FEATURES_PAGE;x;;;;;;;;;;
 ;"Työntekijät-sivu";EMPLOYEES_PAGE;x;;;;;;;;;;
 ;"Viestit-sivu";MESSAGES_PAGE;x;;;x;;x;x;x;x;x;x
@@ -67,6 +68,7 @@
 ;"Lomakyselyn luonti";"CREATE_HOLIDAY_QUESTIONNAIRE";x;;;;;;;;;;
 ;"Lomakyselyn muokkaus";"UPDATE_HOLIDAY_QUESTIONNAIRE";x;;;;;;;;;;
 ;"Lomakyselyn poisto";"DELETE_HOLIDAY_QUESTIONNAIRE";x;;;;;;;;;;
+;"MCP-testidatan hallinta";MANAGE_MCP_TEST_DATA;x;;;;;;;;;;
 ;"Maksujen haku";SEARCH_PAYMENTS;x;;;x;;;;;;;
 ;"Maksuluonnosten luonti";CREATE_DRAFT_PAYMENTS;x;;;x;;;;;;;
 ;"Maksupäätösten haku";SEARCH_FEE_DECISIONS;x;;x;x;x;;;;;;
@@ -85,6 +87,7 @@
 ;"Talouden maksuasetuksien luonti";CREATE_FEE_THRESHOLDS;x;;;x;;;;;;;
 ;"Talouden päätöksen käsittelijöiden luku";"READ_FINANCE_DECISION_HANDLERS";x;;x;x;x;x;;x;;;x
 ;"Talouden päätöksen käsittelijöiden luku";"READ_SELECTABLE_FINANCE_DECISION_HANDLERS";x;;;x;x;;;;;;
+;"Tekoälytyökalujen valtuutusten hallinta";"MANAGE_MCP_AUTHORIZATIONS";x;;;;;;;;;;
 ;"Tilapäisten ilmoitusten luku";"READ_SYSTEM_NOTIFICATIONS";x;;;;;;;;;;
 ;"Tilapäisten ilmoitusten luonti";"UPDATE_SYSTEM_NOTIFICATION";x;;;;;;;;;;
 ;"Tukitoimivaihtoehtojen luku";"READ_ASSISTANCE_ACTION_OPTIONS";x;x;x;x;x;x;;x;x;x;x
