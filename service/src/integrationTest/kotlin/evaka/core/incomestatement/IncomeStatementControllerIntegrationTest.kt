@@ -5,6 +5,7 @@
 package evaka.core.incomestatement
 
 import evaka.core.FullApplicationTest
+import evaka.core.application.ApplicationStatus
 import evaka.core.application.ApplicationType
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
@@ -14,9 +15,12 @@ import evaka.core.attachment.AttachmentsController
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.controller.SortDirection
 import evaka.core.invoicing.domain.IncomeEffect
+import evaka.core.pis.Creator
+import evaka.core.pis.createParentship
 import evaka.core.pis.service.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.shared.AttachmentId
+import evaka.core.shared.DaycareId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.IncomeStatementId
 import evaka.core.shared.PersonId
@@ -738,6 +742,205 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 )
             ),
         )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - care area ignores the ended placement and old application of a sibling`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
+                    startDate = today.minusYears(2),
+                    endDate = today.plusYears(1),
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare1.id,
+                    startDate = today.minusDays(30),
+                    endDate = today.plusDays(30),
+                )
+            )
+            tx.insert(
+                DevParentship(
+                    childId = child6.id,
+                    headOfChildId = adult1.id,
+                    startDate = today.minusYears(2),
+                    endDate = today.plusYears(1),
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child6.id,
+                    unitId = daycare2.id,
+                    startDate = today.minusYears(2),
+                    endDate = today.minusYears(1),
+                )
+            )
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                status = ApplicationStatus.ACTIVE,
+                confidential = true,
+                guardianId = adult1.id,
+                childId = child6.id,
+                document = daycareApplicationForm(daycare2.id),
+            )
+        }
+        val incomeStatement = createTestIncomeStatement(adult1.id)
+        val expected = expectedRow(incomeStatement, adult1, careAreas = listOf(area1.name))
+
+        assertEquals(listOf(expected), getIncomeStatementsAwaitingHandler().data)
+        assertEquals(listOf(expected), searchByArea(area1))
+        assertEquals(emptyList(), searchByArea(area2))
+    }
+
+    @Test
+    fun `list income statements awaiting handler - care area comes from a pending application when there is no current placement`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
+                    startDate = today.minusYears(2),
+                    endDate = today.plusYears(1),
+                )
+            )
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                confidential = true,
+                guardianId = adult1.id,
+                childId = child1.id,
+                document = daycareApplicationForm(daycare2.id),
+            )
+        }
+        val incomeStatement = createTestIncomeStatement(adult1.id)
+        val expected = expectedRow(incomeStatement, adult1, careAreas = listOf(area2.name))
+
+        assertEquals(listOf(expected), getIncomeStatementsAwaitingHandler().data)
+        assertEquals(listOf(expected), searchByArea(area2))
+        assertEquals(emptyList(), searchByArea(area1))
+    }
+
+    @Test
+    fun `list income statements awaiting handler - care area comes from a future placement when there is no current placement`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
+                    startDate = today.minusYears(2),
+                    endDate = today.plusYears(1),
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare1.id,
+                    startDate = today.plusDays(10),
+                    endDate = today.plusYears(1),
+                )
+            )
+            // the accepted application behind the placement prefers another area and must not count
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                status = ApplicationStatus.ACTIVE,
+                confidential = true,
+                guardianId = adult1.id,
+                childId = child1.id,
+                document = daycareApplicationForm(daycare2.id),
+            )
+        }
+        val incomeStatement = createTestIncomeStatement(adult1.id)
+        val expected = expectedRow(incomeStatement, adult1, careAreas = listOf(area1.name))
+
+        assertEquals(listOf(expected), getIncomeStatementsAwaitingHandler().data)
+        assertEquals(listOf(expected), searchByArea(area1))
+        assertEquals(emptyList(), searchByArea(area2))
+    }
+
+    @Test
+    fun `list income statements awaiting handler - care area is empty without a current placement or a pending application`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
+                    startDate = today.minusYears(2),
+                    endDate = today.plusYears(1),
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare2.id,
+                    startDate = today.minusYears(2),
+                    endDate = today.minusYears(1),
+                )
+            )
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                status = ApplicationStatus.REJECTED,
+                confidential = true,
+                guardianId = adult1.id,
+                childId = child1.id,
+                document = daycareApplicationForm(daycare1.id),
+            )
+        }
+        val incomeStatement = createTestIncomeStatement(adult1.id)
+        val expected = expectedRow(incomeStatement, adult1, careAreas = emptyList())
+
+        assertEquals(listOf(expected), getIncomeStatementsAwaitingHandler().data)
+        assertEquals(emptyList(), searchByArea(area1))
+        assertEquals(emptyList(), searchByArea(area2))
+    }
+
+    @Test
+    fun `list income statements awaiting handler - care area comes from a pending application through guardianship`() {
+        db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = adult1.id, childId = child1.id))
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                status = ApplicationStatus.SENT,
+                guardianId = adult1.id,
+                childId = child1.id,
+                document = daycareApplicationForm(daycare1.id),
+            )
+        }
+        val incomeStatement = createTestIncomeStatement(adult1.id)
+        val expected = expectedRow(incomeStatement, adult1, careAreas = listOf(area1.name))
+
+        assertEquals(listOf(expected), getIncomeStatementsAwaitingHandler().data)
+        assertEquals(listOf(expected), searchByArea(area1))
+    }
+
+    @Test
+    fun `list income statements awaiting handler - care area ignores a conflicting parentship`() {
+        db.transaction { tx ->
+            tx.createParentship(
+                childId = child1.id,
+                headOfChildId = adult1.id,
+                startDate = today.minusYears(2),
+                endDate = today.plusYears(1),
+                creator = Creator.DVV,
+                conflict = true,
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare1.id,
+                    startDate = today.minusDays(30),
+                    endDate = today.plusDays(30),
+                )
+            )
+        }
+        val incomeStatement = createTestIncomeStatement(adult1.id)
+        val expected = expectedRow(incomeStatement, adult1, careAreas = emptyList())
+
+        assertEquals(listOf(expected), getIncomeStatementsAwaitingHandler().data)
+        assertEquals(emptyList(), searchByArea(area1))
     }
 
     @Test
@@ -2241,6 +2444,39 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             body,
         )
     }
+
+    private fun daycareApplicationForm(preferredUnit: DaycareId) =
+        DaycareFormV0(
+            type = ApplicationType.DAYCARE,
+            child = Child(dateOfBirth = null),
+            guardian = Adult(),
+            apply = Apply(preferredUnits = listOf(preferredUnit)),
+        )
+
+    private fun expectedRow(
+        incomeStatement: IncomeStatement,
+        person: DevPerson,
+        careAreas: List<String>,
+    ) =
+        IncomeStatementAwaitingHandler(
+            id = incomeStatement.id,
+            sentAt = incomeStatement.sentAt!!,
+            citizenModifiedAt = incomeStatement.sentAt!!,
+            startDate = incomeStatement.startDate,
+            incomeEndDate = null,
+            handlerNote = "",
+            type = IncomeStatementType.HIGHEST_FEE,
+            personId = person.id,
+            personLastName = person.lastName,
+            personFirstName = person.firstName,
+            careAreas = careAreas,
+        )
+
+    private fun searchByArea(area: DevCareArea) =
+        getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(areas = listOf(area.shortName))
+            )
+            .data
 
     private fun getIncomeStatementsAwaitingHandler(
         body: SearchIncomeStatementsRequest =
