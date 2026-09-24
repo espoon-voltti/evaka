@@ -135,7 +135,8 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: true,
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
-    placementDesktop: true
+    placementDesktop: true,
+    sharedApplicationEditor: true
   }
 }
 
