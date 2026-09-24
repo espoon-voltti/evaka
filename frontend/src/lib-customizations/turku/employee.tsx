@@ -60,7 +60,7 @@ const customizations: EmployeeCustomizations = {
       },
       incomeStatement: {
         incomesRegister:
-          'Toimintan tulotietoni liitteenä ja tarvittaessa tuloni saa tarkistaa myös tulorekisteristä'
+          'Toimitan tulotietoni liitteenä ja tarvittaessa tuloni saa tarkistaa myös tulorekisteristä'
       },
       personProfile: {
         income: {
