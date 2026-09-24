@@ -56,8 +56,9 @@ fun Database.Transaction.deleteExpiredBulletinThreads(
     // A municipal bulletin shares one thread across a whole area or unit and records no children at
     // all, so it has no placement to expire by and falls to the age limit instead.
     //
-    // A staff copy shares its content with the bulletin it copies. A copy is deleted as soon as the
-    // original bulletin is gone, which takes one further round.
+    // A staff copy shares its content with the thread it copies. A copy is deleted as soon as the
+    // original thread is gone, which takes one further round. Copies were made of regular messages
+    // too until 2024, so a copy is deleted here whatever its message type.
     //
     // Bulletins linked to an application exist only because of an earlier bug.
     val threadIds = createQuery {
@@ -72,7 +73,7 @@ LEFT JOIN LATERAL (
     WHERE mtc.thread_id = mt.id
 ) recipients ON true
 WHERE
-    mt.message_type = 'BULLETIN' AND
+    (mt.message_type = 'BULLETIN' OR mt.is_copy) AND
     ${predicate(unreferencedByApplication.forTable("mt"))} AND
     CASE
         WHEN mt.is_copy THEN NOT EXISTS (
@@ -108,8 +109,8 @@ FOR UPDATE OF mt
  * the data of the children who are still retained.
  *
  * A thread that records no children at all - a municipal bulletin, a staff copy, or a message of
- * the service worker or the finance account - has nothing to expire by and is left to the rules of
- * its own message type.
+ * the service worker or the finance account - has nothing to expire by and is left to the removal
+ * rule of its own kind.
  *
  * A thread of an application, or one whose content an application note references, is kept even
  * when its children have expired, until the application itself is expired and deleted.
