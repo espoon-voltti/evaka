@@ -12,8 +12,7 @@ import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { appConfig } from 'lib-customizations/citizen'
 
-import 'leaflet/dist/leaflet.css'
-
+import { systemNotificationsQuery } from './login/queries'
 import { pwaEnabled } from './pwa/enabled'
 import { listenForInstallPrompt } from './pwa/installPrompt'
 import { applyPwaMetadata } from './pwa/metadata'
@@ -21,6 +20,7 @@ import {
   registerServiceWorker,
   unregisterServiceWorker
 } from './pwa/serviceWorker'
+import { queryClient } from './query'
 import Root from './router'
 import './index.css'
 
@@ -43,13 +43,29 @@ if (pwaEnabled) {
   listenForInstallPrompt()
 }
 
+// The login page is shown only after the auth status is known. Start its own
+// request right away so the two do not run one after the other.
+if (['/', '/login', '/login/form'].includes(window.location.pathname)) {
+  void queryClient.prefetchQuery(systemNotificationsQuery())
+}
+
 const root = createRoot(document.getElementById('app')!)
 root.render(<Root />)
 
-const serviceWorker = pwaEnabled
-  ? registerServiceWorker()
-  : unregisterServiceWorker()
-serviceWorker.catch((err) => Sentry.captureException(err))
+// The service worker is not needed for the initial page load, so it is set up
+// only after the load has finished to keep its script fetch off the critical
+// path.
+function setupServiceWorker() {
+  const serviceWorker = pwaEnabled
+    ? registerServiceWorker()
+    : unregisterServiceWorker()
+  serviceWorker.catch((err) => Sentry.captureException(err))
+}
+if (document.readyState === 'complete') {
+  setupServiceWorker()
+} else {
+  window.addEventListener('load', setupServiceWorker, { once: true })
+}
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {

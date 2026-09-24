@@ -6,7 +6,7 @@ import { useContext, useMemo } from 'react'
 
 import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
 import { featureFlags, getMaxPreferredUnits } from 'lib-customizations/citizen'
-import { placementTypes } from 'lib-customizations/employee'
+import { placementTypes } from 'lib-customizations/placementTypes'
 
 import { renderResult } from '../../async-rendering'
 import {
