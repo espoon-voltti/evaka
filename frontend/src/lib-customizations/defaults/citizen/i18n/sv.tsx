@@ -2177,6 +2177,11 @@ const sv: Translations = {
     editInfo:
       'Vi hämtar ditt namn och din adress i befolkningsdatasystemet. Om de ändras ska du göra en anmälan till myndigheten för digitalisering och befolkningsdata (DVV).',
     tasks: {
+      ADD_EMAIL_AND_PHONE: {
+        title: 'Lägg till en e-postadress och ett telefonnummer',
+        description:
+          'Du kan ta emot e-postmeddelanden och nås i brådskande ärenden.'
+      },
       ADD_EMAIL: {
         title: 'Lägg till en e-postadress',
         description: 'Du kan ta emot e-postmeddelanden.'

@@ -4,29 +4,22 @@
 
 import { useMemo } from 'react'
 
-import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
-import type { CitizenPasskey } from 'lib-common/generated/api-types/user'
 import { constantQuery, useQuery } from 'lib-common/query'
 
 import { passkeysSupported } from '../auth/passkeys'
-import type { User } from '../auth/state'
 import { useUser } from '../auth/state'
 import { useInstallAvailability } from '../pwa/installAvailability'
+import { useIsRunningInstalled } from '../pwa/installed'
 import { usePushAvailability } from '../pwa/pushNotifications'
 
-import { isEmailVerified } from './emailVerification'
 import { emailVerificationStatusQuery, passkeysQuery } from './queries'
+import type { PersonalDetailsTask } from './taskRules'
+import {
+  resolvePersonalDetailsTasks,
+  toPersonalDetailsTaskInput
+} from './taskRules'
 
-export const personalDetailsTasks = [
-  'ADD_EMAIL',
-  'VERIFY_EMAIL',
-  'ADD_PHONE',
-  'ADD_TO_HOME_SCREEN',
-  'ENABLE_PUSH_NOTIFICATIONS',
-  'ADD_WEAK_LOGIN'
-] as const
-
-export type PersonalDetailsTask = (typeof personalDetailsTasks)[number]
+export type { PersonalDetailsTask } from './taskRules'
 
 export type PersonalDetailsTaskSection =
   | 'contact'
@@ -36,53 +29,28 @@ export type PersonalDetailsTaskSection =
   | 'push'
   | 'notifications'
 
-interface PersonalDetailsTaskContext {
-  user: User
-  emailVerification: EmailVerificationStatusResponse
-  passkeys: CitizenPasskey[]
-  canInstall: boolean
-  canSubscribeToPush: boolean
-}
-
 export const personalDetailsTaskConfig: Record<
   PersonalDetailsTask,
-  {
-    dataQa: string
-    section: PersonalDetailsTaskSection
-    isPending: (ctx: PersonalDetailsTaskContext) => boolean
-  }
+  { dataQa: string; section: PersonalDetailsTaskSection }
 > = {
-  ADD_EMAIL: {
-    dataQa: 'task-add-email',
-    section: 'contact',
-    isPending: ({ emailVerification }) => !emailVerification.email
+  ADD_EMAIL_AND_PHONE: {
+    dataQa: 'task-add-email-and-phone',
+    section: 'contact'
   },
-  VERIFY_EMAIL: {
-    dataQa: 'task-verify-email',
-    section: 'contact',
-    isPending: ({ emailVerification }) =>
-      !!emailVerification.email && !isEmailVerified(emailVerification)
-  },
-  ADD_PHONE: {
-    dataQa: 'task-add-phone',
-    section: 'contact',
-    isPending: ({ user }) => !user.phone
-  },
+  ADD_EMAIL: { dataQa: 'task-add-email', section: 'contact' },
+  ADD_PHONE: { dataQa: 'task-add-phone', section: 'contact' },
+  VERIFY_EMAIL: { dataQa: 'task-verify-email', section: 'contact' },
   ADD_TO_HOME_SCREEN: {
     dataQa: 'task-add-to-home-screen',
-    section: 'homeScreen',
-    isPending: ({ canInstall }) => canInstall
+    section: 'homeScreen'
   },
   ENABLE_PUSH_NOTIFICATIONS: {
     dataQa: 'task-enable-push-notifications',
-    section: 'push',
-    isPending: ({ canSubscribeToPush }) => canSubscribeToPush
+    section: 'push'
   },
   ADD_WEAK_LOGIN: {
     dataQa: 'task-add-weak-login',
-    section: passkeysSupported() ? 'passkeys' : 'login',
-    isPending: ({ user, passkeys }) =>
-      passkeys.length === 0 && !user.weakLoginUsername
+    section: passkeysSupported() ? 'passkeys' : 'login'
   }
 }
 
@@ -96,19 +64,18 @@ export function usePersonalDetailsTasks(): PersonalDetailsTask[] {
   const { data: passkeys } = useQuery(
     user !== undefined ? passkeysQuery() : constantQuery(null)
   )
-  const canInstall = useInstallAvailability().kind !== 'unavailable'
-  const canSubscribeToPush = usePushAvailability().kind === 'subscribable'
+  const runningInstalled = useIsRunningInstalled()
+  const install = useInstallAvailability().kind
+  const push = usePushAvailability().kind
   return useMemo(() => {
-    if (!user || !emailVerification || !passkeys) return noTasks
-    const ctx = {
+    const input = toPersonalDetailsTaskInput({
       user,
       emailVerification,
       passkeys,
-      canInstall,
-      canSubscribeToPush
-    }
-    return personalDetailsTasks.filter((task) =>
-      personalDetailsTaskConfig[task].isPending(ctx)
-    )
-  }, [user, emailVerification, passkeys, canInstall, canSubscribeToPush])
+      runningInstalled,
+      install,
+      push
+    })
+    return input ? resolvePersonalDetailsTasks(input) : noTasks
+  }, [user, emailVerification, passkeys, runningInstalled, install, push])
 }

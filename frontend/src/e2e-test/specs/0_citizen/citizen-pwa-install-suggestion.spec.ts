@@ -16,28 +16,17 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
+import {
+  androidUserAgent,
+  fireInstallPrompt,
+  iosUserAgent
+} from '../../utils/pwa'
 import { enduserLogin } from '../../utils/user'
 
 const today = LocalDate.of(2022, 1, 12)
 const mockedTime = HelsinkiDateTime.fromLocal(today, LocalTime.of(12, 0))
 
 test.use({ evakaOptions: { mockedTime } })
-
-// Chromium only fires beforeinstallprompt when it decides the app is
-// installable, which it does not do under test, so the test supplies the event
-// the app is waiting for.
-const fireInstallPrompt = (page: Page) =>
-  page.page.evaluate(() => {
-    const event = new Event('beforeinstallprompt')
-    Object.assign(event, {
-      prompt: () => {
-        ;(window as unknown as { promptShown: boolean }).promptShown = true
-        return Promise.resolve()
-      },
-      userChoice: Promise.resolve({ outcome: 'accepted' })
-    })
-    window.dispatchEvent(event)
-  })
 
 type InstallAnswer = { outcome: 'accepted' | 'dismissed' }
 
@@ -65,12 +54,6 @@ const answerInstallPrompt = (page: Page, answer: InstallAnswer) =>
       (window as unknown as AnswerableWindow).answerInstallPrompt(answer),
     answer
   )
-
-const iosUserAgent =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
-
-const androidUserAgent =
-  'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
 const setUpFamily = async (withPlacement: boolean) => {
   await resetServiceState()
