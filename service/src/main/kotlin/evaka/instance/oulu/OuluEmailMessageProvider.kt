@@ -814,7 +814,7 @@ ${MessageDeletionEmailContent.detailsBlock(data)}
 
     fun newCustomerIncomeNotification(): EmailContent =
         EmailContent(
-            subject = "Tulotietojen tarkastuskehotus / Request to review income information",
+            subject = "Toimita tulotiedot / Submit income information",
             text =
                 """
                 Hyvä asiakkaamme

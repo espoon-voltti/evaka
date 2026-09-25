@@ -946,7 +946,7 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
     fun newCustomerIncomeNotification(): EmailContent =
         EmailContent(
             subject =
-                "Tulotietojen tarkastuskehotus / Uppmaning att göra en inkomstutredning / Request to review income information",
+                "Toimita tulotiedot / Lämna inkomstuppgifter / Submit income information",
             text =
                 """
                 Hyvä asiakkaamme
