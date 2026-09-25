@@ -20,8 +20,16 @@ import org.springframework.web.context.request.WebRequest
 class MockWebPushEndpoint {
     private val lock = ReentrantLock()
     private var capturedRequests: MutableMap<String, MutableList<CapturedRequest>> = mutableMapOf()
+    private var queuedResponses: MutableMap<String, ArrayDeque<QueuedResponse>> = mutableMapOf()
 
     class CapturedRequest(val headers: Map<String, String>, val body: ByteArray)
+
+    private class QueuedResponse(val status: Int, val retryAfter: String?)
+
+    /** Answers the next request to [id] with [status] instead of the default 201 Created */
+    fun respondOnceWith(id: String, status: Int, retryAfter: String? = null) = lock.withLock {
+        queuedResponses.computeIfAbsent(id) { ArrayDeque() }.add(QueuedResponse(status, retryAfter))
+    }
 
     @PostMapping("/subscription/{id}")
     fun postNotification(
@@ -45,10 +53,18 @@ class MockWebPushEndpoint {
                     )
                 )
         }
-        return ResponseEntity.created(URI("")).build()
+        val queued =
+            lock.withLock { queuedResponses[id]?.removeFirstOrNull() }
+                ?: return ResponseEntity.created(URI("")).build()
+        val response = ResponseEntity.status(queued.status)
+        queued.retryAfter?.let { response.header("Retry-After", it) }
+        return response.build()
     }
 
-    fun clearData() = lock.withLock { capturedRequests.clear() }
+    fun clearData() = lock.withLock {
+        capturedRequests.clear()
+        queuedResponses.clear()
+    }
 
     fun getCapturedRequests(id: String): List<CapturedRequest> = lock.withLock {
         capturedRequests[id]?.toList() ?: emptyList()

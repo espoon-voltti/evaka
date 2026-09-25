@@ -12,13 +12,18 @@ import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
+import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.placement.getPlacementsForChildDuring
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.NotFound
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.getPushChildNames
 import org.springframework.stereotype.Service
 
 @Service
@@ -27,6 +32,7 @@ class AbsenceApplicationService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
 ) {
     init {
         asyncJobRunner.registerHandler(::sendDecidedEmail)
@@ -81,6 +87,26 @@ class AbsenceApplicationService(
                     "${msg.absenceApplicationId}",
                 )
                 ?.also { emailClient.send(it) }
+            db.transaction { tx ->
+                if (
+                    tx.getChildGuardiansAndFosterParents(application.childId, clock.today())
+                        .contains(guardian.id)
+                ) {
+                    citizenPushNotifications.plan(
+                        tx,
+                        clock.now(),
+                        guardian.id,
+                        CitizenPushNotification.AbsenceApplicationDecision(
+                            childId = application.childId,
+                            childName =
+                                tx.getPushChildNames(listOf(application.childId))
+                                    .getValue(application.childId),
+                            range = FiniteDateRange(application.startDate, application.endDate),
+                            rejected = application.status == AbsenceApplicationStatus.REJECTED,
+                        ),
+                    )
+                }
+            }
         }
     }
 }

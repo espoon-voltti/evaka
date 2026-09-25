@@ -88,6 +88,11 @@ import evaka.core.snPreschoolDaycare45
 import evaka.core.test.getDecisionRowById
 import evaka.core.toApplicationType
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.webpush.ApplicationDecision
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -1433,6 +1438,60 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             secondDecisionTo = child1,
             manualMailing = true,
         )
+
+    @Test
+    fun `sendDecisionsWithoutProposal - guardian gets a push notification listing the decisions`() {
+        db.transaction { tx ->
+            tx.insertTestCitizenPushSubscription(adult1.id, mockWebPushEndpoint(httpPort))
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL,
+                guardian = adult1,
+                child = child2,
+                applicationId = applicationId,
+                preferredStartDate = mainPeriod.start,
+            )
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                clock,
+                AuditContext(),
+                applicationId,
+                DaycarePlacementPlan(unitId = daycare.id, period = mainPeriod),
+            )
+        }
+
+        db.transaction { tx ->
+            service.sendDecisionsWithoutProposal(
+                tx,
+                serviceWorker,
+                clock,
+                AuditContext(),
+                applicationId,
+            )
+        }
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(
+            listOf(
+                CitizenPushNotification.ApplicationDecisions(
+                    applicationId = applicationId,
+                    childName = child2.firstName,
+                    decisions =
+                        listOf(
+                            ApplicationDecision(
+                                DecisionType.PRESCHOOL,
+                                daycare.name,
+                                mainPeriod.start,
+                            )
+                        ),
+                    answerRequired = true,
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
+    }
 
     private fun sendDecisionsWithoutProposalTest(
         child: DevPerson,

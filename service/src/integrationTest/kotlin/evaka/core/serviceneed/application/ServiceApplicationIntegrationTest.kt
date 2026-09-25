@@ -40,6 +40,10 @@ import evaka.core.shared.security.PilotFeature
 import evaka.core.snDaycareFullDay25to35
 import evaka.core.snDaycareFullDay35
 import evaka.core.snDaycarePartDay25
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -413,6 +417,57 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             emailContent.subject.startsWith("Palveluntarpeen muutoshakemuksesi on käsitelty")
         )
         assertTrue(emailContent.text.contains("palveluntarve on hylätty"))
+    }
+
+    @Test
+    fun `decision is pushed to the guardian who applied`() {
+        val applicationId = insertApplicationWithPushSubscription()
+
+        rejectServiceApplication(applicationId, "Onnistuu vasta ensi kuussa")
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(
+            listOf(
+                CitizenPushNotification.ServiceApplicationDecision(
+                    childId = child.id,
+                    childName = child.firstName,
+                    serviceNeedNameFi = snDaycareFullDay35.nameFi,
+                    serviceNeedNameSv = snDaycareFullDay35.nameSv,
+                    serviceNeedNameEn = snDaycareFullDay35.nameEn,
+                    startDate = startDate,
+                    rejected = true,
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
+    }
+
+    @Test
+    fun `decision is not pushed to a person who is no longer a guardian`() {
+        val applicationId = insertApplicationWithPushSubscription()
+        db.transaction { tx ->
+            tx.execute { sql("DELETE FROM guardian WHERE guardian_id = ${bind(adult.id)}") }
+        }
+
+        rejectServiceApplication(applicationId, "Onnistuu vasta ensi kuussa")
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(emptyList(), db.read { it.getPlannedCitizenPushNotifications() })
+    }
+
+    private fun insertApplicationWithPushSubscription() = db.transaction { tx ->
+        tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
+        tx.insertTestCitizenPushSubscription(adult.id, mockWebPushEndpoint(httpPort))
+        tx.insert(
+            DevServiceApplication(
+                childId = child.id,
+                personId = adult.id,
+                startDate = startDate,
+                serviceNeedOptionId = snDaycareFullDay35.id,
+                additionalInfo = "Sain uuden duunin",
+                sentAt = now.minusDays(1),
+            )
+        )
     }
 
     @Test

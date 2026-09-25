@@ -21,6 +21,7 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.specialdiet.SpecialDiet
+import evaka.core.webpush.CitizenPushNotification
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -93,6 +94,13 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendCitizenMessagePushNotification(
         val recipient: MessageRecipientId,
         val subscription: CitizenPushSubscriptionId,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendCitizenPushNotification(
+        val subscription: CitizenPushSubscriptionId,
+        val notification: CitizenPushNotification,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -280,6 +288,8 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendMissingHolidayReservationsReminder(
         val guardian: PersonId,
         val holidayRange: FiniteDateRange,
+        /** Null only in jobs queued before the field existed; such jobs send no push */
+        val reservationDeadline: LocalDate? = null,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -310,6 +320,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendOutdatedIncomeNotificationEmail(
         val guardianId: PersonId,
         val type: IncomeNotificationType,
+        val incomeExpirationDate: LocalDate? = null,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -354,12 +365,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    /** [cancelledByCitizen] is false when staff cancelled the reservation */
     data class SendDiscussionSurveyReservationCancellationEmail(
         val recipientId: PersonId,
         val childId: ChildId,
         val language: Language,
         val calendarEventTime: CalendarEventTime,
         val eventTitle: String,
+        val cancelledByCitizen: Boolean = false,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -629,7 +642,10 @@ sealed interface AsyncJob : AsyncJobPayload {
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "citizenPush"),
                 AsyncJobPool.Config(concurrency = 4),
-                setOf(SendCitizenMessagePushNotification::class),
+                setOf(
+                    SendCitizenMessagePushNotification::class,
+                    SendCitizenPushNotification::class,
+                ),
             )
         val suomiFi =
             AsyncJobRunner.Pool(

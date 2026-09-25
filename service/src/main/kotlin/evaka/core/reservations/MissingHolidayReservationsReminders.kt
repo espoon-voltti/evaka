@@ -20,6 +20,8 @@ import evaka.core.shared.async.AsyncJobType
 import evaka.core.shared.async.removeUnclaimedJobs
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service
 class MissingHolidayReservationsReminders(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
 ) {
@@ -79,6 +82,7 @@ class MissingHolidayReservationsReminders(
                             AsyncJob.SendMissingHolidayReservationsReminder(
                                 it,
                                 holidayPeriod.period,
+                                holidayPeriod.reservationDeadline,
                             )
                         },
                     runAt = clock.now(),
@@ -156,17 +160,31 @@ WHERE p.id = ANY(${bind(childIds)})
             return
         }
 
-        if (receiver.email.isNullOrBlank()) return
-        val language = receiver.language?.lowercase()?.let(Language::tryValueOf) ?: Language.fi
+        if (!receiver.email.isNullOrBlank()) {
+            val language = receiver.language?.lowercase()?.let(Language::tryValueOf) ?: Language.fi
+            Email.create(
+                    dbc = db,
+                    personId = msg.guardian,
+                    category = NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
+                    fromAddress = emailEnv.sender(language),
+                    content = emailMessageProvider.missingHolidayReservationsNotification(language),
+                    traceId = msg.guardian.toString(),
+                )
+                ?.also { emailClient.send(it) }
+        }
 
-        Email.create(
-                dbc = db,
-                personId = msg.guardian,
-                category = NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
-                fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.missingHolidayReservationsNotification(language),
-                traceId = msg.guardian.toString(),
-            )
-            ?.also { emailClient.send(it) }
+        if (msg.reservationDeadline != null) {
+            db.transaction { tx ->
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    msg.guardian,
+                    CitizenPushNotification.MissingHolidayReservations(
+                        holidayPeriod = msg.holidayRange,
+                        deadline = msg.reservationDeadline,
+                    ),
+                )
+            }
+        }
     }
 }

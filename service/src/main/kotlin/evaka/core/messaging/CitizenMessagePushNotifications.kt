@@ -17,23 +17,18 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.UiLanguage
 import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.Delivery
 import evaka.core.webpush.MessagePushNotificationData
 import evaka.core.webpush.PushNotificationMessageProvider
-import evaka.core.webpush.WebPush
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import org.springframework.stereotype.Service
-
-private val MAX_THROTTLE_WAIT: Duration = Duration.ofHours(1)
-
-private val logger = KotlinLogging.logger {}
 
 @Service
 class CitizenMessagePushNotifications(
     private val pushNotifications: CitizenPushNotifications,
     private val messageProvider: PushNotificationMessageProvider,
     private val featureConfig: FeatureConfig,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
         asyncJobRunner.registerHandler {
@@ -41,20 +36,8 @@ class CitizenMessagePushNotifications(
             clock,
             job: AsyncJob.SendCitizenMessagePushNotification,
             remainingAttempts ->
-            try {
+            pushNotifications.rescheduleIfThrottled(db, clock, job, remainingAttempts) {
                 send(db, clock, job.recipient, job.subscription)
-            } catch (e: WebPush.Throttled) {
-                if (e.retryAfter == null || remainingAttempts == 0) throw e
-                val retryAfter = minOf(e.retryAfter, MAX_THROTTLE_WAIT)
-                logger.warn(e) { "Push service asked to wait $retryAfter -> rescheduling" }
-                db.transaction { tx ->
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(job),
-                        retryCount = remainingAttempts,
-                        runAt = clock.now().plus(retryAfter),
-                    )
-                }
             }
         }
     }
@@ -85,6 +68,7 @@ AND mt.is_copy IS FALSE
         val threadId: MessageThreadId,
         val type: MessageType,
         val title: String,
+        val content: String,
         val urgent: Boolean,
         val sensitive: Boolean,
         val senderId: MessageAccountId,
@@ -99,6 +83,7 @@ SELECT
     m.thread_id,
     mt.message_type AS type,
     mt.title,
+    mc.content,
     mt.urgent,
     mt.sensitive,
     m.sender_id,
@@ -106,6 +91,7 @@ SELECT
 FROM message_recipients mr
 JOIN message m ON mr.message_id = m.id
 JOIN message_thread mt ON m.thread_id = mt.id
+JOIN message_content mc ON m.content_id = mc.id
 JOIN message_account ma ON mr.recipient_id = ma.id
 LEFT JOIN citizen_user cu ON cu.id = ma.person_id
 WHERE mr.id = ${bind(recipient)}
@@ -143,29 +129,30 @@ AND m.content_deleted_at IS NULL
             messageProvider.messageNotification(
                 notification.language,
                 MessagePushNotificationData(
-                    type = notification.type,
                     urgent = notification.urgent,
                     sensitive = notification.sensitive,
                     senderName = sender.name,
                     title = notification.title,
-                    isSenderMunicipalAccount = isSenderMunicipalAccount,
+                    content = notification.content,
                 ),
             )
         pushNotifications.send(
             dbc,
             clock,
             subscription,
-            category =
-                when (notification.type) {
-                    MessageType.MESSAGE -> NotificationCategory.MESSAGE_NOTIFICATION
-                    MessageType.BULLETIN ->
-                        if (isSenderMunicipalAccount) NotificationCategory.BULLETIN_NOTIFICATION
-                        else NotificationCategory.MESSAGE_NOTIFICATION
-                },
-            content = content,
-            path = "/messages/${notification.threadId}",
-            tag = "message-${notification.threadId}",
-            ttl = Duration.ofDays(1),
+            Delivery(
+                category =
+                    when (notification.type) {
+                        MessageType.MESSAGE -> NotificationCategory.MESSAGE_NOTIFICATION
+                        MessageType.BULLETIN ->
+                            if (isSenderMunicipalAccount) NotificationCategory.BULLETIN_NOTIFICATION
+                            else NotificationCategory.MESSAGE_NOTIFICATION
+                    },
+                content = content,
+                path = "/messages/${notification.threadId}",
+                tag = "message-${notification.threadId}",
+                ttl = Duration.ofDays(1),
+            ),
         )
     }
 }
