@@ -140,7 +140,7 @@ export default React.memo(function DiscussionSurveyForm({
               bind={title}
               info={title.inputInfo()}
               placeholder={t.discussionReservation.surveySubjectPlaceholder}
-              maxLength={30}
+              maxLength={50}
               data-qa="survey-title-input"
             />
           </WidthLimiter>
