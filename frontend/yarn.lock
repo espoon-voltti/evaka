@@ -4778,14 +4778,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-lodash@npm:8.0.0":
-  version: 8.0.0
-  resolution: "eslint-plugin-lodash@npm:8.0.0"
+"eslint-plugin-lodash@npm:8.1.0":
+  version: 8.1.0
+  resolution: "eslint-plugin-lodash@npm:8.1.0"
   dependencies:
-    lodash: "npm:^4.17.21"
+    lodash: "npm:^4.18.1"
   peerDependencies:
     eslint: ">=9.0.0"
-  checksum: 10/c5997c4406a1e886ca2135962dd18bcf650065353a28544848b7d00ec45451eb7c5ae76ece7cd63917c2f5c6b8f6da72cd707d65e6b38e942f7abc9fa44b9f8e
+  checksum: 10/9781bdae40365d3d71d921df58413e4319c674f48184ca60e9c319da1a28cca0c7c26e36b157b12f50b0fcc60945f6aaebe97929abf098337277c7da276658f0
   languageName: node
   linkType: hard
 
@@ -4843,7 +4843,7 @@ __metadata:
     csstype: "npm:3.2.3"
     date-fns: "npm:4.4.0"
     date-fns-tz: "npm:3.2.0"
-    eslint-plugin-lodash: "npm:8.0.0"
+    eslint-plugin-lodash: "npm:8.1.0"
     jsdom: "npm:30.0.1"
     leaflet: "npm:1.9.4"
     lib-common: "link:src/lib-common"
@@ -5566,7 +5566,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.18.1, lodash@npm:^4.17.21":
+"lodash@npm:4.18.1, lodash@npm:^4.18.1":
   version: 4.18.1
   resolution: "lodash@npm:4.18.1"
   checksum: 10/306fea53dfd39dad1f03d45ba654a2405aebd35797b673077f401edb7df2543623dc44b9effbb98f69b32152295fff725a4cec99c684098947430600c6af0c3f
