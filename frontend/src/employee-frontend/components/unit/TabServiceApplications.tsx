@@ -22,7 +22,7 @@ interface Props {
 }
 
 export default React.memo(function TabServiceApplications({ unitId }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [open, setOpen] = useState<boolean>(true)
   const applications = useQueryResult(unitServiceApplicationsQuery({ unitId }))
 
@@ -65,8 +65,13 @@ export default React.memo(function TabServiceApplications({ unitId }: Props) {
                   <Td data-qa="range">
                     {row.startDate.format()} - {row.placementEndDate.format()}
                   </Td>
-                  <Td data-qa="new-need">{row.newNeed}</Td>
-                  <Td data-qa="current-need">{row.currentNeed ?? '-'}</Td>
+                  <Td data-qa="new-need">
+                    {lang === 'sv' ? row.newNeedSv : row.newNeedFi}
+                  </Td>
+                  <Td data-qa="current-need">
+                    {(lang === 'sv' ? row.currentNeedSv : row.currentNeedFi) ??
+                      '-'}
+                  </Td>
                   <Td data-qa="sent-date">
                     {row.sentAt.toLocalDate().format()}
                   </Td>

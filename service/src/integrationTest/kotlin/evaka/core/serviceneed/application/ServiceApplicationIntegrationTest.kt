@@ -258,8 +258,10 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     startDate = startDate,
                     placementEndDate = placement.endDate,
                     sentAt = now.minusDays(1),
-                    currentNeed = snDaycareFullDay25to35.nameFi,
-                    newNeed = snDaycareFullDay35.nameFi,
+                    currentNeedFi = snDaycareFullDay25to35.nameFi,
+                    currentNeedSv = snDaycareFullDay25to35.nameSv,
+                    newNeedFi = snDaycareFullDay35.nameFi,
+                    newNeedSv = snDaycareFullDay35.nameSv,
                 )
             ),
             undecidedApplications,
@@ -358,6 +360,46 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             emailContent.subject.startsWith("Palveluntarpeen muutoshakemuksesi on käsitelty")
         )
         assertTrue(emailContent.text.contains("palveluntarve on hyväksytty 01.03.2024 alkaen"))
+    }
+
+    @Test
+    fun `undecided applications include Swedish service need names`() {
+        val currentOption =
+            snDaycareFullDay25to35.copy(
+                id = ServiceNeedOptionId(UUID.randomUUID()),
+                nameFi = "Kokopäiväinen, 25-35h",
+                nameSv = "Heldag, 25-35h",
+            )
+        val newOption =
+            snDaycareFullDay35.copy(
+                id = ServiceNeedOptionId(UUID.randomUUID()),
+                nameFi = "Kokopäiväinen, vähintään 35h",
+                nameSv = "Heldag, minst 35h",
+            )
+        db.transaction { tx ->
+            tx.insert(currentOption)
+            tx.insert(newOption)
+            tx.execute {
+                sql(
+                    "UPDATE service_need SET option_id = ${bind(currentOption.id)} WHERE id = ${bind(serviceNeed.id)}"
+                )
+            }
+            tx.insert(
+                DevServiceApplication(
+                    childId = child.id,
+                    personId = adult.id,
+                    startDate = startDate,
+                    serviceNeedOptionId = newOption.id,
+                    sentAt = now.minusDays(1),
+                )
+            )
+        }
+
+        val application = getUndecidedServiceApplications().single()
+        assertEquals("Kokopäiväinen, 25-35h", application.currentNeedFi)
+        assertEquals("Heldag, 25-35h", application.currentNeedSv)
+        assertEquals("Kokopäiväinen, vähintään 35h", application.newNeedFi)
+        assertEquals("Heldag, minst 35h", application.newNeedSv)
     }
 
     @Test

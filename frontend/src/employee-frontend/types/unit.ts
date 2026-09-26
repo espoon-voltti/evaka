@@ -27,6 +27,7 @@ export interface DaycareGroupPlacementDetailed {
   child: ChildBasics
   serviceNeeds: ServiceNeed[]
   defaultServiceNeedOptionNameFi: string | null
+  defaultServiceNeedOptionNameSv: string | null
   serviceNeedDetailVisible: boolean
 }
 
@@ -43,6 +44,9 @@ export const flatMapGroupPlacements = (
         defaultServiceNeedOptionNameFi:
           daycarePlacement.serviceNeedDetail?.defaultServiceNeedOption
             ?.nameFi ?? null,
+        defaultServiceNeedOptionNameSv:
+          daycarePlacement.serviceNeedDetail?.defaultServiceNeedOption
+            ?.nameSv ?? null,
         daycarePlacementStartDate: daycarePlacement.startDate,
         daycarePlacementEndDate: daycarePlacement.endDate,
         daycarePlacementId: daycarePlacement.id,

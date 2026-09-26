@@ -2014,6 +2014,8 @@ CREATE TABLE public.assistance_action_option (
     valid_from date,
     valid_to date,
     category public.assistance_action_option_category NOT NULL,
+    name_sv text,
+    description_sv text,
     CONSTRAINT check_validity CHECK (((valid_from IS NULL) OR (valid_to IS NULL) OR (valid_from <= valid_to)))
 );
 

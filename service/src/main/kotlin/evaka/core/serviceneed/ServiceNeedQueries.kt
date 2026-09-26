@@ -302,7 +302,8 @@ fun Database.Read.getChildServiceNeedInfos(
            sno.id AS option_id,
            sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
            sno.daycare_hours_per_month,
-           sno.name_fi                                 AS option_name,
+           sno.name_fi                                 AS option_name_fi,
+           sno.name_sv                                 AS option_name_sv,
            daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
            sn.shift_care,
            sn.part_week
@@ -317,7 +318,8 @@ fun Database.Read.getChildServiceNeedInfos(
            sno.id AS option_id,
            sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
            sno.daycare_hours_per_month,
-           sno.name_fi                                 AS option_name,
+           sno.name_fi                                 AS option_name_fi,
+           sno.name_sv                                 AS option_name_sv,
            daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
            sn.shift_care,
            sn.part_week
@@ -348,7 +350,8 @@ SELECT
     sno.id AS option_id,
     sno.contract_days_per_month IS NOT NULL AS has_contract_days,
     sno.daycare_hours_per_month,
-    sno.name_fi AS option_name,
+    sno.name_fi AS option_name_fi,
+    sno.name_sv AS option_name_sv,
     daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
     sn.shift_care,
     sn.part_week
@@ -368,7 +371,8 @@ SELECT
     sno.id AS option_id,
     sno.contract_days_per_month IS NOT NULL AS has_contract_days,
     sno.daycare_hours_per_month,
-    sno.name_fi AS option_name,
+    sno.name_fi AS option_name_fi,
+    sno.name_sv AS option_name_sv,
     daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
     sn.shift_care,
     sn.part_week
@@ -419,7 +423,8 @@ SELECT
     sno.id AS option_id,
     sno.contract_days_per_month IS NOT NULL AS has_contract_days,
     sno.daycare_hours_per_month,
-    sno.name_fi AS option_name,
+    sno.name_fi AS option_name_fi,
+    sno.name_sv AS option_name_sv,
     daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
     sn.shift_care,
     sn.part_week

@@ -1538,7 +1538,9 @@ export class Fixture {
     const value: DevAssistanceActionOption = {
       id: randomId(),
       descriptionFi: null,
+      descriptionSv: null,
       nameFi: 'a test assistance action option',
+      nameSv: null,
       value: 'TEST_ASSISTANCE_ACTION_OPTION',
       category: 'DAYCARE',
       displayOrder: null,

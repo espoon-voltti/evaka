@@ -34,7 +34,18 @@ const customizations: EmployeeMobileCustomizations = {
         landerText1: 'Tervetuloa käyttämään eVaka Turku -mobiilisovellusta!'
       }
     },
-    sv: {}
+    sv: {
+      absences: {
+        absenceTypes: {
+          PLANNED_ABSENCE: 'Avtalsfrånvaro',
+          FORCE_MAJEURE: 'Dagsspecifik nedsättning',
+          FREE_ABSENCE: 'Avgiftsfri sommarfrånvaro'
+        }
+      },
+      mobile: {
+        landerText1: 'Välkommen att använda mobilappen eVaka Åbo!'
+      }
+    }
   },
   featureFlags,
   additionalStaffAttendanceTypes

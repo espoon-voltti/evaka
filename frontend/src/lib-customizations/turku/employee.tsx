@@ -60,7 +60,7 @@ const customizations: EmployeeCustomizations = {
       },
       incomeStatement: {
         incomesRegister:
-          'Toimintan tulotietoni liitteenä ja tarvittaessa tuloni saa tarkistaa myös tulorekisteristä'
+          'Toimitan tulotietoni liitteenä ja tarvittaessa tuloni saa tarkistaa myös tulorekisteristä'
       },
       personProfile: {
         income: {
@@ -248,6 +248,172 @@ const customizations: EmployeeCustomizations = {
       }
     },
     sv: {
+      common: {
+        careTypeLabels: {
+          'connected-daycare': 'Kompletterande'
+        }
+      },
+      application: {
+        serviceNeed: {
+          connectedLabel: 'Kompletterande småbarnspedagogik',
+          connectedValue:
+            'Jag ansöker också om kompletterande småbarnspedagogik',
+          connectedDaycarePreferredStartDateLabel:
+            'Önskat startdatum för kompletterande småbarnspedagogik'
+        },
+        decisions: {
+          types: {
+            PRESCHOOL_DAYCARE: 'Beslut om kompletterande småbarnspedagogik'
+          }
+        }
+      },
+      decisionDraft: {
+        types: {
+          PRESCHOOL_DAYCARE:
+            'Småbarnspedagogik som kompletterar förskoleundervisningen',
+          PREPARATORY_DAYCARE:
+            'Småbarnspedagogik som kompletterar den förberedande undervisningen'
+        }
+      },
+      incomeStatement: {
+        incomesRegister:
+          'Jag lämnar mina inkomstuppgifter som bilaga och vid behov får mina inkomster kontrolleras även i inkomstregistret'
+      },
+      personProfile: {
+        income: {
+          details: {
+            incomeCoefficients: {
+              MONTHLY_WITH_HOLIDAY_BONUS: 'månad + semesterpenning',
+              MONTHLY_NO_HOLIDAY_BONUS: 'månad utan semesterpenning',
+              BI_WEEKLY_WITH_HOLIDAY_BONUS: '2 veckor + semesterpenning'
+            }
+          }
+        }
+      },
+      invoices: {
+        buttons: {
+          individualSendAlertText: ''
+        }
+      },
+      preferredFirstName: {
+        description:
+          'Du kan definiera ditt tilltalsnamn som används i eVaka. Tilltalsnamnet ska vara ett av dina förnamn.'
+      },
+      absences: {
+        absenceTypes: {
+          PLANNED_ABSENCE: 'Avtalsfrånvaro',
+          FORCE_MAJEURE: 'Dagsspecifik nedsättning',
+          FREE_ABSENCE: 'Avgiftsfri sommarfrånvaro'
+        },
+        absenceTypesShort: {
+          PLANNED_ABSENCE: 'Avtal',
+          FORCE_MAJEURE: 'Dagsspecifik nedsättning',
+          FREE_ABSENCE: 'Avgiftsfri sommarfrånvaro'
+        },
+        absenceTypeInfo: {
+          OTHER_ABSENCE:
+            'Används vid frånvaro samma dag. Frånvaro som anmälts dagen före eller tidigare ska ändras till avtalsfrånvaro.',
+          SICKLEAVE: 'Antecknas när barnet är sjukt.',
+          UNKNOWN_ABSENCE:
+            'Används då vårdnadshavaren inte har anmält frånvaron, påverkar även debiteringen i juni–augusti. Koden ändras endast om det gäller sjukfrånvaro, vars fortsättning vårdnadshavaren meddelar följande dag.',
+          PLANNED_ABSENCE:
+            'Förhandsanmälda frånvaron. Alla frånvaron som anmälts senast dagen före betraktas som avtalsfrånvaro.',
+          TEMPORARY_RELOCATION:
+            'Barnet har reservplacerats i en annan enhet. Frånvarande från den egna enheten, närvarande på annan plats.',
+          PARENTLEAVE:
+            'Frånvaron antecknas för det barn för vilket FPA:s föräldrapenning betalas.',
+          FORCE_MAJEURE:
+            'Används endast i specialsituationer enligt förvaltningens anvisningar. Enskilda dagar för vilka avgiftsgottgörelse har utlovats',
+          FREE_ABSENCE: 'Avgiftsfri frånvaro under sommartid'
+        },
+        modal: {
+          absenceTypes: {
+            PLANNED_ABSENCE: 'Avtalsfrånvaro',
+            TEMPORARY_RELOCATION: 'Barnet reservplacerat på annan plats',
+            FORCE_MAJEURE: 'Dagsspecifik nedsättning',
+            FREE_ABSENCE: 'Avgiftsfri sommarfrånvaro'
+          }
+        }
+      },
+      footer: {
+        cityLabel: 'Åbo stad',
+        linkLabel: 'Åbo småbarnspedagogik',
+        linkHref:
+          'https://www.turku.fi/sv/smabarnspedagogik-och-forskoleundervisning'
+      },
+      childInformation: {
+        assistance: {
+          types: {
+            preschoolAssistanceLevel: {
+              SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1:
+                'Särskilt stöd och förlängd läroplikt - annan än gravt utvecklingsstörd (till Koski)',
+              SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2:
+                'Särskilt stöd och förlängd läroplikt - gravt utvecklingsstörd (till Koski)'
+            }
+          }
+        },
+        assistanceNeed: {
+          fields: {
+            capacityFactor: 'Barnets platsbehov',
+            capacityFactorInfo:
+              'Det strukturella stödet bestäms vanligtvis utifrån barnets ålder och servicebehov. Om barnet har ett sådant stödbehov som ökar behovet av strukturellt stöd, läggs koefficienten för stödbehovet till här. Stödbehovet och koefficienten läggs till av specialläraren inom småbarnspedagogik. Daghemsföreståndaren lägger till koefficienten för en integrerad grupp eller en specialgrupp'
+          }
+        },
+        assistanceAction: {
+          title: 'Stödåtgärder och stödtjänster',
+          fields: {
+            actions: 'Strukturella stödåtgärder'
+          }
+        },
+        dailyServiceTimes: {
+          info: 'Spara här den dagliga närvarotid som avtalats i avtalet om småbarnspedagogik.',
+          info2: ''
+        }
+      },
+      unit: {
+        placementProposals: {
+          rejectReasons: {
+            REASON_1: 'Lediga platser endast i förskolegruppen',
+            REASON_2: 'Servicesedelproducentens platser är fulla',
+            OTHER: 'Annan orsak - motivering'
+          },
+          infoTitle: '',
+          infoText: ''
+        }
+      },
+      login: {
+        loginAD: 'Logga in med edu.turku.fi-konto'
+      },
+      placement: {
+        type: {
+          DAYCARE_FIVE_YEAR_OLDS:
+            'Avgiftsfri och kompletterande småbarnspedagogik för 5-åringar',
+          DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
+            'Avgiftsfri småbarnspedagogik för 5-åringar',
+          CLUB: 'Klubbverksamhet och park',
+          TEMPORARY_DAYCARE: 'Tillfällig småbarnspedagogik'
+        }
+      },
+      unitEditor: {
+        placeholder: {
+          email: 'fornamn.efternamn@turku.fi',
+          url: 't.ex. https://www.turku.fi/toimipaikat/peppiina-paaskyvuori-kaenkuja-3',
+          streetAddress: 'Gatunamn t.ex. Käenkuja 3',
+          decisionCustomization: {
+            name: 't.ex. Ankkalammen Peppiina'
+          }
+        },
+        field: {
+          decisionCustomization: {
+            // Saved verbatim to daycare.decision_handler and matched by exact
+            // string in the unit editor, so these must not be translated.
+            handler: ['Palveluohjaus', 'Varhaiskasvatusyksikön johtaja']
+          }
+        }
+      },
+      welcomePage: {
+        text: 'Du har loggat in i tjänsten eVaka-Åbo. Ditt användarkonto har ännu inte beviljats rättigheter som möjliggör användning av tjänsten. Daghemspersonalens användarrättigheter får du av enhetens närmaste chef. Övriga användarrättigheter fås av eVakas huvudanvändare genom att anmäla inloggningen till varkas.tietojarjestelmat@turku.fi'
+      },
       components: {
         metadata: {
           organizationName: 'Åbo stads småbarnspedagogik'

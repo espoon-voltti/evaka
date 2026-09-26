@@ -10,6 +10,8 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { useTranslation } from '../../state/i18n'
+
 import { OneLetterChip } from './OneLetterChip'
 
 type Props = { contractDayServiceNeeds: ChildServiceNeedInfo[] }
@@ -29,13 +31,14 @@ const TooltipDiv = styled.div`
 
 export const ContractDaysIndicatorChip = React.memo(
   function ContractDaysIndicatorChip({ contractDayServiceNeeds }: Props) {
+    const { lang } = useTranslation()
     return (
       <Tooltip
         position="right"
         width="large"
         tooltip={contractDayServiceNeeds.map((c, i) => (
           <TooltipDiv key={i}>
-            <TooltipP>{`${c.optionName}:`}</TooltipP>
+            <TooltipP>{`${lang === 'sv' ? c.optionNameSv : c.optionNameFi}:`}</TooltipP>
             <TooltipP>
               {c.validDuring.start.format()} - {c.validDuring.end.format()}
             </TooltipP>
