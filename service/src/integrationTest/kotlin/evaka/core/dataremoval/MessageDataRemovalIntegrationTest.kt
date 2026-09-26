@@ -35,6 +35,7 @@ import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MessageContentId
 import evaka.core.shared.MessageDraftId
 import evaka.core.shared.MessageThreadId
+import evaka.core.shared.PersonId
 import evaka.core.shared.PlacementId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -47,6 +48,7 @@ import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevDaycareGroupPlacement
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevFosterParent
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
@@ -87,6 +89,8 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val bulletinRecipientExpireDate = today.minusYears(5)
     private val draftExpiresBefore = now.minusYears(1)
     private val applicationExpireDate = today.minusYears(10)
+    private val financeExpireDate = today.minusYears(5)
+    private val financeExpiresBefore = now.minusYears(5)
 
     // A placement whose child left care over five years ago
     private val expiredPlacementPeriod =
@@ -97,6 +101,11 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         HelsinkiDateTime.of(expiredPlacementPeriod.start.plusDays(1), LocalTime.of(12, 0))
     private val sendTimeWithinFiveYears =
         HelsinkiDateTime.of(bulletinRecipientExpireDate.plusDays(1), LocalTime.of(12, 0))
+    private val replyTimeOverFiveYearsAgo =
+        HelsinkiDateTime.of(financeExpireDate.minusDays(1), LocalTime.of(12, 0))
+
+    // Old enough for the removal of the guardianship of a placement that ended over ten years ago
+    private val childDateOfBirth = today.minusYears(13)
 
     // Owns the municipal message account and corrects placements
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
@@ -110,7 +119,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val daycare =
         DevDaycare(areaId = careArea.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
     private val daycareGroup = DevDaycareGroup(daycareId = daycare.id)
-    private val child = DevPerson()
+    private val child = DevPerson(dateOfBirth = childDateOfBirth)
     private val guardian = DevPerson()
 
     private lateinit var staffSender: Sender
@@ -195,6 +204,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         type: MessageType = MessageType.BULLETIN,
         attachmentCount: Int = 0,
         relatedApplicationId: ApplicationId? = null,
+        markSent: Boolean = true,
     ): SentMessage {
         val sendClock = MockEvakaClock(sentAt)
         val draftId =
@@ -228,7 +238,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     ),
                 )
                 .createdId ?: error("Message had no recipients")
-        runSendingJobs()
+        if (markSent) runSendingJobs()
         return SentMessage(contentId, ageThreadsTo(contentId, sentAt), attachmentIds)
     }
 
@@ -419,6 +429,58 @@ RETURNING id
     private fun expiredChildIdsQuery(childIds: List<ChildId>) = QuerySql {
         sql("SELECT id FROM child WHERE id = ANY(${bind(childIds)})")
     }
+
+    private fun sendFinanceMessage(
+        sentAt: HelsinkiDateTime = now,
+        attachmentCount: Int = 0,
+        markSent: Boolean = true,
+        recipient: PersonId = guardian.id,
+    ): SentMessage =
+        sendMessage(
+            sentAt = sentAt,
+            recipients = listOf(MessageRecipient.Citizen(recipient)),
+            sender = financeSender,
+            type = MessageType.MESSAGE,
+            attachmentCount = attachmentCount,
+            markSent = markSent,
+        )
+
+    private fun insertAdultWithoutChildren(): PersonId {
+        val adult = DevPerson()
+        db.transaction { tx -> tx.insert(adult, DevPersonType.ADULT) }
+        return adult.id
+    }
+
+    private fun insertFosterParentOfChildWhoLeftCareOverTenYearsAgo(): PersonId {
+        val leftCareOverTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
+        insertGroupPlacement(child.id, leftCareOverTenYearsAgo)
+        val fosterParent = DevPerson()
+        db.transaction { tx ->
+            tx.insert(fosterParent, DevPersonType.ADULT)
+            tx.insert(
+                DevFosterParent(
+                    childId = child.id,
+                    parentId = fosterParent.id,
+                    validDuring = leftCareOverTenYearsAgo.asDateRange(),
+                    modifiedAt = now,
+                    modifiedBy = admin.evakaUserId,
+                )
+            )
+        }
+        return fosterParent.id
+    }
+
+    private fun deleteExpiredFinanceThreads(
+        expiredChildIds: List<ChildId> = emptyList(),
+        limit: Int = 100,
+    ) =
+        dataRemovalService.deleteExpiredFinanceThreads(
+            db,
+            now,
+            expiredChildIdsQuery = expiredChildIdsQuery(expiredChildIds),
+            expiresBefore = financeExpiresBefore,
+            limit = limit,
+        )
 
     private fun deleteExpiredMessageDrafts(limit: Int = 100) =
         dataRemovalService.deleteExpiredMessageDrafts(
@@ -1031,6 +1093,246 @@ RETURNING id
     }
 
     @Test
+    fun `deleteExpiredFinanceThreads deletes a thread with its messages, recipients, participants and content once the children of its citizen are removed`() {
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo)
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message"))
+        assertEquals(0, rowCount("message_recipients"))
+        assertEquals(0, rowCount("message_thread_participant"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads keeps a thread whose citizen has one removed and one retained child`() {
+        insertSibling(ongoingPlacementPeriod)
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo)
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads deletes a thread of a citizen who has no children at all`() {
+        sendFinanceMessage(
+            sentAt = sendTimeOverFiveYearsAgo,
+            recipient = insertAdultWithoutChildren(),
+        )
+
+        deleteExpiredFinanceThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads keeps a thread that was sent less than five years ago`() {
+        sendFinanceMessage()
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads keeps a thread that was replied to less than five years ago`() {
+        val sent = sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo)
+        replyToThread(
+            sent.threadIds.single(),
+            sentAt = sendTimeWithinFiveYears,
+            sender = financeSender,
+        )
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(2, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads deletes every content of a thread whose reply is also over five years old`() {
+        val sent = sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo)
+        replyToThread(
+            sent.threadIds.single(),
+            sentAt = replyTimeOverFiveYearsAgo,
+            sender = financeSender,
+        )
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads enqueues DeleteAttachment for each attachment of a deleted thread`() {
+        val sent = sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo, attachmentCount = 2)
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+
+        assertEquals(
+            sent.attachmentIds.map { it.toString() }.toSet(),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads keeps the threads of the other message accounts`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val retained =
+            listOf(
+                sendMessage(sentAt = sendTimeOverFiveYearsAgo, type = MessageType.MESSAGE),
+                sendMessage(sentAt = sendTimeOverFiveYearsAgo),
+                sendServiceWorkerMessage(insertApplication(), sentAt = sendTimeOverFiveYearsAgo),
+            )
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo)
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+
+        assertEquals(
+            retained.flatMap { it.threadIds }.toSet(),
+            survivingMessageThreadIds().toSet(),
+        )
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads doesn't remove more threads than the limit`() {
+        repeat(3) { sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo) }
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id), limit = 2)
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads deletes a thread whose messages are not marked sent yet`() {
+        // The participant row of the recipient is written by the job that marks the messages sent
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo, markSent = false)
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents keeps foster parenthood of a finance thread whose messages are not marked sent yet`() {
+        val fosterParent = insertFosterParentOfChildWhoLeftCareOverTenYearsAgo()
+        // The participant row of the recipient is written by the job that marks the messages sent
+        sendFinanceMessage(
+            sentAt = sendTimeOverFiveYearsAgo,
+            markSent = false,
+            recipient = fosterParent,
+        )
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = today.minusYears(1),
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("foster_parent"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents keeps foster parenthood while the finance thread removal of its parent is pending and deletes it afterwards`() {
+        val fosterParent = insertFosterParentOfChildWhoLeftCareOverTenYearsAgo()
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo, recipient = fosterParent)
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = today.minusYears(1),
+            limit = 100,
+        )
+
+        assertEquals(
+            1,
+            rowCount("foster_parent"),
+            "foster parenthood is kept while a finance thread exists",
+        )
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+        deleteExpiredFosterParents(
+            db,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = today.minusYears(1),
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("foster_parent"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians keeps guardianship while the finance thread removal of its guardian is pending and deletes it afterwards`() {
+        val leftCareOverTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
+        insertGroupPlacement(child.id, leftCareOverTenYearsAgo)
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo)
+
+        deleteExpiredGuardians(
+            db,
+            now,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = today.minusYears(1),
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("guardian"), "guardianship is kept while a finance thread exists")
+
+        deleteExpiredFinanceThreads(expiredChildIds = listOf(child.id))
+        deleteExpiredGuardians(
+            db,
+            now,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = today.minusYears(1),
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians keeps guardianship while a finance thread of its guardian has not expired`() {
+        // A finance thread concerns every child of the family, so it keeps the relationships of
+        // expired children too
+        val leftCareOverTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
+        insertGroupPlacement(child.id, leftCareOverTenYearsAgo)
+        sendFinanceMessage(sentAt = sendTimeWithinFiveYears)
+
+        deleteExpiredGuardians(
+            db,
+            now,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = today.minusYears(1),
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents keeps foster parenthood while a finance thread of its parent has not expired`() {
+        val fosterParent = insertFosterParentOfChildWhoLeftCareOverTenYearsAgo()
+        sendFinanceMessage(sentAt = sendTimeWithinFiveYears, recipient = fosterParent)
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = today.minusYears(1),
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("foster_parent"))
+    }
+
+    @Test
     fun `deleteExpiredMessageDrafts deletes an expired draft and enqueues its attachment deletion`() {
         val draftId = createDraft(createdAt = draftExpiresBefore.minusDays(1))
         val attachmentId = insertDraftAttachment(draftId, now)
@@ -1186,26 +1488,6 @@ RETURNING id
         }
 
         assertEquals(1, rowCount("application"))
-        assertEquals(1, rowCount("message_thread"))
-        assertEquals(1, rowCount("message_content"))
-    }
-
-    @Test
-    fun `deleteExpiredData keeps a regular message thread of a child who left care over ten years ago`() {
-        // Regular messages are retained as long as the data of their children, and the rule that
-        // expires a child is not in use yet
-        val leftCareTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
-        insertGroupPlacement(child.id, leftCareTenYearsAgo)
-        sendMessage(
-            sentAt =
-                HelsinkiDateTime.of(leftCareTenYearsAgo.start.plusDays(1), LocalTime.of(12, 0)),
-            type = MessageType.MESSAGE,
-        )
-
-        withLimit(1000) {
-            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
-        }
-
         assertEquals(1, rowCount("message_thread"))
         assertEquals(1, rowCount("message_content"))
     }
