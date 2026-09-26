@@ -171,6 +171,19 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
       ? latestCurrentDayDepartureTime
       : undefined
 
+  const ongoingAttendanceStart = staffMember.attendances.find(
+    (attendance) => attendance.departed === null
+  )?.arrived
+  const timeNotAfterOngoingAttendanceStart =
+    ongoingAttendanceStart !== undefined &&
+    time !== undefined &&
+    ongoingAttendanceStart.isEqualOrAfter(HelsinkiDateTime.now().withTime(time))
+      ? ongoingAttendanceStart.toLocalTime()
+      : undefined
+
+  const conflictingDepartureTime =
+    timeBeforeLastDeparture ?? timeNotAfterOngoingAttendanceStart
+
   const disableConfirmBecauseOfPlan =
     showAttendanceTypeSelection &&
     selectedTimeDiffFromPlannedStartOfDayMinutes != null &&
@@ -185,7 +198,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
     !selectedTimeIsWithin30MinsFromNow(getNow()) ||
     !attendanceGroup ||
     disableConfirmBecauseOfPlan ||
-    timeBeforeLastDeparture !== undefined
+    conflictingDepartureTime !== undefined
 
   const hasFutureCurrentDay =
     staffMember.latestCurrentDayAttendance &&
@@ -245,11 +258,11 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
             />
           </InfoBoxWrapper>
         )}
-        {timeBeforeLastDeparture !== undefined && (
+        {conflictingDepartureTime !== undefined && (
           <InfoBoxWrapper>
             <InfoBox
               message={i18n.attendances.arrivalIsBeforeDeparture(
-                timeBeforeLastDeparture.format()
+                conflictingDepartureTime.format()
               )}
               data-qa="arrival-before-departure-notification"
             />

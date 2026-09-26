@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 
 class MobileRealtimeStaffAttendanceControllerIntegrationTest :
@@ -1068,6 +1069,70 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(fourthArrivalTime, it.attendances[5].arrived)
             assertEquals(fourthDepartureTime, it.attendances[5].departed)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances[5].type)
+        }
+    }
+
+    @ParameterizedTest(
+        name =
+            "Employee returning from other work cannot be marked arrived {0} minutes before the other work started"
+    )
+    @ValueSource(longs = [0, 10])
+    fun testStaffArrivalNotAfterOngoingOtherWorkStart(minutesBeforeOtherWorkStart: Long) {
+        val pinCode = "1212"
+        val employee = DevEmployee()
+        val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
+            tx.syncDaycareGroupAcl(daycare.id, employee.id, listOf(group.id), now)
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd,
+                )
+            )
+        }
+
+        markArrival(plannedStart, employee.id, pinCode, group.id, plannedStart.toLocalTime(), null)
+        val otherWorkStart = plannedStart.plusHours(2)
+        markDeparture(
+            otherWorkStart,
+            employee.id,
+            pinCode,
+            group.id,
+            otherWorkStart.toLocalTime(),
+            StaffAttendanceType.OTHER_WORK,
+        )
+
+        // The arrival is submitted a while later, so the arrival time is within the allowed
+        // threshold from now but not after the start of the ongoing other work
+        val arrivalTime = otherWorkStart.minusMinutes(minutesBeforeOtherWorkStart)
+        val exception =
+            assertThrows<BadRequest> {
+                markArrival(
+                    otherWorkStart.plusMinutes(15),
+                    employee.id,
+                    pinCode,
+                    group.id,
+                    arrivalTime.toLocalTime(),
+                    StaffAttendanceType.OTHER_WORK,
+                )
+            }
+        assertEquals(
+            "Arrival time must be after the start of the ongoing attendance",
+            exception.message,
+        )
+
+        val attendances = fetchRealtimeStaffAttendances(daycare.id, mobileUser)
+        attendances.staff.first().let {
+            assertEquals(null, it.present)
+            assertEquals(2, it.attendances.size)
+            assertEquals(otherWorkStart, it.attendances.last().arrived)
+            assertEquals(null, it.attendances.last().departed)
+            assertEquals(StaffAttendanceType.OTHER_WORK, it.attendances.last().type)
         }
     }
 
