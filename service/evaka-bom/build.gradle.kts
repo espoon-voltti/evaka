@@ -59,7 +59,7 @@ dependencies {
         api("org.apache.neethi:neethi:3.2.4")
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.26")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.26")
-        api("com.fasterxml.jackson.core:jackson-databind:2.22.2")
+        api("com.fasterxml.jackson.core:jackson-databind:2.22.3")
         api("org.postgresql:postgresql:42.7.13")
     }
 
