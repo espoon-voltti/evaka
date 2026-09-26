@@ -2154,7 +2154,7 @@ __metadata:
     tough-cookie: "npm:6.0.2"
     typescript: "npm:7.0.2"
     vitest: "npm:4.1.11"
-    xml-crypto: "npm:6.3.0"
+    xml-crypto: "npm:6.3.1"
     xml2js: "npm:0.6.2"
     zod: "npm:4.6.5"
   languageName: unknown
@@ -4890,14 +4890,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:6.3.0, xml-crypto@npm:^6.1.2":
-  version: 6.3.0
-  resolution: "xml-crypto@npm:6.3.0"
+"xml-crypto@npm:6.3.1, xml-crypto@npm:^6.1.2":
+  version: 6.3.1
+  resolution: "xml-crypto@npm:6.3.1"
   dependencies:
     "@xmldom/is-dom-node": "npm:^1.0.1"
     "@xmldom/xmldom": "npm:^0.8.15"
     xpath: "npm:^0.0.33"
-  checksum: 10/dddcff56f52009e9a755ad05f5192711f139c80253df6affd56bf7552f3e3f1c0808b6d7be5e8ec5af66683f6220082012e699003497294e98970e868bd30bba
+  checksum: 10/f88308f6b68ee24e9c87be82dc6d360b2c17415b58fb21241a665eaf54b0b5a30f258ef62cb732c384167396c6b87db16c8cf0ad337901c64a1fe08e549a2c4e
   languageName: node
   linkType: hard
 
