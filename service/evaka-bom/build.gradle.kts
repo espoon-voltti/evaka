@@ -63,7 +63,7 @@ dependencies {
         api("org.postgresql:postgresql:42.7.13")
     }
 
-    api(platform("tools.jackson:jackson-bom:3.2.2"))
+    api(platform("tools.jackson:jackson-bom:3.2.3"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.5.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.66.0"))
     api(platform("io.netty:netty-bom:4.2.18.Final"))
