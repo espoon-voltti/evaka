@@ -80,7 +80,8 @@ private fun Row.decisionFromResultSet(): Decision =
             ),
         applicationId = column("application_id"),
         childId = column("child_id"),
-        childName = "${column<String>("child_last_name")} ${column<String>("child_first_name")}",
+        childFirstName = column("child_first_name"),
+        childLastName = column("child_last_name"),
         documentContainsContactInfo = column("document_contains_contact_info"),
         archivedAt = column("archived_at"),
     )

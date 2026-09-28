@@ -24,8 +24,9 @@ import type { ProviderType } from './daycare'
 export interface Decision {
   applicationId: ApplicationId
   archivedAt: HelsinkiDateTime | null
+  childFirstName: string
   childId: PersonId
-  childName: string
+  childLastName: string
   createdBy: string
   decisionNumber: number
   documentContainsContactInfo: boolean
