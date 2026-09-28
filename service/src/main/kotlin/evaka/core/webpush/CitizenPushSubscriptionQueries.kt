@@ -5,6 +5,7 @@
 package evaka.core.webpush
 
 import evaka.core.pis.NotificationCategory
+import evaka.core.pis.splitFirstNames
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
@@ -204,15 +205,21 @@ fun Database.Read.hasCitizenPushSubscriptions(person: PersonId): Boolean = creat
 }
     .exactlyOne()
 
-/** The name a push notification uses for a child: the preferred name if set, else first names */
+/**
+ * The name a push notification uses for a child: the first of the first names, and the last name
+ */
+fun pushChildName(firstName: String, lastName: String): String =
+    listOfNotNull(splitFirstNames(firstName).firstOrNull(), lastName.ifBlank { null })
+        .joinToString(" ")
+
 fun Database.Read.getPushChildNames(children: Collection<PersonId>): Map<PersonId, String> =
     createQuery {
         sql(
             """
-SELECT id, coalesce(nullif(preferred_name, ''), first_name) AS name
+SELECT id, first_name, last_name
 FROM person
 WHERE id = ANY(${bind(children)})
 """
         )
     }
-    .toMap { column<PersonId>("id") to column<String>("name") }
+    .toMap { column<PersonId>("id") to pushChildName(column("first_name"), column("last_name")) }

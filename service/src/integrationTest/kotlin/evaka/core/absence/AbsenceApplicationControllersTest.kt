@@ -549,7 +549,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 listOf(
                     CitizenPushNotification.AbsenceApplicationDecision(
                         childId = child.id,
-                        childName = child.firstName,
+                        childName = "${child.firstName} ${child.lastName}",
                         range =
                             FiniteDateRange(LocalDate.of(2022, 8, 10), LocalDate.of(2022, 8, 10)),
                         rejected = true,

@@ -149,7 +149,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
             listOf(
                 CitizenPushNotification.InformalDocument(
                     child.id,
-                    childName = child.firstName,
+                    childName = "${child.firstName} ${child.lastName}",
                 )
             ),
             db.read { it.getPlannedCitizenPushNotifications() },

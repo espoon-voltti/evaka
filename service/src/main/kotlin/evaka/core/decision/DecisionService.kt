@@ -56,6 +56,7 @@ import evaka.core.shared.template.ITemplateProvider
 import evaka.core.webpush.ApplicationDecision
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.pushChildName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.http.ResponseEntity
@@ -576,7 +577,8 @@ private fun Database.Read.getApplicationDecisionsForPush(
     applicationId: ApplicationId
 ): CitizenPushNotification.ApplicationDecisions {
     data class Row(
-        val childName: String,
+        val childFirstName: String,
+        val childLastName: String,
         val type: DecisionType,
         val unitName: String,
         val startDate: LocalDate,
@@ -586,7 +588,8 @@ private fun Database.Read.getApplicationDecisionsForPush(
         sql(
             """
 SELECT
-    coalesce(nullif(p.preferred_name, ''), p.first_name) AS child_name,
+    p.first_name AS child_first_name,
+    p.last_name AS child_last_name,
     d.type,
     u.name AS unit_name,
     d.start_date,
@@ -603,7 +606,7 @@ ORDER BY d.start_date, d.type
         .toList<Row>()
     return CitizenPushNotification.ApplicationDecisions(
         applicationId = applicationId,
-        childName = rows.first().childName,
+        childName = rows.first().let { pushChildName(it.childFirstName, it.childLastName) },
         decisions = rows.map { ApplicationDecision(it.type, it.unitName, it.startDate) },
         answerRequired = rows.any { it.status == DecisionStatus.PENDING },
     )

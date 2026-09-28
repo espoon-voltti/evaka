@@ -122,7 +122,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     // The threshold is 150 hours, and the autumn daylight saving time change
                     // falls between the deadline and the start of the week
                     deadline = HelsinkiDateTime.of(LocalDate.of(2022, 10, 24), LocalTime.of(18, 0)),
-                    childNames = listOf(child.firstName),
+                    childNames = listOf("${child.firstName} ${child.lastName}"),
                 )
             ),
             db.read { it.getPlannedCitizenPushNotifications() },

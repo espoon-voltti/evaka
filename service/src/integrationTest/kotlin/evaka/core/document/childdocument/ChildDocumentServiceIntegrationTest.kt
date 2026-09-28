@@ -536,7 +536,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 CitizenPushNotification.Document(
                     documentId,
                     ChildDocumentNotificationType.BASIC_DOCUMENT,
-                    childName = testChild.firstName,
+                    childName = "${testChild.firstName} ${testChild.lastName}",
                 )
             ),
             db.read { it.getPlannedCitizenPushNotifications() },

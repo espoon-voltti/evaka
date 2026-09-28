@@ -386,7 +386,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             listOf(
                 CitizenPushNotification.VoucherValueDecision(
                     decisionId = decisionId,
-                    childName = child2.firstName,
+                    childName = "${child2.firstName} ${child2.lastName}",
                     unitName = voucherDaycare.name,
                 )
             ),

@@ -1477,7 +1477,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             listOf(
                 CitizenPushNotification.ApplicationDecisions(
                     applicationId = applicationId,
-                    childName = child2.firstName,
+                    childName = "${child2.firstName} ${child2.lastName}",
                     decisions =
                         listOf(
                             ApplicationDecision(

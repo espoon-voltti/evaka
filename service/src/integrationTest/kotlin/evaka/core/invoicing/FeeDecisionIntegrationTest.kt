@@ -2760,7 +2760,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEquals(
-            listOf(CitizenPushNotification.FeeDecision(childNames = listOf(child2.firstName))),
+            listOf(
+                CitizenPushNotification.FeeDecision(
+                    childNames = listOf("${child2.firstName} ${child2.lastName}")
+                )
+            ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
     }

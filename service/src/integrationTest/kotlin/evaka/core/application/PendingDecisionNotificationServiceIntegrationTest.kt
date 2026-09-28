@@ -138,7 +138,13 @@ class PendingDecisionNotificationServiceIntegrationTest :
         assertEquals(
             listOf(
                 CitizenPushNotification.PendingDecisions(
-                    listOf(PendingDecision(child.firstName, DecisionType.DAYCARE, daycare.name))
+                    listOf(
+                        PendingDecision(
+                            "${child.firstName} ${child.lastName}",
+                            DecisionType.DAYCARE,
+                            daycare.name,
+                        )
+                    )
                 )
             ),
             db.read { it.getPlannedCitizenPushNotifications() },

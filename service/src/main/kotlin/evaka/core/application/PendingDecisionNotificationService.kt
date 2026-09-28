@@ -23,6 +23,7 @@ import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.CitizenPushNotifications
 import evaka.core.webpush.PendingDecision
 import evaka.core.webpush.hasCitizenPushSubscriptions
+import evaka.core.webpush.pushChildName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import org.springframework.stereotype.Service
@@ -201,14 +202,20 @@ private fun Database.Read.getPendingDecisionsForPush(
 ): List<PendingDecision> = createQuery {
     sql(
         """
-SELECT coalesce(nullif(p.preferred_name, ''), p.first_name) AS child_name, d.type, u.name AS unit_name
+SELECT p.first_name, p.last_name, d.type, u.name AS unit_name
 FROM decision d
 JOIN application a ON d.application_id = a.id
 JOIN person p ON a.child_id = p.id
 JOIN daycare u ON d.unit_id = u.id
 WHERE d.id = ANY(${bind(decisionIds)})
-ORDER BY d.sent_date, child_name, d.type
+ORDER BY d.sent_date, p.last_name, p.first_name, d.type
 """
     )
 }
-    .toList<PendingDecision>()
+    .toList {
+        PendingDecision(
+            childName = pushChildName(column("first_name"), column("last_name")),
+            type = column("type"),
+            unitName = column("unit_name"),
+        )
+    }

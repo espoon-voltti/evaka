@@ -254,6 +254,19 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
         assertEquals(notifications.size, mockEndpoint.getCapturedRequests("1234").size)
     }
 
+    @Test
+    fun `a child is named by the first of the first names and the last name`() {
+        // The preferred name is set by staff and is not shown to citizens
+        val namedChild =
+            DevPerson(firstName = "Anna Maria", lastName = "Virtanen", preferredName = "Maija")
+        db.transaction { tx -> tx.insert(namedChild, DevPersonType.CHILD) }
+
+        assertEquals(
+            mapOf(namedChild.id to "Anna Virtanen"),
+            db.read { it.getPushChildNames(listOf(namedChild.id)) },
+        )
+    }
+
     private fun subscribeAndPlanDecision() = db.transaction { tx ->
         tx.insertTestCitizenPushSubscription(citizen.id, mockWebPushEndpoint(httpPort))
         pushNotifications.plan(tx, clock.now(), citizen.id, decision)

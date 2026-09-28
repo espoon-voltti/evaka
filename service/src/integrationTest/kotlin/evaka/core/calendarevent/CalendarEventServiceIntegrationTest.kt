@@ -1799,7 +1799,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today.plusDays(2),
                     LocalTime.of(8, 0),
                     LocalTime.of(9, 0),
-                    childName = child1.firstName,
+                    childName = "${child1.firstName} ${child1.lastName}",
                     surveyTitle = "Group survey",
                 )
             ),
@@ -1871,7 +1871,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today.plusDays(3),
                     LocalTime.of(8, 0),
                     LocalTime.of(9, 0),
-                    childName = child1.firstName,
+                    childName = "${child1.firstName} ${child1.lastName}",
                     surveyTitle = "Group survey",
                 )
             ),
