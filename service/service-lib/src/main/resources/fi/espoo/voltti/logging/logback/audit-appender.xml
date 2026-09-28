@@ -20,6 +20,9 @@ Audit appender logback configuration provided for import
             <onMatch>NEUTRAL</onMatch>
         </filter>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <decorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+                <valueMasker class="fi.espoo.voltti.logging.SsnMasker"/>
+            </decorator>
             <includeTags>false</includeTags>
             <excludeMdcKeyName>spanExportable</excludeMdcKeyName>
             <excludeMdcKeyName>X-B3-ParentSpanId</excludeMdcKeyName>
