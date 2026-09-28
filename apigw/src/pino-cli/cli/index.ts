@@ -188,18 +188,18 @@ const mapPinoLogToMiscLog = (obj: PinoMiscLog): MiscLog => ({
   version: obj.version
 })
 
-// oxlint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any,typescript/no-unsafe-return
 const isPinoAccessLog = (obj: any): boolean =>
-  // oxlint-disable-next-line typescript/no-unsafe-return,typescript/no-unsafe-member-access
+  // oxlint-disable-next-line typescript/no-unsafe-member-access
   obj.req &&
   // oxlint-disable-next-line typescript/no-unsafe-member-access
   obj.res &&
   // oxlint-disable-next-line typescript/no-unsafe-member-access
   (obj.message === 'request completed' || obj.message === 'request errored')
 
-// oxlint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any,typescript/no-unsafe-return
 const isPinoAppAuditLog = (obj: any): boolean =>
-  // oxlint-disable-next-line typescript/no-unsafe-return,typescript/no-unsafe-member-access
+  // oxlint-disable-next-line typescript/no-unsafe-member-access
   obj.type && obj.type === 'app-audit-events'
 
 // oxlint-disable-next-line typescript/no-explicit-any,typescript/no-unsafe-return,typescript/no-unsafe-member-access
