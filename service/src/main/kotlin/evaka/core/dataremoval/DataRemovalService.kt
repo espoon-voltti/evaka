@@ -98,6 +98,8 @@ class DataRemovalService(
         asyncJobRunner.registerHandler(::deleteExpiredData)
         asyncJobRunner.registerHandler(::deleteChildImage)
         asyncJobRunner.registerHandler(::deleteDecisionPdf)
+        asyncJobRunner.registerHandler(::deleteFeeDecisionPdf)
+        asyncJobRunner.registerHandler(::deleteVoucherValueDecisionPdf)
     }
 
     fun planDataRemoval(db: Database.Connection, clock: EvakaClock) {
@@ -344,6 +346,22 @@ class DataRemovalService(
         msg: AsyncJob.DeleteDecisionPdf,
     ) {
         documentClient.delete(DocumentKey.Decision(msg.key))
+    }
+
+    fun deleteFeeDecisionPdf(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.DeleteFeeDecisionPdf,
+    ) {
+        documentClient.delete(DocumentKey.FeeDecision(msg.key))
+    }
+
+    fun deleteVoucherValueDecisionPdf(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.DeleteVoucherValueDecisionPdf,
+    ) {
+        documentClient.delete(DocumentKey.VoucherValueDecision(msg.key))
     }
 
     fun deleteExpiredChildImages(

@@ -264,7 +264,19 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class DeleteFeeDecisionPdf(val key: String) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class DeleteVoucherValueDecisionPdf(val key: String) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data object DeleteExpiredData : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class DeleteExpiredPersonData(val personId: PersonId, val dryRun: Boolean) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -551,7 +563,9 @@ sealed interface AsyncJob : AsyncJobPayload {
                     DeleteChildImage::class,
                     DeleteDecisionPdf::class,
                     DeleteExpiredData::class,
+                    DeleteFeeDecisionPdf::class,
                     DeletePersonalDevicesIfNeeded::class,
+                    DeleteVoucherValueDecisionPdf::class,
                     DvvModificationsRefresh::class,
                     GarbageCollectPairing::class,
                     GenerateFinanceDecisions::class,
@@ -658,6 +672,12 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Id(AsyncJob::class, "varda"),
                 AsyncJobPool.Config(concurrency = 1),
                 setOf(VardaUpdateChild::class),
+            )
+        val dataRetention =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "dataRetention"),
+                AsyncJobPool.Config(concurrency = 1),
+                setOf(DeleteExpiredPersonData::class),
             )
         val archival =
             AsyncJobRunner.Pool(

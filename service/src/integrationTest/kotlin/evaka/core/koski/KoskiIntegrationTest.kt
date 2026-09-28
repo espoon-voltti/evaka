@@ -11,6 +11,7 @@ import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType
 import evaka.core.assistance.OtherAssistanceMeasureType
 import evaka.core.assistance.PreschoolAssistanceLevel
+import evaka.core.dataremoval.SAFE_DATA_REMOVAL_AGE
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.defaultMunicipalOrganizerOid
 import evaka.core.placement.PlacementType
@@ -747,7 +748,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `post-2026 preschool assistance info is converted to Koski extra information`() {
         data class TestCase(val period: FiniteDateRange, val level: PreschoolAssistanceLevel)
-        insertPlacement(child1, period = preschoolTerm2027)
+        // child1 would be past the safe data removal age by the end of this term
+        val child = DevPerson(ssn = "010621A123U", dateOfBirth = LocalDate.of(2021, 6, 1))
+        db.transaction { tx -> tx.insert(child, DevPersonType.CHILD) }
+        insertPlacement(child, period = preschoolTerm2027)
         val childSupport =
             TestCase(testPeriod2027(0L to 1L), PreschoolAssistanceLevel.CHILD_SUPPORT)
         val childSupportWithEce =
@@ -766,7 +770,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(
                     DevPreschoolAssistance(
                         modifiedBy = employee.evakaUser,
-                        childId = child1.id,
+                        childId = child.id,
                         validDuring = it.period,
                         level = it.level,
                     )
@@ -1043,6 +1047,25 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val newOid = koskiEndpoint.getStudyRights().keys.single()
         assertNotEquals(oldOid, newOid)
+    }
+
+    @Test
+    fun `a first upload is refused past the safe data removal age, but an existing study right still syncs`() {
+        insertPlacement()
+        val pastSafeAge = child1.dateOfBirth.plusYears(SAFE_DATA_REMOVAL_AGE)
+
+        koskiTester.triggerUploads(today = pastSafeAge)
+
+        assertTrue(koskiEndpoint.getStudyRights().isEmpty())
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        assertEquals(1, koskiEndpoint.getStudyRights().size)
+
+        db.transaction { it.execute { sql("DELETE FROM placement") } }
+        koskiTester.triggerUploads(today = pastSafeAge)
+
+        assertTrue(koskiEndpoint.getStudyRights().isEmpty())
     }
 
     @Test
