@@ -32,6 +32,7 @@ import { useTranslation } from '../localization'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttentionIndicator from './AttentionIndicator'
+import { hasSubMenuAttention } from './attention'
 import { logoutUrl } from './const'
 import {
   CircledChar,
@@ -413,7 +414,10 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
       >
         {t.header.nav.subNavigationMenu}
         <AttentionIndicator
-          toggled={hasPersonalDetailsTasks || unreadDecisions > 0}
+          toggled={hasSubMenuAttention({
+            hasPersonalDetailsTasks,
+            unreadDecisions
+          })}
           position="bottom"
           data-qa="attention-indicator-sub-menu-desktop"
         >
