@@ -56,9 +56,8 @@ fun Database.Transaction.deleteExpiredBulletinThreads(
     // A municipal bulletin shares one thread across a whole area or unit and records no children at
     // all, so it has no placement to expire by and falls to the age limit instead.
     //
-    // A staff copy shares its content with the thread it copies. A copy is deleted as soon as the
-    // original thread is gone, which takes one further round. Copies were made of regular messages
-    // too until 2024, so a copy is deleted here whatever its message type.
+    // A staff copy shares its content with its original and is deleted one round after the
+    // original. Regular messages were copied too until 2024, so copies of any type are deleted.
     //
     // Bulletins linked to an application exist only because of an earlier bug.
     val threadIds = createQuery {
@@ -108,9 +107,8 @@ FOR UPDATE OF mt
  * children survives until the last of them expires, because the whole conversation is also part of
  * the data of the children who are still retained.
  *
- * A thread that records no children at all - a municipal bulletin, a staff copy, or a message of
- * the service worker or the finance account - has nothing to expire by and is left to the removal
- * rule of its own kind.
+ * A thread that records no children, such as a municipal bulletin, a staff copy, or a service
+ * worker, finance or old regular message, is left to its own removal rule.
  *
  * A thread of an application, or one whose content an application note references, is kept even
  * when its children have expired, until the application itself is expired and deleted.
@@ -182,7 +180,6 @@ FOR UPDATE OF mt
     return deleteMessageThreads(threadIds)
 }
 
-/** Selects the finance threads that have had no activity for their whole retention period */
 private fun expiredFinanceThreadIdsQuery(expiresBefore: HelsinkiDateTime) = QuerySql {
     sql(
         """
@@ -206,8 +203,8 @@ WHERE
 }
 
 /**
- * Deletes the finance threads once all children of the recipient citizen have expired, and there
- * has been no activity in the message thread since the expiration date.
+ * A finance thread expires once every child of its citizens has expired and it has had no activity
+ * during the retention period.
  */
 fun Database.Transaction.deleteExpiredFinanceThreads(
     financeConnectionsQuery: QuerySql,
@@ -246,6 +243,96 @@ FOR UPDATE OF mt
         .toList<MessageThreadId>()
 
     return deleteMessageThreads(threadIds)
+}
+
+/**
+ * Threads started before September 2022, and until November 2023 by a citizen who chose none of
+ * their children, may concern any child of their citizens. Service worker and finance threads have
+ * their own removal rules.
+ */
+private val withoutRecordedChildren = Predicate {
+    where(
+        """
+$it.message_type = 'MESSAGE' AND
+NOT $it.is_copy AND
+NOT EXISTS (SELECT 1 FROM message_thread_children mtc WHERE mtc.thread_id = $it.id) AND
+NOT EXISTS (
+    SELECT 1
+    FROM message m
+    JOIN message_account sender ON sender.id = m.sender_id
+    WHERE m.thread_id = $it.id AND sender.type IN ('SERVICE_WORKER', 'FINANCE')
+)
+"""
+    )
+}
+
+private fun threadCitizensQuery() = QuerySql {
+    sql(
+        """
+SELECT m.thread_id, acc.person_id
+FROM message m
+JOIN message_account acc ON acc.id = m.sender_id AND acc.type = 'CITIZEN'
+UNION ALL
+SELECT m.thread_id, acc.person_id
+FROM message m
+JOIN message_recipients mr ON mr.message_id = m.id
+JOIN message_account acc ON acc.id = mr.recipient_id AND acc.type = 'CITIZEN'
+"""
+    )
+}
+
+/**
+ * The real children of a thread without recorded children are among the children of its citizens,
+ * so waiting for all of them never deletes the thread too early.
+ */
+fun Database.Transaction.deleteExpiredThreadsWithoutRecordedChildren(
+    parenthoodsQuery: QuerySql,
+    expiredChildIdsQuery: QuerySql,
+    limit: Int,
+): DeletedMessageThreadBatch {
+    val threadIds = createQuery {
+        sql(
+            """
+WITH expired_child (id) AS (
+    ${subquery(expiredChildIdsQuery)}
+), parenthood AS (
+    ${subquery(parenthoodsQuery)}
+), thread_citizen AS (
+    ${subquery(threadCitizensQuery())}
+)
+SELECT mt.id
+FROM message_thread mt
+WHERE
+    ${predicate(withoutRecordedChildren.forTable("mt"))} AND
+    ${predicate(unreferencedByApplication.forTable("mt"))} AND
+    NOT EXISTS (
+        SELECT 1
+        FROM thread_citizen tc
+        JOIN parenthood p ON p.person_id = tc.person_id
+        WHERE
+            tc.thread_id = mt.id AND
+            NOT EXISTS (SELECT 1 FROM expired_child ec WHERE ec.id = p.child_id)
+    )
+LIMIT ${bind(limit)}
+FOR UPDATE OF mt
+"""
+        )
+    }
+        .toList<MessageThreadId>()
+
+    return deleteMessageThreads(threadIds)
+}
+
+/** Includes threads linked to an application, as they are deleted once the application is gone */
+fun personIdsWithThreadsWithoutRecordedChildren() = QuerySql {
+    sql(
+        """
+SELECT tc.person_id
+FROM (${subquery(threadCitizensQuery())}) tc
+JOIN message_thread mt ON mt.id = tc.thread_id
+WHERE ${predicate(withoutRecordedChildren.forTable("mt"))}
+"""
+    )
 }
 
 fun personIdsWithFinanceThreads() = QuerySql {
