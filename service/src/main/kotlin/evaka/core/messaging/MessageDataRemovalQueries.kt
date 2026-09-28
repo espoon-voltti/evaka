@@ -48,17 +48,53 @@ NOT EXISTS (
     )
 }
 
+/** A thread with no messages at all expires by its own creation time */
+private fun lastMessageBefore(expiresBefore: HelsinkiDateTime) = Predicate {
+    where(
+        """
+$it.created < ${bind(expiresBefore)} AND
+NOT EXISTS (
+    SELECT 1
+    FROM message m
+    WHERE m.thread_id = $it.id AND m.created >= ${bind(expiresBefore)}
+)
+"""
+    )
+}
+
+/**
+ * The last placement end is null when the children of the thread have no placements, which leaves
+ * the thread to expire by its messages.
+ */
+private fun expiredByChildPlacements(
+    placementExpireDate: LocalDate,
+    expiresBefore: HelsinkiDateTime,
+) = Predicate {
+    where(
+        """
+COALESCE(
+    (
+        SELECT max(pl.end_date)
+        FROM message_thread_children mtc
+        JOIN placement pl ON pl.child_id = mtc.child_id
+        WHERE mtc.thread_id = $it.id
+    ) < ${bind(placementExpireDate)},
+    ${predicate(lastMessageBefore(expiresBefore).forTable(it))}
+)
+"""
+    )
+}
+
 fun Database.Transaction.deleteExpiredBulletinThreads(
-    recipientExpireDate: LocalDate,
+    placementExpireDate: LocalDate,
     expiresBefore: HelsinkiDateTime,
     limit: Int,
 ): DeletedMessageThreadBatch {
     // A municipal bulletin shares one thread across a whole area or unit and records no children at
     // all, so it has no placement to expire by and falls to the age limit instead.
     //
-    // A staff copy shares its content with the thread it copies. A copy is deleted as soon as the
-    // original thread is gone, which takes one further round. Copies were made of regular messages
-    // too until 2024, so a copy is deleted here whatever its message type.
+    // A staff copy shares its content with its original and is deleted after the original.
+    // Regular messages were copied too until 2024, so copies of any type are deleted.
     //
     // Bulletins linked to an application exist only because of an earlier bug.
     val threadIds = createQuery {
@@ -66,12 +102,6 @@ fun Database.Transaction.deleteExpiredBulletinThreads(
             """
 SELECT mt.id
 FROM message_thread mt
-LEFT JOIN LATERAL (
-    SELECT max(pl.end_date) AS last_placement_end
-    FROM message_thread_children mtc
-    JOIN placement pl ON pl.child_id = mtc.child_id
-    WHERE mtc.thread_id = mt.id
-) recipients ON true
 WHERE
     (mt.message_type = 'BULLETIN' OR mt.is_copy) AND
     ${predicate(unreferencedByApplication.forTable("mt"))} AND
@@ -83,15 +113,7 @@ WHERE
             JOIN message_thread original_thread ON original_thread.id = original.thread_id
             WHERE copy_message.thread_id = mt.id AND NOT original_thread.is_copy
         )
-        WHEN recipients.last_placement_end IS NOT NULL THEN
-            recipients.last_placement_end < ${bind(recipientExpireDate)}
-        ELSE
-            mt.created < ${bind(expiresBefore)} AND
-            NOT EXISTS (
-                SELECT 1
-                FROM message m
-                WHERE m.thread_id = mt.id AND m.created >= ${bind(expiresBefore)}
-            )
+        ELSE ${predicate(expiredByChildPlacements(placementExpireDate, expiresBefore).forTable("mt"))}
     END
 LIMIT ${bind(limit)}
 FOR UPDATE OF mt
@@ -104,43 +126,49 @@ FOR UPDATE OF mt
 }
 
 /**
- * Deletes every thread, of any message type, whose children have all expired. A thread of several
- * children survives until the last of them expires, because the whole conversation is also part of
- * the data of the children who are still retained.
+ * Bulletins, staff copies, and the threads of the service worker and finance accounts have their
+ * own removal rules.
+ */
+private val regularThread = Predicate {
+    where(
+        """
+$it.message_type = 'MESSAGE' AND
+NOT $it.is_copy AND
+NOT EXISTS (
+    SELECT 1
+    FROM message m
+    JOIN message_account sender ON sender.id = m.sender_id
+    WHERE m.thread_id = $it.id AND sender.type IN ('SERVICE_WORKER', 'FINANCE')
+)
+"""
+    )
+}
+
+/**
+ * A regular thread expires once the last placement of its children has ended before
+ * [placementExpireDate]. A thread whose children have no placements expires once it has had no
+ * messages since [expiresBefore].
  *
- * A thread that records no children at all - a municipal bulletin, a staff copy, or a message of
- * the service worker or the finance account - has nothing to expire by and is left to the removal
- * rule of its own kind.
+ * Threads started before September 2022, and until November 2023 by a citizen who chose none of
+ * their children, record no children, so they expire by their messages.
  *
  * A thread of an application, or one whose content an application note references, is kept even
- * when its children have expired, until the application itself is expired and deleted.
+ * when it has expired, until the application itself is expired and deleted.
  */
-fun Database.Transaction.deleteMessageThreadsOfExpiredChildren(
-    expiredChildIdsQuery: QuerySql,
+fun Database.Transaction.deleteExpiredRegularThreads(
+    placementExpireDate: LocalDate,
+    expiresBefore: HelsinkiDateTime,
     limit: Int,
 ): DeletedMessageThreadBatch {
     val threadIds = createQuery {
         sql(
             """
-WITH expired_child (id) AS (
-    ${subquery(expiredChildIdsQuery)}
-), expired_child_thread AS (
-    SELECT DISTINCT mtc.thread_id
-    FROM message_thread_children mtc
-    JOIN expired_child ec ON ec.id = mtc.child_id
-)
 SELECT mt.id
-FROM expired_child_thread ect
-JOIN message_thread mt ON mt.id = ect.thread_id
+FROM message_thread mt
 WHERE
-    NOT EXISTS (
-        SELECT 1
-        FROM message_thread_children mtc
-        WHERE
-            mtc.thread_id = mt.id AND
-            NOT EXISTS (SELECT 1 FROM expired_child ec WHERE ec.id = mtc.child_id)
-    ) AND
-    ${predicate(unreferencedByApplication.forTable("mt"))}
+    ${predicate(regularThread.forTable("mt"))} AND
+    ${predicate(unreferencedByApplication.forTable("mt"))} AND
+    ${predicate(expiredByChildPlacements(placementExpireDate, expiresBefore).forTable("mt"))}
 LIMIT ${bind(limit)}
 FOR UPDATE OF mt
 """
@@ -182,62 +210,46 @@ FOR UPDATE OF mt
     return deleteMessageThreads(threadIds)
 }
 
-/** Selects the finance threads that have had no activity for their whole retention period */
-private fun expiredFinanceThreadIdsQuery(expiresBefore: HelsinkiDateTime) = QuerySql {
-    sql(
-        """
-SELECT ft.id
-FROM message_thread ft
-WHERE
-    EXISTS (
-        SELECT 1
-        FROM message sent
-        JOIN message_account sender ON sender.id = sent.sender_id
-        WHERE sent.thread_id = ft.id AND sender.type = 'FINANCE'
-    ) AND
-    ft.created < ${bind(expiresBefore)} AND
-    NOT EXISTS (
-        SELECT 1
-        FROM message later
-        WHERE later.thread_id = ft.id AND later.created >= ${bind(expiresBefore)}
-    )
-"""
-    )
-}
-
 /**
- * Deletes the finance threads once all children of the recipient citizen have expired, and there
- * has been no activity in the message thread since the expiration date.
+ * A finance thread concerns every child connected to its citizens. It expires once the last
+ * placement of those children has ended before [placementExpireDate], if they have any, and it has
+ * had no messages since [expiresBefore].
  */
 fun Database.Transaction.deleteExpiredFinanceThreads(
     financeConnectionsQuery: QuerySql,
-    expiredChildIdsQuery: QuerySql,
+    placementExpireDate: LocalDate,
     expiresBefore: HelsinkiDateTime,
     limit: Int,
 ): DeletedMessageThreadBatch {
     val threadIds = createQuery {
         sql(
             """
-WITH expired_child (id) AS (
-    ${subquery(expiredChildIdsQuery)}
-), finance_connection AS (
+WITH finance_connection AS (
     ${subquery(financeConnectionsQuery)}
-), expired_finance_thread (id) AS (
-    ${subquery(expiredFinanceThreadIdsQuery(expiresBefore))}
+), finance_thread AS (
+    SELECT DISTINCT m.thread_id
+    FROM message_account acc
+    JOIN message m ON m.sender_id = acc.id
+    WHERE acc.type = 'FINANCE'
 )
 SELECT mt.id
-FROM expired_finance_thread eft
-JOIN message_thread mt ON mt.id = eft.id
-WHERE NOT EXISTS (
-    SELECT 1
+FROM finance_thread ft
+JOIN message_thread mt ON mt.id = ft.thread_id
+LEFT JOIN LATERAL (
+    SELECT max(pl.end_date) AS last_placement_end
     FROM message m
     JOIN message_recipients mr ON mr.message_id = m.id
     JOIN message_account acc ON acc.id = mr.recipient_id AND acc.type = 'CITIZEN'
     JOIN finance_connection fc ON fc.person_id = acc.person_id
-    WHERE
-        m.thread_id = mt.id AND
-        NOT EXISTS (SELECT 1 FROM expired_child ec WHERE ec.id = fc.child_id)
-)
+    JOIN placement pl ON pl.child_id = fc.child_id
+    WHERE m.thread_id = mt.id
+) children ON true
+WHERE
+    (
+        children.last_placement_end IS NULL OR
+        children.last_placement_end < ${bind(placementExpireDate)}
+    ) AND
+    ${predicate(lastMessageBefore(expiresBefore).forTable("mt"))}
 LIMIT ${bind(limit)}
 FOR UPDATE OF mt
 """
