@@ -6,7 +6,6 @@ package evaka.core.daycare.controllers
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import evaka.core.Audit
-import evaka.core.AuditChange
 import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.absence.getDaycareIdByGroup
@@ -367,7 +366,8 @@ class UnitAclController(
                         throw BadRequest("End date cannot be in the past")
                     }
                     audit
-                        .addMeta("endDate", AuditChange(old = currentEndDate, new = update.endDate))
+                        .addMeta("endDate", update.endDate)
+                        .addMeta("previousEndDate", currentEndDate)
                         .observeDate(currentEndDate)
                         .observeDate(update.endDate)
                     tx.updateAclRowEndDate(unitId, employeeId, update.endDate)
