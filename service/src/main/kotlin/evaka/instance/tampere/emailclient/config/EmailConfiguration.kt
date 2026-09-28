@@ -411,7 +411,7 @@ $unsubscribeEn
 
     private fun newCustomerIncomeNotification(): EmailContent =
         EmailContent.fromHtml(
-            subject = "Tulotietojen tarkastuskehotus / Request to review income information",
+            subject = "Toimita tulotiedot / Submit income information",
             html =
                 """
 <p>Hyvä asiakkaamme</p>

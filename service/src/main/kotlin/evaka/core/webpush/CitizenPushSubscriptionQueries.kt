@@ -5,11 +5,13 @@
 package evaka.core.webpush
 
 import evaka.core.pis.NotificationCategory
+import evaka.core.pis.splitFirstNames
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.UiLanguage
 import evaka.core.user.DeviceClass
 import evaka.core.user.ParsedUserAgent
 import java.net.URI
@@ -177,3 +179,47 @@ fun Database.Transaction.deleteCitizenPushSubscription(
     sql("DELETE FROM citizen_push_subscription WHERE id = ${bind(subscription)}")
 }
     .executeAndReturnCount()
+
+fun Database.Read.getCitizenPushSubscriptionIds(person: PersonId): List<CitizenPushSubscriptionId> =
+    createQuery {
+        sql("SELECT id FROM citizen_push_subscription WHERE person_id = ${bind(person)}")
+    }
+    .toList()
+
+/** Null when the subscription no longer exists */
+fun Database.Read.getCitizenPushLanguage(subscription: CitizenPushSubscriptionId): UiLanguage? =
+    createQuery {
+        sql(
+            """
+SELECT coalesce(cu.preferred_ui_language, 'FI') AS language
+FROM citizen_push_subscription cps
+LEFT JOIN citizen_user cu ON cu.id = cps.person_id
+WHERE cps.id = ${bind(subscription)}
+"""
+        )
+    }
+    .exactlyOneOrNull()
+
+fun Database.Read.hasCitizenPushSubscriptions(person: PersonId): Boolean = createQuery {
+    sql("SELECT EXISTS(SELECT FROM citizen_push_subscription WHERE person_id = ${bind(person)})")
+}
+    .exactlyOne()
+
+/**
+ * The name a push notification uses for a child: the first of the first names, and the last name
+ */
+fun pushChildName(firstName: String, lastName: String): String =
+    listOfNotNull(splitFirstNames(firstName).firstOrNull(), lastName.ifBlank { null })
+        .joinToString(" ")
+
+fun Database.Read.getPushChildNames(children: Collection<PersonId>): Map<PersonId, String> =
+    createQuery {
+        sql(
+            """
+SELECT id, first_name, last_name
+FROM person
+WHERE id = ANY(${bind(children)})
+"""
+        )
+    }
+    .toMap { column<PersonId>("id") to pushChildName(column("first_name"), column("last_name")) }

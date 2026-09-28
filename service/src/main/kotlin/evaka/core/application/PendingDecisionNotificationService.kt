@@ -19,6 +19,11 @@ import evaka.core.shared.async.AsyncJobType
 import evaka.core.shared.async.removeUnclaimedJobs
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.PendingDecision
+import evaka.core.webpush.hasCitizenPushSubscriptions
+import evaka.core.webpush.pushChildName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import org.springframework.stereotype.Service
@@ -26,31 +31,34 @@ import org.springframework.stereotype.Service
 private val logger = KotlinLogging.logger {}
 
 @Service
-class PendingDecisionEmailService(
+class PendingDecisionNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
 ) {
     init {
-        asyncJobRunner.registerHandler(::doSendPendingDecisionsEmail)
+        asyncJobRunner.registerHandler(::doSendPendingDecisionNotification)
     }
 
-    fun doSendPendingDecisionsEmail(
+    fun doSendPendingDecisionNotification(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendPendingDecisionEmail,
+        msg: AsyncJob.SendPendingDecisionNotification,
     ) {
-        logger.info { "Sending pending decision reminder email to guardian ${msg.guardianId}" }
-        sendPendingDecisionEmail(db, clock, msg)
+        logger.info { "Sending pending decision reminder to guardian ${msg.guardianId}" }
+        sendPendingDecisionNotification(db, clock, msg)
     }
 
     data class GuardianDecisions(val guardianId: PersonId, val decisionIds: List<DecisionId>)
 
     @IgnorableReturnValue
-    fun scheduleSendPendingDecisionsEmails(db: Database.Connection, clock: EvakaClock): Int {
+    fun schedulePendingDecisionNotifications(db: Database.Connection, clock: EvakaClock): Int {
         val jobCount = db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SendPendingDecisionEmail::class)))
+            tx.removeUnclaimedJobs(
+                setOf(AsyncJobType(AsyncJob.SendPendingDecisionNotification::class))
+            )
 
             val today = clock.today()
             val pendingGuardianDecisions =
@@ -85,14 +93,15 @@ GROUP BY application.guardian_id
                         when {
                             guardian == null -> {
                                 logger.warn {
-                                    "Could not send pending decision email to guardian ${pendingDecision.guardianId}: guardian not found"
+                                    "Could not send pending decision reminder to guardian ${pendingDecision.guardianId}: guardian not found"
                                 }
                                 count
                             }
 
-                            guardian.email.isNullOrBlank() -> {
+                            guardian.email.isNullOrBlank() &&
+                                !tx.hasCitizenPushSubscriptions(guardian.id) -> {
                                 logger.warn {
-                                    "Could not send pending decision email to guardian ${guardian.id}: invalid email"
+                                    "Could not send pending decision reminder to guardian ${guardian.id}: no email address or push subscription"
                                 }
                                 count
                             }
@@ -102,7 +111,7 @@ GROUP BY application.guardian_id
                                     tx,
                                     payloads =
                                         listOf(
-                                            AsyncJob.SendPendingDecisionEmail(
+                                            AsyncJob.SendPendingDecisionNotification(
                                                 guardianId = pendingDecision.guardianId,
                                                 language = guardian.language,
                                                 decisionIds = pendingDecision.decisionIds,
@@ -119,7 +128,7 @@ GROUP BY application.guardian_id
                 }
 
             logger.info {
-                "PendingDecisionEmailService: Scheduled sending $createdJobCount pending decision emails"
+                "PendingDecisionNotificationService: Scheduled sending $createdJobCount pending decision reminders"
             }
             createdJobCount
         }
@@ -127,12 +136,14 @@ GROUP BY application.guardian_id
         return jobCount
     }
 
-    fun sendPendingDecisionEmail(
+    fun sendPendingDecisionNotification(
         db: Database.Connection,
         clock: EvakaClock,
-        pendingDecision: AsyncJob.SendPendingDecisionEmail,
+        pendingDecision: AsyncJob.SendPendingDecisionNotification,
     ) {
-        logger.info { "Sending pending decision email to guardian ${pendingDecision.guardianId}" }
+        logger.info {
+            "Sending pending decision reminder to guardian ${pendingDecision.guardianId}"
+        }
         val lang = getLanguage(pendingDecision.language)
 
         Email.create(
@@ -144,6 +155,16 @@ GROUP BY application.guardian_id
                 "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
             )
             ?.also { emailClient.send(it) }
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                pendingDecision.guardianId,
+                CitizenPushNotification.PendingDecisions(
+                    tx.getPendingDecisionsForPush(pendingDecision.decisionIds)
+                ),
+            )
+        }
 
         val now = clock.now()
         db.transaction { tx ->
@@ -175,3 +196,26 @@ WHERE id = ${bind(decisionId)}
         }
     }
 }
+
+private fun Database.Read.getPendingDecisionsForPush(
+    decisionIds: List<DecisionId>
+): List<PendingDecision> = createQuery {
+    sql(
+        """
+SELECT p.first_name, p.last_name, d.type, u.name AS unit_name
+FROM decision d
+JOIN application a ON d.application_id = a.id
+JOIN person p ON a.child_id = p.id
+JOIN daycare u ON d.unit_id = u.id
+WHERE d.id = ANY(${bind(decisionIds)})
+ORDER BY d.sent_date, p.last_name, p.first_name, d.type
+"""
+    )
+}
+    .toList {
+        PendingDecision(
+            childName = pushChildName(column("first_name"), column("last_name")),
+            type = column("type"),
+            unitName = column("unit_name"),
+        )
+    }

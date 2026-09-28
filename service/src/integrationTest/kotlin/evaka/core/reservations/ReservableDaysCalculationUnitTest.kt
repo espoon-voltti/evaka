@@ -113,4 +113,29 @@ class ReservableDaysCalculationUnitTest {
             LocalDateTime.of(mondayBeforeDaylightSavingTimeChange, timeAtThreshold),
         )
     }
+
+    @Test
+    fun `reservation deadline is the threshold before Monday`() {
+        assertEquals(
+            HelsinkiDateTime.of(justBeforeThreshold.plusMinutes(1)),
+            getReservationDeadline(mondayNextWeekAfterThreshold, thresholdMondayAt1800),
+        )
+    }
+
+    @Test
+    fun `reservation deadline keeps the wall clock time across daylight saving time changes`() {
+        // The week before each of these Mondays contains a daylight saving time change
+        listOf(LocalDate.of(2025, 10, 27), LocalDate.of(2026, 3, 30)).forEach { monday ->
+            val deadline = getReservationDeadline(monday, thresholdMondayAt1800)
+            assertEquals(HelsinkiDateTime.of(monday.minusWeeks(1), timeAtThreshold), deadline)
+            assertEquals(
+                monday,
+                getNextReservableMonday(deadline.minusMinutes(1), thresholdMondayAt1800),
+            )
+            assertEquals(
+                monday.plusWeeks(1),
+                getNextReservableMonday(deadline, thresholdMondayAt1800),
+            )
+        }
+    }
 }

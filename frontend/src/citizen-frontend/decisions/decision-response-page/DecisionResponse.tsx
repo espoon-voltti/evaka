@@ -28,6 +28,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, H3, H4, Label } from 'lib-components/typography'
@@ -67,7 +68,8 @@ export default React.memo(function DecisionResponse({
   const {
     id: decisionId,
     applicationId,
-    childName,
+    childFirstName,
+    childLastName,
     sentDate,
     status,
     startDate,
@@ -163,8 +165,11 @@ export default React.memo(function DecisionResponse({
         />
       </DecisionHeaderRow>
       <ThinHorizontalLine />
-      <H4 data-qa="decision-child-name" translate="no" $noMargin>
-        {childName}
+      <H4 data-qa="decision-child-name" $noMargin>
+        <PersonName
+          person={{ firstName: childFirstName, lastName: childLastName }}
+          format="First Last"
+        />
       </H4>
       <Gap $size="xxs" />
       <H2 data-qa="title-decision-type" $noMargin>

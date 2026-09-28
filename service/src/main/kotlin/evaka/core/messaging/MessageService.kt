@@ -31,11 +31,10 @@ import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.utils.assertNotNull
+import evaka.core.webpush.CITIZEN_PUSH_RETRY_COUNT
 import org.springframework.stereotype.Component
 
 private const val DELETION_WINDOW_DAYS = 8L
-
-private const val CITIZEN_PUSH_RETRY_COUNT = 3
 
 @Component
 class MessageService(
@@ -69,7 +68,6 @@ class MessageService(
             asyncJobRunner.plan(
                 tx,
                 citizenMessagePushNotifications.getAsyncJobs(tx, messages),
-                // a notification that is a day old has no value, so few retries are enough
                 retryCount = CITIZEN_PUSH_RETRY_COUNT,
                 runAt = clock.now(),
             )

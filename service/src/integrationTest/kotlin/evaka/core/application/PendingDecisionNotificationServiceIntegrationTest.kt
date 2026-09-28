@@ -32,6 +32,11 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.job.ScheduledJobs
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.PendingDecision
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -39,7 +44,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+class PendingDecisionNotificationServiceIntegrationTest :
+    FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired lateinit var scheduledJobs: ScheduledJobs
@@ -115,6 +121,33 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
             "kirjautumalla osoitteeseen <a",
             "kirjautumalla osoitteeseen https",
+        )
+    }
+
+    @Test
+    fun `pending decision reminder is pushed to a guardian who has only a push device`() {
+        db.transaction { tx ->
+            tx.execute { sql("UPDATE person SET email = NULL WHERE id = ${bind(adult.id)}") }
+            tx.insertTestCitizenPushSubscription(adult.id, mockWebPushEndpoint(httpPort))
+        }
+        createPendingDecision(today.minusDays(8), null, null, 0)
+
+        runPendingDecisionEmailAsyncJobs()
+
+        assertEquals(0, MockEmailClient.emails.size)
+        assertEquals(
+            listOf(
+                CitizenPushNotification.PendingDecisions(
+                    listOf(
+                        PendingDecision(
+                            "${child.firstName} ${child.lastName}",
+                            DecisionType.DAYCARE,
+                            daycare.name,
+                        )
+                    )
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
         )
     }
 

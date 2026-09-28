@@ -144,8 +144,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       }
 
       await dayView.assertEvent(jariId, individualEventId, {
-        title:
-          'Individual event / Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
+        title: 'Individual event / Jari-Petteri',
         description: 'Just Jari'
       })
 

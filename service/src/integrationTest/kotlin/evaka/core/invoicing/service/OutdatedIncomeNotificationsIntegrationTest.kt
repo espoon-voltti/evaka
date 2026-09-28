@@ -43,6 +43,10 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.job.ScheduledJobs
 import evaka.core.snDaycareContractDays15
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -167,6 +171,40 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             IncomeNotificationType.INITIAL_EMAIL,
             getIncomeNotifications(fridgeHeadOfChild.id)[0].notificationType,
         )
+    }
+
+    @Test
+    fun `expiring income is pushed to a guardian who has only a push device`() {
+        db.transaction { tx ->
+            tx.execute {
+                sql("UPDATE person SET email = NULL WHERE id = ${bind(fridgeHeadOfChild.id)}")
+            }
+            tx.insertTestCitizenPushSubscription(
+                fridgeHeadOfChild.id,
+                mockWebPushEndpoint(httpPort),
+            )
+            tx.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChild.id,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = clock.today().minusMonths(1),
+                    validTo = clock.today().plusWeeks(4),
+                )
+            )
+        }
+
+        assertEquals(0, getEmails().size)
+        assertEquals(
+            listOf(
+                CitizenPushNotification.Income(
+                    IncomeNotificationType.INITIAL_EMAIL,
+                    expirationDate = clock.today().plusWeeks(4),
+                    deadline = null,
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
     }
 
     @Test

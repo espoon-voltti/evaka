@@ -43,6 +43,7 @@ import type {
   ChildId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatPersonName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
 import type TimeInterval from 'lib-common/time-interval'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -595,7 +596,10 @@ const DayModal = React.memo(function DayModal({
                                             : event.currentAttending.type ===
                                                 'GROUP'
                                               ? event.currentAttending.groupName
-                                              : row.firstName}
+                                              : formatPersonName(
+                                                  row,
+                                                  'FirstFirst'
+                                                )}
                                         </LabelLike>
                                       </div>
                                       {date.isEqualOrAfter(today) && (

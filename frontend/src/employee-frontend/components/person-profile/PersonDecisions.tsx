@@ -11,6 +11,7 @@ import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { PersonName } from 'lib-components/molecules/PersonNames'
 import { featureFlags } from 'lib-customizations/employee'
 import { faBoxArchive } from 'lib-icons'
 
@@ -70,14 +71,21 @@ const PersonDecisionsTable = ({
           decisions,
           [
             ({ data: decision }) => decision.startDate,
-            ({ data: decision }) => decision.childName
+            ({ data: decision }) => decision.childLastName,
+            ({ data: decision }) => decision.childFirstName
           ],
           ['desc']
         ).map(({ data: decision, permittedActions }) => (
           <Tr key={decision.id} data-qa="table-decision-row">
             <NameTd data-qa="decision-child-name">
               <Link to={`/child-information/${decision.childId}`}>
-                {decision.childName}
+                <PersonName
+                  person={{
+                    firstName: decision.childFirstName,
+                    lastName: decision.childLastName
+                  }}
+                  format="Last First"
+                />
               </Link>
             </NameTd>
             <Td data-qa="decision-preferred-unit-id">

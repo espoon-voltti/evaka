@@ -94,7 +94,7 @@ export function getSummaryForMonth(
       return []
     }
     return {
-      name: formatPersonName(rest, 'Preferred'),
+      name: formatPersonName(rest, 'FirstFirst'),
       ...summaryForMonth
     }
   })
@@ -107,8 +107,7 @@ export const getChildImages = (
     childId: child.id,
     imageId: child.imageId,
     initialLetter: (formatPersonName(child, 'FirstFirst') || '?')[0],
-    colorIndex: index,
-    childName: child.firstName
+    colorIndex: index
   }))
 
 export const formatReservation = (
