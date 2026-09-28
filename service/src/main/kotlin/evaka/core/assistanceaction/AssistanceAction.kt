@@ -48,7 +48,10 @@ enum class AssistanceActionOptionCategory : DatabaseEnum {
 data class AssistanceActionOption(
     val value: String,
     val nameFi: String,
+    /** Falls back to [nameFi] when the municipality has not provided Swedish. */
+    val nameSv: String,
     val descriptionFi: String?,
+    val descriptionSv: String?,
     val category: AssistanceActionOptionCategory,
     val displayOrder: Int?,
     val validFrom: LocalDate?,

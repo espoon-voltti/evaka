@@ -59,6 +59,7 @@ import evaka.core.user.EvakaUserType
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -224,7 +225,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         ),
                                     shiftCare = ShiftCareType.NONE,
                                     partWeek = false,
-                                    optionName = snDefaultDaycare.nameFi,
+                                    optionNameFi = snDefaultDaycare.nameFi,
+                                    optionNameSv = snDefaultDaycare.nameSv,
                                     hasContractDays = false,
                                     daycareHoursPerMonth = null,
                                 ),
@@ -235,7 +237,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         FiniteDateRange(placementStart.plusWeeks(2), placementEnd),
                                     shiftCare = ShiftCareType.NONE,
                                     partWeek = false,
-                                    optionName = snDaycareContractDays15.nameFi,
+                                    optionNameFi = snDaycareContractDays15.nameFi,
+                                    optionNameSv = snDaycareContractDays15.nameSv,
                                     hasContractDays = true,
                                     daycareHoursPerMonth = null,
                                 ),
@@ -393,7 +396,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                             optionId = snDaycareFullDay35.id,
                                             hasContractDays = false,
                                             daycareHoursPerMonth = null,
-                                            optionName = snDaycareFullDay35.nameFi,
+                                            optionNameFi = snDaycareFullDay35.nameFi,
+                                            optionNameSv = snDaycareFullDay35.nameSv,
                                             validDuring =
                                                 FiniteDateRange(placementStart, placementEnd),
                                             shiftCare = ShiftCareType.FULL,
@@ -2192,7 +2196,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     optionId = snDaycareContractDays15.id,
                     hasContractDays = true,
                     daycareHoursPerMonth = null,
-                    optionName = snDaycareContractDays15.nameFi,
+                    optionNameFi = snDaycareContractDays15.nameFi,
+                    optionNameSv = snDaycareContractDays15.nameSv,
                     validDuring = FiniteDateRange(placementStart, placementEnd),
                     shiftCare = ShiftCareType.NONE,
                     partWeek = false,
@@ -2200,6 +2205,34 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
             result.children.find { it.id == child1.id }?.actualServiceNeeds!!,
         )
+    }
+
+    @Test
+    fun `actual service needs include Swedish service need names`() {
+        val option =
+            snDaycareFullDay35.copy(
+                id = ServiceNeedOptionId(UUID.randomUUID()),
+                nameFi = "Kokopäiväinen, vähintään 35h",
+                nameSv = "Heldag, minst 35h",
+            )
+        db.transaction { tx -> tx.insert(option) }
+        insertGroupPlacement(childId = child1.id, serviceNeedOptionId = option.id)
+
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementStart,
+                group.id,
+                placementStart.year,
+                placementStart.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
+
+        val serviceNeed = result.children.single().actualServiceNeeds.single()
+        assertEquals("Kokopäiväinen, vähintään 35h", serviceNeed.optionNameFi)
+        assertEquals("Heldag, minst 35h", serviceNeed.optionNameSv)
     }
 
     private fun insertGroupPlacement(

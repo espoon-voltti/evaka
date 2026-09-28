@@ -960,6 +960,7 @@ const ServiceNeedTooltipLabel = ({
   placement: DaycareGroupPlacementDetailed
   filters: UnitFilters
 }) => {
+  const { lang } = useTranslation()
   if (!placement.serviceNeedDetailVisible) {
     return null
   }
@@ -969,11 +970,14 @@ const ServiceNeedTooltipLabel = ({
   )
   const filterRange = new FiniteDateRange(filters.startDate, filters.endDate)
   const serviceNeeds = placement.serviceNeeds.reduce<
-    { range: FiniteDateRange; nameFi: string }[]
+    { range: FiniteDateRange; name: string }[]
   >((arr, sn) => {
     const snRange = new FiniteDateRange(sn.startDate, sn.endDate)
     if (snRange.overlaps(placementRange) && snRange.overlaps(filterRange)) {
-      arr.push({ range: snRange, nameFi: sn.option.nameFi })
+      arr.push({
+        range: snRange,
+        name: lang === 'sv' ? sn.option.nameSv : sn.option.nameFi
+      })
     }
     return arr
   }, [])
@@ -982,7 +986,10 @@ const ServiceNeedTooltipLabel = ({
     .filter((gap) => gap.overlaps(filterRange))
     .map((gap) => ({
       range: gap,
-      nameFi: placement.defaultServiceNeedOptionNameFi ?? ''
+      name:
+        (lang === 'sv'
+          ? placement.defaultServiceNeedOptionNameSv
+          : placement.defaultServiceNeedOptionNameFi) ?? ''
     }))
   return (
     <>
@@ -994,7 +1001,7 @@ const ServiceNeedTooltipLabel = ({
             key={`service-need-${sn.range.start.formatIso()}`}
             style={{ whiteSpace: 'nowrap' }}
           >
-            {sn.nameFi}:
+            {sn.name}:
             <br />
             {sn.range.format()}
           </p>

@@ -9,11 +9,13 @@ import evaka.core.assistance.AssistanceController
 import evaka.core.insertAssistanceActionOptions
 import evaka.core.placement.PlacementType
 import evaka.core.shared.AssistanceActionId
+import evaka.core.shared.AssistanceActionOptionId
 import evaka.core.shared.ChildId
 import evaka.core.shared.PlacementId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevAssistanceAction
+import evaka.core.shared.dev.DevAssistanceActionOption
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
@@ -54,6 +56,53 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(admin)
             tx.insertAssistanceActionOptions()
         }
+    }
+
+    @Test
+    fun `assistance action option Swedish falls back to Finnish when not provided`() {
+        // Finnish-only, as every municipality's seed data is today
+        db.transaction {
+            it.insert(
+                DevAssistanceActionOption(
+                    id = AssistanceActionOptionId(UUID.randomUUID()),
+                    value = "FINNISH_ONLY_OPTION",
+                    nameFi = "Pienennetty ryhmä",
+                    descriptionFi = "Ryhmän rakenne",
+                )
+            )
+        }
+
+        val option =
+            db.transaction { it.getAssistanceActionOptions() }
+                .first { it.value == "FINNISH_ONLY_OPTION" }
+
+        assertEquals("Pienennetty ryhmä", option.nameSv)
+        assertEquals("Ryhmän rakenne", option.descriptionSv)
+    }
+
+    @Test
+    fun `assistance action option returns Swedish when provided`() {
+        db.transaction {
+            it.insert(
+                DevAssistanceActionOption(
+                    id = AssistanceActionOptionId(UUID.randomUUID()),
+                    value = "SWEDISH_OPTION",
+                    nameFi = "Pienennetty ryhmä",
+                    nameSv = "Förminskad grupp",
+                    descriptionFi = "Ryhmän rakenne",
+                    descriptionSv = "Gruppens sammansättning",
+                )
+            )
+        }
+
+        val option =
+            db.transaction { it.getAssistanceActionOptions() }
+                .first { it.value == "SWEDISH_OPTION" }
+
+        assertEquals("Förminskad grupp", option.nameSv)
+        assertEquals("Gruppens sammansättning", option.descriptionSv)
+        assertEquals("Pienennetty ryhmä", option.nameFi)
+        assertEquals("Ryhmän rakenne", option.descriptionFi)
     }
 
     @Test

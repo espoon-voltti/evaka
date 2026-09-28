@@ -185,9 +185,11 @@ AND option_id NOT IN (SELECT id FROM assistance_action_option WHERE value = ANY(
 fun Database.Read.getAssistanceActionOptions(): List<AssistanceActionOption> = createQuery {
     sql(
         """
-                    SELECT value, name_fi, description_fi, category, display_order, valid_from, valid_to 
-                    FROM assistance_action_option 
-                """
+SELECT value, name_fi, coalesce(name_sv, name_fi) AS name_sv,
+    description_fi, coalesce(description_sv, description_fi) AS description_sv,
+    category, display_order, valid_from, valid_to
+FROM assistance_action_option
+"""
     )
 }
     .toList()

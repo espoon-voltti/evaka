@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default React.memo(function ChildrenSection({ decision }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   return (
     <section>
@@ -29,6 +29,7 @@ export default React.memo(function ChildrenSection({ decision }: Props) {
           placementType,
           serviceNeedFeeCoefficient,
           serviceNeedDescriptionFi,
+          serviceNeedDescriptionSv,
           fee,
           siblingDiscount,
           feeAlterations,
@@ -36,9 +37,10 @@ export default React.memo(function ChildrenSection({ decision }: Props) {
         }) => {
           const mainDescription = `${
             i18n.placement.type[placementType]
-          }, ${serviceNeedDescriptionFi.toLowerCase()} (${
-            serviceNeedFeeCoefficient * 100
-          } %)${
+          }, ${(lang === 'sv'
+            ? serviceNeedDescriptionSv
+            : serviceNeedDescriptionFi
+          ).toLowerCase()} (${serviceNeedFeeCoefficient * 100} %)${
             siblingDiscount
               ? `, ${i18n.feeDecision.form.summary.parts.siblingDiscount} ${siblingDiscount}%`
               : ''

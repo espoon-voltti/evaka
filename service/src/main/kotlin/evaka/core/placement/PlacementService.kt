@@ -640,14 +640,16 @@ SELECT
     c.last_name,
     c.date_of_birth,
     sn.service_needs,
-    default_sno.name_fi AS default_service_need_option_name_fi
+    default_sno.name_fi AS default_service_need_option_name_fi,
+    default_sno.name_sv AS default_service_need_option_name_sv
 FROM missing_group_placement p
 JOIN person c ON p.child_id = c.id
 JOIN LATERAL (
     SELECT coalesce(jsonb_agg(jsonb_build_object(
         'startDate', sn.start_date,
         'endDate', sn.end_date,
-        'nameFi', sno.name_fi
+        'nameFi', sno.name_fi,
+        'nameSv', sno.name_sv
     )), '[]'::jsonb) AS service_needs
     FROM service_need sn
     JOIN service_need_option sno ON sn.option_id = sno.id
@@ -770,6 +772,7 @@ data class MissingGroupPlacement(
     val dateOfBirth: LocalDate,
     @Json val serviceNeeds: List<MissingGroupPlacementServiceNeed>,
     val defaultServiceNeedOptionNameFi: String?,
+    val defaultServiceNeedOptionNameSv: String?,
     val gap: FiniteDateRange,
 )
 
@@ -788,6 +791,7 @@ data class MissingGroupPlacementServiceNeed(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val nameFi: String,
+    val nameSv: String,
 )
 
 data class ChildBasics(

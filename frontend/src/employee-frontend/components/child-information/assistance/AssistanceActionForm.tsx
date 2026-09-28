@@ -218,7 +218,10 @@ export default React.memo(function AssistanceActionForm(props: Props) {
               optionsWithValidation.filter(
                 (o) => o.category === category && o.validation !== false
               ),
-              [(o) => o.displayOrder, (o) => o.nameFi]
+              [
+                (o) => o.displayOrder,
+                (o) => (lang === 'sv' ? o.nameSv : o.nameFi)
+              ]
             )
           }),
         {} as Record<
@@ -226,7 +229,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
           typeof optionsWithValidation
         >
       ),
-    [optionsWithValidation]
+    [optionsWithValidation, lang]
   )
 
   useEffect(() => {
@@ -357,11 +360,15 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                 {sortedOptions[category].map((option) => (
                   <ExpandingInfo
                     key={option.value}
-                    info={option.descriptionFi}
+                    info={
+                      lang === 'sv'
+                        ? option.descriptionSv
+                        : option.descriptionFi
+                    }
                     width="full"
                   >
                     <Checkbox
-                      label={option.nameFi}
+                      label={lang === 'sv' ? option.nameSv : option.nameFi}
                       checked={form.actions.includes(option.value)}
                       onChange={(value) => {
                         const actions = new Set(form.actions)

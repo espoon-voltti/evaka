@@ -52,7 +52,7 @@ export default React.memo(function AssistanceActionRow({
   assistanceActionOptions,
   refSectionTop
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const expandedAtStart = isActiveDateRange(
     assistanceAction.startDate,
     assistanceAction.endDate
@@ -76,12 +76,15 @@ export default React.memo(function AssistanceActionRow({
                   o.category === category &&
                   assistanceAction.actions.includes(o.value)
               ),
-              [(o) => o.displayOrder, (o) => o.nameFi]
+              [
+                (o) => o.displayOrder,
+                (o) => (lang === 'sv' ? o.nameSv : o.nameFi)
+              ]
             )
           }),
         {} as Record<AssistanceActionOptionCategory, AssistanceActionOption[]>
       ),
-    [assistanceActionOptions, assistanceAction.actions]
+    [assistanceActionOptions, assistanceAction.actions, lang]
   )
 
   return (
@@ -172,7 +175,9 @@ export default React.memo(function AssistanceActionRow({
                           </LabelLike>
                           <UnorderedList>
                             {optionsByCategory[category].map((option) => (
-                              <li key={option.value}>{option.nameFi}</li>
+                              <li key={option.value}>
+                                {lang === 'sv' ? option.nameSv : option.nameFi}
+                              </li>
                             ))}
                           </UnorderedList>
                         </FixedSpaceColumn>

@@ -239,9 +239,11 @@ export interface DevAssistanceAction {
 export interface DevAssistanceActionOption {
   category: AssistanceActionOptionCategory
   descriptionFi: string | null
+  descriptionSv: string | null
   displayOrder: number | null
   id: AssistanceActionOptionId
   nameFi: string
+  nameSv: string | null
   validFrom: LocalDate | null
   validTo: LocalDate | null
   value: string
