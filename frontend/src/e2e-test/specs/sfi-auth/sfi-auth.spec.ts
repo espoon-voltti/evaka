@@ -20,10 +20,14 @@ async function enduserLoginSfi(page: Page, person: DevPerson) {
     throw new Error('Person does not have an SSN: cannot login')
   }
   await page.goto(`${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`)
+  await selectSfiPerson(page, person)
+  await expect(page.findByDataQa('header-city-logo')).toBeVisible()
+}
+
+async function selectSfiPerson(page: Page, person: DevPerson) {
   await page.find(`[id="${person.ssn}"]`).locator.check()
   await page.find('[type=submit]').findText('Kirjaudu').click()
   await page.find('[type=submit]').findText('Jatka').click()
-  await expect(page.findByDataQa('header-city-logo')).toBeVisible()
 }
 
 async function employeeLoginSfi(page: Page, employee: DevEmployee) {
@@ -129,5 +133,27 @@ test.describe('SFI authentication', () => {
     await citizenTab.findByDataQa('desktop-nav').click()
     await citizenTab.bringToFront()
     await expect(citizenTab.findByDataQa('session-expired-modal')).toBeVisible()
+  })
+
+  test('Strong login page takes a weakly logged in citizen to the next page after SFI login', async () => {
+    const credentials = {
+      username: 'test@example.com',
+      password: 'TestPassword456!'
+    }
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+    await enduserLoginWeak(citizenTab, credentials)
+    await citizenTab.goto(`${config.enduserUrl}/login/strong?next=%2Fincome`)
+    await citizenTab.findByDataQa('strong-login').click()
+    await selectSfiPerson(citizenTab, testAdult)
+    await citizenTab.page.waitForURL(`${config.enduserUrl}/income`)
+  })
+
+  test('Strong login page takes a strongly logged in citizen directly to the next page', async () => {
+    await enduserLoginSfi(citizenTab, testAdult)
+    await citizenTab.goto(`${config.enduserUrl}/login/strong?next=%2Fincome`)
+    await citizenTab.page.waitForURL(`${config.enduserUrl}/income`)
   })
 })
