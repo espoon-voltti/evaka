@@ -333,6 +333,49 @@ test.describe('Realtime staff attendance page', () => {
     ])
   })
 
+  test('Staff member cannot use arrival time that is not after the start of ongoing other work', async () => {
+    await Fixture.staffAttendancePlan({
+      id: randomId<StaffAttendancePlanId>(),
+      employeeId: staffFixture.id,
+      startTime: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
+      endTime: HelsinkiDateTime.of(2022, 5, 5, 16, 0)
+    }).save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
+      departed: HelsinkiDateTime.of(2022, 5, 5, 14, 2),
+      type: 'PRESENT'
+    }).save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: null,
+      arrived: HelsinkiDateTime.of(2022, 5, 5, 14, 2),
+      departed: null,
+      type: 'OTHER_WORK'
+    }).save()
+
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 30))
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
+
+    // Equal to the last departure time, which is allowed when no other work is ongoing
+    await staffAttendancePage.anyArrivalPage.arrivedInput.fill('14:02')
+    await expect(
+      staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture
+    ).toBeVisible()
+    await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.assertText(
+      (text) => text.endsWith('14:02')
+    )
+    await staffAttendancePage.anyArrivalPage.markArrived.assertDisabled(true)
+
+    await staffAttendancePage.anyArrivalPage.arrivedInput.fill('14:03')
+    await expect(
+      staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture
+    ).toBeHidden()
+    await staffAttendancePage.anyArrivalPage.markArrived.assertDisabled(false)
+  })
+
   test('Staff member cannot be marked as arrived on a non-operational day', async () => {
     const saturday = LocalDate.of(2022, 5, 7)
     await initPages(HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)))

@@ -560,6 +560,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}"
                         )
                     }
+                    if (ongoingAttendance != null && arrivalTime <= ongoingAttendance.arrived) {
+                        throw BadRequest(
+                            "Arrival time must be after the start of the ongoing attendance"
+                        )
+                    }
                     listOfNotNull(
                         ongoingAttendance?.copy(departed = arrivalTime)
                             ?: if (arrival.type == null || latestDepartureToday != null) null
