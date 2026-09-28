@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Redirect, useSearchParams } from 'wouter'
 
 import { string } from 'lib-common/form/fields'
@@ -10,7 +10,6 @@ import { object, validated, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import { useMutationResult } from 'lib-common/query'
-import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
 import Main from 'lib-components/atoms/Main'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -37,6 +36,7 @@ import {
   WideAsyncButton,
   WideLinkButton
 } from './layout'
+import { validatedNextPath } from './next-path'
 import { authWeakLoginMutation } from './queries'
 
 export default React.memo(function WeakLoginFormPage() {
@@ -48,7 +48,7 @@ export default React.memo(function WeakLoginFormPage() {
   const unvalidatedNextPath = searchParams.get('next')
 
   if (user) {
-    return <Redirect to="/" replace />
+    return <Redirect to={validatedNextPath(unvalidatedNextPath)} replace />
   }
 
   return (
@@ -114,13 +114,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
     authWeakLoginMutation
   )
 
-  const nextUrl = useMemo(
-    () =>
-      unvalidatedNextPath
-        ? parseUrlWithOrigin(window.location, unvalidatedNextPath)
-        : undefined,
-    [unvalidatedNextPath]
-  )
+  const nextPath = validatedNextPath(unvalidatedNextPath)
 
   const form = useForm(
     weakLoginForm,
@@ -144,7 +138,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
       )
       if (result === 'success') {
         rememberLastLoginMethod('passkey')
-        window.location.replace(nextUrl ?? '/')
+        window.location.replace(nextPath)
       } else if (result === 'failure') {
         // A 'cancelled' result must stay silent: it also happens when the citizen
         // ignores the autofill suggestion, or when the effect aborts the ceremony
@@ -152,9 +146,9 @@ const WeakLoginForm = React.memo(function WeakLogin({
       }
     })().catch(() => undefined)
 
-    // Abort the pending passkey login if the component unmounts or nextUrl changes
+    // Abort the pending passkey login if the component unmounts or nextPath changes
     return () => abortController.abort()
-  }, [nextUrl])
+  }, [nextPath])
   return (
     <form
       action=""
@@ -209,7 +203,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
           }}
           onSuccess={() => {
             rememberLastLoginMethod('email')
-            window.location.replace(nextUrl ?? '/')
+            window.location.replace(nextPath)
           }}
           onFailure={(error) => {
             if (error.statusCode === 429) {

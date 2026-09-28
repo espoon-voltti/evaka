@@ -162,3 +162,42 @@ test.describe('Citizen login redirects - weak login', () => {
     })
   })
 })
+
+test.describe('Citizen login redirects - already logged in', () => {
+  let page: Page
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testAdult.saveAdult({
+      updateMockVtjWithDependants: []
+    })
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+
+    page = evaka
+  })
+
+  test('Login page takes a logged in user to the next page', async () => {
+    await enduserLogin(page, testAdult)
+    await page.goto(`${config.enduserLoginUrl}?next=%2Fincome`)
+    await page.page.waitForURL(`${config.enduserUrl}/income`)
+  })
+
+  test('Weak login form takes a logged in user to the next page', async () => {
+    await enduserLoginWeak(page, credentials)
+    await page.goto(
+      `${config.enduserUrl}/login/form?next=${encodeURIComponent('/messages?x=1')}`
+    )
+    await page.page.waitForURL(`${config.enduserUrl}/messages?x=1`)
+  })
+
+  test('Login page ignores a next page on another origin', async () => {
+    await enduserLogin(page, testAdult)
+    await page.goto(
+      `${config.enduserLoginUrl}?next=${encodeURIComponent('https://example.com/')}`
+    )
+    await page.page.waitForURL(`${config.enduserUrl}/applications`)
+  })
+})

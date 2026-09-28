@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useCallback, useMemo, useState } from 'react'
+import React, { Fragment, useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { Link, Redirect, useLocation, useSearchParams } from 'wouter'
 
 import { useQueryResult } from 'lib-common/query'
-import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin } from 'lib-components/breakpoints'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
@@ -39,6 +38,7 @@ import {
   UsedLastChip,
   WideLinkButton
 } from './layout'
+import { validatedNextPath } from './next-path'
 import { systemNotificationsQuery } from './queries'
 
 export default React.memo(function LoginPage() {
@@ -54,7 +54,7 @@ export default React.memo(function LoginPage() {
   const [passkeyFailed, setPasskeyFailed] = useState(false)
 
   if (user) {
-    return <Redirect to="/" replace />
+    return <Redirect to={validatedNextPath(unvalidatedNextPath)} replace />
   }
 
   return (
@@ -189,24 +189,18 @@ const WeakLoginMethods = React.memo(function WeakLoginMethods({
   const passkeysEnabled = passkeysSupported()
   const lastLoginMethod = useLastLoginMethod()
 
-  const nextUrl = useMemo(
-    () =>
-      unvalidatedNextPath
-        ? parseUrlWithOrigin(window.location, unvalidatedNextPath)
-        : undefined,
-    [unvalidatedNextPath]
-  )
+  const nextPath = validatedNextPath(unvalidatedNextPath)
 
   const loginWithPasskey = useCallback(async () => {
     setPasskeyFailed(false)
     const result = await authPasskeyLogin()
     if (result === 'success') {
       rememberLastLoginMethod('passkey')
-      window.location.replace(nextUrl ?? '/')
+      window.location.replace(nextPath)
     } else {
       setPasskeyFailed(true)
     }
-  }, [nextUrl, setPasskeyFailed])
+  }, [nextPath, setPasskeyFailed])
 
   const emailButton = (isPrimary: boolean) => (
     <LoginMethod key="email">
