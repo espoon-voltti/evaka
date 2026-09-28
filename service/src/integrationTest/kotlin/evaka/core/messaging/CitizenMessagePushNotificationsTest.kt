@@ -9,6 +9,7 @@ import evaka.core.pis.NotificationCategory
 import evaka.core.pis.service.insertGuardian
 import evaka.core.pis.updateDisabledPushTypes
 import evaka.core.shared.MessageAccountId
+import evaka.core.shared.MessageRecipientId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
@@ -60,6 +61,7 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
 
     private lateinit var employeeAccount: MessageAccountId
     private lateinit var municipalAccount: MessageAccountId
+    private lateinit var groupAccount: MessageAccountId
 
     @BeforeEach
     fun beforeEach() {
@@ -91,6 +93,7 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
             employeeAccount = tx.upsertEmployeeMessageAccount(employee.id)
             tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
             municipalAccount = tx.createMunicipalMessageAccount()
+            groupAccount = tx.createDaycareGroupMessageAccount(group.id)
         }
     }
 
@@ -167,6 +170,19 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `the sender of a group message is the group name without the unit name`() {
+        sendBulletin(groupAccount)
+        sendBulletin(employeeAccount)
+
+        assertEquals(
+            setOf(group.name, null),
+            citizenRecipientIds()
+                .map { db.read { tx -> tx.getMessagePushNotification(it) }?.senderGroupName }
+                .toSet(),
+        )
+    }
+
+    @Test
     fun `a subscription the push service reports gone is deleted`() {
         subscribe(URI("http://push-service.invalid/subscription/1234"))
 
@@ -233,5 +249,19 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
+    }
+
+    private fun citizenRecipientIds(): List<MessageRecipientId> = db.read { tx ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT mr.id
+FROM message_recipients mr
+JOIN message_account ma ON ma.id = mr.recipient_id
+WHERE ma.person_id = ${bind(citizen.id)}
+"""
+                )
+            }
+            .toList<MessageRecipientId>()
     }
 }

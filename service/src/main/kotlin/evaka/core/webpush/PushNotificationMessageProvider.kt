@@ -4,18 +4,16 @@
 
 package evaka.core.webpush
 
-import evaka.core.messaging.MessageType
 import evaka.core.shared.domain.UiLanguage
 
 data class PushNotificationContent(val title: String, val body: String?)
 
 data class MessagePushNotificationData(
-    val type: MessageType,
     val urgent: Boolean,
     val sensitive: Boolean,
-    val senderName: String?,
+    val senderName: String,
     val title: String,
-    val isSenderMunicipalAccount: Boolean,
+    val content: String,
 )
 
 interface PushNotificationMessageProvider {

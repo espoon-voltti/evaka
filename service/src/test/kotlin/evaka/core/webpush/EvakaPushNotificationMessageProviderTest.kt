@@ -16,6 +16,37 @@ import org.junit.jupiter.api.Test
 class EvakaPushNotificationMessageProviderTest {
     private val provider = EvakaPushNotificationMessageProvider()
 
+    private val message =
+        MessagePushNotificationData(
+            urgent = false,
+            sensitive = false,
+            senderName = "Kirsikan päiväkoti",
+            title = "Retki",
+            content = "Lähdemme retkelle\n\nperjantaina.",
+        )
+
+    @Test
+    fun `message shows the sender, the title and the content on one line`() {
+        assertEquals(
+            PushNotificationContent(
+                "Kirsikan päiväkoti",
+                "Retki\nLähdemme retkelle perjantaina.",
+            ),
+            provider.messageNotification(UiLanguage.FI, message),
+        )
+    }
+
+    @Test
+    fun `sensitive message hides the title and the content`() {
+        assertEquals(
+            PushNotificationContent("Kiireellinen: Kirsikan päiväkoti", "Arkaluonteinen viesti"),
+            provider.messageNotification(
+                UiLanguage.FI,
+                message.copy(urgent = true, sensitive = true),
+            ),
+        )
+    }
+
     @Test
     fun `fee decision shows only the children and nothing of the family's finances`() {
         assertEquals(

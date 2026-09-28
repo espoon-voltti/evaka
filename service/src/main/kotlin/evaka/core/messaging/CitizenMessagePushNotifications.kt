@@ -64,41 +64,6 @@ AND mt.is_copy IS FALSE
             }
             .toList<AsyncJob.SendCitizenMessagePushNotification>()
 
-    private data class MessageNotification(
-        val threadId: MessageThreadId,
-        val type: MessageType,
-        val title: String,
-        val urgent: Boolean,
-        val sensitive: Boolean,
-        val senderId: MessageAccountId,
-        val language: UiLanguage,
-    )
-
-    private fun Database.Read.getNotification(recipient: MessageRecipientId): MessageNotification? =
-        createQuery {
-            sql(
-                """
-SELECT
-    m.thread_id,
-    mt.message_type AS type,
-    mt.title,
-    mt.urgent,
-    mt.sensitive,
-    m.sender_id,
-    coalesce(cu.preferred_ui_language, 'FI') AS language
-FROM message_recipients mr
-JOIN message m ON mr.message_id = m.id
-JOIN message_thread mt ON m.thread_id = mt.id
-JOIN message_account ma ON mr.recipient_id = ma.id
-LEFT JOIN citizen_user cu ON cu.id = ma.person_id
-WHERE mr.id = ${bind(recipient)}
-AND mr.read_at IS NULL
-AND m.content_deleted_at IS NULL
-"""
-            )
-        }
-        .exactlyOneOrNull()
-
     fun send(
         dbc: Database.Connection,
         clock: EvakaClock,
@@ -107,7 +72,7 @@ AND m.content_deleted_at IS NULL
     ) {
         val (notification, sender) =
             dbc.read { tx ->
-                tx.getNotification(recipient)?.let { notification ->
+                tx.getMessagePushNotification(recipient)?.let { notification ->
                     Pair(
                         notification,
                         tx.getMessageAccount(
@@ -126,12 +91,11 @@ AND m.content_deleted_at IS NULL
             messageProvider.messageNotification(
                 notification.language,
                 MessagePushNotificationData(
-                    type = notification.type,
                     urgent = notification.urgent,
                     sensitive = notification.sensitive,
-                    senderName = sender.name,
+                    senderName = notification.senderGroupName ?: sender.name,
                     title = notification.title,
-                    isSenderMunicipalAccount = isSenderMunicipalAccount,
+                    content = notification.content,
                 ),
             )
         pushNotifications.send(
@@ -154,3 +118,47 @@ AND m.content_deleted_at IS NULL
         )
     }
 }
+
+data class MessagePushNotification(
+    val threadId: MessageThreadId,
+    val type: MessageType,
+    val title: String,
+    val content: String,
+    val urgent: Boolean,
+    val sensitive: Boolean,
+    val senderId: MessageAccountId,
+    /** Set only when the sender is a group account */
+    val senderGroupName: String?,
+    val language: UiLanguage,
+)
+
+fun Database.Read.getMessagePushNotification(
+    recipient: MessageRecipientId
+): MessagePushNotification? = createQuery {
+    sql(
+        """
+SELECT
+    m.thread_id,
+    mt.message_type AS type,
+    mt.title,
+    mc.content,
+    mt.urgent,
+    mt.sensitive,
+    m.sender_id,
+    dg.name AS sender_group_name,
+    coalesce(cu.preferred_ui_language, 'FI') AS language
+FROM message_recipients mr
+JOIN message m ON mr.message_id = m.id
+JOIN message_thread mt ON m.thread_id = mt.id
+JOIN message_content mc ON m.content_id = mc.id
+JOIN message_account ma ON mr.recipient_id = ma.id
+LEFT JOIN citizen_user cu ON cu.id = ma.person_id
+JOIN message_account sa ON sa.id = m.sender_id
+LEFT JOIN daycare_group dg ON dg.id = sa.daycare_group_id
+WHERE mr.id = ${bind(recipient)}
+AND mr.read_at IS NULL
+AND m.content_deleted_at IS NULL
+"""
+    )
+}
+    .exactlyOneOrNull()

@@ -7,7 +7,6 @@ package evaka.core.webpush
 import evaka.core.decision.DecisionType
 import evaka.core.document.childdocument.ChildDocumentNotificationType
 import evaka.core.invoicing.service.IncomeNotificationType
-import evaka.core.messaging.MessageType
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.UiLanguage
 import java.time.format.DateTimeFormatter
@@ -21,39 +20,25 @@ class EvakaPushNotificationMessageProvider : PushNotificationMessageProvider {
     override fun messageNotification(
         language: UiLanguage,
         data: MessagePushNotificationData,
-    ): PushNotificationContent {
-        val kind =
-            when (data.type) {
-                MessageType.MESSAGE ->
+    ): PushNotificationContent =
+        PushNotificationContent(
+            title =
+                if (data.urgent)
                     when (language) {
-                        UiLanguage.FI ->
-                            if (data.urgent) "Uusi kiireellinen viesti" else "Uusi viesti"
-                        UiLanguage.SV ->
-                            if (data.urgent) "Nytt brådskande meddelande" else "Nytt meddelande"
-                        UiLanguage.EN -> if (data.urgent) "New urgent message" else "New message"
+                        UiLanguage.FI -> "Kiireellinen: ${data.senderName}"
+                        UiLanguage.SV -> "Brådskande: ${data.senderName}"
+                        UiLanguage.EN -> "Urgent: ${data.senderName}"
                     }
-
-                MessageType.BULLETIN ->
-                    when (language) {
-                        UiLanguage.FI ->
-                            if (data.urgent) "Uusi kiireellinen tiedote" else "Uusi tiedote"
-                        UiLanguage.SV ->
-                            if (data.urgent) "Nytt brådskande meddelande" else "Nytt meddelande"
-                        UiLanguage.EN -> if (data.urgent) "New urgent bulletin" else "New bulletin"
-                    }
-            }
-
-        val showTitle = data.isSenderMunicipalAccount && data.type == MessageType.BULLETIN
-        return PushNotificationContent(
-            title = kind,
+                else data.senderName,
             body =
-                when {
-                    showTitle -> data.title
-                    data.sensitive -> null
-                    else -> data.senderName
-                },
+                if (data.sensitive)
+                    when (language) {
+                        UiLanguage.FI -> "Arkaluonteinen viesti"
+                        UiLanguage.SV -> "Känsligt meddelande"
+                        UiLanguage.EN -> "Sensitive message"
+                    }
+                else "${data.title}\n${data.content.replace(whitespace, " ").trim()}",
         )
-    }
 
     override fun testNotification(language: UiLanguage): PushNotificationContent =
         when (language) {
