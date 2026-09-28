@@ -21,6 +21,8 @@ set -euo pipefail
 docker compose up -d
 pm2 start
 
+./tunnel.sh check
+
 APIGW_PORT=${EVAKA_APIGW_PORT:-3000}
 SERVICE_PORT=${SERVER_PORT:-8888}
 FRONTEND_PORT=${EVAKA_FRONTEND_PORT:-9099}
@@ -48,7 +50,7 @@ trap - INT
 echo ""
 echo "Development environment started."
 echo "  Active municipality: ${EVAKA_MUNICIPALITY:-espoo (default)}"
-echo "Open http://localhost:${FRONTEND_PORT}/ in your browser."
+echo "Open ${TUNNEL_URL:-http://localhost:${FRONTEND_PORT}}/ in your browser."
 """
 
 [tasks.restart]
@@ -84,6 +86,16 @@ docker compose down
 
 echo "Development environment stopped."
 """
+
+[tasks.tunnel]
+description = "Expose the development environment through a Cloudflare quick tunnel"
+usage = """
+arg "[command]" default="start" help="start: new tunnel, stop: back to localhost, status: show tunnel state" {
+    choices "start" "stop" "status"
+}
+"""
+dir = "compose"
+run = "./tunnel.sh ${usage_command:-start}"
 
 [tasks.instance]
 description = "Activate eVaka instance with offset ports"

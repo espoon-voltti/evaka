@@ -197,6 +197,11 @@ mise instance            # Return to default instance
 
 After activation, all port-related environment variables are set automatically based on the configured mise environment. Access instance 1 at http://localhost:9100.
 
+## Testing on external devices through a Cloudflare tunnel
+
+Run `mise tunnel` to expose your development environment over HTTPS for testing on
+other devices. See [TUNNEL.md](TUNNEL.md).
+
 ## Troubleshooting
 
 ### Database
