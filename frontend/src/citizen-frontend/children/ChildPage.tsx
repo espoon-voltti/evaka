@@ -80,7 +80,10 @@ const ChildData = ({ child }: { child: ChildAndPermittedActions }) => {
       {user?.accessibleFeatures.childDocumentation && (
         <>
           <Gap $size="s" />
-          <PedagogicalDocumentsSection childId={childId} />
+          <PedagogicalDocumentsSection
+            childId={childId}
+            startOpen={linkedSection === 'pedagogical-documents'}
+          />
           <Gap $size="s" />
           <ChildDocumentsSection childId={childId} />
         </>

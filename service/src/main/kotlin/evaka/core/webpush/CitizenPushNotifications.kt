@@ -209,7 +209,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.INFORMAL_DOCUMENT_NOTIFICATION,
                     messageProvider.pedagogicalDocumentNotification(language, notification),
-                    path = "/children/${notification.childId}",
+                    path = "/children/${notification.childId}?section=pedagogical-documents",
                     requiresStrongAuth = true,
                     tag = "informal-document-${notification.childId}",
                 )

@@ -377,11 +377,13 @@ const PedagogicalDocumentsTable = React.memo(
 )
 
 export default React.memo(function PedagogicalDocumentsSection({
-  childId
+  childId,
+  startOpen
 }: {
   childId: ChildId
+  startOpen: boolean
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(startOpen)
   const t = useTranslation()
   const { data: unreadPedagogicalDocumentsCount } = useQuery(
     unreadPedagogicalDocumentsCountQuery()
@@ -394,6 +396,7 @@ export default React.memo(function PedagogicalDocumentsSection({
       $opaque
       open={open}
       toggleOpen={() => setOpen(!open)}
+      scrollIntoView={startOpen}
       data-qa="collapsible-pedagogical-documents"
       countIndicator={unreadPedagogicalDocumentsCount?.[childId]}
       contentPadding="zero"

@@ -5,6 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import config from '../../config'
 import { insertPedagogicalDocumentAttachment } from '../../dev-api'
 import {
   Fixture,
@@ -17,7 +18,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -83,6 +84,15 @@ test.describe('Citizen pedagogical documents', () => {
   })
 
   test.describe('Pedagogical documents view', () => {
+    test('A link opens the pedagogical documents section', async () => {
+      await page.goto(
+        `${config.enduserUrl}/children/${testChild.id}?section=pedagogical-documents`
+      )
+      await expect(
+        page.findByDataQa('collapsible-pedagogical-documents')
+      ).toHaveAttribute('data-status', 'open')
+    })
+
     test('Existing pedagogical document without attachment is shown', async () => {
       const pd = await Fixture.pedagogicalDocument({
         childId: testChild.id,
