@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled, { useTheme } from 'styled-components'
 
+import { useScrollIntoView } from 'lib-common/utils/scrolling'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
@@ -46,12 +47,15 @@ export default React.memo(function ResponsiveWholePageCollapsible({
   children,
   countIndicator = 0,
   contentPadding = 's',
+  scrollIntoView = false,
   ...props
 }: Omit<CollapsibleContentAreaProps, 'title'> & {
   title: string
   contentPadding?: SpacingSize
+  scrollIntoView?: boolean
 }) {
   const { colors } = useTheme()
+  const ref = useScrollIntoView<HTMLElement>(scrollIntoView)
 
   const showCountIndicator =
     typeof countIndicator === 'number'
@@ -77,7 +81,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
   const [isFocusable, setIsFocusable] = useState(true)
 
   return (
-    <ContentArea {...props} data-status={open ? 'open' : 'closed'}>
+    <ContentArea ref={ref} {...props} data-status={open ? 'open' : 'closed'}>
       <TitleContainer
         onClick={toggleOpen}
         data-qa={props['data-qa'] ? `${props['data-qa']}-header` : undefined}

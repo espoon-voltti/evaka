@@ -156,18 +156,20 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.absenceApplicationDecisionNotification(language, notification),
-                    path = "/children/${notification.childId}",
+                    path =
+                        "/children/${notification.childId}?section=absence-applications&absenceApplication=${notification.applicationId}",
                     requiresStrongAuth = false,
-                    tag = "child-application-${notification.childId}",
+                    tag = "absence-application-${notification.applicationId}",
                 )
 
             is CitizenPushNotification.ServiceApplicationDecision ->
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.serviceApplicationDecisionNotification(language, notification),
-                    path = "/children/${notification.childId}",
+                    path =
+                        "/children/${notification.childId}?section=service-need&serviceApplication=${notification.applicationId}",
                     requiresStrongAuth = false,
-                    tag = "child-application-${notification.childId}",
+                    tag = "service-application-${notification.applicationId}",
                 )
 
             is CitizenPushNotification.Income ->

@@ -97,6 +97,7 @@ class AbsenceApplicationService(
                         clock.now(),
                         guardian.id,
                         CitizenPushNotification.AbsenceApplicationDecision(
+                            applicationId = application.id,
                             childId = application.childId,
                             childName =
                                 tx.getPushChildNames(listOf(application.childId))

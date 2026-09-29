@@ -11,7 +11,10 @@ import type {
   ServiceApplication,
   ServiceNeedOptionBasics
 } from 'lib-common/generated/api-types/serviceneed'
-import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type {
+  ChildId,
+  ServiceApplicationId
+} from 'lib-common/generated/api-types/shared'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -52,18 +55,21 @@ import { deleteServiceApplicationsMutation } from '../../queries'
 export default React.memo(function ServiceApplications({
   childId,
   applications,
-  canCreate
+  canCreate,
+  linkedApplicationId
 }: {
   childId: ChildId
   applications: CitizenServiceApplication[]
   canCreate: boolean
+  linkedApplicationId: ServiceApplicationId | null
 }) {
   const i18n = useTranslation()
   const [, navigate] = useLocation()
   const { user } = useContext(AuthContext)
   const weakAuth = user.map((u) => u?.authLevel === 'WEAK').getOrElse(false)
   const [detailsView, setDetailsView] = useState<ServiceApplication | null>(
-    null
+    () =>
+      applications.find((a) => a.data.id === linkedApplicationId)?.data ?? null
   )
   const hasOpenApplication = useMemo(
     () => applications.some((a) => a.data.decision === null),

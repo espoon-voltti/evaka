@@ -10,11 +10,13 @@ import evaka.core.document.childdocument.ChildDocumentNotificationType
 import evaka.core.invoicing.service.IncomeNotificationType
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.updateDisabledPushTypes
+import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.CalendarEventId
 import evaka.core.shared.CalendarEventTimeId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.FeeDecisionId
+import evaka.core.shared.ServiceApplicationId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -182,12 +184,14 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     unitName = "Test Daycare",
                 ),
                 CitizenPushNotification.AbsenceApplicationDecision(
+                    applicationId = AbsenceApplicationId(UUID.randomUUID()),
                     childId = child.id,
                     childName = "Test",
                     range = FiniteDateRange(clock.today(), clock.today().plusDays(3)),
                     rejected = true,
                 ),
                 CitizenPushNotification.ServiceApplicationDecision(
+                    applicationId = ServiceApplicationId(UUID.randomUUID()),
                     childId = child.id,
                     childName = "Test",
                     serviceNeedNameFi = "Kokopäiväinen",

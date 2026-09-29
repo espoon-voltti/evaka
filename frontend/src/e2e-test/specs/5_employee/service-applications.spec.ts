@@ -310,6 +310,31 @@ test.describe('Service applications', () => {
     )
   })
 
+  test('A link opens the service need section', async ({ newEvakaPage }) => {
+    const mockedTime = LocalDate.of(2022, 3, 1).toHelsinkiDateTime(
+      LocalTime.of(8, 0)
+    )
+    await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      startDate: mockedTime.toLocalDate().subMonths(1),
+      endDate: mockedTime.toLocalDate().addMonths(8),
+      type: 'DAYCARE'
+    }).save()
+
+    const citizenPage = await newEvakaPage({ mockedTime })
+    await enduserLogin(
+      citizenPage,
+      testAdult,
+      `/children/${testChild.id}?section=service-need`
+    )
+    await expect(
+      citizenPage.findByDataQa(
+        'collapsible-service-need-and-daily-service-time'
+      )
+    ).toHaveAttribute('data-status', 'open')
+  })
+
   test('cancelling application', async ({ newEvakaPage }) => {
     const mockedTime1 = LocalDate.of(2022, 3, 1).toHelsinkiDateTime(
       LocalTime.of(8, 0)
