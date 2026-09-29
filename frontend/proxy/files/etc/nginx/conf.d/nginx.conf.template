@@ -119,6 +119,12 @@ map $msec $millisec {
   ~\.([0-9]+)$ $1;
 }
 
+# Avoid logging presigned S3 URL credentials
+map $uri $logged_query_string {
+  default                $query_string;
+  ~^/internal_redirect/  "";
+}
+
 # Output logs in accordance to eVaka's log schema (type app-requests-received).
 # NOTE: userIdHash cannot easily be computed here, so left empty.
 log_format json_access escape=json
@@ -133,7 +139,7 @@ log_format json_access escape=json
     '"hostIp":"{{ .Env.HOST_IP }}",'
     '"httpMethod":"$request_method",'
     '"path":"$uri",'
-    '"queryString":"$query_string",'
+    '"queryString":"$logged_query_string",'
     '"userAgent":"$http_user_agent",'
     '"responseTime":$request_time_ms,'
     '"spanId":"$request_id",'
@@ -164,7 +170,7 @@ server {
   set $staticEndpoint "{{ .Env.STATIC_FILES_ENDPOINT_URL }}";
   {{ end }}
 
-  access_log off;
+  access_log /dev/stdout json_access;
 
   # Security
 
@@ -283,8 +289,6 @@ server {
   }
 
   location /api {
-    access_log /dev/stdout json_access;
-
     include     proxy_params;
     proxy_pass  $enduserUrl;
 
@@ -362,7 +366,7 @@ server {
     listen 8080;
     server_name {{ .Env.SERVICE_DOMAIN_SV }};
 
-    access_log off;
+    access_log /dev/stdout json_access;
 
     set $httpScheme "{{ env.Getenv "HTTP_SCHEME" "https" }}";
 
