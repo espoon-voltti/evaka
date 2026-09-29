@@ -222,7 +222,8 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
                     messageProvider.missingHolidayReservationsNotification(language, notification),
-                    path = "/calendar?modal=holidays",
+                    path =
+                        "/calendar?modal=reservations&startDate=${notification.holidayPeriod.start}&endDate=${notification.holidayPeriod.end}",
                     requiresStrongAuth = false,
                     tag = "missing-holiday-reservations",
                     ttl = ttlUntil(now, HelsinkiDateTime.of(notification.deadline, LocalTime.MAX)),
