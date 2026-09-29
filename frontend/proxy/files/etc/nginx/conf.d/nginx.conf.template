@@ -119,10 +119,15 @@ map $msec $millisec {
   ~\.([0-9]+)$ $1;
 }
 
-# Avoid logging presigned S3 URL credentials
-map $uri $logged_query_string {
-  default                $query_string;
-  ~^/internal_redirect/  "";
+# Log the path and query string from $request_uri, which internal redirects do
+# not change. After an X-Accel-Redirect, $query_string holds the presigned S3
+# URL credentials.
+map $request_uri $request_path {
+  ~^([^?]*)  $1;
+}
+map $request_uri $request_query {
+  default   "";
+  ~\?(.*)$  $1;
 }
 
 # Output logs in accordance to eVaka's log schema (type app-requests-received).
@@ -138,8 +143,9 @@ log_format json_access escape=json
     '"env":"{{ .Env.NGINX_ENV }}",'
     '"hostIp":"{{ .Env.HOST_IP }}",'
     '"httpMethod":"$request_method",'
-    '"path":"$uri",'
-    '"queryString":"$logged_query_string",'
+    '"path":"$request_path",'
+    '"queryString":"$request_query",'
+    '"internalPath":"$uri",'
     '"userAgent":"$http_user_agent",'
     '"responseTime":$request_time_ms,'
     '"spanId":"$request_id",'
