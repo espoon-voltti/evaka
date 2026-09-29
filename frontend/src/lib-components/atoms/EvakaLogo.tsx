@@ -8,12 +8,14 @@ interface Props {
   color?: string
 }
 
+export const evakaLogoWidth = 117
+
 export const EvakaLogo = React.memo(function EvakaLogo({
   color = '#FFF'
 }: Props) {
   return (
     <svg
-      width="117"
+      width={evakaLogoWidth}
       height="24"
       viewBox="0 0 117 24"
       fill="none"
