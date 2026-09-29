@@ -136,7 +136,9 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.applicationDecisionsNotification(language, notification),
-                    path = if (notification.answerRequired) "/decisions/pending" else "/decisions",
+                    path =
+                        if (notification.answerRequired) "/decisions/pending"
+                        else "/decisions?application=${notification.applicationId}",
                     requiresStrongAuth = true,
                     tag = "decision-${notification.applicationId}",
                 )

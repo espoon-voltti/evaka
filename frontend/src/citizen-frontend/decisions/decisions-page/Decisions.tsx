@@ -44,6 +44,7 @@ export default React.memo(function Decisions() {
   const t = useTranslation()
   const [searchParams] = useSearchParams()
   const linkedFinanceDecisionId = searchParams.get('financeDecision')
+  const linkedApplicationId = searchParams.get('application')
   const children = useQueryResult(childrenQuery())
   const applicationDecisions = useQueryResult(decisionsQuery())
 
@@ -313,6 +314,15 @@ export default React.memo(function Decisions() {
                         canDecide={child.decidableApplications.includes(
                           decision.applicationId
                         )}
+                        startOpen={
+                          decision.applicationId === linkedApplicationId
+                        }
+                        scrollIntoView={
+                          decision.id ===
+                          child.decisions.find(
+                            (d) => d.applicationId === linkedApplicationId
+                          )?.id
+                        }
                       />
                     </Fragment>
                   ))}
