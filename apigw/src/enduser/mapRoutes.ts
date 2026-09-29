@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type http from 'node:http'
+
 import express from 'express'
 import expressHttpProxy from 'express-http-proxy'
+import _ from 'lodash'
 
 import {
   digitransitApiEnabled,
@@ -16,8 +19,30 @@ import { createProxy } from '../shared/proxy-utils.ts'
 
 const router = express.Router()
 
-function createDigitransitProxy(path: string) {
-  return expressHttpProxy(digitransitApiUrl, {
+const forwardedRequestHeaders = [
+  'accept',
+  'accept-language',
+  'content-type',
+  'content-length'
+]
+
+function digitransitResponseHeaders(
+  proxyRes: http.IncomingMessage
+): http.OutgoingHttpHeaders {
+  return {
+    'content-type': 'application/json; charset=utf-8',
+    ...(proxyRes.headers['content-encoding'] === 'gzip'
+      ? { 'content-encoding': 'gzip' }
+      : {})
+  }
+}
+
+export function createDigitransitProxy(
+  apiUrl: string,
+  apiKey: string | undefined,
+  path: string
+): express.RequestHandler {
+  const proxy = expressHttpProxy(apiUrl, {
     parseReqBody: false,
     proxyReqPathResolver: (req) => {
       const query = req.url.split('?')[1]
@@ -25,13 +50,22 @@ function createDigitransitProxy(path: string) {
     },
     proxyReqOptDecorator: (proxyReqOpts, _srcReq) => {
       proxyReqOpts.headers = {
-        ...proxyReqOpts.headers,
-        ...(digitransitApiKey
-          ? { 'digitransit-subscription-key': digitransitApiKey }
-          : {})
+        ..._.pick(proxyReqOpts.headers, forwardedRequestHeaders),
+        'accept-encoding': 'gzip',
+        ...(apiKey ? { 'digitransit-subscription-key': apiKey } : {})
       }
       return proxyReqOpts
     },
+    userResHeaderDecorator: (
+      _headers,
+      _userReq,
+      userRes,
+      _proxyReq,
+      proxyRes
+    ) => ({
+      ...(userRes.locals.headersBeforeProxy as http.OutgoingHttpHeaders),
+      ...digitransitResponseHeaders(proxyRes)
+    }),
     userResDecorator: (proxyRes, proxyResData) => {
       function parseBody(): unknown {
         if (!Buffer.isBuffer(proxyResData)) {
@@ -73,12 +107,20 @@ function createDigitransitProxy(path: string) {
       return proxyResData
     }
   })
+  return (req, res, next) => {
+    res.locals.headersBeforeProxy = res.getHeaders()
+    proxy(req, res, next)
+  }
 }
 
 router.get(
   '/autocomplete',
   digitransitApiEnabled
-    ? createDigitransitProxy('/geocoding/v1/autocomplete')
+    ? createDigitransitProxy(
+        digitransitApiUrl,
+        digitransitApiKey,
+        '/geocoding/v1/autocomplete'
+      )
     : enableDevApi
       ? createProxy({
           getUserHeader: () => undefined,
@@ -90,7 +132,11 @@ router.get(
 router.post(
   '/query',
   digitransitApiEnabled
-    ? createDigitransitProxy('/routing/v2/finland/gtfs/v1')
+    ? createDigitransitProxy(
+        digitransitApiUrl,
+        digitransitApiKey,
+        '/routing/v2/finland/gtfs/v1'
+      )
     : (_, res) => res.status(404)
 )
 
