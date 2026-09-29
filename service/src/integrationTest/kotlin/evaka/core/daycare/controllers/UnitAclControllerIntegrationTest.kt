@@ -5,7 +5,6 @@
 package evaka.core.daycare.controllers
 
 import evaka.core.Audit
-import evaka.core.AuditChange
 import evaka.core.AuditLogCapture
 import evaka.core.FullApplicationTest
 import evaka.core.attendance.getOccupancyCoefficientsByUnit
@@ -317,7 +316,8 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             .assertContext { add(daycare.id).add(employee.id).add(daycareGroup.id) }
             .assertMeta(
                 "role" to UserRole.UNIT_SUPERVISOR,
-                "endDate" to AuditChange(old = endDate1, new = endDate2),
+                "endDate" to endDate2,
+                "previousEndDate" to endDate1,
                 "groupsUpdated" to true,
             )
             .assertMinDate(endDate1)
@@ -351,7 +351,8 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             .assertContext { add(daycare.id).add(staffMember.id) }
             .assertMeta(
                 "role" to UserRole.STAFF,
-                "endDate" to AuditChange(old = null, new = endDate),
+                "endDate" to endDate,
+                "previousEndDate" to null,
             )
     }
 
