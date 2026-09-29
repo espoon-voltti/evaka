@@ -21,7 +21,7 @@ import {
   SortableTh
 } from 'lib-components/layout/Table'
 import { PersonName } from 'lib-components/molecules/PersonNames'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
 
 import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
@@ -38,18 +38,19 @@ const TopBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: ${defaultMargins.L};
 `
 
 const Wrapper = styled.div`
   position: relative;
   padding-bottom: 50px;
   width: 500px;
-  margin-right: 20px;
 `
 
 const ButtonsContainer = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
+  gap: ${defaultMargins.xs} ${defaultMargins.s};
 `
 
 export default React.memo(function Search() {
@@ -97,9 +98,6 @@ export default React.memo(function Search() {
                   onClick={() => setShowAddPersonFromVTJModal(true)}
                   data-qa="add-vtj-person-button"
                 />
-              )}
-              {canCreatePersonFromVtj && canCreatePerson && (
-                <Gap $size="s" $horizontal />
               )}
               {canCreatePerson && (
                 <AddButton
