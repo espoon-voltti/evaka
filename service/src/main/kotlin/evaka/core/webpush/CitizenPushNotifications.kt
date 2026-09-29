@@ -182,9 +182,12 @@ class CitizenPushNotifications(
                     NotificationCategory.CALENDAR_EVENT_NOTIFICATION,
                     messageProvider.calendarEventNotification(language, notification.events),
                     path =
-                        notification.events.singleOrNull()?.let {
-                            "/calendar?day=${it.period.start}"
-                        } ?: "/calendar",
+                        notification.events
+                            .map { it.period.start }
+                            .distinct()
+                            .singleOrNull()
+                            ?.let { "/calendar?day=${maxOf(it, now.toLocalDate())}" }
+                            ?: "/calendar",
                     requiresStrongAuth = false,
                     tag = "calendar-events",
                 )
