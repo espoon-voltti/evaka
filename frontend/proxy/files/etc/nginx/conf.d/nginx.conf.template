@@ -151,6 +151,8 @@ log_format json_access escape=json
     '"version":1'
   '}';
 
+access_log /dev/stdout json_access;
+
 server {
   # Basic configs
   root /static/{{ .Env.EVAKA_MUNICIPALITY }};
@@ -169,8 +171,6 @@ server {
   {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
   set $staticEndpoint "{{ .Env.STATIC_FILES_ENDPOINT_URL }}";
   {{ end }}
-
-  access_log /dev/stdout json_access;
 
   # Security
 
@@ -365,8 +365,6 @@ server {
 server {
     listen 8080;
     server_name {{ .Env.SERVICE_DOMAIN_SV }};
-
-    access_log /dev/stdout json_access;
 
     set $httpScheme "{{ env.Getenv "HTTP_SCHEME" "https" }}";
 
