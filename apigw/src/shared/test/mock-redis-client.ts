@@ -48,11 +48,12 @@ export class MockRedisClient implements RedisClient {
   set(
     key: string,
     value: string,
-    options?: { EX: number }
+    options?: { EX?: number; expiration?: { type: 'EX'; value: number } }
   ): Promise<string | null> {
+    const ex = options?.EX ?? options?.expiration?.value
     this.db[key] = {
       value,
-      expires: options?.EX ? this.time + options.EX : null
+      expires: ex ? this.time + ex : null
     }
     return Promise.resolve(value)
   }
@@ -68,7 +69,7 @@ export class MockRedisClient implements RedisClient {
   }
 
   expire(key: string, seconds: number): Promise<number> {
-    const record = this.db[key]
+    const record = this.db[key] ?? this.sets[key]
     if (!record) return Promise.resolve(0)
     record.expires = this.time + seconds
     return Promise.resolve(1)

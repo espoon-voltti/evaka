@@ -159,6 +159,7 @@ export function sessionSupport<T extends SessionType>(
     req.user = getUser(req)
 
     await refreshLogoutToken(req)
+    await registerWeakSession(req)
   })
 
   const middleware: express.RequestHandler = (req, res, next) => {
@@ -235,6 +236,26 @@ export function sessionSupport<T extends SessionType>(
     if (differenceInMinutes(logoutExpires, sessionExpires) < 30) {
       await saveLogoutToken(req)
     }
+  }
+
+  // Refreshed on every request, since the registry must not expire before the
+  // rolling sessions listed in it.
+  async function registerWeakSession(req: express.Request): Promise<void> {
+    const sessionId = req.session?.id
+    const evaka = req.session?.evaka
+    if (
+      !sessionId ||
+      !evaka ||
+      (evaka.user.authType !== 'citizen-weak' &&
+        evaka.user.authType !== 'citizen-passkey')
+    )
+      return
+    const key = userSessionsKey(evaka.userIdHash)
+    await redisClient
+      .multi()
+      .sAdd(key, sessionId)
+      .expire(key, (config.sessionTimeoutMinutes + 60) * 60)
+      .exec()
   }
 
   async function saveRejectedSfiLogin(
@@ -457,17 +478,7 @@ export function sessionSupport<T extends SessionType>(
     await save(req)
     req.user = user
 
-    if (
-      req.session.id &&
-      (user.authType === 'citizen-weak' || user.authType === 'citizen-passkey')
-    ) {
-      const key = userSessionsKey(userIdHash)
-      await redisClient
-        .multi()
-        .sAdd(key, req.session.id)
-        .expire(key, config.sessionTimeoutMinutes * 60)
-        .exec()
-    }
+    await registerWeakSession(req)
 
     if (
       req.session.id &&

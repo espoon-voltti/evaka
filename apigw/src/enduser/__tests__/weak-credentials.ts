@@ -66,6 +66,13 @@ describe('Weak login credentials', () => {
     expect((status.data as { loggedIn: boolean }).loggedIn).toBe(false)
   }
 
+  async function keepActive(onTester: GatewayTester): Promise<void> {
+    onTester.nockScope.get(`/system/citizen/${mockUser.id}`).reply(200, {})
+    const status = await onTester.client.get('/api/citizen/auth/status')
+    onTester.nockScope.done()
+    expect((status.data as { loggedIn: boolean }).loggedIn).toBe(true)
+  }
+
   test('deleting credentials requires a session', async () => {
     const res = await tester.client.delete(
       '/api/citizen/personal-data/weak-login-credentials',
@@ -101,6 +108,30 @@ describe('Weak login credentials', () => {
 
   test('updating credentials logs out other weak sessions', async () => {
     await withSecondWeakSession(async (otherTester) => {
+      tester.nockScope
+        .put('/citizen/personal-data/weak-login-credentials')
+        .reply(200)
+      const res = await tester.client.put(
+        '/api/citizen/personal-data/weak-login-credentials',
+        { password: 'aifiefaeC3io?dee' },
+        { validateStatus: () => true }
+      )
+      tester.nockScope.done()
+      expect(res.status).toBe(204)
+
+      await assertLoggedOut(otherTester)
+    })
+  })
+
+  test('updating credentials logs out other weak sessions that have stayed active past the session timeout', async () => {
+    await withSecondWeakSession(async (otherTester) => {
+      // Active for an hour, well past the idle timeout counted from login
+      for (let i = 0; i < 3; i++) {
+        redisClient.advanceTime(20 * 60)
+        await keepActive(tester)
+        await keepActive(otherTester)
+      }
+
       tester.nockScope
         .put('/citizen/personal-data/weak-login-credentials')
         .reply(200)
