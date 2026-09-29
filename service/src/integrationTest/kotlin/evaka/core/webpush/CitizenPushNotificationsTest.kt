@@ -14,6 +14,7 @@ import evaka.core.shared.ApplicationId
 import evaka.core.shared.CalendarEventId
 import evaka.core.shared.CalendarEventTimeId
 import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -171,7 +172,10 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                         ),
                     answerRequired = true,
                 ),
-                CitizenPushNotification.FeeDecision(childNames = listOf("Test")),
+                CitizenPushNotification.FeeDecision(
+                    decisionId = FeeDecisionId(UUID.randomUUID()),
+                    childNames = listOf("Test"),
+                ),
                 CitizenPushNotification.VoucherValueDecision(
                     decisionId = VoucherValueDecisionId(UUID.randomUUID()),
                     childName = "Test",

@@ -485,7 +485,8 @@ class FeeDecisionService(
                 clock.now(),
                 decision.headOfFamily.id,
                 CitizenPushNotification.FeeDecision(
-                    childNames = decision.children.map { childNames.getValue(it.child.id) }
+                    decisionId = feeDecisionId,
+                    childNames = decision.children.map { childNames.getValue(it.child.id) },
                 ),
             )
         }

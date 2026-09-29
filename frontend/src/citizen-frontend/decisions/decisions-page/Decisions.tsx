@@ -8,6 +8,7 @@ import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
 import styled from 'styled-components'
+import { useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { DecisionSummary } from 'lib-common/generated/api-types/application'
@@ -41,6 +42,8 @@ import FinanceDecision from './FinanceDecision'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
+  const [searchParams] = useSearchParams()
+  const linkedFinanceDecisionId = searchParams.get('financeDecision')
   const children = useQueryResult(childrenQuery())
   const applicationDecisions = useQueryResult(decisionsQuery())
 
@@ -330,7 +333,15 @@ export default React.memo(function Decisions() {
                 <HorizontalLine $dashed $slim />
                 <FinanceDecision
                   decisionData={decision}
-                  startOpen={index === 0}
+                  startOpen={
+                    linkedFinanceDecisionId
+                      ? decision.id === linkedFinanceDecisionId
+                      : index === 0
+                  }
+                  scrollIntoView={
+                    decision.id === linkedFinanceDecisionId &&
+                    !childrenWithSortedDecisions.isLoading
+                  }
                 />
               </Fragment>
             ))}

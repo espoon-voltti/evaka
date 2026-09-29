@@ -14,6 +14,7 @@ import evaka.core.shared.CalendarEventId
 import evaka.core.shared.CalendarEventTimeId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
+import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -45,7 +46,8 @@ sealed interface CitizenPushNotification {
     /* Message is not included here, because it has custom sending logic. See CitizenMessagePushNotifications.kt */
 
     @JsonTypeName("FEE_DECISION")
-    data class FeeDecision(val childNames: List<String>) : CitizenPushNotification
+    data class FeeDecision(val decisionId: FeeDecisionId, val childNames: List<String>) :
+        CitizenPushNotification
 
     @JsonTypeName("VOUCHER_VALUE_DECISION")
     data class VoucherValueDecision(

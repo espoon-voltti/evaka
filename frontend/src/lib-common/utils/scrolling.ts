@@ -98,6 +98,15 @@ export function scrollRefIntoView(
   )
 }
 
+/** Scrolls the element of the returned ref into view when [enabled] turns true */
+export function useScrollIntoView<T extends HTMLElement>(enabled: boolean) {
+  const ref = useRef<T>(null)
+  useEffect(() => {
+    if (enabled) scrollRefIntoView(ref, 100)
+  }, [enabled])
+  return ref
+}
+
 /** Shows the end of the element, or its start when the element does not fit in view */
 export function scrollRefEndIntoView(
   ref: RefObject<HTMLElement | null>,

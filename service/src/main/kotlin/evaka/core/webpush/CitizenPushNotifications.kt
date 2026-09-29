@@ -118,16 +118,16 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.feeDecisionNotification(language, notification),
-                    path = "/decisions",
+                    path = "/decisions?financeDecision=${notification.decisionId}",
                     requiresStrongAuth = true,
-                    tag = "fee-decision",
+                    tag = "fee-decision-${notification.decisionId}",
                 )
 
             is CitizenPushNotification.VoucherValueDecision ->
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.voucherValueDecisionNotification(language, notification),
-                    path = "/decisions",
+                    path = "/decisions?financeDecision=${notification.decisionId}",
                     requiresStrongAuth = true,
                     tag = "voucher-value-decision-${notification.decisionId}",
                 )
