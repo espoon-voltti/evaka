@@ -112,6 +112,7 @@ AND mt.is_copy IS FALSE
                     },
                 content = content,
                 path = "/messages/${notification.threadId}",
+                requiresStrongAuth = notification.sensitive,
                 tag = "message-${notification.threadId}",
                 ttl = Duration.ofDays(1),
             ),

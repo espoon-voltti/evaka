@@ -171,6 +171,7 @@ class CitizenWebPushController(
                         category = null,
                         content = content,
                         path = "/",
+                        requiresStrongAuth = false,
                         tag = "test",
                         ttl = TEST_NOTIFICATION_TTL,
                     ),

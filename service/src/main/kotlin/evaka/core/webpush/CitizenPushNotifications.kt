@@ -16,6 +16,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.UiLanguage
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URLEncoder
 import java.time.Duration
 import java.time.LocalTime
 import org.springframework.stereotype.Service
@@ -118,6 +119,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.feeDecisionNotification(language, notification),
                     path = "/decisions",
+                    requiresStrongAuth = true,
                     tag = "fee-decision",
                 )
 
@@ -126,6 +128,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.voucherValueDecisionNotification(language, notification),
                     path = "/decisions",
+                    requiresStrongAuth = true,
                     tag = "voucher-value-decision-${notification.decisionId}",
                 )
 
@@ -134,6 +137,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.applicationDecisionsNotification(language, notification),
                     path = if (notification.answerRequired) "/decisions/pending" else "/decisions",
+                    requiresStrongAuth = true,
                     tag = "decision-${notification.applicationId}",
                 )
 
@@ -142,6 +146,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.pendingDecisionsNotification(language, notification.decisions),
                     path = "/decisions/pending",
+                    requiresStrongAuth = true,
                     tag = "decision-pending",
                 )
 
@@ -150,6 +155,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.absenceApplicationDecisionNotification(language, notification),
                     path = "/children/${notification.childId}",
+                    requiresStrongAuth = false,
                     tag = "child-application-${notification.childId}",
                 )
 
@@ -158,6 +164,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.serviceApplicationDecisionNotification(language, notification),
                     path = "/children/${notification.childId}",
+                    requiresStrongAuth = false,
                     tag = "child-application-${notification.childId}",
                 )
 
@@ -166,6 +173,7 @@ class CitizenPushNotifications(
                     NotificationCategory.INCOME_NOTIFICATION,
                     messageProvider.incomeNotification(language, notification),
                     path = "/income",
+                    requiresStrongAuth = true,
                     tag = "income",
                 )
 
@@ -177,6 +185,7 @@ class CitizenPushNotifications(
                         notification.events.singleOrNull()?.let {
                             "/calendar?day=${it.period.start}"
                         } ?: "/calendar",
+                    requiresStrongAuth = false,
                     tag = "calendar-events",
                 )
 
@@ -185,6 +194,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DOCUMENT_NOTIFICATION,
                     messageProvider.childDocumentNotification(language, notification),
                     path = "/child-documents/${notification.documentId}",
+                    requiresStrongAuth = true,
                     tag = "document-${notification.documentId}",
                 )
 
@@ -193,6 +203,7 @@ class CitizenPushNotifications(
                     NotificationCategory.INFORMAL_DOCUMENT_NOTIFICATION,
                     messageProvider.pedagogicalDocumentNotification(language, notification),
                     path = "/children/${notification.childId}",
+                    requiresStrongAuth = true,
                     tag = "informal-document-${notification.childId}",
                 )
 
@@ -202,6 +213,7 @@ class CitizenPushNotifications(
                     messageProvider.missingReservationsNotification(language, notification),
                     path =
                         "/calendar?modal=reservations&startDate=${notification.range.start}&endDate=${notification.range.end}",
+                    requiresStrongAuth = false,
                     tag = "missing-reservations",
                     ttl = ttlUntil(now, notification.deadline),
                 )
@@ -211,6 +223,7 @@ class CitizenPushNotifications(
                     NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
                     messageProvider.missingHolidayReservationsNotification(language, notification),
                     path = "/calendar?modal=holidays",
+                    requiresStrongAuth = false,
                     tag = "missing-holiday-reservations",
                     ttl = ttlUntil(now, HelsinkiDateTime.of(notification.deadline, LocalTime.MAX)),
                 )
@@ -220,6 +233,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                     messageProvider.discussionSurveyNotification(language, notification),
                     path = "/calendar?modal=discussions",
+                    requiresStrongAuth = false,
                     tag = "discussion-survey-${notification.eventId}",
                 )
 
@@ -228,6 +242,7 @@ class CitizenPushNotifications(
                     NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                     messageProvider.discussionTimeNotification(language, notification),
                     path = "/calendar?day=${notification.date}",
+                    requiresStrongAuth = false,
                     tag = "discussion-time-${notification.eventTimeId}",
                     ttl =
                         when (notification.event) {
@@ -276,7 +291,10 @@ class CitizenPushNotifications(
                 DeclarativeNotification(
                     title = truncate(delivery.content.title, MAX_TITLE_LENGTH),
                     // URL is not visible to the citizens, so we can always use the Finnish URL
-                    navigate = env.frontendBaseUrlFi + delivery.path,
+                    navigate =
+                        env.frontendBaseUrlFi +
+                            if (delivery.requiresStrongAuth) strongLoginPath(delivery.path)
+                            else delivery.path,
                     body = delivery.content.body?.let { truncate(it, MAX_BODY_LENGTH) },
                     tag = delivery.tag,
                 )
@@ -295,6 +313,9 @@ class CitizenPushNotifications(
     }
 }
 
+private fun strongLoginPath(path: String): String =
+    "/login/strong?next=${URLEncoder.encode(path, Charsets.UTF_8)}"
+
 /** Cuts [text] to at most [maxLength] characters, the last being an ellipsis */
 internal fun truncate(text: String, maxLength: Int): String =
     if (text.codePointCount(0, text.length) <= maxLength) text
@@ -304,6 +325,7 @@ data class Delivery(
     val category: NotificationCategory?,
     val content: PushNotificationContent,
     val path: String,
+    val requiresStrongAuth: Boolean,
     val tag: String,
     val ttl: Duration = DEFAULT_TTL,
 )
