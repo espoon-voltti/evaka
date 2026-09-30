@@ -48,10 +48,9 @@ export const Container = styled.div<{ $isRead: boolean; $active: boolean }>`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   position: relative;
 
-  &:focus {
-    outline: none;
-    border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
-    padding: calc(${defaultMargins.s} - 1px) calc(${defaultMargins.m} - 2px);
+  &:focus-visible {
+    outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
+    outline-offset: -2px;
   }
 
   @media (pointer: coarse) {

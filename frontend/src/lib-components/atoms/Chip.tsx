@@ -42,7 +42,7 @@ export const StaticChip = styled.div<{
     calc(${defaultMargins.xs} + ${defaultMargins.xxs});
 
   outline: none;
-  &:focus {
+  &:focus-visible {
     outline: 2px solid ${(p) => p.theme.colors.main.m3};
     outline-offset: 2px;
   }
@@ -148,8 +148,8 @@ const SelectionChipWrapper = styled.div`
   outline: none;
   border: 2px solid transparent;
 
-  &:focus,
-  &:focus-within {
+  &:focus-visible,
+  &:has(:focus-visible) {
     border-color: ${(p) => p.theme.colors.main.m1};
   }
 

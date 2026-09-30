@@ -29,6 +29,11 @@ select {
   box-sizing: inherit;
 }
 
+/* The app focuses these only so that a screen reader reads out the content */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
 html {
   box-sizing: border-box;
   background-color: #f5f5f5;

@@ -795,7 +795,7 @@ const DayCell = styled.button<{
         `
       : ''};
 
-  &:focus {
+  &:focus-visible {
     outline: 2px solid ${(p) => p.theme.colors.main.m2};
     z-index: 1;
   }

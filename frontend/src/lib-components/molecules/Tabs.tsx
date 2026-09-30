@@ -162,7 +162,7 @@ const tabStyles = css<{
       : css`
           border: 2px solid transparent;
 
-          &:focus {
+          &:focus-visible {
             border-color: ${p.theme.colors.main.m1};
           }
         `}

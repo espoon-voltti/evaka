@@ -390,6 +390,14 @@ export default class CitizenCalendarPage {
     )
     expect(activeElement.computedStyle.outlineWidth).toBe('2px')
   }
+
+  async assertDayIsFocusedWithoutOutline(dayId: string) {
+    const activeElement = await this.getPageActiveElementDetails()
+    expect(activeElement.id).toBe(dayId)
+    expect([this.desktopFocusColor, this.mobileFocusColor]).not.toContain(
+      activeElement.computedStyle.outlineColor
+    )
+  }
 }
 
 type ReadOnlyDayState =
@@ -933,6 +941,10 @@ class DayView extends Element {
 
   async close() {
     await this.findByDataQa('day-view-close-button').click()
+  }
+
+  async closeWithKeyboard() {
+    await this.findByDataQa('day-view-close-button').locator.press('Enter')
   }
 
   async assertEvent(

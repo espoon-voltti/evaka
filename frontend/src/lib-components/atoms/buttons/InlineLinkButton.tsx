@@ -57,7 +57,7 @@ const inlineButtonStyles = css<{ $hasText: boolean; $size: IconSize }>`
       height: ${diameterByIconSize(p.$size)}px;
     `};
 
-  &:focus {
+  &:focus-visible {
     outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     outline-offset: 2px;
   }

@@ -58,7 +58,7 @@ const StyledButton = styled.button`
     margin: -4px ${defaultMargins.s} -4px -4px;
   }
 
-  &:focus .icon-wrapper-outer {
+  &:focus-visible .icon-wrapper-outer {
     border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     border-radius: 100%;
   }

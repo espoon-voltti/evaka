@@ -166,7 +166,7 @@ const StyledAction = styled.button.attrs({ type: 'button' })`
   align-items: center;
   cursor: pointer;
 
-  &:focus {
+  &:focus-visible {
     outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     outline-offset: 2px;
   }
