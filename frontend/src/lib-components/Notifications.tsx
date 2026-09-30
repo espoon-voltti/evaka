@@ -224,7 +224,7 @@ const OuterContainer = styled.div<{
 
   @media (min-width: ${desktopMin}) {
     position: ${(p) => (p.$sticky ? 'sticky' : 'fixed')};
-    top: ${(p) => (p.$offsetTop ? '160px' : '0')};
+    top: 0;
   }
 
   left: 0;
