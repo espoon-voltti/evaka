@@ -54,8 +54,7 @@ const customizations: EmployeeCustomizations = {
           PRESCHOOL: 'Esiopetus',
           PREPARATORY: 'Valmistava opetus',
           PREPARATORY_EDUCATION: 'Valmistava opetus',
-          PREPARATORY_DAYCARE:
-            'Valmistavaan opetusta täydentävä varhaiskasvatus'
+          PREPARATORY_DAYCARE: 'Valmistavaa opetusta täydentävä varhaiskasvatus'
         }
       },
       incomeStatement: {
@@ -127,7 +126,7 @@ const customizations: EmployeeCustomizations = {
           TEMPORARY_RELOCATION:
             'Lapselle on tehty varasijoitus toiseen yksikköön. Poissa omasta, läsnä muualla.',
           PARENTLEAVE:
-            'Poissaolo merkitään sille lapselle, josta maksetaan Kelan vanhenpainrahaa.',
+            'Poissaolo merkitään sille lapselle, josta maksetaan Kelan vanhempainrahaa.',
           FORCE_MAJEURE:
             'Käytetään vain erikoistilanteissa hallinnon ohjeiden mukaan. Yksittäisiä päiviä, joista on luvattu maksuhyvitys',
           FREE_ABSENCE: 'Kesäajan maksuton poissaolo',
