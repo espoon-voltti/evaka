@@ -68,6 +68,7 @@ export const Banner = styled.div`
   z-index: 10;
   background-color: ${(p) => p.theme.colors.main.m4};
   padding: ${defaultMargins.s};
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
 
   @media (min-width: ${desktopMin}) {
     top: 0;
