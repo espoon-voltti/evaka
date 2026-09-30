@@ -6,6 +6,7 @@ package evaka.core.webpush
 
 import evaka.core.decision.DecisionType
 import evaka.core.shared.ApplicationId
+import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.UiLanguage
 import java.time.LocalDate
@@ -53,7 +54,10 @@ class EvakaPushNotificationMessageProviderTest {
             PushNotificationContent("Uusi maksupäätös", "Matti, Maija"),
             provider.feeDecisionNotification(
                 UiLanguage.FI,
-                CitizenPushNotification.FeeDecision(childNames = listOf("Matti", "Maija")),
+                CitizenPushNotification.FeeDecision(
+                    decisionId = FeeDecisionId(UUID.randomUUID()),
+                    childNames = listOf("Matti", "Maija"),
+                ),
             ),
         )
     }

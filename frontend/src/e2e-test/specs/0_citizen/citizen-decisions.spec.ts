@@ -27,7 +27,7 @@ import {
 import type { DevPerson } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import type { NewEvakaPage } from '../../playwright'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import { enduserLogin } from '../../utils/user'
 
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
@@ -163,6 +163,46 @@ test.describe('Citizen application decisions', () => {
     await responsePage.reload()
     await responsePage.assertPageTitle(0)
     await responsePage.assertNoDecisionsVisible()
+  })
+
+  test('A link to an application opens its decisions', async ({
+    newEvakaPage
+  }) => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'PRESCHOOL',
+      null,
+      [testDaycare.id],
+      true
+    )
+    await createApplications({ body: [application] })
+    await execSimpleApplicationActions(
+      application.id,
+      [
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
+      ],
+      now
+    )
+    const decisions = await getApplicationDecisions({
+      applicationId: application.id
+    })
+
+    const page = await newEvakaPage()
+    await enduserLogin(
+      page,
+      testAdult,
+      `/decisions?application=${application.id}`
+    )
+
+    for (const decision of decisions) {
+      await expect(
+        page.findByDataQa(`application-decision-${decision.id}`)
+      ).toHaveAttribute('data-status', 'open')
+    }
   })
 
   test('Rejecting preschool decision also rejects connected daycare after confirmation', async ({

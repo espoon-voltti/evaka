@@ -3,12 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useLocation } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type {
+  AbsenceApplicationId,
+  ChildId
+} from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
+import { useScrollIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -34,18 +38,29 @@ import {
 
 interface Props {
   childId: ChildId
+  linkedApplicationId: AbsenceApplicationId | null
 }
 
-export const AbsenceApplicationsSection = (props: Props) => {
+export const AbsenceApplicationsSection = (
+  props: Props & { startOpen: boolean }
+) => {
   const i18n = useTranslation()
-  const [open, { toggle: toggleOpen }] = useBoolean(false)
+  const [open, { toggle: toggleOpen }] = useBoolean(props.startOpen)
+  // Closing the section unmounts its contents, so the link must not apply when it opens again
+  const [linkedApplicationId, setLinkedApplicationId] = useState(
+    props.linkedApplicationId
+  )
   const [, navigate] = useLocation()
 
   return (
     <ResponsiveWholePageCollapsible
       title={i18n.children.absenceApplication.title}
       open={open}
-      toggleOpen={toggleOpen}
+      toggleOpen={() => {
+        toggleOpen()
+        setLinkedApplicationId(null)
+      }}
+      scrollIntoView={props.startOpen && !props.linkedApplicationId}
       $opaque
       data-qa="collapsible-absence-applications"
     >
@@ -61,7 +76,10 @@ export const AbsenceApplicationsSection = (props: Props) => {
         data-qa="create-absence-application"
       />
       <H4>{i18n.children.absenceApplication.list}</H4>
-      <AbsenceApplicationList {...props} />
+      <AbsenceApplicationList
+        childId={props.childId}
+        linkedApplicationId={linkedApplicationId}
+      />
     </ResponsiveWholePageCollapsible>
   )
 }
@@ -87,7 +105,11 @@ const AbsenceApplicationList = (props: Props) => {
         <>
           {applications.map((application) => (
             <React.Fragment key={application.data.id}>
-              <FixedSpaceColumn data-qa="absence-application-row">
+              <AbsenceApplicationRow
+                scrollIntoView={
+                  application.data.id === props.linkedApplicationId
+                }
+              >
                 <FixedSpaceRow>
                   <div>
                     {application.data.startDate.format()} -{' '}
@@ -132,12 +154,27 @@ const AbsenceApplicationList = (props: Props) => {
                       data-qa-modal="delete-absence-application-modal"
                     />
                   )}
-              </FixedSpaceColumn>
+              </AbsenceApplicationRow>
               <HorizontalLine $slim />
             </React.Fragment>
           ))}
         </>
       ))}
     </div>
+  )
+}
+
+const AbsenceApplicationRow = ({
+  scrollIntoView,
+  children
+}: {
+  scrollIntoView: boolean
+  children: React.ReactNode
+}) => {
+  const ref = useScrollIntoView<HTMLDivElement>(scrollIntoView)
+  return (
+    <FixedSpaceColumn ref={ref} data-qa="absence-application-row">
+      {children}
+    </FixedSpaceColumn>
   )
 }

@@ -259,6 +259,11 @@ const sv: Translations = {
       ),
       usedLast: 'Senast använd'
     },
+    strongLogin: {
+      title: 'Stark autentisering',
+      info: 'För att se detta innehåll krävs stark autentisering. Autentisera dig i Suomi.fi-tjänsten, så kommer du direkt till innehållet.',
+      goToHomepage: 'Gå till hemsidan'
+    },
     applying: {
       title: 'Första gången här?',
       paragraph:

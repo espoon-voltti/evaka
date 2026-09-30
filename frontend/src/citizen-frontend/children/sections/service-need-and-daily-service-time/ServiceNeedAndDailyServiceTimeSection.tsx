@@ -6,7 +6,10 @@ import React, { useState } from 'react'
 
 import type { Result } from 'lib-common/api'
 import { combine, Failure, Success } from 'lib-common/api'
-import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type {
+  ChildId,
+  ServiceApplicationId
+} from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import {
@@ -31,14 +34,22 @@ import { childDailyServiceTimesQuery, childServiceNeedsQuery } from './queries'
 interface ServiceNeedProps {
   childId: ChildId
   showServiceTimes: boolean
+  startOpen: boolean
+  linkedApplicationId: ServiceApplicationId | null
 }
 
 export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
   childId,
-  showServiceTimes
+  showServiceTimes,
+  startOpen,
+  linkedApplicationId: initiallyLinkedApplicationId
 }: ServiceNeedProps) {
   const t = useTranslation()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(startOpen)
+  // Closing the section unmounts its contents, so the link must not apply when it opens again
+  const [linkedApplicationId, setLinkedApplicationId] = useState(
+    initiallyLinkedApplicationId
+  )
   const serviceNeedsResponse = useQueryResult(
     childServiceNeedsQuery({ childId })
   )
@@ -81,7 +92,11 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
           : t.children.serviceNeedAndDailyServiceTime.title
       }
       open={open}
-      toggleOpen={() => setOpen(!open)}
+      toggleOpen={() => {
+        setOpen(!open)
+        setLinkedApplicationId(null)
+      }}
+      scrollIntoView={startOpen}
       $opaque
       data-qa="collapsible-service-need-and-daily-service-time"
     >
@@ -134,6 +149,7 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
                   childId={childId}
                   applications={serviceApplications}
                   canCreate={serviceApplicationCreationPossible}
+                  linkedApplicationId={linkedApplicationId}
                 />
               </>
             )

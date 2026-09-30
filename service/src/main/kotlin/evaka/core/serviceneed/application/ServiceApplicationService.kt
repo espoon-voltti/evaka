@@ -92,6 +92,7 @@ class ServiceApplicationService(
                     clock.now(),
                     application.personId,
                     CitizenPushNotification.ServiceApplicationDecision(
+                        applicationId = application.id,
                         childId = application.childId,
                         childName =
                             tx.getPushChildNames(listOf(application.childId))

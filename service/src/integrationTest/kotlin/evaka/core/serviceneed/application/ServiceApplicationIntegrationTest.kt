@@ -471,6 +471,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(
             listOf(
                 CitizenPushNotification.ServiceApplicationDecision(
+                    applicationId = applicationId,
                     childId = child.id,
                     childName = "${child.firstName} ${child.lastName}",
                     serviceNeedNameFi = snDaycareFullDay35.nameFi,

@@ -2762,7 +2762,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(
             listOf(
                 CitizenPushNotification.FeeDecision(
-                    childNames = listOf("${child2.firstName} ${child2.lastName}")
+                    decisionId = decision.id,
+                    childNames = listOf("${child2.firstName} ${child2.lastName}"),
                 )
             ),
             db.read { it.getPlannedCitizenPushNotifications() },

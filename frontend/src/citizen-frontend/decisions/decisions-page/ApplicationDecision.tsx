@@ -15,6 +15,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { useScrollIntoView } from 'lib-common/utils/scrolling'
 import IconChip from 'lib-components/atoms/IconChip'
 import { ResponsiveLinkButton } from 'lib-components/atoms/buttons/LinkButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -38,6 +39,8 @@ interface Props {
   sentDate: LocalDate
   status: DecisionStatus
   canDecide: boolean
+  startOpen: boolean
+  scrollIntoView: boolean
 }
 
 export default React.memo(function ApplicationDecision({
@@ -46,60 +49,65 @@ export default React.memo(function ApplicationDecision({
   type,
   sentDate,
   status,
-  canDecide
+  canDecide,
+  startOpen,
+  scrollIntoView
 }: Props) {
   const t = useTranslation()
-  const [open, setOpen] = useState(false)
+  const ref = useScrollIntoView<HTMLDivElement>(scrollIntoView)
+  const [open, setOpen] = useState(startOpen)
   const toggleOpen = useCallback(() => setOpen((o) => !o), [])
 
   return (
-    <CollapsibleContentArea
-      $opaque={false}
-      open={open}
-      toggleOpen={toggleOpen}
-      title={
-        <div
-          aria-label={`${
-            t.decisions.applicationDecisions.type[type]
-          } ${sentDate.format()} - ${
-            t.decisions.applicationDecisions.status[status]
-          }`}
-        >
-          <H4 $noMargin data-qa="decision-sent-date">
-            {sentDate.format()}
-          </H4>
-          <Gap $size="xxs" />
-          <H3 $noMargin data-qa="title-decision-type">
-            {t.decisions.applicationDecisions.type[type]}
-          </H3>
-        </div>
-      }
-      alwaysShownContent={
-        <AlwaysShownCollapseContent>
-          <IconChip
-            {...iconPropsByStatus[status]}
-            label={t.decisions.applicationDecisions.status[status]}
-            data-qa="decision-status"
-          />
-          {canDecide && (
-            <ResponsiveLinkButton
-              $style="secondary"
-              href="/decisions/pending"
-              data-qa={`button-confirm-decisions-${applicationId}`}
-            >
-              {t.decisions.applicationDecisions.confirmationLink}
-            </ResponsiveLinkButton>
-          )}
-        </AlwaysShownCollapseContent>
-      }
-      $paddingHorizontal="0"
-      $paddingVertical="0"
-      data-qa={`application-decision-${id}`}
-    >
-      {open && (
-        <DecisionDetails id={id} applicationId={applicationId} type={type} />
-      )}
-    </CollapsibleContentArea>
+    <div ref={ref}>
+      <CollapsibleContentArea
+        $opaque={false}
+        open={open}
+        toggleOpen={toggleOpen}
+        title={
+          <div
+            aria-label={`${
+              t.decisions.applicationDecisions.type[type]
+            } ${sentDate.format()} - ${
+              t.decisions.applicationDecisions.status[status]
+            }`}
+          >
+            <H4 $noMargin data-qa="decision-sent-date">
+              {sentDate.format()}
+            </H4>
+            <Gap $size="xxs" />
+            <H3 $noMargin data-qa="title-decision-type">
+              {t.decisions.applicationDecisions.type[type]}
+            </H3>
+          </div>
+        }
+        alwaysShownContent={
+          <AlwaysShownCollapseContent>
+            <IconChip
+              {...iconPropsByStatus[status]}
+              label={t.decisions.applicationDecisions.status[status]}
+              data-qa="decision-status"
+            />
+            {canDecide && (
+              <ResponsiveLinkButton
+                $style="secondary"
+                href="/decisions/pending"
+                data-qa={`button-confirm-decisions-${applicationId}`}
+              >
+                {t.decisions.applicationDecisions.confirmationLink}
+              </ResponsiveLinkButton>
+            )}
+          </AlwaysShownCollapseContent>
+        }
+        $paddingHorizontal="0"
+        $paddingVertical="0"
+        data-qa={`application-decision-${id}`}
+      >
+        {open && (
+          <DecisionDetails id={id} applicationId={applicationId} type={type} />
+        )}
+      </CollapsibleContentArea>
+    </div>
   )
 })
 

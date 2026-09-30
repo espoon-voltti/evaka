@@ -260,6 +260,11 @@ const en: Translations = {
       ),
       usedLast: 'Used last'
     },
+    strongLogin: {
+      title: 'Strong authentication',
+      info: 'Viewing this content requires strong authentication. Authenticate in the Suomi.fi service to go directly to the content.',
+      goToHomepage: 'Go to homepage'
+    },
     applying: {
       title: 'First time here?',
       paragraph:

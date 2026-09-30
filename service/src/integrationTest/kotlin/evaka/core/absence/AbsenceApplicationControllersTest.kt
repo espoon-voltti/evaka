@@ -548,6 +548,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             assertEquals(
                 listOf(
                     CitizenPushNotification.AbsenceApplicationDecision(
+                        applicationId = id,
                         childId = child.id,
                         childName = "${child.firstName} ${child.lastName}",
                         range =

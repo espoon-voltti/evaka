@@ -258,6 +258,11 @@ export default {
       ),
       usedLast: 'Käytit viimeksi'
     },
+    strongLogin: {
+      title: 'Tunnistaudu vahvasti',
+      info: 'Tämän sisällön näkeminen vaatii vahvan tunnistautumisen. Tunnistaudu Suomi.fi-palvelussa, niin pääset suoraan sisältöön.',
+      goToHomepage: 'Siirry etusivulle'
+    },
     applying: {
       title: 'Ensimmäistä kertaa täällä?',
       paragraph:

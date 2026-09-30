@@ -3,10 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { useSearchParams } from 'wouter'
 
 import { Failure, Success } from 'lib-common/api'
 import type { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
+import type { Id } from 'lib-common/id-type'
+import { tryFromUuid } from 'lib-common/id-type'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -57,6 +60,8 @@ const ChildData = ({ child }: { child: ChildAndPermittedActions }) => {
   const { id: childId, firstName, lastName } = child
   useTitle(i18n, formatPersonName({ firstName, lastName }, childPageNameFormat))
   const user = useUser()
+  const [searchParams] = useSearchParams()
+  const linkedSection = searchParams.get('section')
 
   return (
     <>
@@ -69,11 +74,16 @@ const ChildData = ({ child }: { child: ChildAndPermittedActions }) => {
         showServiceTimes={child.permittedActions.includes(
           'READ_DAILY_SERVICE_TIMES'
         )}
+        startOpen={linkedSection === 'service-need'}
+        linkedApplicationId={linkedId(searchParams, 'serviceApplication')}
       />
       {user?.accessibleFeatures.childDocumentation && (
         <>
           <Gap $size="s" />
-          <PedagogicalDocumentsSection childId={childId} />
+          <PedagogicalDocumentsSection
+            childId={childId}
+            startOpen={linkedSection === 'pedagogical-documents'}
+          />
           <Gap $size="s" />
           <ChildDocumentsSection childId={childId} />
         </>
@@ -82,11 +92,23 @@ const ChildData = ({ child }: { child: ChildAndPermittedActions }) => {
         child.absenceApplicationCreationPossible && (
           <>
             <Gap $size="s" />
-            <AbsenceApplicationsSection childId={childId} />
+            <AbsenceApplicationsSection
+              childId={childId}
+              startOpen={linkedSection === 'absence-applications'}
+              linkedApplicationId={linkedId(searchParams, 'absenceApplication')}
+            />
           </>
         )}
       <Gap $size="s" />
       <PlacementTerminationSection childId={childId} />
     </>
   )
+}
+
+function linkedId<T extends Id<string>>(
+  searchParams: URLSearchParams,
+  name: string
+): T | null {
+  const value = searchParams.get(name)
+  return (value && tryFromUuid<T>(value)) || null
 }

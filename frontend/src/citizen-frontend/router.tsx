@@ -28,6 +28,7 @@ import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import IncomeStatementView from './income-statements/IncomeStatementView'
 import IncomeStatements from './income-statements/IncomeStatements'
 import LoginPage from './login/LoginPage'
+import StrongLoginPage from './login/StrongLoginPage'
 import LoginFormPage from './login/WeakLoginFormPage'
 import MapPage from './map/MapPage'
 import MessagesPage from './messages/MessagesPage'
@@ -42,6 +43,7 @@ interface CitizenRoute {
 
 const routes: CitizenRoute[] = [
   { path: '/login/form', component: LoginFormPage, auth: null },
+  { path: '/login/strong', component: StrongLoginPage, auth: null },
   { path: '/login', component: LoginPage, auth: null },
   { path: '/map', component: MapPage, auth: null },
   { path: '/accessibility', component: AccessibilityStatement, auth: null },

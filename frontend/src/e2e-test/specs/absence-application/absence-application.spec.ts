@@ -425,6 +425,42 @@ test.describe('Absence application', () => {
     await applicationProcessTab.assertAbsenceApplications([])
   })
 
+  test('A link opens the absence applications section', async ({
+    newEvakaPage
+  }) => {
+    const mockedDate = mockedTime.toLocalDate()
+    const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
+    await Fixture.preschoolTerm({
+      extendedTerm: termRange,
+      finnishPreschool: termRange,
+      swedishPreschool: termRange,
+      applicationPeriod: termRange.withStart(mockedDate.subMonths(2))
+    }).save()
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
+    await Fixture.family({ guardian: adult, children: [child] }).save()
+    await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
+
+    const citizenPage = await newEvakaPage({
+      mockedTime,
+      citizenCustomizations: { featureFlags: { absenceApplications: true } }
+    })
+    await enduserLogin(
+      citizenPage,
+      adult,
+      `/children/${child.id}?section=absence-applications`
+    )
+    await expect(
+      citizenPage.findByDataQa('collapsible-absence-applications')
+    ).toHaveAttribute('data-status', 'open')
+  })
+
   test('Form is invalid if absence date range is not on possible absence application date range', async ({
     newEvakaPage
   }) => {

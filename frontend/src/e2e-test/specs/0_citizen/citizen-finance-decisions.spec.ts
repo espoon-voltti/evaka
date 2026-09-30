@@ -31,7 +31,7 @@ import {
 import type { DevPerson, VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -143,6 +143,24 @@ test.describe('Citizen finance decisions', () => {
       parsePersonNames([headOfFamily]),
       parsePersonNames([child])
     )
+  })
+
+  test('A link to a finance decision opens only that decision', async ({
+    evaka
+  }) => {
+    page = evaka
+    await enduserLogin(
+      page,
+      testAdult,
+      `/decisions?financeDecision=${feeDecision.id}`
+    )
+
+    await expect(
+      page.findByDataQa(`finance-decision-${feeDecision.id}`)
+    ).toHaveAttribute('data-status', 'open')
+    await expect(
+      page.findByDataQa(`finance-decision-${voucherValueDecision.id}`)
+    ).toHaveAttribute('data-status', 'closed')
   })
 
   test('Restricted partner sees their decisions with strong auth', async ({
