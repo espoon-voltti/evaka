@@ -1544,7 +1544,7 @@ HAVING max(p.end_date) < ${bind(date)}
 
 /**
  * A child expires once all other data depending on the child can be removed. Data kept for as long
- * as the child, such as their message threads, is removed with the child. Child removal is not
- * implemented yet, so no child expires.
+ * as the child, such as their message threads, is removed with the child. The data retention run of
+ * the child finds this and marks the messages of the child ready for deletion.
  */
-private fun expiredChildIdsQuery() = QuerySql { sql("SELECT id FROM child WHERE FALSE") }
+private fun expiredChildIdsQuery() = childIdsWithMessagesReadyForDeletion()

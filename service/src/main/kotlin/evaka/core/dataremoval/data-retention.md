@@ -260,6 +260,14 @@ A leaf table whose rows should simply be deleted with the rows they reference ca
 
 The `child` row is deleted at the very end, but some information in it, such as diet, may need to be deleted earlier. That information can be cleared by a separate job.
 
+### 5.6 Message threads
+
+The message threads of a child are deleted by the message removal of the nightly data removal job, whose rules span several people: a thread of several children is kept until every one of them has expired, and a thread without recorded children until every child of its citizens has. `message_thread_children` is therefore an external table, whose rows hold the `child` row like any foreign rows.
+
+The message removal waits for the rest of the child's data to expire, so these rows block the deletion of the child, but not its expiry. The evaluation checks whether the `child` node is still expired before the `message_thread_children` nodes block it. If it is, the run marks the child's messages ready for deletion in the `messages_ready_for_deletion_at` column of the `child` row, and the message removal reads the children from there. The next run of the child finds the threads gone and deletes the child row, and the mark with it. A run that finds the child not expired removes an earlier mark.
+
+The mark names the data it concerns instead of saying that the child has expired, because it holds only when the threads are the one thing left keeping the child.
+
 ## 6. Special cases
 
 ### 6.1 Missing child row

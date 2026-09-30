@@ -217,6 +217,69 @@ class PersonGraphEvaluationTest {
         assertEquals(listOf(single("a", other)), plan.deleted())
     }
 
+    private val messageSchema =
+        schema(
+            table("c", CHILD, "child_id" to "child"),
+            table("d", CHILD, "child_id" to "child", expirationRule = Never),
+            table("fridge_child", ADULT, "head_of_child" to "person", "child_id" to "child"),
+            externalTable(MESSAGE_THREAD_CHILDREN_TABLE, "child_id" to "child"),
+        )
+
+    private val messageThreadsOfTarget =
+        messageSchema.foreign(MESSAGE_THREAD_CHILDREN_TABLE, "child_id", target)
+
+    @Test
+    fun `message threads hold the child row, but its messages are ready for deletion once nothing else holds it`() {
+        val plan =
+            messageSchema
+                .graph(
+                    messageSchema.ownNode("c", row("child_id" to target)),
+                    foreignNodes = listOf(messageThreadsOfTarget),
+                )
+                .evaluate(today)
+        assertEquals(listOf(whole("c")), plan.deleted())
+        assertEquals(true, plan.childMessagesReadyForDeletion)
+    }
+
+    @Test
+    fun `the messages of a child are not ready for deletion while other data holds the child`() {
+        // An own node that has not expired
+        val notExpired =
+            messageSchema
+                .graph(
+                    messageSchema.ownNode("d", row("child_id" to target)),
+                    foreignNodes = listOf(messageThreadsOfTarget),
+                )
+                .evaluate(today)
+        assertEquals(false, notExpired.childMessagesReadyForDeletion)
+
+        // Another person's row
+        val foreign =
+            messageSchema
+                .graph(
+                    foreignNodes =
+                        listOf(
+                            messageSchema.foreign("fridge_child", "child_id", target),
+                            messageThreadsOfTarget,
+                        )
+                )
+                .evaluate(today)
+        assertEquals(false, foreign.childMessagesReadyForDeletion)
+    }
+
+    @Test
+    fun `a child without message threads is deleted, so its messages need no marking`() {
+        val plan =
+            messageSchema
+                .graph(messageSchema.ownNode("c", row("child_id" to target)))
+                .evaluate(today)
+        assertEquals(listOf(whole("c"), child, person), plan.deleted())
+        assertEquals(false, plan.childMessagesReadyForDeletion)
+
+        val withoutChildRow = messageSchema.graph(childRow = false).evaluate(today)
+        assertEquals(false, withoutChildRow.childMessagesReadyForDeletion)
+    }
+
     @Test
     fun `a missing child row counts as expired and blocks nothing`() {
         val plan =

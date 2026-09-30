@@ -132,7 +132,6 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
             "holiday_questionnaire_answer.child_id",
             "invoice.codebtor",
             "invoice_correction.child_id",
-            "message_thread_children.child_id",
             "nekku_special_diet_choices.child_id",
             "pedagogical_document.child_id",
             "pedagogical_document_read.person_id",

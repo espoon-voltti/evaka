@@ -4,8 +4,14 @@
 
 package evaka.core.dataremoval
 
+import evaka.core.DataRemovalEnv
 import evaka.core.FullApplicationTest
 import evaka.core.childimages.insertChildImage
+import evaka.core.messaging.MessageType
+import evaka.core.messaging.insertMessageThreadChildren
+import evaka.core.messaging.insertThread
+import evaka.core.shared.ChildId
+import evaka.core.shared.MessageThreadId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -26,9 +32,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.util.ReflectionTestUtils
 
 class DataRetentionServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var dataRetentionService: DataRetentionService
+    @Autowired private lateinit var dataRemovalService: DataRemovalService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val today = LocalDate.of(2026, 9, 12)
@@ -105,6 +113,74 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
 
         assertEquals(emptySet(), remaining(longGone.id))
         assertEquals(setOf("person", "child", "placement"), remaining(recent.id))
+    }
+
+    private fun insertMessageThread(childId: PersonId): MessageThreadId = db.transaction { tx ->
+        tx.insertThread(
+                MessageType.MESSAGE,
+                "Thread",
+                urgent = false,
+                sensitive = false,
+                isCopy = false,
+            )
+            .also { tx.insertMessageThreadChildren(listOf(it to setOf(ChildId(childId.raw)))) }
+    }
+
+    private fun messageThreadIds(): Set<MessageThreadId> = db.read { tx ->
+        tx.createQuery { sql("SELECT id FROM message_thread") }.toSet<MessageThreadId>()
+    }
+
+    private fun childrenWithMessagesReadyForDeletion(): Set<ChildId> = db.read { tx ->
+        tx.createQuery(childIdsWithMessagesReadyForDeletion()).toSet<ChildId>()
+    }
+
+    private fun runNightlyDataRemoval() {
+        val env = ReflectionTestUtils.getField(dataRemovalService, "dataRemovalEnv")
+        ReflectionTestUtils.setField(
+            dataRemovalService,
+            "dataRemovalEnv",
+            DataRemovalEnv(limit = 100),
+        )
+        try {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        } finally {
+            ReflectionTestUtils.setField(dataRemovalService, "dataRemovalEnv", env)
+        }
+    }
+
+    @Test
+    fun `message threads keep an expired child until the nightly data removal has deleted them`() {
+        insertMessageThread(longGone.id)
+
+        realRun(longGone.id)
+        assertEquals(setOf("person", "child", "placement"), remaining(longGone.id))
+        assertEquals(setOf(ChildId(longGone.id.raw)), childrenWithMessagesReadyForDeletion())
+
+        runNightlyDataRemoval()
+        assertEquals(emptySet(), messageThreadIds())
+
+        realRun(longGone.id)
+        assertEquals(emptySet(), remaining(longGone.id))
+        assertEquals(emptySet(), childrenWithMessagesReadyForDeletion())
+    }
+
+    @Test
+    fun `the messages of a child whose other data has not expired are not ready for deletion`() {
+        val thread = insertMessageThread(recent.id)
+        // A mark from an earlier run, after which the child got data that has not expired
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE child SET messages_ready_for_deletion_at = ${bind(clock.now().minusYears(1))} WHERE id = ${bind(recent.id)}"
+                )
+            }
+        }
+
+        realRun(recent.id)
+        assertEquals(emptySet(), childrenWithMessagesReadyForDeletion())
+
+        runNightlyDataRemoval()
+        assertEquals(setOf(thread), messageThreadIds())
     }
 
     @Test

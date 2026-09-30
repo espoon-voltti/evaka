@@ -483,6 +483,10 @@ fun buildDataRetentionSchema(
                     listOf(optionalReference("application_id", referencedTable = "application")),
             ),
             ExternalTable(
+                name = MESSAGE_THREAD_CHILDREN_TABLE,
+                references = listOf(secondaryReference("child_id", referencedTable = "child")),
+            ),
+            ExternalTable(
                 name = "voucher_value_report_decision",
                 references =
                     listOf(
