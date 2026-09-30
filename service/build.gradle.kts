@@ -41,32 +41,46 @@ val integrationTestImplementation: Configuration by configurations.getting {
 val downloadOnly: Configuration by configurations.creating { isTransitive = false }
 
 val xjcTool: Configuration by configurations.creating
-val xjcGenerate =
-    tasks.register<JavaExec>("xjcGenerate") {
+
+fun registerXjcTask(name: String, schemaPath: String, packageName: String? = null) =
+    tasks.register<JavaExec>(name) {
         group = "code generation"
         description = "Generates Java classes from XML schema using the XJC binding compiler"
 
-        val schemaDirectory = layout.projectDirectory.dir("src/main/schema")
-        val outputDirectory = layout.buildDirectory.dir("generated/sources/xjc/java/main")
+        val schema = layout.projectDirectory.file(schemaPath)
+        val outputDirectory = layout.buildDirectory.dir("generated/sources/$name/java/main")
 
         classpath = xjcTool
         mainClass = "com.sun.tools.xjc.Driver"
         args =
-            listOf(
-                "-no-header",
-                "-quiet",
-                "-d",
-                outputDirectory.get().asFile.absolutePath,
-                schemaDirectory.asFile.absolutePath,
-            )
+            listOf("-no-header", "-quiet") +
+                (packageName?.let { listOf("-p", it) } ?: emptyList()) +
+                listOf("-d", outputDirectory.get().asFile.absolutePath, schema.asFile.absolutePath)
 
-        inputs.dir(schemaDirectory)
+        inputs.files(schema)
         outputs.dir(outputDirectory)
     }
 
-tasks.compileKotlin { dependsOn(xjcGenerate) }
+// The IDoc schemas have no target namespace, so each one needs its own XJC run to get its own
+// package
+val xjcTasks =
+    listOf(
+        registerXjcTask("xjcGenerate", "src/main/schema"),
+        registerXjcTask(
+            "xjcGenerateTurkuInvoiceIdoc",
+            "src/main/idoc-schema/ORDERS05.xsd",
+            "evaka.instance.turku.invoice.service",
+        ),
+        registerXjcTask(
+            "xjcGenerateTurkuPaymentIdoc",
+            "src/main/idoc-schema/FIDCCP02.xsd",
+            "evaka.instance.turku.payment.service",
+        ),
+    )
 
-sourceSets.main { java.srcDirs(xjcGenerate) }
+tasks.compileKotlin { dependsOn(xjcTasks) }
+
+sourceSets.main { java.srcDirs(xjcTasks) }
 
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
