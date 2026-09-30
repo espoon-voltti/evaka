@@ -149,7 +149,8 @@ const BottomBar = styled.nav`
   align-items: center;
   height: ${mobileBottomNavHeight}px;
   width: 100%;
-  padding: ${defaultMargins.xs};
+  padding: ${defaultMargins.xs}
+    max(calc(env(safe-area-inset-bottom) / 2), ${defaultMargins.xs});
   position: fixed;
   bottom: 0;
   left: 0;
