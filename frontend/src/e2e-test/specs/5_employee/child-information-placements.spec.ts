@@ -357,8 +357,28 @@ test.describe('Child Information placement create (feature flag place guarantee 
     )
     await editedStart.fill(preschoolTerms.extendedTerm.start.subDays(1))
 
+    const termError = placements.findText(
+      'Sijoituksen tulee olla esiopetuskaudella'
+    )
+    const saveButton = placements.findByDataQa('placement-save-button')
+    await expect(termError).toBeVisible()
+    await new Checkbox(placements.findByDataQa('confirm-retroactive')).check()
+    await saveButton.assertDisabled(true)
+
+    // The end date is invalid, so fixing the start date must not clear the error
+    const editedEnd = new DatePicker(
+      placements.findByDataQa('placement-end-date-input')
+    )
+    await editedEnd.fill(preschoolTerms.extendedTerm.end.addDays(1))
+    await editedStart.fill(preschoolTerms.extendedTerm.start)
+    await expect(termError).toBeVisible()
+    await saveButton.assertDisabled(true)
+
+    await editedEnd.fill(preschoolTerms.extendedTerm.end)
+    await expect(termError).toBeHidden()
+    await saveButton.click()
     await expect(
-      placements.findText('Sijoituksen tulee olla esiopetuskaudella')
-    ).toBeVisible()
+      placements.findByDataQa('placement-details-end-date')
+    ).toHaveText(preschoolTerms.extendedTerm.end.format())
   })
 })

@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import type { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
@@ -29,11 +30,14 @@ import { UIContext } from '../../../state/ui'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
-import { daycaresQuery, getPreschoolTermsQuery } from '../../unit/queries'
+import { daycaresQuery } from '../../unit/queries'
 import { createPlacementMutation } from '../queries'
+
+import { getPreschoolTermError } from './preschool-term-validation'
 
 export interface Props {
   childId: ChildId
+  preschoolTerms: PreschoolTerm[]
 }
 
 interface Form {
@@ -44,11 +48,10 @@ interface Form {
   placeGuarantee: boolean
 }
 
-function CreatePlacementModal({ childId }: Props) {
+function CreatePlacementModal({ childId, preschoolTerms }: Props) {
   const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const units = useQueryResult(daycaresQuery({ includeClosed: true }))
-  const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
 
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
@@ -96,35 +99,18 @@ function CreatePlacementModal({ childId }: Props) {
       .getOrElse([])
   }, [units, form])
 
-  const datesAreInsideSomePreschoolTerm = useMemo(() => {
-    if (form.startDate && form.endDate) {
-      const preschoolTerms = preschoolTermsResult
-        .map((preschoolTerms) => preschoolTerms)
-        .getOrElse([])
-      return preschoolTerms.some(
-        (term) =>
-          (term.finnishPreschool.asDateRange().includes(form.startDate!) &&
-            term.finnishPreschool.asDateRange().includes(form.endDate!)) ||
-          (term.swedishPreschool.asDateRange().includes(form.startDate!) &&
-            term.swedishPreschool.asDateRange().includes(form.endDate!))
-      )
-    }
-    return false
-  }, [form, preschoolTermsResult])
-
-  const datesAreInsideSomeExtendedPreschoolTerm = useMemo(() => {
-    if (form.startDate && form.endDate) {
-      const preschoolTerms = preschoolTermsResult
-        .map((preschoolTerms) => preschoolTerms)
-        .getOrElse([])
-      return preschoolTerms.some(
-        (term) =>
-          term.extendedTerm.asDateRange().includes(form.startDate!) &&
-          term.extendedTerm.asDateRange().includes(form.endDate!)
-      )
-    }
-    return false
-  }, [form, preschoolTermsResult])
+  const preschoolTermError = useMemo(
+    () =>
+      form.startDate && form.endDate
+        ? getPreschoolTermError(
+            form.type,
+            form.startDate,
+            form.endDate,
+            preschoolTerms
+          )
+        : null,
+    [form, preschoolTerms]
+  )
 
   const errors = useMemo(() => {
     const errors: string[] = []
@@ -152,38 +138,8 @@ function CreatePlacementModal({ childId }: Props) {
       errors.push(i18n.validationError.invertedDateRange)
     }
 
-    if (
-      (form.type === 'PRESCHOOL' || form.type === 'PREPARATORY') &&
-      form.startDate &&
-      form.endDate &&
-      !datesAreInsideSomePreschoolTerm
-    ) {
-      errors.push(
-        i18n.childInformation.placements.createPlacement.preschoolTermNotOpen
-      )
-    }
-
-    if (
-      (form.type === 'PRESCHOOL_DAYCARE' ||
-        form.type === 'PRESCHOOL_DAYCARE_ONLY' ||
-        form.type === 'PREPARATORY_DAYCARE') &&
-      form.startDate &&
-      form.endDate &&
-      !datesAreInsideSomeExtendedPreschoolTerm
-    ) {
-      errors.push(
-        i18n.childInformation.placements.createPlacement
-          .preschoolExtendedTermNotOpen
-      )
-    }
-
     return errors
-  }, [
-    i18n,
-    form,
-    datesAreInsideSomePreschoolTerm,
-    datesAreInsideSomeExtendedPreschoolTerm
-  ])
+  }, [i18n, form])
 
   const { mutateAsync: createPlacement, isPending: submitting } =
     useMutationResult(createPlacementMutation)
@@ -218,6 +174,7 @@ function CreatePlacementModal({ childId }: Props) {
       resolveLabel={i18n.common.confirm}
       resolveDisabled={
         errors.length > 0 ||
+        preschoolTermError !== null ||
         (retroactive && !confirmedRetroactive) ||
         submitting
       }
@@ -327,6 +284,15 @@ function CreatePlacementModal({ childId }: Props) {
         {errors.map((error) => (
           <ValidationError key={error}>{error}</ValidationError>
         ))}
+        {preschoolTermError && (
+          <ValidationError data-qa="preschool-term-error">
+            {
+              i18n.childInformation.placements.createPlacement[
+                preschoolTermError
+              ]
+            }
+          </ValidationError>
+        )}
       </FixedSpaceColumn>
     </FormModal>
   )

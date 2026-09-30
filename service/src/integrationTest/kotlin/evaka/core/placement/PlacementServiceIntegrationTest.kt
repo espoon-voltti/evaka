@@ -14,6 +14,7 @@ import evaka.core.shared.GroupPlacementId
 import evaka.core.shared.PlacementId
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.data.DateSet
 import evaka.core.shared.dev.DevBackupCare
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
@@ -23,6 +24,7 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
+import evaka.core.shared.dev.DevPreschoolTerm
 import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
@@ -251,6 +253,18 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertTrue(originalPlacements.containsAll(listOf(oldPlacement, newPlacement)))
 
         val newStart = oldPlacement.endDate.minusDays(5)
+        val preschoolTerm = FiniteDateRange(newStart, newPlacement.endDate)
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolTerm(
+                    finnishPreschool = preschoolTerm,
+                    swedishPreschool = preschoolTerm,
+                    extendedTerm = preschoolTerm,
+                    applicationPeriod = preschoolTerm,
+                    termBreaks = DateSet.empty(),
+                )
+            )
+        }
         db.transaction {
             it.updatePlacement(
                 id = newPlacement.id,

@@ -11,6 +11,7 @@ import type { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { Action } from 'lib-common/generated/action'
+import type { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import type {
   DaycareGroupPlacement,
   DaycarePlacementWithDetails
@@ -48,7 +49,6 @@ import Toolbar from '../../common/Toolbar'
 import ToolbarAccordion, {
   RestrictedToolbar
 } from '../../common/ToolbarAccordion'
-import { getPreschoolTermsQuery } from '../../unit/queries'
 import {
   backupCaresQuery,
   deletePlacementMutation,
@@ -56,6 +56,7 @@ import {
 } from '../queries'
 
 import ServiceNeeds from './ServiceNeeds'
+import { getPreschoolTermError } from './preschool-term-validation'
 
 interface PlacementUpdate {
   startDate: LocalDate | null
@@ -68,6 +69,7 @@ interface Props {
   permittedServiceNeedActions: Partial<Record<string, Action.ServiceNeed[]>>
   otherPlacementRanges: FiniteDateRange[]
   serviceNeedOptions: ServiceNeedOption[]
+  preschoolTerms: PreschoolTerm[]
 }
 
 const DataRow = styled.div`
@@ -111,15 +113,14 @@ export default React.memo(function PlacementRow({
   permittedActions,
   permittedServiceNeedActions,
   otherPlacementRanges,
-  serviceNeedOptions
+  serviceNeedOptions,
+  preschoolTerms
 }: Props) {
   const { i18n, lang } = useTranslation()
   const { setErrorMessage } = useContext<UiState>(UIContext)
   const backupCares = useQueryResult(
     backupCaresQuery({ childId: placement.child.id })
   )
-
-  const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
 
   const expandedAtStart = isActiveDateRange(
     placement.startDate,
@@ -136,8 +137,6 @@ export default React.memo(function PlacementRow({
   const [confirmingDelete, setConfirmingDelete] = useState<boolean>(false)
   const [startDateWarning, setStartDateWarning] = useState(false)
   const [endDateWarning, setEndDateWarning] = useState(false)
-  const [preschoolDatesTermWarning, setPreschoolDatesTermWarning] =
-    useState(false)
 
   const retroactive = useMemo(
     () =>
@@ -153,6 +152,19 @@ export default React.memo(function PlacementRow({
   )
   const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
+  const preschoolTermError = useMemo(
+    () =>
+      form.startDate && form.endDate
+        ? getPreschoolTermError(
+            placement.type,
+            form.startDate,
+            form.endDate,
+            preschoolTerms
+          )
+        : null,
+    [form, placement.type, preschoolTerms]
+  )
+
   function startEdit() {
     setToggled(true)
     setForm(initFormData())
@@ -160,7 +172,6 @@ export default React.memo(function PlacementRow({
     setStartDateWarning(false)
     setEndDateWarning(false)
     setConfirmedRetroactive(false)
-    setPreschoolDatesTermWarning(false)
   }
 
   const onSuccess = useCallback(() => {
@@ -267,33 +278,6 @@ export default React.memo(function PlacementRow({
       setConflictBackupCare(true)
     } else {
       setConflictBackupCare(false)
-    }
-    if (placement.type === 'PRESCHOOL' || placement.type === 'PREPARATORY') {
-      preschoolTermsResult.map((preschoolTerms) => {
-        const datesAreInsideSomePreschoolTerm = preschoolTerms.some(
-          (term) =>
-            (term.finnishPreschool.asDateRange().includes(startDate) &&
-              term.finnishPreschool.asDateRange().includes(endDate)) ||
-            (term.swedishPreschool.asDateRange().includes(startDate) &&
-              term.swedishPreschool.asDateRange().includes(endDate))
-        )
-        setPreschoolDatesTermWarning(!datesAreInsideSomePreschoolTerm)
-      })
-    }
-
-    if (
-      placement.type === 'PRESCHOOL_DAYCARE' ||
-      placement.type === 'PRESCHOOL_DAYCARE_ONLY' ||
-      placement.type === 'PREPARATORY_DAYCARE'
-    ) {
-      preschoolTermsResult.map((preschoolTerms) => {
-        const datesAreInsideSomeExtendedPreschoolTerm = preschoolTerms.some(
-          (term) =>
-            term.extendedTerm.asDateRange().includes(startDate) &&
-            term.extendedTerm.asDateRange().includes(endDate)
-        )
-        setPreschoolDatesTermWarning(!datesAreInsideSomeExtendedPreschoolTerm)
-      })
     }
   }
 
@@ -406,15 +390,17 @@ export default React.memo(function PlacementRow({
                     </WarningContainer>
                   )}
                 </div>
-                {preschoolDatesTermWarning && (
+                {preschoolTermError && (
                   <div>
                     <WarningContainer>
                       <InputWarning
                         text={
-                          i18n.childInformation.placements.createPlacement
-                            .preschoolTermNotOpen
+                          i18n.childInformation.placements.createPlacement[
+                            preschoolTermError
+                          ]
                         }
                         iconPosition="after"
+                        data-qa="preschool-term-error"
                       />
                     </WarningContainer>
                   </div>
@@ -552,9 +538,11 @@ export default React.memo(function PlacementRow({
                 onSuccess={onSuccess}
                 onFailure={onFailure}
                 text={i18n.common.save}
+                data-qa="placement-save-button"
                 disabled={
                   form.startDate === null ||
                   form.endDate === null ||
+                  preschoolTermError !== null ||
                   (retroactive && !confirmedRetroactive)
                 }
               />

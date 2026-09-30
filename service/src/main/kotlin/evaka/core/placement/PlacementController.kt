@@ -158,6 +158,10 @@ class PlacementController(
                         Action.Unit.CREATE_PLACEMENT,
                         body.unitId,
                     )
+                    tx.requirePlacementWithinPreschoolTerm(
+                        body.type,
+                        FiniteDateRange(body.startDate, body.endDate),
+                    )
                     if (tx.getChild(body.childId) == null) {
                         tx.createChild(
                             Child(
