@@ -119,6 +119,17 @@ map $msec $millisec {
   ~\.([0-9]+)$ $1;
 }
 
+# Log the path and query string from $request_uri, which internal redirects do
+# not change. After an X-Accel-Redirect, $query_string holds the presigned S3
+# URL credentials.
+map $request_uri $request_path {
+  ~^([^?]*)  $1;
+}
+map $request_uri $request_query {
+  default   "";
+  ~\?(.*)$  $1;
+}
+
 # Output logs in accordance to eVaka's log schema (type app-requests-received).
 # NOTE: userIdHash cannot easily be computed here, so left empty.
 log_format json_access escape=json
@@ -132,8 +143,9 @@ log_format json_access escape=json
     '"env":"{{ .Env.NGINX_ENV }}",'
     '"hostIp":"{{ .Env.HOST_IP }}",'
     '"httpMethod":"$request_method",'
-    '"path":"$uri",'
-    '"queryString":"$query_string",'
+    '"path":"$request_path",'
+    '"queryString":"$request_query",'
+    '"internalPath":"$uri",'
     '"userAgent":"$http_user_agent",'
     '"responseTime":$request_time_ms,'
     '"spanId":"$request_id",'
@@ -144,6 +156,8 @@ log_format json_access escape=json
     '"awsTraceId":"$http_x_amzn_trace_id",'
     '"version":1'
   '}';
+
+access_log /dev/stdout json_access;
 
 server {
   # Basic configs
@@ -163,8 +177,6 @@ server {
   {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
   set $staticEndpoint "{{ .Env.STATIC_FILES_ENDPOINT_URL }}";
   {{ end }}
-
-  access_log off;
 
   # Security
 
@@ -283,8 +295,6 @@ server {
   }
 
   location /api {
-    access_log /dev/stdout json_access;
-
     include     proxy_params;
     proxy_pass  $enduserUrl;
 
@@ -361,8 +371,6 @@ server {
 server {
     listen 8080;
     server_name {{ .Env.SERVICE_DOMAIN_SV }};
-
-    access_log off;
 
     set $httpScheme "{{ env.Getenv "HTTP_SCHEME" "https" }}";
 
