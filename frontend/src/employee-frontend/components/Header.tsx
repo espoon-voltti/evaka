@@ -5,17 +5,19 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import partition from 'lodash/partition'
+import sum from 'lodash/sum'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled, { css, useTheme } from 'styled-components'
 import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
+import type { Action } from 'lib-common/generated/action'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
-import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
+import { EvakaLogo, evakaLogoWidth } from 'lib-components/atoms/EvakaLogo'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import NavLink, { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { desktopMin } from 'lib-components/breakpoints'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -26,7 +28,14 @@ import type { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
-import { faChevronDown, faChevronUp, faGlobe, faSignOut } from 'lib-icons'
+import type { Lang } from 'lib-customizations/employee'
+import {
+  faChevronDown,
+  faChevronUp,
+  faGlobe,
+  faSignOut,
+  faUser
+} from 'lib-icons'
 
 import { logoutUrl } from '../api/auth'
 import { I18nContext, useTranslation } from '../state/i18n'
@@ -38,20 +47,19 @@ import { ReportNotificationContext } from './reports/ReportNotificationContext'
 
 export const headerHeight = '80px'
 
-const HeaderWrapper = styled.header`
-  margin-bottom: ${defaultMargins.xs};
-  @media print {
-    display: none;
-  }
-`
+const headerGap = defaultMargins.L
+const logoMargin = defaultMargins.s
+const navLinkBorderWidth = 2
+const navLinkCompactMargin = 8
+const navLinkSpaciousMargin = 16
+const denseNavFontSize = 13
+const unreadCountMargin = defaultMargins.xs
+const unreadCountSize = defaultMargins.m
 
 const LogoLink = styled(Link)`
-  display: none;
-  @media screen and (min-width: ${desktopMin}) {
-    display: block;
-    margin-left: ${defaultMargins.s};
-    margin-right: ${defaultMargins.L};
-  }
+  flex: 0 1 auto;
+  min-width: 70px;
+  margin-left: ${logoMargin};
 
   > svg {
     width: 100%;
@@ -77,38 +85,16 @@ const NavbarContainer = styled.nav`
   position: relative;
   display: flex;
   align-items: center;
-  gap: ${defaultMargins.L};
+  gap: ${headerGap};
+  container-type: inline-size;
 `
-
-interface HeaderContainerProps extends BaseProps {
-  children: React.ReactNode
-}
-
-function HeaderContainer({
-  'data-qa': dataQa,
-  children,
-  className
-}: HeaderContainerProps) {
-  const theme = useTheme()
-
-  return (
-    <HeaderWrapper data-qa={dataQa} className={className}>
-      <NavbarContainer>
-        <LogoLink to="/">
-          <EvakaLogo color={theme.colors.main.m1} />
-        </LogoLink>
-        {children}
-      </NavbarContainer>
-    </HeaderWrapper>
-  )
-}
 
 const NavLinkWrapper = styled.div`
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   border-bottom: 4px solid transparent;
-  margin: 6px 16px;
+  margin: 6px ${navLinkCompactMargin}px;
   padding: 10px 0;
 `
 
@@ -117,7 +103,7 @@ const NavbarLink = styled(NavLink)`
   display: flex;
   align-items: center;
   min-height: 2.5rem;
-  border: 2px solid transparent;
+  border: ${navLinkBorderWidth}px solid transparent;
   border-radius: 2px;
 
   &.active {
@@ -151,32 +137,40 @@ const LogoutLink = styled.a`
 const UnreadCount = styled.span`
   color: ${colors.main.m1};
   font-weight: ${fontWeights.medium};
-  margin-left: ${defaultMargins.xs};
+  margin-left: ${unreadCountMargin};
   border: 1px solid ${colors.main.m1};
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   border-radius: 100%;
-  width: ${defaultMargins.m};
-  height: ${defaultMargins.m};
+  width: ${unreadCountSize};
+  height: ${unreadCountSize};
 `
 
 const NavBarItems = styled.div`
   flex-grow: 1;
   display: flex;
   justify-content: space-between;
-  gap: ${defaultMargins.L};
+  gap: ${headerGap};
 `
 const NavLinks = styled.div`
   display: flex;
-  @media screen and (min-width: 1216px) {
-    gap: ${defaultMargins.L};
-  }
 `
 
-const NavbarButton = styled(Button)`
+const UserNameButton = styled(Button)`
   border-bottom: 4px solid transparent; // align vertically with other navbar links
+`
+
+const UserIconButton = styled(IconOnlyButton)`
+  display: none;
+  align-self: center;
+`
+
+const UserPopupName = styled.div`
+  display: none;
+  font-weight: ${fontWeights.semibold};
+  margin-bottom: ${defaultMargins.s};
 `
 
 const UserPopup = styled.div`
@@ -193,6 +187,161 @@ const UserPopup = styled.div`
     color: ${colors.grayscale.g100};
   }
 `
+
+const navItems = [
+  'applications',
+  'units',
+  'search',
+  'finance',
+  'reports',
+  'messages'
+] as const
+type NavItem = (typeof navItems)[number]
+
+const navItemActions: Record<NavItem, Action.Global> = {
+  applications: 'APPLICATIONS_PAGE',
+  units: 'UNITS_PAGE',
+  search: 'PERSON_SEARCH_PAGE',
+  finance: 'FINANCE_PAGE',
+  reports: 'REPORTS_PAGE',
+  messages: 'MESSAGES_PAGE'
+}
+
+// Measured rendered widths (px) of the header labels at the regular nav font
+// size, in the bold weight of the active link. Re-measure when a label changes.
+const navLinkTextWidths: Record<Lang, Record<NavItem, number>> = {
+  fi: {
+    applications: 122,
+    units: 78,
+    search: 143,
+    finance: 71,
+    reports: 90,
+    messages: 68
+  },
+  sv: {
+    applications: 134,
+    units: 83,
+    search: 176,
+    finance: 87,
+    reports: 109,
+    messages: 138
+  }
+}
+// NavLinkText's font size from tabletMin up
+const regularNavFontSize = 15
+// A typical name; longer names wrap
+const userNameWidth = 162
+// IconOnlyButton with the default size
+const userIconWidth = 32
+
+const gapWidth = parseInt(headerGap)
+const logoWidth = parseInt(logoMargin) + evakaLogoWidth
+const navLinkCompactSpacing = 2 * (navLinkCompactMargin + navLinkBorderWidth)
+const navLinkSpaciousSpacing = 2 * (navLinkSpaciousMargin + navLinkBorderWidth)
+const unreadCountWidth = parseInt(unreadCountMargin) + parseInt(unreadCountSize)
+const denseNavFontScale = denseNavFontSize / regularNavFontSize
+
+interface HeaderBreakpoints {
+  spacious: number
+  userName: number
+  regularNavFont: number
+  logo: number
+}
+
+function headerBreakpoints(
+  lang: Lang,
+  items: NavItem[],
+  unreadCountBadges: number
+): HeaderBreakpoints {
+  const textWidth = sum(items.map((item) => navLinkTextWidths[lang][item]))
+  const compactLinksWidth = textWidth + items.length * navLinkCompactSpacing
+  const fixedWidth =
+    logoWidth + 2 * gapWidth + unreadCountBadges * unreadCountWidth
+  return {
+    spacious:
+      fixedWidth +
+      textWidth +
+      items.length * navLinkSpaciousSpacing +
+      Math.max(items.length - 1, 0) * gapWidth +
+      userNameWidth,
+    userName: fixedWidth + compactLinksWidth + userNameWidth,
+    regularNavFont: fixedWidth + compactLinksWidth + userIconWidth,
+    logo:
+      fixedWidth +
+      Math.ceil(textWidth * denseNavFontScale) +
+      items.length * navLinkCompactSpacing +
+      userIconWidth
+  }
+}
+
+const HeaderWrapper = styled.header<{ $breakpoints: HeaderBreakpoints }>`
+  margin-bottom: ${defaultMargins.xs};
+  @media print {
+    display: none;
+  }
+
+  ${({ $breakpoints: breakpoints }) => css`
+    @container (width >= ${breakpoints.spacious}px) {
+      ${NavLinks} {
+        gap: ${headerGap};
+      }
+      ${NavLinkWrapper} {
+        margin: 6px ${navLinkSpaciousMargin}px;
+      }
+    }
+    @container (width < ${breakpoints.userName}px) {
+      ${UserNameButton} {
+        display: none;
+      }
+      ${UserIconButton} {
+        display: flex;
+      }
+      ${UserPopupName} {
+        display: block;
+      }
+    }
+    @container (width < ${breakpoints.regularNavFont}px) {
+      ${NavLinks} ${NavLinkText} {
+        font-size: ${denseNavFontSize}px;
+        letter-spacing: 0.04em;
+      }
+    }
+    @container (width < ${breakpoints.logo}px) {
+      ${LogoLink} {
+        display: none;
+      }
+    }
+  `}
+`
+
+interface HeaderContainerProps extends BaseProps {
+  breakpoints: HeaderBreakpoints
+  children: React.ReactNode
+}
+
+function HeaderContainer({
+  'data-qa': dataQa,
+  breakpoints,
+  children,
+  className
+}: HeaderContainerProps) {
+  const theme = useTheme()
+
+  return (
+    <HeaderWrapper
+      data-qa={dataQa}
+      className={className}
+      $breakpoints={breakpoints}
+    >
+      <NavbarContainer>
+        <LogoLink to="/">
+          <EvakaLogo color={theme.colors.main.m1} />
+        </LogoLink>
+        {children}
+      </NavbarContainer>
+    </HeaderWrapper>
+  )
+}
 
 export default React.memo(function Header() {
   const { i18n } = useTranslation()
@@ -235,123 +384,91 @@ export default React.memo(function Header() {
   )
   const closeUserPopup = useCallback(() => setPopupVisible(false), [])
 
+  const visibleNavItems = useMemo(
+    () =>
+      loggedIn && user
+        ? navItems.filter((item) => hasGlobalAction(user, navItemActions[item]))
+        : [],
+    [loggedIn, user]
+  )
+  const navItemUnreadCounts = useMemo<Partial<Record<NavItem, number | null>>>(
+    () => ({
+      reports: childDocumentDecisionNotificationCount.getOrElse(null),
+      messages: unreadCount
+    }),
+    [childDocumentDecisionNotificationCount, unreadCount]
+  )
+  const breakpoints = useMemo(
+    () =>
+      headerBreakpoints(
+        lang,
+        visibleNavItems,
+        visibleNavItems.filter((item) => (navItemUnreadCounts[item] ?? 0) > 0)
+          .length
+      ),
+    [lang, visibleNavItems, navItemUnreadCounts]
+  )
+
   return (
-    <HeaderContainer data-qa="header">
+    <HeaderContainer data-qa="header" breakpoints={breakpoints}>
       <NavBarItems>
         {loggedIn && user && (
           <NavLinks>
-            {hasGlobalAction(user, 'APPLICATIONS_PAGE') && (
-              <NavbarLink
-                onClick={closeUserPopup}
-                className="navbar-item is-tab"
-                to="/applications"
-                data-qa="applications-nav"
-              >
-                <NavLinkWrapper>
-                  <NavLinkText>{i18n.header.applications}</NavLinkText>
-                </NavLinkWrapper>
-              </NavbarLink>
-            )}
-
-            {hasGlobalAction(user, 'UNITS_PAGE') && (
-              <NavbarLink
-                onClick={closeUserPopup}
-                className="navbar-item is-tab"
-                to="/units"
-                data-qa="units-nav"
-              >
-                <NavLinkWrapper>
-                  <NavLinkText>{i18n.header.units}</NavLinkText>
-                </NavLinkWrapper>
-              </NavbarLink>
-            )}
-
-            {hasGlobalAction(user, 'PERSON_SEARCH_PAGE') && (
-              <NavbarLink
-                onClick={closeUserPopup}
-                className={classNames('navbar-item is-tab', {
-                  active: profileIsActive
-                })}
-                to="/search"
-                data-qa="search-nav"
-              >
-                <NavLinkWrapper>
-                  <NavLinkText>{i18n.header.search}</NavLinkText>
-                </NavLinkWrapper>
-              </NavbarLink>
-            )}
-
-            {hasGlobalAction(user, 'FINANCE_PAGE') && (
-              <NavbarLink
-                onClick={closeUserPopup}
-                className="navbar-item is-tab"
-                to="/finance"
-                data-qa="finance-nav"
-              >
-                <NavLinkWrapper>
-                  <NavLinkText>{i18n.header.finance}</NavLinkText>
-                </NavLinkWrapper>
-              </NavbarLink>
-            )}
-
-            {hasGlobalAction(user, 'REPORTS_PAGE') && (
-              <NavbarLink
-                onClick={closeUserPopup}
-                className="navbar-item is-tab"
-                to="/reports"
-                data-qa="reports-nav"
-              >
-                <NavLinkWrapper>
-                  <NavLinkText>{i18n.header.reports}</NavLinkText>
-                  {childDocumentDecisionNotificationCount
-                    .map((unread) =>
-                      unread > 0 ? (
-                        <UnreadCount key="-" data-qa="notifications">
+            {visibleNavItems.map((item) => {
+              const unread = navItemUnreadCounts[item]
+              return (
+                <NavbarLink
+                  key={item}
+                  onClick={closeUserPopup}
+                  className={classNames('navbar-item is-tab', {
+                    active: item === 'search' && profileIsActive
+                  })}
+                  to={`/${item}`}
+                  data-qa={`${item}-nav`}
+                >
+                  <NavLinkWrapper>
+                    <NavLinkText>{i18n.header[item]}</NavLinkText>
+                    {unread !== undefined &&
+                      unread !== null &&
+                      (unread > 0 ? (
+                        <UnreadCount data-qa="notifications">
                           {unread}
                         </UnreadCount>
                       ) : (
-                        <span key="-" data-qa="no-notifications" />
-                      )
-                    )
-                    .getOrElse(null)}
-                </NavLinkWrapper>
-              </NavbarLink>
-            )}
-
-            {hasGlobalAction(user, 'MESSAGES_PAGE') && (
-              <NavbarLink
-                onClick={closeUserPopup}
-                className="navbar-item is-tab"
-                to="/messages"
-                data-qa="messages-nav"
-              >
-                <NavLinkWrapper>
-                  <NavLinkText>{i18n.header.messages} </NavLinkText>
-                  {unreadCount > 0 ? (
-                    <UnreadCount data-qa="notifications">
-                      {unreadCount}
-                    </UnreadCount>
-                  ) : (
-                    <span data-qa="no-notifications" />
-                  )}
-                </NavLinkWrapper>
-              </NavbarLink>
-            )}
+                        <span data-qa="no-notifications" />
+                      ))}
+                  </NavLinkWrapper>
+                </NavbarLink>
+              )
+            })}
           </NavLinks>
         )}
 
         {loggedIn && user && (
-          <NavbarButton
-            appearance="inline"
-            order="text-icon"
-            data-qa="username"
-            onClick={toggleUserPopup}
-            text={user.name}
-            icon={popupVisible ? faChevronUp : faChevronDown}
-          />
+          <>
+            <UserNameButton
+              appearance="inline"
+              order="text-icon"
+              data-qa="username"
+              onClick={toggleUserPopup}
+              text={user.name}
+              icon={popupVisible ? faChevronUp : faChevronDown}
+            />
+            <UserIconButton
+              icon={faUser}
+              aria-label={user.name}
+              data-qa="user-icon"
+              onClick={toggleUserPopup}
+            />
+          </>
         )}
         {popupVisible && (
           <UserPopup>
+            {user && (
+              <UserPopupName data-qa="user-popup-name">
+                {user.name}
+              </UserPopupName>
+            )}
             {featureFlags.employeeLanguageSelection && (
               <>
                 <FixedSpaceRow

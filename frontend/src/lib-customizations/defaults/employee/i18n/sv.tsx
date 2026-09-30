@@ -275,6 +275,9 @@ export const sv: typeof fi = {
     showMore: 'Visa mer',
     showLess: 'Dölj'
   },
+  // The header breakpoints use the rendered widths of the nav link labels
+  // (navLinkTextWidths in employee-frontend/components/Header.tsx). Re-measure
+  // them when changing applications, units, search, finance, reports or messages.
   header: {
     applications: 'Ansökningar',
     units: 'Enheter',
