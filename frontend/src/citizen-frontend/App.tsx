@@ -112,9 +112,11 @@ export function App({ children }: { children: React.ReactNode }) {
 // top and the mobile navi is fixed to the bottom.
 //
 // In PWA (standalone), AppShell is a flex column that fills the screen, and
-// ScrollArea is the only scrollable element. This avoids anchoring topbar or
-// navi with `position: fixed` or `position sticky`, because those cause subtle
-// layout bugs in iOS PWA.
+// ScrollArea is the only scrollable element. The navi is not anchored with
+// `position: fixed` or `position: sticky`, because those cause subtle layout
+// bugs in iOS PWA. The header must still be `position: sticky`, because iOS 27
+// blurs the top of the screen unless a fixed or sticky element is there. It
+// never actually sticks, because AppShell does not scroll.
 //
 const AppShell = styled.div`
   display: flex;
