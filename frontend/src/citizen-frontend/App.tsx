@@ -40,7 +40,7 @@ import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
 import { PushSuggestion } from './pwa/PushSuggestion'
-import { useStandaloneAttribute } from './pwa/installed'
+import { useStandaloneLayout } from './pwa/installed'
 import { useNotificationClickRouting } from './pwa/notificationRouting'
 import { queryClient, QueryClientProvider } from './query'
 
@@ -182,7 +182,7 @@ const Content = React.memo(function Content({
       user.map((usr) => !!usr).getOrElse(false)
     )
   useChildrenStartingNotification()
-  useStandaloneAttribute()
+  useStandaloneLayout()
   const scrollAreaRef = useRegisterScrollContainer()
   useNotificationClickRouting()
   return (
