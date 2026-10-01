@@ -18,19 +18,13 @@ import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import { desktopMin, zoomedMobileMax } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
-import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
-import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 
 import { useChildrenStartingNotification } from './ChildStartingNotificationHook'
 import { UnwrapResult } from './async-rendering'
-import {
-  AuthContext,
-  AuthContextProvider,
-  useSessionKeepalive,
-  useUser
-} from './auth/state'
+import SessionExpiry from './auth/SessionExpiry'
+import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import { Localization, useTranslation } from './localization'
 import { MessageDraftsProvider } from './messages/drafts'
 import Header from './navigation/Header'
@@ -174,13 +168,6 @@ const Content = React.memo(function Content({
   const { apiVersion } = useContext(AuthContext)
   const { modalOpen } = useContext(OverlayContext)
 
-  const { user } = useContext(AuthContext)
-  const sessionKeepalive = useSessionKeepalive()
-  const { sessionExpirationDetected, dismissSessionExpiredDetection } =
-    useKeepSessionAlive(
-      sessionKeepalive,
-      user.map((usr) => !!usr).getOrElse(false)
-    )
   useChildrenStartingNotification()
   useStandaloneLayout()
   const scrollAreaRef = useRegisterScrollContainer()
@@ -198,9 +185,7 @@ const Content = React.memo(function Content({
         </FullPageContainer>
       </ScrollArea>
       <MobileNav />
-      {sessionExpirationDetected && (
-        <SessionExpiredModal onClose={() => dismissSessionExpiredDetection()} />
-      )}
+      <SessionExpiry />
       {!!featureFlags.environmentLabel && (
         <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
       )}
