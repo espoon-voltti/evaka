@@ -270,6 +270,8 @@ The mark names the data it concerns instead of saying that the child has expired
 
 The message removal finds the children of a citizen through `guardian` and `foster_parent`, so both are bundled by `child`. If such a row were deleted while the child was kept for some other reason, the child would drop out of its citizens' children, and a thread that only that child still kept would be deleted too early. Bundled, the rows are deleted with the child row, and a child missing from them is one that has been deleted.
 
+A citizen's `message_account` is adult-handled and bundled by `person`, so it is deleted together with the person row. `message` and `message_content` are external tables whose `sender_id` and `author_id` hold it: a message the citizen sent keeps the account, and with it the person row, until the message removal deletes its thread. The account's received messages, thread participations, folders and drafts are `ON DELETE CASCADE` (section 5.3), so the citizen drops out of the threads that other people's data still keeps. The person row cannot expire while any of the citizen's children exists, since the guardianships hold it, so by then the threads of those children are gone.
+
 ## 6. Special cases
 
 ### 6.1 Missing child row
