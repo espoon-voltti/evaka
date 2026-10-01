@@ -192,8 +192,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
 
-        val pin = db.read { it.getPinCode(userId = employeeId) }
-        assertNull(pin)
+        assertFalse(db.read { it.employeePinIsCorrect(employeeId, "6712") })
     }
 
     @Test

@@ -810,6 +810,16 @@ export interface TemporaryEmployee {
 }
 
 /**
+* Generated from evaka.core.pis.TemporaryEmployeeResponse
+*/
+export interface TemporaryEmployeeResponse {
+  firstName: string
+  groupIds: GroupId[]
+  hasStaffOccupancyEffect: boolean
+  lastName: string
+}
+
+/**
 * Generated from evaka.core.pis.controllers.PasskeyControllerCitizen.UpdatePasskeyNameRequest
 */
 export interface UpdatePasskeyNameRequest {

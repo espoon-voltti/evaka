@@ -41,6 +41,7 @@ import type { ServiceWorkerNote } from 'lib-common/generated/api-types/daycare'
 import type { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import type { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import type { TemporaryEmployee } from 'lib-common/generated/api-types/pis'
+import type { TemporaryEmployeeResponse } from 'lib-common/generated/api-types/pis'
 import type { UnitFeatures } from 'lib-common/generated/api-types/daycare'
 import type { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import type { UnitNotifications } from 'lib-common/generated/api-types/daycare'
@@ -910,8 +911,8 @@ export async function getTemporaryEmployee(
     unitId: DaycareId,
     employeeId: EmployeeId
   }
-): Promise<TemporaryEmployee> {
-  const { data: json } = await client.request<JsonOf<TemporaryEmployee>>({
+): Promise<TemporaryEmployeeResponse> {
+  const { data: json } = await client.request<JsonOf<TemporaryEmployeeResponse>>({
     url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
     method: 'GET'
   })
