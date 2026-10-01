@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 
 import { theme } from 'lib-customizations/common'
 
-import BaseModal from './BaseModal'
+import BaseModal, { PlainModal } from './BaseModal'
 
 const wrap = (el: React.ReactElement) =>
   render(<ThemeProvider theme={theme}>{el}</ThemeProvider>)
@@ -37,5 +37,20 @@ describe('BaseModal accessible name', () => {
     expect(
       screen.getByRole('dialog', { name: 'Poissaolon merkintä' })
     ).toBeTruthy()
+  })
+})
+
+describe('PlainModal accessible name', () => {
+  it('uses the heading that aria-labelledby points to', () => {
+    wrap(
+      <PlainModal
+        margin="auto"
+        onEscapeKey={() => undefined}
+        aria-labelledby="heading"
+      >
+        <h1 id="heading">Varaukset</h1>
+      </PlainModal>
+    )
+    expect(screen.getByRole('dialog', { name: 'Varaukset' })).toBeTruthy()
   })
 })
