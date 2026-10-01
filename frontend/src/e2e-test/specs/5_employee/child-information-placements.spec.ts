@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import type { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
@@ -137,6 +138,112 @@ test.describe('Child Information placement info', () => {
     await expect(row.endDate).toHaveText(
       preschoolTerms.extendedTerm.end.format()
     )
+  })
+
+  test('placement edit shows an overlap warning on the date that was moved over another placement', async () => {
+    await Fixture.placement({
+      childId,
+      unitId,
+      startDate: LocalDate.of(2023, 11, 1),
+      endDate: LocalDate.of(2023, 11, 30)
+    }).save()
+    const placement = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: LocalDate.of(2024, 1, 1),
+      endDate: LocalDate.of(2024, 3, 31)
+    }).save()
+    await Fixture.placement({
+      childId,
+      unitId,
+      startDate: LocalDate.of(2024, 5, 1),
+      endDate: LocalDate.of(2024, 5, 31)
+    }).save()
+
+    const childPlacements = await openChildPlacements(page, childId)
+    const row = childPlacements.placementRow(placement.id)
+    await row.editButton.click()
+
+    await row.endDateInput.fill(LocalDate.of(2024, 5, 15))
+    await expect(row.endDateOverlapWarning).toBeVisible()
+    await expect(row.startDateOverlapWarning).toBeHidden()
+
+    // Moving the start date does not affect the overlap caused by the end date
+    await row.startDateInput.fill(LocalDate.of(2024, 2, 1))
+    await expect(row.endDateOverlapWarning).toBeVisible()
+    await expect(row.startDateOverlapWarning).toBeHidden()
+
+    await row.endDateInput.fill(LocalDate.of(2024, 3, 31))
+    await expect(row.endDateOverlapWarning).toBeHidden()
+
+    await row.startDateInput.fill(LocalDate.of(2023, 11, 15))
+    await expect(row.startDateOverlapWarning).toBeVisible()
+    await expect(row.endDateOverlapWarning).toBeHidden()
+  })
+
+  test('placement edit shows no backup care warning before the dates are changed', async () => {
+    const placement = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: LocalDate.of(2024, 1, 1),
+      endDate: LocalDate.of(2024, 3, 31)
+    }).save()
+    await Fixture.backupCare({
+      childId,
+      unitId,
+      period: new FiniteDateRange(
+        LocalDate.of(2024, 1, 1),
+        LocalDate.of(2024, 3, 31)
+      )
+    }).save()
+
+    const childPlacements = await openChildPlacements(page, childId)
+    const row = childPlacements.placementRow(placement.id)
+    await row.editButton.click()
+    // The backup care covers the whole placement, but nothing has been edited yet
+    await expect(row.startDateInput).toBeVisible()
+    await expect(row.backupCareConflictWarning).toBeHidden()
+
+    await row.endDateInput.fill(LocalDate.of(2024, 3, 20))
+    await expect(row.backupCareConflictWarning).toBeVisible()
+  })
+
+  test('placement edit backup care warning reflects both edited dates', async () => {
+    const placement = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: LocalDate.of(2024, 1, 1),
+      endDate: LocalDate.of(2024, 3, 31)
+    }).save()
+    await Fixture.backupCare({
+      childId,
+      unitId,
+      period: new FiniteDateRange(
+        LocalDate.of(2024, 2, 1),
+        LocalDate.of(2024, 2, 14)
+      )
+    }).save()
+
+    const childPlacements = await openChildPlacements(page, childId)
+    const row = childPlacements.placementRow(placement.id)
+    await row.editButton.click()
+
+    await row.endDateInput.fill(LocalDate.of(2024, 2, 10))
+    await expect(row.backupCareConflictWarning).toBeVisible()
+    // The end date still cuts the backup care, so moving the start date must not clear the warning
+    await row.startDateInput.fill(LocalDate.of(2024, 1, 5))
+    await expect(row.backupCareConflictWarning).toBeVisible()
+
+    // Cancelling resets the dates, so the warning must not remain when editing again
+    await row.cancelButton.click()
+    await row.editButton.click()
+    await expect(row.backupCareConflictWarning).toBeHidden()
+
+    await row.startDateInput.fill(LocalDate.of(2024, 2, 5))
+    await expect(row.backupCareConflictWarning).toBeVisible()
+    // The start date still cuts the backup care, so moving the end date must not clear the warning
+    await row.endDateInput.fill(LocalDate.of(2024, 3, 20))
+    await expect(row.backupCareConflictWarning).toBeVisible()
   })
 })
 

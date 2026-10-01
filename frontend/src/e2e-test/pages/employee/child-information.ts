@@ -797,7 +797,11 @@ class PlacementRow extends Element {
   endDate = this.findByDataQa('placement-details-end-date')
   confirmRetroactive = new Checkbox(this.findByDataQa('confirm-retroactive'))
   saveButton = this.findByDataQa('placement-save-button')
+  cancelButton = this.findByDataQa('placement-cancel-button')
   preschoolTermError = this.findByDataQa('preschool-term-error')
+  startDateOverlapWarning = this.findByDataQa('start-date-overlap-warning')
+  endDateOverlapWarning = this.findByDataQa('end-date-overlap-warning')
+  backupCareConflictWarning = this.findByDataQa('backup-care-conflict-warning')
 }
 
 export class PlacementsSection extends Section {
