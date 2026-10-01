@@ -491,7 +491,7 @@ class SchemaDefinitionTest {
     }
 
     @Test
-    fun `a custom date source and an archived rule need rows identified by a single column`() {
+    fun `a custom date source and a not while rule need rows identified by a single column`() {
         invalid("a custom date source needs rows identified by a single column") {
             schema(
                 table(
@@ -503,14 +503,14 @@ class SchemaDefinitionTest {
                 )
             )
         }
-        invalid("an archived if required rule needs rows identified by a single column") {
+        invalid("a not while rule needs rows identified by a single column") {
             schema(
                 table(
                     "a",
                     CHILD,
                     "child_id" to "child",
                     identifiedByCols = listOf("child_id", "n"),
-                    expirationRule = archivedIfRequiredRule(),
+                    expirationRule = notWhileRule(),
                 )
             )
         }
@@ -523,7 +523,7 @@ class SchemaDefinitionTest {
                     expirationRule =
                         AllOf(
                             Coalesce(After(oneYear, customSource()), Never),
-                            archivedIfRequiredRule(),
+                            notWhileRule(),
                         ),
                 )
             )
@@ -552,7 +552,7 @@ class SchemaDefinitionTest {
     }
 
     @Test
-    fun `a rule safe for integrations is validated, and its sources and archived rules found, through the wrapper`() {
+    fun `a rule safe for integrations is validated, and its sources and not while rules found, through the wrapper`() {
         invalid("add a fallback with Coalesce") { validated(nullableOwn.safeFor(VARDA)) }
         invalid("wrap it in Coalesce") { validated(AllOf(nullableOwn, Always).safeFor(VARDA)) }
         valid { validated(Coalesce(nullableOwn, ownDate).safeFor(VARDA)) }
@@ -560,10 +560,10 @@ class SchemaDefinitionTest {
         invalid("safe for no integration") { Always.safeFor() }
 
         val source = customSource()
-        val archived = archivedIfRequiredRule()
-        val rule = AllOf(Coalesce(After(oneYear, source), ownDate), archived).safeFor(KOSKI, VARDA)
+        val notWhile = notWhileRule()
+        val rule = AllOf(Coalesce(After(oneYear, source), ownDate), notWhile).safeFor(KOSKI, VARDA)
         assertEquals(setOf(source, OwnColumn("created")), rule.usedDateSources())
-        assertEquals(setOf(archived), rule.usedArchivedIfRequiredRules())
+        assertEquals(setOf(notWhile), rule.usedNotWhileRules())
         assertEquals(setOf(KOSKI, VARDA), rule.integrations)
         assertEquals(
             mapOf("created" to DATE),

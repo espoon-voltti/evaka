@@ -256,7 +256,7 @@ fun buildDataRetentionSchema(
                                 OwnColumn("status_modified_at", TIMESTAMP_WITH_TIME_ZONE),
                             ),
                         ),
-                        childDocumentArchivedIfRequired,
+                        notWhileChildDocumentAwaitingArchival,
                     ),
                 orphansToDelete =
                     listOf(

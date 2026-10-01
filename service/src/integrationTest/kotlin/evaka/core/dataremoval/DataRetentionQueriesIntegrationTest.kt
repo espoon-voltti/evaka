@@ -218,8 +218,8 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             true,
             document.rows
                 .single()
-                .mayExpireByArchivedRule
-                .getValue(childDocumentArchivedIfRequired),
+                .mayExpireByNotWhileRule
+                .getValue(notWhileChildDocumentAwaitingArchival),
         )
 
         val read =

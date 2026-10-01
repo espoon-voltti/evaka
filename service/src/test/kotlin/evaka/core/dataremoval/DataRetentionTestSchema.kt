@@ -90,13 +90,14 @@ internal val targetChildId = ChildId(targetId.raw)
 internal val neverSent =
     ChildIntegrationFacts(today.minusYears(5), sentToKoski = false, sentToVarda = false)
 
-/** The unit tests give the dates and results of custom sources and archived rules by hand */
+/** The unit tests give the dates and results of custom sources and not while rules by hand */
 internal fun customSource(mayHaveNoDate: Boolean = true) =
     DateSource.Custom(mayHaveNoDate) { _, _ -> error("The query of a test source is never run") }
 
-internal fun archivedIfRequiredRule() = ExpirationRule.ArchivedIfRequired { _, _ ->
-    error("The query of a test rule is never run")
-}
+internal fun notWhileRule() =
+    ExpirationRule.NotWhile("a test condition holds") { _, _ ->
+        error("The query of a test rule is never run")
+    }
 
 internal fun row(
     vararg references: Pair<String, UUID?>,
@@ -104,7 +105,7 @@ internal fun row(
     orphanIdByReferenceColumn: Map<String, UUID?> = emptyMap(),
     dateByColumn: Map<String, LocalDate?> = emptyMap(),
     dateByCustomSource: Map<DateSource.Custom, LocalDate?> = emptyMap(),
-    mayExpireByArchivedRule: Map<ExpirationRule.ArchivedIfRequired, Boolean> = emptyMap(),
+    mayExpireByNotWhileRule: Map<ExpirationRule.NotWhile, Boolean> = emptyMap(),
     valueForJobByColumn: Map<String, String?> = emptyMap(),
 ) =
     OwnRow(
@@ -113,7 +114,7 @@ internal fun row(
         orphanIdByReferenceColumn = orphanIdByReferenceColumn,
         dateByColumn = dateByColumn,
         dateByCustomSource = dateByCustomSource,
-        mayExpireByArchivedRule = mayExpireByArchivedRule,
+        mayExpireByNotWhileRule = mayExpireByNotWhileRule,
         valueForJobByColumn = valueForJobByColumn,
     )
 

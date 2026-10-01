@@ -4,7 +4,7 @@
 
 package evaka.core.dataremoval
 
-import evaka.core.dataremoval.ExpirationRule.ArchivedIfRequired
+import evaka.core.dataremoval.ExpirationRule.NotWhile
 import evaka.core.shared.db.Database
 import java.time.LocalDate
 import java.util.UUID
@@ -36,19 +36,20 @@ WHERE cd.id = ANY(${bind(ids)})
     }
 
 /** A document whose template is archived externally waits until it has been archived */
-val childDocumentArchivedIfRequired = ArchivedIfRequired { tx, ids ->
-    tx.createQuery {
-            sql(
-                """
+val notWhileChildDocumentAwaitingArchival =
+    NotWhile("the document awaits archival") { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
 SELECT cd.id
 FROM child_document cd
 JOIN document_template dt ON dt.id = cd.template_id
 WHERE cd.id = ANY(${bind(ids)}) AND cd.status <> 'DRAFT' AND dt.archive_externally AND cd.archived_at IS NULL
 """
-            )
-        }
-        .toSet<UUID>()
-}
+                )
+            }
+            .toSet<UUID>()
+    }
 
 /**
  * A draft was never sent, so it expires a year after it was created. A sent statement expires ten

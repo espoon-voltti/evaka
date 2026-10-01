@@ -351,10 +351,10 @@ class SchemaDefinition(tables: List<Table>) {
                 }
             }
             require(
-                table.expirationRule.usedArchivedIfRequiredRules().isEmpty() ||
+                table.expirationRule.usedNotWhileRules().isEmpty() ||
                     table.identifiedByCols.size == 1
             ) {
-                "$table: an archived if required rule needs rows identified by a single column"
+                "$table: a not while rule needs rows identified by a single column"
             }
         }
         dateColumnTypesByTable = dateColumnTypesAccumulator

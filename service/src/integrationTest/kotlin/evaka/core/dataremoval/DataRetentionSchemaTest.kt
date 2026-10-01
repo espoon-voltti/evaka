@@ -496,14 +496,14 @@ GROUP BY c.oid, t.relname
     }
 
     @Test
-    fun `every custom date source and archived rule runs against the database`() {
+    fun `every custom date source and not while rule runs against the database`() {
         db.read { tx ->
             for (table in handledTables) {
                 for (source in table.expirationRule.usedCustomDateSources()) {
                     assertEquals(emptyMap(), source.query(tx, emptyList()))
                 }
-                for (rule in table.expirationRule.usedArchivedIfRequiredRules()) {
-                    assertEquals(emptySet(), rule.idsAwaitingArchival(tx, emptyList()))
+                for (rule in table.expirationRule.usedNotWhileRules()) {
+                    assertEquals(emptySet(), rule.idsWhereConditionHolds(tx, emptyList()))
                 }
             }
         }
