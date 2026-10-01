@@ -17,10 +17,13 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevFosterParent
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import java.time.LocalDate
@@ -181,6 +184,39 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
 
         runNightlyDataRemoval()
         assertEquals(setOf(thread), messageThreadIds())
+    }
+
+    @Test
+    fun `a foster parent row holds the parent's person row and is deleted with the child`() {
+        val employee = DevEmployee()
+        val fosterParent = DevPerson(dateOfBirth = today.minusYears(50))
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(fosterParent, DevPersonType.RAW_ROW)
+            tx.execute {
+                sql(
+                    "UPDATE person SET created = ${bind(HelsinkiDateTime.of(today.minusYears(13), LocalTime.NOON))} WHERE id = ${bind(fosterParent.id)}"
+                )
+            }
+            tx.insert(
+                DevFosterParent(
+                    childId = longGone.id,
+                    parentId = fosterParent.id,
+                    validDuring = DateRange(today.minusYears(12), today.minusYears(11)),
+                    modifiedAt = clock.now(),
+                    modifiedBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        realRun(fosterParent.id)
+        assertEquals(setOf("person"), remaining(fosterParent.id))
+
+        realRun(longGone.id)
+        assertEquals(emptySet(), remaining(longGone.id))
+
+        realRun(fosterParent.id)
+        assertEquals(emptySet(), remaining(fosterParent.id))
     }
 
     @Test

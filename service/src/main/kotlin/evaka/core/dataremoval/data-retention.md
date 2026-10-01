@@ -268,6 +268,8 @@ The message removal waits for the rest of the child's data to expire, so these r
 
 The mark names the data it concerns instead of saying that the child has expired, because it holds only when the threads are the one thing left keeping the child.
 
+The message removal finds the children of a citizen through `guardian` and `foster_parent`, so both are bundled by `child`. If such a row were deleted while the child was kept for some other reason, the child would drop out of its citizens' children, and a thread that only that child still kept would be deleted too early. Bundled, the rows are deleted with the child row, and a child missing from them is one that has been deleted.
+
 ## 6. Special cases
 
 ### 6.1 Missing child row

@@ -328,7 +328,6 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "child_document_read" to 1,
                 "child_document_published_version" to 1,
                 "child_document" to 1,
-                "guardian" to 2,
                 "family_contact" to 1,
                 "voucher_value_decision" to 1,
             ),
@@ -356,11 +355,12 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(listOf(child.id), result.childrenFrozenForVarda)
 
         // The fee decision child and parentship rows of the adult's data hold the child row, and
-        // with it the placements the child row bundles
+        // with it the placements and guardianships the child row bundles
         assertEquals(
             setOf(
                 "person",
                 "child",
+                "guardian",
                 "placement",
                 "service_need",
                 "daycare_group_placement",
@@ -582,8 +582,8 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
 
         // The application expires five years after it was made and the documents ten years after
         // their last status change or the template's days after it. The family contact expires at
-        // once. The image waits a year after its update and the guardianship ten years after its
-        // creation.
+        // once. The image waits a year after its update, and the guardianship is kept with the
+        // child row that the image holds.
         assertEquals(
             mapOf(
                 "application_note" to 1,

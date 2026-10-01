@@ -127,8 +127,6 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
             "calendar_event_time.child_id",
             "child_attendance.child_id",
             "child_sticky_note.child_id",
-            "foster_parent.child_id",
-            "foster_parent.parent_id",
             "holiday_questionnaire_answer.child_id",
             "invoice.codebtor",
             "invoice_correction.child_id",
