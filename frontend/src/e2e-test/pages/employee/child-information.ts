@@ -776,8 +776,33 @@ export class GuardiansSection extends Section {
   }
 }
 
+class CreatePlacementModal extends Modal {
+  type = new Select(this.findByDataQa('placement-type-select'))
+  unit = new Combobox(this.findByDataQa('unit-select'))
+  startDate = new DatePicker(this.findByDataQa('create-placement-start-date'))
+  endDate = new DatePicker(this.findByDataQa('create-placement-end-date'))
+  placeGuarantee = new Checkbox(
+    this.findByDataQa('create-placement-place-guarantee')
+  )
+  confirmRetroactive = new Checkbox(this.findByDataQa('confirm-retroactive'))
+  preschoolTermError = this.findByDataQa('preschool-term-error')
+}
+
+class PlacementRow extends Element {
+  editButton = this.findByDataQa('btn-edit-placement')
+  startDateInput = new DatePicker(
+    this.findByDataQa('placement-start-date-input')
+  )
+  endDateInput = new DatePicker(this.findByDataQa('placement-end-date-input'))
+  endDate = this.findByDataQa('placement-details-end-date')
+  confirmRetroactive = new Checkbox(this.findByDataQa('confirm-retroactive'))
+  saveButton = this.findByDataQa('placement-save-button')
+  preschoolTermError = this.findByDataQa('preschool-term-error')
+}
+
 export class PlacementsSection extends Section {
-  #placementRow = (id: string) => this.find(`[data-qa="placement-${id}"]`)
+  placementRow = (id: string) =>
+    new PlacementRow(this.findByDataQa(`placement-${id}`))
   #serviceNeedRow = (index: number) =>
     this.findAll('[data-qa="service-need-row"]').nth(index)
   #serviceNeedRowRange = (index: number) =>
@@ -825,7 +850,7 @@ export class PlacementsSection extends Section {
 
   serviceNeedSaveButton = this.find('[data-qa="service-need-save"]')
   #terminatedByGuardian = (placementId: string) =>
-    this.#placementRow(placementId).find('[data-qa="placement-terminated"]')
+    this.placementRow(placementId).findByDataQa('placement-terminated')
   partiallyInvalidWarning = this.findByDataQa('partially-invalid-warning')
 
   async assertPlacementRows(
@@ -850,7 +875,7 @@ export class PlacementsSection extends Section {
   }
 
   async openPlacement(id: string) {
-    const placementRow = this.#placementRow(id)
+    const placementRow = this.placementRow(id)
     if ((await placementRow.getAttribute('data-status')) === 'closed') {
       await placementRow.find('[data-qa="collapsible-trigger"]').click()
     }
@@ -933,8 +958,8 @@ export class PlacementsSection extends Section {
 
   async assertTerminatedByGuardianIsNotShown(placementId: string) {
     await expect(
-      this.#placementRow(placementId).find(
-        '[data-qa="placement-details-start-date"]'
+      this.placementRow(placementId).findByDataQa(
+        'placement-details-start-date'
       )
     ).toBeVisible()
     await expect(this.#terminatedByGuardian(placementId)).toBeHidden()
@@ -942,14 +967,19 @@ export class PlacementsSection extends Section {
 
   async assertSource(placementId: string, source: string) {
     await expect(
-      this.#placementRow(placementId).findByDataQa('placement-source')
+      this.placementRow(placementId).findByDataQa('placement-source')
     ).toHaveText(source)
   }
 
   async assertCreatedBy(placementId: string, creator: string) {
     await expect(
-      this.#placementRow(placementId).findByDataQa('placement-created-by')
+      this.placementRow(placementId).findByDataQa('placement-created-by')
     ).toHaveText(creator)
+  }
+
+  async openCreatePlacementModal() {
+    await this.findByDataQa('create-new-placement-button').click()
+    return new CreatePlacementModal(this.page.findByDataQa('modal'))
   }
 
   async createNewPlacement({
@@ -963,26 +993,13 @@ export class PlacementsSection extends Section {
     endDate: string
     placeGuarantee?: boolean
   }) {
-    await this.findByDataQa('create-new-placement-button').click()
-
-    const modal = new Modal(this.page.findByDataQa('modal'))
-    const unitSelect = new Combobox(modal.findByDataQa('unit-select'))
-    await unitSelect.fillAndSelectFirst(unitName)
-
-    const start = new DatePicker(
-      modal.findByDataQa('create-placement-start-date')
-    )
-    await start.fill(startDate)
-
-    const end = new DatePicker(modal.findByDataQa('create-placement-end-date'))
-    await end.fill(endDate)
-
+    const modal = await this.openCreatePlacementModal()
+    await modal.unit.fillAndSelectFirst(unitName)
+    await modal.startDate.fill(startDate)
+    await modal.endDate.fill(endDate)
     if (placeGuarantee) {
-      await new Checkbox(
-        modal.findByDataQa('create-placement-place-guarantee')
-      ).check()
+      await modal.placeGuarantee.check()
     }
-
     await modal.submit()
   }
 

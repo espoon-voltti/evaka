@@ -7,7 +7,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -26,14 +25,7 @@ import {
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { test, expect } from '../../playwright'
-import {
-  Checkbox,
-  Combobox,
-  DatePicker,
-  Modal,
-  type Page,
-  Select
-} from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 test.beforeEach(async (): Promise<void> => resetServiceState())
@@ -41,7 +33,7 @@ test.beforeEach(async (): Promise<void> => resetServiceState())
 const mockToday = LocalDate.of(2023, 9, 6)
 const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(9, 35))
 
-async function openChildPlacements(page: Page, childId: UUID) {
+async function openChildPlacements(page: Page, childId: PersonId) {
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   const childInformationPage = new ChildInformationPage(page)
   await childInformationPage.waitUntilLoaded()
@@ -113,9 +105,55 @@ test.describe('Child Information placement info', () => {
     await childPlacements.assertSource(placement.id, 'Työntekijä manuaalisesti')
     await childPlacements.assertCreatedBy(placement.id, 'eVaka')
   })
+
+  test('placement edit shows errors on dates outside the extended term', async () => {
+    const preschoolTerms = await preschoolTerm2023.save()
+    const placement = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: preschoolTerms.extendedTerm.start,
+      endDate: preschoolTerms.finnishPreschool.end,
+      type: 'PRESCHOOL_DAYCARE'
+    }).save()
+
+    const childPlacements = await openChildPlacements(page, childId)
+    const row = childPlacements.placementRow(placement.id)
+    await row.editButton.click()
+
+    await row.startDateInput.fill(preschoolTerms.extendedTerm.start.subDays(1))
+    await expect(row.preschoolTermError).toBeVisible()
+    await row.confirmRetroactive.check()
+    await row.saveButton.assertDisabled(true)
+
+    // The end date is invalid, so fixing the start date must not clear the error
+    await row.endDateInput.fill(preschoolTerms.extendedTerm.end.addDays(1))
+    await row.startDateInput.fill(preschoolTerms.extendedTerm.start)
+    await expect(row.preschoolTermError).toBeVisible()
+    await row.saveButton.assertDisabled(true)
+
+    await row.endDateInput.fill(preschoolTerms.extendedTerm.end)
+    await expect(row.preschoolTermError).toBeHidden()
+    await row.saveButton.click()
+    await expect(row.endDate).toHaveText(
+      preschoolTerms.extendedTerm.end.format()
+    )
+  })
 })
 
+async function loginAndCreateUnitAndChild(page: Page) {
+  const admin = await Fixture.employee().admin().save()
+  const area = await Fixture.careArea().save()
+  const unit = await Fixture.daycare({ areaId: area.id }).save()
+  const child = await Fixture.person().saveChild({ updateMockVtj: true })
+  await employeeLogin(page, admin)
+  return { unitName: unit.name, childId: child.id }
+}
+
 test.describe('Child Information placement create (feature flag place guarantee = true)', () => {
+  let page: Page
+  let unitName: string
+  let childId: PersonId
+
   test.use({
     evakaOptions: {
       mockedTime,
@@ -123,39 +161,38 @@ test.describe('Child Information placement create (feature flag place guarantee 
     }
   })
 
-  test('place guarantee can be set with create modal', async ({ evaka }) => {
-    const admin = await Fixture.employee().admin().save()
-    const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const { name: unitName } = unit
-    const child = await Fixture.person().saveChild({ updateMockVtj: true })
-    const childId = child.id
+  test.beforeEach(async ({ evaka }) => {
+    page = evaka
+    const setup = await loginAndCreateUnitAndChild(page)
+    unitName = setup.unitName
+    childId = setup.childId
+  })
 
-    await employeeLogin(evaka, admin)
-    const childPlacements = await openChildPlacements(evaka, childId)
+  test('place guarantee can be set with create modal', async () => {
+    const childPlacements = await openChildPlacements(page, childId)
 
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().subDays(2).format(),
-      endDate: mockedTime.toLocalDate().subDays(2).format(),
+      startDate: mockToday.subDays(2).format(),
+      endDate: mockToday.subDays(2).format(),
       placeGuarantee: false
     })
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().subDays(1).format(),
-      endDate: mockedTime.toLocalDate().subDays(1).format(),
+      startDate: mockToday.subDays(1).format(),
+      endDate: mockToday.subDays(1).format(),
       placeGuarantee: true
     })
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().addDays(1).format(),
-      endDate: mockedTime.toLocalDate().addDays(1).format(),
+      startDate: mockToday.addDays(1).format(),
+      endDate: mockToday.addDays(1).format(),
       placeGuarantee: true
     })
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().addDays(2).format(),
-      endDate: mockedTime.toLocalDate().addDays(2).format(),
+      startDate: mockToday.addDays(2).format(),
+      endDate: mockToday.addDays(2).format(),
       placeGuarantee: false
     })
 
@@ -167,23 +204,13 @@ test.describe('Child Information placement create (feature flag place guarantee 
     ])
   })
 
-  test('place guarantee placement shows correctly active status', async ({
-    evaka
-  }) => {
-    const admin = await Fixture.employee().admin().save()
-    const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const { name: unitName } = unit
-    const child = await Fixture.person().saveChild({ updateMockVtj: true })
-    const childId = child.id
-
-    await employeeLogin(evaka, admin)
-    const childPlacements = await openChildPlacements(evaka, childId)
+  test('place guarantee placement shows correctly active status', async () => {
+    const childPlacements = await openChildPlacements(page, childId)
 
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().format(),
-      endDate: mockedTime.toLocalDate().format(),
+      startDate: mockToday.format(),
+      endDate: mockToday.format(),
       placeGuarantee: true
     })
 
@@ -192,23 +219,13 @@ test.describe('Child Information placement create (feature flag place guarantee 
     ])
   })
 
-  test('non place guarantee placement shows correctly active status', async ({
-    evaka
-  }) => {
-    const admin = await Fixture.employee().admin().save()
-    const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const { name: unitName } = unit
-    const child = await Fixture.person().saveChild({ updateMockVtj: true })
-    const childId = child.id
-
-    await employeeLogin(evaka, admin)
-    const childPlacements = await openChildPlacements(evaka, childId)
+  test('non place guarantee placement shows correctly active status', async () => {
+    const childPlacements = await openChildPlacements(page, childId)
 
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().format(),
-      endDate: mockedTime.toLocalDate().format(),
+      startDate: mockToday.format(),
+      endDate: mockToday.format(),
       placeGuarantee: false
     })
 
@@ -219,10 +236,9 @@ test.describe('Child Information placement create (feature flag place guarantee 
 })
 
 test.describe('Child Information placement create (feature flag place guarantee = false)', () => {
-  const mockedTime = HelsinkiDateTime.fromLocal(
-    LocalDate.of(2023, 9, 6),
-    LocalTime.of(9, 35)
-  )
+  let page: Page
+  let unitName: string
+  let childId: PersonId
 
   test.use({
     evakaOptions: {
@@ -231,32 +247,30 @@ test.describe('Child Information placement create (feature flag place guarantee 
     }
   })
 
-  test('placement create works', async ({ evaka }) => {
-    const admin = await Fixture.employee().admin().save()
-    const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const unitName = unit.name
-    const child = await Fixture.person().saveChild({ updateMockVtj: true })
-    const childId = child.id
+  test.beforeEach(async ({ evaka }) => {
+    page = evaka
+    const setup = await loginAndCreateUnitAndChild(page)
+    unitName = setup.unitName
+    childId = setup.childId
+  })
 
-    await employeeLogin(evaka, admin)
-
-    const childPlacements = await openChildPlacements(evaka, childId)
+  test('placement create works', async () => {
+    const childPlacements = await openChildPlacements(page, childId)
 
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().subDays(1).format(),
-      endDate: mockedTime.toLocalDate().subDays(1).format()
+      startDate: mockToday.subDays(1).format(),
+      endDate: mockToday.subDays(1).format()
     })
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().format(),
-      endDate: mockedTime.toLocalDate().format()
+      startDate: mockToday.format(),
+      endDate: mockToday.format()
     })
     await childPlacements.createNewPlacement({
       unitName,
-      startDate: mockedTime.toLocalDate().addDays(1).format(),
-      endDate: mockedTime.toLocalDate().addDays(1).format()
+      startDate: mockToday.addDays(1).format(),
+      endDate: mockToday.addDays(1).format()
     })
 
     await childPlacements.assertPlacementRows([
@@ -266,119 +280,51 @@ test.describe('Child Information placement create (feature flag place guarantee 
     ])
   })
 
-  test('placement end date is initially empty but mandatory', async ({
-    evaka
-  }) => {
-    const admin = await Fixture.employee().admin().save()
-    const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const unitName = unit.name
-    const child = await Fixture.person().saveChild({ updateMockVtj: true })
-    const childId = child.id
+  test('placement end date is initially empty but mandatory', async () => {
+    const childPlacements = await openChildPlacements(page, childId)
+    const modal = await childPlacements.openCreatePlacementModal()
 
-    await employeeLogin(evaka, admin)
-
-    await openChildPlacements(evaka, childId)
-    await evaka.findByDataQa('create-new-placement-button').click()
-
-    const modal = new Modal(evaka.findByDataQa('modal'))
-    const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
-    await unitSelect.fillAndSelectFirst(unitName)
-    await expect(modal.findByDataQa('create-placement-end-date')).toHaveText('')
+    await modal.unit.fillAndSelectFirst(unitName)
+    await expect(modal.endDate).toHaveText('')
     await modal.submitButton.assertDisabled(true)
   })
 
-  test('placement create dialog shows errors on dates outside preschool and extended terms', async ({
-    evaka
-  }) => {
+  test('placement create dialog shows errors on dates outside preschool and extended terms', async () => {
     const preschoolTerms = await preschoolTerm2023.save()
 
-    const admin = await Fixture.employee().admin().save()
-    const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const unitName = unit.name
-    const child = await Fixture.person().saveChild({ updateMockVtj: true })
-    const childId = child.id
+    const childPlacements = await openChildPlacements(page, childId)
+    const modal = await childPlacements.openCreatePlacementModal()
 
-    await employeeLogin(evaka, admin)
-
-    await openChildPlacements(evaka, childId)
-    await evaka.findByDataQa('create-new-placement-button').click()
-
-    const modal = new Modal(evaka.findByDataQa('modal'))
-
-    const placementTypeSelect = new Select(
-      modal.find('[data-qa="placement-type-select"]')
-    )
-    await placementTypeSelect.selectOption('PRESCHOOL')
-
-    const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
-    await unitSelect.fillAndSelectFirst(unitName)
-    const start = new DatePicker(
-      modal.findByDataQa('create-placement-start-date')
-    )
-    await start.click()
-    await start.fill(preschoolTerms.finnishPreschool.start)
-
-    const end = new DatePicker(modal.findByDataQa('create-placement-end-date'))
-    await end.fill(preschoolTerms.finnishPreschool.end)
-
-    await new Checkbox(modal.findByDataQa('confirm-retroactive')).check()
-
+    await modal.type.selectOption('PRESCHOOL')
+    await modal.unit.fillAndSelectFirst(unitName)
+    await modal.startDate.click()
+    await modal.startDate.fill(preschoolTerms.finnishPreschool.start)
+    await modal.endDate.fill(preschoolTerms.finnishPreschool.end)
+    await modal.confirmRetroactive.check()
     await modal.submitButton.assertDisabled(false)
 
     // Placement starts a day before the term
-    await start.fill(preschoolTerms.finnishPreschool.start.subDays(1))
-    await expect(
-      modal.findText('Sijoituksen tulee olla esiopetuskaudella')
-    ).toBeVisible()
+    await modal.startDate.fill(preschoolTerms.finnishPreschool.start.subDays(1))
+    await expect(modal.preschoolTermError).toBeVisible()
     await modal.submitButton.assertDisabled(true)
 
     // A day before preschool term the extended term is valid so placement can be created
-    await placementTypeSelect.selectOption('PRESCHOOL_DAYCARE')
+    await modal.type.selectOption('PRESCHOOL_DAYCARE')
     await modal.submitButton.assertDisabled(false)
 
     // Placement starts a day before the term so it is invalid
-    await start.fill(preschoolTerms.extendedTerm.start.subDays(1))
-    await expect(
-      modal.findText('Sijoituksen tulee olla esiopetuskaudella')
-    ).toBeVisible()
+    await modal.startDate.fill(preschoolTerms.extendedTerm.start.subDays(1))
+    await expect(modal.preschoolTermError).toBeVisible()
     await modal.submitButton.assertDisabled(true)
 
-    // Create a valid placement
-    await start.fill(preschoolTerms.extendedTerm.start)
-    await modal.submitButton.click()
-
-    const placements = evaka.findByDataQa('child-placements-collapsible')
-    await placements.findByDataQa('btn-edit-placement').click()
-
-    const editedStart = new DatePicker(
-      placements.findByDataQa('placement-start-date-input')
-    )
-    await editedStart.fill(preschoolTerms.extendedTerm.start.subDays(1))
-
-    const termError = placements.findText(
-      'Sijoituksen tulee olla esiopetuskaudella'
-    )
-    const saveButton = placements.findByDataQa('placement-save-button')
-    await expect(termError).toBeVisible()
-    await new Checkbox(placements.findByDataQa('confirm-retroactive')).check()
-    await saveButton.assertDisabled(true)
-
-    // The end date is invalid, so fixing the start date must not clear the error
-    const editedEnd = new DatePicker(
-      placements.findByDataQa('placement-end-date-input')
-    )
-    await editedEnd.fill(preschoolTerms.extendedTerm.end.addDays(1))
-    await editedStart.fill(preschoolTerms.extendedTerm.start)
-    await expect(termError).toBeVisible()
-    await saveButton.assertDisabled(true)
-
-    await editedEnd.fill(preschoolTerms.extendedTerm.end)
-    await expect(termError).toBeHidden()
-    await saveButton.click()
-    await expect(
-      placements.findByDataQa('placement-details-end-date')
-    ).toHaveText(preschoolTerms.extendedTerm.end.format())
+    await modal.startDate.fill(preschoolTerms.extendedTerm.start)
+    await modal.submit()
+    await childPlacements.assertPlacementRows([
+      {
+        unitName,
+        period: `${preschoolTerms.extendedTerm.start.format()} - ${preschoolTerms.finnishPreschool.end.format()}`,
+        status: 'Aktiivinen'
+      }
+    ])
   })
 })
