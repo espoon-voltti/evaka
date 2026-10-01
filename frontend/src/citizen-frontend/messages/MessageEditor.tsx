@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import partition from 'lodash/partition'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useId, useMemo, useState } from 'react'
 import { FocusOn } from 'react-focus-on'
 import styled from 'styled-components'
 
@@ -107,6 +107,7 @@ export default React.memo(function MessageEditor({
       : emptyMessage
   )
   const title = message.title || i18n.messages.messageEditor.newMessage
+  const titleId = useId()
   const fullScreen = useMediaQuery(fullScreenWidth)
 
   const [attachments, setAttachments] = useState<Attachment[]>([])
@@ -200,9 +201,14 @@ export default React.memo(function MessageEditor({
       scrollLock={fullScreen}
       noIsolation={!fullScreen}
     >
-      <Container data-qa="message-editor">
+      <Container
+        role="dialog"
+        aria-modal={fullScreen}
+        aria-labelledby={titleId}
+        data-qa="message-editor"
+      >
         <TopBar>
-          <Title>{title}</Title>
+          <Title id={titleId}>{title}</Title>
           <IconOnlyButton
             icon={faTimes}
             onClick={() => onClose()}
