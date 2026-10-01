@@ -8,9 +8,11 @@ import evaka.core.pis.employeePinIsCorrect
 import evaka.core.pis.markEmployeeLastLogin
 import evaka.core.pis.resetEmployeePinFailureCount
 import evaka.core.pis.updateEmployeePinFailureCountAndCheckIfLocked
+import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.Tracing
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.getDaycareAclRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.EvakaClock
@@ -449,11 +451,15 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
 
     fun verifyPinCodeAndThrow(
         dbc: Database.Connection,
+        unitId: DaycareId,
         employeeId: EmployeeId,
         pinCode: String,
         clock: EvakaClock,
     ) {
-        val errorCode = dbc.transaction { verifyPinCode(it, employeeId, pinCode, clock) }
+        val errorCode = dbc.transaction { tx ->
+            if (tx.getDaycareAclRole(unitId, employeeId) == null) PinError.WRONG_PIN
+            else verifyPinCode(tx, employeeId, pinCode, clock)
+        }
         if (errorCode != null) throw Forbidden("Invalid pin code", errorCode.name)
     }
 }

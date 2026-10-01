@@ -500,6 +500,9 @@ class SystemController(
     ): PinLoginResponse =
         db.connect { dbc ->
                 dbc.transaction { tx ->
+                    if (!tx.canPinLoginOnDevice(params.deviceId, params.employeeId)) {
+                        return@transaction PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                    }
                     val employee = tx.getEmployeeUser(params.employeeId)
                     if (employee?.active == false) {
                         throw Forbidden("User is not active")
@@ -604,7 +607,11 @@ class SystemController(
         val authLevel: CitizenAuthLevel,
     )
 
-    data class PinLoginRequest(val pin: String, val employeeId: EmployeeId)
+    data class PinLoginRequest(
+        val pin: String,
+        val employeeId: EmployeeId,
+        val deviceId: MobileDeviceId,
+    )
 
     enum class PinLoginStatus {
         SUCCESS,

@@ -34,6 +34,26 @@ GROUP BY md.id, md.name, md.employee_id
         .exactlyOneOrNull<MobileDeviceDetails>() ?: throw NotFound("Device $id not found")
 }
 
+fun Database.Read.canPinLoginOnDevice(deviceId: MobileDeviceId, employeeId: EmployeeId): Boolean =
+    createQuery {
+        sql(
+            """
+SELECT EXISTS (
+    SELECT FROM mobile_device md
+    WHERE md.id = ${bind(deviceId)}
+    AND (
+        md.employee_id = ${bind(employeeId)}
+        OR EXISTS (
+            SELECT FROM daycare_acl acl
+            WHERE acl.daycare_id = md.unit_id AND acl.employee_id = ${bind(employeeId)}
+        )
+    )
+)
+"""
+        )
+    }
+    .exactlyOne<Boolean>()
+
 fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity =
     createQuery {
         sql("SELECT id, long_term_token FROM mobile_device WHERE long_term_token = ${bind(token)}")
