@@ -127,7 +127,7 @@ export default React.memo(function CalendarListView({
 const HoverButton = styled(Button)`
   position: fixed;
   bottom: calc(${defaultMargins.s} + ${mobileBottomNavHeight}px);
-  right: ${defaultMargins.s};
+  right: calc(${defaultMargins.s} + env(safe-area-inset-right));
   border-radius: 40px;
   z-index: 2;
 

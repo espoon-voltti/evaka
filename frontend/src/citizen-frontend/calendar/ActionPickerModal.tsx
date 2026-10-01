@@ -116,7 +116,7 @@ const Container = styled.div`
   bottom: calc(
     ${baseBottomValue}px + ${defaultMargins.L} + ${mobileBottomNavHeight}px
   );
-  right: ${defaultMargins.s};
+  right: calc(${defaultMargins.s} + env(safe-area-inset-right));
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
