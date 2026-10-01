@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState
@@ -25,6 +26,7 @@ import {
   focusElementAfterDelay,
   focusElementOnNextFrame
 } from 'lib-common/utils/focus'
+import { getScrollTop, scrollToPos } from 'lib-common/utils/scrolling'
 import { NotificationsContext } from 'lib-components/Notifications'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
@@ -146,12 +148,27 @@ export default React.memo(function MessagesPage() {
 
   const threadView = useRef<ThreadViewApi>(null)
 
+  const threadListScrollTop = useRef<number | null>(null)
+  useLayoutEffect(() => {
+    if (selectedThreadId === undefined) {
+      scrollToPos({
+        top: threadListScrollTop.current ?? 0,
+        left: 0,
+        behavior: 'auto'
+      })
+      threadListScrollTop.current = null
+    } else {
+      scrollToPos({ top: 0, left: 0, behavior: 'auto' })
+    }
+  }, [selectedThreadId])
+
   const selectThread = useCallback(
     (threadId: MessageThreadId | undefined) => {
       if (!threadId) {
         navigate('/messages')
       } else {
         if (selectedThreadId !== threadId) {
+          threadListScrollTop.current = getScrollTop()
           navigate(`/messages/${threadId}`)
         } else {
           threadView.current?.focusThreadTitle()
