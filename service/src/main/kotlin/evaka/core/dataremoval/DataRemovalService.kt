@@ -1346,9 +1346,9 @@ WITH del_batch AS (
         NOT guardian_id = ANY(${subquery(citizenUserIdsWithPlacementsEndingBefore(citizenUserExpireDate))}) AND
         NOT guardian_id = ANY(${subquery(personIdsWithFinanceNotes())}) AND
         NOT guardian_id = ANY(${subquery(personIdsWithFinanceThreads())}) AND
-        NOT (
-            guardian_id = ANY(${subquery(personIdsWithThreadsWithoutRecordedChildren())}) AND
-            NOT child_id = ANY(${subquery(expiredChildIdsQuery)})
+        (
+            child_id = ANY(${subquery(expiredChildIdsQuery)}) OR
+            NOT guardian_id = ANY(${subquery(personIdsWithThreadsWithoutRecordedChildren())})
         )
     FOR UPDATE
     LIMIT ${bind(limit)}
@@ -1415,9 +1415,9 @@ WITH del_batch AS (
         NOT parent_id = ANY(${subquery(citizenUserIdsWithPlacementsEndingBefore(citizenUserExpireDate))}) AND
         NOT parent_id = ANY(${subquery(personIdsWithFinanceNotes())}) AND
         NOT parent_id = ANY(${subquery(personIdsWithFinanceThreads())}) AND
-        NOT (
-            parent_id = ANY(${subquery(personIdsWithThreadsWithoutRecordedChildren())}) AND
-            NOT child_id = ANY(${subquery(expiredChildIdsQuery)})
+        (
+            child_id = ANY(${subquery(expiredChildIdsQuery)}) OR
+            NOT parent_id = ANY(${subquery(personIdsWithThreadsWithoutRecordedChildren())})
         )
     FOR UPDATE
     LIMIT ${bind(limit)}
