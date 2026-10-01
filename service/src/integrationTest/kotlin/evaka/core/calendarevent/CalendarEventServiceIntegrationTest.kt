@@ -2047,6 +2047,127 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `discussion survey notification is not sent when the child already has a reserved time`() {
+        db.transaction { tx ->
+            tx.updatePersonalDetails(
+                adult1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = "example@example.com",
+                ),
+            )
+        }
+
+        val event =
+            createCalendarEvent(
+                CalendarEventForm(
+                    unitId = daycare.id,
+                    tree = mapOf(group1.id to setOf(child1.id)),
+                    title = "Child survey",
+                    description = "cs",
+                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
+                    times =
+                        listOf(
+                            CalendarEventTimeForm(
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+                            )
+                        ),
+                )
+            )
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            CalendarEventTimeEmployeeReservationForm(
+                calendarEventTimeId = event.times.first().id,
+                childId = child1.id,
+            ),
+        )
+        // Discard the reservation confirmation emails
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        MockEmailClient.clear()
+
+        calendarEventNotificationService.scheduleDiscussionSurveyDigests(db, now)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(0, MockEmailClient.emails.size)
+    }
+
+    @Test
+    fun `discussion survey notification is sent when only a sibling has a reserved time`() {
+        val email = "example@example.com"
+        db.transaction { tx ->
+            tx.updatePersonalDetails(
+                adult1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = email,
+                ),
+            )
+            // child1 and child2 are both in group1
+            tx.insertGuardian(adult1.id, child2.id)
+        }
+
+        val event =
+            createCalendarEvent(
+                CalendarEventForm(
+                    unitId = daycare.id,
+                    tree = mapOf(group1.id to null),
+                    title = "Group survey",
+                    description = "gsu",
+                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
+                    times =
+                        listOf(
+                            CalendarEventTimeForm(
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+                            )
+                        ),
+                )
+            )
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            CalendarEventTimeEmployeeReservationForm(
+                calendarEventTimeId = event.times.first().id,
+                childId = child1.id,
+            ),
+        )
+        // Discard the reservation confirmation emails
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        MockEmailClient.clear()
+
+        calendarEventNotificationService.scheduleDiscussionSurveyDigests(db, now)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val notificationEmailContent =
+            emailMessageProvider.discussionSurveyCreationNotification(
+                language = Language.fi,
+                notificationDetails =
+                    DiscussionSurveyCreationNotificationData(
+                        eventId = event.id,
+                        eventTitle = HtmlSafe(event.title),
+                        eventDescription = HtmlSafe(event.description),
+                    ),
+            )
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertEquals(1, MockEmailClient.emails.size)
+        assertEmails(
+            listOf(adult1.copy(email = email)),
+            notificationEmailContent,
+            expectedFromAddress,
+        )
+    }
+
+    @Test
     fun `notifications are sent even child in backup care`() {
         val email = "example@example.com"
         db.transaction { tx ->

@@ -733,17 +733,24 @@ WITH matching_events AS (
         cea.group_id IS NOT NULL AND
         cea.child_id IS NOT NULL
 
+), children_without_reservation AS (
+    SELECT mc.event_id, mc.period, mc.child_id
+    FROM matching_children mc
+    WHERE NOT EXISTS (
+        SELECT FROM calendar_event_time cet
+        WHERE cet.calendar_event_id = mc.event_id AND cet.child_id = mc.child_id
+    )
 ), matching_parents AS (
     -- List each event at most once per parent
 
     SELECT DISTINCT g.guardian_id AS parent_id, mc.event_id
-    FROM matching_children mc
+    FROM children_without_reservation mc
              JOIN guardian g ON g.child_id = mc.child_id
 
     UNION
 
     SELECT DISTINCT fp.parent_id, mc.event_id
-    FROM matching_children mc
+    FROM children_without_reservation mc
              JOIN foster_parent fp ON fp.child_id = mc.child_id AND fp.valid_during && mc.period
 )
 SELECT
