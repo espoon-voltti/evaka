@@ -1088,7 +1088,7 @@ const ButtonFooter = styled.div`
 
   @media (max-width: ${tabletMin}) {
     margin-top: 0;
-    padding: ${defaultMargins.s};
+    padding: ${defaultMargins.L} ${defaultMargins.s};
     display: grid;
     grid-auto-columns: 1fr 1fr;
     gap: ${defaultMargins.s};
