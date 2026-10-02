@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useId, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type {
@@ -38,7 +38,6 @@ import colors from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
 import { faTimes } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { exportCitizenDiscussionReservationIcs } from '../../generated/api-clients/calendarevent'
 import { useLang, useTranslation } from '../../localization'
 import { CalendarEventExportButton } from '../CalendarEventExportButton'
@@ -86,6 +85,7 @@ export default React.memo(function DiscussionSurveyModal({
   openDiscussionReservations
 }: Props) {
   const i18n = useTranslation()
+  const titleId = useId()
 
   const [infoOpen, setInfoOpen] = useState(false)
   const onInfoClick = useCallback(() => setInfoOpen((prev) => !prev), [])
@@ -138,7 +138,7 @@ export default React.memo(function DiscussionSurveyModal({
   )
 
   return (
-    <ModalAccessibilityWrapper>
+    <>
       {confirmationModalState.visible && (
         <MutateFormModal
           resolveMutation={deleteCalendarEventTimeReservationMutation}
@@ -174,6 +174,7 @@ export default React.memo(function DiscussionSurveyModal({
         zIndex={100}
         data-qa="discussions-modal"
         onEscapeKey={close}
+        aria-labelledby={titleId}
       >
         <CalendarModalBackground>
           <div>
@@ -183,7 +184,7 @@ export default React.memo(function DiscussionSurveyModal({
                 aria-label={i18n.common.closeModal}
                 icon={faTimes}
               />
-              <H1 $noMargin>
+              <H1 $noMargin id={titleId}>
                 {i18n.calendar.discussionTimeReservation.surveyModalTitle}
               </H1>
             </DiscussionHeader>
@@ -238,7 +239,7 @@ export default React.memo(function DiscussionSurveyModal({
           </div>
         </CalendarModalBackground>
       </PlainModal>
-    </ModalAccessibilityWrapper>
+    </>
   )
 })
 

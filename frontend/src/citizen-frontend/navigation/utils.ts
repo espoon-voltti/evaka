@@ -72,16 +72,6 @@ export function useHasPersonalDetailsTasks() {
   return usePersonalDetailsTasks().length > 0
 }
 
-export const useOnEscape = (action: () => void) =>
-  useCallback(
-    (event: KeyboardEvent<HTMLElement>) => {
-      if (event.key === 'Escape') {
-        action()
-      }
-    },
-    [action]
-  )
-
 export const useMenubarKeyboardNavigation = (
   menubarRef: React.RefObject<HTMLElement | null>
 ) =>

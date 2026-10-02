@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback } from 'react'
+import React, { useCallback, useId } from 'react'
 import styled from 'styled-components'
 
 import { Failure } from 'lib-common/api'
@@ -147,6 +147,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
   defaultGroupId
 }: ExternalPersonModalProps) {
   const { i18n, lang } = useTranslation()
+  const titleId = useId()
   const { mutateAsync: upsertExternalAttendances } = useMutationResult(
     upsertExternalAttendancesMutation
   )
@@ -178,13 +179,16 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
       margin="auto"
       data-qa="staff-attendance-add-person-modal"
       onEscapeKey={onClose}
+      aria-labelledby={titleId}
     >
       <Content>
         <Centered>
           <IconWrapper>
             <FontAwesomeIcon icon={faPlus} />
           </IconWrapper>
-          <H1 $noMargin>{i18n.unit.staffAttendance.addPerson}</H1>
+          <H1 $noMargin id={titleId}>
+            {i18n.unit.staffAttendance.addPerson}
+          </H1>
           {i18n.unit.staffAttendance.addPersonModal.description}
         </Centered>
 
