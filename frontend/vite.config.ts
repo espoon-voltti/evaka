@@ -58,14 +58,19 @@ async function resolveIcons() {
   }
 }
 
+const tunnelHost = process.env.TUNNEL_URL
+  ? new URL(process.env.TUNNEL_URL).hostname
+  : undefined
+
 function serveIndexHtml(): Plugin {
   return {
     name: 'serve-index-html',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        // Skip api, source code and vite internal paths
+        // Skip api, source code, proxied paths and vite internal paths
         if (
           req.originalUrl?.startsWith('/api/') ||
+          req.originalUrl?.startsWith('/idp/') ||
           req.originalUrl?.startsWith('/src/') ||
           req.originalUrl?.startsWith('/node_modules/') ||
           req.originalUrl?.startsWith('/@')
@@ -229,11 +234,23 @@ export default defineConfig(async (): Promise<UserConfig> => {
     },
     server: {
       port: parseInt(process.env.EVAKA_FRONTEND_PORT || '9099', 10),
+      // When TUNNEL_URL is set, the dev server is reached through an external
+      // HTTPS hostname, so it must accept that Host header and point the HMR
+      // client at the tunnel instead of localhost.
+      ...(tunnelHost
+        ? {
+            allowedHosts: [tunnelHost],
+            hmr: { protocol: 'wss', host: tunnelHost, clientPort: 443 }
+          }
+        : {}),
       warmup: {
         clientFiles: ['src/**/index.html']
       },
       proxy: {
-        '/api': `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`
+        '/api': `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`,
+        // Served under the same origin as the app so that the Suomi.fi SAML
+        // flow works through the tunnel (same-site cookies, reachable IdP).
+        '/idp': `http://localhost:${process.env.EVAKA_IDP_PORT || '9090'}`
       }
     },
     resolve: {

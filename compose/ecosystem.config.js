@@ -15,6 +15,17 @@ const ports = {
   frontend: parseInt(process.env.EVAKA_FRONTEND_PORT || '9099', 10)
 }
 
+// Externally reachable HTTPS URL set by `mise tunnel` (compose/tunnel.sh) for
+// testing on external devices. When set, the SAML flow, the WebAuthn relying
+// party and the app's own base URL all use it instead of localhost. The dummy IdP
+// is reached through the frontend dev server's /idp proxy (frontend/vite.config.ts).
+const tunnelUrl = process.env.TUNNEL_URL
+const frontendBaseUrl = tunnelUrl || `http://localhost:${ports.frontend}`
+const idpBaseUrl = tunnelUrl
+  ? `${tunnelUrl}/idp`
+  : `http://localhost:${ports.idp}/idp`
+const webAuthnRpId = tunnelUrl ? new URL(tunnelUrl).hostname : 'localhost'
+
 const defaults = {
   autorestart: false
 }
@@ -28,11 +39,11 @@ module.exports = {
       HTTP_PORT: ports.apigw,
       EVAKA_SERVICE_URL: `http://localhost:${ports.service}`,
       REDIS_PORT: ports.redis,
-      EVAKA_BASE_URL: `http://localhost:${ports.frontend}`,
-      SFI_SAML_CALLBACK_URL: `http://localhost:${ports.frontend}/api/application/auth/saml/login/callback`,
-      SFI_SAML_ENTRYPOINT: `http://localhost:${ports.idp}/idp/sso`,
-      SFI_SAML_LOGOUT_URL: `http://localhost:${ports.idp}/idp/slo`,
-      SFI_SAML_ISSUER: `http://localhost:${ports.frontend}/api/application/auth/saml/`
+      EVAKA_BASE_URL: frontendBaseUrl,
+      SFI_SAML_CALLBACK_URL: `${frontendBaseUrl}/api/application/auth/saml/login/callback`,
+      SFI_SAML_ENTRYPOINT: `${idpBaseUrl}/sso`,
+      SFI_SAML_LOGOUT_URL: `${idpBaseUrl}/slo`,
+      SFI_SAML_ISSUER: `${frontendBaseUrl}/api/application/auth/saml/`
     },
     ...defaults
   }, {
@@ -43,7 +54,9 @@ module.exports = {
       ICONS: process.env.ICONS,
       EVAKA_FRONTEND_PORT: ports.frontend,
       EVAKA_APIGW_PORT: ports.apigw,
-      EVAKA_CUSTOMIZATIONS: process.env.EVAKA_CUSTOMIZATIONS
+      EVAKA_IDP_PORT: ports.idp,
+      EVAKA_CUSTOMIZATIONS: process.env.EVAKA_CUSTOMIZATIONS,
+      TUNNEL_URL: tunnelUrl
     },
     ...defaults
   }, {
@@ -57,7 +70,10 @@ module.exports = {
       EVAKA_LOCAL_S3_URL: `https://localhost:${ports.s3}`,
       EVAKA_MUNICIPALITY: process.env.EVAKA_MUNICIPALITY,
       EVAKA_INTEGRATION_VTJ_MOCK_URL: `http://localhost:${ports.idp}`,
-      EVAKA_WEBAUTHN_ORIGIN: `http://localhost:${ports.frontend}`,
+      EVAKA_WEBAUTHN_ORIGIN: frontendBaseUrl,
+      EVAKA_WEBAUTHN_RP_ID: webAuthnRpId,
+      EVAKA_FRONTEND_BASE_URL_FI: frontendBaseUrl,
+      EVAKA_FRONTEND_BASE_URL_SV: frontendBaseUrl,
     },
     ...defaults
   }, /*{

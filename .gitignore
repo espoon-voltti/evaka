@@ -12,3 +12,6 @@
 
 # mise
 mise.local.toml
+
+# cloudflared quick tunnel state (compose/tunnel.sh)
+/compose/.tunnel/

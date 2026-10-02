@@ -78,9 +78,9 @@ services:
     ports:
       - "${EVAKA_IDP_PORT:-9090}:9090"
     environment:
-      SP_ENTITY_ID: "http://localhost:${EVAKA_FRONTEND_PORT:-9099}/api/application/auth/saml/"
-      SP_SSO_CALLBACK_URL: "http://localhost:${EVAKA_FRONTEND_PORT:-9099}/api/application/auth/saml/login/callback"
-      SP_SLO_CALLBACK_URL: "http://localhost:${EVAKA_FRONTEND_PORT:-9099}/api/application/auth/saml/logout/callback"
+      SP_ENTITY_ID: "${TUNNEL_URL:-http://localhost:${EVAKA_FRONTEND_PORT:-9099}}/api/application/auth/saml/"
+      SP_SSO_CALLBACK_URL: "${TUNNEL_URL:-http://localhost:${EVAKA_FRONTEND_PORT:-9099}}/api/application/auth/saml/login/callback"
+      SP_SLO_CALLBACK_URL: "${TUNNEL_URL:-http://localhost:${EVAKA_FRONTEND_PORT:-9099}}/api/application/auth/saml/logout/callback"
 
 volumes:
   db-data:
