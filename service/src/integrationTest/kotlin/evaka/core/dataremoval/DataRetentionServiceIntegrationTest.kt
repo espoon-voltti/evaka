@@ -91,7 +91,7 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
             db,
             clock,
             asyncJobRunner,
-            buildDataRetentionSchema(financeFreezeImplemented = true),
+            buildDataRetentionSchema(),
             id,
             dryRun = false,
         )

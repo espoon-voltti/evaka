@@ -247,7 +247,7 @@ A table that the graph only references, and that references nothing in it, is ou
 
 - Case processes and their history rows are left as orphans. At least the ones from the current year must stay, so that the sequence numbers are not reused.
 - A `child_document_decision` is deleted with its child document.
-- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 8.6).
+- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 8.5).
 - A `calendar_event` is left as an orphan.
 
 ### 5.3 Tables excluded by exception
@@ -258,7 +258,7 @@ A leaf table whose rows should simply be deleted with the rows they reference ca
 
 ### 5.4 The evaka_user row
 
-`evaka_user` reaches `person` through `citizen_id`, but it is excluded too. The database sets the column null when the person row is deleted, and the row lives on as the author of what the citizen created. Whether its name should then be anonymised is open (section 8.4). References to `evaka_user`, such as `created_by` columns, are therefore not declared.
+`evaka_user` reaches `person` through `citizen_id`, but it is excluded too. The database sets the column null when the person row is deleted, and the row lives on as the author of what the citizen created. Whether its name should then be anonymised is open (section 8.3). References to `evaka_user`, such as `created_by` columns, are therefore not declared.
 
 ### 5.5 Data in the child table
 
@@ -275,6 +275,12 @@ Therefore the `child` node is part of every graph, identified by the person id, 
 ### 6.2 Partnerships
 
 A partnership is stored as two `fridge_partner` rows, one for each partner, which reference each other through a composite self-reference. Each row references its own person, so it is an own row of that partner's run. The table has `independentRows`, and the declared primary key of a row is the partnership id rather than its own id, so deleting it deletes both rows of the partnership at once, in whichever partner's run first finds the rule met. The other partner's run then finds no row. The rule reads only what the two rows share, the partnership's own dates and the placements and pending applications of the children of either partner, so both runs reach the same verdict. The self-reference is not declared, and the schema test lists it as the only composite foreign key.
+
+### 6.3 Finance freeze
+
+Finance decisions are generated from the family and income data, the parentships, partnerships and incomes, placements and service needs, etc. The *finance freeze* limits how far back in time they are generated. They are never generated for days more than five years before today, not even retroactively. The freeze date moves forward every day.
+
+A row expires only when no decision that can still be generated needs it. For most tables, the rules require the row's period to have ended longer ago than the freeze, in addition to possible other expiration rules. The rules add a margin of one month to the freeze, so that data is deleted only after the generator no longer reads it. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
 
 ## 7. Validation
 
@@ -314,19 +320,15 @@ Integration tests then compare the schema definition against the database schema
 
 The not while rule for archival needs to know which rows must be archived before deletion. For `child_document` the schema says it: the template has an `archive_externally` flag and a trigger refuses to delete an unarchived document. For `decision`, `fee_decision` and `voucher_value_decision` there is only the `archived_at` column, and the knowledge of which rows get archived lives in the municipality-specific archival job, together with the fact that archival is enabled per municipality. If the rule treated every row as "to be archived", the nodes would never expire in a municipality without an archive, and rows that are never archived would be blocked forever.
 
-### 8.3 Finance freeze
-
-Finance decisions can be regenerated for any past period, so the family and income data they read, the parentships, partnerships and incomes, placements and service needs, etc. cannot be deleted while a regeneration could still need them. Once the *finance freeze* is implemented, finance decisions will not be generated further back in time than some fixed period. Until then, the rules of these tables are gated to never expire. Once it exists, a row expires only when no decision that can still be regenerated needs it. For most tables, the rules then require the row's period to be older than the freeze, in addition to possible other expiration rules. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
-
-### 8.4 Anonymising orphan evaka_user rows
+### 8.3 Anonymising orphan evaka_user rows
 
 Whether the `name` column of an orphaned `evaka_user` row should be anonymised, for example to "Poistettu kuntalainen", is an open question.
 
-### 8.5 Self-references between independent rows
+### 8.4 Self-references between independent rows
 
 `invoice.replaced_invoice_id` references the invoice that a corrected invoice replaced. As long as `invoice` is evaluated as a whole, the rows are deleted together and the reference does not matter. If invoices need `independentRows`, a replacing invoice must be deleted before the one it replaced. The easiest solution would then probably be `ON DELETE SET NULL`.
 
-### 8.6 Voucher value report snapshots
+### 8.5 Voucher value report snapshots
 
 The frozen monthly service voucher report is one `voucher_value_report_snapshot` row per month and its `voucher_value_report_decision` rows, each naming a voucher value decision. The algorithm waits for those rows before it deletes the decision but must not delete them (section 5.2), and nothing deletes them today. A job must delete each snapshot a set time after the month it covers, no longer than the ten years of the decisions themselves, or the decisions wait for the report. For the report rows to be deleted with their snapshot, `voucher_value_report_decision.voucher_value_report_snapshot_id` must become `ON DELETE CASCADE`; `decision_id` stays as it is, so that the rows keep holding the decision.
 

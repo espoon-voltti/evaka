@@ -571,56 +571,49 @@ class SchemaDefinitionTest {
         )
     }
 
-    private val declaredSchemas = listOf(false, true).map { buildDataRetentionSchema(it) }
+    private val declaredSchema = buildDataRetentionSchema()
 
     @Test
     fun `every declared table an integration reads is safe for that integration directly, and no table claims an integration that does not read it`() {
         val inputTablesByIntegration =
             mapOf(KOSKI to KOSKI_INPUT_TABLES, VARDA to VARDA_INPUT_TABLES)
-        for (schema in declaredSchemas) {
-            val invalid =
-                schema.handledTables.flatMap { table ->
-                    val declared =
-                        (table.expirationRule as? SafeForIntegrations)?.integrations.orEmpty()
-                    inputTablesByIntegration.mapNotNull { (integration, inputTables) ->
-                        when {
-                            table.name in inputTables && integration !in declared ->
-                                "$table is read by $integration but is not declared safe for it"
-                            table.name !in inputTables && integration in declared ->
-                                "$table is declared safe for $integration, which does not read it"
-                            else -> null
-                        }
+        val invalid =
+            declaredSchema.handledTables.flatMap { table ->
+                val declared =
+                    (table.expirationRule as? SafeForIntegrations)?.integrations.orEmpty()
+                inputTablesByIntegration.mapNotNull { (integration, inputTables) ->
+                    when {
+                        table.name in inputTables && integration !in declared ->
+                            "$table is read by $integration but is not declared safe for it"
+                        table.name !in inputTables && integration in declared ->
+                            "$table is declared safe for $integration, which does not read it"
+                        else -> null
                     }
                 }
-            assertEquals(emptyList(), invalid)
-        }
+            }
+        assertEquals(emptyList(), invalid)
     }
 
     /** Always on its own would delete the rows the first time a run reaches them */
     @Test
     fun `every declared table whose rule is Always, wrapped or not, is bundled`() {
-        for (schema in declaredSchemas) {
-            val invalid =
-                schema.handledTables.filter { table ->
-                    val rule = table.expirationRule
-                    val always =
-                        rule == Always || (rule is SafeForIntegrations && rule.rule == Always)
-                    always && table.bundledBy == null
-                }
-            assertEquals(emptyList(), invalid)
-        }
+        val invalid =
+            declaredSchema.handledTables.filter { table ->
+                val rule = table.expirationRule
+                val always = rule == Always || (rule is SafeForIntegrations && rule.rule == Always)
+                always && table.bundledBy == null
+            }
+        assertEquals(emptyList(), invalid)
     }
 
     @Test
     fun `the declared schema definition is valid and loads every table after the one its primary reference points to`() {
-        for (schema in declaredSchemas) {
-            val order = schema.rootFirstOrder
-            assertEquals(schema.handledTables.toSet(), order.toSet())
-            for (table in order) {
-                val parent = schema.primaryReference(table)?.referencedTable ?: continue
-                assert(order.indexOf(schema.handled(parent)) < order.indexOf(table)) {
-                    "$parent must be loaded before $table"
-                }
+        val order = declaredSchema.rootFirstOrder
+        assertEquals(declaredSchema.handledTables.toSet(), order.toSet())
+        for (table in order) {
+            val parent = declaredSchema.primaryReference(table)?.referencedTable ?: continue
+            assert(order.indexOf(declaredSchema.handled(parent)) < order.indexOf(table)) {
+                "$parent must be loaded before $table"
             }
         }
     }

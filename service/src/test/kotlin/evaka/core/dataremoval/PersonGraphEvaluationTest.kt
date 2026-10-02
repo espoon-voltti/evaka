@@ -17,6 +17,7 @@ import evaka.core.dataremoval.Handler.ADULT
 import evaka.core.dataremoval.Handler.CHILD
 import evaka.core.dataremoval.Integration.KOSKI
 import evaka.core.dataremoval.Integration.VARDA
+import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.shared.ChildId
 import evaka.core.shared.DatabaseTable
 import evaka.core.shared.async.AsyncJob
@@ -51,9 +52,10 @@ class PersonGraphEvaluationTest {
     private fun expired(
         rule: ExpirationRule,
         vararg rows: OwnRow = arrayOf(row("child_id" to target)),
+        on: LocalDate = today,
     ): Boolean {
         val schema = schemaWith(rule)
-        val plan = schema.graph(schema.ownNode("a", *rows)).evaluate(today)
+        val plan = schema.graph(schema.ownNode("a", *rows)).evaluate(on)
         return whole("a") in plan.deleted()
     }
 
@@ -72,6 +74,18 @@ class PersonGraphEvaluationTest {
         assert(expired(rule, endedAt(today.minusYears(1).minusDays(1))))
         assert(!expired(rule, endedAt(today.minusYears(1))))
         assert(!expired(rule, endedAt(today)))
+    }
+
+    @Test
+    fun `the finance freeze margin keeps data the finance decision generator still reads`() {
+        val rule = After(FINANCE_FREEZE_WITH_MARGIN, endDate)
+        generateSequence(LocalDate.of(2024, 1, 1)) { it.plusDays(1) }
+            .takeWhile { it.year < 2029 }
+            .forEach { day ->
+                val freezeDate = financeFreezeDate(day)
+                assert(!expired(rule, endedAt(freezeDate), on = day)) { "$day" }
+                assert(expired(rule, endedAt(freezeDate.minusMonths(2)), on = day)) { "$day" }
+            }
     }
 
     @Test
