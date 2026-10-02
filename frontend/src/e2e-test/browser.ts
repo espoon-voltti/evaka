@@ -29,6 +29,7 @@ declare global {
 
 export interface EvakaBrowserContextOptions {
   mockedTime?: HelsinkiDateTime
+  keepSessionAliveThrottleTime?: number
   citizenCustomizations?: DeepPartial<JsonOf<CitizenCustomizations>>
   employeeCustomizations?: DeepPartial<JsonOf<EmployeeCustomizations>>
   employeeMobileCustomizations?: DeepPartial<
@@ -44,7 +45,7 @@ export const initScript = (options: EvakaBrowserContextOptions) => {
       ? `window.evaka.${key} = JSON.parse('${JSON.stringify(value)}')`
       : ''
   }
-  const { mockedTime } = options
+  const { mockedTime, keepSessionAliveThrottleTime } = options
 
   return `
 window.evaka = window.evaka ?? {}
@@ -52,6 +53,11 @@ window.evaka.automatedTest = true
 ${
   mockedTime
     ? `window.evaka.mockedTime = new Date('${mockedTime.toString()}')`
+    : ''
+}
+${
+  keepSessionAliveThrottleTime !== undefined
+    ? `window.evaka.keepSessionAliveThrottleTime = ${keepSessionAliveThrottleTime}`
     : ''
 }
 ${override('citizenCustomizations')}
