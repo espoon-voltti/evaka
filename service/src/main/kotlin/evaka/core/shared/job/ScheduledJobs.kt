@@ -235,7 +235,7 @@ enum class ScheduledJob(
     ),
     SendMissingHolidayReservationReminders(
         ScheduledJobs::sendMissingHolidayReservationReminders,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(17, 0))),
     ),
     SendOutdatedIncomeNotifications(
         ScheduledJobs::sendOutdatedIncomeNotifications,
