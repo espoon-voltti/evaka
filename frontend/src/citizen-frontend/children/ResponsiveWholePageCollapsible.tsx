@@ -4,14 +4,15 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useEffect, useState } from 'react'
-import FocusLock from 'react-focus-lock'
+import React, { useId, useState } from 'react'
+import { FocusOn } from 'react-focus-on'
 import styled, { useTheme } from 'styled-components'
 
 import { useScrollIntoView } from 'lib-common/utils/scrolling'
+import { useMediaQuery } from 'lib-common/utils/useMediaQuery'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
+import { tabletMin } from 'lib-components/breakpoints'
 import type { CollapsibleContentAreaProps } from 'lib-components/layout/Container'
 import {
   ContentArea,
@@ -64,19 +65,8 @@ export default React.memo(function ResponsiveWholePageCollapsible({
 
   const t = useTranslation()
 
-  const [width, setWidth] = useState(window.innerWidth)
-
-  useEffect(() => {
-    const onResize = () => {
-      setWidth(window.innerWidth)
-    }
-
-    window.addEventListener('resize', onResize)
-
-    return () => {
-      window.removeEventListener('resize', onResize)
-    }
-  }, [])
+  const wholePage = !useMediaQuery(`(min-width: ${tabletMin})`)
+  const wholePageTitleId = useId()
 
   const [isFocusable, setIsFocusable] = useState(true)
 
@@ -121,9 +111,13 @@ export default React.memo(function ResponsiveWholePageCollapsible({
           </div>
         </FixedSpaceRow>
       </TitleContainer>
-      <FocusLock disabled={!open || width >= tabletMinPx}>
+      <FocusOn enabled={open && wholePage} onEscapeKey={toggleOpen}>
         {open && (
-          <ResponsiveCollapsibleContainer>
+          <ResponsiveCollapsibleContainer
+            role={wholePage ? 'dialog' : undefined}
+            aria-modal={wholePage ? true : undefined}
+            aria-labelledby={wholePage ? wholePageTitleId : undefined}
+          >
             <MobileOnly>
               <ResponsiveCollapsibleTitle>
                 <FixedSpaceRow $spacing="s">
@@ -134,6 +128,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
                     aria-label={t.common.return}
                   />
                   <div
+                    id={wholePageTitleId}
                     tabIndex={isFocusable ? 0 : undefined}
                     onBlur={() => setIsFocusable(false)}
                     data-autofocus="true"
@@ -148,7 +143,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
             </CollapsibleContainer>
           </ResponsiveCollapsibleContainer>
         )}
-      </FocusLock>
+      </FocusOn>
     </ContentArea>
   )
 })
