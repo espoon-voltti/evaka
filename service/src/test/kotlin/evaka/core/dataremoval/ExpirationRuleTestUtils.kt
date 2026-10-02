@@ -8,9 +8,9 @@ import evaka.core.dataremoval.ExpirationRule.After
 import evaka.core.dataremoval.ExpirationRule.AllOf
 import evaka.core.dataremoval.ExpirationRule.Always
 import evaka.core.dataremoval.ExpirationRule.AnyOf
-import evaka.core.dataremoval.ExpirationRule.ArchivedIfRequired
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
+import evaka.core.dataremoval.ExpirationRule.NotWhile
 import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
 
 /**
@@ -34,7 +34,7 @@ private fun ExpirationRule.alwaysApplies(mayHaveNoDate: (DateSource) -> Boolean)
     when (this) {
         Always,
         Never,
-        is ArchivedIfRequired -> true
+        is NotWhile -> true
         is After -> !mayHaveNoDate(dateSource)
         is AllOf -> rules.all { it.alwaysApplies(mayHaveNoDate) }
         is AnyOf -> rules.all { it.alwaysApplies(mayHaveNoDate) }
@@ -61,7 +61,7 @@ private fun ExpirationRule.validateMembers(
         Always,
         Never,
         is After,
-        is ArchivedIfRequired -> {}
+        is NotWhile -> {}
     }
 }
 

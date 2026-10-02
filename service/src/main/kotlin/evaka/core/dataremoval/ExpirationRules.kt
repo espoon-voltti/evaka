@@ -8,9 +8,9 @@ import evaka.core.dataremoval.ExpirationRule.After
 import evaka.core.dataremoval.ExpirationRule.AllOf
 import evaka.core.dataremoval.ExpirationRule.Always
 import evaka.core.dataremoval.ExpirationRule.AnyOf
-import evaka.core.dataremoval.ExpirationRule.ArchivedIfRequired
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
+import evaka.core.dataremoval.ExpirationRule.NotWhile
 import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
 import evaka.core.shared.db.Database
 import java.time.LocalDate
@@ -92,14 +92,12 @@ sealed interface ExpirationRule {
      */
     data class After(val period: Period, val dateSource: DateSource) : ExpirationRule
 
-    /**
-     * Rows that must be archived keep the node until they have been: the function returns the ids
-     * of the rows still waiting
-     */
-    class ArchivedIfRequired(
-        val idsAwaitingArchival: (tx: Database.Read, ids: List<UUID>) -> Set<UUID>
+    /** Not expired while the condition holds for any of the node's rows */
+    class NotWhile(
+        val description: String,
+        val idsWhereConditionHolds: (tx: Database.Read, ids: List<UUID>) -> Set<UUID>,
     ) : ExpirationRule {
-        override fun toString(): String = "archived if required rule"
+        override fun toString(): String = "not while $description"
     }
 
     /**
@@ -134,19 +132,19 @@ fun ExpirationRule.usedDateSources(): Set<DateSource> =
         is After -> setOf(dateSource)
         Always,
         Never,
-        is ArchivedIfRequired -> emptySet()
+        is NotWhile -> emptySet()
     }
 
 fun ExpirationRule.usedCustomDateSources(): Set<DateSource.Custom> =
     usedDateSources().filterIsInstance<DateSource.Custom>().toSet()
 
-fun ExpirationRule.usedArchivedIfRequiredRules(): Set<ArchivedIfRequired> =
+fun ExpirationRule.usedNotWhileRules(): Set<NotWhile> =
     when (this) {
-        is ArchivedIfRequired -> setOf(this)
-        is AllOf -> rules.flatMapTo(mutableSetOf()) { it.usedArchivedIfRequiredRules() }
-        is AnyOf -> rules.flatMapTo(mutableSetOf()) { it.usedArchivedIfRequiredRules() }
-        is Coalesce -> rules.flatMapTo(mutableSetOf()) { it.usedArchivedIfRequiredRules() }
-        is SafeForIntegrations -> rule.usedArchivedIfRequiredRules()
+        is NotWhile -> setOf(this)
+        is AllOf -> rules.flatMapTo(mutableSetOf()) { it.usedNotWhileRules() }
+        is AnyOf -> rules.flatMapTo(mutableSetOf()) { it.usedNotWhileRules() }
+        is Coalesce -> rules.flatMapTo(mutableSetOf()) { it.usedNotWhileRules() }
+        is SafeForIntegrations -> rule.usedNotWhileRules()
         Always,
         Never,
         is After -> emptySet()

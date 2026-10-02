@@ -134,12 +134,12 @@ class PersonGraphEvaluationTest {
     }
 
     @Test
-    fun `ArchivedIfRequired holds the node until every row that must be archived is`() {
-        val archived = archivedIfRequiredRule()
+    fun `NotWhile holds the node while the condition holds for any row`() {
+        val notWhile = notWhileRule()
         fun row(mayExpire: Boolean) =
-            row("child_id" to target, mayExpireByArchivedRule = mapOf(archived to mayExpire))
-        assert(!expired(archived, row(true), row(false)))
-        assert(expired(archived, row(true), row(true)))
+            row("child_id" to target, mayExpireByNotWhileRule = mapOf(notWhile to mayExpire))
+        assert(!expired(notWhile, row(true), row(false)))
+        assert(expired(notWhile, row(true), row(true)))
     }
 
     @Test

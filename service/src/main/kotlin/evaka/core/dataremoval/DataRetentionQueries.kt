@@ -238,27 +238,27 @@ WHERE ${predicate(where.forTable(table.name))}
                 valueForJobByColumn = jobColumns.associateWith { column<String?>(it) },
                 // Filled in below
                 dateByCustomSource = emptyMap(),
-                mayExpireByArchivedRule = emptyMap(),
+                mayExpireByNotWhileRule = emptyMap(),
             )
         }
 
     val customSources = table.expirationRule.usedCustomDateSources()
-    val archivedRules = table.expirationRule.usedArchivedIfRequiredRules()
-    if (rows.isEmpty() || (customSources.isEmpty() && archivedRules.isEmpty())) return rows
+    val notWhileRules = table.expirationRule.usedNotWhileRules()
+    if (rows.isEmpty() || (customSources.isEmpty() && notWhileRules.isEmpty())) return rows
 
-    // Tables that have customSources or archivedRules are guaranteed by validation to have a
+    // Tables that have customSources or notWhileRules are guaranteed by validation to have a
     // single identifying column
     val rowIds = rows.map { it.id.single() }
     val dateByRowIdBySource = customSources.associateWith { it.query(this, rowIds) }
-    val idsAwaitingArchivalByRule = archivedRules.associateWith {
-        it.idsAwaitingArchival(this, rowIds)
+    val idsWhereConditionHoldsByRule = notWhileRules.associateWith {
+        it.idsWhereConditionHolds(this, rowIds)
     }
 
     return rows.map { row ->
         val id = row.id.single()
         row.copy(
             dateByCustomSource = dateByRowIdBySource.mapValues { it.value[id] },
-            mayExpireByArchivedRule = idsAwaitingArchivalByRule.mapValues { id !in it.value },
+            mayExpireByNotWhileRule = idsWhereConditionHoldsByRule.mapValues { id !in it.value },
         )
     }
 }

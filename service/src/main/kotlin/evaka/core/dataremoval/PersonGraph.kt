@@ -8,9 +8,9 @@ import evaka.core.dataremoval.ExpirationRule.After
 import evaka.core.dataremoval.ExpirationRule.AllOf
 import evaka.core.dataremoval.ExpirationRule.Always
 import evaka.core.dataremoval.ExpirationRule.AnyOf
-import evaka.core.dataremoval.ExpirationRule.ArchivedIfRequired
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
+import evaka.core.dataremoval.ExpirationRule.NotWhile
 import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
 import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.shared.ChildId
@@ -49,8 +49,8 @@ data class OwnRow(
     val orphanIdByReferenceColumn: Map<String, UUID?>,
     val dateByColumn: Map<String, LocalDate?>,
     val dateByCustomSource: Map<DateSource.Custom, LocalDate?>,
-    /** Whether the row may expire, that is be deleted, under each archived rule of its table */
-    val mayExpireByArchivedRule: Map<ArchivedIfRequired, Boolean>,
+    /** Whether the row may expire, that is be deleted, under each not while rule of its table */
+    val mayExpireByNotWhileRule: Map<NotWhile, Boolean>,
     /** The values needed for async jobs planned on delete, by column */
     val valueForJobByColumn: Map<String, String?>,
 )
@@ -410,7 +410,7 @@ private fun PersonGraph.evaluateRule(
         is AnyOf -> rule.rules.any { requireResult(it, node, today) }
         is Coalesce -> rule.rules.firstNotNullOfOrNull { evaluateRule(it, node, today) }
         is After -> dateOf(rule.dateSource, node)?.let { it.plus(rule.period) < today }
-        is ArchivedIfRequired -> node.rows.all { it.mayExpireUnder(rule, node) }
+        is NotWhile -> node.rows.all { it.mayExpireUnder(rule, node) }
         is SafeForIntegrations ->
             evaluateRule(rule.rule, node, today)?.let { expired ->
                 expired && isSafeForIntegrations(rule.integrations, node, today)
@@ -462,7 +462,7 @@ private fun PersonGraph.dateOf(source: DateSource, node: OwnNode): LocalDate? =
 private fun List<LocalDate?>.latestOrNone(): LocalDate? =
     if (isEmpty() || any { it == null }) null else filterNotNull().max()
 
-/** A loaded row must carry every date and archived result the rules of its table read */
+/** A loaded row must carry every date and not while result the rules of its table read */
 private fun OwnRow.date(column: String, node: OwnNode): LocalDate? {
     check(column in dateByColumn) { "$node: the loader did not read column $column" }
     return dateByColumn[column]
@@ -473,5 +473,5 @@ private fun OwnRow.customDate(source: DateSource.Custom, node: OwnNode): LocalDa
     return dateByCustomSource[source]
 }
 
-private fun OwnRow.mayExpireUnder(rule: ArchivedIfRequired, node: OwnNode): Boolean =
-    checkNotNull(mayExpireByArchivedRule[rule]) { "$node: the loader did not evaluate $rule" }
+private fun OwnRow.mayExpireUnder(rule: NotWhile, node: OwnNode): Boolean =
+    checkNotNull(mayExpireByNotWhileRule[rule]) { "$node: the loader did not evaluate $rule" }

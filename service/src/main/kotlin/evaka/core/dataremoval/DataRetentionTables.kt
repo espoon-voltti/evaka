@@ -44,7 +44,6 @@ const val ALL_CASCADING_FOREIGN_KEYS_DECLARED = false
 
 private val oneMonth = Period.ofMonths(1)
 private val oneYear = Period.ofYears(1)
-private val fiveYears = Period.ofYears(5)
 private val tenYears = Period.ofYears(10)
 
 fun ageAtLeast(years: Int) =
@@ -140,9 +139,13 @@ fun buildDataRetentionSchema(
                     ),
                 auditIdType = DatabaseTable.Application::class,
                 expirationRule =
-                    Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(fiveYears, OwnColumn("created_at", TIMESTAMP_WITH_TIME_ZONE)),
+                    AllOf(
+                            Coalesce(
+                                tenYearsAfterLastPlacement,
+                                After(tenYears, OwnColumn("sentdate")),
+                                After(tenYears, OwnColumn("created_at", TIMESTAMP_WITH_TIME_ZONE)),
+                            ),
+                            notWhileApplicationPending,
                         )
                         .safeFor(VARDA),
             ),
@@ -193,7 +196,13 @@ fun buildDataRetentionSchema(
                     listOf(primaryReference("application_id", referencedTable = "application")),
                 bundledBy = "application",
                 auditIdType = DatabaseTable.Decision::class,
-                expirationRule = Always.safeFor(VARDA),
+                expirationRule =
+                    Coalesce(
+                            tenYearsAfterLastPlacement,
+                            After(tenYears, OwnColumn("sent_date")),
+                            After(tenYears, OwnColumn("created", TIMESTAMP_WITH_TIME_ZONE)),
+                        )
+                        .safeFor(VARDA),
                 asyncJobsPlannedOnDelete =
                     AsyncJobsOnDelete(listOf("document_key", "other_guardian_document_key")) { row
                         ->
@@ -256,7 +265,7 @@ fun buildDataRetentionSchema(
                                 OwnColumn("status_modified_at", TIMESTAMP_WITH_TIME_ZONE),
                             ),
                         ),
-                        childDocumentArchivedIfRequired,
+                        notWhileChildDocumentAwaitingArchival,
                     ),
                 orphansToDelete =
                     listOf(
@@ -368,14 +377,21 @@ fun buildDataRetentionSchema(
                 independentRows = true,
                 // Parentship expires once no finance decision it affects
                 // can be regenerated: its own period or the placements of the children it affects
-                // ended longer ago than the finance freeze.
+                // ended longer ago than the finance freeze, and none of them has a pending
+                // application.
                 auditIdType = DatabaseTable.Parentship::class,
                 expirationRule =
                     AllOf(
                         financeFreezeExists,
                         AnyOf(
                             After(FINANCE_FREEZE, OwnColumn("end_date")),
-                            Coalesce(After(FINANCE_FREEZE, fridgeChildRelevantPlacementEnd), Never),
+                            AllOf(
+                                Coalesce(
+                                    After(FINANCE_FREEZE, fridgeChildRelevantPlacementEnd),
+                                    Always,
+                                ),
+                                notWhileFridgeChildRelevantApplicationPending,
+                            ),
                         ),
                     ),
             ),
@@ -395,18 +411,20 @@ fun buildDataRetentionSchema(
                 independentRows = true,
                 // Partnership expires once no finance decision it affects
                 // can be regenerated: its own period or the placements of the children it affects
-                // ended longer ago than the finance freeze.
+                // ended longer ago than the finance freeze, and none of them has a pending
+                // application.
                 auditIdType = DatabaseTable.Partnership::class,
                 expirationRule =
                     AllOf(
                         financeFreezeExists,
                         AnyOf(
                             Coalesce(After(FINANCE_FREEZE, OwnColumn("end_date")), Never),
-                            Coalesce(
-                                After(FINANCE_FREEZE, fridgePartnerRelevantPlacementEnd),
-                                After(FINANCE_FREEZE, fridgePartnerRelevantParentshipEnd),
-                                After(oneYear, OwnColumn("modified_at", TIMESTAMP_WITH_TIME_ZONE)),
-                                After(oneYear, OwnColumn("created_at", TIMESTAMP_WITH_TIME_ZONE)),
+                            AllOf(
+                                Coalesce(
+                                    After(FINANCE_FREEZE, fridgePartnerRelevantPlacementEnd),
+                                    Always,
+                                ),
+                                notWhileFridgePartnerRelevantApplicationPending,
                             ),
                         ),
                     ),

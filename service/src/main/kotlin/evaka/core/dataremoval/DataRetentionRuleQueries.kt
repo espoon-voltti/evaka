@@ -4,8 +4,10 @@
 
 package evaka.core.dataremoval
 
-import evaka.core.dataremoval.ExpirationRule.ArchivedIfRequired
+import evaka.core.application.ApplicationStatus
+import evaka.core.dataremoval.ExpirationRule.NotWhile
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.QuerySql
 import java.time.LocalDate
 import java.util.UUID
 
@@ -36,19 +38,20 @@ WHERE cd.id = ANY(${bind(ids)})
     }
 
 /** A document whose template is archived externally waits until it has been archived */
-val childDocumentArchivedIfRequired = ArchivedIfRequired { tx, ids ->
-    tx.createQuery {
-            sql(
-                """
+val notWhileChildDocumentAwaitingArchival =
+    NotWhile("the document awaits archival") { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
 SELECT cd.id
 FROM child_document cd
 JOIN document_template dt ON dt.id = cd.template_id
 WHERE cd.id = ANY(${bind(ids)}) AND cd.status <> 'DRAFT' AND dt.archive_externally AND cd.archived_at IS NULL
 """
-            )
-        }
-        .toSet<UUID>()
-}
+                )
+            }
+            .toSet<UUID>()
+    }
 
 /**
  * A draft was never sent, so it expires a year after it was created. A sent statement expires ten
@@ -74,6 +77,31 @@ WHERE id = ANY(${bind(ids)})
             .toDatesById()
     }
 
+/** Expects the surrounding query to name the parentship `fc` */
+private val fridgeChildRelevantChildren = QuerySql {
+    sql(
+        """
+SELECT own.child_id
+FROM fridge_child own
+WHERE own.head_of_child = fc.head_of_child
+  AND daterange(own.start_date, own.end_date, '[]') && daterange(fc.start_date, fc.end_date, '[]')
+
+UNION
+
+SELECT theirs.child_id
+FROM fridge_partner fp
+JOIN fridge_partner partner ON partner.partnership_id = fp.partnership_id AND partner.indx <> fp.indx
+JOIN fridge_child theirs ON theirs.head_of_child = partner.person_id
+WHERE fp.person_id = fc.head_of_child
+  AND NOT isempty(
+    daterange(fc.start_date, fc.end_date, '[]')
+    * daterange(fp.start_date, fp.end_date, '[]')
+    * daterange(theirs.start_date, theirs.end_date, '[]')
+  )
+"""
+    )
+}
+
 /**
  * The end of the last placement among the children whose fee decisions the parentship can affect:
  * the children of the same head of child during the parentship, and the children of the head's
@@ -86,23 +114,7 @@ val fridgeChildRelevantPlacementEnd =
                     """
 SELECT fc.id, max(p.end_date) AS date
 FROM fridge_child fc
-JOIN LATERAL (
-    SELECT own.child_id
-    FROM fridge_child own
-    WHERE own.head_of_child = fc.head_of_child
-      AND daterange(own.start_date, own.end_date, '[]') && daterange(fc.start_date, fc.end_date, '[]')
-    UNION
-    SELECT theirs.child_id
-    FROM fridge_partner fp
-    JOIN fridge_partner partner ON partner.partnership_id = fp.partnership_id AND partner.indx <> fp.indx
-    JOIN fridge_child theirs ON theirs.head_of_child = partner.person_id
-    WHERE fp.person_id = fc.head_of_child
-      AND NOT isempty(
-        daterange(fc.start_date, fc.end_date, '[]')
-        * daterange(fp.start_date, fp.end_date, '[]')
-        * daterange(theirs.start_date, theirs.end_date, '[]')
-      )
-) relevant ON true
+JOIN LATERAL (${subquery(fridgeChildRelevantChildren)}) relevant ON true
 JOIN placement p ON p.child_id = relevant.child_id
 WHERE fc.id = ANY(${bind(ids)})
 GROUP BY fc.id
@@ -110,6 +122,22 @@ GROUP BY fc.id
                 )
             }
             .toDatesById()
+    }
+
+val notWhileFridgeChildRelevantApplicationPending =
+    NotWhile("a child the parentship affects has a pending application") { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT DISTINCT fc.id
+FROM fridge_child fc
+JOIN LATERAL (${subquery(fridgeChildRelevantChildren)}) relevant ON true
+JOIN application a ON a.child_id = relevant.child_id AND a.status = ANY(${bind(ApplicationStatus.pending)})
+WHERE fc.id = ANY(${bind(ids)})
+"""
+                )
+            }
+            .toSet<UUID>()
     }
 
 /** The end of the last placement among the children of either partner during the partnership */
@@ -132,23 +160,36 @@ GROUP BY fp.partnership_id
             .toDatesById()
     }
 
-/** The end of the last parentship of either partner during the partnership */
-val fridgePartnerRelevantParentshipEnd =
-    DateSource.Custom(mayReturnNoDate = true) { tx, ids ->
+val notWhileFridgePartnerRelevantApplicationPending =
+    NotWhile("a child the partnership affects has a pending application") { tx, ids ->
         tx.createQuery {
                 sql(
                     """
-SELECT fp.partnership_id AS id, max(fc.end_date) AS date
+SELECT DISTINCT fp.partnership_id
 FROM fridge_partner fp
 JOIN fridge_child fc
   ON fc.head_of_child = fp.person_id
   AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp.start_date, fp.end_date, '[]')
+JOIN application a ON a.child_id = fc.child_id AND a.status = ANY(${bind(ApplicationStatus.pending)})
 WHERE fp.partnership_id = ANY(${bind(ids)})
-GROUP BY fp.partnership_id
 """
                 )
             }
-            .toDatesById()
+            .toSet<UUID>()
+    }
+
+val notWhileApplicationPending =
+    NotWhile("the application is pending") { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT id
+FROM application
+WHERE id = ANY(${bind(ids)}) AND status = ANY(${bind(ApplicationStatus.pending)})
+"""
+                )
+            }
+            .toSet<UUID>()
     }
 
 /** The end of the last placement among the children on the fee decision */

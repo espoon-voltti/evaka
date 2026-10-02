@@ -5,12 +5,14 @@
 package evaka.core.dataremoval
 
 import evaka.core.PureJdbiTest
+import evaka.core.application.ApplicationStatus
 import evaka.core.application.ApplicationType
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child as ApplicationFormChild
 import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.childimages.insertChildImage
+import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.DocumentDeletionBasis
@@ -28,6 +30,7 @@ import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.placement.PlacementSource
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.ChildId
 import evaka.core.shared.ChildImageId
 import evaka.core.shared.DatabaseTable
 import evaka.core.shared.DocumentTemplateId
@@ -218,8 +221,8 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             true,
             document.rows
                 .single()
-                .mayExpireByArchivedRule
-                .getValue(childDocumentArchivedIfRequired),
+                .mayExpireByNotWhileRule
+                .getValue(notWhileChildDocumentAwaitingArchival),
         )
 
         val read =
@@ -542,7 +545,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     @Test
     fun `a child never placed expires through the fallbacks of the rules`() {
         val byStatus = db.transaction { tx ->
-            tx.insertApplicationTree()
+            tx.insertApplicationTree(ApplicationStatus.REJECTED, DecisionStatus.REJECTED)
             tx.insertChildImage(child.id)
             tx.insertDocument(tx.insert(devDocumentTemplate()), documentKey = "placement-end.pdf")
             val byStatus =
@@ -580,10 +583,10 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
 
         val result = execute(child.id)
 
-        // The application expires five years after it was made and the documents ten years after
-        // their last status change or the template's days after it. The family contact expires at
-        // once. The image waits a year after its update and the guardianship ten years after its
-        // creation.
+        // The application and its decision expire ten years after they were sent, and the documents
+        // ten years after their last status change or the template's days after it. The family
+        // contact expires at once. The image waits a year after its update and the guardianship ten
+        // years after its creation.
         assertEquals(
             mapOf(
                 "application_note" to 1,
@@ -746,8 +749,8 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `an open-ended partnership waits for the parentships of the partners' children while they have no placements, and expires once their placements ended long enough ago`() {
-        db.transaction { tx ->
+    fun `an open-ended partnership waits for a pending application of the partner's child, and for the child's placements until they ended long enough ago`() {
+        val applicationId = db.transaction { tx ->
             tx.insert(
                 DevFridgePartnership(
                     first = guardian.id,
@@ -759,34 +762,50 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             tx.insert(
                 DevFridgeChild(
                     childId = child.id,
-                    headOfChild = guardian.id,
+                    headOfChild = otherGuardian.id,
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
+            tx.insertApplication(
+                child.id,
+                ApplicationStatus.SENT,
+                sentDate = today.minusMonths(1),
+            )
         }
 
-        // The child was never placed, and the parentship lasts until the child turns 18
         assertEquals(null, execute(guardian.id).deletedRowCountsByTable["fridge_partner"])
 
         db.transaction { tx ->
+            tx.execute {
+                sql("UPDATE application SET status = 'ACTIVE' WHERE id = ${bind(applicationId)}")
+            }
             tx.insert(
                 DevPlacement(
                     childId = child.id,
                     unitId = daycare.id,
-                    startDate = LocalDate.of(2012, 8, 1),
-                    endDate = LocalDate.of(2018, 5, 31),
+                    startDate = LocalDate.of(2021, 8, 1),
+                    endDate = LocalDate.of(2025, 5, 31),
                 )
             )
         }
 
-        // The child's placement ended long enough ago for the finance freeze
+        assertEquals(null, execute(guardian.id).deletedRowCountsByTable["fridge_partner"])
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE placement SET start_date = '2012-08-01', end_date = '2018-05-31' WHERE child_id = ${bind(child.id)}"
+                )
+            }
+        }
+
         assertEquals(2, execute(guardian.id).deletedRowCountsByTable["fridge_partner"])
     }
 
     @Test
-    fun `a partnership without children expires a year after it was created`() {
-        val partnershipId = db.transaction { tx ->
+    fun `a partnership without children expires at once`() {
+        db.transaction { tx ->
             tx.insert(
                 DevFridgePartnership(
                     first = guardian.id,
@@ -797,16 +816,159 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        assertEquals(null, execute(guardian.id).deletedRowCountsByTable["fridge_partner"])
+        assertEquals(2, execute(guardian.id).deletedRowCountsByTable["fridge_partner"])
+    }
 
-        db.transaction {
-            it.execute {
+    @Test
+    fun `an ongoing parentship of a family with no placements and no pending applications expires at once`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevFridgeChild(
+                    childId = child.id,
+                    headOfChild = guardian.id,
+                    startDate = child.dateOfBirth,
+                    endDate = child.dateOfBirth.plusYears(18).minusDays(1),
+                )
+            )
+        }
+
+        assertEquals(1, execute(guardian.id).deletedRowCountsByTable["fridge_child"])
+    }
+
+    @Test
+    fun `a pending application holds the parentships and the partnership of a family whose other placements ended long ago, until it is cancelled`() {
+        val baby = DevPerson(dateOfBirth = LocalDate.of(2025, 3, 1))
+        val applicationId = db.transaction { tx ->
+            tx.insert(baby, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2012, 8, 1),
+                    endDate = LocalDate.of(2018, 5, 31),
+                )
+            )
+            tx.insert(
+                DevFridgeChild(
+                    childId = child.id,
+                    headOfChild = guardian.id,
+                    startDate = child.dateOfBirth,
+                    endDate = child.dateOfBirth.plusYears(18).minusDays(1),
+                )
+            )
+            tx.insert(
+                DevFridgeChild(
+                    childId = baby.id,
+                    headOfChild = guardian.id,
+                    startDate = today.minusMonths(1),
+                    endDate = baby.dateOfBirth.plusYears(18).minusDays(1),
+                )
+            )
+            tx.insert(
+                DevFridgePartnership(
+                    first = guardian.id,
+                    second = otherGuardian.id,
+                    startDate = today.minusMonths(1),
+                    createdAt = now,
+                )
+            )
+            tx.insertApplication(
+                baby.id,
+                ApplicationStatus.WAITING_PLACEMENT,
+                sentDate = today.minusMonths(2),
+            )
+        }
+
+        val held = execute(guardian.id).deletedRowCountsByTable
+        assertEquals(null, held["fridge_child"])
+        assertEquals(null, held["fridge_partner"])
+
+        db.transaction { tx ->
+            tx.execute {
+                sql("UPDATE application SET status = 'CANCELLED' WHERE id = ${bind(applicationId)}")
+            }
+        }
+
+        val deleted = execute(guardian.id).deletedRowCountsByTable
+        assertEquals(2, deleted["fridge_child"])
+        assertEquals(2, deleted["fridge_partner"])
+    }
+
+    @Test
+    fun `a pending application is kept with its decision however old, and expires once rejected`() {
+        val applicationId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2012, 8, 1),
+                    endDate = LocalDate.of(2014, 7, 31),
+                )
+            )
+            tx.insertApplicationTree(ApplicationStatus.WAITING_CONFIRMATION, DecisionStatus.PENDING)
+        }
+
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
+
+        db.transaction { tx ->
+            tx.execute {
                 sql(
-                    "UPDATE fridge_partner SET created_at = ${bind(longAgo)} WHERE partnership_id = ${bind(partnershipId)}"
+                    "UPDATE decision SET status = 'REJECTED' WHERE application_id = ${bind(applicationId)}"
+                )
+            }
+            tx.execute {
+                sql("UPDATE application SET status = 'REJECTED' WHERE id = ${bind(applicationId)}")
+            }
+        }
+
+        val deleted = execute(child.id).deletedRowCountsByTable
+        assertEquals(1, deleted["application"])
+        assertEquals(1, deleted["decision"])
+    }
+
+    @Test
+    fun `a resolved application of a child never placed expires ten years after it was sent`() {
+        val applicationId = db.transaction { tx ->
+            tx.insertApplication(
+                child.id,
+                ApplicationStatus.CANCELLED,
+                sentDate = today.minusYears(10),
+            )
+        }
+
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(applicationId)}"
                 )
             }
         }
-        assertEquals(2, execute(guardian.id).deletedRowCountsByTable["fridge_partner"])
+
+        assertEquals(1, execute(child.id).deletedRowCountsByTable["application"])
+    }
+
+    @Test
+    fun `an application waits for its decision, which expires ten years after it was sent`() {
+        val applicationId = db.transaction { tx ->
+            tx.insertApplicationTree(ApplicationStatus.REJECTED, DecisionStatus.REJECTED)
+        }
+        fun setDecisionSent(date: LocalDate) = db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE decision SET sent_date = ${bind(date)} WHERE application_id = ${bind(applicationId)}"
+                )
+            }
+        }
+
+        setDecisionSent(today.minusYears(10))
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
+
+        setDecisionSent(today.minusYears(10).minusDays(1))
+        val deleted = execute(child.id).deletedRowCountsByTable
+        assertEquals(1, deleted["application"])
+        assertEquals(1, deleted["decision"])
     }
 
     @Test
@@ -982,24 +1144,11 @@ FROM snapshot
         val young = DevPerson(dateOfBirth = today.minusYears(7))
         db.transaction { tx ->
             tx.insert(young, DevPersonType.CHILD)
-            val applicationId =
-                tx.insertTestApplication(
-                    type = ApplicationType.DAYCARE,
-                    guardianId = guardian.id,
-                    childId = young.id,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            child = ApplicationFormChild(dateOfBirth = null),
-                            guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(daycare.id)),
-                        ),
-                )
-            tx.execute {
-                sql(
-                    "UPDATE application SET created_at = ${bind(longAgo)} WHERE id = ${bind(applicationId)}"
-                )
-            }
+            tx.insertApplication(
+                young.id,
+                ApplicationStatus.CANCELLED,
+                sentDate = longAgo.toLocalDate(),
+            )
             tx.execute {
                 sql(
                     "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(young.id)}, NULL, now())"
@@ -1007,7 +1156,7 @@ FROM snapshot
             }
         }
         assertEquals(true, load(young.id).integrationFactsByChild.getValue(young.id).sentToVarda)
-        // The application expired five years after it was made, but Varda has read it
+        // The application expired ten years after it was sent, but Varda has read it
         assertEquals(emptyMap(), execute(young.id).deletedRowCountsByTable)
         assertEquals(noFreezes, freezes(young.id))
 
@@ -1179,10 +1328,16 @@ FROM snapshot
      * An application made by the guardian in 2012 with the other guardian on it, with a note, a
      * placement plan, a placement draft and a decision with PDFs for both guardians
      */
-    private fun Database.Transaction.insertApplicationTree(): ApplicationId {
+    private fun Database.Transaction.insertApplicationTree(
+        status: ApplicationStatus = ApplicationStatus.ACTIVE,
+        decisionStatus: DecisionStatus = DecisionStatus.ACCEPTED,
+    ): ApplicationId {
         val applicationId =
             insertTestApplication(
                 type = ApplicationType.DAYCARE,
+                sentDate = LocalDate.of(2012, 4, 1),
+                status = status,
+                confidential = false,
                 guardianId = guardian.id,
                 childId = child.id,
                 otherGuardians = setOf(otherGuardian.id),
@@ -1217,11 +1372,13 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
             insertTestDecision(
                 TestDecision(
                     createdBy = employee.evakaUserId,
+                    sentDate = LocalDate.of(2012, 6, 1),
                     unitId = daycare.id,
                     applicationId = applicationId,
                     type = DecisionType.DAYCARE,
                     startDate = LocalDate.of(2012, 8, 1),
                     endDate = LocalDate.of(2013, 7, 31),
+                    status = decisionStatus,
                     documentKey = "decision.pdf",
                 )
             )
@@ -1232,6 +1389,28 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
         }
         return applicationId
     }
+
+    private fun Database.Transaction.insertApplication(
+        childId: ChildId,
+        status: ApplicationStatus,
+        sentDate: LocalDate,
+    ): ApplicationId =
+        insertTestApplication(
+            type = ApplicationType.DAYCARE,
+            sentDate = sentDate,
+            status = status,
+            confidential = false,
+            guardianId = guardian.id,
+            childId = childId,
+            document =
+                DaycareFormV0(
+                    type = ApplicationType.DAYCARE,
+                    child = ApplicationFormChild(dateOfBirth = null),
+                    guardian = Adult(),
+                    apply = Apply(preferredUnits = listOf(daycare.id)),
+                ),
+            modifiedAt = now,
+        )
 
     /**
      * The child's two placements, the last of them from the application, and the family's data

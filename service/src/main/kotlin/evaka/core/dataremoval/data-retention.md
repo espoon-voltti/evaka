@@ -118,9 +118,13 @@ A source may have no date for a node. A child may have no placements at all, if 
 
 Null never reaches all of or any of: validation checks that such a rule is wrapped directly in a coalesce rule, whose fallback is guaranteed to return a verdict. Whether a source may have no date is judged from the database schema, except for a query source, which declares it. 
 
-### 2.3 Archived if required
+### 2.3 Not while
 
-Child documents, placement decisions, fee decisions and voucher value decisions can be archived to an external system. Under this rule a node is not expired while any of its rows is still to be archived.
+Under a not while rule a node is not expired while a condition holds for any of its rows. The condition is a query that takes the primary keys of the rows and returns those for which it holds.
+
+Child documents, placement decisions, fee decisions and voucher value decisions can be archived to an external system. A row that is still to be archived keeps its node.
+
+An application that is still open keeps its node too. The parentships and partnerships of a family are also kept while one of the children they affect has a pending application.
 
 ### 2.4 Safe for integrations
 
@@ -168,7 +172,7 @@ One run goes through four steps. All of them run in one transaction. Evaluation 
 - the ids of its orphans to delete,
 - the columns its async jobs need.
 
-It then runs the query sources and archived if required rules of the table for the rows. The edges of the graph are derived from the referenced ids.
+It then runs the query sources and not while rules of the table for the rows. The edges of the graph are derived from the referenced ids.
 
 Foreign rows are found next. The loader goes through every secondary reference whose target table has an own node. The rows that hold the id of one of those rows in the reference column, apart from the own rows, form a foreign node.
 
@@ -270,7 +274,7 @@ Therefore the `child` node is part of every graph, identified by the person id, 
 
 ### 6.2 Partnerships
 
-A partnership is stored as two `fridge_partner` rows, one for each partner, which reference each other through a composite self-reference. Each row references its own person, so it is an own row of that partner's run. The table has `independentRows`, and the declared primary key of a row is the partnership id rather than its own id, so deleting it deletes both rows of the partnership at once, in whichever partner's run first finds the rule met. The other partner's run then finds no row. The rule reads only what the two rows share, the partnership's own dates and the placements of the children of either partner, so both runs reach the same verdict. The self-reference is not declared, and the schema test lists it as the only composite foreign key.
+A partnership is stored as two `fridge_partner` rows, one for each partner, which reference each other through a composite self-reference. Each row references its own person, so it is an own row of that partner's run. The table has `independentRows`, and the declared primary key of a row is the partnership id rather than its own id, so deleting it deletes both rows of the partnership at once, in whichever partner's run first finds the rule met. The other partner's run then finds no row. The rule reads only what the two rows share, the partnership's own dates and the placements and pending applications of the children of either partner, so both runs reach the same verdict. The self-reference is not declared, and the schema test lists it as the only composite foreign key.
 
 ## 7. Validation
 
@@ -281,7 +285,7 @@ The schema definition is validated when it is constructed:
 - Every handled table other than `person` declares exactly one primary reference, and its role is the table's handler. `child` is the exception, since its primary reference leads to `person`. An external table has no handler and declares no primary reference.
 - `bundledBy` names an ancestor on the table's primary path.
 - Within a deletion bundle, either every table has `independentRows` or none has.
-- A date source that reads another table reads `person` or a table with the same handler, and a column is read the same way everywhere. A query source and an archived if required rule need a primary key of one column.
+- A date source that reads another table reads `person` or a table with the same handler, and a column is read the same way everywhere. A query source and a not while rule need a primary key of one column.
 - An orphan to delete points outside the schema definition from a column that is not a declared reference.
 
 Unit tests check the declared schema definition:
@@ -298,7 +302,7 @@ Integration tests then compare the schema definition against the database schema
 - The column of an optional reference and its `alsoNull` columns are nullable.
 - Every column a date source reads exists with the declared type. A column read as a finite date range is not null and has a check constraint that forbids an open end.
 - A rule whose source may have no date is wrapped directly in a coalesce rule whose fallback always returns a verdict. A column source may have no date when the column is nullable or a date range, and one that reads another table also when that table can be without rows while the table has some, judged by following the not-null primary references, `child` never counting as always present. A query source declares it.
-- Every query source and archived if required rule runs against the database, and the columns the async jobs read exist and are text.
+- Every query source and not while rule runs against the database, and the columns the async jobs read exist and are text.
 
 ## 8. Things to figure out
 
@@ -308,11 +312,11 @@ Integration tests then compare the schema definition against the database schema
 
 ### 8.2 Which rows are to be archived
 
-The archived if required rule needs to know which rows must be archived before deletion. For `child_document` the schema says it: the template has an `archive_externally` flag and a trigger refuses to delete an unarchived document. For `decision`, `fee_decision` and `voucher_value_decision` there is only the `archived_at` column, and the knowledge of which rows get archived lives in the municipality-specific archival job, together with the fact that archival is enabled per municipality. If the rule treated every row as "to be archived", the nodes would never expire in a municipality without an archive, and rows that are never archived would be blocked forever.
+The not while rule for archival needs to know which rows must be archived before deletion. For `child_document` the schema says it: the template has an `archive_externally` flag and a trigger refuses to delete an unarchived document. For `decision`, `fee_decision` and `voucher_value_decision` there is only the `archived_at` column, and the knowledge of which rows get archived lives in the municipality-specific archival job, together with the fact that archival is enabled per municipality. If the rule treated every row as "to be archived", the nodes would never expire in a municipality without an archive, and rows that are never archived would be blocked forever.
 
 ### 8.3 Finance freeze
 
-Finance decisions can be regenerated for any past period, so the family and income data they read, the parentships, partnerships and incomes, placements and service needs, etc. cannot be deleted while a regeneration could still need them. Once the *finance freeze* is implemented, finance decisions will not be generated further back in time than some fixed period. Until then, the rules of these tables are gated to never expire. Once it exists, a row expires only when no decision that can still be regenerated needs it. For most tables, the rules then require the row's period to be older than the freeze, in addition to possible other expiration rules. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze.
+Finance decisions can be regenerated for any past period, so the family and income data they read, the parentships, partnerships and incomes, placements and service needs, etc. cannot be deleted while a regeneration could still need them. Once the *finance freeze* is implemented, finance decisions will not be generated further back in time than some fixed period. Until then, the rules of these tables are gated to never expire. Once it exists, a row expires only when no decision that can still be regenerated needs it. For most tables, the rules then require the row's period to be older than the freeze, in addition to possible other expiration rules. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
 
 ### 8.4 Anonymising orphan evaka_user rows
 
