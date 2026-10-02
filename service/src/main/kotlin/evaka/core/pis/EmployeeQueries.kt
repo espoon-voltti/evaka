@@ -503,11 +503,6 @@ fun Database.Transaction.removePinCode(userId: EmployeeId) {
     createUpdate { sql("DELETE FROM employee_pin WHERE user_id = ${bind(userId)}") }.execute()
 }
 
-fun Database.Read.getPinCode(userId: EmployeeId): PinCode? = createQuery {
-    sql("SELECT pin FROM employee_pin WHERE user_id = ${bind(userId)}")
-}
-    .exactlyOneOrNull<PinCode>()
-
 fun Database.Read.employeePinIsCorrect(employeeId: EmployeeId, pin: String): Boolean = createQuery {
     sql(
         """

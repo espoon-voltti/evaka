@@ -1505,6 +1505,75 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
+    fun `arrival cannot be marked for an employee of another unit`() {
+        val employeeId = addEmployeeToDaycare2()
+
+        val exception =
+            assertThrows<Forbidden> {
+                markArrival(now, employeeId, "1122", group.id, now.toLocalTime(), null)
+            }
+        assertEquals("WRONG_PIN", exception.errorCode)
+        assertNull(db.read { it.getOngoingAttendance(employeeId) })
+    }
+
+    @Test
+    fun `departure cannot be marked for an employee of another unit`() {
+        val employeeId = addEmployeeToDaycare2()
+
+        val exception =
+            assertThrows<Forbidden> {
+                markDeparture(now, employeeId, "1122", group.id, now.toLocalTime(), null)
+            }
+        assertEquals("WRONG_PIN", exception.errorCode)
+    }
+
+    @Test
+    fun `attendances cannot be set for an employee of another unit`() {
+        val employeeId = addEmployeeToDaycare2()
+        val body =
+            MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                employeeId = employeeId,
+                pinCode = "1122",
+                date = now.toLocalDate(),
+                rows =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = null,
+                            groupId = group.id,
+                            arrived = now,
+                            departed = null,
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true,
+                        )
+                    ),
+            )
+
+        val exception =
+            assertThrows<Forbidden> {
+                mobileRealtimeStaffAttendanceController.setAttendances(
+                    dbInstance(),
+                    mobileUser,
+                    MockEvakaClock(now),
+                    daycare.id,
+                    body,
+                )
+            }
+        assertEquals("WRONG_PIN", exception.errorCode)
+        assertNull(db.read { it.getOngoingAttendance(employeeId) })
+    }
+
+    private fun addEmployeeToDaycare2(): EmployeeId = db.transaction { tx ->
+        val employeeId =
+            tx.insert(
+                DevEmployee(),
+                unitRoles = mapOf(daycare2.id to UserRole.STAFF),
+                groupAcl = mapOf(daycare2.id to listOf(group2.id)),
+            )
+        tx.insert(DevEmployeePin(userId = employeeId, pin = "1122"))
+        employeeId
+    }
+
+    @Test
     fun `set attendances with attendance outside given date throws bad request`() {
         val employeeId = addEmployee()
         val body =

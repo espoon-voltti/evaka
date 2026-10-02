@@ -10,8 +10,10 @@ import evaka.core.FullApplicationTest
 import evaka.core.attendance.getOccupancyCoefficientsByUnit
 import evaka.core.pairing.listPersonalDevices
 import evaka.core.pis.TemporaryEmployee
+import evaka.core.pis.TemporaryEmployeeResponse
 import evaka.core.pis.controllers.PinCode
 import evaka.core.pis.deactivateInactiveEmployees
+import evaka.core.pis.employeePinIsCorrect
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.GroupId
@@ -462,14 +464,19 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             .extracting({ it.id }, { it.firstName }, { it.lastName }, { it.temporaryInUnitId })
             .containsExactly(Tuple(temporaryEmployeeId, "Etu1", "Suku1", daycare.id))
         assertThat(getTemporaryEmployees(daycare2.id)).isEmpty()
-        assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId))
-            .isEqualTo(createdTemporary)
+        val createdResponse =
+            TemporaryEmployeeResponse(
+                firstName = "Etu1",
+                lastName = "Suku1",
+                groupIds = emptySet(),
+                hasStaffOccupancyEffect = false,
+            )
+        assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId)).isEqualTo(createdResponse)
         assertThrows<NotFound> { getTemporaryEmployee(daycare2.id, temporaryEmployeeId) }
         dbInstance().connect { dbc ->
             dbc.transaction { tx -> tx.deactivateInactiveEmployees(now.plusMonths(1)) }
         }
-        assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId))
-            .isEqualTo(createdTemporary)
+        assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId)).isEqualTo(createdResponse)
 
         // update
         val updatedTemporary =
@@ -501,13 +508,19 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertThat(getTemporaryEmployees(daycare.id))
             .extracting({ it.id }, { it.firstName }, { it.lastName }, { it.temporaryInUnitId })
             .containsExactly(Tuple(temporaryEmployeeId, "Etu2", "Suku2", daycare.id))
-        assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId))
-            .isEqualTo(updatedTemporary)
+        val updatedResponse =
+            TemporaryEmployeeResponse(
+                firstName = "Etu2",
+                lastName = "Suku2",
+                groupIds = setOf(daycareGroup.id),
+                hasStaffOccupancyEffect = true,
+            )
+        assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId)).isEqualTo(updatedResponse)
+        assertTrue(db.read { it.employeePinIsCorrect(temporaryEmployeeId, "2537") })
         dbInstance().connect { dbc ->
             dbc.transaction { tx -> tx.deactivateInactiveEmployees(now.plusMonths(1)) }
         }
-        assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId))
-            .isEqualTo(updatedTemporary)
+        assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId)).isEqualTo(updatedResponse)
 
         // delete acl
         assertThrows<NotFound> {
@@ -530,7 +543,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             .extracting({ it.id }, { it.firstName }, { it.lastName }, { it.temporaryInUnitId })
             .containsExactly(Tuple(temporaryEmployeeId, "Etu2", "Suku2", daycare.id))
         assertThat(getTemporaryEmployee(daycare.id, temporaryEmployeeId))
-            .isEqualTo(updatedTemporary.copy(groupIds = emptySet()))
+            .isEqualTo(updatedResponse.copy(groupIds = emptySet()))
 
         // delete
         assertThrows<NotFound> {

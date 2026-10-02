@@ -362,12 +362,19 @@ export interface EmployeePinLoginResponse {
   employee?: Pick<EmployeeUser, 'firstName' | 'lastName'>
 }
 
+interface EmployeePinLoginRequest {
+  deviceId: UUID
+  employeeId: UUID
+  pin: string
+}
+
 export async function employeePinLogin(
-  req: express.Request
+  req: express.Request,
+  request: EmployeePinLoginRequest
 ): Promise<EmployeePinLoginResponse> {
   const { data } = await client.post<EmployeePinLoginResponse>(
     `/system/mobile-pin-login`,
-    req.body,
+    request,
     { headers: createServiceRequestHeaders(req, systemUserHeader) }
   )
   return data

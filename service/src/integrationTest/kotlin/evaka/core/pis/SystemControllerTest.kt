@@ -15,7 +15,9 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevEmployeePin
 import evaka.core.shared.dev.DevMobileDevice
+import evaka.core.shared.dev.DevPersonalMobileDevice
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.MockEvakaClock
 import java.util.UUID
@@ -302,6 +304,97 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         val result = systemController.mobileIdentity(dbInstance(), user, token)
         assertEquals(MobileDeviceIdentity(id = deviceId, longTermToken = token), result)
     }
+
+    @Test
+    fun `pin login succeeds for an employee of the device's unit`() {
+        val employee = DevEmployee()
+        val device = DevMobileDevice(unitId = daycare.id)
+        db.transaction { tx ->
+            tx.insert(employee, unitRoles = mapOf(daycare.id to UserRole.STAFF))
+            tx.insert(DevEmployeePin(userId = employee.id, pin = "2580"))
+            tx.insert(device)
+        }
+
+        assertEquals(
+            SystemController.PinLoginStatus.SUCCESS,
+            pinLogin(device.id, employee.id, "2580").status,
+        )
+    }
+
+    @Test
+    fun `pin login is rejected for an employee of another unit even with the correct pin`() {
+        val otherDaycare = DevDaycare(areaId = area.id, name = "Other daycare")
+        val employee = DevEmployee()
+        val device = DevMobileDevice(unitId = daycare.id)
+        db.transaction { tx ->
+            tx.insert(otherDaycare)
+            tx.insert(employee, unitRoles = mapOf(otherDaycare.id to UserRole.STAFF))
+            tx.insert(DevEmployeePin(userId = employee.id, pin = "2580"))
+            tx.insert(device)
+        }
+
+        assertEquals(
+            SystemController.PinLoginStatus.WRONG_PIN,
+            pinLogin(device.id, employee.id, "2580").status,
+        )
+    }
+
+    @Test
+    fun `failed pin logins from another unit's device do not lock the pin`() {
+        val otherDaycare = DevDaycare(areaId = area.id, name = "Other daycare")
+        val employee = DevEmployee()
+        val ownDevice = DevMobileDevice(unitId = daycare.id)
+        val otherDevice = DevMobileDevice(unitId = otherDaycare.id)
+        db.transaction { tx ->
+            tx.insert(otherDaycare)
+            tx.insert(employee, unitRoles = mapOf(daycare.id to UserRole.STAFF))
+            tx.insert(DevEmployeePin(userId = employee.id, pin = "2580"))
+            tx.insert(ownDevice)
+            tx.insert(otherDevice)
+        }
+
+        repeat(10) { pinLogin(otherDevice.id, employee.id, "9999") }
+
+        assertEquals(
+            SystemController.PinLoginStatus.SUCCESS,
+            pinLogin(ownDevice.id, employee.id, "2580").status,
+        )
+    }
+
+    @Test
+    fun `pin login on a personal device is only allowed for the device owner`() {
+        val owner = DevEmployee()
+        val colleague = DevEmployee()
+        val device = DevPersonalMobileDevice(employeeId = owner.id)
+        db.transaction { tx ->
+            tx.insert(owner, unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(colleague, unitRoles = mapOf(daycare.id to UserRole.STAFF))
+            tx.insert(DevEmployeePin(userId = owner.id, pin = "2580"))
+            tx.insert(DevEmployeePin(userId = colleague.id, pin = "1470"))
+            tx.insert(device)
+        }
+
+        assertEquals(
+            SystemController.PinLoginStatus.WRONG_PIN,
+            pinLogin(device.id, colleague.id, "1470").status,
+        )
+        assertEquals(
+            SystemController.PinLoginStatus.SUCCESS,
+            pinLogin(device.id, owner.id, "2580").status,
+        )
+    }
+
+    private fun pinLogin(deviceId: MobileDeviceId, employeeId: EmployeeId, pin: String) =
+        systemController.pinLogin(
+            dbInstance(),
+            user,
+            clock,
+            SystemController.PinLoginRequest(
+                pin = pin,
+                employeeId = employeeId,
+                deviceId = deviceId,
+            ),
+        )
 
     private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null): MobileDeviceId {
         val id = MobileDeviceId(UUID.randomUUID())

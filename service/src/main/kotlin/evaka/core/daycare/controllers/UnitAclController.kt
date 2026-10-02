@@ -19,10 +19,10 @@ import evaka.core.pairing.deletePersonalDevices
 import evaka.core.pis.Employee
 import evaka.core.pis.NewEmployee
 import evaka.core.pis.TemporaryEmployee
+import evaka.core.pis.TemporaryEmployeeResponse
 import evaka.core.pis.createEmployee
 import evaka.core.pis.getEmployee
 import evaka.core.pis.getEmployeeRoles
-import evaka.core.pis.getPinCode
 import evaka.core.pis.getTemporaryEmployees
 import evaka.core.pis.updateEmployee
 import evaka.core.pis.updateEmployeeActive
@@ -543,7 +543,7 @@ class UnitAclController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-    ): TemporaryEmployee {
+    ): TemporaryEmployeeResponse {
         val employee = db.connect { dbc ->
             dbc.transaction { tx ->
                 val employee = getTemporaryEmployee(tx, unitId, employeeId)
@@ -568,13 +568,11 @@ class UnitAclController(
                         employeeId = employeeId,
                         unitId = unitId,
                     ) ?: BigDecimal.ZERO
-                val pinCode = tx.getPinCode(employee.id)
-                TemporaryEmployee(
+                TemporaryEmployeeResponse(
                     firstName = employee.firstName,
                     lastName = employee.lastName,
                     groupIds = groupIds,
                     hasStaffOccupancyEffect = occupancyCoefficient > BigDecimal.ZERO,
-                    pinCode = pinCode,
                 )
             }
         }

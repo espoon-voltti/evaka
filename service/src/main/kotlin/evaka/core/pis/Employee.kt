@@ -33,3 +33,10 @@ data class TemporaryEmployee(
     val hasStaffOccupancyEffect: Boolean,
     val pinCode: PinCode?,
 )
+
+data class TemporaryEmployeeResponse(
+    val firstName: String,
+    val lastName: String,
+    val groupIds: Set<GroupId>,
+    val hasStaffOccupancyEffect: Boolean,
+)

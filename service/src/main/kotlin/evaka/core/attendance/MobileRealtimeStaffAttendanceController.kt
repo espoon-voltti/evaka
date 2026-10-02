@@ -157,7 +157,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val (updates, changes) =
             try {
                 db.connect { dbc ->
-                    dbc.transaction { tx ->
+                    val unitId = dbc.transaction { tx ->
                         ac.requirePermissionFor(
                             tx,
                             user,
@@ -165,10 +165,10 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             Action.Group.MARK_ARRIVAL,
                             body.groupId,
                         )
+                        tx.getDaycareIdByGroup(body.groupId)
                     }
-                    ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
+                    ac.verifyPinCodeAndThrow(dbc, unitId, body.employeeId, body.pinCode, clock)
 
-                    // todo: check that employee has access to a unit related to the group?
                     dbc.transaction { tx ->
                         val plannedAttendances =
                             tx.getPlannedStaffAttendances(body.employeeId, clock.now())
@@ -239,7 +239,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     ) {
         val (updates, changes) =
             db.connect { dbc ->
-                dbc.transaction { tx ->
+                val unitId = dbc.transaction { tx ->
                     ac.requirePermissionFor(
                         tx,
                         user,
@@ -247,8 +247,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         Action.Group.MARK_DEPARTURE,
                         body.groupId,
                     )
+                    tx.getDaycareIdByGroup(body.groupId)
                 }
-                ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
+                ac.verifyPinCodeAndThrow(dbc, unitId, body.employeeId, body.pinCode, clock)
 
                 dbc.transaction { tx ->
                     val plannedAttendances =
@@ -319,7 +320,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         unitId,
                     )
                 }
-                ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
+                ac.verifyPinCodeAndThrow(dbc, unitId, body.employeeId, body.pinCode, clock)
 
                 if (body.rows.any { it.arrived.toLocalDate() != body.date })
                     throw BadRequest("Attendances outside given date")

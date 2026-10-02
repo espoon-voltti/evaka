@@ -109,7 +109,12 @@ export const pinLoginRequestHandler = (
     if (user?.userType !== 'MOBILE') return
 
     const employeeId = assertStringProp(req.body, 'employeeId')
-    const response = await employeePinLogin(req)
+    const pin = assertStringProp(req.body, 'pin')
+    const response = await employeePinLogin(req, {
+      deviceId: user.id,
+      employeeId,
+      pin
+    })
 
     if (response.status === 'SUCCESS') {
       const token = uuid()
