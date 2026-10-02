@@ -59,10 +59,9 @@ fun generateAndInsertVoucherValueDecisionsV2(
     tx: Database.Transaction,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
-    financeMinDate: LocalDate,
+    minDate: LocalDate,
     valueDecisionCapacityFactorEnabled: Boolean,
     childId: ChildId,
-    retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
 ): GeneratedVoucherValueDecisions {
     val existingDecisions = tx.findValueDecisionsForChild(childId = childId, lockForUpdate = true)
 
@@ -82,9 +81,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
             activeDecisions = activeDecisions,
             existingDrafts = existingDrafts,
             ignoredDrafts = ignoredDrafts,
-            minDate =
-                if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
-                else financeMinDate,
+            minDate = minDate,
         )
 
     tx.deleteValueDecisions(existingDrafts.map { it.id })

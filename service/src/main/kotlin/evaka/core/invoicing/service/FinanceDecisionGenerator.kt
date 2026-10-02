@@ -6,6 +6,7 @@ package evaka.core.invoicing.service
 
 import evaka.core.AuditContext
 import evaka.core.EvakaEnv
+import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.invoicing.service.generator.generateAndInsertFeeDecisionsV2
 import evaka.core.invoicing.service.generator.generateAndInsertVoucherValueDecisionsV2
 import evaka.core.pis.getParentships
@@ -75,6 +76,7 @@ FROM ids
 
     fun createRetroactiveFeeDecisions(
         tx: Database.Transaction,
+        today: LocalDate,
         headOfFamily: PersonId,
         from: LocalDate,
         audit: AuditContext,
@@ -84,9 +86,8 @@ FROM ids
                 tx = tx,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
-                financeMinDate = feeDecisionMinDate,
+                minDate = retroactiveMinDateFor(today, from),
                 headOfFamilyId = headOfFamily,
-                retroactiveOverride = from,
             )
         audit
             .add(generated.written.map { it.id })
@@ -97,6 +98,7 @@ FROM ids
 
     fun createRetroactiveValueDecisions(
         tx: Database.Transaction,
+        today: LocalDate,
         headOfFamily: PersonId,
         from: LocalDate,
         audit: AuditContext,
@@ -108,11 +110,10 @@ FROM ids
                         tx = tx,
                         incomeTypesProvider = incomeTypesProvider,
                         coefficientMultiplierProvider = coefficientMultiplierProvider,
-                        financeMinDate = feeDecisionMinDate,
+                        minDate = retroactiveMinDateFor(today, from),
                         valueDecisionCapacityFactorEnabled =
                             featureConfig.valueDecisionCapacityFactorEnabled,
                         childId = childId,
-                        retroactiveOverride = from,
                     )
                 audit.add(generated.written.map { it.id })
                 generated.written.forEach { audit.addDecision(it) }
@@ -125,6 +126,7 @@ FROM ids
 
     fun generateNewDecisionsForAdult(
         tx: Database.Transaction,
+        today: LocalDate,
         personId: PersonId,
         skipPropagation: Boolean = false,
     ) {
@@ -133,13 +135,14 @@ FROM ids
             else getAllPossiblyAffectedAdultsByAdult(tx, personId)
 
         val children = adults.flatMap { tx.getChildrenOfHeadOfFamily(it) }.toSet()
+        val minDate = minDateFor(today)
 
         adults.forEach { adult ->
             generateAndInsertFeeDecisionsV2(
                 tx = tx,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
-                financeMinDate = feeDecisionMinDate,
+                minDate = minDate,
                 headOfFamilyId = adult,
             )
         }
@@ -149,7 +152,7 @@ FROM ids
                 tx = tx,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
-                financeMinDate = feeDecisionMinDate,
+                minDate = minDate,
                 valueDecisionCapacityFactorEnabled =
                     featureConfig.valueDecisionCapacityFactorEnabled,
                 childId = childId,
@@ -157,13 +160,14 @@ FROM ids
         }
     }
 
-    fun generateNewDecisionsForChild(tx: Database.Transaction, childId: ChildId) {
+    fun generateNewDecisionsForChild(tx: Database.Transaction, today: LocalDate, childId: ChildId) {
+        val minDate = minDateFor(today)
         getAllPossiblyAffectedAdultsByChild(tx, childId).forEach { adultId ->
             generateAndInsertFeeDecisionsV2(
                 tx = tx,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
-                financeMinDate = feeDecisionMinDate,
+                minDate = minDate,
                 headOfFamilyId = adultId,
             )
         }
@@ -172,11 +176,17 @@ FROM ids
             tx = tx,
             incomeTypesProvider = incomeTypesProvider,
             coefficientMultiplierProvider = coefficientMultiplierProvider,
-            financeMinDate = feeDecisionMinDate,
+            minDate = minDate,
             valueDecisionCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled,
             childId = childId,
         )
     }
+
+    private fun minDateFor(today: LocalDate) = maxOf(feeDecisionMinDate, financeFreezeDate(today))
+
+    /** May go further back than the configured min date, but not past the freeze */
+    private fun retroactiveMinDateFor(today: LocalDate, from: LocalDate) =
+        maxOf(minOf(from, feeDecisionMinDate), financeFreezeDate(today))
 }
 
 internal fun getAllPossiblyAffectedAdultsByAdult(

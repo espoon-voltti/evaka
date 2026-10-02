@@ -396,6 +396,51 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     }
 
     @Test
+    fun `ignored draft stays ignored when the finance freeze cuts its start`() {
+        extendPlacementTo(day(25))
+        generate()
+        assertDrafts(listOf(dateRange(21, 25) to 1))
+        ignoreDrafts()
+
+        generate(today = day(23).plusYears(5))
+        assertDrafts(emptyList())
+    }
+
+    @Test
+    fun `draft keeps its id when the finance freeze cuts its start`() {
+        extendPlacementTo(day(25))
+        generate()
+        val draft = getAllFeeDecisions().single { it.status == FeeDecisionStatus.DRAFT }
+
+        generate(today = day(23).plusYears(5))
+        assertDrafts(listOf(dateRange(23, 25) to 1))
+        assertEquals(
+            draft.id,
+            getAllFeeDecisions().single { it.status == FeeDecisionStatus.DRAFT }.id,
+        )
+    }
+
+    @Test
+    fun `ignored draft resurfaces when its start moves later for another reason`() {
+        extendPlacementTo(day(25))
+        generate()
+        ignoreDrafts()
+
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child2.id,
+                    headOfChildId = adult.id,
+                    startDate = day(21),
+                    endDate = day(22),
+                )
+            )
+        }
+        generate()
+        assertDrafts(listOf(dateRange(21, 22) to 1, dateRange(23, 25) to 1))
+    }
+
+    @Test
     fun `Incomplete income is equal to non-existing and does not cause new draft`() {
         db.transaction { tx ->
             tx.insert(
@@ -460,8 +505,20 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             .sortedBy { it.validFrom }
     }
 
-    private fun generate() {
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult.id) }
+    private fun generate(today: LocalDate = now.today()) {
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, today, adult.id) }
+    }
+
+    private fun extendPlacementTo(end: LocalDate) {
+        db.transaction { tx ->
+            tx.updatePlacementStartAndEndDate(
+                placement.id,
+                originalRange.start,
+                end,
+                now.now(),
+                employee.evakaUserId,
+            )
+        }
     }
 
     private fun sendAllFeeDecisions() {

@@ -39,6 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired
 class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
 
+    /** Early enough for the finance freeze to be before all the fixtures */
+    private val today = LocalDate.of(2021, 1, 1)
+
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
     private val voucherDaycare =
@@ -104,7 +107,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
         insertPlacement(child2.id, period, DAYCARE, voucherDaycare.id)
         insertPlacement(child3.id, period, DAYCARE, daycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, today, adult.id) }
 
         val feeDecisions = getAllFeeDecisions()
         assertEquals(1, feeDecisions.size)
