@@ -116,7 +116,7 @@ const Container = styled.div`
   bottom: calc(
     ${baseBottomValue}px + ${defaultMargins.L} + ${mobileBottomNavHeight}px
   );
-  right: ${defaultMargins.s};
+  right: calc(${defaultMargins.s} + env(safe-area-inset-right));
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -166,7 +166,7 @@ const StyledAction = styled.button.attrs({ type: 'button' })`
   align-items: center;
   cursor: pointer;
 
-  &:focus {
+  &:focus-visible {
     outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     outline-offset: 2px;
   }

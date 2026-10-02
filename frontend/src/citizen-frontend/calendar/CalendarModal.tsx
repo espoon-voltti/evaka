@@ -22,7 +22,7 @@ export const CalendarModalButtons = styled.div`
   padding: ${defaultMargins.L};
 
   @media (max-width: ${tabletMin}) {
-    padding: ${defaultMargins.s};
+    padding: ${defaultMargins.L} ${defaultMargins.s};
     display: grid;
     grid-template-columns: 1fr 1fr;
     background-color: ${(p) => p.theme.colors.main.m4};

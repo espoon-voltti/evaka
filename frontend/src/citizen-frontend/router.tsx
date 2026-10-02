@@ -39,6 +39,7 @@ interface CitizenRoute {
   component: React.FunctionComponent
   auth?: 'STRONG' | 'WEAK' | null // STRONG auth is required by default
   disabled?: boolean
+  scrollToTop?: boolean // the page scrolls to the top on each path change by default
 }
 
 const routes: CitizenRoute[] = [
@@ -71,7 +72,12 @@ const routes: CitizenRoute[] = [
     path: '/decisions/pending',
     component: DecisionResponseList
   },
-  { path: '/messages/:threadId?', component: MessagesPage, auth: 'WEAK' },
+  {
+    path: '/messages/:threadId?',
+    component: MessagesPage,
+    auth: 'WEAK',
+    scrollToTop: false
+  },
   { path: '/calendar', component: CalendarPage, auth: 'WEAK' },
   {
     path: '/children/:childId/service-application',
@@ -89,13 +95,16 @@ function renderRoute({
   path,
   component: Component,
   auth,
-  disabled
+  disabled,
+  scrollToTop = true
 }: CitizenRoute) {
   if (disabled) return null
-  const inner = (
+  const inner = scrollToTop ? (
     <ScrollToTop>
       <Component />
     </ScrollToTop>
+  ) : (
+    <Component />
   )
   const outer =
     auth !== null ? <RequireAuth strength={auth}>{inner}</RequireAuth> : inner

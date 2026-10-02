@@ -18,19 +18,13 @@ import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import { desktopMin, zoomedMobileMax } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
-import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
-import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 
 import { useChildrenStartingNotification } from './ChildStartingNotificationHook'
 import { UnwrapResult } from './async-rendering'
-import {
-  AuthContext,
-  AuthContextProvider,
-  useSessionKeepalive,
-  useUser
-} from './auth/state'
+import SessionExpiry from './auth/SessionExpiry'
+import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import { Localization, useTranslation } from './localization'
 import { MessageDraftsProvider } from './messages/drafts'
 import Header from './navigation/Header'
@@ -40,7 +34,7 @@ import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
 import { PushSuggestion } from './pwa/PushSuggestion'
-import { useStandaloneAttribute } from './pwa/installed'
+import { useStandaloneLayout } from './pwa/installed'
 import { useNotificationClickRouting } from './pwa/notificationRouting'
 import { queryClient, QueryClientProvider } from './query'
 
@@ -112,9 +106,11 @@ export function App({ children }: { children: React.ReactNode }) {
 // top and the mobile navi is fixed to the bottom.
 //
 // In PWA (standalone), AppShell is a flex column that fills the screen, and
-// ScrollArea is the only scrollable element. This avoids anchoring topbar or
-// navi with `position: fixed` or `position sticky`, because those cause subtle
-// layout bugs in iOS PWA.
+// ScrollArea is the only scrollable element. The navi is not anchored with
+// `position: fixed` or `position: sticky`, because those cause subtle layout
+// bugs in iOS PWA. The header must still be `position: sticky`, because iOS 27
+// blurs the top of the screen unless a fixed or sticky element is there. It
+// never actually sticks, because AppShell does not scroll.
 //
 const AppShell = styled.div`
   display: flex;
@@ -172,15 +168,8 @@ const Content = React.memo(function Content({
   const { apiVersion } = useContext(AuthContext)
   const { modalOpen } = useContext(OverlayContext)
 
-  const { user } = useContext(AuthContext)
-  const sessionKeepalive = useSessionKeepalive()
-  const { sessionExpirationDetected, dismissSessionExpiredDetection } =
-    useKeepSessionAlive(
-      sessionKeepalive,
-      user.map((usr) => !!usr).getOrElse(false)
-    )
   useChildrenStartingNotification()
-  useStandaloneAttribute()
+  useStandaloneLayout()
   const scrollAreaRef = useRegisterScrollContainer()
   useNotificationClickRouting()
   return (
@@ -196,9 +185,7 @@ const Content = React.memo(function Content({
         </FullPageContainer>
       </ScrollArea>
       <MobileNav />
-      {sessionExpirationDetected && (
-        <SessionExpiredModal onClose={() => dismissSessionExpiredDetection()} />
-      )}
+      <SessionExpiry />
       {!!featureFlags.environmentLabel && (
         <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
       )}

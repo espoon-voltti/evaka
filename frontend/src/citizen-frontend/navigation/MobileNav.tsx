@@ -148,11 +148,12 @@ const BottomBar = styled.nav`
   justify-content: space-between;
   align-items: center;
   height: ${mobileBottomNavHeight}px;
-  width: 100%;
-  padding: ${defaultMargins.xs};
+  padding: ${defaultMargins.xs}
+    max(calc(env(safe-area-inset-bottom) / 2), ${defaultMargins.xs});
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: env(safe-area-inset-left);
+  right: env(safe-area-inset-right);
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
 
   html[data-standalone] & {
@@ -453,8 +454,8 @@ const MenuContainer = styled.div`
   overflow-y: scroll;
   top: ${headerHeightMobile}px;
   bottom: ${mobileBottomNavHeight}px;
-  left: 0;
-  right: 0;
+  left: env(safe-area-inset-left);
+  right: env(safe-area-inset-right);
   background: ${colors.grayscale.g0};
   box-sizing: border-box;
   padding: ${defaultMargins.s};

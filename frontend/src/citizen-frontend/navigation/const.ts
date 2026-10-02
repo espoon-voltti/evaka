@@ -14,4 +14,4 @@ export const getStrongLoginUri = (
 
 export const headerHeightDesktop = 80
 export const headerHeightMobile = 60
-export const mobileBottomNavHeight = 60
+export const mobileBottomNavHeight = 66

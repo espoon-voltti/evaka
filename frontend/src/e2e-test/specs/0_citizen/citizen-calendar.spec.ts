@@ -173,7 +173,19 @@ for (const env of ['desktop', 'mobile'] as const) {
       await dayView.close()
     })
 
-    test('After close, focus is set to the correct day and style', async ({
+    test('After a keyboard close, focus is set to the correct day and style', async ({
+      evaka
+    }) => {
+      const { calendarPage } = await setupPageObjects(evaka, env)
+      const todayId = `calendar-day-${today.formatIso()}`
+      const dayView = await calendarPage.openDayView(today)
+
+      await dayView.closeWithKeyboard()
+
+      await calendarPage.assertDayIsFocusedAndStyled(todayId)
+    })
+
+    test('After a mouse close, focus is set to the correct day without a focus ring', async ({
       evaka
     }) => {
       const { calendarPage } = await setupPageObjects(evaka, env)
@@ -182,7 +194,7 @@ for (const env of ['desktop', 'mobile'] as const) {
 
       await dayView.close()
 
-      await calendarPage.assertDayIsFocusedAndStyled(todayId)
+      await calendarPage.assertDayIsFocusedWithoutOutline(todayId)
     })
   })
 }

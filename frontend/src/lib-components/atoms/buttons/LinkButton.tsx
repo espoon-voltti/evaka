@@ -43,7 +43,7 @@ const baseStyles = css`
     padding: 0 ${defaultMargins.s};
   }
 
-  &:focus {
+  &:focus-visible {
     box-shadow:
       0 0 0 2px ${(p) => p.theme.colors.grayscale.g0},
       0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};

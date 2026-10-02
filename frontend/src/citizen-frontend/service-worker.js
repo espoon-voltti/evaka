@@ -9,8 +9,8 @@
 const serviceWorker = self
 
 const cachePrefix = 'citizen-offline-'
-// Changes this script's bytes every release, which is what re-runs install
-const cacheName = `${cachePrefix}${__APP_COMMIT__}`
+// Changes this script's bytes whenever the offline page changes, which is what re-runs install
+const cacheName = `${cachePrefix}${__OFFLINE_PAGE_HASH__}`
 const offlinePage = '/offline.html'
 
 serviceWorker.addEventListener('install', (event) => {

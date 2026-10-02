@@ -126,17 +126,18 @@ test.describe('Citizen PWA install suggestion', () => {
 
     await evaka.findByDataQa('pwa-install-suggestion-close').click()
     await expect(evaka.findByDataQa('pwa-install-suggestion')).toBeHidden()
+    await expect(
+      evaka.findByDataQa('pwa-install-suggestion-note')
+    ).toBeVisible()
 
-    // Click again to dismiss the next stage of the suggestion
-    await evaka.findByDataQa('pwa-install-suggestion-note-action').click()
-    await expect(evaka.findByDataQa('pwa-install-suggestion-note')).toBeHidden()
-
+    // The note is left untouched, and the suggestion still stays dismissed
     await evaka.goto('/calendar')
     await fireInstallPrompt(evaka)
     await expect(
       evaka.find('[data-qa="calendar-page"][data-isloading="false"]')
     ).toBeVisible()
     await expect(evaka.findByDataQa('pwa-install-suggestion')).toBeHidden()
+    await expect(evaka.findByDataQa('pwa-install-suggestion-note')).toBeHidden()
   })
 })
 
@@ -149,6 +150,7 @@ test.describe('Citizen PWA install suggestion on desktop', () => {
     await fireInstallPrompt(evaka)
 
     await expect(evaka.findByDataQa('pwa-install-suggestion')).toBeHidden()
+    await expect(evaka.findByDataQa('pwa-install-suggestion-note')).toBeHidden()
   })
 })
 

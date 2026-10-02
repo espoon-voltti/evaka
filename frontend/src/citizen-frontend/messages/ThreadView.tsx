@@ -293,7 +293,8 @@ export default React.memo(
 
     const lastMessageRef = useRef<HTMLLIElement>(null)
     useEffect(() => {
-      scrollRefEndIntoView(lastMessageRef)
+      // Use a short delay to first scroll to top, then scroll to last message
+      scrollRefEndIntoView(lastMessageRef, 100)
     }, [threadId])
 
     const onUpdateContent = useCallback(

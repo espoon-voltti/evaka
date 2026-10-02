@@ -177,7 +177,7 @@ const TwoLineButtonRoot = styled.button<{ $primary: boolean }>`
       p.$primary ? p.theme.colors.grayscale.g0 : p.theme.colors.main.m2Hover};
   }
 
-  &:focus {
+  &:focus-visible {
     box-shadow:
       0 0 0 2px ${(p) => p.theme.colors.grayscale.g0},
       0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};

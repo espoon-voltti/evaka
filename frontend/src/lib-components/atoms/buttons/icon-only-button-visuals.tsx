@@ -143,7 +143,7 @@ const StyledButton = styled.button<{
   margin: -6px;
   -webkit-tap-highlight-color: transparent;
 
-  &:focus {
+  &:focus-visible {
     box-shadow: 0 0 0 2px ${(p) => cssColors(p.theme, p.$color).focus};
   }
 

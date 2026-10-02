@@ -169,7 +169,7 @@ test.describe('Citizen push notifications', () => {
     await expect(page.enablePushNotificationsTask).toBeHidden()
   })
 
-  test('"Myöhemmin" replaces the suggestion with a note that dismisses it', async ({
+  test('"Myöhemmin" replaces the suggestion with a note that hides on click', async ({
     evaka
   }) => {
     await emulateInstalledApp(evaka)
@@ -180,10 +180,21 @@ test.describe('Citizen push notifications', () => {
 
     await evaka.findByDataQa('push-suggestion-note-action').click()
     await expect(evaka.findByDataQa('push-suggestion-note')).toBeHidden()
+  })
+
+  test('"Myöhemmin" dismisses the suggestion even if the note is left untouched', async ({
+    evaka
+  }) => {
+    await emulateInstalledApp(evaka)
+    await enduserLogin(evaka, testAdult, '/')
+
+    await evaka.findByDataQa('push-suggestion-later').click()
+    await expect(evaka.findByDataQa('push-suggestion-note')).toBeVisible()
 
     await evaka.reload()
     await expect(evaka.findByDataQa('applications-list')).toBeVisible()
     await expect(evaka.findByDataQa('push-suggestion')).toBeHidden()
+    await expect(evaka.findByDataQa('push-suggestion-note')).toBeHidden()
   })
 
   test('enabling push is offered as a task in personal details', async ({

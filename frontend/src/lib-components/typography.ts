@@ -252,7 +252,7 @@ export const P = styled.p<ParagraphProps>`
     text-decoration: none;
   }
 
-  a:focus {
+  a:focus-visible {
     outline: 1px solid ${(p) => p.theme.colors.main.m2Focus};
     text-decoration: none;
   }

@@ -4,6 +4,7 @@
 
 // oxlint-disable no-console
 
+import { createHash } from 'node:crypto'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -116,6 +117,13 @@ function serveIndexHtml(): Plugin {
 
 const appCommit = JSON.stringify(process.env.APP_COMMIT || 'UNDEFINED')
 
+function offlinePageHash() {
+  const content = fs.readFileSync(
+    path.resolve(__dirname, 'public/offline.html')
+  )
+  return JSON.stringify(createHash('sha256').update(content).digest('hex'))
+}
+
 function serviceWorker(urlPath: string, sourcePath: string): Plugin {
   return {
     name: `build-service-worker-prod:${urlPath}`,
@@ -125,7 +133,12 @@ function serviceWorker(urlPath: string, sourcePath: string): Plugin {
           const code = await server.transformRequest(sourcePath)
           res.setHeader('Content-Type', 'text/javascript')
           // In dev defines are page globals, which a worker scope never sees
-          res.end((code?.code ?? '').replaceAll('__APP_COMMIT__', appCommit))
+          res.end(
+            (code?.code ?? '').replaceAll(
+              '__OFFLINE_PAGE_HASH__',
+              offlinePageHash()
+            )
+          )
         } catch (err) {
           next(err)
         }
@@ -142,7 +155,7 @@ function serviceWorker(urlPath: string, sourcePath: string): Plugin {
         publicDir: false,
         // This nested build does not inherit the main config
         define: {
-          __APP_COMMIT__: appCommit
+          __OFFLINE_PAGE_HASH__: offlinePageHash()
         },
         build: {
           outDir: path.join(outDir, dirName),

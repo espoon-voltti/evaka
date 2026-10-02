@@ -29,6 +29,11 @@ select {
   box-sizing: inherit;
 }
 
+/* The app focuses these only so that a screen reader reads out the content */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
 html {
   box-sizing: border-box;
   background-color: #f5f5f5;
@@ -50,6 +55,12 @@ a {
 
 #app {
   height: 100%;
+  /* The viewport covers the whole screen (viewport-fit=cover), so in landscape the notch
+     hides content at the screen edge. Elements with `position: fixed` do not get this padding
+     and must add the insets themselves. The padding must not be on body, because the scroll
+     lock of an open modal (react-focus-on) sets the body padding to 0. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* When the app runs installed, all scrolling happens inside the app shell (see App.tsx) */

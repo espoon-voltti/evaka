@@ -367,14 +367,16 @@ export default React.memo(function ReservationModal({
                 )}
               </CalendarModalSection>
             </div>
-            <Gap $size="m" />
             {saveError !== undefined && (
-              <AlertBox
-                title={i18n.calendar.reservationModal.saveErrors.failure}
-                message={saveError}
-                wide
-                noMargin
-              />
+              <>
+                <Gap $size="m" />
+                <AlertBox
+                  title={i18n.calendar.reservationModal.saveErrors.failure}
+                  message={saveError}
+                  wide
+                  noMargin
+                />
+              </>
             )}
             <CalendarModalButtons>
               <Button

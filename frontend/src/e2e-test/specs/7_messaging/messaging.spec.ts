@@ -1046,13 +1046,11 @@ test.describe('Sending and receiving messages', () => {
   test.describe('Session keepalive while typing', () => {
     test('Citizen session is kept alive as long as user keeps typing', async () => {
       citizenPage = await newPage({
-        mockedTime: mockedDateAt10
+        mockedTime: mockedDateAt10,
+        keepSessionAliveThrottleTime: 300
       })
       await enduserLoginWeak(citizenPage, credentials)
       await citizenPage.goto(config.enduserMessagesUrl)
-      await citizenPage.page.evaluate(() => {
-        if (window.evaka) window.evaka.keepSessionAliveThrottleTime = 300
-      })
       const citizenMessagesPage = new CitizenMessagesPage(
         citizenPage,
         'desktop'
@@ -1084,13 +1082,11 @@ test.describe('Sending and receiving messages', () => {
 
     test('Citizen stays on the page and keeps typed text when the session has expired', async () => {
       citizenPage = await newPage({
-        mockedTime: mockedDateAt10
+        mockedTime: mockedDateAt10,
+        keepSessionAliveThrottleTime: 300
       })
       await enduserLoginWeak(citizenPage, credentials)
       await citizenPage.goto(config.enduserMessagesUrl)
-      await citizenPage.page.evaluate(() => {
-        if (window.evaka) window.evaka.keepSessionAliveThrottleTime = 300
-      })
       const citizenMessagesPage = new CitizenMessagesPage(
         citizenPage,
         'desktop'

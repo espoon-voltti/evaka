@@ -127,7 +127,7 @@ const StyledButton = styled.button<{
     cursor: not-allowed;
   }
 
-  &:focus {
+  &:focus-visible {
     outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
     outline-offset: 2px;
   }
@@ -172,7 +172,7 @@ const StyledButton = styled.button<{
           text-decoration: underline;
           text-align: unset;
 
-          &:focus {
+          &:focus-visible {
             outline: none;
           }
 

@@ -26,11 +26,16 @@ export function useSuggestionStage(suggestion: Suggestion) {
   // Hide while any modal is open, for example until the "Application sent"
   // modal is dismissed
   const hidden =
-    modalOpen || !user || isSuggestionDismissed(suggestion, user.id)
+    modalOpen ||
+    !user ||
+    (stage === 'suggestion' && isSuggestionDismissed(suggestion, user.id))
 
   return {
     stage: hidden ? 'hidden' : stage,
-    showNote: () => setStage('note'),
+    showNote: () => {
+      if (user) dismissSuggestion(suggestion, user.id)
+      setStage('note')
+    },
     dismiss: () => {
       if (user) dismissSuggestion(suggestion, user.id)
       setStage('hidden')
@@ -63,6 +68,7 @@ export const Banner = styled.div`
   z-index: 10;
   background-color: ${(p) => p.theme.colors.main.m4};
   padding: ${defaultMargins.s};
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
 
   @media (min-width: ${desktopMin}) {
     top: 0;

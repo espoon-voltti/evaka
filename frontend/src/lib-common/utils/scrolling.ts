@@ -41,6 +41,10 @@ export function useRegisterScrollContainer() {
   return scrollAreaRef
 }
 
+export function getScrollTop(): number {
+  return resolveScrollContainer()?.scrollTop ?? window.scrollY
+}
+
 export function scrollToPos(options: ScrollToOptions, timeout = 0) {
   scrollWithTimeout(() => options, timeout)
 }
