@@ -29,7 +29,7 @@ dependencies {
         api("org.apache.commons:commons-text:1.15.0")
         api("org.apache.commons:commons-imaging:1.0.0-alpha6")
         api("org.apache.httpcomponents:httpclient:4.5.14")
-        api("org.apache.tika:tika-core:4.0.0")
+        api("org.apache.tika:tika-core:4.1.0")
         api("org.bouncycastle:bcpkix-jdk18on:1.86")
         api("org.bouncycastle:bcprov-jdk18on:1.86")
         api(libs.flyway.core)
