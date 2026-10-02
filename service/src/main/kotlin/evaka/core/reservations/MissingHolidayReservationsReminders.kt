@@ -20,6 +20,7 @@ import evaka.core.shared.async.AsyncJobType
 import evaka.core.shared.async.removeUnclaimedJobs
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.isHoliday
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.CitizenPushNotifications
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -113,7 +114,11 @@ FROM reservable_placements p
         ) 
         AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
 WHERE
-    NOT EXISTS (
+    (
+        NOT ${bind(isHoliday(theDate))}
+        OR (d.shift_care_open_on_holidays AND p.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[]))
+    )
+    AND NOT EXISTS (
         SELECT 1
         FROM attendance_reservation ar
         WHERE ar.child_id = p.child_id AND ar.date = ${bind(theDate)}

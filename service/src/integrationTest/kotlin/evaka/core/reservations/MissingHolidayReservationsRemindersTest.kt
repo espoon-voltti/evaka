@@ -11,6 +11,7 @@ import evaka.core.daycare.domain.ProviderType
 import evaka.core.emailclient.MockEmailClient
 import evaka.core.pis.service.blockGuardian
 import evaka.core.placement.PlacementType
+import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
@@ -25,12 +26,14 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevReservation
+import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertServiceNeedOption
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.job.ScheduledJobs
 import evaka.core.shared.security.PilotFeature
 import evaka.core.snDefaultDaycare
@@ -54,6 +57,11 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
 
     private val holidayPeriod: FiniteDateRange =
         FiniteDateRange(clockToday.today().plusDays(2), clockToday.today().plusDays(3))
+    // Independence Day 2024 is a Friday
+    private val independenceDay: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2024, 12, 6), LocalDate.of(2024, 12, 6))
+    private val clockBeforeIndependenceDay =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 12, 3), LocalTime.of(22, 0)))
     private val guardianEmail = "guardian@example.com"
     private val guardian = DevPerson(email = guardianEmail)
     private val area = DevCareArea()
@@ -221,9 +229,82 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
         assertEquals(listOf("fosterparent@test.com"), getHolidayReminderRecipients())
     }
 
-    private fun getHolidayReminderRecipients(): List<String> {
-        scheduledJobs.sendMissingHolidayReservationReminders(db, clockToday)
-        asyncJobRunner.runPendingJobsSync(clockToday)
+    @Test
+    fun `Missing holiday reminder is not sent for a public holiday when the unit is closed on holidays`() {
+        db.transaction {
+            it.insert(
+                DevHolidayPeriod(
+                    period = independenceDay,
+                    reservationsOpenOn = clockBeforeIndependenceDay.today(),
+                    reservationDeadline = clockBeforeIndependenceDay.today().plusDays(2),
+                )
+            )
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = independenceDay.start,
+                    endDate = independenceDay.end,
+                    type = PlacementType.DAYCARE,
+                )
+            )
+        }
+
+        assertEquals(emptyList(), getHolidayReminderRecipients(clockBeforeIndependenceDay))
+    }
+
+    @Test
+    fun `Missing holiday reminder is sent for a public holiday when a shift care child is in a unit open on holidays`() {
+        db.transaction {
+            val roundTheClockDaycare =
+                it.insert(
+                    DevDaycare(
+                        areaId = area.id,
+                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        shiftCareOperationTimes =
+                            List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
+                        shiftCareOpenOnHolidays = true,
+                    )
+                )
+            it.insert(employee)
+            it.insert(
+                DevHolidayPeriod(
+                    period = independenceDay,
+                    reservationsOpenOn = clockBeforeIndependenceDay.today(),
+                    reservationDeadline = clockBeforeIndependenceDay.today().plusDays(2),
+                )
+            )
+            val placementId =
+                it.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = roundTheClockDaycare,
+                        startDate = independenceDay.start,
+                        endDate = independenceDay.end,
+                        type = PlacementType.DAYCARE,
+                    )
+                )
+            it.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = independenceDay.start,
+                    endDate = independenceDay.end,
+                    optionId = snDefaultDaycare.id,
+                    shiftCare = ShiftCareType.FULL,
+                    confirmedBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        assertEquals(
+            listOf(guardianEmail),
+            getHolidayReminderRecipients(clockBeforeIndependenceDay),
+        )
+    }
+
+    private fun getHolidayReminderRecipients(clock: MockEvakaClock = clockToday): List<String> {
+        scheduledJobs.sendMissingHolidayReservationReminders(db, clock)
+        asyncJobRunner.runPendingJobsSync(clock)
         val emails = MockEmailClient.emails.map { it.toAddress }
         MockEmailClient.clear()
         return emails
