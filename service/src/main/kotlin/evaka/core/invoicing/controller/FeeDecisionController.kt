@@ -18,6 +18,7 @@ import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionDifference
 import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.FeeDecisionType
+import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.invoicing.service.FeeDecisionService
 import evaka.core.invoicing.service.FinanceDecisionGenerator
 import evaka.core.pis.getPersonById
@@ -405,7 +406,11 @@ class FeeDecisionController(
                     Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS,
                     id,
                 )
-                generator.createRetroactiveFeeDecisions(it, id, body.from, audit)
+                val today = clock.today()
+                if (body.from < financeFreezeDate(today)) {
+                    throw BadRequest("Retroactive decisions cannot start before the finance freeze")
+                }
+                generator.createRetroactiveFeeDecisions(it, today, id, body.from, audit)
             }
         }
         audit.log(Audit.FeeDecisionHeadOfFamilyCreateRetroactive, clock)

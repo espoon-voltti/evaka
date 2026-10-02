@@ -9,7 +9,7 @@ import { Link } from 'wouter'
 
 import type { VoucherValueDecisionSummaryWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
-import type LocalDate from 'lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { cancelMutation, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -212,6 +212,7 @@ const Modal = React.memo(function Modal({
           locale={lang}
           date={date}
           onChange={setDate}
+          minDate={LocalDate.todayInHelsinkiTz().subYears(5)}
           hideErrorsBeforeTouched
         />
       </FixedSpaceRow>

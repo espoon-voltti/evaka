@@ -19,21 +19,14 @@ import evaka.core.dataremoval.Handler.ADULT
 import evaka.core.dataremoval.Handler.CHILD
 import evaka.core.dataremoval.Integration.KOSKI
 import evaka.core.dataremoval.Integration.VARDA
+import evaka.core.invoicing.domain.FINANCE_FREEZE_PERIOD
 import evaka.core.shared.ChildImageId
 import evaka.core.shared.DatabaseTable
 import evaka.core.shared.async.AsyncJob
 import java.time.Period
 
-/**
- * Finance decisions are regenerated for any period, so the family and income data they are based on
- * cannot be deleted before a freeze of old decisions exists
- */
-const val FINANCE_FREEZE_IMPLEMENTED = false
-
-/**
- * Once the freeze exists, the finance decisions of a period older than this are never regenerated
- */
-val FINANCE_FREEZE: Period = Period.ofYears(5)
+/** A month past the finance freeze, so that nothing the generator still reads is deleted */
+val FINANCE_FREEZE_WITH_MARGIN: Period = FINANCE_FREEZE_PERIOD.plusMonths(1)
 
 /**
  * Some foreign keys into `person` or `child` still cascade without being declared, so a real run
@@ -60,10 +53,7 @@ private val feeDecisionValidityEnd = OwnColumn("valid_during", FINITE_DATE_RANGE
  * retention periods are decided, and the tables not yet declared are listed in
  * `DataRetentionSchemaTest`.
  */
-fun buildDataRetentionSchema(
-    financeFreezeImplemented: Boolean = FINANCE_FREEZE_IMPLEMENTED
-): SchemaDefinition {
-    val financeFreezeExists = if (financeFreezeImplemented) Always else Never
+fun buildDataRetentionSchema(): SchemaDefinition {
     return SchemaDefinition(
         listOf(
             HandledTable(
@@ -99,9 +89,7 @@ fun buildDataRetentionSchema(
                     ),
                 bundledBy = "child",
                 auditIdType = DatabaseTable.Placement::class,
-                expirationRule =
-                    AllOf(financeFreezeExists, After(tenYears, OwnColumn("end_date")))
-                        .safeFor(KOSKI, VARDA),
+                expirationRule = After(tenYears, OwnColumn("end_date")).safeFor(KOSKI, VARDA),
             ),
             HandledTable(
                 name = "service_need",
@@ -110,7 +98,7 @@ fun buildDataRetentionSchema(
                     listOf(primaryReference("placement_id", referencedTable = "placement")),
                 bundledBy = "placement",
                 auditIdType = DatabaseTable.ServiceNeed::class,
-                expirationRule = financeFreezeExists.safeFor(VARDA),
+                expirationRule = Always.safeFor(VARDA),
             ),
             HandledTable(
                 name = "daycare_group_placement",
@@ -346,8 +334,7 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.VoucherValueDecision::class,
                 expirationRule =
                     AllOf(
-                            financeFreezeExists,
-                            After(FINANCE_FREEZE, OwnColumn("valid_to")),
+                            After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("valid_to")),
                             Coalesce(
                                 tenYearsAfterLastPlacement,
                                 After(tenYears, OwnColumn("valid_to")),
@@ -381,17 +368,14 @@ fun buildDataRetentionSchema(
                 // application.
                 auditIdType = DatabaseTable.Parentship::class,
                 expirationRule =
-                    AllOf(
-                        financeFreezeExists,
-                        AnyOf(
-                            After(FINANCE_FREEZE, OwnColumn("end_date")),
-                            AllOf(
-                                Coalesce(
-                                    After(FINANCE_FREEZE, fridgeChildRelevantPlacementEnd),
-                                    Always,
-                                ),
-                                notWhileFridgeChildRelevantApplicationPending,
+                    AnyOf(
+                        After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("end_date")),
+                        AllOf(
+                            Coalesce(
+                                After(FINANCE_FREEZE_WITH_MARGIN, fridgeChildRelevantPlacementEnd),
+                                Always,
                             ),
+                            notWhileFridgeChildRelevantApplicationPending,
                         ),
                     ),
             ),
@@ -415,17 +399,17 @@ fun buildDataRetentionSchema(
                 // application.
                 auditIdType = DatabaseTable.Partnership::class,
                 expirationRule =
-                    AllOf(
-                        financeFreezeExists,
-                        AnyOf(
-                            Coalesce(After(FINANCE_FREEZE, OwnColumn("end_date")), Never),
-                            AllOf(
-                                Coalesce(
-                                    After(FINANCE_FREEZE, fridgePartnerRelevantPlacementEnd),
-                                    Always,
+                    AnyOf(
+                        Coalesce(After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("end_date")), Never),
+                        AllOf(
+                            Coalesce(
+                                After(
+                                    FINANCE_FREEZE_WITH_MARGIN,
+                                    fridgePartnerRelevantPlacementEnd,
                                 ),
-                                notWhileFridgePartnerRelevantApplicationPending,
+                                Always,
                             ),
+                            notWhileFridgePartnerRelevantApplicationPending,
                         ),
                     ),
             ),
@@ -439,11 +423,7 @@ fun buildDataRetentionSchema(
                     ),
                 independentRows = true,
                 auditIdType = DatabaseTable.Income::class,
-                expirationRule =
-                    AllOf(
-                        financeFreezeExists,
-                        Coalesce(After(tenYears, OwnColumn("valid_to")), Never),
-                    ),
+                expirationRule = Coalesce(After(tenYears, OwnColumn("valid_to")), Never),
             ),
             HandledTable(
                 name = "income_statement",
@@ -464,8 +444,7 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.FeeDecision::class,
                 expirationRule =
                     AllOf(
-                            financeFreezeExists,
-                            After(FINANCE_FREEZE, feeDecisionValidityEnd),
+                            After(FINANCE_FREEZE_WITH_MARGIN, feeDecisionValidityEnd),
                             Coalesce(
                                 After(tenYears, feeDecisionChildrenPlacementEnd),
                                 After(tenYears, feeDecisionValidityEnd),
