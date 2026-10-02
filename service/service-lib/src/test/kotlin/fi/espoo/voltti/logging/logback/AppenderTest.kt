@@ -53,6 +53,42 @@ class AppenderTest {
     }
 
     @Test
+    fun `audit appender masks ssns`() {
+        withTestLoggers {
+            testSSNs.forEach { ssn ->
+                logger.audit(
+                    "Accidental SSN logging: $ssn",
+                    mapOf(
+                        "eventCode" to "someEvent",
+                        "targetId" to ssn,
+                        "meta" to mapOf("body" to """{"ssn": "$ssn"}"""),
+                    ),
+                )
+                it.withLatestAudit { actual ->
+                    assertThat(actual["description"] as String).doesNotContain(ssn)
+                    assertThat(actual["description"] as String).contains(redactedSSN)
+                    assertThat(actual["targetId"]).isEqualTo(redactedSSN)
+                    assertThat((actual["meta"] as Map<*, *>)["body"] as String).doesNotContain(ssn)
+                    assertThat((actual["meta"] as Map<*, *>)["body"] as String)
+                        .contains(redactedSSN)
+                }
+            }
+
+            UUIDWithSSNs.forEach { uuid ->
+                logger.audit(
+                    "UUID has SSN in it: $uuid",
+                    mapOf("eventCode" to "someEvent", "targetId" to uuid),
+                )
+                it.withLatestAudit { actual ->
+                    assertThat(actual["description"] as String).contains(uuid)
+                    assertThat(actual["description"] as String).doesNotContain(redactedSSN)
+                    assertThat(actual["targetId"]).isEqualTo(uuid)
+                }
+            }
+        }
+    }
+
+    @Test
     fun `default appender`() {
         withTestLoggers {
             MDC.put("userIdHash", userIdHash)
