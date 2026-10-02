@@ -240,11 +240,17 @@ class OwnNodeDeletion(
 )
 
 class DeletionPlan(
+    val targetChildId: ChildId,
     /** Leaf-first */
     val ownNodeDeletions: List<OwnNodeDeletion>,
     val childrenToFreezeForKoski: Set<ChildId>,
     val childrenToFreezeForVarda: Set<ChildId>,
     val asyncJobs: List<AsyncJob>,
+    /**
+     * Whether the child row would be deleted if its message threads were gone, which lets the
+     * message removal delete them
+     */
+    val childMessagesReadyForDeletion: Boolean,
 ) {
     /** Rows to delete by table, in deletion order */
     fun rowCountsByTable(): Map<String, Int> {
@@ -265,7 +271,7 @@ class DeletionPlan(
                     deletion.referenceClearings.map { "${it.table}.${it.column}" }
                 }
                 .distinct()
-        return "delete ${describeRowCounts(rowCountsByTable())}, clear ${cleared.joinToString().ifEmpty { "nothing" }}, freeze ${describeFreezes(childrenToFreezeForKoski, childrenToFreezeForVarda)}, queue ${asyncJobs.size} jobs"
+        return "delete ${describeRowCounts(rowCountsByTable())}, clear ${cleared.joinToString().ifEmpty { "nothing" }}, freeze ${describeFreezes(childrenToFreezeForKoski, childrenToFreezeForVarda)}, queue ${asyncJobs.size} jobs${if (childMessagesReadyForDeletion) ", mark the child's messages ready for deletion" else ""}"
     }
 }
 
@@ -285,6 +291,9 @@ fun describeFreezes(koski: Collection<ChildId>, varda: Collection<ChildId>): Str
  * Decides what to delete. First, every node whose own rule is met is marked expired. Then a node
  * that is not expired, or a foreign node, blocks the nodes it references and the nodes it bundles,
  * transitively. What stays expired can be deleted leaf-first.
+ *
+ * The message threads of a child are removed only once everything else of the child could be
+ * deleted, so whether the child row is still expired is checked before they block it.
  */
 fun PersonGraph.evaluate(today: LocalDate): DeletionPlan {
     val expiredOwnNodeIds = ownNodes.filter { isExpired(it, today) }.mapTo(mutableSetOf()) { it.id }
@@ -294,10 +303,17 @@ fun PersonGraph.evaluate(today: LocalDate): DeletionPlan {
             if (expiredOwnNodeIds.remove(other)) block(other)
         }
     }
-    ownNodes.filter { it.id !in expiredOwnNodeIds }.forEach { block(it.id) }
-    foreignNodes.forEach { foreign ->
+    fun blockBy(foreign: ForeignNode) {
         ownNodesReferencedBy(foreign).forEach { if (expiredOwnNodeIds.remove(it)) block(it) }
     }
+    ownNodes.filter { it.id !in expiredOwnNodeIds }.forEach { block(it.id) }
+    val (messageNodes, otherForeignNodes) =
+        foreignNodes.partition { it.table.name == MESSAGE_THREAD_CHILDREN_TABLE }
+    otherForeignNodes.forEach { blockBy(it) }
+    val childNodeId = OwnNodeId.WholeTable(CHILD_TABLE)
+    val childExpiredExceptMessages =
+        childNodeId in expiredOwnNodeIds && ownNode(childNodeId).rows.isNotEmpty()
+    messageNodes.forEach { blockBy(it) }
 
     val ownNodesToDelete =
         leafFirstOrder().filter { it.id in expiredOwnNodeIds && it.rows.isNotEmpty() }
@@ -317,6 +333,7 @@ fun PersonGraph.evaluate(today: LocalDate): DeletionPlan {
             .toSet()
 
     return DeletionPlan(
+        targetChildId = ChildId(targetPersonId.raw),
         ownNodeDeletions =
             ownNodesToDelete.map { node ->
                 OwnNodeDeletion(
@@ -354,6 +371,7 @@ fun PersonGraph.evaluate(today: LocalDate): DeletionPlan {
                 val jobs = node.table.asyncJobsPlannedOnDelete ?: return@flatMap emptyList()
                 node.rows.flatMap { jobs.jobsToPlan(DeletedRow(it.id, it.valueForJobByColumn)) }
             },
+        childMessagesReadyForDeletion = childExpiredExceptMessages && !childDeleted,
     )
 }
 

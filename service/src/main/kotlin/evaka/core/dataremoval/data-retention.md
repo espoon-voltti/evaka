@@ -260,6 +260,18 @@ A leaf table whose rows should simply be deleted with the rows they reference ca
 
 The `child` row is deleted at the very end, but some information in it, such as diet, may need to be deleted earlier. That information can be cleared by a separate job.
 
+### 5.6 Message threads
+
+The message threads of a child are deleted by the message removal of the nightly data removal job, whose rules span several people: a thread of several children is kept until every one of them has expired, and a thread without recorded children until every child of its citizens has. `message_thread_children` is therefore an external table, whose rows hold the `child` row like any foreign rows.
+
+The message removal waits for the rest of the child's data to expire, so these rows block the deletion of the child, but not its expiry. The evaluation checks whether the `child` node is still expired before the `message_thread_children` nodes block it. If it is, the run marks the child's messages ready for deletion in the `messages_ready_for_deletion_at` column of the `child` row, and the message removal reads the children from there. The next run of the child finds the threads gone and deletes the child row, and the mark with it. A run that finds the child not expired removes an earlier mark.
+
+The mark names the data it concerns instead of saying that the child has expired, because it holds only when the threads are the one thing left keeping the child.
+
+The message removal finds the children of a citizen through `guardian` and `foster_parent`, so both are bundled by `child`. If such a row were deleted while the child was kept for some other reason, the child would drop out of its citizens' children, and a thread that only that child still kept would be deleted too early. Bundled, the rows are deleted with the child row, and a child missing from them is one that has been deleted.
+
+A citizen's `message_account` is adult-handled and bundled by `person`, so it is deleted together with the person row. `message` and `message_content` are external tables whose `sender_id` and `author_id` hold it: a message the citizen sent keeps the account, and with it the person row, until the message removal deletes its thread. The account's received messages, thread participations, folders and drafts are `ON DELETE CASCADE` (section 5.3), so the citizen drops out of the threads that other people's data still keeps. The person row cannot expire while any of the citizen's children exists, since the guardianships hold it, so by then the threads of those children are gone.
+
 ## 6. Special cases
 
 ### 6.1 Missing child row

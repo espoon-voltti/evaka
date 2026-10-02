@@ -306,13 +306,24 @@ fun buildDataRetentionSchema(
                         primaryReference("child_id", referencedTable = "child"),
                         secondaryReference("guardian_id", referencedTable = "person"),
                     ),
+                // The message removal finds the children of a citizen through the guardianships,
+                // so they are kept until the child itself is deleted
+                bundledBy = "child",
                 identifiedByCols = listOf("guardian_id", "child_id"),
-                expirationRule =
-                    Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(tenYears, OwnColumn("created", TIMESTAMP_WITH_TIME_ZONE)),
-                        )
-                        .safeFor(VARDA),
+                expirationRule = Always.safeFor(VARDA),
+            ),
+            HandledTable(
+                name = "foster_parent",
+                handledBy = CHILD,
+                references =
+                    listOf(
+                        primaryReference("child_id", referencedTable = "child"),
+                        secondaryReference("parent_id", referencedTable = "person"),
+                    ),
+                // Kept until the child is deleted for the same reason as the guardianships
+                bundledBy = "child",
+                auditIdType = DatabaseTable.FosterParent::class,
+                expirationRule = Always,
             ),
             HandledTable(
                 name = "family_contact",
@@ -473,14 +484,34 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.FeeDecisionChild::class,
                 expirationRule = Always.safeFor(VARDA),
             ),
-            ExternalTable(
+            HandledTable(
                 name = "message_account",
-                references = listOf(secondaryReference("person_id", referencedTable = "person")),
+                handledBy = ADULT,
+                references = listOf(primaryReference("person_id", referencedTable = "person")),
+                bundledBy = "person",
+                auditIdType = DatabaseTable.MessageAccount::class,
+                expirationRule = Always,
+            ),
+            // The messages and contents the citizen sent keep the account until the message
+            // removal deletes their threads
+            ExternalTable(
+                name = "message",
+                references =
+                    listOf(secondaryReference("sender_id", referencedTable = "message_account")),
+            ),
+            ExternalTable(
+                name = "message_content",
+                references =
+                    listOf(secondaryReference("author_id", referencedTable = "message_account")),
             ),
             ExternalTable(
                 name = "message_thread",
                 references =
                     listOf(optionalReference("application_id", referencedTable = "application")),
+            ),
+            ExternalTable(
+                name = MESSAGE_THREAD_CHILDREN_TABLE,
+                references = listOf(secondaryReference("child_id", referencedTable = "child")),
             ),
             ExternalTable(
                 name = "voucher_value_report_decision",

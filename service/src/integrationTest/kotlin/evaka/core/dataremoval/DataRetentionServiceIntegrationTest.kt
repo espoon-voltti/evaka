@@ -4,17 +4,26 @@
 
 package evaka.core.dataremoval
 
+import evaka.core.DataRemovalEnv
 import evaka.core.FullApplicationTest
 import evaka.core.childimages.insertChildImage
+import evaka.core.messaging.MessageType
+import evaka.core.messaging.insertMessageThreadChildren
+import evaka.core.messaging.insertThread
+import evaka.core.shared.ChildId
+import evaka.core.shared.MessageThreadId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevFosterParent
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import java.time.LocalDate
@@ -26,9 +35,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.util.ReflectionTestUtils
 
 class DataRetentionServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var dataRetentionService: DataRetentionService
+    @Autowired private lateinit var dataRemovalService: DataRemovalService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val today = LocalDate.of(2026, 9, 12)
@@ -105,6 +116,107 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
 
         assertEquals(emptySet(), remaining(longGone.id))
         assertEquals(setOf("person", "child", "placement"), remaining(recent.id))
+    }
+
+    private fun insertMessageThread(childId: PersonId): MessageThreadId = db.transaction { tx ->
+        tx.insertThread(
+                MessageType.MESSAGE,
+                "Thread",
+                urgent = false,
+                sensitive = false,
+                isCopy = false,
+            )
+            .also { tx.insertMessageThreadChildren(listOf(it to setOf(ChildId(childId.raw)))) }
+    }
+
+    private fun messageThreadIds(): Set<MessageThreadId> = db.read { tx ->
+        tx.createQuery { sql("SELECT id FROM message_thread") }.toSet<MessageThreadId>()
+    }
+
+    private fun childrenWithMessagesReadyForDeletion(): Set<ChildId> = db.read { tx ->
+        tx.createQuery(childIdsWithMessagesReadyForDeletion()).toSet<ChildId>()
+    }
+
+    private fun runNightlyDataRemoval() {
+        val env = ReflectionTestUtils.getField(dataRemovalService, "dataRemovalEnv")
+        ReflectionTestUtils.setField(
+            dataRemovalService,
+            "dataRemovalEnv",
+            DataRemovalEnv(limit = 100),
+        )
+        try {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        } finally {
+            ReflectionTestUtils.setField(dataRemovalService, "dataRemovalEnv", env)
+        }
+    }
+
+    @Test
+    fun `message threads keep an expired child until the nightly data removal has deleted them`() {
+        insertMessageThread(longGone.id)
+
+        realRun(longGone.id)
+        assertEquals(setOf("person", "child", "placement"), remaining(longGone.id))
+        assertEquals(setOf(ChildId(longGone.id.raw)), childrenWithMessagesReadyForDeletion())
+
+        runNightlyDataRemoval()
+        assertEquals(emptySet(), messageThreadIds())
+
+        realRun(longGone.id)
+        assertEquals(emptySet(), remaining(longGone.id))
+        assertEquals(emptySet(), childrenWithMessagesReadyForDeletion())
+    }
+
+    @Test
+    fun `the messages of a child whose other data has not expired are not ready for deletion`() {
+        val thread = insertMessageThread(recent.id)
+        // A mark from an earlier run, after which the child got data that has not expired
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE child SET messages_ready_for_deletion_at = ${bind(clock.now().minusYears(1))} WHERE id = ${bind(recent.id)}"
+                )
+            }
+        }
+
+        realRun(recent.id)
+        assertEquals(emptySet(), childrenWithMessagesReadyForDeletion())
+
+        runNightlyDataRemoval()
+        assertEquals(setOf(thread), messageThreadIds())
+    }
+
+    @Test
+    fun `a foster parent row holds the parent's person row and is deleted with the child`() {
+        val employee = DevEmployee()
+        val fosterParent = DevPerson(dateOfBirth = today.minusYears(50))
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(fosterParent, DevPersonType.RAW_ROW)
+            tx.execute {
+                sql(
+                    "UPDATE person SET created = ${bind(HelsinkiDateTime.of(today.minusYears(13), LocalTime.NOON))} WHERE id = ${bind(fosterParent.id)}"
+                )
+            }
+            tx.insert(
+                DevFosterParent(
+                    childId = longGone.id,
+                    parentId = fosterParent.id,
+                    validDuring = DateRange(today.minusYears(12), today.minusYears(11)),
+                    modifiedAt = clock.now(),
+                    modifiedBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        realRun(fosterParent.id)
+        assertEquals(setOf("person"), remaining(fosterParent.id))
+
+        realRun(longGone.id)
+        assertEquals(emptySet(), remaining(longGone.id))
+
+        realRun(fosterParent.id)
+        assertEquals(emptySet(), remaining(fosterParent.id))
     }
 
     @Test

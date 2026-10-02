@@ -72,7 +72,7 @@ fun runDataRetention(
         } ?: return
 
     logger.info {
-        "Data retention for person $personId: deleted ${describeRowCounts(deletionResult.deletedRowCountsByTable)}, cleared ${describeRowCounts(deletionResult.clearedRowCountsByTable)}, froze ${describeFreezes(deletionResult.childrenFrozenForKoski, deletionResult.childrenFrozenForVarda)}, in ${started.elapsedNow().inWholeMilliseconds} ms"
+        "Data retention for person $personId: deleted ${describeRowCounts(deletionResult.deletedRowCountsByTable)}, cleared ${describeRowCounts(deletionResult.clearedRowCountsByTable)}, froze ${describeFreezes(deletionResult.childrenFrozenForKoski, deletionResult.childrenFrozenForVarda)}${if (deletionResult.childMessagesReadyForDeletion) ", marked the child's messages ready for deletion" else ""}, in ${started.elapsedNow().inWholeMilliseconds} ms"
     }
 
     // Audit logs

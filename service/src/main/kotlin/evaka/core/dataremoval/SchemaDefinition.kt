@@ -12,6 +12,12 @@ import kotlin.reflect.KClass
 const val PERSON_TABLE = "person"
 const val CHILD_TABLE = "child"
 
+/**
+ * Its rows hold the child only because the message removal waits for the rest of the child's data
+ * to expire, so they block the deletion of the child but not its expiry
+ */
+const val MESSAGE_THREAD_CHILDREN_TABLE = "message_thread_children"
+
 /** Whose run deletes the rows of a table */
 enum class Handler {
     CHILD,

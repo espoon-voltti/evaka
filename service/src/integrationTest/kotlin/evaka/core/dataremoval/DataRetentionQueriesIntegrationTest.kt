@@ -266,6 +266,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "income_statement" to 1,
                 "fee_decision" to 1,
                 "fee_decision_child" to 1,
+                "message_account" to 1,
             ),
             graph.rows(),
         )
@@ -282,7 +283,6 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "application.guardian_id",
                 "guardian.guardian_id",
                 "child_document_read.person_id",
-                "message_account.person_id",
                 "voucher_value_decision.head_of_family_id",
             ),
             graph.foreign(),
@@ -328,7 +328,6 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "child_document_read" to 1,
                 "child_document_published_version" to 1,
                 "child_document" to 1,
-                "guardian" to 2,
                 "family_contact" to 1,
                 "voucher_value_decision" to 1,
             ),
@@ -356,11 +355,12 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(listOf(child.id), result.childrenFrozenForVarda)
 
         // The fee decision child and parentship rows of the adult's data hold the child row, and
-        // with it the placements the child row bundles
+        // with it the placements and guardianships the child row bundles
         assertEquals(
             setOf(
                 "person",
                 "child",
+                "guardian",
                 "placement",
                 "service_need",
                 "daycare_group_placement",
@@ -419,7 +419,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `an adult's run deletes the expired fee decision with its child rows, and the person row waits for the child's data, the messaging job, the adult's own rows and a recent login`() {
+    fun `an adult's run deletes the expired fee decision with its child rows, and the person row and its message account wait for the child's data, the adult's own rows and a recent login`() {
         val family = db.transaction { it.insertFamily() }
 
         assertEquals(
@@ -446,7 +446,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             0,
             count("fridge_partner WHERE partnership_id = '${family.partnershipId.raw}'"),
         )
-        assertEquals(setOf("person", "income"), remaining(guardian.id))
+        assertEquals(setOf("person", "income", "message_account"), remaining(guardian.id))
 
         val childRun = execute(child.id)
 
@@ -482,12 +482,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(emptyList(), childRun.childrenFrozenForVarda)
         assertEquals(false, personExists(child.id))
 
-        // The message account is handled elsewhere and holds the person row, and so does the
-        // income that has not expired
-        assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
-        db.transaction {
-            it.execute { sql("DELETE FROM message_account WHERE person_id = ${bind(guardian.id)}") }
-        }
+        // The income that has not expired holds the person row, and with it the message account
         assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
         db.transaction {
             it.execute {
@@ -506,8 +501,53 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 sql("UPDATE person SET last_login = NULL WHERE id = ${bind(guardian.id)}")
             }
         }
-        assertEquals(mapOf("person" to 1), execute(guardian.id).deletedRowCountsByTable)
+        assertEquals(
+            mapOf("message_account" to 1, "person" to 1),
+            execute(guardian.id).deletedRowCountsByTable,
+        )
         assertEquals(false, personExists(guardian.id))
+    }
+
+    @Test
+    fun `a message the adult sent holds the message account, and with it the person row, until the message removal deletes it`() {
+        val threadId = db.transaction { tx ->
+            val accountId = tx.createPersonMessageAccount(guardian.id)
+            val contentId =
+                tx.createQuery {
+                        sql(
+                            "INSERT INTO message_content (author_id, content) VALUES (${bind(accountId)}, 'Hello') RETURNING id"
+                        )
+                    }
+                    .exactlyOne<UUID>()
+            val threadId =
+                tx.createQuery {
+                        sql(
+                            "INSERT INTO message_thread (message_type, title, urgent, is_copy, sensitive) VALUES ('MESSAGE', 'Hello', false, false, false) RETURNING id"
+                        )
+                    }
+                    .exactlyOne<UUID>()
+            tx.execute {
+                sql(
+                    "INSERT INTO message (sender_name, content_id, thread_id, sender_id) VALUES ('Guardian', ${bind(contentId)}, ${bind(threadId)}, ${bind(accountId)})"
+                )
+            }
+            threadId
+        }
+        assertEquals(
+            setOf("message.sender_id", "message_content.author_id"),
+            load(guardian.id).foreign(),
+        )
+
+        assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
+
+        db.transaction { tx ->
+            tx.execute { sql("DELETE FROM message_thread WHERE id = ${bind(threadId)}") }
+            tx.execute { sql("DELETE FROM message_content") }
+        }
+        assertEquals(
+            mapOf("message_account" to 1, "person" to 1),
+            execute(guardian.id).deletedRowCountsByTable,
+        )
     }
 
     @Test
@@ -582,8 +622,8 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
 
         // The application expires five years after it was made and the documents ten years after
         // their last status change or the template's days after it. The family contact expires at
-        // once. The image waits a year after its update and the guardianship ten years after its
-        // creation.
+        // once. The image waits a year after its update, and the guardianship is kept with the
+        // child row that the image holds.
         assertEquals(
             mapOf(
                 "application_note" to 1,

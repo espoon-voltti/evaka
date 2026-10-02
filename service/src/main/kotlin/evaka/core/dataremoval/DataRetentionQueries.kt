@@ -275,6 +275,7 @@ data class DeletionResult(
     val clearedRowCountsByTable: Map<String, Int>,
     val childrenFrozenForKoski: List<ChildId>,
     val childrenFrozenForVarda: List<ChildId>,
+    val childMessagesReadyForDeletion: Boolean,
 ) {
     val deletedRowCountsByTable: Map<String, Int>
         get() = deletedRowsByTable.mapValues { it.value.ids.size }
@@ -340,12 +341,57 @@ fun Database.Transaction.executeDeletionPlan(
         if (plan.childrenToFreezeForVarda.isEmpty()) emptyList()
         else freezeVardaSync(plan.childrenToFreezeForVarda, now)
 
+    setChildMessagesReadyForDeletion(
+        plan.targetChildId,
+        ready = plan.childMessagesReadyForDeletion,
+        now,
+    )
+
     return DeletionResult(
         deletedRowsByTable = deletedRowsByTable,
         clearedRowCountsByTable = clearedRowCountsByTable,
         childrenFrozenForKoski = childrenFrozenForKoski,
         childrenFrozenForVarda = childrenFrozenForVarda,
+        childMessagesReadyForDeletion = plan.childMessagesReadyForDeletion,
     )
+}
+
+/**
+ * Keeps the time the messages were first found ready, and removes the mark once the child has data
+ * that has not expired
+ */
+private fun Database.Transaction.setChildMessagesReadyForDeletion(
+    childId: ChildId,
+    ready: Boolean,
+    now: HelsinkiDateTime,
+) {
+    if (ready) {
+        execute {
+            sql(
+                """
+UPDATE child
+SET messages_ready_for_deletion_at = ${bind(now)}
+WHERE id = ${bind(childId)}
+AND messages_ready_for_deletion_at IS NULL
+"""
+            )
+        }
+    } else {
+        execute {
+            sql(
+                """
+UPDATE child
+SET messages_ready_for_deletion_at = NULL
+WHERE id = ${bind(childId)}
+AND messages_ready_for_deletion_at IS NOT NULL
+"""
+            )
+        }
+    }
+}
+
+fun childIdsWithMessagesReadyForDeletion() = QuerySql {
+    sql("SELECT id FROM child WHERE messages_ready_for_deletion_at IS NOT NULL")
 }
 
 private fun Row.rowIdentity(identifiedByCols: List<String>): RowIdentity =
