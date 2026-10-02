@@ -25,6 +25,10 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 sequenceOf(HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER))
             }
 
+            Action.Global.READ_CHILD_ABSENCE_REPORT_FOR_AREA -> {
+                action.defaultRules.asSequence() + sequenceOf(HasGlobalRole(UserRole.REPORT_VIEWER))
+            }
+
             Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT -> {
                 emptySequence()
             }
@@ -81,6 +85,13 @@ class EspooActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
                     )
+            }
+
+            Action.Unit.READ_CHILD_ABSENCE_REPORT_FOR_UNIT,
+            Action.Unit.READ_GROUPS -> {
+                @Suppress("UNCHECKED_CAST")
+                action.defaultRules.asSequence() +
+                    sequenceOf(HasGlobalRole(UserRole.REPORT_VIEWER) as ScopedActionRule<in T>)
             }
 
             Action.Unit.READ_FAMILY_CONFLICT_REPORT -> {
