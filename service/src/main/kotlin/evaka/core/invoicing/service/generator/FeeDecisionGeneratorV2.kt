@@ -121,7 +121,7 @@ fun generateFeeDecisionsDrafts(
             ignoredDrafts = ignoredDrafts,
             minDate = minDate,
         )
-        .map { it.withMetadataFromExisting(existingDrafts) }
+        .map { it.withMetadataFromExisting(existingDrafts, minDate) }
         .map {
             it.copy(
                 difference =
