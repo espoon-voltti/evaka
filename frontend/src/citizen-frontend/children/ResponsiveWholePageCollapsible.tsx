@@ -12,7 +12,7 @@ import { useScrollIntoView } from 'lib-common/utils/scrolling'
 import { useMediaQuery } from 'lib-common/utils/useMediaQuery'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { tabletMin } from 'lib-components/breakpoints'
+import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
 import type { CollapsibleContentAreaProps } from 'lib-components/layout/Container'
 import {
   ContentArea,
@@ -149,7 +149,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
 })
 
 const ResponsiveCollapsibleContainer = styled.div`
-  @media (max-width: ${tabletMin}) {
+  @media (max-width: ${tabletMinPx - 1}px) {
     position: fixed;
     top: 0;
     bottom: 0;
@@ -178,7 +178,7 @@ const ResponsiveCollapsibleTitle = styled.div`
 const CollapsibleContainer = styled.div<{ $padding: SpacingSize }>`
   margin-top: ${defaultMargins.s};
 
-  @media (max-width: ${tabletMin}) {
+  @media (max-width: ${tabletMinPx - 1}px) {
     margin-top: 0;
     overflow-y: auto;
     flex-grow: 1;
