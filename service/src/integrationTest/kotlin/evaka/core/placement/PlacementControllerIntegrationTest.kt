@@ -21,6 +21,7 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.data.DateSet
 import evaka.core.shared.dev.DevBackupCare
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
@@ -30,6 +31,7 @@ import evaka.core.shared.dev.DevFridgeChild
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
+import evaka.core.shared.dev.DevPreschoolTerm
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.updateDaycareAclWithEmployee
 import evaka.core.shared.domain.BadRequest
@@ -107,6 +109,17 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private val placementStart = LocalDate.of(2020, 1, 1)
     private val placementEnd = placementStart.plusDays(200)
     private lateinit var testPlacement: DaycarePlacementDetails
+
+    private val preschoolTerm =
+        DevPreschoolTerm(
+            finnishPreschool =
+                FiniteDateRange(LocalDate.of(2023, 8, 10), LocalDate.of(2024, 5, 31)),
+            swedishPreschool = FiniteDateRange(LocalDate.of(2023, 8, 14), LocalDate.of(2024, 6, 7)),
+            extendedTerm = FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 7)),
+            applicationPeriod =
+                FiniteDateRange(LocalDate.of(2023, 1, 8), LocalDate.of(2023, 1, 20)),
+            termBreaks = DateSet.empty(),
+        )
 
     private val unitSupervisor = supervisorEmployee.user
     private val staff = staffEmployee.user
@@ -304,6 +317,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `Creating overlapping future placement with different absence category, should delete future absences with wrong category type that are in the range of new placements period`() {
         val activePlacementStart = mockClock.today().minusMonths(3)
         val activePlacementEnd = mockClock.today().plusMonths(6)
+        insertPreschoolTerm(FiniteDateRange(activePlacementStart, activePlacementEnd.plusWeeks(1)))
 
         val activePlacement =
             createPlacementAndGroupPlacement(
@@ -400,6 +414,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `Creating overlapping placement, should delete future attendance reservations of old placement that are in the range of new placements period`() {
         val activePlacementStart = mockClock.today().minusMonths(3)
         val activePlacementEnd = mockClock.today().plusMonths(6)
+        insertPreschoolTerm(FiniteDateRange(activePlacementStart, activePlacementEnd.plusWeeks(1)))
 
         val activePlacement =
             createPlacementAndGroupPlacement(
@@ -1193,6 +1208,158 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val backupCares = db.transaction { it.getBackupCaresForChild(childId) }
         assertEquals(0, backupCares.size)
     }
+
+    @Test
+    fun `creating a preschool placement requires it to be within the finnish or swedish preschool term`() {
+        db.transaction { tx -> tx.insert(preschoolTerm) }
+
+        listOf(PlacementType.PRESCHOOL, PlacementType.PREPARATORY).forEach { type ->
+            createPlacement(type, preschoolTerm.finnishPreschool)
+            createPlacement(type, preschoolTerm.swedishPreschool)
+            assertThrows<BadRequest> {
+                createPlacement(
+                    type,
+                    FiniteDateRange(
+                        preschoolTerm.finnishPreschool.start.minusDays(1),
+                        preschoolTerm.finnishPreschool.end,
+                    ),
+                )
+            }
+            assertThrows<BadRequest> {
+                createPlacement(
+                    type,
+                    FiniteDateRange(
+                        preschoolTerm.swedishPreschool.start,
+                        preschoolTerm.swedishPreschool.end.plusDays(1),
+                    ),
+                )
+            }
+            // Each date is within some term, but no single term contains the whole placement
+            assertThrows<BadRequest> {
+                createPlacement(
+                    type,
+                    FiniteDateRange(
+                        preschoolTerm.finnishPreschool.start,
+                        preschoolTerm.swedishPreschool.end,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `creating a preschool daycare placement requires it to be within the extended preschool term`() {
+        db.transaction { tx -> tx.insert(preschoolTerm) }
+
+        listOf(
+                PlacementType.PRESCHOOL_DAYCARE,
+                PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                PlacementType.PREPARATORY_DAYCARE,
+            )
+            .forEach { type ->
+                createPlacement(type, preschoolTerm.extendedTerm)
+                assertThrows<BadRequest> {
+                    createPlacement(
+                        type,
+                        FiniteDateRange(
+                            preschoolTerm.extendedTerm.start.minusDays(1),
+                            preschoolTerm.extendedTerm.end,
+                        ),
+                    )
+                }
+                assertThrows<BadRequest> {
+                    createPlacement(
+                        type,
+                        FiniteDateRange(
+                            preschoolTerm.extendedTerm.start,
+                            preschoolTerm.extendedTerm.end.plusDays(1),
+                        ),
+                    )
+                }
+            }
+    }
+
+    @Test
+    fun `updating a preschool placement requires it to be within the preschool term`() {
+        val term = preschoolTerm.finnishPreschool
+        val placement =
+            DevPlacement(
+                type = PlacementType.PRESCHOOL,
+                childId = childId,
+                unitId = daycareId,
+                startDate = term.start,
+                endDate = term.end,
+            )
+        db.transaction { tx ->
+            tx.insert(preschoolTerm)
+            tx.insert(placement)
+        }
+
+        assertThrows<BadRequest> {
+            updatePlacement(
+                placement.id,
+                PlacementUpdateRequestBody(startDate = term.start, endDate = term.end.plusDays(1)),
+            )
+        }
+        updatePlacement(
+            placement.id,
+            PlacementUpdateRequestBody(startDate = term.start, endDate = term.end.minusDays(1)),
+        )
+
+        assertEquals(term.end.minusDays(1), db.read { it.getPlacement(placement.id) }!!.endDate)
+    }
+
+    @Test
+    fun `updating a preschool daycare placement requires it to be within the extended preschool term`() {
+        val term = preschoolTerm.extendedTerm
+        val placement =
+            DevPlacement(
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                childId = childId,
+                unitId = daycareId,
+                startDate = term.start,
+                endDate = term.end,
+            )
+        db.transaction { tx ->
+            tx.insert(preschoolTerm)
+            tx.insert(placement)
+        }
+
+        assertThrows<BadRequest> {
+            updatePlacement(
+                placement.id,
+                PlacementUpdateRequestBody(startDate = term.start.minusDays(1), endDate = term.end),
+            )
+        }
+        updatePlacement(
+            placement.id,
+            PlacementUpdateRequestBody(startDate = term.start.plusDays(1), endDate = term.end),
+        )
+
+        assertEquals(term.start.plusDays(1), db.read { it.getPlacement(placement.id) }!!.startDate)
+    }
+
+    private fun insertPreschoolTerm(term: FiniteDateRange) {
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolTerm(
+                    finnishPreschool = term,
+                    swedishPreschool = term,
+                    extendedTerm = term,
+                    applicationPeriod = term,
+                    termBreaks = DateSet.empty(),
+                )
+            )
+        }
+    }
+
+    private fun createPlacement(type: PlacementType, period: FiniteDateRange) =
+        placementController.createPlacement(
+            dbInstance(),
+            unitSupervisor,
+            mockClock,
+            PlacementCreateRequestBody(type, childId, daycareId, period.start, period.end, false),
+        )
 
     private fun getChildPlacements(
         childId: ChildId = this.childId,

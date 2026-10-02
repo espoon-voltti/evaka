@@ -45,6 +45,7 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.data.DateSet
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
@@ -52,9 +53,11 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.DevPreschoolTerm
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestPartnership
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -614,6 +617,18 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         val newStartDate = now.toLocalDate().minusDays(1)
+        val preschoolTerm = FiniteDateRange(newStartDate, endDate)
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolTerm(
+                    finnishPreschool = preschoolTerm,
+                    swedishPreschool = preschoolTerm,
+                    extendedTerm = preschoolTerm,
+                    applicationPeriod = preschoolTerm,
+                    termBreaks = DateSet.empty(),
+                )
+            )
+        }
         createPlacement(newStartDate, endDate, type = PlacementType.PRESCHOOL)
         sendAllValueDecisions()
 

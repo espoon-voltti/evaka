@@ -9,6 +9,7 @@ import evaka.core.application.utils.exhaust
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.daycare.getDaycareGroup
+import evaka.core.daycare.getPreschoolTerms
 import evaka.core.occupancy.familyUnitPlacementCoefficient
 import evaka.core.serviceneed.ServiceNeed
 import evaka.core.serviceneed.ServiceNeedOption
@@ -144,6 +145,37 @@ fun createPlacement(
     )
 }
 
+fun Database.Read.requirePlacementWithinPreschoolTerm(
+    type: PlacementType,
+    period: FiniteDateRange,
+) {
+    when (type) {
+        PlacementType.PRESCHOOL,
+        PlacementType.PREPARATORY ->
+            if (
+                getPreschoolTerms(period).none {
+                    it.finnishPreschool.contains(period) || it.swedishPreschool.contains(period)
+                }
+            )
+                throw BadRequest("Placement must be within a preschool term")
+        PlacementType.PRESCHOOL_DAYCARE,
+        PlacementType.PRESCHOOL_DAYCARE_ONLY,
+        PlacementType.PREPARATORY_DAYCARE ->
+            if (getPreschoolTerms(period).none { it.extendedTerm.contains(period) })
+                throw BadRequest("Placement must be within an extended preschool term")
+        PlacementType.PREPARATORY_DAYCARE_ONLY,
+        PlacementType.PRESCHOOL_CLUB,
+        PlacementType.CLUB,
+        PlacementType.DAYCARE,
+        PlacementType.DAYCARE_PART_TIME,
+        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+        PlacementType.TEMPORARY_DAYCARE,
+        PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+        PlacementType.SCHOOL_SHIFT_CARE -> {}
+    }
+}
+
 @IgnorableReturnValue
 fun Database.Transaction.updatePlacement(
     id: PlacementId,
@@ -158,6 +190,7 @@ fun Database.Transaction.updatePlacement(
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
 
     val old = getPlacement(id) ?: throw NotFound("Placement $id not found")
+    requirePlacementWithinPreschoolTerm(old.type, FiniteDateRange(startDate, endDate))
     audit
         .add(old.id)
         .add(old.childId)

@@ -19,6 +19,7 @@ import { UIContext } from '../../state/ui'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
+import { getPreschoolTermsQuery } from '../unit/queries'
 
 import CreatePlacementModal from './placements/CreatePlacementModal'
 import PlacementRow from './placements/PlacementRow'
@@ -35,6 +36,7 @@ export default React.memo(function Placements({ childId }: Props) {
 
   const placements = useQueryResult(placementsQuery({ childId }))
   const serviceNeedOptions = useQueryResult(serviceNeedOptionsQuery())
+  const preschoolTerms = useQueryResult(getPreschoolTermsQuery())
 
   return (
     <div>
@@ -51,8 +53,8 @@ export default React.memo(function Placements({ childId }: Props) {
         ) : null}
       </FlexRow>
       {renderResult(
-        combine(serviceNeedOptions, placements),
-        ([serviceNeedOptions, placements]) => (
+        combine(serviceNeedOptions, placements, preschoolTerms),
+        ([serviceNeedOptions, placements, preschoolTerms]) => (
           <div>
             {orderBy(placements.placements, ['startDate'], ['desc']).map(
               (p, i) => (
@@ -71,6 +73,7 @@ export default React.memo(function Placements({ childId }: Props) {
                         (p2) => new FiniteDateRange(p2.startDate, p2.endDate)
                       )}
                     serviceNeedOptions={serviceNeedOptions}
+                    preschoolTerms={preschoolTerms}
                   />
                   {i < placements.placements.length - 1 && (
                     <div className="separator large" />
@@ -78,11 +81,14 @@ export default React.memo(function Placements({ childId }: Props) {
                 </Fragment>
               )
             )}
+            {uiMode === 'create-new-placement' && (
+              <CreatePlacementModal
+                childId={childId}
+                preschoolTerms={preschoolTerms}
+              />
+            )}
           </div>
         )
-      )}
-      {uiMode === 'create-new-placement' && (
-        <CreatePlacementModal childId={childId} />
       )}
     </div>
   )
