@@ -59,15 +59,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:5.18.1":
-  version: 5.18.1
-  resolution: "@datadog/pprof@npm:5.18.1"
+"@datadog/pprof@npm:5.19.0":
+  version: 5.19.0
+  resolution: "@datadog/pprof@npm:5.19.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^4.8.4"
     pprof-format: "npm:^2.3.1"
     source-map: "npm:^0.8.0"
-  checksum: 10/8b90ade6f2a1343675f2d744e54813bf40fd4388ecaf7f05247d97b1871ec700a678fcc635d9e7dff6c760f49f50e34ee9dc1df2a9fe86b0e89b69507643a8bc
+  checksum: 10/db8ba256b1ae70b865ba5ddbeb08248c3613b8ca9fc77ebb402e5046c2910f7275e771a49bbcc4fd8d2361085a24b5b5e14ee518e0be0e3cc6b886253cca57bf
   languageName: node
   linkType: hard
 
@@ -1825,16 +1825,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:6.16.0":
-  version: 6.16.0
-  resolution: "dd-trace@npm:6.16.0"
+"dd-trace@npm:6.17.0":
+  version: 6.17.0
+  resolution: "dd-trace@npm:6.17.0"
   dependencies:
     "@datadog/libdatadog": "npm:^0.21.0"
     "@datadog/libdatadog-extras": "npm:^0.21.0"
     "@datadog/native-appsec": "npm:11.0.2"
     "@datadog/native-iast-taint-tracking": "npm:4.2.1"
     "@datadog/native-metrics": "npm:4.0.0"
-    "@datadog/pprof": "npm:5.18.1"
+    "@datadog/pprof": "npm:5.19.0"
     "@datadog/wasm-js-rewriter": "npm:5.0.4"
     "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
     "@opentelemetry/api-logs": "npm:<1.0.0"
@@ -1863,7 +1863,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/8bc8bfd55e48dd295dd9d26248ec8af565e2622209dc41670f32da38251d247ecec571fbdc92d84a4d285b27741454bf08061308ce10c9f865db687613d52c2d
+  checksum: 10/8aa580bc242bed8d0f6d102e1140d4b5139cb93a1201b474fd5d73256275fdf3bf184782b17389b5ae0823e62335d5e6725854adfbdb8a843225bcbe91308969
   languageName: node
   linkType: hard
 
@@ -2128,7 +2128,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:6.16.0"
+    dd-trace: "npm:6.17.0"
     express: "npm:5.2.1"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
