@@ -27,7 +27,7 @@
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2003",
-    "prettier": "3.9.8",
+    "prettier": "3.9.9",
     "tsx": "4.23.15",
     "typescript": "7.0.2"
   },
