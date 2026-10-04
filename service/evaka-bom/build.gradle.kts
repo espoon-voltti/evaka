@@ -13,7 +13,7 @@ dependencies {
         api("com.github.kagkarlsson:db-scheduler:16.12.0")
         api("com.github.mwiede:jsch:2.28.7")
         api("com.github.ua-parser:uap-java:1.6.1")
-        api("com.google.guava:guava:33.7.1-jre")
+        api("com.google.guava:guava:33.7.2-jre")
         api("com.networknt:json-schema-validator:3.0.7")
         api("com.upokecenter:cbor:4.5.6")
         api("com.yubico:webauthn-server-core:2.9.0")
