@@ -10,15 +10,17 @@ import tools.jackson.core.TokenStreamContext
 class SsnMasker : ValueMasker {
     override fun mask(context: TokenStreamContext?, value: Any?): Any {
         return if (value is String) {
-            value.replace(
-                Regex(
-                    "(?<!-|[\\dA-z])(\\d{2})(\\d{2})(\\d{2})[-+ABCDEFUVWXY](\\d{3})[\\dA-Z](?!-)",
-                    RegexOption.IGNORE_CASE,
-                ),
-                "REDACTED-SSN",
-            )
+            value.replace(ssnRegex, "REDACTED-SSN")
         } else {
             value ?: "null"
         }
+    }
+
+    companion object {
+        private val ssnRegex =
+            Regex(
+                "(?<!-|[\\dA-z])(\\d{2})(\\d{2})(\\d{2})[-+ABCDEFUVWXY](\\d{3})[\\dA-Z](?!-)",
+                RegexOption.IGNORE_CASE,
+            )
     }
 }

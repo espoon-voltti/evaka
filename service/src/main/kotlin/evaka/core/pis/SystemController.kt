@@ -84,13 +84,7 @@ class SystemController(
                     citizen
                 }
             }
-            .also {
-                Audit.CitizenLogin.log(
-                    targetId = AuditId(request.socialSecurityNumber),
-                    objectId = AuditId(it.id),
-                    meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName),
-                )
-            }
+            .also { Audit.CitizenLogin.log(objectId = AuditId(it.id)) }
     }
 
     @PostMapping("/system/citizen-weak-login")
@@ -265,13 +259,7 @@ class SystemController(
                 Audit.EmployeeLogin.log(
                     targetId = AuditId(request.externalId.toString()),
                     objectId = AuditId(it.id),
-                    meta =
-                        mapOf(
-                            "lastName" to request.lastName,
-                            "firstName" to request.firstName,
-                            "email" to request.email,
-                            "globalRoles" to it.globalRoles,
-                        ),
+                    meta = mapOf("globalRoles" to it.globalRoles),
                 )
             }
     }
@@ -283,10 +271,7 @@ class SystemController(
         clock: EvakaClock,
         @RequestBody request: EmployeeSuomiFiLoginRequest,
     ): EmployeeUser {
-        Audit.EmployeeSfiLoginAttempt.log(
-            targetId = AuditId(request.ssn.value),
-            meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName),
-        )
+        Audit.EmployeeSfiLoginAttempt.log()
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     val employee =
@@ -310,14 +295,8 @@ class SystemController(
             }
             .also {
                 Audit.EmployeeSfiLogin.log(
-                    targetId = AuditId(request.ssn.value),
                     objectId = AuditId(it.id),
-                    meta =
-                        mapOf(
-                            "lastName" to request.lastName,
-                            "firstName" to request.firstName,
-                            "globalRoles" to it.globalRoles,
-                        ),
+                    meta = mapOf("globalRoles" to it.globalRoles),
                 )
             }
     }

@@ -104,6 +104,9 @@ fun TestLoggers.assertSanitized() =
     assertThat(sanitized.appender.list.map { it.toJson(sanitized.encoder).asMap(mapper) })
         .extracting(*defaultEventProps)
 
+fun TestLoggers.withLatestAudit(block: (Map<String, Any>) -> Unit) =
+    block(audit.appender.list.last().toJson(audit.encoder).asMap(mapper))
+
 fun TestLoggers.withLatestDefault(block: (Map<String, Any>) -> Unit) =
     block(default.appender.list.last().toJson(default.encoder).asMap(mapper))
 
