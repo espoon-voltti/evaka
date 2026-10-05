@@ -17,7 +17,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { buttonBounceAnimation } from 'lib-components/atoms/buttons/button-commons'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import { desktopMin, tabletMin } from 'lib-components/breakpoints'
+import { tabletMin } from 'lib-components/breakpoints'
 import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -203,14 +203,6 @@ const Container = styled.div`
   max-width: 400px;
   min-height: 500px;
   background-color: ${colors.grayscale.g0};
-
-  @media (max-width: ${desktopMin}) {
-    overflow-y: visible;
-  }
-
-  @media (min-width: ${desktopMin}) {
-    overflow-y: auto;
-  }
 
   @media (max-width: 750px) {
     min-width: 50%;
