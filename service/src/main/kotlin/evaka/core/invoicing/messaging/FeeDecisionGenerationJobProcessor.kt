@@ -30,13 +30,14 @@ class FeeDecisionGenerationJobProcessor(
                 is AsyncJob.GenerateFinanceDecisions.Person.Adult -> {
                     generator.generateNewDecisionsForAdult(
                         tx,
+                        clock.today(),
                         msg.person.adultId,
                         skipPropagation = msg.person.skipPropagation == true,
                     )
                 }
 
                 is AsyncJob.GenerateFinanceDecisions.Person.Child -> {
-                    generator.generateNewDecisionsForChild(tx, msg.person.childId)
+                    generator.generateNewDecisionsForChild(tx, clock.today(), msg.person.childId)
                 }
             }
         }

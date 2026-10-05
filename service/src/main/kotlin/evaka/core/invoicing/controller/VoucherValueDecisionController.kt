@@ -38,6 +38,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionStatus.WAITING_FOR_MANUAL
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus.WAITING_FOR_SENDING
 import evaka.core.invoicing.domain.VoucherValueDecisionSummary
 import evaka.core.invoicing.domain.VoucherValueDecisionType
+import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import evaka.core.invoicing.service.FinanceDecisionGenerator
 import evaka.core.invoicing.service.VoucherValueDecisionService
@@ -449,7 +450,11 @@ class VoucherValueDecisionController(
                     Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS,
                     id,
                 )
-                generator.createRetroactiveValueDecisions(it, id, body.from, audit)
+                val today = clock.today()
+                if (body.from < financeFreezeDate(today)) {
+                    throw BadRequest("Retroactive decisions cannot start before the finance freeze")
+                }
+                generator.createRetroactiveValueDecisions(it, today, id, body.from, audit)
             }
         }
         audit.log(Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive, clock)

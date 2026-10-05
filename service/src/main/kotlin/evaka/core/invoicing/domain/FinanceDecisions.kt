@@ -10,7 +10,13 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
+import java.time.Period
 import java.util.UUID
+
+val FINANCE_FREEZE_PERIOD: Period = Period.ofYears(5)
+
+/** Finance decisions are never generated for days before this */
+fun financeFreezeDate(today: LocalDate): LocalDate = today.minus(FINANCE_FREEZE_PERIOD)
 
 interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val id: Id<*>

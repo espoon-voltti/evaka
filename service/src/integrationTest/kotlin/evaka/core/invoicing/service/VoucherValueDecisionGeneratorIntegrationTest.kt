@@ -12,6 +12,7 @@ import evaka.core.feeThresholds
 import evaka.core.insertServiceNeedOptionVoucherValues
 import evaka.core.insertServiceNeedOptions
 import evaka.core.invoicing.calculateMonthlyAmount
+import evaka.core.invoicing.controller.CreateRetroactiveFeeDecisionsBody
 import evaka.core.invoicing.controller.VoucherValueDecisionController
 import evaka.core.invoicing.domain.FeeAlterationType
 import evaka.core.invoicing.domain.FeeThresholds
@@ -31,6 +32,7 @@ import evaka.core.shared.PlacementId
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevAssistanceFactor
 import evaka.core.shared.dev.DevCareArea
@@ -45,6 +47,7 @@ import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestPartnership
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -66,6 +69,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -130,7 +134,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child1.id), period)
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
@@ -153,6 +157,35 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
             assertEquals(87000, decision.voucherValue)
             assertEquals(28900, decision.finalCoPayment)
+        }
+    }
+
+    @Test
+    fun `voucher value decisions are generated starting earliest on the finance freeze date`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(adult1.id, listOf(child1.id), period)
+        insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(it, LocalDate.of(2025, 3, 15), adult1.id)
+        }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
+        assertEquals(LocalDate.of(2020, 3, 15), voucherValueDecisions.first().validFrom)
+        assertEquals(period.end, voucherValueDecisions.last().validTo)
+    }
+
+    @Test
+    fun `retroactive voucher value decisions cannot be requested to start before the finance freeze date`() {
+        val clock = MockEvakaClock(2025, 3, 15, 12, 0)
+        assertThrows<BadRequest> {
+            voucherValueDecisionController.generateRetroactiveVoucherValueDecisions(
+                dbInstance(),
+                AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN)),
+                clock,
+                adult1.id,
+                CreateRetroactiveFeeDecisionsBody(from = LocalDate.of(2020, 3, 14)),
+            )
         }
     }
 
@@ -189,8 +222,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         )
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(it, dad.id)
-            generator.generateNewDecisionsForAdult(it, mom.id)
+            generator.generateNewDecisionsForAdult(it, clock.today(), dad.id)
+            generator.generateNewDecisionsForAdult(it, clock.today(), mom.id)
         }
 
         val voucherValueDecisions =
@@ -239,7 +272,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertFeeAlteration(child1.id, 50.0, period.asDateRange())
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
@@ -276,7 +309,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(testChild.id), period)
         insertPlacement(testChild.id, period, PlacementType.DAYCARE, voucherDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
@@ -310,7 +343,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val serviceNeedPeriod = period.copy(start = period.start.plusMonths(5))
         insertServiceNeed(placementId, serviceNeedPeriod, snDaycareFullDayPartWeek25.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
@@ -343,7 +376,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child2.id), period)
         insertPlacement(child2.id, period, PlacementType.DAYCARE_FIVE_YEAR_OLDS, voucherDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
         assertEquals(1, voucherValueDecisions.size)
@@ -372,7 +405,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             voucherDaycare.id,
         )
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
         assertEquals(1, voucherValueDecisions.size)
@@ -396,7 +429,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child2.id), period)
         insertPlacement(child2.id, period, PlacementType.PRESCHOOL, voucherDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
         assertEquals(0, voucherValueDecisions.size)
@@ -408,7 +441,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child2.id), period)
         insertPlacement(child2.id, period, PlacementType.PREPARATORY, voucherDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
         assertEquals(1, voucherValueDecisions.size)
@@ -431,7 +464,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             insertPlacement(child2.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertServiceNeed(placementId, period, snDaycareFiveYearOldsFullDayPartWeek25.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
         assertEquals(1, voucherValueDecisions.size)
@@ -461,7 +494,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             voucherDaycare.id,
         )
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
@@ -503,8 +536,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(twin1.id, twin2.id), placementPeriod)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(it, twin1.id)
-            generator.generateNewDecisionsForChild(it, twin2.id)
+            generator.generateNewDecisionsForChild(it, clock.today(), twin1.id)
+            generator.generateNewDecisionsForChild(it, clock.today(), twin2.id)
         }
 
         val decisions = getAllVoucherValueDecisions()
@@ -524,7 +557,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child2.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         db.transaction { it.insert(DevAssistanceFactor(childId = child2.id, capacityFactor = 3.0)) }
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
         assertEquals(1, voucherValueDecisions.size)
@@ -549,7 +582,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child2.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertAssistanceNeedCoefficient(child2.id, period, 3.55)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions()
         assertEquals(1, voucherValueDecisions.size)
@@ -576,7 +609,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child2.id, wholePeriod, PlacementType.DAYCARE, voucherDaycare.id)
         insertPartnership(adult1.id, adult2.id, firstPeriod.asDateRange(), clock.now())
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult2.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult2.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
@@ -614,7 +647,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertIncome(adult1.id, 310200, period.asDateRange())
         insertIncome(child1.id, 600000, period.asDateRange())
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
@@ -649,7 +682,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPartnership(adult1.id, adult2.id, period.asDateRange(), clock.now())
         insertPlacement(child1.id, period, PlacementType.DAYCARE_FIVE_YEAR_OLDS, voucherDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, child1.id) }
+        db.transaction { generator.generateNewDecisionsForChild(it, clock.today(), child1.id) }
         assertEquals(1, getAllVoucherValueDecisions().size)
     }
 
@@ -663,8 +696,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, period, PlacementType.DAYCARE_FIVE_YEAR_OLDS, voucherDaycare.id)
 
         db.transaction {
-            generator.generateNewDecisionsForChild(it, child1.id)
-            generator.generateNewDecisionsForChild(it, child2.id)
+            generator.generateNewDecisionsForChild(it, clock.today(), child1.id)
+            generator.generateNewDecisionsForChild(it, clock.today(), child2.id)
         }
         assertEquals(1, getAllVoucherValueDecisions().size)
     }
@@ -678,7 +711,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult2.id, listOf(child1.id), subPeriod2)
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForChild(tx, child1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForChild(tx, clock.today(), child1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -703,7 +738,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPartnership(adult1.id, adult2.id, subPeriod1.asDateRange(), clock.now())
         insertPartnership(adult1.id, adult3.id, subPeriod2.asDateRange(), clock.now())
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -730,7 +767,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertIncome(adult1.id, 10000, period.asDateRange())
         insertIncome(adult2.id, 20000, period.asDateRange())
 
-        db.transaction { tx -> generator.generateNewDecisionsForChild(tx, child1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForChild(tx, clock.today(), child1.id)
+        }
 
         val expectedHeadOfFamily = adult1
         assertThat(getAllVoucherValueDecisions())
@@ -753,7 +792,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertIncome(adult1.id, 10000, subPeriod2.asDateRange())
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
@@ -781,7 +822,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPartnership(adult1.id, adult2.id, period.asDateRange(), clock.now())
         insertIncome(adult2.id, 10000, subPeriod2.asDateRange())
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
@@ -800,7 +843,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertIncome(adult1.id, 310200, incomePeriod1)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val decisions = getAllVoucherValueDecisions()
         assertEquals(1, decisions.size)
@@ -823,7 +866,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         }
         insertIncome(adult1.id, 310200, incomePeriod2)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         assertEquals(2, getAllVoucherValueDecisions().size)
     }
@@ -837,7 +880,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertIncome(adult1.id, 310200, incomePeriod1)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         val decisions = getAllVoucherValueDecisions()
         assertEquals(1, decisions.size)
@@ -871,7 +914,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         }
         insertIncome(adult1.id, 310200, incomePeriod2)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         // No new DRAFT is generated because the incomes are identical
         assertEquals(1, getAllVoucherValueDecisions().size)
@@ -886,7 +929,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertIncome(child1.id, 10000, subPeriod2.asDateRange())
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
@@ -905,7 +950,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertFamilyRelations(adult1.id, listOf(child2.id), subPeriod2)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -935,7 +982,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, subPeriod1, PlacementType.DAYCARE, voucherDaycare.id)
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE, voucherDaycare2.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -962,7 +1011,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, subPeriod1, PlacementType.DAYCARE, voucherDaycare.id)
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE_PART_TIME, voucherDaycare.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -999,7 +1050,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertServiceNeed(placementId, subPeriod1, snDefaultDaycare.id)
         insertServiceNeed(placementId, subPeriod2, snDaycareFullDay35.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -1031,7 +1084,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child1.id), period)
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE, voucherDaycare.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -1075,7 +1130,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         insertFeeAlteration(child1.id, 50.0, subPeriod2.asDateRange())
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
@@ -1099,7 +1156,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child1.id), period)
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
@@ -1178,7 +1237,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             )
         }
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting({ it.validFrom }, { it.validTo }, { it.difference })
@@ -1203,7 +1264,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE, voucherDaycare2.id)
         insertIncome(child1.id, 10000, subPeriod3.asDateRange())
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting({ it.validFrom }, { it.validTo }, { it.difference })
@@ -1239,12 +1302,14 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child1.id), period)
         insertPlacement(child1.id, subPeriod1, PlacementType.DAYCARE, voucherDaycare.id)
         db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(tx, adult1.id)
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
             tx.createUpdate { sql("UPDATE voucher_value_decision SET status = 'SENT'") }.execute()
         }
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE, voucherDaycare2.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -1274,14 +1339,16 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child1.id), period)
         insertPlacement(child1.id, period, PlacementType.DAYCARE, voucherDaycare.id)
         db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(tx, adult1.id)
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
             tx.createUpdate { sql("UPDATE voucher_value_decision SET status = 'SENT'") }.execute()
             tx.createUpdate { sql("DELETE FROM placement") }.execute()
         }
         insertPlacement(child1.id, subPeriod1, PlacementType.DAYCARE, voucherDaycare2.id)
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE, voucherDaycare.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -1317,7 +1384,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, subPeriod1, PlacementType.DAYCARE, voucherDaycare.id)
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE, voucherDaycare2.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting({ FiniteDateRange(it.validFrom, it.validTo) }, { it.difference })
@@ -1335,12 +1404,14 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(adult1.id, listOf(child1.id), period)
         insertPlacement(child1.id, subPeriod1, PlacementType.DAYCARE, voucherDaycare.id)
         db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(tx, adult1.id)
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
             tx.createUpdate { sql("UPDATE voucher_value_decision SET status = 'SENT'") }.execute()
         }
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE, voucherDaycare2.id)
 
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult1.id) }
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock.today(), adult1.id)
+        }
 
         assertThat(getAllVoucherValueDecisions())
             .extracting(
@@ -1372,7 +1443,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(child1.id, subPeriod1, PlacementType.DAYCARE, voucherDaycare.id)
         insertPlacement(child1.id, subPeriod2, PlacementType.DAYCARE, voucherDaycare2.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
         val decisions = getAllVoucherValueDecisions()
         assertEquals(2, decisions.size)
         assertEquals(2, decisions.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size)
@@ -1395,7 +1466,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(1, it.filter { d -> d.status == VoucherValueDecisionStatus.DRAFT }.size)
         }
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, adult1.id) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, clock.today(), adult1.id) }
 
         getAllVoucherValueDecisions().let {
             assertEquals(2, it.size)

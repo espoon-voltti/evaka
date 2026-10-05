@@ -95,12 +95,17 @@ fun <Decision : FinanceDecision<Decision>> filterAndMergeDrafts(
         .mapNotNull { draft ->
             draft.validDuring.intersection(DateRange(minDate, null))?.let { draft.withValidity(it) }
         }
-        .filter { newDraft ->
-            !ignoredDrafts.any {
-                it.validDuring == newDraft.validDuring && it.contentEquals(newDraft)
-            }
-        }
+        .filter { newDraft -> ignoredDrafts.none { newDraft.matchesOldDraft(it, minDate) } }
 }
+
+/** The old draft is identical, or identical apart from its start, which the min date has cut */
+private fun <Decision : FinanceDecision<Decision>> Decision.matchesOldDraft(
+    oldDraft: Decision,
+    minDate: LocalDate,
+): Boolean =
+    contentEquals(oldDraft) &&
+        (validDuring == oldDraft.validDuring ||
+            (validTo == oldDraft.validTo && validFrom == minDate && oldDraft.validFrom < minDate))
 
 fun <Decision : FinanceDecision<Decision>> existsActiveDuplicateThatWillRemainEffective(
     draft: Decision,
@@ -176,13 +181,12 @@ fun <Decision : FinanceDecision<Decision>, Difference> Decision.getDifferencesTo
     return activeDifferences.toSet()
 }
 
-/** If there exists identical old draft, copy id and created date from it */
+/** If there exists a matching old draft, copy id and created date from it */
 fun <Decision : FinanceDecision<Decision>> Decision.withMetadataFromExisting(
-    existingDrafts: List<Decision>
+    existingDrafts: List<Decision>,
+    minDate: LocalDate,
 ): Decision {
-    val duplicateOldDraft = existingDrafts.find { oldDraft ->
-        contentEquals(oldDraft) && validDuring == oldDraft.validDuring
-    }
+    val duplicateOldDraft = existingDrafts.find { matchesOldDraft(it, minDate) }
 
     return duplicateOldDraft?.let { this.withId(it.id.raw).withCreated(it.created) } ?: this
 }

@@ -56,9 +56,8 @@ fun generateAndInsertFeeDecisionsV2(
     tx: Database.Transaction,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
-    financeMinDate: LocalDate,
+    minDate: LocalDate,
     headOfFamilyId: PersonId,
-    retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
 ): GeneratedFeeDecisions {
     val existingDecisions =
         tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId = headOfFamilyId, lockForUpdate = true)
@@ -78,9 +77,7 @@ fun generateAndInsertFeeDecisionsV2(
             activeDecisions = activeDecisions,
             existingDrafts = existingDrafts,
             ignoredDrafts = ignoredDrafts,
-            minDate =
-                if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
-                else financeMinDate,
+            minDate = minDate,
         )
 
     tx.deleteFeeDecisions(existingDrafts.map { it.id })
@@ -121,7 +118,7 @@ fun generateFeeDecisionsDrafts(
             ignoredDrafts = ignoredDrafts,
             minDate = minDate,
         )
-        .map { it.withMetadataFromExisting(existingDrafts) }
+        .map { it.withMetadataFromExisting(existingDrafts, minDate) }
         .map {
             it.copy(
                 difference =
