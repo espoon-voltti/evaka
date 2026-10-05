@@ -4,11 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useRef, useState } from 'react'
+import { FocusOn } from 'react-focus-on'
 import styled, { css } from 'styled-components'
 import { Link } from 'wouter'
 
 import { useQuery } from 'lib-common/query'
+import { useMediaQuery } from 'lib-common/utils/useMediaQuery'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { desktopMin, zoomedMobileMax } from 'lib-components/breakpoints'
@@ -30,7 +32,6 @@ import {
   fasEnvelope
 } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import type { User } from '../auth/state'
 import { AuthContext } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
@@ -67,15 +68,24 @@ export default React.memo(function MobileNav() {
   const hasPersonalDetailsTasks = useHasPersonalDetailsTasks()
 
   const [menuOpen, setMenuOpen] = useState<'children' | 'submenu'>()
-  const toggleSubMenu = useCallback(
-    () => setMenuOpen((open) => (open === 'submenu' ? undefined : 'submenu')),
-    []
-  )
-  const toggleChildrenMenu = useCallback(
-    () => setMenuOpen((open) => (open === 'children' ? undefined : 'children')),
-    []
-  )
+
+  const closedWithEscape = useRef(false)
+  const toggleSubMenu = useCallback(() => {
+    closedWithEscape.current = false
+    setMenuOpen((open) => (open === 'submenu' ? undefined : 'submenu'))
+  }, [])
+  const toggleChildrenMenu = useCallback(() => {
+    closedWithEscape.current = false
+    setMenuOpen((open) => (open === 'children' ? undefined : 'children'))
+  }, [])
   const closeMenu = useCallback(() => setMenuOpen(undefined), [])
+  const closeMenuWithEscape = useCallback(() => {
+    closedWithEscape.current = true
+    closeMenu()
+  }, [closeMenu])
+
+  const bottomBarRef = useRef<HTMLElement>(null)
+  const bottomBarHidden = useMediaQuery(hiddenAtDesktopWidth)
 
   const currentUser = user.getOrElse(undefined)
   if (!currentUser) {
@@ -84,7 +94,7 @@ export default React.memo(function MobileNav() {
 
   return (
     <>
-      <BottomBar>
+      <BottomBar ref={bottomBarRef}>
         {currentUser.accessibleFeatures.reservations && (
           <BottomBarLink
             to="/calendar"
@@ -108,10 +118,15 @@ export default React.memo(function MobileNav() {
           />
         )}
         <ChildrenLink
+          menuOpen={menuOpen === 'children'}
           toggleChildrenMenu={toggleChildrenMenu}
           closeMenu={closeMenu}
         />
-        <StyledButton onClick={toggleSubMenu} data-qa="sub-nav-menu-mobile">
+        <StyledButton
+          onClick={toggleSubMenu}
+          aria-expanded={menuOpen === 'submenu'}
+          data-qa="sub-nav-menu-mobile"
+        >
           <AttentionIndicator
             toggled={hasSubMenuAttention({
               hasPersonalDetailsTasks,
@@ -127,18 +142,32 @@ export default React.memo(function MobileNav() {
           {t.header.nav.subNavigationMenu}
         </StyledButton>
       </BottomBar>
-      {menuOpen === 'submenu' ? (
-        <Menu
-          user={currentUser}
-          closeMenu={closeMenu}
-          unreadDecisions={unreadDecisions}
-        />
-      ) : menuOpen === 'children' ? (
-        <ChildrenMenu closeMenu={closeMenu} />
-      ) : null}
+      {menuOpen !== undefined && !bottomBarHidden && (
+        <FocusOn
+          onEscapeKey={closeMenuWithEscape}
+          shards={[bottomBarRef]}
+          // Scroll lock screws up page layout when menu is visible
+          scrollLock={false}
+          // Return focus only if the menu was closed with Escape, otherwise
+          // the user either navigated away or clicned the menu button again
+          returnFocus={() => closedWithEscape.current}
+        >
+          {menuOpen === 'submenu' ? (
+            <Menu
+              user={currentUser}
+              closeMenu={closeMenu}
+              unreadDecisions={unreadDecisions}
+            />
+          ) : (
+            <ChildrenMenu closeMenu={closeMenu} />
+          )}
+        </FocusOn>
+      )}
     </>
   )
 })
+
+const hiddenAtDesktopWidth = `(min-width: ${desktopMin})`
 
 const BottomBar = styled.nav`
   z-index: 25;
@@ -161,7 +190,7 @@ const BottomBar = styled.nav`
     flex: none;
   }
 
-  @media (min-width: ${desktopMin}) {
+  @media ${hiddenAtDesktopWidth} {
     display: none;
   }
 
@@ -264,9 +293,11 @@ const ResponsiveLanguageRow = styled(FixedSpaceRow)`
 `
 
 const ChildrenLink = React.memo(function ChildrenLink({
+  menuOpen,
   toggleChildrenMenu,
   closeMenu
 }: {
+  menuOpen: boolean
   toggleChildrenMenu: () => void
   closeMenu: () => void
 }) {
@@ -298,6 +329,7 @@ const ChildrenLink = React.memo(function ChildrenLink({
     <StyledButton
       className={classNames({ active })}
       onClick={toggleChildrenMenu}
+      aria-expanded={menuOpen}
       data-qa="nav-children-mobile"
     >
       <AttentionIndicator
@@ -326,35 +358,33 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     'long'
   )
   return (
-    <ModalAccessibilityWrapper data-qa="children-menu">
-      <MenuContainer>
-        {childrenWithOwnPage.map((child) => (
-          <DropDownLink
-            key={child.id}
-            data-qa={`children-menu-${child.id}`}
-            to={`/children/${child.id}`}
-            onClick={closeMenu}
-            $alignRight
-            translate="no"
-          >
-            <PersonName person={child} format="FirstFirst Last" />
-            {unreadChildNotifications[child.id] ? (
-              <CircledChar
-                aria-label={`${unreadChildNotifications[child.id]} ${
-                  t.header.notifications
-                }`}
-                data-qa="sub-nav-menu-decisions-notification-count"
-              >
-                {unreadChildNotifications[child.id]}
-              </CircledChar>
-            ) : null}
-            {duplicateChildInfo[child.id] !== undefined && (
-              <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
-            )}
-          </DropDownLink>
-        ))}
-      </MenuContainer>
-    </ModalAccessibilityWrapper>
+    <MenuContainer>
+      {childrenWithOwnPage.map((child) => (
+        <DropDownLink
+          key={child.id}
+          data-qa={`children-menu-${child.id}`}
+          to={`/children/${child.id}`}
+          onClick={closeMenu}
+          $alignRight
+          translate="no"
+        >
+          <PersonName person={child} format="FirstFirst Last" />
+          {unreadChildNotifications[child.id] ? (
+            <CircledChar
+              aria-label={`${unreadChildNotifications[child.id]} ${
+                t.header.notifications
+              }`}
+              data-qa="sub-nav-menu-decisions-notification-count"
+            >
+              {unreadChildNotifications[child.id]}
+            </CircledChar>
+          ) : null}
+          {duplicateChildInfo[child.id] !== undefined && (
+            <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
+          )}
+        </DropDownLink>
+      ))}
+    </MenuContainer>
   )
 })
 
@@ -374,77 +404,75 @@ const Menu = React.memo(function Menu({
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
-    <ModalAccessibilityWrapper>
-      <MenuContainer>
-        <ResponsiveLanguageRow $spacing="xs" $justifyContent="flex-end">
-          {langs.map((l) => (
-            <SelectionChip
-              key={l}
-              text={t.header.langMobile[l]}
-              selected={lang === l}
-              onChange={() => setLang(l)}
-            />
-          ))}
-        </ResponsiveLanguageRow>
-        <Separator />
+    <MenuContainer>
+      <ResponsiveLanguageRow $spacing="xs" $justifyContent="flex-end">
+        {langs.map((l) => (
+          <SelectionChip
+            key={l}
+            text={t.header.langMobile[l]}
+            selected={lang === l}
+            onChange={() => setLang(l)}
+          />
+        ))}
+      </ResponsiveLanguageRow>
+      <Separator />
+      <DropDownLink
+        data-qa="sub-nav-menu-applications"
+        to="/applications"
+        onClick={closeMenu}
+      >
+        {t.header.nav.applications} {lock}
+      </DropDownLink>
+      <AttentionIndicator
+        toggled={unreadDecisions > 0}
+        position="top"
+        closerToText
+        data-qa="messages-notification"
+      >
         <DropDownLink
-          data-qa="sub-nav-menu-applications"
-          to="/applications"
+          data-qa="sub-nav-menu-decisions"
+          to="/decisions"
           onClick={closeMenu}
         >
-          {t.header.nav.applications} {lock}
+          {t.header.nav.decisions} {lock}
+          {unreadDecisions ? (
+            <CircledChar
+              aria-label={`${unreadDecisions} ${t.header.notifications}`}
+              data-qa="sub-nav-menu-decisions-notification-count"
+            >
+              {unreadDecisions}
+            </CircledChar>
+          ) : null}
         </DropDownLink>
-        <AttentionIndicator
-          toggled={unreadDecisions > 0}
-          position="top"
-          closerToText
-          data-qa="messages-notification"
-        >
-          <DropDownLink
-            data-qa="sub-nav-menu-decisions"
-            to="/decisions"
-            onClick={closeMenu}
-          >
-            {t.header.nav.decisions} {lock}
-            {unreadDecisions ? (
-              <CircledChar
-                aria-label={`${unreadDecisions} ${t.header.notifications}`}
-                data-qa="sub-nav-menu-decisions-notification-count"
-              >
-                {unreadDecisions}
-              </CircledChar>
-            ) : null}
-          </DropDownLink>
-        </AttentionIndicator>
+      </AttentionIndicator>
+      <DropDownLink
+        data-qa="sub-nav-menu-income"
+        to="/income"
+        matchRoutes={['/income', '/child-income']}
+        onClick={closeMenu}
+      >
+        {t.header.nav.income} {lock}
+      </DropDownLink>
+      <Separator />
+      <AttentionIndicator
+        toggled={hasPersonalDetailsTasks}
+        position="top"
+        closerToText
+        data-qa="personal-details-notification"
+      >
         <DropDownLink
-          data-qa="sub-nav-menu-income"
-          to="/income"
-          matchRoutes={['/income', '/child-income']}
+          data-qa="sub-nav-menu-personal-details"
+          to="/personal-details"
           onClick={closeMenu}
         >
-          {t.header.nav.income} {lock}
+          {t.header.nav.personalDetails}
         </DropDownLink>
-        <Separator />
-        <AttentionIndicator
-          toggled={hasPersonalDetailsTasks}
-          position="top"
-          closerToText
-          data-qa="personal-details-notification"
-        >
-          <DropDownLink
-            data-qa="sub-nav-menu-personal-details"
-            to="/personal-details"
-            onClick={closeMenu}
-          >
-            {t.header.nav.personalDetails}
-          </DropDownLink>
-        </AttentionIndicator>
-        <DropDownLocalLink key="sub-nav-menu-logout" href={logoutUrl}>
-          {t.header.logout}
-          <FontAwesomeIcon icon={farSignOut} />
-        </DropDownLocalLink>
-      </MenuContainer>
-    </ModalAccessibilityWrapper>
+      </AttentionIndicator>
+      <DropDownLocalLink key="sub-nav-menu-logout" href={logoutUrl}>
+        {t.header.logout}
+        <FontAwesomeIcon icon={farSignOut} />
+      </DropDownLocalLink>
+    </MenuContainer>
   )
 })
 
@@ -467,10 +495,6 @@ const MenuContainer = styled.div`
   html[data-standalone] & {
     position: absolute;
     overflow-y: auto;
-  }
-
-  @media (min-width: ${desktopMin}) {
-    display: none;
   }
 `
 

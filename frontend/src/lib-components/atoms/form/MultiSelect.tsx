@@ -126,6 +126,14 @@ function MultiSelect<T>({
         getOptionValue={getOptionId}
         value={value}
         tabSelectsValue={false}
+        onKeyDown={(ev) => {
+          if (ev.key === 'Escape' && !isMenuOpen) {
+            // react-select calls preventDefault on all key events. We want to
+            // allow the Escape key when the menu is closed so that it e.g.
+            // closes a modal that uses <MultiSelect>
+            ev.preventDefault = () => undefined
+          }
+        }}
         onFocus={(ev) => {
           const parentContainer = ev.target.closest('.multi-select')
 
