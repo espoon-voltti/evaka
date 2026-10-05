@@ -200,6 +200,8 @@ export default React.memo(function MessageEditor({
       onEscapeKey={onClose}
       scrollLock={fullScreen}
       noIsolation={!fullScreen}
+      // The caller manages focus itself
+      returnFocus={false}
     >
       <Container
         role="dialog"
