@@ -8,7 +8,7 @@ import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import 'lib-common/assets/fonts/fonts.css'
 import { appVersion } from 'lib-common/globals'
-import { sentryEventFilter } from 'lib-common/sentry'
+import { sentryDataCollection, sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { appConfig } from 'lib-customizations/citizen'
 
@@ -29,7 +29,8 @@ Sentry.init({
   enabled: appConfig.sentry?.enabled === true,
   dsn: appConfig.sentry?.dsn,
   release: appVersion,
-  environment: getEnvironment()
+  environment: getEnvironment(),
+  dataCollection: sentryDataCollection
 })
 Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 
