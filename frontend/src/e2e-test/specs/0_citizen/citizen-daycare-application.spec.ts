@@ -630,7 +630,8 @@ test.describe('Citizen daycare applications', () => {
       'manager@example.com'
     )
     await unitEditor.setInvoiceByMunicipality(false)
-    await unitEditor.submit()
+    const unitDetails = await unitEditor.submit()
+    await unitDetails.waitUntilLoaded()
 
     // Citizen re-enters the draft and revisits the unit preference section
     await applicationsPage.editApplication(applicationId)
