@@ -35,6 +35,12 @@ export interface RedisClient extends RedisCommands {
 }
 
 export interface RedisTransaction extends RedisCommands {
+  set(
+    key: string,
+    value: string,
+    options: { EX: number; NX: true }
+  ): RedisTransaction
+
   incr(key: string): RedisTransaction
 
   sAdd(key: string, members: string | string[]): RedisTransaction
