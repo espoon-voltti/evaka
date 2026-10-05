@@ -4215,8 +4215,14 @@ export const fi = {
       description: 'Titaniasta tuoduista vuorolistoista löydetyt virheet',
       header: 'Titania-vienti',
       date: 'Päivämäärä',
-      shift1: 'Ensimmäinen vuoro',
-      shift2: 'Päällekäinen vuoro'
+      error: 'Virhe',
+      shift: 'Vuoro',
+      overlappingShift: 'Päällekkäinen vuoro',
+      errorTypes: {
+        OVERLAPPING_SHIFT: 'Päällekkäiset vuorot',
+        ZERO_LENGTH_SHIFT: 'Vuoro alkaa ja päättyy samaan aikaan',
+        REVERSED_SHIFT: 'Vuoro päättyy ennen alkua'
+      }
     },
     sextet: {
       title: 'Kuusikkovertailu',

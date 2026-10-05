@@ -651,18 +651,20 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertThat(response.inserted).isEmpty()
         assertThat(response.deleted).isEmpty()
-        assertThat(response.overLappingShifts)
+        assertThat(response.errors)
             .containsExactlyInAnyOrder(
-                TitaniaOverLappingShifts(
+                TitaniaErrorRow(
                     employeeId1,
+                    TitaniaErrorType.OVERLAPPING_SHIFT,
                     LocalDate.of(2022, 10, 12),
                     LocalTime.of(8, 0),
                     LocalTime.of(9, 0),
                     LocalTime.of(8, 30),
                     LocalTime.of(14, 0),
                 ),
-                TitaniaOverLappingShifts(
+                TitaniaErrorRow(
                     employeeId2,
+                    TitaniaErrorType.OVERLAPPING_SHIFT,
                     LocalDate.of(2022, 10, 13),
                     LocalTime.of(7, 0),
                     LocalTime.of(11, 30),
@@ -813,6 +815,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     LocalTime.of(9, 0),
                     LocalTime.of(8, 30),
                     LocalTime.of(14, 0),
+                    TitaniaErrorType.OVERLAPPING_SHIFT,
                 ),
                 TitaniaTestDbRow(
                     HelsinkiDateTime.now(),
@@ -822,6 +825,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     LocalTime.of(11, 30),
                     LocalTime.of(10, 45),
                     LocalTime.of(13, 0),
+                    TitaniaErrorType.OVERLAPPING_SHIFT,
                 ),
             )
     }
@@ -903,6 +907,208 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val reportRows = db.read { tx -> tx.fetchReportRows() }
         assertThat(reportRows).isEmpty()
     }
+
+    @Test
+    fun `stores zero-length shift in the error report table and keeps existing plans`() {
+        val employeeId = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
+        db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(
+                tx,
+                singleEmployeeRequest("176716", event("0800", "1600")),
+            )
+        }
+        val existingPlans = db.read { tx -> tx.findStaffAttendancePlansBy() }
+
+        // the zero-length shift touches the other shift without overlapping it
+        val response = db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(
+                tx,
+                singleEmployeeRequest("176716", event("0800", "0900"), event("0900", "0900")),
+            )
+        }
+
+        assertThat(response.inserted).isEmpty()
+        assertThat(response.deleted).isEmpty()
+        assertThat(db.read { tx -> tx.findStaffAttendancePlansBy() }).isEqualTo(existingPlans)
+        assertThat(db.read { tx -> tx.fetchReportRows() })
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("requestTime")
+            .containsExactly(
+                TitaniaTestDbRow(
+                    HelsinkiDateTime.now(),
+                    employeeId,
+                    LocalDate.of(2022, 10, 12),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(9, 0),
+                    null,
+                    null,
+                    TitaniaErrorType.ZERO_LENGTH_SHIFT,
+                )
+            )
+    }
+
+    @Test
+    fun `stores reversed shift in the error report table without checking it for overlaps`() {
+        val employeeId = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
+
+        db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(
+                tx,
+                singleEmployeeRequest("176716", event("1300", "1600"), event("1500", "1400")),
+            )
+        }
+
+        assertThat(db.read { tx -> tx.findStaffAttendancePlansBy() }).isEmpty()
+        assertThat(db.read { tx -> tx.fetchReportRows() })
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("requestTime")
+            .containsExactly(
+                TitaniaTestDbRow(
+                    HelsinkiDateTime.now(),
+                    employeeId,
+                    LocalDate.of(2022, 10, 12),
+                    LocalTime.of(15, 0),
+                    LocalTime.of(14, 0),
+                    null,
+                    null,
+                    TitaniaErrorType.REVERSED_SHIFT,
+                )
+            )
+    }
+
+    @Test
+    fun `zero-length shift inside another shift is reported as both zero-length and overlapping`() {
+        val employeeId = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
+
+        // the duplicated zero-length shift is reported only once
+        db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(
+                tx,
+                singleEmployeeRequest(
+                    "176716",
+                    event("0800", "1200"),
+                    event("0900", "0900"),
+                    event("0900", "0900"),
+                ),
+            )
+        }
+
+        assertThat(db.read { tx -> tx.fetchReportRows() })
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("requestTime")
+            .containsExactlyInAnyOrder(
+                TitaniaTestDbRow(
+                    HelsinkiDateTime.now(),
+                    employeeId,
+                    LocalDate.of(2022, 10, 12),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(9, 0),
+                    null,
+                    null,
+                    TitaniaErrorType.ZERO_LENGTH_SHIFT,
+                ),
+                TitaniaTestDbRow(
+                    HelsinkiDateTime.now(),
+                    employeeId,
+                    LocalDate.of(2022, 10, 12),
+                    LocalTime.of(8, 0),
+                    LocalTime.of(12, 0),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(9, 0),
+                    TitaniaErrorType.OVERLAPPING_SHIFT,
+                ),
+            )
+    }
+
+    @Test
+    fun `zero-length shift is reported as overlapping a shift that comes later in the request`() {
+        val employeeId = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
+
+        // same employee in two scheduling units, the zero-length shift's unit first
+        val zeroLengthUnit = singleEmployeeRequest("176716", event("0900", "0900"))
+        val enclosingUnit = singleEmployeeRequest("176716", event("0800", "1200"))
+        db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(
+                tx,
+                zeroLengthUnit.copy(
+                    schedulingUnit = zeroLengthUnit.schedulingUnit + enclosingUnit.schedulingUnit
+                ),
+            )
+        }
+
+        assertThat(db.read { tx -> tx.fetchReportRows() })
+            .usingRecursiveFieldByFieldElementComparatorIgnoringFields("requestTime")
+            .containsExactlyInAnyOrder(
+                TitaniaTestDbRow(
+                    HelsinkiDateTime.now(),
+                    employeeId,
+                    LocalDate.of(2022, 10, 12),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(9, 0),
+                    null,
+                    null,
+                    TitaniaErrorType.ZERO_LENGTH_SHIFT,
+                ),
+                TitaniaTestDbRow(
+                    HelsinkiDateTime.now(),
+                    employeeId,
+                    LocalDate.of(2022, 10, 12),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(8, 0),
+                    LocalTime.of(12, 0),
+                    TitaniaErrorType.OVERLAPPING_SHIFT,
+                ),
+            )
+    }
+
+    private fun event(beginTime: String, endTime: String) =
+        TitaniaWorkingTimeEvent(
+            date = LocalDate.of(2022, 10, 12),
+            beginTime = beginTime,
+            endTime = endTime,
+        )
+
+    private fun singleEmployeeRequest(
+        employeeNumber: String,
+        vararg events: TitaniaWorkingTimeEvent,
+    ) =
+        UpdateWorkingTimeEventsRequest(
+            period =
+                TitaniaPeriod(
+                    beginDate = LocalDate.of(2022, 10, 12),
+                    endDate = LocalDate.of(2022, 10, 12),
+                ),
+            schedulingUnit =
+                listOf(
+                    TitaniaSchedulingUnit(
+                        code = "",
+                        occupation =
+                            listOf(
+                                TitaniaOccupation(
+                                    code = "",
+                                    name = "",
+                                    person =
+                                        listOf(
+                                            TitaniaPerson(
+                                                employeeId = employeeNumber,
+                                                name = "",
+                                                actualWorkingTimeEvents =
+                                                    TitaniaWorkingTimeEvents(
+                                                        event = events.toList()
+                                                    ),
+                                            )
+                                        ),
+                                )
+                            ),
+                    )
+                ),
+        )
 
     @Test
     fun getStampedWorkingTimeEvents() {
@@ -2274,7 +2480,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 fun Database.Read.fetchReportRows(): List<TitaniaTestDbRow> = createQuery {
     sql(
         """
-                SELECT request_time, employee_id, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends
+                SELECT request_time, employee_id, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends, error_type
                 FROM titania_errors
             """
     )
@@ -2287,6 +2493,7 @@ data class TitaniaTestDbRow(
     val shiftDate: LocalDate,
     val shiftBegins: LocalTime,
     val shiftEnds: LocalTime,
-    val overlappingShiftBegins: LocalTime,
-    val overlappingShiftEnds: LocalTime,
+    val overlappingShiftBegins: LocalTime?,
+    val overlappingShiftEnds: LocalTime?,
+    val errorType: TitaniaErrorType,
 )

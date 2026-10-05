@@ -57,7 +57,7 @@ import evaka.core.shared.PreschoolAssistanceId
 import evaka.core.shared.PreschoolTermId
 import evaka.core.shared.ServiceApplicationId
 import evaka.core.shared.ServiceNeedId
-import evaka.core.shared.TitaniaConflictId
+import evaka.core.shared.TitaniaErrorId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.auth.UserRole.ADMIN
 import evaka.core.shared.auth.UserRole.DIRECTOR
@@ -1945,9 +1945,8 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
 
-    enum class TitaniaError(
-        override vararg val defaultRules: ScopedActionRule<in TitaniaConflictId>
-    ) : ScopedAction<TitaniaConflictId> {
+    enum class TitaniaError(override vararg val defaultRules: ScopedActionRule<in TitaniaErrorId>) :
+        ScopedAction<TitaniaErrorId> {
         DELETE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnitOfTitaniaErrorEmployee());
 
         override fun toString(): String = "${javaClass.name}.$name"

@@ -1276,11 +1276,11 @@ export async function getTampereRegionalSurveyYearlyStatistics(
 */
 export async function clearTitaniaErrors(
   request: {
-    conflictId: TitaniaErrorsId
+    errorId: TitaniaErrorsId
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/reports/titania-errors/${request.conflictId}`.toString(),
+    url: uri`/employee/reports/titania-errors/${request.errorId}`.toString(),
     method: 'DELETE'
   })
   return json

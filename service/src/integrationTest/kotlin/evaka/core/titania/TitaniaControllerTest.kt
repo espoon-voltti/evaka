@@ -184,4 +184,41 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
             )
         }
     }
+
+    @Test
+    fun `put working time events with zero-length shift should respond 400 and store the error`() {
+        db.transaction { tx -> tx.insert(DevEmployee(employeeNumber = "176716")) }
+        val request =
+            Request.Builder()
+                .url("http://localhost:$httpPort/integration/titania/working-time-events")
+                .put(
+                    jsonMapper
+                        .writeValueAsString(titaniaUpdateRequestZeroLengthShiftData)
+                        .toRequestBody(jsonMediaType)
+                )
+                .asUser(AuthenticatedUser.Integration)
+                .build()
+
+        client.newCall(request).execute().use { response ->
+            assertThat(response.code).isEqualTo(400)
+            assertEquals(
+                """{
+    "faultcode": "Server",
+    "faultstring": "multiple",
+    "faultactor": "/integration/titania/working-time-events",
+    "detail": [
+        {
+            "errorcode": "103",
+            "message": "Conflicting working time events found"
+        }
+    ]
+}""",
+                response.body.string(),
+                JSONCompareMode.STRICT,
+            )
+        }
+        assertThat(db.read { tx -> tx.fetchReportRows() })
+            .extracting<TitaniaErrorType> { it.errorType }
+            .containsExactly(TitaniaErrorType.ZERO_LENGTH_SHIFT)
+    }
 }

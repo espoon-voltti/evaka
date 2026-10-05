@@ -7,7 +7,7 @@ package evaka.core.reports
 import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.shared.DaycareId
-import evaka.core.shared.TitaniaConflictId
+import evaka.core.shared.TitaniaErrorId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
@@ -16,6 +16,7 @@ import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import evaka.core.shared.security.actionrule.forTable
+import evaka.core.titania.TitaniaErrorType
 import java.time.LocalDate
 import java.time.LocalTime
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -47,12 +48,12 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
             .also { Audit.TitaniaReportRead.log() }
     }
 
-    @DeleteMapping("/employee/reports/titania-errors/{conflictId}")
+    @DeleteMapping("/employee/reports/titania-errors/{errorId}")
     fun clearTitaniaErrors(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable conflictId: TitaniaConflictId,
+        @PathVariable errorId: TitaniaErrorId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -61,12 +62,12 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.TitaniaError.DELETE,
-                        conflictId,
+                        errorId,
                     )
-                    tx.deleteTitaniaError(conflictId)
+                    tx.deleteTitaniaError(errorId)
                 }
             }
-            .also { Audit.TitaniaReportDelete.log(targetId = AuditId(conflictId)) }
+            .also { Audit.TitaniaReportDelete.log(targetId = AuditId(errorId)) }
     }
 }
 
@@ -89,6 +90,7 @@ fun Database.Read.getTitaniaErrors(
                 emp.last_name,
                 emp.employee_number,
                 te.id,
+                te.error_type,
                 te.shift_date,
                 te.shift_begins,
                 te.shift_ends,
@@ -104,7 +106,7 @@ fun Database.Read.getTitaniaErrors(
                     FROM daycare_acls
                     GROUP BY employee_id
             ) emp_units ON te.employee_id = emp_units.employee_id
-            ORDER BY request_time, unit_names, last_name, first_name, shift_date;
+            ORDER BY request_time, unit_names, last_name, first_name, shift_date, shift_begins;
             """
         )
     }
@@ -132,8 +134,9 @@ fun Database.Read.getTitaniaErrors(
                                             employeeEntry.value[0].firstName,
                                         employeeEntry.value[0].employeeNumber ?: "",
                                         employeeEntry.value.map { shiftEntry ->
-                                            TitaniaErrorConflict(
+                                            TitaniaShiftError(
                                                 shiftEntry.id,
+                                                shiftEntry.errorType,
                                                 shiftEntry.shiftDate,
                                                 shiftEntry.shiftBegins,
                                                 shiftEntry.shiftEnds,
@@ -149,7 +152,7 @@ fun Database.Read.getTitaniaErrors(
         }
 }
 
-fun Database.Transaction.deleteTitaniaError(id: TitaniaConflictId) {
+fun Database.Transaction.deleteTitaniaError(id: TitaniaErrorId) {
     createUpdate {
         sql(
             """
@@ -166,28 +169,30 @@ data class TitaniaDbRow(
     val firstName: String,
     val lastName: String,
     val employeeNumber: String?,
-    val id: TitaniaConflictId,
+    val id: TitaniaErrorId,
+    val errorType: TitaniaErrorType,
     val shiftDate: LocalDate,
     val shiftBegins: LocalTime,
     val shiftEnds: LocalTime,
-    val overlappingShiftBegins: LocalTime,
-    val overlappingShiftEnds: LocalTime,
+    val overlappingShiftBegins: LocalTime?,
+    val overlappingShiftEnds: LocalTime?,
     val unitNames: String,
 )
 
-data class TitaniaErrorConflict(
-    val id: TitaniaConflictId,
+data class TitaniaShiftError(
+    val id: TitaniaErrorId,
+    val errorType: TitaniaErrorType,
     val shiftDate: LocalDate,
     val shiftBegins: LocalTime,
     val shiftEnds: LocalTime,
-    val overlappingShiftBegins: LocalTime,
-    val overlappingShiftEnds: LocalTime,
+    val overlappingShiftBegins: LocalTime?,
+    val overlappingShiftEnds: LocalTime?,
 )
 
 data class TitaniaErrorEmployee(
     val employeeName: String,
     val employeeNumber: String,
-    val conflictingShifts: List<TitaniaErrorConflict>,
+    val shiftErrors: List<TitaniaShiftError>,
 )
 
 data class TitaniaErrorUnit(val unitName: String, val employees: List<TitaniaErrorEmployee>)

@@ -7,6 +7,7 @@ package evaka.core.titania
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import evaka.core.shared.EmployeeId
+import evaka.core.shared.db.DatabaseEnum
 import evaka.core.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
@@ -186,7 +187,7 @@ data class UpdateWorkingTimeEventsResponse(val message: String) {
 
 data class UpdateWorkingTimeEventsServiceResponse(
     val updateWorkingTimeEventsResponse: UpdateWorkingTimeEventsResponse,
-    val overlappingShifts: List<TitaniaOverLappingShifts>,
+    val hasErrors: Boolean,
 )
 
 data class GetStampedWorkingTimeEventsRequest(
@@ -232,13 +233,22 @@ data class TitaniaStampedWorkingTimeEvent(
     val endReasonCode: String? = null,
 )
 
-data class TitaniaOverLappingShifts(
+enum class TitaniaErrorType : DatabaseEnum {
+    OVERLAPPING_SHIFT,
+    ZERO_LENGTH_SHIFT,
+    REVERSED_SHIFT;
+
+    override val sqlType: String = "titania_error_type"
+}
+
+data class TitaniaErrorRow(
     val employeeId: EmployeeId,
+    val errorType: TitaniaErrorType,
     val shiftDate: LocalDate,
     val shiftBegins: LocalTime,
     val shiftEnds: LocalTime,
-    val overlappingShiftBegins: LocalTime,
-    val overlappingShiftEnds: LocalTime,
+    val overlappingShiftBegins: LocalTime?,
+    val overlappingShiftEnds: LocalTime?,
 )
 
 data class TitaniaException(val status: HttpStatus, val detail: List<TitaniaErrorDetail>) :

@@ -314,8 +314,9 @@ fun Database.Transaction.insertErrorTestData() {
 
     val rows =
         listOf(
-            TitaniaOverLappingShifts(
+            TitaniaErrorRow(
                 employee.id,
+                TitaniaErrorType.OVERLAPPING_SHIFT,
                 LocalDate.of(2024, 10, 1),
                 LocalTime.of(8, 0),
                 LocalTime.of(11, 0),

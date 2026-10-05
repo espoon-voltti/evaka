@@ -389,7 +389,7 @@ typealias StaffAttendanceRealtimeId = Id<DatabaseTable.StaffAttendanceRealtime>
 
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>
 
-typealias TitaniaConflictId = Id<DatabaseTable.TitaniaErrors>
+typealias TitaniaErrorId = Id<DatabaseTable.TitaniaErrors>
 
 typealias VardaStateId = Id<DatabaseTable.VardaState>
 

@@ -695,6 +695,14 @@ CREATE TYPE public.timerange AS (
 CREATE DOMAIN public.timerange_non_nullable_range AS public.timerange
 	CONSTRAINT timerange_non_nullable_range_check CHECK (((VALUE IS NOT DISTINCT FROM NULL) OR (((VALUE).start IS NOT NULL) AND ((VALUE)."end" IS NOT NULL))));
 
+-- Name: titania_error_type; Type: TYPE; Schema: public
+
+CREATE TYPE public.titania_error_type AS ENUM (
+    'OVERLAPPING_SHIFT',
+    'ZERO_LENGTH_SHIFT',
+    'REVERSED_SHIFT'
+);
+
 -- Name: ui_language; Type: TYPE; Schema: public
 
 CREATE TYPE public.ui_language AS ENUM (
@@ -4029,9 +4037,11 @@ CREATE TABLE public.titania_errors (
     shift_date date NOT NULL,
     shift_begins time without time zone NOT NULL,
     shift_ends time without time zone NOT NULL,
-    overlapping_shift_begins time without time zone NOT NULL,
-    overlapping_shift_ends time without time zone NOT NULL,
-    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL
+    overlapping_shift_begins time without time zone,
+    overlapping_shift_ends time without time zone,
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    error_type public.titania_error_type NOT NULL,
+    CONSTRAINT "check$overlapping_shift_only_for_overlaps" CHECK ((((error_type = 'OVERLAPPING_SHIFT'::public.titania_error_type) = (overlapping_shift_begins IS NOT NULL)) AND ((error_type = 'OVERLAPPING_SHIFT'::public.titania_error_type) = (overlapping_shift_ends IS NOT NULL))))
 );
 
 -- Name: vapid_jwt; Type: TABLE; Schema: public
