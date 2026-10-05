@@ -133,7 +133,8 @@ const features: Features = {
     showMetadataToCitizen: true,
     placementDesktop: true,
     employeeLanguageSelection: true,
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   }
 }
 
