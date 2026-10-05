@@ -68,15 +68,22 @@ export default React.memo(function MobileNav() {
   const hasPersonalDetailsTasks = useHasPersonalDetailsTasks()
 
   const [menuOpen, setMenuOpen] = useState<'children' | 'submenu'>()
-  const toggleSubMenu = useCallback(
-    () => setMenuOpen((open) => (open === 'submenu' ? undefined : 'submenu')),
-    []
-  )
-  const toggleChildrenMenu = useCallback(
-    () => setMenuOpen((open) => (open === 'children' ? undefined : 'children')),
-    []
-  )
+
+  const closedWithEscape = useRef(false)
+  const toggleSubMenu = useCallback(() => {
+    closedWithEscape.current = false
+    setMenuOpen((open) => (open === 'submenu' ? undefined : 'submenu'))
+  }, [])
+  const toggleChildrenMenu = useCallback(() => {
+    closedWithEscape.current = false
+    setMenuOpen((open) => (open === 'children' ? undefined : 'children'))
+  }, [])
   const closeMenu = useCallback(() => setMenuOpen(undefined), [])
+  const closeMenuWithEscape = useCallback(() => {
+    closedWithEscape.current = true
+    closeMenu()
+  }, [closeMenu])
+
   const bottomBarRef = useRef<HTMLElement>(null)
   const bottomBarHidden = useMediaQuery(hiddenAtDesktopWidth)
 
@@ -137,10 +144,13 @@ export default React.memo(function MobileNav() {
       </BottomBar>
       {menuOpen !== undefined && !bottomBarHidden && (
         <FocusOn
-          onEscapeKey={closeMenu}
+          onEscapeKey={closeMenuWithEscape}
           shards={[bottomBarRef]}
           // Scroll lock screws up page layout when menu is visible
           scrollLock={false}
+          // Return focus only if the menu was closed with Escape, otherwise
+          // the user either navigated away or clicned the menu button again
+          returnFocus={() => closedWithEscape.current}
         >
           {menuOpen === 'submenu' ? (
             <Menu
