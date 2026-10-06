@@ -21,9 +21,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -85,13 +83,12 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
             .toSet<String>()
     }
 
-    /** A real run is refused in production until every cascading foreign key is declared */
     private fun realRun(id: PersonId) =
         runDataRetention(
             db,
             clock,
             asyncJobRunner,
-            buildDataRetentionSchema(),
+            buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false),
             id,
             dryRun = false,
         )
@@ -105,20 +102,6 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
 
         assertEquals(emptySet(), remaining(longGone.id))
         assertEquals(setOf("person", "child", "placement"), remaining(recent.id))
-    }
-
-    @Test
-    fun `the job refuses a real run while some cascading foreign keys are not declared`() {
-        val error =
-            assertFailsWith<IllegalStateException> {
-                dataRetentionService.deleteExpiredPersonData(
-                    db,
-                    clock,
-                    AsyncJob.DeleteExpiredPersonData(longGone.id, dryRun = false),
-                )
-            }
-        assertContains(error.message!!, "only dry runs are allowed")
-        assertEquals(setOf("person", "child", "placement", "child_images"), remaining(longGone.id))
     }
 
     @Test

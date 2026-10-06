@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeAll
  *
  * NOTE: If this test fails you have likely added a table or a foreign key that points at a table of
  * the schema definition. Decide what the retention algorithm should do with it:
- * 1) declare the table in [dataRetentionSchema] with its references and expiration rule, or
+ * 1) declare the table in [buildDataRetentionSchema] with its references and expiration rule, or
  * 2) if the database handles its rows with ON DELETE CASCADE or SET NULL and it needs no rule of
  *    its own, add the foreign key to [handledByDatabase]
  */
@@ -59,7 +59,7 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var uniqueKeys: List<UniqueKey>
     private lateinit var checkConstraints: List<CheckConstraint>
 
-    private val schema = dataRetentionSchema
+    private val schema = buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
     private val declaredTables = schema.tablesByName.values
     private val handledTables = schema.handledTables
 
@@ -86,14 +86,19 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val handledByDatabase =
         columnRefs(
             "attachment.application_id",
+            "attachment.fee_alteration_id",
             "attachment.income_id",
             "attachment.income_statement_id",
+            "attachment.invoice_id",
+            "attachment.pedagogical_document_id",
+            "calendar_event_attendee.child_id",
             "citizen_passkey_registration.person_id",
             "citizen_push_subscription.person_id",
             "citizen_user.id",
             "decision_reasoning_individual_selection.decision_id",
             "evaka_user.citizen_id",
             "invoiced_fee_decision.fee_decision_id",
+            "invoiced_fee_decision.invoice_id",
             "person_email_verification.person_id",
             "sfi_message.decision_id",
             "sfi_message.document_id",
@@ -109,68 +114,16 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val compositeSelfReference = columnRefs("fridge_partner.partnership_id")
 
     /**
+     * A replacement invoice references the invoice of the same head of family and month that it
+     * replaced. Invoices are evaluated as a whole, so both are deleted in the same statement.
+     */
+    private val selfReferences = columnRefs("invoice.replaced_invoice_id")
+
+    /**
      * A partnership's two rows share its id, which is unique only among the rows of one partner, so
      * a run, which loads only the target's rows, still identifies them by it
      */
     private val idUniqueOnlyWithPerson = mapOf("fridge_partner" to "person_id")
-
-    /**
-     * Tables whose handling is decided later. Their foreign keys are NO ACTION or RESTRICT, so a
-     * run that reaches their rows fails and rolls back instead of deleting them unseen.
-     */
-    private val notYetDeclared =
-        columnRefs(
-            "absence.child_id",
-            "absence_application.child_id",
-            "assistance_need_voucher_coefficient.child_id",
-            "attendance_reservation.child_id",
-            "calendar_event_time.child_id",
-            "child_attendance.child_id",
-            "child_sticky_note.child_id",
-            "foster_parent.child_id",
-            "foster_parent.parent_id",
-            "holiday_questionnaire_answer.child_id",
-            "invoice.codebtor",
-            "invoice_correction.child_id",
-            "message_thread_children.child_id",
-            "nekku_special_diet_choices.child_id",
-            "pedagogical_document.child_id",
-            "pedagogical_document_read.person_id",
-            "service_application.child_id",
-            "service_application.person_id",
-        )
-
-    /**
-     * Also decided later, but these cascade: a run that deletes the person or child row would
-     * delete their rows unseen, with no rule, audit event or integration freeze. The job allows
-     * only dry runs until every one of them is declared.
-     */
-    private val notYetDeclaredCascading =
-        columnRefs(
-            "assistance_action.child_id",
-            "assistance_factor.child_id",
-            "backup_pickup.child_id",
-            "calendar_event_attendee.child_id",
-            "child_daily_note.child_id",
-            "daily_service_time.child_id",
-            "daily_service_time_notification.guardian_id",
-            "daycare_assistance.child_id",
-            "fee_alteration.person_id",
-            "finance_note.person_id",
-            "guardian_blocklist.child_id",
-            "guardian_blocklist.guardian_id",
-            "income_notification.receiver_id",
-            "invoice.head_of_family",
-            "invoice_correction.head_of_family_id",
-            "invoice_row.child",
-            "other_assistance_measure.child_id",
-            "preschool_assistance.child_id",
-        )
-
-    @Test
-    fun `real runs are allowed exactly when no cascading foreign key is left undeclared`() {
-        assertEquals(notYetDeclaredCascading.isEmpty(), ALL_CASCADING_FOREIGN_KEYS_DECLARED)
-    }
 
     private fun columnRefs(vararg names: String): Set<ColumnRef> =
         names.map { ColumnRef(it.substringBefore('.'), it.substringAfter('.')) }.toSet()
@@ -267,7 +220,7 @@ GROUP BY c.oid, t.relname
     private fun columnOf(ref: ColumnRef): Column? = columns.find { it.ref == ref }
 
     @Test
-    fun `every foreign key into a table whose rows are deleted here is declared, handled by the database, refused or listed as not yet declared`() {
+    fun `every foreign key into a table whose rows are deleted here is declared, handled by the database, refused or a known self-reference`() {
         val into = foreignKeys.filter { it.referencesRef.tableName in deletedTables }
         assertEquals(
             compositeSelfReference,
@@ -275,7 +228,7 @@ GROUP BY c.oid, t.relname
             "composite foreign keys are never declared",
         )
         val refs = into.filter { it.columnCount == 1 }.map { it.ref }.toSet()
-        val leftOut = handledByDatabase + refused + notYetDeclared + notYetDeclaredCascading
+        val leftOut = handledByDatabase + refused + selfReferences
         assertEquals(
             emptySet(),
             refs - declaredReferences - leftOut,
@@ -526,13 +479,6 @@ GROUP BY c.oid, t.relname
                 .filter { columnOf(it)?.dataType != "text" }
         }
         assertEquals(emptyList(), notText)
-    }
-
-    @Test
-    fun `the foreign keys not yet declared fail a run loudly, apart from the ones listed as cascading`() {
-        fun action(ref: ColumnRef) = foreignKeys.first { it.ref == ref }.onDelete
-        assertEquals(emptyList(), notYetDeclared.filter { action(it) !in setOf("a", "r") })
-        assertEquals(emptyList(), notYetDeclaredCascading.filter { action(it) !in setOf("c", "n") })
     }
 
     @Test

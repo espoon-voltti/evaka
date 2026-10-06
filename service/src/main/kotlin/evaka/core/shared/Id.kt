@@ -148,6 +148,8 @@ sealed interface DatabaseTable {
 
     sealed class MobileDevice : DatabaseTable
 
+    sealed class NekkuSpecialDietChoice : DatabaseTable
+
     sealed class OtherAssistanceMeasure : DatabaseTable
 
     sealed class OutOfOffice : DatabaseTable

@@ -128,7 +128,7 @@ An application that is still open keeps its node too. The parentships and partne
 
 ### 2.4 Safe for integrations
 
-Koski and Varda read a fixed set of tables. The rule of every table an integration reads is wrapped in a rule that names the integration. The node then expires only if the wrapped rule is met and every child the node concerns is *safe* for each named integration. More details in section 3.3.
+Koski and Varda read a fixed set of tables. The rule of every table an integration reads is wrapped in a rule that names the integration, and so is the rule of `child`, which bundles the state of each sync. The node then expires only if the wrapped rule is met and every child the node concerns is *safe* for each named integration. More details in section 3.3.
 
 ## 3. Deletion instructions
 
@@ -154,7 +154,7 @@ Koski and Varda read a fixed set of tables. Deleting rows from any of them must 
 
 The rows are not always deleted in the child's own run. When an adult's run deletes a fee decision, for example, the freeze must be recorded for every child on that decision.
 
-The tables that hold the state of each sync, `koski_study_right`, `koski_upload_error` and `varda_state`, are bundled by `child`, so that all of them are deleted together, and never before the child has reached the safe data removal age. The `child` row may still be recreated without the freeze timestamps, for example if a guardian logs in before the child turns 18. Creating new placements for such a child is not realistic, but as an additional safeguard both integrations refuse to start syncing a child past that age who has no previous integration state rows. First sync happening at that age is clearly an error.
+The tables that hold the state of each sync, `koski_study_right`, `koski_upload_error` and `varda_state`, are bundled by `child`, so that all of them are deleted together. The rule of `child` is safe for both integrations, so the state of a child who was sent stays until the safe data removal age, even when the rows the integrations read were deleted by hand. The `child` row may still be recreated without the freeze timestamps, for example if a guardian logs in before the child turns 18. Creating new placements for such a child is not realistic, but as an additional safeguard both integrations refuse to start syncing a child past that age who has no previous integration state rows. First sync happening at that age is clearly an error.
 
 ## 4. Running the algorithm
 
@@ -239,7 +239,7 @@ Some tables that reach `person` are still left out of the schema definition, and
 
 ### 5.1 Rows whose primary reference is null
 
-A primary reference may be nullable, and a row where it is null is nobody's. No run finds it as an own row, so this algorithm never deletes it. Such rows are not personal data: a `calendar_event_attendee` may relate to a unit or a group instead of a child, and a `calendar_event_time` without a child is an unreserved discussion slot. Where such a row references own rows through a secondary reference, it is a foreign row and blocks them like any other.
+A primary reference may be nullable, and a row where it is null is nobody's. No run finds it as an own row, so this algorithm never deletes it. Such rows are not personal data: a `calendar_event_time` without a child, for example, is an unreserved discussion slot. Where such a row references own rows through a secondary reference, it is a foreign row and blocks them like any other.
 
 ### 5.2 Tables that are only referenced
 
@@ -247,14 +247,14 @@ A table that the graph only references, and that references nothing in it, is ou
 
 - Case processes and their history rows are left as orphans. At least the ones from the current year must stay, so that the sequence numbers are not reused.
 - A `child_document_decision` is deleted with its child document.
-- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 8.5).
+- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 8.4).
 - A `calendar_event` is left as an orphan.
 
 ### 5.3 Tables excluded by exception
 
 `attachment` and `sfi_message` reference several tables of the graph through separate columns, of which only one is set per row, and `sfi_message_event` follows `sfi_message`. Supporting them would need a way to split a table's rows by the column that is set, for only two cases, so they are excluded by exception. Their foreign keys are refused in the validation of chapter 7, and the database takes care of their rows instead. Every foreign key from `attachment` into the graph is `ON DELETE SET NULL`, and a separate job deletes attachments that no longer belong to anything. The foreign keys of `sfi_message` and `sfi_message_event` are `ON DELETE CASCADE`, so that a message is deleted with what it was sent for or with the guardian it was sent to.
 
-A leaf table whose rows should simply be deleted with the rows they reference can be excluded the same way with `ON DELETE CASCADE`, as long as the rows need no rule and no deletion instruction of their own. `invoiced_fee_decision` and a citizen's login rows such as `citizen_user` and `citizen_passkey_registration` are excluded like this.
+A leaf table whose rows should simply be deleted with the rows they reference can be excluded the same way with `ON DELETE CASCADE`, as long as the rows need no rule and no deletion instruction of their own. `invoiced_fee_decision`, `calendar_event_attendee` and a citizen's login rows such as `citizen_user` and `citizen_passkey_registration` are excluded like this.
 
 ### 5.4 The evaka_user row
 
@@ -276,11 +276,19 @@ Therefore the `child` node is part of every graph, identified by the person id, 
 
 A partnership is stored as two `fridge_partner` rows, one for each partner, which reference each other through a composite self-reference. Each row references its own person, so it is an own row of that partner's run. The table has `independentRows`, and the declared primary key of a row is the partnership id rather than its own id, so deleting it deletes both rows of the partnership at once, in whichever partner's run first finds the rule met. The other partner's run then finds no row. The rule reads only what the two rows share, the partnership's own dates and the placements and pending applications of the children of either partner, so both runs reach the same verdict. The self-reference is not declared, and the schema test lists it as the only composite foreign key.
 
-### 6.3 Finance freeze
+### 6.3 Replacement invoices
+
+A replacement invoice references the invoice it replaced through `invoice.replaced_invoice_id`. Both invoices always have the same head of family and the same month, and merging duplicate persons moves all of a person's invoices at once. `invoice` is evaluated as a whole, so both are deleted in the same statement. The self-reference is not declared, and the schema test lists it separately.
+
+### 6.4 Finance freeze
 
 Finance decisions are generated from the family and income data, the parentships, partnerships and incomes, placements and service needs, etc. The *finance freeze* limits how far back in time they are generated. They are never generated for days more than five years before today, not even retroactively. The freeze date moves forward every day.
 
 A row expires only when no decision that can still be generated needs it. For most tables, the rules require the row's period to have ended longer ago than the freeze, in addition to possible other expiration rules. The rules add a margin of one month to the freeze, so that data is deleted only after the generator no longer reads it. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
+
+The freeze is written into the rule of every table the generators read, even where a longer period such as ten years already outlasts it, so that shortening that period later cannot break it. A test checks this against a list of those tables, kept by hand next to the freeze period. A bundled table may rely on the rule of the table that bundles it.
+
+The voucher value decision generator reads the assistance coefficients from `assistance_factor` when the municipality uses capacity factors, and from `assistance_need_voucher_coefficient` otherwise. The schema definition is therefore built for that setting, and only the table the generator reads waits for the freeze.
 
 ## 7. Validation
 
@@ -296,12 +304,12 @@ The schema definition is validated when it is constructed:
 
 Unit tests check the declared schema definition:
 
-- Every table an integration reads has the safe for integrations rule directly, and no table names an integration that does not read it.
+- Every table an integration reads, and `child`, has the safe for integrations rule directly, and no other table names an integration.
 - Every table whose rule is `Always` is bundled.
 
 Integration tests then compare the schema definition against the database schema:
 
-- Every foreign key into a table whose rows are deleted here is declared as a reference, handled by the database with `ON DELETE CASCADE` or `SET NULL` (section 5.3), refused, or listed as not yet declared. A key not yet declared is `NO ACTION` or `RESTRICT`, so that a run reaching its rows fails and rolls back. The ones that cascade are listed separately, and until they are declared, the job allows only dry runs. The only composite foreign key is the partnership self-reference (section 6.2).
+- Every foreign key into a table whose rows are deleted here is declared as a reference, handled by the database with `ON DELETE CASCADE` or `SET NULL` (section 5.3), or refused. The only composite foreign key is the partnership self-reference (section 6.2), and the only other self-reference is the replacement invoice's (section 6.3).
 - Every declared reference is a real foreign key to the primary key column of the declared table, or to either `child` or `person` when declared to `child`, and its column is indexed.
 - The declared primary key of a table is unique in the database, as its real primary key or a unique constraint or index, alone or together with the primary reference to the target person, and its columns are uuids.
 - An orphan to delete is the only foreign key into its table and points at the orphan's declared primary key column, which is a uuid, from a unique column.
@@ -324,11 +332,7 @@ The not while rule for archival needs to know which rows must be archived before
 
 Whether the `name` column of an orphaned `evaka_user` row should be anonymised, for example to "Poistettu kuntalainen", is an open question.
 
-### 8.4 Self-references between independent rows
-
-`invoice.replaced_invoice_id` references the invoice that a corrected invoice replaced. As long as `invoice` is evaluated as a whole, the rows are deleted together and the reference does not matter. If invoices need `independentRows`, a replacing invoice must be deleted before the one it replaced. The easiest solution would then probably be `ON DELETE SET NULL`.
-
-### 8.5 Voucher value report snapshots
+### 8.4 Voucher value report snapshots
 
 The frozen monthly service voucher report is one `voucher_value_report_snapshot` row per month and its `voucher_value_report_decision` rows, each naming a voucher value decision. The algorithm waits for those rows before it deletes the decision but must not delete them (section 5.2), and nothing deletes them today. A job must delete each snapshot a set time after the month it covers, no longer than the ten years of the decisions themselves, or the decisions wait for the report. For the report rows to be deleted with their snapshot, `voucher_value_report_decision.voucher_value_report_snapshot_id` must become `ON DELETE CASCADE`; `decision_id` stays as it is, so that the rows keep holding the decision.
 

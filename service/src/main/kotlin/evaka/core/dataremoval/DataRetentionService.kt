@@ -6,6 +6,7 @@ package evaka.core.dataremoval
 
 import evaka.core.Audit
 import evaka.core.AuditContext
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -19,7 +20,12 @@ import org.springframework.stereotype.Service
 private val logger = KotlinLogging.logger {}
 
 @Service
-class DataRetentionService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class DataRetentionService(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    featureConfig: FeatureConfig,
+) {
+    private val schema = buildDataRetentionSchema(featureConfig.valueDecisionCapacityFactorEnabled)
+
     init {
         asyncJobRunner.registerHandler(::deleteExpiredPersonData)
     }
@@ -29,14 +35,11 @@ class DataRetentionService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>)
         clock: EvakaClock,
         msg: AsyncJob.DeleteExpiredPersonData,
     ) {
-        check(msg.dryRun || ALL_CASCADING_FOREIGN_KEYS_DECLARED) {
-            "Data retention for person ${msg.personId}: only dry runs are allowed until every foreign key that cascades from person or child is declared"
-        }
         runDataRetention(
             dbc,
             clock,
             asyncJobRunner,
-            dataRetentionSchema,
+            schema,
             msg.personId,
             dryRun = msg.dryRun,
         )

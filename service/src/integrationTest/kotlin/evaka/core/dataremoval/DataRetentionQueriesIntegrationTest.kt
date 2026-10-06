@@ -26,6 +26,9 @@ import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.incomestatement.IncomeStatementBody
 import evaka.core.incomestatement.IncomeStatementStatus
 import evaka.core.insertServiceNeedOptions
+import evaka.core.invoicing.domain.FeeAlterationType
+import evaka.core.invoicing.domain.FeeDecisionStatus
+import evaka.core.invoicing.service.ProductKey
 import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.placement.PlacementSource
 import evaka.core.shared.ApplicationId
@@ -52,6 +55,7 @@ import evaka.core.shared.dev.DevDaycareGroupPlacement
 import evaka.core.shared.dev.DevDocumentTemplate
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevFamilyContact
+import evaka.core.shared.dev.DevFeeAlteration
 import evaka.core.shared.dev.DevFeeDecision
 import evaka.core.shared.dev.DevFeeDecisionChild
 import evaka.core.shared.dev.DevFridgeChild
@@ -59,6 +63,9 @@ import evaka.core.shared.dev.DevFridgePartnership
 import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevIncome
 import evaka.core.shared.dev.DevIncomeStatement
+import evaka.core.shared.dev.DevInvoice
+import evaka.core.shared.dev.DevInvoiceCorrection
+import evaka.core.shared.dev.DevInvoiceRow
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
@@ -76,6 +83,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.snDefaultDaycare
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -87,7 +95,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     private val today = LocalDate.of(2026, 9, 12)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(2, 0))
     private val longAgo = HelsinkiDateTime.of(LocalDate.of(2011, 1, 1), LocalTime.NOON)
-    private val schema = buildDataRetentionSchema()
+    private val schema = buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
 
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
@@ -308,12 +316,6 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     @Test
     fun `the child's run deletes what the child's rules govern, clears the optional references and leaves what the adults' rows still name`() {
         val family = db.transaction { it.insertFamily() }
-        // The same guardian's row for a sibling shares one column of the composite key
-        val sibling = DevPerson(dateOfBirth = LocalDate.of(2013, 1, 1))
-        db.transaction { tx ->
-            tx.insert(sibling, DevPersonType.RAW_ROW)
-            tx.insert(DevGuardian(guardianId = guardian.id, childId = sibling.id))
-        }
 
         val result = execute(child.id)
 
@@ -326,12 +328,10 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "placement_draft" to 1,
                 "decision" to 1,
                 "application" to 1,
-                "backup_care" to 1,
                 "child_images" to 1,
                 "child_document_read" to 1,
                 "child_document_published_version" to 1,
                 "child_document" to 1,
-                "guardian" to 2,
                 "family_contact" to 1,
                 "voucher_value_decision" to 1,
             ),
@@ -359,7 +359,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(listOf(child.id), result.childrenFrozenForVarda)
 
         // The fee decision child and parentship rows of the adult's data hold the child row, and
-        // with it the placements the child row bundles
+        // with it the placements, backup placements and guardianships the child row bundles
         assertEquals(
             setOf(
                 "person",
@@ -367,13 +367,14 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "placement",
                 "service_need",
                 "daycare_group_placement",
+                "backup_care",
                 "koski_study_right",
                 "koski_upload_error",
                 "varda_state",
+                "guardian",
             ),
             remaining(child.id),
         )
-        assertEquals(1, count("guardian WHERE child_id = '${sibling.id.raw}'"))
         assertEquals(
             1,
             count(
@@ -424,6 +425,12 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     @Test
     fun `an adult's run deletes the expired fee decision with its child rows, and the person row waits for the child's data, the messaging job, the adult's own rows and a recent login`() {
         val family = db.transaction { it.insertFamily() }
+        // The same guardian's row for a sibling shares one column of the composite key
+        val sibling = DevPerson(dateOfBirth = LocalDate.of(2013, 1, 1))
+        db.transaction { tx ->
+            tx.insert(sibling, DevPersonType.RAW_ROW)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = sibling.id))
+        }
 
         assertEquals(
             setOf(AsyncJob.DeleteFeeDecisionPdf("fee-decision.pdf")),
@@ -484,6 +491,11 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(emptyList(), childRun.childrenFrozenForKoski)
         assertEquals(emptyList(), childRun.childrenFrozenForVarda)
         assertEquals(false, personExists(child.id))
+        assertEquals(1, count("guardian WHERE child_id = '${sibling.id.raw}'"))
+
+        // The sibling's guardianship holds the person row until the sibling's run deletes it
+        assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
+        assertEquals(1, execute(sibling.id).deletedRowCountsByTable["guardian"])
 
         // The message account is handled elsewhere and holds the person row, and so does the
         // income that has not expired
@@ -560,6 +572,17 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 )
             tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
             tx.insert(
+                DevFeeAlteration(
+                    personId = child.id,
+                    type = FeeAlterationType.DISCOUNT,
+                    amount = 50.0,
+                    isAbsolute = false,
+                    validFrom = LocalDate.of(2014, 1, 1),
+                    validTo = null,
+                    modifiedBy = employee.evakaUserId,
+                )
+            )
+            tx.insert(
                 DevFamilyContact(
                     id = UUID.randomUUID(),
                     childId = child.id,
@@ -584,9 +607,9 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         val result = execute(child.id)
 
         // The application and its decision expire ten years after they were sent, and the documents
-        // ten years after their last status change or the template's days after it. The family
-        // contact expires at once. The image waits a year after its update and the guardianship ten
-        // years after its creation.
+        // ten years after their last status change or the template's days after it. The open-ended
+        // fee alteration expires ten years after it started, and the family contact at once. The
+        // image waits a year after its update and the guardianship for the child row.
         assertEquals(
             mapOf(
                 "application_note" to 1,
@@ -598,6 +621,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "child_document_read" to 2,
                 "child_document_published_version" to 2,
                 "child_document" to 2,
+                "fee_alteration" to 1,
                 "family_contact" to 1,
             ),
             result.deletedRowCountsByTable,
@@ -950,6 +974,37 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
+    fun `an application sent after the last placement ended expires ten years after it was sent`() {
+        val applicationId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2012, 8, 1),
+                    endDate = LocalDate.of(2014, 7, 31),
+                )
+            )
+            tx.insertApplication(
+                child.id,
+                ApplicationStatus.CANCELLED,
+                sentDate = today.minusYears(1),
+            )
+        }
+
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(applicationId)}"
+                )
+            }
+        }
+
+        assertEquals(1, execute(child.id).deletedRowCountsByTable["application"])
+    }
+
+    @Test
     fun `an application waits for its decision, which expires ten years after it was sent`() {
         val applicationId = db.transaction { tx ->
             tx.insertApplicationTree(ApplicationStatus.REJECTED, DecisionStatus.REJECTED)
@@ -1110,6 +1165,99 @@ FROM snapshot
     }
 
     @Test
+    fun `a head of family's fee decision, invoice and correction count from their children's placements, or from their own end when the children have none`() {
+        val sibling = DevPerson(dateOfBirth = LocalDate.of(2012, 2, 3))
+        val placementId = db.transaction { tx ->
+            tx.insert(sibling, DevPersonType.CHILD)
+            fun feeDecision(validDuring: FiniteDateRange, childId: ChildId) {
+                val feeDecisionId =
+                    tx.insert(
+                        DevFeeDecision(validDuring = validDuring, headOfFamilyId = guardian.id)
+                    )
+                tx.insert(
+                    DevFeeDecisionChild(
+                        feeDecisionId = feeDecisionId,
+                        childId = childId,
+                        placementUnitId = daycare.id,
+                    )
+                )
+            }
+            fun invoice(month: YearMonth, childId: ChildId) =
+                tx.insert(
+                    DevInvoice(
+                        periodStart = month.atDay(1),
+                        periodEnd = month.atEndOfMonth(),
+                        headOfFamilyId = guardian.id,
+                        areaId = area.id,
+                        rows = listOf(DevInvoiceRow(childId = childId, unitId = daycare.id)),
+                    )
+                )
+            fun correction(month: YearMonth, childId: ChildId) =
+                tx.insert(
+                    DevInvoiceCorrection(
+                        targetMonth = null,
+                        headOfFamilyId = guardian.id,
+                        childId = childId,
+                        unitId = daycare.id,
+                        product = ProductKey("DAYCARE"),
+                        period = FiniteDateRange(month.atDay(1), month.atEndOfMonth()),
+                        amount = 1,
+                        unitPrice = 100,
+                        description = "",
+                        note = "",
+                    )
+                )
+            // The sibling was never placed, so these count from their own end in 2015
+            feeDecision(
+                FiniteDateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 12, 31)),
+                sibling.id,
+            )
+            invoice(YearMonth.of(2015, 12), sibling.id)
+            correction(YearMonth.of(2015, 12), sibling.id)
+            feeDecision(
+                FiniteDateRange(LocalDate.of(2014, 1, 1), LocalDate.of(2014, 12, 31)),
+                child.id,
+            )
+            invoice(YearMonth.of(2014, 12), child.id)
+            correction(YearMonth.of(2014, 12), child.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2014, 1, 1),
+                    endDate = today.minusYears(10),
+                )
+            )
+        }
+        val financeTables =
+            setOf(
+                "fee_decision",
+                "fee_decision_child",
+                "invoice",
+                "invoice_row",
+                "invoice_correction",
+            )
+
+        // The child's placement holds the rows of the sibling too
+        assertEquals(
+            emptyMap(),
+            execute(guardian.id).deletedRowCountsByTable.filterKeys { it in financeTables },
+        )
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE placement SET end_date = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(placementId)}"
+                )
+            }
+        }
+        assertEquals(
+            financeTables.associateWith { 2 },
+            execute(guardian.id).deletedRowCountsByTable.filterKeys { it in financeTables },
+        )
+    }
+
+    @Test
     fun `a person that is a duplicate or has duplicates is refused`() {
         val duplicate = DevPerson(duplicateOf = child.id)
         db.transaction { tx -> tx.insert(duplicate, DevPersonType.CHILD) }
@@ -1170,19 +1318,159 @@ FROM snapshot
     }
 
     @Test
-    fun `an income statement draft expires a year after it was created, and a sent one ten years after its period, which lasts a year when it has no end`() {
+    fun `a child sent to Koski keeps the child row with the sync state until the safe age, though nothing Koski read remains`() {
+        val young = DevPerson(dateOfBirth = today.minusYears(SAFE_DATA_REMOVAL_AGE))
+        val old = DevPerson(dateOfBirth = today.minusYears(SAFE_DATA_REMOVAL_AGE).minusDays(1))
+        db.transaction { tx ->
+            for (person in listOf(young, old)) {
+                tx.insert(person, DevPersonType.CHILD)
+                tx.execute {
+                    sql(
+                        """
+INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_version)
+VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
+"""
+                    )
+                }
+            }
+            tx.setCreatedLongAgo(young.id, old.id)
+        }
+
+        assertEquals(emptyMap(), execute(young.id).deletedRowCountsByTable)
+        assertEquals(
+            mapOf("koski_study_right" to 1, "child" to 1, "person" to 1),
+            execute(old.id).deletedRowCountsByTable,
+        )
+    }
+
+    @Test
+    fun `an open-ended income waits ten years after it started and after the last finance decision naming its person`() {
+        fun openEndedIncome(personId: PersonId, validFrom: LocalDate) =
+            DevIncome(
+                personId = personId,
+                validFrom = validFrom,
+                validTo = null,
+                modifiedBy = employee.evakaUserId,
+            )
+        val undecided = DevPerson(dateOfBirth = LocalDate.of(1980, 1, 1))
+        db.transaction { tx ->
+            tx.insert(undecided, DevPersonType.RAW_ROW)
+            tx.insert(openEndedIncome(undecided.id, LocalDate.of(2014, 1, 1)))
+        }
+        // No decision applied the income
+        assertEquals(1, execute(undecided.id).deletedRowCountsByTable["income"])
+
+        val feeDecisionId = db.transaction { tx ->
+            tx.insert(openEndedIncome(guardian.id, LocalDate.of(2014, 1, 1)))
+            tx.insert(
+                DevFeeDecision(
+                    validDuring = FiniteDateRange(LocalDate.of(2014, 1, 1), today.minusYears(10)),
+                    headOfFamilyId = otherGuardian.id,
+                    partnerId = guardian.id,
+                )
+            )
+        }
+        val voucherValueDecisionId = db.transaction { tx ->
+            tx.insert(
+                DevVoucherValueDecision(
+                    validFrom = LocalDate.of(2014, 1, 1),
+                    validTo = LocalDate.of(2014, 12, 31),
+                    headOfFamilyId = guardian.id,
+                    childId = child.id,
+                    placementUnitId = daycare.id,
+                )
+            )
+        }
+        fun endDecisions(feeDecisionEnd: LocalDate, voucherValueDecisionEnd: LocalDate) =
+            db.transaction { tx ->
+                tx.execute {
+                    sql(
+                        "UPDATE fee_decision SET valid_during = daterange(lower(valid_during), ${bind(feeDecisionEnd)}, '[]') WHERE id = ${bind(feeDecisionId)}"
+                    )
+                }
+                tx.execute {
+                    sql(
+                        "UPDATE voucher_value_decision SET valid_to = ${bind(voucherValueDecisionEnd)} WHERE id = ${bind(voucherValueDecisionId)}"
+                    )
+                }
+            }
+
+        // The fee decision names the guardian as the partner
+        assertEquals(null, execute(guardian.id).deletedRowCountsByTable["income"])
+
+        // The voucher value decision names the guardian as the head of family
+        endDecisions(LocalDate.of(2014, 12, 31), today.minusYears(10))
+        assertEquals(null, execute(guardian.id).deletedRowCountsByTable["income"])
+
+        endDecisions(LocalDate.of(2014, 12, 31), today.minusYears(10).minusDays(1))
+        assertEquals(1, execute(guardian.id).deletedRowCountsByTable["income"])
+
+        // A new income waits for its own start, however old the decisions are
+        db.transaction { it.insert(openEndedIncome(guardian.id, today.minusYears(1))) }
+        assertEquals(null, execute(guardian.id).deletedRowCountsByTable["income"])
+    }
+
+    @Test
+    fun `a fee alteration is kept ten years after the child's last placement and ten years after its own end, or after its start when it has no end`() {
+        val alterationId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2012, 8, 1),
+                    endDate = LocalDate.of(2014, 7, 31),
+                )
+            )
+            tx.insert(
+                DevFeeAlteration(
+                    personId = child.id,
+                    type = FeeAlterationType.DISCOUNT,
+                    amount = 50.0,
+                    isAbsolute = false,
+                    validFrom = today.minusYears(1),
+                    validTo = null,
+                    modifiedBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        // The placements ended long ago, but the alteration is recent
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["fee_alteration"])
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE fee_alteration SET valid_from = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(alterationId)}"
+                )
+            }
+        }
+        assertEquals(1, execute(child.id).deletedRowCountsByTable["fee_alteration"])
+    }
+
+    @Test
+    fun `an income statement draft expires a year after it was created, a sent one a fee decision other than an ignored one overlaps ten years after its period, and any other a year after it was sent`() {
         fun statement(
             status: IncomeStatementStatus,
             createdAt: HelsinkiDateTime,
             start: LocalDate,
+            end: LocalDate? = null,
         ) =
             DevIncomeStatement(
                 personId = guardian.id,
-                data = IncomeStatementBody.HighestFee(start, null),
+                data = IncomeStatementBody.HighestFee(start, end),
                 status = status,
                 sentAt = createdAt.takeIf { status != IncomeStatementStatus.DRAFT },
+                handlerId = employee.id.takeIf { status == IncomeStatementStatus.HANDLED },
+                handledAt = createdAt.takeIf { status == IncomeStatementStatus.HANDLED },
                 createdAt = createdAt,
                 modifiedAt = createdAt,
+            )
+        fun handled(sentAt: LocalDate, start: LocalDate, end: LocalDate? = null) =
+            statement(
+                IncomeStatementStatus.HANDLED,
+                HelsinkiDateTime.of(sentAt, LocalTime.NOON),
+                start,
+                end,
             )
         val expiredDraft =
             statement(
@@ -1196,23 +1484,66 @@ FROM snapshot
                 HelsinkiDateTime.of(today.minusYears(1), LocalTime.NOON),
                 start = today,
             )
-        val expiredSent =
+        // The fee decision below, which names the guardian as the partner, overlaps these two
+        val expiredDecided = handled(LocalDate.of(2015, 1, 1), today.minusYears(11).minusDays(1))
+        val recentDecided = handled(LocalDate.of(2015, 1, 1), today.minusYears(11))
+        val expiredUndecided =
+            handled(
+                today.minusYears(1).minusDays(1),
+                LocalDate.of(2020, 1, 1),
+                LocalDate.of(2020, 12, 31),
+            )
+        val recentUndecided =
+            handled(today.minusYears(1), LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        // Only the ignored fee decision below overlaps this one
+        val expiredIgnored =
+            handled(
+                today.minusYears(1).minusDays(1),
+                LocalDate.of(2018, 1, 1),
+                LocalDate.of(2018, 12, 31),
+            )
+        val unhandled =
             statement(
                 IncomeStatementStatus.SENT,
                 longAgo,
-                start = today.minusYears(11).minusDays(1),
+                LocalDate.of(2020, 1, 1),
+                LocalDate.of(2020, 12, 31),
             )
-        val recentSent =
-            statement(IncomeStatementStatus.SENT, longAgo, start = today.minusYears(11))
         db.transaction { tx ->
-            for (statement in listOf(expiredDraft, recentDraft, expiredSent, recentSent)) {
+            for (statement in
+                listOf(
+                    expiredDraft,
+                    recentDraft,
+                    expiredDecided,
+                    recentDecided,
+                    expiredUndecided,
+                    recentUndecided,
+                    expiredIgnored,
+                    unhandled,
+                )) {
                 tx.insert(statement)
             }
+            tx.insert(
+                DevFeeDecision(
+                    validDuring =
+                        FiniteDateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 12, 31)),
+                    headOfFamilyId = otherGuardian.id,
+                    partnerId = guardian.id,
+                )
+            )
+            tx.insert(
+                DevFeeDecision(
+                    validDuring =
+                        FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 12, 31)),
+                    headOfFamilyId = guardian.id,
+                    status = FeeDecisionStatus.IGNORED,
+                )
+            )
         }
 
-        assertEquals(mapOf("income_statement" to 2), execute(guardian.id).deletedRowCountsByTable)
+        assertEquals(mapOf("income_statement" to 4), execute(guardian.id).deletedRowCountsByTable)
         assertEquals(
-            setOf(recentDraft.id, recentSent.id),
+            setOf(recentDraft.id, recentDecided.id, recentUndecided.id, unhandled.id),
             db.read { tx ->
                 tx.createQuery {
                         sql(
@@ -1590,6 +1921,10 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                     ),
                 createdAt = longAgo,
                 modifiedAt = longAgo,
+                status = IncomeStatementStatus.HANDLED,
+                sentAt = longAgo,
+                handlerId = employee.id,
+                handledAt = longAgo,
             )
         )
         createPersonMessageAccount(guardian.id)
