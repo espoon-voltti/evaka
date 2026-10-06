@@ -1,9 +1,0 @@
-{
-  "cpu": 8,
-  "memory": 12,
-  "disk": 160,
-  "mounts": [],
-  "copies": ["~/.gitconfig"],
-  "ports": ["3000", "9090", "9099"],
-  "notify": "say 'sandbox needs attention'"
-}
