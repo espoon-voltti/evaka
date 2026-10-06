@@ -3244,7 +3244,8 @@ CREATE TABLE public.invoice_correction (
     created_by uuid NOT NULL,
     modified_at timestamp with time zone NOT NULL,
     modified_by uuid NOT NULL,
-    CONSTRAINT "check$invoice_correction_target_month" CHECK (((target_month IS NULL) OR (EXTRACT(day FROM target_month) = (1)::numeric)))
+    CONSTRAINT "check$invoice_correction_target_month" CHECK (((target_month IS NULL) OR (EXTRACT(day FROM target_month) = (1)::numeric))),
+    CONSTRAINT "check$period_finite" CHECK ((NOT (lower_inf(period) OR upper_inf(period))))
 );
 
 -- Name: invoice_row; Type: TABLE; Schema: public

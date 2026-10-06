@@ -613,3 +613,4 @@ V614__assistance_action_option_swedish.sql
 V615__sfi_message_cascade.sql
 V616__titania_error_type.sql
 V617__finance_decision_partner_is_codebtor.sql
+V618__invoice_correction_finite_period.sql
