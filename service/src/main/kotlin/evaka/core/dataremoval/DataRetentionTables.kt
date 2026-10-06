@@ -110,7 +110,6 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                             alsoNull = listOf("source"),
                         ),
                     ),
-                bundledBy = "child",
                 auditIdType = DatabaseTable.Placement::class,
                 expirationRule =
                     AllOf(
@@ -118,32 +117,33 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                             After(tenYears, OwnColumn("end_date")),
                         )
                         .safeFor(KOSKI, VARDA),
+                bundledBy = "child",
             ),
             HandledTable(
                 name = "service_need",
                 handledBy = CHILD,
                 references =
                     listOf(primaryReference("placement_id", referencedTable = "placement")),
-                bundledBy = "placement",
                 auditIdType = DatabaseTable.ServiceNeed::class,
                 expirationRule = Always.safeFor(VARDA),
+                bundledBy = "placement",
             ),
             HandledTable(
                 name = "daycare_group_placement",
                 handledBy = CHILD,
                 references =
                     listOf(primaryReference("daycare_placement_id", referencedTable = "placement")),
-                bundledBy = "placement",
                 auditIdType = DatabaseTable.GroupPlacement::class,
                 expirationRule = Always,
+                bundledBy = "placement",
             ),
             HandledTable(
                 name = "backup_care",
                 handledBy = CHILD,
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
-                bundledBy = "child",
                 auditIdType = DatabaseTable.BackupCare::class,
                 expirationRule = Always,
+                bundledBy = "child",
             ),
             HandledTable(
                 name = "application",
@@ -170,9 +170,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 handledBy = CHILD,
                 references =
                     listOf(primaryReference("application_id", referencedTable = "application")),
-                bundledBy = "application",
                 auditIdType = DatabaseTable.ApplicationNote::class,
                 expirationRule = Always,
+                bundledBy = "application",
             ),
             HandledTable(
                 name = "application_other_guardian",
@@ -182,35 +182,34 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         primaryReference("application_id", referencedTable = "application"),
                         secondaryReference("guardian_id", referencedTable = "person"),
                     ),
-                bundledBy = "application",
                 identifiedByCols = listOf("application_id", "guardian_id"),
                 expirationRule = Always,
+                bundledBy = "application",
             ),
             HandledTable(
                 name = "placement_plan",
                 handledBy = CHILD,
                 references =
                     listOf(primaryReference("application_id", referencedTable = "application")),
-                bundledBy = "application",
                 auditIdType = DatabaseTable.PlacementPlan::class,
                 expirationRule = Always,
+                bundledBy = "application",
             ),
             HandledTable(
                 name = "placement_draft",
                 handledBy = CHILD,
                 references =
                     listOf(primaryReference("application_id", referencedTable = "application")),
-                bundledBy = "application",
                 identifiedByCols = listOf("application_id"),
                 auditIdType = DatabaseTable.PlacementDraft::class,
                 expirationRule = Always,
+                bundledBy = "application",
             ),
             HandledTable(
                 name = "decision",
                 handledBy = CHILD,
                 references =
                     listOf(primaryReference("application_id", referencedTable = "application")),
-                bundledBy = "application",
                 auditIdType = DatabaseTable.Decision::class,
                 expirationRule =
                     Coalesce(
@@ -219,6 +218,7 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                             Always,
                         )
                         .safeFor(VARDA),
+                bundledBy = "application",
                 asyncJobsPlannedOnDelete =
                     AsyncJobsOnDelete(listOf("document_key", "other_guardian_document_key")) { row
                         ->
@@ -231,25 +231,25 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 name = "koski_study_right",
                 handledBy = CHILD,
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
-                bundledBy = "child",
                 auditIdType = DatabaseTable.KoskiStudyRight::class,
                 expirationRule = Always,
+                bundledBy = "child",
             ),
             HandledTable(
                 name = "koski_upload_error",
                 handledBy = CHILD,
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
-                bundledBy = "child",
                 auditIdType = DatabaseTable.KoskiUploadError::class,
                 expirationRule = Always,
+                bundledBy = "child",
             ),
             HandledTable(
                 name = "varda_state",
                 handledBy = CHILD,
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
-                bundledBy = "child",
                 auditIdType = DatabaseTable.VardaState::class,
                 expirationRule = Always,
+                bundledBy = "child",
             ),
             HandledTable(
                 name = "child_images",
@@ -300,10 +300,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         primaryReference("document_id", referencedTable = "child_document"),
                         secondaryReference("person_id", referencedTable = "person"),
                     ),
-                bundledBy = "child_document",
                 identifiedByCols = listOf("document_id", "person_id"),
                 independentRows = true,
                 expirationRule = Always,
+                bundledBy = "child_document",
             ),
             HandledTable(
                 name = "child_document_published_version",
@@ -312,10 +312,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                     listOf(
                         primaryReference("child_document_id", referencedTable = "child_document")
                     ),
-                bundledBy = "child_document",
                 independentRows = true,
                 auditIdType = DatabaseTable.ChildDocumentPublishedVersion::class,
                 expirationRule = Always,
+                bundledBy = "child_document",
                 asyncJobsPlannedOnDelete =
                     AsyncJobsOnDelete(listOf("document_key")) { row ->
                         listOfNotNull(row.valuesByColumn["document_key"]).map {
@@ -331,9 +331,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         primaryReference("child_id", referencedTable = "child"),
                         secondaryReference("guardian_id", referencedTable = "person"),
                     ),
-                bundledBy = "child",
                 identifiedByCols = listOf("guardian_id", "child_id"),
                 expirationRule = Always.safeFor(VARDA),
+                bundledBy = "child",
             ),
             HandledTable(
                 name = "foster_parent",
@@ -343,9 +343,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         primaryReference("child_id", referencedTable = "child"),
                         secondaryReference("parent_id", referencedTable = "person"),
                     ),
-                bundledBy = "child",
                 auditIdType = DatabaseTable.FosterParent::class,
                 expirationRule = Always,
+                bundledBy = "child",
             ),
             HandledTable(
                 name = "guardian_blocklist",
@@ -355,9 +355,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         primaryReference("child_id", referencedTable = "child"),
                         secondaryReference("guardian_id", referencedTable = "person"),
                     ),
-                bundledBy = "child",
                 identifiedByCols = listOf("guardian_id", "child_id"),
                 expirationRule = Always,
+                bundledBy = "child",
             ),
             HandledTable(
                 name = "family_contact",
@@ -523,9 +523,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 handledBy = CHILD,
                 references =
                     listOf(primaryReference("action_id", referencedTable = "assistance_action")),
-                bundledBy = "assistance_action",
                 identifiedByCols = listOf("action_id", "option_id"),
                 expirationRule = Always,
+                bundledBy = "assistance_action",
             ),
             HandledTable(
                 name = "assistance_need_voucher_coefficient",
@@ -562,9 +562,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         ),
                         secondaryReference("person_id", referencedTable = "person"),
                     ),
-                bundledBy = "pedagogical_document",
                 identifiedByCols = listOf("pedagogical_document_id", "person_id"),
                 expirationRule = Always,
+                bundledBy = "pedagogical_document",
             ),
             HandledTable(
                 name = "service_application",
@@ -751,17 +751,17 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         primaryReference("fee_decision_id", referencedTable = "fee_decision"),
                         secondaryReference("child_id", referencedTable = "child"),
                     ),
-                bundledBy = "fee_decision",
                 auditIdType = DatabaseTable.FeeDecisionChild::class,
                 expirationRule = Always.safeFor(VARDA),
+                bundledBy = "fee_decision",
             ),
             HandledTable(
                 name = "finance_note",
                 handledBy = ADULT,
                 references = listOf(primaryReference("person_id", referencedTable = "person")),
-                bundledBy = "person",
                 auditIdType = DatabaseTable.FinanceNote::class,
                 expirationRule = Always,
+                bundledBy = "person",
             ),
             HandledTable(
                 name = "income_notification",
@@ -804,9 +804,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         secondaryReference("child", referencedTable = "child"),
                         secondaryReference("correction_id", referencedTable = "invoice_correction"),
                     ),
-                bundledBy = "invoice",
                 auditIdType = DatabaseTable.InvoiceRow::class,
                 expirationRule = Always,
+                bundledBy = "invoice",
             ),
             HandledTable(
                 name = "invoice_correction",
