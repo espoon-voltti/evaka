@@ -50,6 +50,7 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
@@ -2633,7 +2634,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         // Check that message is still sent via sfi
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
-        assertEquals(1, MockSfiMessagesClient.getMessages().size)
+        assertEquals(
+            setOf(adult7.ssn, adult2.ssn),
+            MockSfiMessagesClient.getMessages().map { it.ssn }.toSet(),
+        )
     }
 
     @Test
@@ -2662,7 +2666,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertThrows<Forbidden> { getPdf(decision.id, user) }
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
-        assertEquals(1, MockSfiMessagesClient.getMessages().size)
+        assertEquals(
+            setOf(adult1.ssn, adult2.ssn),
+            MockSfiMessagesClient.getMessages().map { it.ssn }.toSet(),
+        )
     }
 
     @Test
@@ -2894,6 +2901,84 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `decision is sent via suomi fi and email to both the head of family and the codebtor`() {
+        db.transaction {
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult2.id, child1.id)
+            it.setEmail(adult1, "head@example.com")
+            it.setEmail(adult2, "codebtor@example.com")
+        }
+        val decision = createAndConfirmFeeDecisionsForFamily(adult1, adult2, listOf(child1))
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(
+            setOf(adult1.ssn, adult2.ssn),
+            MockSfiMessagesClient.getMessages().map { it.ssn }.toSet(),
+        )
+        assertEquals(
+            setOf("head@example.com", "codebtor@example.com"),
+            MockEmailClient.emails.map { it.toAddress }.toSet(),
+        )
+
+        sfiAsyncJobs.getEvents(db, MockEvakaClock(HelsinkiDateTime.now()))
+        val metadata =
+            processMetadataController.getFeeDecisionMetadata(
+                dbInstance(),
+                adminUser,
+                RealEvakaClock(),
+                decision.id,
+            )
+        assertEquals(
+            setOf("Doe John", "Doe Joan"),
+            metadata.data?.primaryDocument?.sfiDeliveries?.map { it.recipientName }?.toSet(),
+        )
+    }
+
+    @Test
+    fun `decision is not sent to a partner who is not a codebtor`() {
+        db.transaction {
+            it.insertGuardian(adult1.id, child1.id)
+            it.setEmail(adult2, "partner@example.com")
+        }
+        createAndConfirmFeeDecisionsForFamily(adult1, adult2, listOf(child1))
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(listOf(adult1.ssn), MockSfiMessagesClient.getMessages().map { it.ssn })
+        assertEquals(emptyList(), MockEmailClient.emails)
+    }
+
+    @Test
+    fun `decision is sent only to the head of family when the codebtor has no SSN`() {
+        // adult3 has no SSN
+        db.transaction {
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult3.id, child1.id)
+        }
+        createAndConfirmFeeDecisionsForFamily(adult1, adult3, listOf(child1))
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(listOf(adult1.ssn), MockSfiMessagesClient.getMessages().map { it.ssn })
+        assertEquals(emptyList(), MockEmailClient.emails)
+    }
+
+    @Test
+    fun `decision is sent to the default address of a codebtor with restricted details`() {
+        // adult7 has restricted details on
+        db.transaction {
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult7.id, child1.id)
+        }
+        createAndConfirmFeeDecisionsForFamily(adult1, adult7, listOf(child1))
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val codebtorMessage = MockSfiMessagesClient.getMessages().single { it.ssn == adult7.ssn }
+        assertEquals(
+            "Espoon Kaupunki, Talousyksikkö, Varhaiskasvatuksen laskutus, PL 30",
+            codebtorMessage.streetAddress,
+        )
+    }
+
+    @Test
     fun `codebtor status is locked when the PDF is created`() {
         db.transaction {
             it.insertGuardian(adult1.id, child1.id)
@@ -3030,6 +3115,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     private fun setDecisionType(id: FeeDecisionId, body: FeeDecisionTypeRequest) {
         feeDecisionController.setFeeDecisionType(dbInstance(), user, RealEvakaClock(), id, body)
+    }
+
+    private fun Database.Transaction.setEmail(person: DevPerson, email: String) = execute {
+        sql("UPDATE person SET email = ${bind(email)} WHERE id = ${bind(person.id)}")
     }
 
     private fun getEmailFor(person: DevPerson): Email {

@@ -24,6 +24,7 @@ import evaka.core.invoicing.data.setVoucherValueDecisionType
 import evaka.core.invoicing.data.updateVoucherValueDecisionDocumentKey
 import evaka.core.invoicing.data.updateVoucherValueDecisionStatus
 import evaka.core.invoicing.domain.FinanceDecisionType
+import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.VoucherValueDecision
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
@@ -31,6 +32,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.NotificationCategory
 import evaka.core.s3.DocumentKey
+import evaka.core.s3.DocumentLocation
 import evaka.core.s3.DocumentService
 import evaka.core.setting.SettingType
 import evaka.core.setting.getSettings
@@ -144,52 +146,21 @@ class VoucherValueDecisionService(
         }
 
         val lang = getDecisionLanguage(decision)
-
-        // If address is missing (restricted info enabled), use the financial handling address
-        // instead
-        val sendAddress =
-            DecisionSendAddress.fromPerson(decision.headOfFamily)
-                ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
-
         val documentLocation =
             documentClient.locate(DocumentKey.VoucherValueDecision(decision.documentKey))
 
-        val documentDisplayName =
-            calculateDecisionFileName(decision, lang, FileNameType.DISPLAY_NAME)
-        val messageHeader = messageProvider.getVoucherValueDecisionHeader(lang)
-        val messageContent = messageProvider.getVoucherValueDecisionContent(lang)
+        sendSfiMessage(tx, clock, decision, decision.headOfFamily, lang, documentLocation)
 
-        val messageId =
-            tx.storeSentSfiMessage(
-                SentSfiMessage(
-                    guardianId = decision.headOfFamily.id,
-                    voucherValueDecisionId = decision.id,
-                )
-            )
-
-        asyncJobRunner.plan(
-            tx,
-            listOf(
-                AsyncJob.SendMessage(
-                    SfiMessage(
-                        messageId = messageId,
-                        documentId = decision.id.toString(),
-                        documentDisplayName = documentDisplayName,
-                        documentBucket = documentLocation.bucket,
-                        documentKey = documentLocation.key,
-                        firstName = decision.headOfFamily.firstName,
-                        lastName = decision.headOfFamily.lastName,
-                        streetAddress = sendAddress.street,
-                        postalCode = sendAddress.postalCode,
-                        postOffice = sendAddress.postOffice,
-                        ssn = decision.headOfFamily.ssn!!,
-                        messageHeader = messageHeader,
-                        messageContent = messageContent,
-                    )
-                )
-            ),
-            runAt = now,
-        )
+        val codebtor = decision.partner?.takeIf { decision.partnerIsCodebtor == true }
+        if (codebtor != null) {
+            if (codebtor.ssn.isNullOrBlank()) {
+                logger.info {
+                    "Cannot deliver voucher value decision ${decision.id} to codebtor. SSN is missing."
+                }
+            } else {
+                sendSfiMessage(tx, clock, decision, codebtor, lang, documentLocation)
+            }
+        }
 
         tx.markVoucherValueDecisionsSent(listOf(decision.id), now)
 
@@ -208,6 +179,51 @@ class VoucherValueDecisionService(
             runAt = now,
         )
         return true
+    }
+
+    private fun sendSfiMessage(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decision: VoucherValueDecisionDetailed,
+        recipient: PersonDetailed,
+        lang: OfficialLanguage,
+        documentLocation: DocumentLocation,
+    ) {
+        val sendAddress =
+            DecisionSendAddress.fromPerson(recipient)?.takeUnless {
+                recipient.restrictedDetailsEnabled
+            } ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
+
+        val messageId =
+            tx.storeSentSfiMessage(
+                SentSfiMessage(guardianId = recipient.id, voucherValueDecisionId = decision.id)
+            )
+
+        asyncJobRunner.plan(
+            tx,
+            listOf(
+                AsyncJob.SendMessage(
+                    SfiMessage(
+                        messageId = messageId,
+                        // Suomi.fi requires a unique document ID for each message
+                        documentId = "${decision.id}|${recipient.id}",
+                        documentDisplayName =
+                            calculateDecisionFileName(decision, lang, FileNameType.DISPLAY_NAME),
+                        documentBucket = documentLocation.bucket,
+                        documentKey = documentLocation.key,
+                        firstName = recipient.firstName,
+                        lastName = recipient.lastName,
+                        streetAddress = sendAddress.street,
+                        postalCode = sendAddress.postalCode,
+                        postOffice = sendAddress.postOffice,
+                        ssn = recipient.ssn!!,
+                        messageHeader = messageProvider.getVoucherValueDecisionHeader(lang),
+                        messageContent = messageProvider.getVoucherValueDecisionContent(lang),
+                    )
+                )
+            ),
+            runAt = clock.now(),
+        )
     }
 
     fun ignoreDrafts(
@@ -309,33 +325,46 @@ class VoucherValueDecisionService(
             "Sending voucher value decision emails for (decisionId: $voucherValueDecisionId)"
         }
 
+        val recipientIds =
+            listOfNotNull(
+                decision.headOfFamily.id,
+                decision.partner
+                    ?.takeIf { decision.partnerIsCodebtor == true && !it.ssn.isNullOrBlank() }
+                    ?.id,
+            )
+
         // simplified to get rid of superfluous language requirement
         val fromAddress = emailEnv.sender(Language.fi)
         val content =
             emailMessageProvider.financeDecisionNotification(
                 FinanceDecisionType.VOUCHER_VALUE_DECISION
             )
-        Email.create(
-                db,
-                decision.headOfFamily.id,
-                NotificationCategory.DECISION_NOTIFICATION,
-                fromAddress,
-                content,
-                "$voucherValueDecisionId - ${decision.headOfFamily.id}",
-            )
-            ?.also { emailClient.send(it) }
+        recipientIds.forEach { recipientId ->
+            Email.create(
+                    db,
+                    recipientId,
+                    NotificationCategory.DECISION_NOTIFICATION,
+                    fromAddress,
+                    content,
+                    "$voucherValueDecisionId - $recipientId",
+                )
+                ?.also { emailClient.send(it) }
+        }
         db.transaction { tx ->
-            citizenPushNotifications.plan(
-                tx,
-                clock.now(),
-                decision.headOfFamily.id,
-                CitizenPushNotification.VoucherValueDecision(
-                    decisionId = voucherValueDecisionId,
-                    childName =
-                        tx.getPushChildNames(listOf(decision.child.id)).getValue(decision.child.id),
-                    unitName = decision.placement.unit.name,
-                ),
-            )
+            val childName =
+                tx.getPushChildNames(listOf(decision.child.id)).getValue(decision.child.id)
+            recipientIds.forEach { recipientId ->
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    recipientId,
+                    CitizenPushNotification.VoucherValueDecision(
+                        decisionId = voucherValueDecisionId,
+                        childName = childName,
+                        unitName = decision.placement.unit.name,
+                    ),
+                )
+            }
         }
 
         logger.info {
