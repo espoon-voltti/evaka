@@ -116,6 +116,7 @@ SELECT
     decision.head_of_family_id AS head_id,
     decision.document_contains_contact_info,
     decision.archived_at,
+    decision.partner_is_codebtor,
     head.date_of_birth as head_date_of_birth,
     head.first_name as head_first_name,
     head.last_name as head_last_name,
@@ -657,12 +658,13 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
         ?.let {
             it.copy(
                 partnerIsCodebtor =
-                    partnerIsCodebtor(
-                        this,
-                        it.partner?.id,
-                        it.children.map { c -> c.child.id },
-                        it.validDuring,
-                    )
+                    it.partnerIsCodebtor
+                        ?: partnerIsCodebtor(
+                            this,
+                            it.partner?.id,
+                            it.children.map { c -> c.child.id },
+                            it.validDuring,
+                        )
             )
         }
 }
@@ -781,6 +783,18 @@ fun Database.Transaction.updateFeeDecisionDocumentKey(id: FeeDecisionId, key: St
                 SET document_key = ${bind(key)}
                 WHERE id = ${bind(id)}
                 """
+        )
+    }
+        .execute()
+}
+
+fun Database.Transaction.setFeeDecisionPartnerIsCodebtor(
+    id: FeeDecisionId,
+    partnerIsCodebtor: Boolean,
+) {
+    createUpdate {
+        sql(
+            "UPDATE fee_decision SET partner_is_codebtor = ${bind(partnerIsCodebtor)} WHERE id = ${bind(id)}"
         )
     }
         .execute()

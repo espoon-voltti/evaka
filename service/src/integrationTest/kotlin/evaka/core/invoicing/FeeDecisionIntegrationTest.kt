@@ -2894,6 +2894,21 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `codebtor status is locked when the PDF is created`() {
+        db.transaction {
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult2.id, child1.id)
+        }
+        val decision = createAndConfirmFeeDecisionsForFamily(adult1, adult2, listOf(child1))
+
+        db.transaction {
+            it.execute { sql("DELETE FROM guardian WHERE guardian_id = ${bind(adult2.id)}") }
+        }
+
+        assertEquals(true, getDecision(decision.id).partnerIsCodebtor)
+    }
+
+    @Test
     fun `Sfi message event is stored correctly`() {
 
         // adult7 has restricted details on

@@ -516,12 +516,13 @@ WHERE decision.id = ${bind(id)}
         ?.let {
             it.copy(
                 partnerIsCodebtor =
-                    partnerIsCodebtor(
-                        this,
-                        it.partner?.id,
-                        listOf(it.child.id),
-                        FiniteDateRange(it.validFrom, it.validTo),
-                    )
+                    it.partnerIsCodebtor
+                        ?: partnerIsCodebtor(
+                            this,
+                            it.partner?.id,
+                            listOf(it.child.id),
+                            FiniteDateRange(it.validFrom, it.validTo),
+                        )
             )
         }
 }
@@ -636,6 +637,18 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
     createUpdate {
         sql(
             "UPDATE voucher_value_decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(id)}"
+        )
+    }
+        .execute()
+}
+
+fun Database.Transaction.setVoucherValueDecisionPartnerIsCodebtor(
+    id: VoucherValueDecisionId,
+    partnerIsCodebtor: Boolean,
+) {
+    createUpdate {
+        sql(
+            "UPDATE voucher_value_decision SET partner_is_codebtor = ${bind(partnerIsCodebtor)} WHERE id = ${bind(id)}"
         )
     }
         .execute()

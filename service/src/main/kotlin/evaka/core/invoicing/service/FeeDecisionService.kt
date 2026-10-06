@@ -26,6 +26,7 @@ import evaka.core.invoicing.data.getFeeDecisionsByIds
 import evaka.core.invoicing.data.lockFeeDecisions
 import evaka.core.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import evaka.core.invoicing.data.removeFeeDecisionIgnore
+import evaka.core.invoicing.data.setFeeDecisionPartnerIsCodebtor
 import evaka.core.invoicing.data.setFeeDecisionProcessId
 import evaka.core.invoicing.data.setFeeDecisionSent
 import evaka.core.invoicing.data.setFeeDecisionToIgnored
@@ -296,6 +297,10 @@ class FeeDecisionService(
                 .upload(DocumentKey.FeeDecision(decision.id, lang), pdfByteArray, "application/pdf")
                 .key
         tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
+        tx.setFeeDecisionPartnerIsCodebtor(
+            decision.id,
+            decision.partner != null && decision.partnerIsCodebtor == true,
+        )
     }
 
     fun sendDecision(tx: Database.Transaction, clock: EvakaClock, id: FeeDecisionId): Boolean {

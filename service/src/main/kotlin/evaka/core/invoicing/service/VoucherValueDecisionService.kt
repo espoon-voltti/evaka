@@ -18,6 +18,7 @@ import evaka.core.invoicing.data.getValueDecisionsByIds
 import evaka.core.invoicing.data.getVoucherValueDecision
 import evaka.core.invoicing.data.markVoucherValueDecisionsSent
 import evaka.core.invoicing.data.removeVoucherValueDecisionIgnore
+import evaka.core.invoicing.data.setVoucherValueDecisionPartnerIsCodebtor
 import evaka.core.invoicing.data.setVoucherValueDecisionToIgnored
 import evaka.core.invoicing.data.setVoucherValueDecisionType
 import evaka.core.invoicing.data.updateVoucherValueDecisionDocumentKey
@@ -89,6 +90,10 @@ class VoucherValueDecisionService(
                 .upload(DocumentKey.VoucherValueDecision(decisionId), pdf, "application/pdf")
                 .key
         tx.updateVoucherValueDecisionDocumentKey(decision.id, key)
+        tx.setVoucherValueDecisionPartnerIsCodebtor(
+            decision.id,
+            decision.partner != null && decision.partnerIsCodebtor == true,
+        )
     }
 
     fun getDecisionPdfResponse(
