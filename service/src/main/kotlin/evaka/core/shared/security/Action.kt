@@ -2233,7 +2233,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
         ),
         READ_CHILD_DOCUMENTS_REPORT(
-            HasGlobalRole(ADMIN, DIRECTOR),
+            HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit(),
         ),
         READ_PRESCHOOL_APPLICATION_REPORT,

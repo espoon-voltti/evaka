@@ -380,7 +380,7 @@ Yksikkö;"Tilapäisen sijaisen poisto";"DELETE_TEMPORARY_EMPLOYEE";x;;;;;;;x;;;x
 Yksikkö;"Ruokailijamäärät-raportti";READ_MEAL_REPORT;x;;;;;;;x;;;x
 Yksikkö;"Lasten poissaoloraportti";"READ_CHILD_ABSENCE_REPORT_FOR_UNIT";x;;;x;;;;x;;;x
 Yksikkö;"Esiopetuksen poissaoloraportti";"READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT";x;;;;;;;x;x;;
-Yksikkö;"Pedagogiset asiakirjat -raportti";"READ_CHILD_DOCUMENTS_REPORT";x;;x;;;;;x;;x;
+Yksikkö;"Pedagogiset asiakirjat -raportti";"READ_CHILD_DOCUMENTS_REPORT";x;x;x;;;;;x;;x;
 Yksikkö;"Ehdottava EO-raportti";"READ_PRESCHOOL_APPLICATION_REPORT";"TRE,NOK,YLO,KAN";;"TRE,NOK,YLO,KAN";;;"TRE,NOK,YLO,KAN";;"TRE,NOK,YLO,KAN";;;
 Yksikkö;Lomakyselyraportti;"READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT";x;;;;;;;x;;;x
 Yksikkö;Poissaolokyselyraportti;"READ_HOLIDAY_QUESTIONNAIRE_REPORT";x;;;;;;;x;;;
