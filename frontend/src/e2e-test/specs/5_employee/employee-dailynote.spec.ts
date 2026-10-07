@@ -110,6 +110,7 @@ test.describe('Mobile employee daily notes', () => {
 
     await noteModal.noteInput.fill('aardvark')
     await noteModal.submitButton.click()
+    await expect(noteModal).toBeHidden()
 
     await childRow.assertDailyNoteContainsText('aardvark')
   })
