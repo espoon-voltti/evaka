@@ -726,6 +726,13 @@ test.describe('Employee - Child documents', () => {
     await expect(groupRow.completed).toHaveText('0')
     await expect(groupRow.noDocuments).toHaveText('1')
     await expect(groupRow.total).toHaveText('2')
+
+    const csvReport = await report.getCsvReport()
+    expect(csvReport.split('\n').slice(1)).toEqual([
+      `${testCareArea.name};${testDaycare.name};;1;0;0;1;2`,
+      `${testCareArea.name};${testDaycare.name};${daycareGroup.name};1;0;0;1;2`,
+      ''
+    ])
   })
 
   test('Document archiving', async ({ newEvakaPage }) => {

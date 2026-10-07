@@ -754,6 +754,14 @@ export class ChildDocumentsReport {
       total: row.findByDataQa('total-count')
     }
   }
+
+  async getCsvReport(): Promise<string> {
+    const [download] = await Promise.all([
+      this.page.waitForDownload(),
+      this.page.findByDataQa('download-csv').click()
+    ])
+    return captureTextualDownload(download)
+  }
 }
 
 export class ChildDocumentDecisionsReport {

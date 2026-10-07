@@ -19,6 +19,7 @@ import type {
   DocumentTemplateId
 } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -37,6 +38,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { daycaresQuery } from '../unit/queries'
 
+import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow } from './common'
 import {
   childDocumentsReportQuery,
@@ -221,6 +223,7 @@ const ChildDocumentsReportInner = React.memo(
         </FilterRowWide>
         {unitIds.length > 0 && templateIds.length > 0 && (
           <ChildDocumentsReportTable
+            units={units}
             unitIds={unitIds}
             templateIds={templateIds}
           />
@@ -232,13 +235,16 @@ const ChildDocumentsReportInner = React.memo(
 
 const ChildDocumentsReportTable = React.memo(
   function ChildDocumentsReportInner({
+    units,
     unitIds,
     templateIds
   }: {
+    units: Daycare[]
     unitIds: DaycareId[]
     templateIds: DocumentTemplateId[]
   }) {
     const { i18n } = useTranslation()
+    const t = i18n.reports.childDocuments
 
     const rowsResult = useQueryResult(
       childDocumentsReportQuery({ unitIds, templateIds })
@@ -248,37 +254,89 @@ const ChildDocumentsReportTable = React.memo(
       [rowsResult]
     )
 
-    return renderResult(orderedRows, (unitRows) => (
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>{i18n.reports.childDocuments.table.unitOrGroup}</Th>
-            <Th>{i18n.reports.childDocuments.table.draft}</Th>
-            <Th>{i18n.reports.childDocuments.table.prepared}</Th>
-            <Th>{i18n.reports.childDocuments.table.completed}</Th>
-            <Th>{i18n.reports.childDocuments.table.none}</Th>
-            <Th>{i18n.reports.childDocuments.table.total}</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {unitRows.map((row) => (
-            <React.Fragment key={row.unitId}>
-              <Tr data-qa={`unit-row-${row.unitId}`}>
-                <Td data-qa="name">
-                  <Strong>{row.unitName}</Strong>
-                </Td>
-                <Td data-qa="drafts-count">{row.drafts}</Td>
-                <Td data-qa="prepared-count">{row.prepared}</Td>
-                <Td data-qa="completed-count">{row.completed}</Td>
-                <Td data-qa="no-documents-count">{row.none}</Td>
-                <Td data-qa="total-count">{row.total}</Td>
+    const csvRows = useMemo(
+      () =>
+        orderedRows.map((unitRows) => {
+          const areaNameByUnitId = new Map(
+            units.map((u) => [u.id, u.area.name])
+          )
+          return unitRows.flatMap((unitRow) => {
+            const areaName = areaNameByUnitId.get(unitRow.unitId) ?? ''
+            return [
+              { ...unitRow, areaName, groupName: '' },
+              ...orderBy(unitRow.groups, (g) => g.groupName).map(
+                (groupRow) => ({
+                  ...groupRow,
+                  areaName,
+                  unitName: unitRow.unitName
+                })
+              )
+            ]
+          })
+        }),
+      [orderedRows, units]
+    )
+
+    return renderResult(
+      combine(orderedRows, csvRows),
+      ([unitRows, csvRows]) => (
+        <>
+          <ReportDownload
+            data={csvRows}
+            columns={[
+              {
+                label: i18n.reports.common.careAreaName,
+                value: (row) => row.areaName
+              },
+              {
+                label: i18n.reports.common.unitName,
+                value: (row) => row.unitName
+              },
+              {
+                label: i18n.reports.common.groupName,
+                value: (row) => row.groupName
+              },
+              { label: t.table.draft, value: (row) => row.drafts },
+              { label: t.table.prepared, value: (row) => row.prepared },
+              { label: t.table.completed, value: (row) => row.completed },
+              { label: t.table.none, value: (row) => row.none },
+              { label: t.table.total, value: (row) => row.total }
+            ]}
+            filename={`${t.title} ${LocalDate.todayInHelsinkiTz().formatIso()}.csv`}
+            data-qa="download-csv"
+          />
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>{i18n.reports.childDocuments.table.unitOrGroup}</Th>
+                <Th>{i18n.reports.childDocuments.table.draft}</Th>
+                <Th>{i18n.reports.childDocuments.table.prepared}</Th>
+                <Th>{i18n.reports.childDocuments.table.completed}</Th>
+                <Th>{i18n.reports.childDocuments.table.none}</Th>
+                <Th>{i18n.reports.childDocuments.table.total}</Th>
               </Tr>
-              <GroupSection unitId={row.unitId} groupRows={row.groups} />
-            </React.Fragment>
-          ))}
-        </Tbody>
-      </Table>
-    ))
+            </Thead>
+            <Tbody>
+              {unitRows.map((row) => (
+                <React.Fragment key={row.unitId}>
+                  <Tr data-qa={`unit-row-${row.unitId}`}>
+                    <Td data-qa="name">
+                      <Strong>{row.unitName}</Strong>
+                    </Td>
+                    <Td data-qa="drafts-count">{row.drafts}</Td>
+                    <Td data-qa="prepared-count">{row.prepared}</Td>
+                    <Td data-qa="completed-count">{row.completed}</Td>
+                    <Td data-qa="no-documents-count">{row.none}</Td>
+                    <Td data-qa="total-count">{row.total}</Td>
+                  </Tr>
+                  <GroupSection unitId={row.unitId} groupRows={row.groups} />
+                </React.Fragment>
+              ))}
+            </Tbody>
+          </Table>
+        </>
+      )
+    )
   }
 )
 
