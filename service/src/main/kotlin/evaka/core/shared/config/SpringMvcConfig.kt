@@ -30,6 +30,7 @@ import org.springframework.format.FormatterRegistry
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverters
 import org.springframework.http.converter.StringHttpMessageConverter
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.context.request.WebRequest.SCOPE_REQUEST
@@ -93,6 +94,13 @@ class SpringMvcConfig(
                 supportedMediaTypes = listOf(MediaType.TEXT_PLAIN)
             }
         )
+        // Spring registers Jackson 2 converters for data formats (e.g. CBOR) that libraries bring
+        // in as transitive dependencies. Jackson 2 ignores our Jackson 3 annotations, so it must
+        // never serialize our types.
+        builder.configureMessageConvertersList { converters ->
+            @Suppress("DEPRECATION")
+            converters.removeIf { it is AbstractJackson2HttpMessageConverter }
+        }
     }
 
     private fun WebRequest.getDatabaseInstance(): Database =
