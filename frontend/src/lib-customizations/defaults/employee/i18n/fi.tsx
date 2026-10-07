@@ -1325,7 +1325,12 @@ export const fi = {
         optionStartEndNotValidWarningTitle: (validity: FiniteDateRange) =>
           `Valittu palveluntarvetyyppi on käytettävissä ajalla ${validity.format()}`,
         notFullyValidOptionWarning:
-          'Valitun palveluntarvetyypin täytyy olla käytettävissä koko ajalla. Luo palveluntarve tarvittaessa kahdessa osassa.'
+          'Valitun palveluntarvetyypin täytyy olla käytettävissä koko ajalla. Luo palveluntarve tarvittaessa kahdessa osassa.',
+        voucherValueMissing: {
+          title: 'Palveluntarvetta ei voitu tallentaa',
+          message:
+            'Valitulle palveluntarvetyypille ei ole määritelty palvelusetelin arvoa koko ajalle.'
+        }
       }
     },
     absenceApplications: {

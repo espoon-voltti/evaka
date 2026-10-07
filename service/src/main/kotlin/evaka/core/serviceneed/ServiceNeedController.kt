@@ -6,7 +6,9 @@ package evaka.core.serviceneed
 
 import evaka.core.Audit
 import evaka.core.AuditContext
+import evaka.core.EvakaEnv
 import evaka.core.absence.ChildServiceNeedInfo
+import evaka.core.invoicing.domain.financeDecisionMinDate
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.PlacementId
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController
 class ServiceNeedController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val env: EvakaEnv,
 ) {
 
     data class ServiceNeedCreateRequest(
@@ -75,6 +78,8 @@ class ServiceNeedController(
                             shiftCare = body.shiftCare,
                             partWeek = body.partWeek,
                             confirmedAt = HelsinkiDateTime.now(),
+                            financeDecisionMinDate =
+                                financeDecisionMinDate(env.feeDecisionMinDate, clock.today()),
                         )
                         .also { id ->
                             val range = tx.getServiceNeedChildRange(id)
@@ -125,6 +130,8 @@ class ServiceNeedController(
                         shiftCare = body.shiftCare,
                         partWeek = body.partWeek,
                         confirmedAt = HelsinkiDateTime.now(),
+                        financeDecisionMinDate =
+                            financeDecisionMinDate(env.feeDecisionMinDate, clock.today()),
                         audit = audit,
                     )
                     notifyServiceNeedUpdated(

@@ -6,6 +6,7 @@ package evaka.core.invoicing.service
 
 import evaka.core.AuditContext
 import evaka.core.EvakaEnv
+import evaka.core.invoicing.domain.financeDecisionMinDate
 import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.invoicing.service.generator.generateAndInsertFeeDecisionsV2
 import evaka.core.invoicing.service.generator.generateAndInsertVoucherValueDecisionsV2
@@ -182,7 +183,7 @@ FROM ids
         )
     }
 
-    private fun minDateFor(today: LocalDate) = maxOf(feeDecisionMinDate, financeFreezeDate(today))
+    private fun minDateFor(today: LocalDate) = financeDecisionMinDate(feeDecisionMinDate, today)
 
     /** May go further back than the configured min date, but not past the freeze */
     private fun retroactiveMinDateFor(today: LocalDate, from: LocalDate) =

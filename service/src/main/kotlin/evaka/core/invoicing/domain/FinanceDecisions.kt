@@ -18,6 +18,10 @@ val FINANCE_FREEZE_PERIOD: Period = Period.ofYears(5)
 /** Finance decisions are never generated for days before this */
 fun financeFreezeDate(today: LocalDate): LocalDate = today.minus(FINANCE_FREEZE_PERIOD)
 
+/** Finance decisions are generated for days from this onwards, unless generated retroactively */
+fun financeDecisionMinDate(feeDecisionMinDate: LocalDate, today: LocalDate): LocalDate =
+    maxOf(feeDecisionMinDate, financeFreezeDate(today))
+
 interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val id: Id<*>
     val validFrom: LocalDate

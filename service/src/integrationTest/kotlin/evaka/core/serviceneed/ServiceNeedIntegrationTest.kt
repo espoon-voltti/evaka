@@ -5,7 +5,10 @@
 package evaka.core.serviceneed
 
 import evaka.core.FullApplicationTest
+import evaka.core.daycare.domain.ProviderType
 import evaka.core.insertServiceNeedOptions
+import evaka.core.invoicing.controller.insertNewVoucherValue
+import evaka.core.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
 import evaka.core.placement.PlacementController
 import evaka.core.shared.ChildId
 import evaka.core.shared.PlacementId
@@ -23,6 +26,7 @@ import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertServiceNeedOption
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -31,6 +35,7 @@ import evaka.core.snDaycareFullDay25to35
 import evaka.core.snDaycareFullDay35
 import evaka.core.snDefaultDaycare
 import evaka.core.snPreschoolDaycare45
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -48,6 +53,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     private val clock = RealEvakaClock()
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
+    private val voucherUnit =
+        DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE_SERVICE_VOUCHER)
     private val supervisor = DevEmployee()
     private val admin = DevEmployee()
     private val child = DevPerson()
@@ -55,6 +62,18 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     private val unitSupervisor =
         AuthenticatedUser.Employee(supervisor.id, setOf(UserRole.UNIT_SUPERVISOR))
     private val adminUser = AuthenticatedUser.Employee(admin.id, setOf(UserRole.ADMIN))
+
+    // Finance decisions are generated from 2021-10-07 onwards: five years before the clock's date,
+    // which is later than the integration test fee decision min date
+    private val financeClock = MockEvakaClock(2026, 10, 7, 12, 0)
+    private val voucherValuesStart = LocalDate.of(2024, 8, 1)
+    private val optionWithLateVoucherValues =
+        snDaycareFullDay35.copy(
+            id = ServiceNeedOptionId(UUID.randomUUID()),
+            nameFi = "Voucher value from 2024-08-01",
+            nameSv = "Voucher value from 2024-08-01",
+            nameEn = "Voucher value from 2024-08-01",
+        )
 
     lateinit var placementId: PlacementId
 
@@ -64,9 +83,29 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             tx.insert(admin)
             tx.insert(area)
             tx.insert(daycare)
-            tx.insert(supervisor, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(voucherUnit)
+            tx.insert(
+                supervisor,
+                mapOf(
+                    daycare.id to UserRole.UNIT_SUPERVISOR,
+                    voucherUnit.id to UserRole.UNIT_SUPERVISOR,
+                ),
+            )
             tx.insert(child, DevPersonType.CHILD)
             tx.insertServiceNeedOptions()
+            tx.insertServiceNeedOption(optionWithLateVoucherValues)
+            tx.insertNewVoucherValue(
+                ServiceNeedOptionVoucherValueRange(
+                    serviceNeedOptionId = optionWithLateVoucherValues.id,
+                    range = DateRange(voucherValuesStart, null),
+                    baseValue = 94900,
+                    coefficient = BigDecimal("0.80"),
+                    value = 75920,
+                    baseValueUnder3y = 147095,
+                    coefficientUnder3y = BigDecimal("0.80"),
+                    valueUnder3y = 117676,
+                )
+            )
             placementId =
                 tx.insert(
                     DevPlacement(
@@ -486,6 +525,112 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         }
     }
 
+    @Test
+    fun `post service need in voucher unit with option missing voucher value`() {
+        val placementId =
+            givenPlacement(voucherUnit, LocalDate.of(2023, 9, 11), LocalDate.of(2024, 7, 31))
+
+        val exception =
+            assertThrows<BadRequest> {
+                postServiceNeedAtFinanceClock(
+                    placementId,
+                    LocalDate.of(2023, 9, 11),
+                    LocalDate.of(2024, 7, 31),
+                    optionWithLateVoucherValues.id,
+                )
+            }
+        assertEquals("VOUCHER_VALUE_MISSING", exception.errorCode)
+    }
+
+    @Test
+    fun `post service need in voucher unit with voucher value covering only part of the period`() {
+        val placementId =
+            givenPlacement(voucherUnit, LocalDate.of(2024, 5, 1), LocalDate.of(2024, 12, 31))
+
+        val exception =
+            assertThrows<BadRequest> {
+                postServiceNeedAtFinanceClock(
+                    placementId,
+                    LocalDate.of(2024, 5, 1),
+                    LocalDate.of(2024, 12, 31),
+                    optionWithLateVoucherValues.id,
+                )
+            }
+        assertEquals("VOUCHER_VALUE_MISSING", exception.errorCode)
+    }
+
+    @Test
+    fun `cannot update service need in voucher unit to option missing voucher value`() {
+        val placementId =
+            givenPlacement(voucherUnit, LocalDate.of(2023, 9, 11), LocalDate.of(2024, 7, 31))
+        val serviceNeed =
+            DevServiceNeed(
+                placementId = placementId,
+                startDate = LocalDate.of(2023, 9, 11),
+                endDate = LocalDate.of(2024, 7, 31),
+                optionId = snDaycareFullDay35.id,
+                confirmedBy = unitSupervisor.evakaUserId,
+            )
+        db.transaction { tx -> tx.insert(serviceNeed) }
+
+        val exception =
+            assertThrows<BadRequest> {
+                serviceNeedController.putServiceNeed(
+                    dbInstance(),
+                    unitSupervisor,
+                    financeClock,
+                    serviceNeed.id,
+                    ServiceNeedController.ServiceNeedUpdateRequest(
+                        startDate = serviceNeed.startDate,
+                        endDate = serviceNeed.endDate,
+                        optionId = optionWithLateVoucherValues.id,
+                        shiftCare = ShiftCareType.NONE,
+                        partWeek = false,
+                    ),
+                )
+            }
+        assertEquals("VOUCHER_VALUE_MISSING", exception.errorCode)
+    }
+
+    @Test
+    fun `post service need in voucher unit with voucher value for the whole period`() {
+        val placementId =
+            givenPlacement(voucherUnit, voucherValuesStart, LocalDate.of(2024, 12, 31))
+
+        postServiceNeedAtFinanceClock(
+            placementId,
+            voucherValuesStart,
+            LocalDate.of(2024, 12, 31),
+            optionWithLateVoucherValues.id,
+        )
+    }
+
+    @Test
+    fun `post service need in voucher unit without voucher value before finance decisions are generated`() {
+        val placementId =
+            givenPlacement(voucherUnit, LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
+
+        postServiceNeedAtFinanceClock(
+            placementId,
+            LocalDate.of(2020, 8, 1),
+            LocalDate.of(2021, 7, 31),
+            optionWithLateVoucherValues.id,
+        )
+    }
+
+    @Test
+    fun `post service need in municipal unit with option missing voucher value`() {
+        val placementId =
+            givenPlacement(daycare, LocalDate.of(2023, 9, 11), LocalDate.of(2024, 7, 31))
+
+        postServiceNeedAtFinanceClock(
+            placementId,
+            LocalDate.of(2023, 9, 11),
+            LocalDate.of(2024, 7, 31),
+            optionWithLateVoucherValues.id,
+        )
+    }
+
     private fun testDate(day: Int) = LocalDate.now().plusDays(day.toLong())
 
     private fun givenServiceNeed(
@@ -613,6 +758,33 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(ShiftCareType.NONE, result[0].shiftCare)
         assertEquals(ShiftCareType.FULL, result[1].shiftCare)
     }
+
+    private fun givenPlacement(unit: DevDaycare, start: LocalDate, end: LocalDate): PlacementId =
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(childId = child.id, unitId = unit.id, startDate = start, endDate = end)
+            )
+        }
+
+    private fun postServiceNeedAtFinanceClock(
+        placementId: PlacementId,
+        start: LocalDate,
+        end: LocalDate,
+        optionId: ServiceNeedOptionId,
+    ) =
+        serviceNeedController.postServiceNeed(
+            dbInstance(),
+            unitSupervisor,
+            financeClock,
+            ServiceNeedController.ServiceNeedCreateRequest(
+                placementId = placementId,
+                startDate = start,
+                endDate = end,
+                optionId = optionId,
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false,
+            ),
+        )
 
     private fun getServiceNeeds(childId: ChildId, placementId: PlacementId): List<ServiceNeed> =
         placementController
