@@ -6,9 +6,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 # iOS Safari smoke tests for the citizen app: design and implementation plan
 
-Status: design done, toolchain verified locally, **nothing committed to the
-repo yet**. Written 2026-10-07, updated the same day after a research and
-verification round. The research findings and sources are in
+Status: **proof of concept implemented and working locally** on branch
+`ios-smoke-tests-design` (`frontend/src/ios-smoke/`, run with
+`yarn ios-smoke`; see its README). Both stages pass on master and both fail
+with the #9840 bug reintroduced. Written 2026-10-07, updated the same day
+after the research round and again after the implementation. The research
+findings and sources are in
 [ios-safari-smoke-tests-research.md](ios-safari-smoke-tests-research.md).
 
 ## Why
@@ -62,7 +65,7 @@ regression testing, any commercial device cloud.
 | Client / runner | **WebdriverIO 10.0.0** testrunner, Mocha specs, `@wdio/appium-service` | TypeScript, `browser.execute` for DOM assertions, `switchContext` for native/webview. Appium is started by the service, no second terminal. |
 | Appium install location | project-local `APPIUM_HOME=frontend/.appium` (gitignored), driver installed by a `yarn ios-smoke:setup` script | Nothing global; versions pinned. |
 | Login | **In-page `fetch` POST to `/api/dev-api/auth/citizen-sfi-login`** from `browser.execute`, then `browser.url('/calendar')` | Verified: returns 200 and the session cookie sticks. No apigw change needed. Works inside the web clip too (own cookie jar, same trick). WebDriver `setCookie` cannot set HttpOnly cookies, so it is not an option. |
-| Stage 1 standalone switch | app reads a **`localStorage` test config** (`evaka.testConfig`) into `window.evaka` at startup; `forceStandalone: true` makes `isRunningInstalled()` return true | WebDriver has no init script. Setting storage and reloading is the only pre-load hook. Keeps the existing `window.evaka` plumbing. |
+| Stage 1 standalone switch | app reads a **`localStorage` test config** (`evaka.testConfig`) into `window.evaka` at startup; `forceStandalone: true` makes `isRunningInstalled()` return true | WebDriver has no init script. Storage written before the next navigation is the only pre-load hook. Keeps the existing `window.evaka` plumbing. |
 | Stage 2 web clip install | **Seed a `.webclip` folder** into the simulator's data directory and restart SpringBoard, not the share sheet | Verified on iOS 26.4 simulator: the icon appears, tapping it opens the page full screen with `navigator.standalone === true`. Share sheet automation needs coordinate taps and is flaky. |
 | Simulator | dedicated `evaka-smoke` simulator (iPhone 17, newest iOS runtime), booted headless with `simctl boot` + `bootstatus -b`, never Simulator.app | ~7 s boot locally. Does not interfere with the developer's own simulators. |
 | Mocked time | not used in the first iteration; fixtures are relative to today | Keeps the test config minimal. `mockedTime` can be added to the same `localStorage` config later. |
@@ -140,7 +143,7 @@ developer Mac (later: macOS runner)
 The simulator shares the Mac's network, so `http://localhost:<port>` works
 from inside it without a tunnel.
 
-## Implementation plan (next session)
+## Implementation (as built; see frontend/src/ios-smoke/README.md)
 
 ### 1. Dependencies and scripts (`frontend/package.json`)
 
@@ -178,8 +181,8 @@ path mapping tricks are needed for `tsx`.
 returns true also when `isAutomatedTest && window.evaka?.forceStandalone`.
 
 The test sets `localStorage['evaka.testConfig'] =
-'{"automatedTest":true,"forceStandalone":true}'` via `browser.execute` and
-reloads. `automatedTest: true` also gives the usual test behaviour (no scroll
+'{"automatedTest":true,"forceStandalone":true}'` via `browser.execute` on a
+static page of the same origin and then navigates to the app. `automatedTest: true` also gives the usual test behaviour (no scroll
 animations, short async-button timeouts, no double-click guard).
 
 ### 3. Folder layout
@@ -194,7 +197,7 @@ frontend/src/ios-smoke/
 ├── support/
 │   ├── simulator.ts      # find/create "evaka-smoke", boot, bootstatus, data dir lookup
 │   ├── login.ts          # in-page fetch to dev-api citizen-sfi-login, then navigate
-│   ├── test-config.ts    # write evaka.testConfig to localStorage and reload
+│   ├── test-config.ts    # write evaka.testConfig to localStorage (read on next page load)
 │   ├── reachable.ts      # expectReachable(): rect fully in viewport + elementFromPoint hits self
 │   ├── fixtures.ts       # thin wrappers over e2e-test/dev-api/fixtures.ts (family, placement, messaging)
 │   └── webclip.ts        # seed .webclip into <sim>/data/Library/WebClips, restart SpringBoard,
@@ -239,8 +242,8 @@ runs `browser.setTimeout({ script: 30000 })`.
 Common `beforeEach`: `resetServiceState()`, `testCareArea`, `testDaycare`,
 `Fixture.family({ guardian: testAdult, children: [testChild] })`,
 `Fixture.placement({ childId: testChild.id, unitId: testDaycare.id, startDate:
-today, endDate: today.addYears(1) })`, open base URL, set test config and
-reload, log in, go to `/calendar`, assert `html[data-standalone]` is present,
+today, endDate: today.addYears(1) })`, open `/offline.html`, set the test config,
+log in, go to `/calendar`, assert `html[data-standalone]` is present,
 wait for `[data-qa="calendar-page"][data-isloading="false"]`.
 
 `expectReachable(selector)` runs in `browser.execute`: element exists, its
@@ -365,18 +368,55 @@ boot and settling. Appium's own `e2e (web, 26.4)` job on macos-26 was red
 on 2026-10-07 while 26.5 and 27.0 passed, so pin the runtime deliberately
 and expect some flakiness.
 
+## Findings from the implementation (2026-10-07)
+
+- **Geometry and hit testing are not enough.** With the #9840 bug the iOS
+  26.4 simulator reproduces the clipping, but `getBoundingClientRect()`
+  reports the button inside the viewport, `elementFromPoint()` returns the
+  button and even a native tap reaches it. Only the painting is wrong. The
+  suite therefore adds a **paint check**: the element is coloured magenta,
+  a lossless WebDriverAgent screenshot (`appium:settings[screenshotQuality]:
+  0`) is decoded, and the bounding box of magenta pixels must cover 95% of
+  the element. With the bug the modal footer buttons show as 177x11 of
+  177x45 points.
+- **Stage 1 (Safari + forced app shell) is enough to catch #9840.** Stage 2
+  fails the same way, so it is a confirmation, not a requirement.
+- **Stage 2 works through the full driver session.** A session without
+  `browserName` starts on the home screen, taps the seeded `eVaka` icon
+  (home screen page 2, so swipe once), and `getContexts()` lists the clip
+  page within a couple of seconds with `bundleId:
+  com.apple.SafariViewService`. The id changes on every relaunch, so the
+  context is picked by URL prefix. The context survives `location.assign`,
+  `browser.url`, `simctl terminate` + `simctl launch com.apple.webapp` and
+  WDA `mobile: launchApp` / `activateApp`.
+- Never use `mobile: getContexts` with `waitForWebviewMs`: with no webview it
+  busy-loops and wrote about a million log lines in 20 s.
+- The first screenshot after the icon tap can be blank white while the dev
+  bundle loads; wait for a DOM selector.
+- Login must happen on a static page (`/offline.html`): logging in while the
+  app is running races the app's own auth check. `browser.url()` can return
+  before the old document is replaced, so `support/navigate.ts` waits for a
+  marker to disappear and the URL to match.
+- The dev instance needs `EVAKA_IDP_PORT` as well as `EVAKA_FRONTEND_PORT`
+  (fixtures write VTJ data to the dummy IdP).
+- Many screenshots in a tight loop stalled WebDriverAgent for two minutes
+  and the next navigation hung indefinitely. The paint check now waits
+  between retries and a failed Safari test continues in a fresh session.
+- `innerHeight` in the clip is 812 of the 874 point screen (status bar); a
+  Safari style toolbar seen once in a logged-out run took about 200 points.
+  The stage 2 precondition test allows a 70 point gap.
+- Two agents sharing one WebDriverAgent port (8100) attached to each
+  other's simulators. With more than one simulator, set a distinct
+  `appium:wdaLocalPort` per simulator.
+
 ## Open questions
 
-- Does the full XCUITest driver session (not just `appium-remote-debugger`)
-  list the seeded web clip page in `getContexts()`, and does the context
-  survive terminate/relaunch of `com.apple.webapp`? This is the first thing
-  to verify in stage 2.
-- Does the iOS 26.4 simulator reproduce the #9840 clipping in stage 1 (forced
-  app shell in Safari), or only in the real web clip?
 - Self-hosted Mac or GitHub-hosted runner? This decides whether a native
   backend recipe has to be built.
 - Does iOS 26 copy Safari cookies into a new web clip at install time?
-  Irrelevant if the clip logs in itself, which is the plan.
+  Irrelevant while the clip logs in itself.
+- The stage 2 failure screenshot shows an empty 62 point strip below the
+  bottom navigation in the web clip; worth checking on a real device.
 
 ## Pointers
 
@@ -395,7 +435,6 @@ and expect some flakiness.
 - Draft assertions: `frontend/src/e2e-test/specs/0_citizen/citizen-installed-app-modals.spec.ts` (on this branch).
 - Reference project for headless simulator control (not a building block):
   `/Users/wnt/Documents/iOS-pwa-runner`, see the research doc.
-- The `iPhone 17` simulator (`00ABCA4C-D68C-4B96-B20E-A45F568F3343`) was
-  left booted by the research session; `xcrun simctl shutdown` it if it is
-  in the way. The probe's Appium home and scripts lived in the session
-  scratchpad and are gone; everything needed is in this document.
+- The suite uses its own `evaka-smoke` simulator. The `iPhone 17`
+  simulator (`00ABCA4C-…`) was used by the probes and may still hold an
+  `eVaka` web clip; `xcrun simctl shutdown` or delete it if it is in the way.

@@ -37,4 +37,7 @@ public/favicon.ico
 
 playwright-filenames.txt
 
+.appium/
+ios-smoke-results/
+
 espoo-customizations/

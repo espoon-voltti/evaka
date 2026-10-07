@@ -4,6 +4,8 @@
 
 import { useEffect, useLayoutEffect, useSyncExternalStore } from 'react'
 
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+
 const standaloneQuery = () => window.matchMedia('(display-mode: standalone)')
 
 const subscribe = (onChange: () => void) => {
@@ -16,7 +18,8 @@ const isRunningInstalled = () =>
   standaloneQuery().matches ||
   // iOS Safari does not implement the display-mode media feature, so the home
   // screen app is only recognisable through this non-standard property.
-  ('standalone' in navigator && navigator.standalone === true)
+  ('standalone' in navigator && navigator.standalone === true) ||
+  (isAutomatedTest && window.evaka?.forceStandalone === true)
 
 export function useIsRunningInstalled(): boolean {
   return useSyncExternalStore(subscribe, isRunningInstalled)
