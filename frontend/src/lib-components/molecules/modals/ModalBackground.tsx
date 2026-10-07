@@ -4,6 +4,7 @@
 
 import type { ReactNode } from 'react'
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { FocusOn } from 'react-focus-on'
 import styled from 'styled-components'
 
@@ -26,12 +27,14 @@ export default React.memo(function ModalBackground({
   onEscapeKey,
   children
 }: Props) {
-  return (
+  const modal = (
     <FocusOn onEscapeKey={onEscapeKey}>
       <BackgroundOverlay $zIndex={zIndex} onClick={onClick} />
       <FormModalLifter $zIndex={zIndex}>{children}</FormModalLifter>
     </FocusOn>
   )
+  const container = document.getElementById('modal-container')
+  return container ? createPortal(modal, container) : modal
 })
 
 const BackgroundOverlay = styled.div<ZIndexProp>`
