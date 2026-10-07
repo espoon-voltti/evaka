@@ -1,6 +1,22 @@
 -- SPDX-FileCopyrightText: 2021 City of Turku
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
+INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period, term_breaks) VALUES
+    ('[2019-08-14,2020-05-31]', '[2019-08-14,2020-05-31]', '[2019-08-14,2020-05-31]', '[2019-01-01,2020-05-31]', datemultirange()),
+    ('[2020-08-12,2021-05-31]', '[2020-08-12,2021-05-31]', '[2020-08-12,2021-05-31]', '[2020-01-01,2021-05-31]', datemultirange()),
+    ('[2021-08-10,2022-06-03]', '[2021-08-10,2022-06-03]', '[2021-08-09,2022-06-04]', '[2021-01-01,2021-08-10]', datemultirange()),
+    ('[2022-08-10,2023-05-31]', '[2022-08-10,2023-05-31]', '[2022-08-10,2023-05-31]', '[2022-01-10,2023-01-23]', datemultirange()),
+    ('[2023-08-10,2024-05-31]', '[2023-08-10,2024-05-31]', '[2023-08-10,2024-05-31]', '[2023-01-02,2023-01-15]', datemultirange('[2023-10-16,2023-10-22]', '[2023-12-23,2024-01-07]', '[2024-02-19,2024-02-25]')),
+    ('[2024-08-08,2025-05-31]', '[2024-08-08,2025-05-31]', '[2024-08-08,2025-05-31]', '[2023-11-02,2024-01-15]', datemultirange('[2024-10-14,2024-10-20]', '[2024-12-21,2025-01-06]', '[2025-02-17,2025-02-23]')),
+    ('[2025-08-07,2026-05-29]', '[2025-08-07,2026-05-29]', '[2025-08-07,2026-05-29]', '[2024-11-27,2026-05-29]', datemultirange('[2025-10-13,2025-10-19]', '[2025-12-20,2026-01-06]', '[2026-02-16,2026-02-22]')),
+    ('[2026-08-11,2027-05-31]', '[2026-08-11,2027-05-31]', '[2026-08-11,2027-05-31]', '[2025-11-25,2027-05-31]', datemultirange('[2026-10-12,2026-10-18]', '[2026-12-19,2027-01-06]', '[2027-02-22,2027-02-28]')),
+    ('[2027-08-11,2028-05-31]', '[2027-08-11,2028-05-31]', '[2027-08-11,2028-05-31]', '[2027-01-01,2028-05-31]', datemultirange('[2027-10-18,2027-10-24]', '[2027-12-23,2028-01-09]', '[2028-02-21,2028-02-27]'));
+INSERT INTO club_term (term, application_period, term_breaks) VALUES
+    ('[2021-08-10,2022-06-03]', '[2021-01-01,2021-08-10]', datemultirange()),
+    ('[2022-08-10,2023-06-02]', '[2022-01-01,2022-08-10]', datemultirange()),
+    ('[2023-08-01,2024-07-31]', '[2023-01-01,2024-07-31]', datemultirange('[2023-12-06,2023-12-06]', '[2023-12-23,2024-01-07]')),
+    ('[2024-08-01,2025-07-31]', '[2024-01-01,2025-07-31]', datemultirange('[2024-12-06,2024-12-06]', '[2024-12-21,2025-01-06]', '[2025-07-01,2025-07-31]')),
+    ('[2025-08-01,2028-07-31]', '[2025-01-22,2028-07-31]', datemultirange());
 
 INSERT INTO daycare (id, name, type, care_area_id, phone, url, created, updated, backup_location, opening_date, closing_date, email, schedule, additional_info, cost_center, upload_to_varda, capacity, decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address, street_address, postal_code, post_office, mailing_po_box, location, mailing_street_address, mailing_postal_code, mailing_post_office, invoiced_by_municipality, provider_type, language, upload_to_koski, oph_unit_oid, oph_organizer_oid, operation_times, shift_care_operation_times, shift_care_open_on_holidays, ghost_unit, daycare_apply_period, preschool_apply_period, club_apply_period, finance_decision_handler) VALUES
     ('340ed088-a1bc-11eb-b601-e3f8e80e9e6b', 'Haukiluoman päiväkoti', '{CENTRE}', (SELECT id FROM care_area WHERE short_name = 'lantinen'), NULL, NULL, '2021-04-20 09:38:46.42075+00', '2021-04-20 09:38:46.42075+00', NULL,  '2021-04-20', NULL, NULL, NULL, NULL, NULL, false, 0, '', '', '', '', 'Runkokatu 5', '33340', 'turku', 'Runkokatu 5', '(23.60571,61.51667)', NULL, '33340', 'turku', false, 'MUNICIPAL', 'fi', false, NULL, NULL, '{"(06:00,18:00)","(06:00,18:00)","(06:00,18:00)","(06:00,18:00)","(06:00,18:00)", null, null}', null, false, NULL, '[2021-04-20,)', NULL, NULL, NULL),

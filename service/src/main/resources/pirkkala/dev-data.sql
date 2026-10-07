@@ -3,7 +3,12 @@
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
 INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period, term_breaks) VALUES
-    ('[2023-08-09,2024-05-31]', '[2023-08-09,2024-05-31]', '[2023-08-09,2024-05-31]', '[2022-10-01,2024-05-31]', datemultirange('[2023-10-16,2023-10-22]', '[2023-12-23,2024-01-07]', '[2024-02-26,2024-03-03]', '[2024-03-28,2024-04-01]', '[2024-05-09,2024-05-10]'));
+    ('[2025-08-06,2026-05-30]', '[2025-08-06,2026-05-30]', '[2025-08-06,2026-05-30]', '[2026-04-23,2026-05-30]', datemultirange()),
+    ('[2026-08-06,2027-06-05]', '[2026-08-06,2027-06-05]', '[2026-08-06,2027-06-05]', '[2026-05-27,2027-06-05]', datemultirange());
+INSERT INTO club_term (term, application_period, term_breaks) VALUES
+    ('[2024-01-08,2024-06-20]', '[2024-05-08,2024-06-20]', datemultirange()),
+    ('[2024-08-07,2025-05-31]', '[2024-05-08,2025-05-31]', datemultirange()),
+    ('[2025-08-06,2026-05-31]', '[2025-06-23,2026-05-31]', datemultirange());
 
 INSERT INTO daycare (name, type, care_area_id, phone, url, backup_location, opening_date, closing_date, email, schedule, additional_info, unit_manager_name, unit_manager_phone, unit_manager_email, cost_center, upload_to_varda, capacity, decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address, street_address, postal_code, post_office, mailing_po_box, location, mailing_street_address, mailing_postal_code, mailing_post_office, invoiced_by_municipality, provider_type, language, upload_to_koski, oph_unit_oid, oph_organizer_oid, ghost_unit, daycare_apply_period, preschool_apply_period, club_apply_period, finance_decision_handler, operation_times, shift_care_operation_times, daily_preschool_time, daily_preparatory_time) VALUES
     ('Päiväkoti A', '{CENTRE}', (SELECT id FROM care_area WHERE name = 'Pirkkala'), NULL, NULL, NULL, '2021-04-20', NULL, NULL, NULL, NULL, 'UNIT_MANAGER_NAME', 'UNIT_MANAGER_PHONE', 'UNIT_MANAGER_EMAIL@tampere.fi', '1', false, 0, 'Päiväkoti A', 'Päiväkoti A', 'Varhaiskasvatusyksikön johtaja', 'Suokatu 10', 'Runkokatu 5', '33340', 'Tampere', 'Runkokatu 5', '(23.60571,61.51667)', NULL, '33340', 'Tampere', TRUE, 'MUNICIPAL', 'fi', false, NULL, NULL, NULL, '[2021-04-20,)', NULL, NULL, NULL, '{"(00:00,23:59)","(00:00,23:59)","(00:00,23:59)","(00:00,23:59)","(00:00,23:59)", null, null}', NULL, NULL, NULL),
