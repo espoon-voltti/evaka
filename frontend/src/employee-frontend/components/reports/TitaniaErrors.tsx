@@ -58,24 +58,37 @@ export default React.memo(function TitaniaErrors() {
                           <Thead>
                             <Tr>
                               <Th>{i18n.reports.titaniaErrors.date}</Th>
-                              <Th>{i18n.reports.titaniaErrors.shift1}</Th>
-                              <Th>{i18n.reports.titaniaErrors.shift2}</Th>
+                              <Th>{i18n.reports.titaniaErrors.error}</Th>
+                              <Th>{i18n.reports.titaniaErrors.shift}</Th>
+                              <Th>
+                                {i18n.reports.titaniaErrors.overlappingShift}
+                              </Th>
                               <Th />
                             </Tr>
                           </Thead>
                           <Tbody>
-                            {employee.conflictingShifts.map((conflict) => (
-                              <Tr key={conflict.id}>
-                                <Td>{conflict.shiftDate.format()}</Td>
+                            {employee.shiftErrors.map((shiftError) => (
+                              <Tr key={shiftError.id}>
+                                <Td>{shiftError.shiftDate.format()}</Td>
                                 <Td>
-                                  {conflict.shiftBegins.format() +
-                                    ' - ' +
-                                    conflict.shiftEnds.format()}
+                                  {
+                                    i18n.reports.titaniaErrors.errorTypes[
+                                      shiftError.errorType
+                                    ]
+                                  }
                                 </Td>
                                 <Td>
-                                  {conflict.overlappingShiftBegins.format() +
+                                  {shiftError.shiftBegins.format() +
                                     ' - ' +
-                                    conflict.overlappingShiftEnds.format()}
+                                    shiftError.shiftEnds.format()}
+                                </Td>
+                                <Td>
+                                  {shiftError.overlappingShiftBegins &&
+                                  shiftError.overlappingShiftEnds
+                                    ? shiftError.overlappingShiftBegins.format() +
+                                      ' - ' +
+                                      shiftError.overlappingShiftEnds.format()
+                                    : '-'}
                                 </Td>
                                 <Td>
                                   <MutateButton
@@ -83,9 +96,9 @@ export default React.memo(function TitaniaErrors() {
                                     text={i18n.common.remove}
                                     mutation={clearTitaniaErrorMutation}
                                     onClick={() => ({
-                                      conflictId: conflict.id
+                                      errorId: shiftError.id
                                     })}
-                                    data-qa={`delete-button-${conflict.id}`}
+                                    data-qa={`delete-button-${shiftError.id}`}
                                   />
                                 </Td>
                               </Tr>

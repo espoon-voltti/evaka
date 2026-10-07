@@ -32,7 +32,7 @@ class TitaniaController(private val titaniaService: TitaniaService) {
         return db.connect { dbc ->
             lateinit var result: UpdateWorkingTimeEventsServiceResponse
             dbc.transaction { tx -> result = titaniaService.updateWorkingTimeEvents(tx, request) }
-            if (result.overlappingShifts.isNotEmpty()) {
+            if (result.hasErrors) {
                 throw TitaniaException(
                     TitaniaErrorDetail(
                         errorcode = TitaniaError.CONFLICTING_SHIFTS,

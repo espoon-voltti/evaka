@@ -42,7 +42,7 @@ import evaka.core.shared.PlacementId
 import evaka.core.shared.PreschoolAssistanceId
 import evaka.core.shared.ServiceApplicationId
 import evaka.core.shared.ServiceNeedId
-import evaka.core.shared.TitaniaConflictId
+import evaka.core.shared.TitaniaErrorId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.QuerySql
@@ -835,7 +835,7 @@ WHERE employee_id = ${bind(user.id)}
         }
 
     fun inUnitOfTitaniaErrorEmployee() =
-        rule<TitaniaConflictId> { user, _ ->
+        rule<TitaniaErrorId> { user, _ ->
             sql(
                 """
 SELECT te.id, acl.role, acl.daycare_id AS unit_id

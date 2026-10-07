@@ -74,13 +74,13 @@ AND ${predicate(daterangeFilter.forTable("sa"))}
 
 fun Database.Transaction.insertReportRows(
     requestTime: HelsinkiDateTime,
-    rows: List<TitaniaOverLappingShifts>,
+    rows: List<TitaniaErrorRow>,
 ) {
     executeBatch(rows) {
         sql(
             """
-                INSERT INTO titania_errors (request_time, employee_id, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends)
-                VALUES (${bind { requestTime} }, ${bind { it.employeeId} }::uuid, ${bind { it.shiftDate} }, ${bind { it.shiftBegins} }, ${bind { it.shiftEnds} }, ${bind { it.overlappingShiftBegins} }, ${bind { it.overlappingShiftEnds} })
+                INSERT INTO titania_errors (request_time, employee_id, error_type, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends)
+                VALUES (${bind { requestTime} }, ${bind { it.employeeId} }, ${bind { it.errorType} }, ${bind { it.shiftDate} }, ${bind { it.shiftBegins} }, ${bind { it.shiftEnds} }, ${bind { it.overlappingShiftBegins} }, ${bind { it.overlappingShiftEnds} })
             """
                 .trimIndent()
         )

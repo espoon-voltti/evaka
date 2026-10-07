@@ -4249,8 +4249,14 @@ export const sv: typeof fi = {
       description: 'Fel i arbetsturer',
       header: 'Titania-export',
       date: 'Datum',
-      shift1: 'Första skiftet',
-      shift2: 'Överlappande skift'
+      error: 'Fel',
+      shift: 'Skift',
+      overlappingShift: 'Överlappande skift',
+      errorTypes: {
+        OVERLAPPING_SHIFT: 'Skiften överlappar',
+        ZERO_LENGTH_SHIFT: 'Skiftet börjar och slutar samtidigt',
+        REVERSED_SHIFT: 'Skiftet slutar innan det börjar'
+      }
     },
     sextet: {
       title: 'Kuusikko kommunernas jämförelse',

@@ -15,6 +15,7 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.titania.TitaniaErrorType
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -157,7 +158,7 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
 
         insertTestData()
         val clock = MockEvakaClock(2025, 12, 12, 12, 0, 0)
-        val conflictId =
+        val errorId =
             titaniaErrorsReport
                 .getTitaniaErrorsReport(dbInstance(), supervisor.user, clock)
                 .first()
@@ -165,15 +166,50 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
                 .first()
                 .employees
                 .first()
-                .conflictingShifts
+                .shiftErrors
                 .first()
                 .id
 
-        titaniaErrorsReport.clearTitaniaErrors(dbInstance(), supervisor.user, clock, conflictId)
+        titaniaErrorsReport.clearTitaniaErrors(dbInstance(), supervisor.user, clock, errorId)
 
         assertEquals(
             emptyList(),
             titaniaErrorsReport.getTitaniaErrorsReport(dbInstance(), supervisor.user, clock),
+        )
+    }
+
+    @Test
+    fun `invalid shifts are shown with their error type and without an overlapping shift`() {
+        insertTestData()
+        db.transaction { tx ->
+            insertTitaniaError(
+                tx,
+                HelsinkiDateTime.of(LocalDate.of(2025, 12, 12), LocalTime.of(12, 0)),
+                LocalDate.of(2025, 12, 10),
+                employee.id,
+                LocalTime.of(7, 0),
+                LocalTime.of(6, 0),
+                overlappingShiftBegins = null,
+                overlappingShiftEnds = null,
+                errorType = TitaniaErrorType.REVERSED_SHIFT,
+            )
+        }
+
+        val result =
+            titaniaErrorsReport.getTitaniaErrorsReport(
+                dbInstance(),
+                supervisor.user,
+                MockEvakaClock(2025, 12, 12, 12, 0, 0),
+            )
+
+        assertEquals(
+            listOf(
+                TitaniaErrorType.REVERSED_SHIFT to null,
+                TitaniaErrorType.OVERLAPPING_SHIFT to LocalTime.of(10, 0),
+            ),
+            result.single().units.single().employees.single().shiftErrors.map {
+                it.errorType to it.overlappingShiftBegins
+            },
         )
     }
 
@@ -280,8 +316,9 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
         employeeId: EmployeeId,
         shiftBegins: LocalTime,
         shiftEnds: LocalTime,
-        overlappingShiftBegins: LocalTime,
-        overlappingShiftEnds: LocalTime,
+        overlappingShiftBegins: LocalTime?,
+        overlappingShiftEnds: LocalTime?,
+        errorType: TitaniaErrorType = TitaniaErrorType.OVERLAPPING_SHIFT,
     ) {
         tx.createUpdate {
                 val id = UUID.randomUUID()
@@ -295,7 +332,8 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
                         shift_begins,
                         shift_ends,
                         overlapping_shift_begins,
-                        overlapping_shift_ends
+                        overlapping_shift_ends,
+                        error_type
                     )
                     VALUES (
                         ${bind(id)},
@@ -305,7 +343,8 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
                         ${bind(shiftBegins)},
                         ${bind(shiftEnds)},
                         ${bind(overlappingShiftBegins)},
-                        ${bind(overlappingShiftEnds)}
+                        ${bind(overlappingShiftEnds)},
+                        ${bind(errorType)}
                     )
                 """
                         .trimIndent()

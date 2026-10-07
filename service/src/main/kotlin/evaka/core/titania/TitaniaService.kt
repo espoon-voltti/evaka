@@ -34,10 +34,10 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
         val internal = updateWorkingTimeEventsInternal(tx, request)
         logger.debug { "Titania internal response: $internal" }
         val response =
-            if (internal.overLappingShifts.isEmpty()) UpdateWorkingTimeEventsResponse.ok()
-            else UpdateWorkingTimeEventsResponse.validationFailed()
+            if (internal.hasErrors) UpdateWorkingTimeEventsResponse.validationFailed()
+            else UpdateWorkingTimeEventsResponse.ok()
         logger.debug { "Titania response: $response" }
-        return UpdateWorkingTimeEventsServiceResponse(response, internal.overLappingShifts)
+        return UpdateWorkingTimeEventsServiceResponse(response, internal.hasErrors)
     }
 
     fun updateWorkingTimeEventsInternal(
@@ -63,8 +63,27 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
         val employeeNumbers = persons.map { (employeeNumber, _) -> employeeNumber }.distinct()
         val employeeNumberToId = tx.getEmployeeIdsByNumbers(employeeNumbers)
 
-        var unmergedPlans = mutableListOf<StaffAttendancePlan>()
-        val overlappingShifts = mutableListOf<TitaniaOverLappingShifts>()
+        val unmergedPlans = mutableListOf<StaffAttendancePlan>()
+        val errors = mutableSetOf<TitaniaErrorRow>()
+
+        fun findOverlappingShifts(next: StaffAttendancePlan) =
+            unmergedPlans
+                .filter { it.employeeId == next.employeeId }
+                .filter {
+                    HelsinkiDateTimeRange(next.startTime, next.endTime)
+                        .overlaps(HelsinkiDateTimeRange(it.startTime, it.endTime))
+                }
+                .map {
+                    TitaniaErrorRow(
+                        employeeId = next.employeeId,
+                        errorType = TitaniaErrorType.OVERLAPPING_SHIFT,
+                        shiftDate = next.startTime.toLocalDate(),
+                        shiftBegins = it.startTime.toLocalTime(),
+                        shiftEnds = it.endTime.toLocalTime(),
+                        overlappingShiftBegins = next.startTime.toLocalTime(),
+                        overlappingShiftEnds = next.endTime.toLocalTime(),
+                    )
+                }
 
         val newPlans =
             persons
@@ -118,6 +137,39 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                     ),
                                     event.description,
                                 )
+                            val invalidShiftType =
+                                when {
+                                    next.endTime == next.startTime ->
+                                        TitaniaErrorType.ZERO_LENGTH_SHIFT
+                                    next.endTime < next.startTime -> TitaniaErrorType.REVERSED_SHIFT
+                                    else -> null
+                                }
+                            // a reversed shift cannot be compared for overlaps
+                            // (HelsinkiDateTimeRange requires start <= end);
+                            // identical shifts are deduplicated later, ignore them here
+                            if (
+                                invalidShiftType != TitaniaErrorType.REVERSED_SHIFT &&
+                                    next !in unmergedPlans
+                            ) {
+                                errors.addAll(findOverlappingShifts(next))
+                                unmergedPlans.add(next)
+                            }
+
+                            if (invalidShiftType != null) {
+                                errors.add(
+                                    TitaniaErrorRow(
+                                        employeeId = next.employeeId,
+                                        errorType = invalidShiftType,
+                                        shiftDate = next.startTime.toLocalDate(),
+                                        shiftBegins = next.startTime.toLocalTime(),
+                                        shiftEnds = next.endTime.toLocalTime(),
+                                        overlappingShiftBegins = null,
+                                        overlappingShiftEnds = null,
+                                    )
+                                )
+                                return@fold plans
+                            }
+
                             if (previous?.canMerge(next) == true) {
                                 plans.remove(previous)
                                 plans.add(previous.copy(endTime = next.endTime))
@@ -125,43 +177,14 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                 plans.add(next)
                             }
 
-                            if (unmergedPlans.isEmpty()) {
-                                unmergedPlans = mutableListOf(next)
-                            } else {
-                                // identical shifts are deduplicated later, ignore them here
-                                if (next !in unmergedPlans) {
-                                    unmergedPlans
-                                        .filter { it.employeeId == next.employeeId }
-                                        .filter {
-                                            HelsinkiDateTimeRange(next.startTime, next.endTime)
-                                                .overlaps(
-                                                    HelsinkiDateTimeRange(it.startTime, it.endTime)
-                                                )
-                                        }
-                                        .forEach {
-                                            overlappingShifts.add(
-                                                TitaniaOverLappingShifts(
-                                                    employeeNumberToId[employeeNumber]!!,
-                                                    next.startTime.toLocalDate(),
-                                                    it.startTime.toLocalTime(),
-                                                    it.endTime.toLocalTime(),
-                                                    next.startTime.toLocalTime(),
-                                                    next.endTime.toLocalTime(),
-                                                )
-                                            )
-                                        }
-
-                                    unmergedPlans.add(next)
-                                }
-                            }
-
                             plans.distinct().toMutableList()
                         }
                 }
 
-        if (overlappingShifts.isNotEmpty()) {
-            tx.insertReportRows(requestTime, overlappingShifts)
-            return TitaniaUpdateResponse(listOf(), listOf(), overlappingShifts)
+        if (errors.isNotEmpty()) {
+            val errorRows = errors.toList()
+            tx.insertReportRows(requestTime, errorRows)
+            return TitaniaUpdateResponse(listOf(), listOf(), errorRows)
         }
 
         logger.info {
@@ -455,8 +478,11 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
 data class TitaniaUpdateResponse(
     val deleted: List<StaffAttendancePlan>,
     val inserted: List<StaffAttendancePlan>,
-    val overLappingShifts: List<TitaniaOverLappingShifts>,
-)
+    val errors: List<TitaniaErrorRow>,
+) {
+    val hasErrors: Boolean
+        get() = errors.isNotEmpty()
+}
 
 interface TitaniaEmployeeIdConverter {
     fun fromTitania(employeeId: String): String
