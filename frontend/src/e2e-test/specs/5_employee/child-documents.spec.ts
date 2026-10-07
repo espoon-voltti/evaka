@@ -701,7 +701,9 @@ test.describe('Employee - Child documents', () => {
     await page.goto(`${config.employeeUrl}/reports/child-documents`)
 
     const report = new ChildDocumentsReport(page)
-    await report.unitSelector.fillAndSelectFirst(testDaycare.name)
+    await report.unitSelector.open()
+    await report.unitSelector.expandAll()
+    await report.unitSelector.option(testDaycare.id).check()
     await report.unitSelector.close()
     await report.templateSelector.open()
     await report.templateSelector.expandAll()

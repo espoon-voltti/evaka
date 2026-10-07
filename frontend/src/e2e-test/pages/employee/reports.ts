@@ -717,11 +717,11 @@ export class ChildAttendanceReservationByChildReport {
 }
 
 export class ChildDocumentsReport {
-  unitSelector: MultiSelect
+  unitSelector: TreeDropdown
   templateSelector: TreeDropdown
 
   constructor(private page: Page) {
-    this.unitSelector = new MultiSelect(page.findByDataQa('unit-select'))
+    this.unitSelector = new TreeDropdown(page.findByDataQa('unit-select'))
     this.templateSelector = new TreeDropdown(
       page.findByDataQa('template-select')
     )

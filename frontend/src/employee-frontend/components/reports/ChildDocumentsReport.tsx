@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -23,8 +24,9 @@ import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
-import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import TreeDropdown, {
+  sortTreeByText
+} from 'lib-components/atoms/dropdowns/TreeDropdown'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { P, Strong } from 'lib-components/typography'
@@ -48,12 +50,7 @@ export default React.memo(function ChildDocumentsReport() {
   const unitOptions = useMemo(
     () =>
       units.map((res) =>
-        orderBy(
-          res.filter((u) =>
-            u.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
-          ),
-          (u) => u.name
-        )
+        res.filter((u) => u.enabledPilotFeatures.includes('VASU_AND_PEDADOC'))
       ),
     [units]
   )
@@ -102,7 +99,21 @@ const ChildDocumentsReportInner = React.memo(
   }) {
     const { i18n } = useTranslation()
 
-    const [selectedUnits, setSelectedUnits] = useState<Daycare[]>([])
+    const [unitTree, setUnitTree] = useState<TreeNode[]>(() =>
+      sortTreeByText(
+        Object.values(groupBy(units, (u) => u.area.id)).map((areaUnits) => ({
+          key: areaUnits[0].area.id,
+          text: areaUnits[0].area.name,
+          checked: false,
+          children: areaUnits.map((u) => ({
+            key: u.id,
+            text: u.name,
+            checked: false,
+            children: []
+          }))
+        }))
+      )
+    )
 
     const sortedTemplates = useMemo(
       () => orderBy(templates, (t) => t.name),
@@ -164,8 +175,13 @@ const ChildDocumentsReportInner = React.memo(
     )
 
     const unitIds = useMemo(
-      () => selectedUnits.map((u) => u.id),
-      [selectedUnits]
+      () =>
+        unitTree.flatMap((area) =>
+          area.children
+            .filter((u) => u.checked)
+            .map((u) => fromUuid<DaycareId>(u.key))
+        ),
+      [unitTree]
     )
     const templateIds = useMemo(
       () =>
@@ -182,12 +198,9 @@ const ChildDocumentsReportInner = React.memo(
         <FilterRowWide>
           <FilterLabel>{i18n.reports.childDocuments.filters.units}</FilterLabel>
           <FlexGrow>
-            <MultiSelect
-              options={units}
-              value={selectedUnits}
-              onChange={setSelectedUnits}
-              getOptionLabel={(o) => o.name}
-              getOptionId={(o) => o.id}
+            <TreeDropdown
+              tree={unitTree}
+              onChange={setUnitTree}
               placeholder={i18n.common.select}
               data-qa="unit-select"
             />
