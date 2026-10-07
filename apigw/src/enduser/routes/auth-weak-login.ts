@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import cookieParser from 'cookie-parser'
-import { getHours } from 'date-fns/getHours'
 import { z } from 'zod'
 
 import type { EvakaSessionUser } from '../../shared/auth/index.ts'
@@ -13,6 +12,7 @@ import {
 } from '../../shared/device-cookies.ts'
 import { toRequestHandler } from '../../shared/express.ts'
 import { logAuditEvent, logWarn } from '../../shared/logging.ts'
+import { consumeRateLimit } from '../../shared/rate-limit.ts'
 import type { RedisClient } from '../../shared/redis-client.ts'
 import { citizenWeakLogin } from '../../shared/service-client.ts'
 import type { Sessions } from '../../shared/session.ts'
@@ -51,24 +51,20 @@ export const authWeakLogin = (
         }
       )
 
-      if (loginAttemptsPerHour > 0) {
-        // Apply rate limit (attempts per hour)
-        // Reference: Redis Rate Limiting Best Practices
-        // https://redis.io/glossary/rate-limiting/
-        const hour = getHours(new Date())
-        const key = `citizen-weak-login:${username}:${hour}`
-        const value = Number.parseInt((await redis.get(key)) ?? '', 10)
-        if (Number.isNaN(value) || value < loginAttemptsPerHour) {
-          // expire in 1 hour, so there's no old entry when the hours value repeats the next day
-          const expirySeconds = 60 * 60
-          await redis.multi().incr(key).expire(key, expirySeconds).exec()
-        } else {
-          logWarn('Login request hit rate limit', req, {
-            username
-          })
-          res.sendStatus(429)
-          return
-        }
+      if (
+        loginAttemptsPerHour > 0 &&
+        !(await consumeRateLimit(
+          redis,
+          `citizen-weak-login:${username}`,
+          loginAttemptsPerHour,
+          60 * 60
+        ))
+      ) {
+        logWarn('Login request hit rate limit', req, {
+          username
+        })
+        res.sendStatus(429)
+        return
       }
 
       const { id } = await citizenWeakLogin(req, {

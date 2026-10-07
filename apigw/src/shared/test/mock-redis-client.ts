@@ -48,8 +48,13 @@ export class MockRedisClient implements RedisClient {
   set(
     key: string,
     value: string,
-    options?: { EX?: number; expiration?: { type: 'EX'; value: number } }
+    options?: {
+      EX?: number
+      expiration?: { type: 'EX'; value: number }
+      NX?: true
+    }
   ): Promise<string | null> {
+    if (options?.NX && key in this.db) return Promise.resolve(null)
     const ex = options?.EX ?? options?.expiration?.value
     this.db[key] = {
       value,
@@ -141,22 +146,24 @@ class MockTransaction implements RedisTransaction {
   constructor(client: RedisClient) {
     this.#client = client
   }
+  set(
+    key: string,
+    value: string,
+    options: { EX: number; NX: true }
+  ): RedisTransaction {
+    this.#queue.push(() => this.#client.set(key, value, options))
+    return this
+  }
   incr(key: string): RedisTransaction {
-    this.#queue.push(async () => {
-      await this.#client.incr(key)
-    })
+    this.#queue.push(() => this.#client.incr(key))
     return this
   }
   sAdd(key: string, members: string | string[]): RedisTransaction {
-    this.#queue.push(async () => {
-      await this.#client.sAdd(key, members)
-    })
+    this.#queue.push(() => this.#client.sAdd(key, members))
     return this
   }
   expire(key: string, seconds: number): RedisTransaction {
-    this.#queue.push(async () => {
-      await this.#client.expire(key, seconds)
-    })
+    this.#queue.push(() => this.#client.expire(key, seconds))
     return this
   }
   async exec(): Promise<unknown[]> {
