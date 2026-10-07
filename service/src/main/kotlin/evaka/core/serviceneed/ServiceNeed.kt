@@ -6,7 +6,9 @@ package evaka.core.serviceneed
 
 import evaka.core.AuditContext
 import evaka.core.ConstList
+import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.domain.SiblingDiscount
+import evaka.core.invoicing.service.generator.ignoredPlacementTypes
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.EvakaUserId
@@ -174,6 +176,7 @@ fun validateServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     partWeek: Boolean,
+    financeDecisionMinDate: LocalDate,
 ) {
     if (endDate.isBefore(startDate)) {
         throw BadRequest("Start date cannot be before end date.")
@@ -207,6 +210,57 @@ fun validateServiceNeed(
         }
         .toList<Int>()
         .let { if (it.isEmpty()) throw BadRequest("Service need must be within placement") }
+
+    if (!endDate.isBefore(financeDecisionMinDate)) {
+        requireVoucherValueInVoucherUnit(
+            db,
+            placementId,
+            optionId,
+            FiniteDateRange(maxOf(startDate, financeDecisionMinDate), endDate),
+        )
+    }
+}
+
+/**
+ * Voucher value decisions cannot be generated for a period whose service need option has no voucher
+ * value, so such a service need would block finance decision generation for the whole family.
+ */
+private fun requireVoucherValueInVoucherUnit(
+    db: Database.Read,
+    placementId: PlacementId,
+    optionId: ServiceNeedOptionId,
+    period: FiniteDateRange,
+) {
+    val voucherValueMissing =
+        db.createQuery {
+                sql(
+                    """
+SELECT EXISTS (
+    SELECT
+    FROM placement pl
+    JOIN daycare d ON d.id = pl.unit_id
+    WHERE pl.id = ${bind(placementId)}
+      AND d.provider_type = ${bind(ProviderType.PRIVATE_SERVICE_VOUCHER)}
+      AND NOT pl.type = ANY(${bind(ignoredPlacementTypes)})
+      AND NOT ${bind(period)} <@ coalesce(
+          (
+              SELECT range_agg(v.validity)
+              FROM service_need_option_voucher_value v
+              WHERE v.service_need_option_id = ${bind(optionId)}
+          ),
+          '{}'
+      )
+)
+"""
+                )
+            }
+            .exactlyOne<Boolean>()
+    if (voucherValueMissing) {
+        throw BadRequest(
+            "Service need option has no voucher value for the whole period",
+            "VOUCHER_VALUE_MISSING",
+        )
+    }
 }
 
 fun createServiceNeed(
@@ -219,8 +273,17 @@ fun createServiceNeed(
     shiftCare: ShiftCareType,
     partWeek: Boolean,
     confirmedAt: HelsinkiDateTime,
+    financeDecisionMinDate: LocalDate,
 ): ServiceNeedId {
-    validateServiceNeed(tx, placementId, startDate, endDate, optionId, partWeek)
+    validateServiceNeed(
+        tx,
+        placementId,
+        startDate,
+        endDate,
+        optionId,
+        partWeek,
+        financeDecisionMinDate,
+    )
     clearServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
     return tx.insertServiceNeed(
         placementId = placementId,
@@ -244,11 +307,20 @@ fun updateServiceNeed(
     shiftCare: ShiftCareType,
     partWeek: Boolean,
     confirmedAt: HelsinkiDateTime,
+    financeDecisionMinDate: LocalDate,
     audit: AuditContext,
 ) {
     val old = tx.getServiceNeed(id)
     audit.add(old.placementId).observeDate(old.startDate)
-    validateServiceNeed(tx, old.placementId, startDate, endDate, optionId, partWeek)
+    validateServiceNeed(
+        tx,
+        old.placementId,
+        startDate,
+        endDate,
+        optionId,
+        partWeek,
+        financeDecisionMinDate,
+    )
     if (startDate.isBefore(old.startDate)) {
         clearServiceNeedsFromPeriod(
             tx,

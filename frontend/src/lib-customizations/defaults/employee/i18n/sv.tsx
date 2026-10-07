@@ -1329,7 +1329,12 @@ export const sv: typeof fi = {
         optionStartEndNotValidWarningTitle: (validity: FiniteDateRange) =>
           `Den valda servicebehovstypen är tillgänglig under perioden ${validity.format()}`,
         notFullyValidOptionWarning:
-          'Den valda servicebehovstypen måste vara tillgänglig under hela perioden. Skapa servicebehovet vid behov i två delar.'
+          'Den valda servicebehovstypen måste vara tillgänglig under hela perioden. Skapa servicebehovet vid behov i två delar.',
+        voucherValueMissing: {
+          title: 'Servicebehovet kunde inte sparas',
+          message:
+            'Servicesedelns värde har inte fastställts för den valda servicebehovstypen för hela perioden.'
+        }
       }
     },
     absenceApplications: {

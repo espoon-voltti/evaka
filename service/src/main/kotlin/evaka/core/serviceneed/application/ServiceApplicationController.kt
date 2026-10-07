@@ -6,7 +6,9 @@ package evaka.core.serviceneed.application
 
 import evaka.core.Audit
 import evaka.core.AuditContext
+import evaka.core.EvakaEnv
 import evaka.core.absence.generateAbsencesFromIrregularDailyServiceTimes
+import evaka.core.invoicing.domain.financeDecisionMinDate
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.createPlacement
 import evaka.core.placement.deleteFutureReservationsAndAbsencesOutsideValidPlacements
@@ -41,6 +43,7 @@ class ServiceApplicationController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
+    private val env: EvakaEnv,
 ) {
     data class EmployeeServiceApplication(
         val data: ServiceApplication,
@@ -222,6 +225,8 @@ class ServiceApplicationController(
                             shiftCare = body.shiftCareType,
                             partWeek = body.partWeek,
                             confirmedAt = now,
+                            financeDecisionMinDate =
+                                financeDecisionMinDate(env.feeDecisionMinDate, now.toLocalDate()),
                         )
 
                     tx.setServiceApplicationAccepted(id, now, user)

@@ -281,6 +281,13 @@ function ServiceNeedEditorRow({
       .then((res) => {
         if (res.isSuccess) {
           onSuccess()
+        } else if (res.isFailure && res.errorCode === 'VOUCHER_VALUE_MISSING') {
+          setErrorMessage({
+            type: 'error',
+            title: t.voucherValueMissing.title,
+            text: t.voucherValueMissing.message,
+            resolveLabel: i18n.common.ok
+          })
         } else {
           setErrorMessage({
             type: 'error',
