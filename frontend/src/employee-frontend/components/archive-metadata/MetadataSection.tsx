@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import type { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { ProcessMetadataResponse } from 'lib-common/generated/api-types/caseprocess'
-import { CollapsibleContentArea as Collapsible } from 'lib-components/layout/Container'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Metadatas } from 'lib-components/molecules/Metadatas'
 import { H2 } from 'lib-components/typography'
 
@@ -24,20 +24,22 @@ export default React.memo(function MetadataSection({
   const [sectionOpen, { toggle: toggleOpen }] = useBoolean(false)
 
   return (
-    <CollapsibleContentArea
-      title={<H2 $noMargin>{i18n.components.metadata.title}</H2>}
-      open={sectionOpen}
-      toggleOpen={toggleOpen}
-      $opaque
-    >
-      {renderResult(metadataResult, ({ data: metadata }) => (
-        <Metadatas metadata={metadata} />
-      ))}
-    </CollapsibleContentArea>
+    <HiddenInPrint>
+      <CollapsibleContentArea
+        title={<H2 $noMargin>{i18n.components.metadata.title}</H2>}
+        open={sectionOpen}
+        toggleOpen={toggleOpen}
+        $opaque
+      >
+        {renderResult(metadataResult, ({ data: metadata }) => (
+          <Metadatas metadata={metadata} />
+        ))}
+      </CollapsibleContentArea>
+    </HiddenInPrint>
   )
 })
 
-const CollapsibleContentArea = styled(Collapsible)`
+const HiddenInPrint = styled.div`
   @media print {
     display: none;
   }
