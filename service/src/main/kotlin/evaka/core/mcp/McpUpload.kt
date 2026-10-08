@@ -25,7 +25,7 @@ val createUploadUrlTool =
     mcpTool<EmptyInput>(
         name = "create_upload_url",
         description =
-            "Returns a one-time URL, valid for 10 minutes, that runs $UPLOAD_TOOL with the POSTed JSON body as its arguments and responds with its result. Use it for large data sets: write the arguments to a file and upload it with the returned curl command, so that the rows don't pass through the conversation.",
+            "Returns a one-time URL, valid for 10 minutes, that runs $UPLOAD_TOOL with the POSTed JSON body as its arguments and responds with its result. Use it for large data sets: write the arguments to a file and upload it with the returned curl command, so that the rows don't pass through the conversation. The URL is used up even if the request fails or times out: if it times out, the rows may still be saved once the transaction commits, so check the batch with list_test_data before uploading again.",
     ) { ctx, _ ->
         val token = generateMcpSecret()
         val expiresAt = ctx.now.plusMinutes(10)
