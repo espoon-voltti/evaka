@@ -55,17 +55,18 @@ class McpUploadController(private val server: McpServerController, private val t
                 dbc.transaction { it.useMcpUpload(sha256Base64Url(token), clock.now()) }
             }
                 ?: return server.unauthorized(
+                    clock,
                     McpServerController.AuthResult.Failure(
                         HttpStatus.NOT_FOUND,
                         "invalid_token",
                         "Unknown, expired or already used upload URL",
-                    )
+                    ),
                 )
         val session =
             when (
                 val auth = server.authenticate(db, clock) { getMcpAuthorization(authorizationId) }
             ) {
-                is McpServerController.AuthResult.Failure -> return server.unauthorized(auth)
+                is McpServerController.AuthResult.Failure -> return server.unauthorized(clock, auth)
                 is McpServerController.AuthResult.Success -> auth
             }
         val tool = tools.findTool(UPLOAD_TOOL) ?: error("Tool $UPLOAD_TOOL not found")

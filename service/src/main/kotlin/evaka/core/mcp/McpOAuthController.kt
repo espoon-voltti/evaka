@@ -5,7 +5,7 @@
 package evaka.core.mcp
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.ExcludeCodeGen
 import evaka.core.shared.McpClientId
 import evaka.core.shared.db.Database
@@ -153,10 +153,10 @@ class McpOAuthController(private val config: McpServerConfig) {
                 )
             }
         }
-        Audit.McpClientRegister.log(
-            targetId = AuditId(clientId),
-            meta = mapOf("clientName" to clientName),
-        )
+        AuditContext()
+            .add(clientId)
+            .addMeta("clientName", clientName)
+            .log(Audit.McpClientRegister, clock)
         val response =
             linkedMapOf<String, Any>(
                 "client_id" to clientId.toString(),
@@ -289,22 +289,20 @@ class McpOAuthController(private val config: McpServerConfig) {
         }
         return when (result) {
             is TokenResult.Error -> {
-                Audit.McpTokenIssue.log(
-                    targetId = AuditId(clientId),
-                    meta = mapOf("error" to result.error, "description" to result.description),
-                )
+                AuditContext()
+                    .add(clientId)
+                    .addMeta("error", result.error)
+                    .addMeta("description", result.description)
+                    .log(Audit.McpTokenIssue, clock)
                 oauthError(result.status, result.error, result.description)
             }
             is TokenResult.Success -> {
-                Audit.McpTokenIssue.log(
-                    targetId = AuditId(result.authorization.id),
-                    objectId = AuditId(result.authorization.employeeId),
-                    meta =
-                        mapOf(
-                            "clientId" to clientId,
-                            "expiresAt" to result.authorization.expiresAt,
-                        ),
-                )
+                AuditContext()
+                    .add(result.authorization.id)
+                    .add(result.authorization.employeeId)
+                    .add(clientId)
+                    .addMeta("expiresAt", result.authorization.expiresAt)
+                    .log(Audit.McpTokenIssue, clock)
                 val expiresIn = result.authorization.expiresAt.durationSince(now).seconds
                 ResponseEntity.ok()
                     .cacheControl(CacheControl.noStore())

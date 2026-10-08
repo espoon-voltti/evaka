@@ -5,7 +5,7 @@
 package evaka.core.mcp
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.shared.McpAuthorizationId
 import evaka.core.shared.McpClientId
 import evaka.core.shared.McpTestDataBatchId
@@ -190,11 +190,11 @@ class McpEmployeeController(
                 )
             }
         }
-        Audit.McpAuthorizationCreate.log(
-            targetId = AuditId(authorizationId),
-            objectId = AuditId(body.clientId),
-            meta = mapOf("validityDays" to body.validityDays),
-        )
+        AuditContext()
+            .add(authorizationId)
+            .add(body.clientId)
+            .addMeta("validityDays", body.validityDays)
+            .log(Audit.McpAuthorizationCreate, clock)
         val redirectUrl = buildString {
             append(body.redirectUri)
             append(if (body.redirectUri.contains('?')) '&' else '?')
@@ -278,7 +278,7 @@ class McpEmployeeController(
                 }
             }
         }
-        Audit.McpAuthorizationRevoke.log(targetId = AuditId(id))
+        AuditContext().add(id).log(Audit.McpAuthorizationRevoke, clock)
     }
 
     @GetMapping("/test-data/batches")
@@ -370,10 +370,10 @@ class McpEmployeeController(
                 }
             }
             .also {
-                Audit.McpTestDataBatchDelete.log(
-                    targetId = AuditId(id),
-                    meta = mapOf("deletedRowCounts" to it.deletedRowCounts),
-                )
+                AuditContext()
+                    .add(id)
+                    .addMeta("deletedRowCounts", it.deletedRowCounts)
+                    .log(Audit.McpTestDataBatchDelete, clock)
             }
     }
 }

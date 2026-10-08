@@ -78,7 +78,7 @@ class McpServerController(
     ): ResponseEntity<Any> {
         val session =
             when (val auth = authenticate(db, clock, request)) {
-                is AuthResult.Failure -> return unauthorized(auth)
+                is AuthResult.Failure -> return unauthorized(clock, auth)
                 is AuthResult.Success -> auth
             }
 
@@ -221,8 +221,10 @@ class McpServerController(
         }
     }
 
-    fun unauthorized(failure: AuthResult.Failure): ResponseEntity<Any> {
-        Audit.McpUnauthorizedRequest.log(meta = mapOf("reason" to failure.description))
+    fun unauthorized(clock: EvakaClock, failure: AuthResult.Failure): ResponseEntity<Any> {
+        AuditContext()
+            .addMeta("reason", failure.description)
+            .log(Audit.McpUnauthorizedRequest, clock)
         val challenge = buildString {
             append("Bearer realm=\"evaka-mcp\"")
             append(", resource_metadata=\"${config.protectedResourceMetadataUrl}\"")
