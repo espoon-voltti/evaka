@@ -43,6 +43,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.async.PermanentAsyncJobFailure
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
@@ -80,8 +81,10 @@ class VoucherValueDecisionService(
 
     fun createDecisionPdf(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
         val decision = getDecision(tx, decisionId)
-        check(decision.documentKey.isNullOrBlank()) {
-            "Voucher value decision $decisionId has document key already!"
+        if (!decision.documentKey.isNullOrBlank()) {
+            throw PermanentAsyncJobFailure(
+                "Voucher value decision $decisionId has document key already!"
+            )
         }
 
         val settings = tx.getSettings()
@@ -130,8 +133,10 @@ class VoucherValueDecisionService(
     ): Boolean {
         val now = clock.now()
         val decision = getDecision(tx, decisionId)
-        check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
-            "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
+        if (decision.status != VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
+            throw PermanentAsyncJobFailure(
+                "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
+            )
         }
         checkNotNull(decision.documentKey) {
             "Cannot send voucher value decision ${decision.id} - missing document key"

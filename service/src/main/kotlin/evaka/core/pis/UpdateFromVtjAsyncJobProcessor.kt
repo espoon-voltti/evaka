@@ -5,10 +5,12 @@
 package evaka.core.pis
 
 import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.isValidSSN
 import evaka.core.pis.service.FridgeFamilyService
 import evaka.core.pis.service.PersonService
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.async.PermanentAsyncJobFailure
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
@@ -34,6 +36,9 @@ class UpdateFromVtjAsyncJobProcessor(
         evakaClock: EvakaClock,
         msg: AsyncJob.UpdateFromVtj,
     ) {
+        if (!isValidSSN(msg.ssn)) {
+            throw PermanentAsyncJobFailure("Invalid SSN in UpdateFromVtj payload")
+        }
         db.transaction { tx ->
                 personService.getOrCreatePerson(
                     tx,
