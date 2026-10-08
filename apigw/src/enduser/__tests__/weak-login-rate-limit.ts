@@ -123,6 +123,15 @@ describe('Weak login IP rate limit', () => {
     return res.status
   }
 
+  function clientIpMismatchWarnings() {
+    return vi
+      .mocked(logWarn)
+      .mock.calls.filter(
+        ([, , meta]) =>
+          meta?.eventCode === 'evaka.citizen_weak.client_ip_mismatch'
+      )
+  }
+
   function ipLimitWarnings() {
     return vi
       .mocked(logWarn)
@@ -218,5 +227,54 @@ describe('Weak login IP rate limit', () => {
     }
 
     expect(ipLimitWarnings()[0][2]).toMatchObject({ xRealIpMatches: false })
+  })
+
+  test('logs once per window when X-Real-IP disagrees with the client IP', async () => {
+    await start(false)
+    tester.nockScope.post('/system/citizen-weak-login').times(2).reply(403)
+
+    await attempt('203.0.113.1', 'a@example.com', '10.0.2.2')
+    await attempt('203.0.113.1', 'b@example.com', '10.0.2.2')
+
+    expect(clientIpMismatchWarnings()).toEqual([
+      [
+        'Client IP differs from X-Real-IP',
+        expect.anything(),
+        {
+          eventCode: 'evaka.citizen_weak.client_ip_mismatch',
+          ipKey: '203.0.113.1'
+        }
+      ]
+    ])
+  })
+
+  test('does not log a mismatch when X-Real-IP agrees with the client IP', async () => {
+    await start(false)
+    tester.nockScope.post('/system/citizen-weak-login').reply(403)
+
+    await attempt('203.0.113.1', 'a@example.com')
+
+    expect(clientIpMismatchWarnings()).toEqual([])
+  })
+
+  test('logs a mismatch when the client IP is not a valid address', async () => {
+    await start(true)
+    tester.nockScope.post('/system/citizen-weak-login').reply(403)
+
+    // e.g. a load balancer appending the client port to X-Forwarded-For
+    expect(
+      await attempt('203.0.113.1:54321', 'a@example.com', '203.0.113.1')
+    ).toBe(403)
+
+    expect(clientIpMismatchWarnings()).toEqual([
+      [
+        'Client IP differs from X-Real-IP',
+        expect.anything(),
+        {
+          eventCode: 'evaka.citizen_weak.client_ip_mismatch',
+          ipKey: undefined
+        }
+      ]
+    ])
   })
 })

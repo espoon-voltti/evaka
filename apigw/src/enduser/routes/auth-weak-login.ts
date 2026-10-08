@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import cookieParser from 'cookie-parser'
+import type { Request as ExpressRequest } from 'express'
 import { z } from 'zod'
 
 import type { EvakaSessionUser } from '../../shared/auth/index.ts'
@@ -38,6 +39,46 @@ export interface WeakLoginRateLimits {
   enforcePerIp: boolean
 }
 
+async function rejectedByIpRateLimit(
+  req: ExpressRequest,
+  redis: RedisClient,
+  { perIp, enforcePerIp }: WeakLoginRateLimits
+): Promise<boolean> {
+  if (perIp <= 0) return false
+  const ipKey = clientIpKey(req.ip)
+  const realIp = req.headers['x-real-ip']
+  const xRealIpMatches =
+    ipKey !== undefined &&
+    typeof realIp === 'string' &&
+    clientIpKey(realIp) === ipKey
+  const logMismatch = () =>
+    logWarn('Client IP differs from X-Real-IP', req, {
+      eventCode: eventCode('client_ip_mismatch'),
+      ipKey
+    })
+
+  if (ipKey === undefined) {
+    logMismatch()
+    return false
+  }
+  const { allowed, count } = await consumeRateLimit(
+    redis,
+    `citizen-weak-login-ip:${ipKey}`,
+    perIp,
+    60 * 60
+  )
+  if (count === 1 && !xRealIpMatches) logMismatch()
+  if (count === perIp + 1) {
+    logWarn('Login request exceeded IP rate limit', req, {
+      eventCode: eventCode('ip_rate_limit_exceeded'),
+      ipKey,
+      xRealIpMatches,
+      enforced: enforcePerIp
+    })
+  }
+  return !allowed && enforcePerIp
+}
+
 export const authWeakLogin = (
   sessions: Sessions<'citizen'>,
   redis: RedisClient,
@@ -63,28 +104,9 @@ export const authWeakLogin = (
 
       // Checked before the username limit so that attempts rejected here don't
       // count against the usernames they target
-      const ipKey = clientIpKey(req.ip)
-      if (rateLimits.perIp > 0 && ipKey !== undefined) {
-        const { allowed, count } = await consumeRateLimit(
-          redis,
-          `citizen-weak-login-ip:${ipKey}`,
-          rateLimits.perIp,
-          60 * 60
-        )
-        if (count === rateLimits.perIp + 1) {
-          const realIp = req.headers['x-real-ip']
-          logWarn('Login request exceeded IP rate limit', req, {
-            eventCode: eventCode('ip_rate_limit_exceeded'),
-            ipKey,
-            xRealIpMatches:
-              typeof realIp === 'string' && clientIpKey(realIp) === ipKey,
-            enforced: rateLimits.enforcePerIp
-          })
-        }
-        if (!allowed && rateLimits.enforcePerIp) {
-          res.sendStatus(429)
-          return
-        }
+      if (await rejectedByIpRateLimit(req, redis, rateLimits)) {
+        res.sendStatus(429)
+        return
       }
 
       if (
