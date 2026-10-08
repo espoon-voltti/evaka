@@ -31,9 +31,15 @@ import {
   refreshMobileSession
 } from './internal/mobile-device-session.ts'
 import { internalAuthStatus } from './internal/routes/auth-status.ts'
+import { createMcpRouter } from './mcp/router.ts'
 import { integrationUserHeader } from './shared/auth/index.ts'
 import type { Config } from './shared/config.ts'
-import { appCommit, enableDevApi, titaniaConfig } from './shared/config.ts'
+import {
+  appCommit,
+  enableDevApi,
+  enableMcp,
+  titaniaConfig
+} from './shared/config.ts'
 import { assertStringProp, toRequestHandler } from './shared/express.ts'
 import { cacheControl } from './shared/middleware/cache-control.ts'
 import { csrf } from './shared/middleware/csrf.ts'
@@ -215,6 +221,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
         getUserHeader: () => undefined
       })
     )
+  }
+
+  if (enableMcp) {
+    // MCP server for AI-assisted test data generation (non-production only)
+    router.use(createMcpRouter())
   }
 
   router.get(

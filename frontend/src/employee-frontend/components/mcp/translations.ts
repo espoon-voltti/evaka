@@ -1,0 +1,378 @@
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import { useTranslation } from '../../state/i18n'
+
+/**
+ * Translations for the MCP pages. They live here instead of lib-customizations because the
+ * feature is only available in non-production environments and needs no municipality-specific
+ * customization.
+ */
+const fi = {
+  title: 'Tekoälytyökalut (MCP)',
+  description:
+    'Tekoälyavustajat (esim. Claude tai GitHub Copilot) voivat luoda tähän testiympäristöön testidataa MCP-palvelimen kautta. Tällä sivulla näet, mitkä työkalut on valtuutettu toimimaan puolestasi, ja voit poistaa MCP:n kautta luodun testidatan.',
+  serverUrl: 'MCP-palvelimen osoite',
+  serverUrlInfo:
+    'Lisää tämä osoite tekoälytyökaluun HTTP-tyyppisenä MCP-palvelimena (esim. Claude Code: claude mcp add --transport http evaka <osoite>). Työkalu ohjaa sinut kirjautumaan eVakaan ja hyväksymään valtuutuksen.',
+  authorizations: {
+    title: 'Valtuutetut tekoälytyökalut',
+    empty: 'Et ole valtuuttanut yhtään tekoälytyökalua.',
+    client: 'Työkalu',
+    createdAt: 'Valtuutettu',
+    expiresAt: 'Voimassa',
+    lastUsedAt: 'Käytetty viimeksi',
+    status: 'Tila',
+    statusActive: 'Voimassa',
+    statusExpired: 'Vanhentunut',
+    statusRevoked: 'Poistettu',
+    statusPending: 'Odottaa',
+    never: 'Ei koskaan',
+    revoke: 'Poista valtuutus',
+    revokeConfirmTitle: 'Poistetaanko valtuutus?',
+    revokeConfirmText:
+      'Työkalu ei voi enää käyttää eVakaa puolestasi. Voit valtuuttaa sen uudelleen myöhemmin.'
+  },
+  testData: {
+    title: 'MCP:n kautta luotu testidata',
+    description:
+      'Jokainen tekoälytyökalun luoma testidatakokonaisuus on oma joukkonsa. Joukon poistaminen poistaa kaikki siihen luodut tiedot sekä niihin liittyvät tiedot (esim. sijoitukset, hakemukset ja viestit).',
+    empty: 'MCP:n kautta ei ole luotu testidataa.',
+    name: 'Nimi',
+    createdBy: 'Luonut',
+    client: 'Työkalu',
+    createdAt: 'Luotu',
+    contents: 'Sisältö',
+    total: 'Yhteensä',
+    details: 'Näytä sisältö',
+    hideDetails: 'Piilota sisältö',
+    delete: 'Poista joukko',
+    deleteConfirmTitle: 'Poistetaanko testidatajoukko?',
+    deleteConfirmText:
+      'Kaikki joukkoon kuuluvat tiedot ja niistä riippuvat tiedot poistetaan pysyvästi.',
+    deleteConfirmCheckbox: 'Ymmärrän, että poisto on pysyvä',
+    deletePreviewTotal: (rows: number, tracked: number) =>
+      `Poistetaan yhteensä ${rows} tietokantariviä, joista ${tracked} on joukkoon merkittyjä tietoja.`,
+    deletePreviewUntracked: (rows: number) =>
+      `Poisto ulottuu myös ${rows} riviin, joita ei ole luotu MCP:n kautta, esimerkiksi käyttöliittymässä testidatan päälle tehtyihin tietoihin:`,
+    deletePreviewConflict:
+      'Joukkoa ei voi poistaa, koska sen tietoihin viittaa toinen testidatajoukko. Poista ensin se.',
+    deletePreviewFailed: 'Poiston esikatselu epäonnistui.',
+    // Every table the rows of a batch can be in: the insert_rows row types, the tables the
+    // tools write to and, recursively, the tables referencing them. Others show the table name.
+    entityTypes: {
+      absence: 'Poissaolot',
+      absence_application: 'Poissaolohakemukset',
+      application: 'Hakemukset',
+      application_note: 'Hakemusten muistiinpanot',
+      assistance_action: 'Tukitoimet',
+      assistance_factor: 'Tuen kertoimet',
+      assistance_need_voucher_coefficient: 'Palvelusetelikertoimet',
+      attendance_reservation: 'Läsnäolovaraukset',
+      backup_care: 'Varasijoitukset',
+      backup_pickup: 'Varahakijat',
+      calendar_event: 'Kalenteritapahtumat',
+      calendar_event_attendee: 'Kalenteritapahtumien osallistujat',
+      calendar_event_time: 'Kalenteritapahtumien ajat',
+      care_area: 'Palvelualueet',
+      child: 'Lapset',
+      child_attendance: 'Lasten läsnäolot',
+      child_daily_note: 'Lasten päivämuistiinpanot',
+      child_document: 'Lasten asiakirjat',
+      child_document_decision: 'Asiakirjapäätökset',
+      child_document_published_version: 'Asiakirjojen julkaistut versiot',
+      child_images: 'Lasten kuvat',
+      child_sticky_note: 'Lasten muistilaput',
+      citizen_passkey: 'Kuntalaisten pääsyavaimet',
+      citizen_push_subscription: 'Kuntalaisten push-tilaukset',
+      citizen_user: 'Kuntalaiskäyttäjät',
+      club_term: 'Kerhokaudet',
+      daily_service_time: 'Päivittäiset varhaiskasvatusajat',
+      daily_service_time_notification: 'Varhaiskasvatusaikojen ilmoitukset',
+      daycare: 'Yksiköt',
+      daycare_assistance: 'Varhaiskasvatuksen tuet',
+      daycare_caretaker: 'Henkilökuntamäärät',
+      daycare_group: 'Ryhmät',
+      daycare_group_placement: 'Ryhmäsijoitukset',
+      decision: 'Päätökset',
+      document_template: 'Asiakirjapohjat',
+      employee: 'Työntekijät',
+      employee_pin: 'Työntekijöiden PIN-koodit',
+      family_contact: 'Perheen yhteyshenkilöt',
+      fee_alteration: 'Maksumuutokset',
+      fee_decision: 'Maksupäätökset',
+      fee_decision_child: 'Maksupäätösten lapset',
+      finance_note: 'Talouden muistiinpanot',
+      foster_parent: 'Sijaisvanhemmuudet',
+      fridge_child: 'Päämiessuhteet',
+      group_note: 'Ryhmien muistiinpanot',
+      holiday_period: 'Lomakaudet',
+      holiday_period_questionnaire: 'Loma-ajan kyselyt',
+      holiday_questionnaire_answer: 'Loma-ajan kyselyiden vastaukset',
+      income: 'Tulotiedot',
+      income_notification: 'Tulotietoilmoitukset',
+      income_statement: 'Tuloselvitykset',
+      invoice: 'Laskut',
+      invoice_correction: 'Laskujen korjaukset',
+      invoice_row: 'Laskurivit',
+      koski_study_right: 'Koski-opiskeluoikeudet',
+      koski_upload_error: 'Koski-siirtovirheet',
+      mcp_authorization: 'MCP-valtuutukset',
+      mcp_upload: 'MCP-lataukset',
+      message: 'Viestit',
+      message_account: 'Viestitilit',
+      message_content: 'Viestien sisällöt',
+      message_draft: 'Viestiluonnokset',
+      message_recipients: 'Viestien vastaanottajat',
+      message_thread: 'Viestiketjut',
+      message_thread_children: 'Viestiketjujen lapset',
+      message_thread_folder: 'Viestikansiot',
+      message_thread_participant: 'Viestiketjujen osallistujat',
+      mobile_device: 'Mobiililaitteet',
+      nekku_special_diet_choices: 'Nekku-erityisruokavaliot',
+      other_assistance_measure: 'Muut tukitoimet',
+      out_of_office: 'Poissaoloilmoitukset',
+      pairing: 'Laiteparitukset',
+      payment: 'Maksut',
+      pedagogical_document: 'Pedagogiset dokumentit',
+      person: 'Henkilöt',
+      person_email_verification: 'Sähköpostien vahvistukset',
+      placement: 'Sijoitukset',
+      placement_plan: 'Sijoitusehdotukset',
+      preschool_assistance: 'Esiopetuksen tuet',
+      preschool_term: 'Esiopetuskaudet',
+      service_application: 'Palveluntarvehakemukset',
+      service_need: 'Palveluntarpeet',
+      service_need_option: 'Palveluntarvevaihtoehdot',
+      service_need_option_fee: 'Palveluntarvevaihtoehtojen maksut',
+      service_need_option_voucher_value:
+        'Palveluntarvevaihtoehtojen setelien arvot',
+      sfi_message: 'Suomi.fi-viestit',
+      sfi_message_event: 'Suomi.fi-viestien tapahtumat',
+      staff_attendance: 'Henkilökunnan läsnäolot',
+      staff_attendance_external: 'Ulkopuolisten läsnäolot',
+      staff_attendance_plan: 'Henkilökunnan työvuorosuunnitelmat',
+      staff_attendance_realtime: 'Henkilökunnan reaaliaikaiset läsnäolot',
+      staff_occupancy_coefficient: 'Henkilökunnan käyttöastekertoimet',
+      titania_errors: 'Titania-virheet',
+      varda_state: 'Varda-tilat',
+      voucher_value_decision: 'Arvopäätökset',
+      voucher_value_report_decision: 'Arvopäätösten raportoinnit'
+    } as Record<string, string>
+  },
+  authorize: {
+    title: 'Valtuuta tekoälytyökalu',
+    loginRequired: 'Kirjaudu sisään eVakaan hyväksyäksesi valtuutuksen.',
+    login: 'Kirjaudu sisään',
+    adminRequired:
+      'Vain pääkäyttäjät voivat valtuuttaa tekoälytyökaluja käyttämään eVakaa.',
+    invalidRequest: 'Valtuutuspyyntö on virheellinen.',
+    redirectUriNotRegistered:
+      'Paluuosoitetta ei ole rekisteröity tälle työkalulle, joten valtuutuspyyntöä ei voi käsitellä.',
+    unknownClient:
+      'Tekoälytyökalun rekisteröinti ei ole enää voimassa. Poista tunnistautuminen tekoälytyökalusta ja yhdistä uudelleen.',
+    clientRequests: 'pyytää lupaa toimia eVakassa puolestasi.',
+    permissions: 'Työkalu voi puolestasi:',
+    permissionList: [
+      'lukea tämän testiympäristön yksiköitä, palvelualueita ja palveluntarpeita',
+      'luoda testidataa: yksiköitä, perheitä, työntekijöitä, sijoituksia, hakemuksia ja muita eVakan perustietoja',
+      'listata ja poistaa MCP:n kautta luotua testidataa'
+    ],
+    redirectUri: 'Paluuosoite',
+    validity: 'Valtuutus on voimassa',
+    validityDays: (days: number) => (days === 1 ? '1 päivä' : `${days} päivää`),
+    approve: 'Hyväksy',
+    deny: 'Hylkää',
+    approved: 'Valtuutus hyväksytty. Voit palata tekoälytyökaluun.',
+    environmentWarning:
+      'Muista, että tekoälytyökalu toimii sinun käyttöoikeuksillasi.'
+  }
+}
+
+const sv: typeof fi = {
+  title: 'AI-verktyg (MCP)',
+  description:
+    'AI-assistenter (t.ex. Claude eller GitHub Copilot) kan skapa testdata i den här testmiljön via MCP-servern. På den här sidan ser du vilka verktyg som har behörighet att agera för din räkning, och du kan ta bort testdata som skapats via MCP.',
+  serverUrl: 'MCP-serverns adress',
+  serverUrlInfo:
+    'Lägg till den här adressen i AI-verktyget som en MCP-server av typen HTTP (t.ex. Claude Code: claude mcp add --transport http evaka <adress>). Verktyget leder dig till att logga in i eVaka och godkänna behörigheten.',
+  authorizations: {
+    title: 'Behöriga AI-verktyg',
+    empty: 'Du har inte gett behörighet åt något AI-verktyg.',
+    client: 'Verktyg',
+    createdAt: 'Behörighet given',
+    expiresAt: 'Giltig till',
+    lastUsedAt: 'Senast använd',
+    status: 'Status',
+    statusActive: 'Giltig',
+    statusExpired: 'Utgången',
+    statusRevoked: 'Återkallad',
+    statusPending: 'Väntar',
+    never: 'Aldrig',
+    revoke: 'Återkalla behörighet',
+    revokeConfirmTitle: 'Återkalla behörigheten?',
+    revokeConfirmText:
+      'Verktyget kan inte längre använda eVaka för din räkning. Du kan ge behörigheten på nytt senare.'
+  },
+  testData: {
+    title: 'Testdata skapad via MCP',
+    description:
+      'Varje testdatahelhet som ett AI-verktyg skapat är en egen grupp. När gruppen tas bort raderas all data som skapats i den samt data som är beroende av den (t.ex. placeringar, ansökningar och meddelanden).',
+    empty: 'Ingen testdata har skapats via MCP.',
+    name: 'Namn',
+    createdBy: 'Skapad av',
+    client: 'Verktyg',
+    createdAt: 'Skapad',
+    contents: 'Innehåll',
+    total: 'Totalt',
+    details: 'Visa innehåll',
+    hideDetails: 'Dölj innehåll',
+    delete: 'Ta bort gruppen',
+    deleteConfirmTitle: 'Ta bort testdatagruppen?',
+    deleteConfirmText:
+      'All data i gruppen och all data som är beroende av den raderas permanent.',
+    deleteConfirmCheckbox: 'Jag förstår att raderingen är permanent',
+    deletePreviewTotal: (rows: number, tracked: number) =>
+      `Sammanlagt ${rows} databasrader raderas, varav ${tracked} är data som hör till gruppen.`,
+    deletePreviewUntracked: (rows: number) =>
+      `Raderingen omfattar också ${rows} rader som inte skapats via MCP, till exempel data som lagts till ovanpå testdatan i användargränssnittet:`,
+    deletePreviewConflict:
+      'Gruppen kan inte tas bort eftersom en annan testdatagrupp hänvisar till dess data. Ta bort den gruppen först.',
+    deletePreviewFailed: 'Förhandsgranskningen av raderingen misslyckades.',
+    entityTypes: {
+      absence: 'Frånvaron',
+      absence_application: 'Frånvaroansökningar',
+      application: 'Ansökningar',
+      application_note: 'Anteckningar om ansökningar',
+      assistance_action: 'Stödåtgärder',
+      assistance_factor: 'Stödkoefficienter',
+      assistance_need_voucher_coefficient: 'Servicesedelkoefficienter',
+      attendance_reservation: 'Närvaroreservationer',
+      backup_care: 'Reservplaceringar',
+      backup_pickup: 'Reservhämtare',
+      calendar_event: 'Kalenderhändelser',
+      calendar_event_attendee: 'Deltagare i kalenderhändelser',
+      calendar_event_time: 'Tider för kalenderhändelser',
+      care_area: 'Serviceområden',
+      child: 'Barn',
+      child_attendance: 'Barnens närvaro',
+      child_daily_note: 'Barnens dagsanteckningar',
+      child_document: 'Barnens dokument',
+      child_document_decision: 'Dokumentbeslut',
+      child_document_published_version: 'Publicerade versioner av dokument',
+      child_images: 'Barnens bilder',
+      child_sticky_note: 'Barnens lappar',
+      citizen_passkey: 'Invånarnas nyckelkoder',
+      citizen_push_subscription: 'Invånarnas push-prenumerationer',
+      citizen_user: 'Invånaranvändare',
+      club_term: 'Klubbterminer',
+      daily_service_time: 'Dagliga tider för småbarnspedagogik',
+      daily_service_time_notification:
+        'Meddelanden om tider för småbarnspedagogik',
+      daycare: 'Enheter',
+      daycare_assistance: 'Stöd inom småbarnspedagogik',
+      daycare_caretaker: 'Personalantal',
+      daycare_group: 'Grupper',
+      daycare_group_placement: 'Gruppplaceringar',
+      decision: 'Beslut',
+      document_template: 'Dokumentmallar',
+      employee: 'Anställda',
+      employee_pin: 'Anställdas PIN-koder',
+      family_contact: 'Familjens kontaktpersoner',
+      fee_alteration: 'Avgiftsändringar',
+      fee_decision: 'Avgiftsbeslut',
+      fee_decision_child: 'Barn i avgiftsbeslut',
+      finance_note: 'Ekonomianteckningar',
+      foster_parent: 'Familjehemsföräldraskap',
+      fridge_child: 'Huvudmannaskap',
+      group_note: 'Gruppanteckningar',
+      holiday_period: 'Semesterperioder',
+      holiday_period_questionnaire: 'Semesterenkäter',
+      holiday_questionnaire_answer: 'Svar på semesterenkäter',
+      income: 'Inkomstuppgifter',
+      income_notification: 'Inkomstmeddelanden',
+      income_statement: 'Inkomstutredningar',
+      invoice: 'Fakturor',
+      invoice_correction: 'Fakturakorrigeringar',
+      invoice_row: 'Fakturarader',
+      koski_study_right: 'Koski-studierätter',
+      koski_upload_error: 'Koski-överföringsfel',
+      mcp_authorization: 'MCP-behörigheter',
+      mcp_upload: 'MCP-uppladdningar',
+      message: 'Meddelanden',
+      message_account: 'Meddelandekonton',
+      message_content: 'Meddelandeinnehåll',
+      message_draft: 'Meddelandeutkast',
+      message_recipients: 'Meddelandemottagare',
+      message_thread: 'Meddelandetrådar',
+      message_thread_children: 'Barn i meddelandetrådar',
+      message_thread_folder: 'Meddelandemappar',
+      message_thread_participant: 'Deltagare i meddelandetrådar',
+      mobile_device: 'Mobila enheter',
+      nekku_special_diet_choices: 'Nekku-specialkoster',
+      other_assistance_measure: 'Andra stödåtgärder',
+      out_of_office: 'Frånvaromeddelanden',
+      pairing: 'Enhetsparkopplingar',
+      payment: 'Betalningar',
+      pedagogical_document: 'Pedagogiska dokument',
+      person: 'Personer',
+      person_email_verification: 'E-postverifieringar',
+      placement: 'Placeringar',
+      placement_plan: 'Placeringsförslag',
+      preschool_assistance: 'Stöd inom förskoleundervisning',
+      preschool_term: 'Förskoleterminer',
+      service_application: 'Ansökningar om servicebehov',
+      service_need: 'Servicebehov',
+      service_need_option: 'Servicebehovsalternativ',
+      service_need_option_fee: 'Avgifter för servicebehovsalternativ',
+      service_need_option_voucher_value:
+        'Servicesedelvärden för servicebehovsalternativ',
+      sfi_message: 'Suomi.fi-meddelanden',
+      sfi_message_event: 'Händelser för Suomi.fi-meddelanden',
+      staff_attendance: 'Personalens närvaro',
+      staff_attendance_external: 'Externa personers närvaro',
+      staff_attendance_plan: 'Personalens arbetsturer',
+      staff_attendance_realtime: 'Personalens närvaro i realtid',
+      staff_occupancy_coefficient: 'Personalens beläggningskoefficienter',
+      titania_errors: 'Titania-fel',
+      varda_state: 'Varda-tillstånd',
+      voucher_value_decision: 'Värdebeslut',
+      voucher_value_report_decision: 'Rapporterade värdebeslut'
+    }
+  },
+  authorize: {
+    title: 'Ge AI-verktyg behörighet',
+    loginRequired: 'Logga in i eVaka för att godkänna behörigheten.',
+    login: 'Logga in',
+    adminRequired:
+      'Endast administratörer kan ge AI-verktyg behörighet att använda eVaka.',
+    invalidRequest: 'Behörighetsbegäran är felaktig.',
+    redirectUriNotRegistered:
+      'Returadressen är inte registrerad för det här verktyget, så behörighetsbegäran kan inte behandlas.',
+    unknownClient:
+      'AI-verktygets registrering är inte längre giltig. Ta bort autentiseringen i AI-verktyget och anslut på nytt.',
+    clientRequests: 'begär tillstånd att agera i eVaka för din räkning.',
+    permissions: 'Verktyget kan för din räkning:',
+    permissionList: [
+      'läsa testmiljöns enheter, serviceområden och servicebehov',
+      'skapa testdata: enheter, familjer, anställda, placeringar, ansökningar och andra grunduppgifter i eVaka',
+      'lista och ta bort testdata som skapats via MCP'
+    ],
+    redirectUri: 'Returadress',
+    validity: 'Behörigheten är giltig',
+    validityDays: (days: number) => (days === 1 ? '1 dag' : `${days} dagar`),
+    approve: 'Godkänn',
+    deny: 'Avvisa',
+    approved: 'Behörigheten godkänd. Du kan återgå till AI-verktyget.',
+    environmentWarning:
+      'Kom ihåg att AI-verktyget agerar med dina användarrättigheter.'
+  }
+}
+
+export type McpTranslations = typeof fi
+
+export function useMcpTranslation(): McpTranslations {
+  const { lang } = useTranslation()
+  return lang === 'sv' ? sv : fi
+}

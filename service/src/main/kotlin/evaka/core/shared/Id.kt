@@ -144,6 +144,12 @@ sealed interface DatabaseTable {
 
     sealed class MessageThread : DatabaseTable
 
+    sealed class McpAuthorization : DatabaseTable
+
+    sealed class McpClient : DatabaseTable
+
+    sealed class McpTestDataBatch : DatabaseTable
+
     sealed class MessageThreadFolder : DatabaseTable
 
     sealed class MobileDevice : DatabaseTable
@@ -338,6 +344,12 @@ typealias MessageDraftId = Id<DatabaseTable.MessageDraft>
 typealias MessageId = Id<DatabaseTable.Message>
 
 typealias MessageRecipientId = Id<DatabaseTable.MessageRecipients>
+
+typealias McpAuthorizationId = Id<DatabaseTable.McpAuthorization>
+
+typealias McpClientId = Id<DatabaseTable.McpClient>
+
+typealias McpTestDataBatchId = Id<DatabaseTable.McpTestDataBatch>
 
 typealias MessageThreadFolderId = Id<DatabaseTable.MessageThreadFolder>
 

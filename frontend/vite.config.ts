@@ -72,6 +72,7 @@ function serveIndexHtml(): Plugin {
         if (
           req.originalUrl?.startsWith('/api/') ||
           req.originalUrl?.startsWith('/idp/') ||
+          req.originalUrl?.startsWith('/.well-known/oauth-') ||
           req.originalUrl?.startsWith('/src/') ||
           req.originalUrl?.startsWith('/node_modules/') ||
           req.originalUrl?.startsWith('/@')
@@ -263,7 +264,12 @@ export default defineConfig(async (): Promise<UserConfig> => {
         '/api': `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`,
         // Served under the same origin as the app so that the Suomi.fi SAML
         // flow works through the tunnel (same-site cookies, reachable IdP).
-        '/idp': `http://localhost:${process.env.EVAKA_IDP_PORT || '9090'}`
+        '/idp': `http://localhost:${process.env.EVAKA_IDP_PORT || '9090'}`,
+        // OAuth metadata for the MCP server must be served from the site root
+        '/.well-known/oauth-': {
+          target: `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`,
+          rewrite: (path) => `/api${path}`
+        }
       }
     },
     resolve: {
