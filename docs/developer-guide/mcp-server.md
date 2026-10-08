@@ -78,7 +78,8 @@ curl -X POST -H 'Content-Type: application/json' --data-binary @rows.json \
 ```
 
 The upload runs through the same code path as an `insert_rows` tool call (same transaction, errors and `McpToolCall`
-audit log, with `via=upload`).
+audit log, with `via=upload`). If a very large upload times out in a proxy, the transaction may still commit, so the
+assistant is told to check the batch with `list_test_data` before uploading again.
 
 ## Batches and deletion
 
