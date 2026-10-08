@@ -82,7 +82,7 @@ describe('Weak login rate limit', () => {
 describe('Weak login IP rate limit', () => {
   let tester: GatewayTester
 
-  async function start(enforce: boolean) {
+  async function start(enforce: boolean, ipRateLimit = 2) {
     const config = configFromEnv()
     tester = await GatewayTester.start(
       {
@@ -90,7 +90,7 @@ describe('Weak login IP rate limit', () => {
         citizen: {
           ...config.citizen,
           weakLoginRateLimit: 2,
-          weakLoginIpRateLimit: 2,
+          weakLoginIpRateLimit: ipRateLimit,
           weakLoginIpRateLimitEnforce: enforce
         }
       },
@@ -257,24 +257,46 @@ describe('Weak login IP rate limit', () => {
     expect(clientIpMismatchWarnings()).toEqual([])
   })
 
-  test('logs a mismatch when the client IP is not a valid address', async () => {
+  test('never limits and logs a mismatch on every attempt when the client IP is not a valid address', async () => {
     await start(true)
-    tester.nockScope.post('/system/citizen-weak-login').reply(403)
+    tester.nockScope.post('/system/citizen-weak-login').times(4).reply(403)
 
     // e.g. a load balancer appending the client port to X-Forwarded-For
-    expect(
-      await attempt('203.0.113.1:54321', 'a@example.com', '203.0.113.1')
-    ).toBe(403)
+    for (const username of ['a', 'b', 'c', 'd']) {
+      expect(
+        await attempt(
+          '203.0.113.1:54321',
+          `${username}@example.com`,
+          '203.0.113.1'
+        )
+      ).toBe(403)
+    }
+    tester.nockScope.done()
 
-    expect(clientIpMismatchWarnings()).toEqual([
-      [
+    expect(clientIpMismatchWarnings()).toEqual(
+      Array(4).fill([
         'Client IP differs from X-Real-IP',
         expect.anything(),
         {
           eventCode: 'evaka.citizen_weak.client_ip_mismatch',
           ipKey: undefined
         }
-      ]
-    ])
+      ])
+    )
+  })
+
+  test('neither limits nor logs when the IP limit is 0', async () => {
+    await start(true, 0)
+    tester.nockScope.post('/system/citizen-weak-login').times(4).reply(403)
+
+    for (const username of ['a', 'b', 'c', 'd']) {
+      expect(
+        await attempt('203.0.113.1', `${username}@example.com`, '10.0.2.2')
+      ).toBe(403)
+    }
+    tester.nockScope.done()
+
+    expect(clientIpMismatchWarnings()).toEqual([])
+    expect(ipLimitWarnings()).toEqual([])
   })
 })
