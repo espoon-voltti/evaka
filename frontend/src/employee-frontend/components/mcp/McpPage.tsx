@@ -159,8 +159,17 @@ const Authorizations = React.memo(function Authorizations() {
   )
 })
 
-const entityTypeName = (t: McpTranslations['testData'], tableName: string) =>
-  t.entityTypes[tableName] ?? tableName
+/** [name, count] pairs sorted by name, with table names translated where possible */
+const namedCounts = (
+  t: McpTranslations['testData'],
+  counts: Partial<Record<string, number>>
+): [string, number][] =>
+  Object.entries(counts)
+    .map(([tableName, count]): [string, number] => [
+      t.entityTypes[tableName] ?? tableName,
+      count ?? 0
+    ])
+    .sort(([a], [b]) => a.localeCompare(b, 'fi'))
 
 const TestDataBatches = React.memo(function TestDataBatches() {
   const mcp = useMcpTranslation()
@@ -236,12 +245,11 @@ const TestDataBatches = React.memo(function TestDataBatches() {
   )
 
   function EntityCounts({ batch }: { batch: BatchSummary }) {
-    const entries = Object.entries(batch.entityCounts)
     return (
       <EntityList>
-        {entries.map(([tableName, count]) => (
-          <li key={tableName}>
-            {entityTypeName(t, tableName)}: {count}
+        {namedCounts(t, batch.entityCounts).map(([name, count]) => (
+          <li key={name}>
+            {name}: {count}
           </li>
         ))}
         <li>
@@ -352,11 +360,13 @@ const DeletionPreview = React.memo(function DeletionPreview({
               <>
                 {t.deletePreviewUntracked(untrackedRows)}
                 <EntityList data-qa="deletion-preview-untracked">
-                  {untracked.map(([tableName, count]) => (
-                    <li key={tableName}>
-                      {entityTypeName(t, tableName)}: {count}
-                    </li>
-                  ))}
+                  {namedCounts(t, preview.untrackedRowCounts).map(
+                    ([name, count]) => (
+                      <li key={name}>
+                        {name}: {count}
+                      </li>
+                    )
+                  )}
                 </EntityList>
               </>
             }
