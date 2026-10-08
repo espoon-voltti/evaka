@@ -198,6 +198,17 @@ class McpToolsRowsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         assertEquals(1, countRows("employee_pin"))
     }
 
+    @Test
+    fun `admins cannot be created`() {
+        val error =
+            assertThrows<BadRequest> {
+                insertRows("employee" to """{"roles":["SERVICE_WORKER","ADMIN"]}""")
+            }
+        assertTrue(error.message.contains("ADMIN role"), error.message)
+        insertRows("employee" to """{"roles":["SERVICE_WORKER"]}""")
+        assertEquals(2, countRows("employee"))
+    }
+
     private fun insertRows(vararg groups: Pair<String, String>): JsonNode =
         callTool(
             "insert_rows",
