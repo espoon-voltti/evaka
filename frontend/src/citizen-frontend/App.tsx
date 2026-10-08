@@ -172,7 +172,7 @@ const Content = React.memo(function Content({
   const scrollAreaRef = useRegisterScrollContainer()
   useNotificationClickRouting()
   return (
-    <AppShell>
+    <AppShell data-qa="app-shell">
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header />
       <InstallSuggestion />
@@ -186,7 +186,9 @@ const Content = React.memo(function Content({
       <MobileNav />
       <SessionExpiry />
       {!!featureFlags.environmentLabel && (
-        <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
+        <EnvironmentLabel data-qa="environment-label">
+          {featureFlags.environmentLabel}
+        </EnvironmentLabel>
       )}
     </AppShell>
   )

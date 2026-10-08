@@ -14,7 +14,6 @@ import {
 } from 'node:fs'
 import { homedir } from 'node:os'
 import path from 'node:path'
-import { setTimeout as sleep } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 
 import config from '../../e2e-test/config'
@@ -22,15 +21,18 @@ import type { DevPerson } from '../../e2e-test/generated/api-types'
 
 import { citizenLogin } from './login'
 import { navigate } from './navigate'
+import { rebootSimulator } from './simulator'
 import { storeTestConfig } from './test-config'
 
 export const webClipTitle = 'eVaka'
-const webClipPath = '/calendar'
+// iOS scopes a clip without a web app manifest to its start URL's path:
+// starting at /calendar would show /messages with a Safari style toolbar
+const webClipPath = '/'
 const iconFile = fileURLToPath(
   new URL('../../../public/icons/evaka-180px.png', import.meta.url)
 )
-const springBoardRestartMs = 5000
 const contextTimeoutMs = 30000
+const appRenderTimeoutMs = 30000
 const maxHomeScreenPages = 3
 const homeScreenAnimationMs = 1000
 
@@ -71,7 +73,10 @@ const readTitle = (infoPlist: string) => {
 const escapeXml = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-// Keys copied from a clip that iOS 26.4 Safari created with "Add to Home Screen"
+// Keys copied from a clip that iOS 26.4 Safari created with "Add to Home Screen".
+// With the legacy translucent status bar style the page is drawn from the top
+// of the screen while innerHeight still leaves out the status bar, so the app
+// ends 62 points above the screen bottom.
 const infoPlist = (
   id: string,
   url: string
@@ -94,7 +99,7 @@ const infoPlist = (
 <key>Title</key><string>${webClipTitle}</string>
 <key>TrustedClientBundleIdentifiers</key><array><string>com.apple.mobilesafari</string></array>
 <key>URL</key><string>${escapeXml(url)}</string>
-<key>WebClipStatusBarStyle</key><string>UIWebClipStatusBarStyleLegacyBlackTranslucent</string>
+<key>WebClipStatusBarStyle</key><string>UIWebClipStatusBarStyleDefault</string>
 </dict></plist>
 `
 
@@ -102,7 +107,7 @@ const infoPlist = (
  * Puts an eVaka icon on the simulator's home screen, as if the user had added
  * the app with Safari's "Add to Home Screen". Replaces earlier eVaka clips.
  */
-export async function seedWebClip(udid: string) {
+export function seedWebClip(udid: string) {
   const dir = webClipsDir(udid)
   mkdirSync(dir, { recursive: true })
   for (const entry of readdirSync(dir)) {
@@ -129,9 +134,10 @@ export async function seedWebClip(udid: string) {
     simctlSpawn(udid, 'defaults', 'write', ...args)
   }
 
-  // SpringBoard reads the clips only on start; launchd restarts it
-  simctlSpawn(udid, 'launchctl', 'stop', 'com.apple.SpringBoard')
-  await sleep(springBoardRestartMs)
+  // SpringBoard reads the clips only on start. Restarting just SpringBoard
+  // leaves the simulator unable to rotate ("Unable To Rotate Device"), so the
+  // whole simulator is rebooted.
+  rebootSimulator(udid)
 }
 
 interface WebviewContext {
@@ -166,15 +172,28 @@ const tapHomeScreenIcon = async () => {
 }
 
 /**
- * Taps the eVaka icon on the home screen and switches to the web clip's
- * webview. The context id changes on every launch and the webview belongs to
- * com.apple.SafariViewService, so the context is recognised by its URL.
+ * Taps the eVaka icon on the home screen, switches to the web clip's webview
+ * and waits until the app has rendered. The context id changes on every
+ * launch and the webview belongs to com.apple.SafariViewService, so the
+ * context is recognised by its URL.
  */
 export async function launchWebClip() {
   await browser.switchContext('NATIVE_APP')
   await browser.execute('mobile: pressButton', { name: 'home' })
   await tapHomeScreenIcon()
+  await switchToWebClipContext()
+  // Right after the tap the dev bundle is still loading and the screen can be
+  // blank
+  await browser.waitUntil(
+    () => browser.execute(() => !!document.querySelector('#app [data-qa]')),
+    {
+      timeout: appRenderTimeoutMs,
+      timeoutMsg: 'The app did not render in the web clip'
+    }
+  )
+}
 
+export async function switchToWebClipContext() {
   const context = await browser.waitUntil(findAppContext, {
     timeout: contextTimeoutMs,
     interval: 1500,

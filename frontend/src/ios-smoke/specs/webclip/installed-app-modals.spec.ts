@@ -4,6 +4,7 @@
 
 import assert from 'node:assert/strict'
 
+import { expectAppShellLayout } from '../../support/app-shell'
 import { createFamilyWithPlacement, testAdult } from '../../support/fixtures'
 import { waitForCalendar } from '../../support/installed-app'
 import { expectReachable } from '../../support/reachable'
@@ -17,12 +18,6 @@ const maxStatusBarHeight = 70
 describe('Calendar modals in the home screen web clip', () => {
   before(async () => {
     await launchWebClip()
-    // Right after the tap the dev bundle is still loading and the screen can
-    // be blank
-    await browser.waitUntil(
-      () => browser.execute(() => !!document.querySelector('#app [data-qa]')),
-      { timeout: 30000, timeoutMsg: 'The app did not render in the web clip' }
-    )
   })
 
   beforeEach(async () => {
@@ -47,13 +42,16 @@ describe('Calendar modals in the home screen web clip', () => {
       'Unexpected test config in localStorage'
     )
     assert.ok(state.dataStandalone, 'The app did not set html[data-standalone]')
-    // The page starts under the translucent status bar, yet iOS still leaves
-    // the status bar height out of innerHeight (874 - 812 on iPhone 17). A
+    // The status bar takes the top of the screen (874 - 812 on iPhone 17). A
     // Safari style toolbar at the top would take about 200 points more.
     assert.ok(
       state.screenHeight - state.innerHeight <= maxStatusBarHeight,
       `The page does not fill the screen (innerHeight ${state.innerHeight}, screen height ${state.screenHeight}): is a Safari style toolbar shown?`
     )
+  })
+
+  it('lays the calendar out as the app shell', async () => {
+    await expectAppShellLayout({ longPage: true })
   })
 
   it('reservation modal buttons are reachable', async () => {

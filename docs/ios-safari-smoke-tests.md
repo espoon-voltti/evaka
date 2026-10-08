@@ -409,12 +409,90 @@ and expect some flakiness.
   other's simulators. With more than one simulator, set a distinct
   `appium:wdaLocalPort` per simulator.
 
+## Second regression: stale visual viewport (PR #9798 workaround)
+
+The second iOS bug the suite guards against: in the home screen app iOS can
+leave the visual viewport stale after the software keyboard closes (and the
+device rotates), and resolves `position: fixed`/`sticky` against it, so
+viewport-anchored elements drift by hundreds of points until the app is
+relaunched (WebKit bugs 254861 and 297779, closed PR #9744 has the
+description). PR #9798 worked around it with the app shell layout: the
+document never scrolls, `ScrollArea` is the only scroller, the bottom
+navigation is `position: static`, the mobile menu `position: absolute`, and
+only the header stays `position: sticky` (iOS 27 blurs the top of the screen
+without a sticky or fixed element there; it never actually sticks).
+
+Findings (2026-10-08):
+
+- **Superseded, see "As built" below: the simulator does reproduce it with
+  the right sequence.** First attempt: the iOS 26.4 Simulator did not reproduce the WebKit bug. With the
+  pre-#9798 frontend served from a worktree and installed as a web clip,
+  every sequence (landscape, keyboard, send, keyboard Done button, back to
+  portrait, calendar scrolling in both directions, reload, relaunch) left
+  `visualViewport` consistent with `innerHeight` and the fixed header and
+  navigation in place. A minimal fixed-header test page behaved the same.
+  This matches the 254861 reporter's note that the simulator is unaffected.
+  Rotation through WebDriverAgent is also unreliable in the simulator: after
+  a SpringBoard restart (which the web clip seed does) it fails with
+  `Unable To Rotate Device` until the simulator is rebooted. A rotation
+  based spec was therefore dropped.
+- **The guard is `specs/app-shell-layout.spec.ts`** (stage 1, also run on the
+  calendar in stage 2). It asserts the workaround's invariants directly:
+  `html[data-standalone]` set, document not scrollable and `scrollY` 0,
+  `html`/`body`/`#app` `overflow: hidden`, the app shell `position:
+  relative`/`overflow: hidden` filling the viewport, the scroll area the only
+  scroller, no `position: fixed` inside the shell (sticky allowed only when
+  the nearest scroll container is inside the shell), the navigation
+  `position: static` ending at the shell bottom, the header at the top, the
+  mobile menu `position: absolute` inside the shell, modals portaled outside
+  the shell, and the header and navigation painted at the same screen
+  position before and after scrolling the content by 400 px. Mutation check:
+  removing the navigation's `position: static`, the `overflow: hidden` of
+  `html[data-standalone]`, or the scroll area's overflow each makes the spec
+  fail with a message naming the offending rule.
+- **Gap found by the spec:** two floating buttons are still `position:
+  fixed` in the installed app and are not covered by the workaround:
+  `open-calendar-actions-modal` (`HoverButton` in
+  `calendar/CalendarListView.tsx`) and `new-message-btn-mobile`
+  (`FloatingButton` in `messages/ThreadList.tsx`). They are listed as known
+  exceptions in `support/app-shell.ts`; remove the exception when they are
+  repositioned inside the shell.
+- **As built (2026-10-08): `specs/webclip/stale-viewport.spec.ts`
+  reproduces the bug in the simulator.** `support/stale-viewport.ts` replays
+  a recorded sequence in the web clip with native touches and the recorded
+  timings (messages, thread, reply, landscape, type J on the keyboard,
+  flick and drag, send, portrait after 4.7 s, calendar after 2.6 s). It
+  never triggers on the first loop after a launch but did on the second loop
+  in every run (visualViewport.height 336 vs innerHeight 812), so it runs up
+  to three loops and fails with "The WebKit precondition was not reached"
+  otherwise. The spec then asserts that the header, the navigation and the
+  floating calendar button keep their layout rects and painted screen
+  positions and that `scrollY` stays 0, right after rotating back and after a
+  native calendar scroll. Current layout: passes (header 0..60, navigation
+  746..812, floating button 685..730). Pre-#9798 layout: fails with
+  offsetTop 476, header at -476 and the fixed navigation at 276..336.
+  Needed for it: the web clip seed reboots the simulator instead of
+  restarting SpringBoard (otherwise rotation fails), writes
+  `UIWebClipStatusBarStyleDefault` like iOS 26 Safari (the legacy translucent
+  style drew the app 62 points too high), and the spec dismisses the push
+  notification banner, which took the room of the reply editor in landscape.
+  `paintedBox()` ignores the status bar strip because iOS 26 tints it with
+  the page edge colour.
+- Notes for driving a real device later: a `nativeWebTap` click opens the
+  software keyboard where a plain `click()` only focuses; `mobile:
+  isKeyboardShown` needs `defaultActiveApplication:
+  'com.apple.SafariViewService'` inside the clip; a seeded clip without a
+  manifest scopes navigation to its start URL path, so the seed URL is `/`.
+
 ## Open questions
 
 - Self-hosted Mac or GitHub-hosted runner? This decides whether a native
   backend recipe has to be built.
 - Does iOS 26 copy Safari cookies into a new web clip at install time?
   Irrelevant while the clip logs in itself.
+- Do the two remaining `position: fixed` floating buttons drift on a real
+  device in the stale viewport state, and should they move into the app
+  shell?
 - The stage 2 failure screenshot shows an empty 62 point strip below the
   bottom navigation in the web clip; worth checking on a real device.
 

@@ -39,7 +39,7 @@ export default React.memo(function Header() {
 
   return (
     <>
-      <HeaderContainer $narrow={isLoginPage}>
+      <HeaderContainer $narrow={isLoginPage} data-qa="header">
         <CityLogo />
         <EvakaLogo />
         {isLoginPage && (

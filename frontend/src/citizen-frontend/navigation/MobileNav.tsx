@@ -94,7 +94,7 @@ export default React.memo(function MobileNav() {
 
   return (
     <>
-      <BottomBar ref={bottomBarRef}>
+      <BottomBar ref={bottomBarRef} data-qa="mobile-nav">
         {currentUser.accessibleFeatures.reservations && (
           <BottomBarLink
             to="/calendar"
@@ -358,7 +358,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     'long'
   )
   return (
-    <MenuContainer>
+    <MenuContainer data-qa="mobile-menu">
       {childrenWithOwnPage.map((child) => (
         <DropDownLink
           key={child.id}
@@ -404,7 +404,7 @@ const Menu = React.memo(function Menu({
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
-    <MenuContainer>
+    <MenuContainer data-qa="mobile-menu">
       <ResponsiveLanguageRow $spacing="xs" $justifyContent="flex-end">
         {langs.map((l) => (
           <SelectionChip

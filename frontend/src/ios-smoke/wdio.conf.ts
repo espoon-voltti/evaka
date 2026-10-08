@@ -92,12 +92,12 @@ export const config: WebdriverIO.Config = {
       cap['appium:udid'] = udid
     }
   },
-  async beforeSession(_config, capabilities) {
+  beforeSession(_config, capabilities) {
     const caps = capabilities as WebdriverIO.Capabilities
     const udid = caps['appium:udid']
     if (!udid) throw new Error('Simulator udid was not resolved in onPrepare')
     terminateApps(udid)
-    if (isWebClip(caps)) await seedWebClip(udid)
+    if (isWebClip(caps)) seedWebClip(udid)
   },
   async before() {
     await prepareSession()

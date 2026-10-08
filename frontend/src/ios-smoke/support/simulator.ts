@@ -76,6 +76,11 @@ export function ensureSimulatorBooted(): string {
   return udid
 }
 
+export function rebootSimulator(udid: string) {
+  simctl('shutdown', udid)
+  simctl('bootstatus', udid, '-b')
+}
+
 export function terminateApp(udid: string, bundleId: string) {
   try {
     execFileSync('xcrun', ['simctl', 'terminate', udid, bundleId], {

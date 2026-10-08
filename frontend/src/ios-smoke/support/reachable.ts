@@ -69,6 +69,85 @@ async function expectInViewportAndOnTop(fullSelector: string) {
 }
 
 async function expectPainted(fullSelector: string) {
+  const { painted, rect, dpr } = await measurePainted(
+    fullSelector,
+    (painted, rect, dpr) => paintedRatio(painted, rect, dpr) >= minPaintedRatio
+  )
+  const ratio = paintedRatio(painted, rect, dpr)
+  assert.ok(
+    ratio >= minPaintedRatio,
+    `${fullSelector} is not painted on screen: ${Math.round(ratio * 100)}% of its ${Math.round(rect.width)}x${Math.round(rect.height)} area is visible, painted box ${Math.round(painted.width / dpr)}x${Math.round(painted.height / dpr)} (something is drawn over it or it is clipped)`
+  )
+}
+
+export interface ScreenBox {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+/**
+ * Where the element is really drawn on the screen, in screen points from the
+ * top left corner of the screenshot, or undefined if no part of it is drawn.
+ * Unlike `getBoundingClientRect()` this does not trust the browser's idea of
+ * where the viewport is.
+ *
+ * iOS 26 tints the status bar with the colour at the top or bottom edge of the
+ * page, so a magenta element can turn the status bar magenta too. Where the
+ * status bar is outside the page, pass its height as `ignoreAbove`.
+ */
+export async function paintedBox(
+  cssSelector: string,
+  { ignoreAbove = 0 }: { ignoreAbove?: number } = {}
+): Promise<ScreenBox | undefined> {
+  const { painted, dpr } = await measurePainted(
+    cssSelector,
+    (painted) => painted.count > 0,
+    ignoreAbove
+  )
+  return painted.count === 0
+    ? undefined
+    : {
+        left: painted.minX / dpr,
+        top: painted.minY / dpr,
+        width: painted.width / dpr,
+        height: painted.height / dpr
+      }
+}
+
+export const formatBox = (box: ScreenBox | undefined) =>
+  box
+    ? `${Math.round(box.left)},${Math.round(box.top)} ${Math.round(box.width)}x${Math.round(box.height)} (bottom ${Math.round(box.top + box.height)})`
+    : 'not painted'
+
+interface ElementSize {
+  width: number
+  height: number
+}
+
+const paintedRatio = (painted: Magenta, rect: ElementSize, dpr: number) => {
+  const expectedWidth = Math.round(rect.width * dpr)
+  const expectedHeight = Math.round(rect.height * dpr)
+  const expectedArea = expectedWidth * expectedHeight
+  return expectedArea > 0
+    ? Math.min(
+        painted.count / expectedArea,
+        painted.width / expectedWidth,
+        painted.height / expectedHeight
+      )
+    : 0
+}
+
+/**
+ * Colours the element magenta and takes screenshots until `isDone` accepts the
+ * measurement or the paint timeout passes
+ */
+async function measurePainted(
+  cssSelector: string,
+  isDone: (painted: Magenta, rect: ElementSize, dpr: number) => boolean,
+  ignoreAbove = 0
+) {
   const { width, height, dpr } = await browser.execute(
     async (sel: string, attribute: string) => {
       const style = document.createElement('style')
@@ -94,31 +173,23 @@ async function expectPainted(fullSelector: string) {
         dpr: window.devicePixelRatio
       }
     },
-    fullSelector,
+    cssSelector,
     markerAttribute
   )
-  const expectedWidth = Math.round(width * dpr)
-  const expectedHeight = Math.round(height * dpr)
-  const expectedArea = expectedWidth * expectedHeight
-  let painted = { count: 0, width: 0, height: 0 }
-  let ratio = 0
+  const rect = { width, height }
+  let painted = noMagenta
   try {
     const deadline = Date.now() + paintTimeoutMs
     let attempt = 0
     do {
       if (attempt++ > 0) await browser.pause(paintRetryIntervalMs)
-      painted = measureMagenta(await browser.takeScreenshot())
-      ratio =
-        expectedArea > 0
-          ? Math.min(
-              painted.count / expectedArea,
-              painted.width / expectedWidth,
-              painted.height / expectedHeight
-            )
-          : 0
-    } while (ratio < minPaintedRatio && Date.now() < deadline)
+      painted = measureMagenta(
+        await browser.takeScreenshot(),
+        Math.round(ignoreAbove * dpr)
+      )
+    } while (!isDone(painted, rect, dpr) && Date.now() < deadline)
   } finally {
-    await browser.execute((attribute: string) => {
+    await browser.execute(async (attribute: string) => {
       document
         .querySelectorAll(`[${attribute}]`)
         .forEach((node) =>
@@ -126,18 +197,31 @@ async function expectPainted(fullSelector: string) {
             ? node.remove()
             : node.removeAttribute(attribute)
         )
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve))
+      )
     }, markerAttribute)
+    // Screenshots can lag behind painting: the next measurement must not see
+    // this element still magenta
+    await browser.pause(paintRetryIntervalMs)
   }
-  assert.ok(
-    ratio >= minPaintedRatio,
-    `${fullSelector} is not painted on screen: ${Math.round(ratio * 100)}% of its ${Math.round(width)}x${Math.round(height)} area is visible, painted box ${Math.round(painted.width / dpr)}x${Math.round(painted.height / dpr)} (something is drawn over it or it is clipped)`
-  )
+  return { painted, rect, dpr }
 }
+
+interface Magenta {
+  count: number
+  minX: number
+  minY: number
+  width: number
+  height: number
+}
+
+const noMagenta: Magenta = { count: 0, minX: 0, minY: 0, width: 0, height: 0 }
 
 // The screen coordinates of the web viewport are unknown, so the painted
 // area is measured as the bounding box of the magenta pixels on the whole
-// screen; the box shrinks when the element is clipped
-function measureMagenta(screenshotBase64: string) {
+// screen below row `fromRow`; the box shrinks when the element is clipped
+function measureMagenta(screenshotBase64: string, fromRow = 0): Magenta {
   const { width, pixels, channels } = decodePng(
     Buffer.from(screenshotBase64, 'base64')
   )
@@ -146,7 +230,7 @@ function measureMagenta(screenshotBase64: string) {
   let maxX = -Infinity
   let minY = Infinity
   let maxY = -Infinity
-  for (let i = 0; i < pixels.length; i += channels) {
+  for (let i = fromRow * width * channels; i < pixels.length; i += channels) {
     if (pixels[i] > 230 && pixels[i + 1] < 40 && pixels[i + 2] > 230) {
       const pixel = i / channels
       const x = pixel % width
@@ -159,6 +243,12 @@ function measureMagenta(screenshotBase64: string) {
     }
   }
   return count === 0
-    ? { count, width: 0, height: 0 }
-    : { count, width: maxX - minX + 1, height: maxY - minY + 1 }
+    ? noMagenta
+    : {
+        count,
+        minX,
+        minY,
+        width: maxX - minX + 1,
+        height: maxY - minY + 1
+      }
 }
