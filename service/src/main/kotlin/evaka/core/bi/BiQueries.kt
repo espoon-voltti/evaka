@@ -431,7 +431,7 @@ object BiQueries {
                 """
             select id, child_id, created_at::text AS created, modified_at::text AS updated, unit_id, date, start_time, end_time
             FROM child_attendance
-            WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.deltaWindowDays)}))::date
+            WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.windowDays)}))::date
         """
             )
         }
@@ -442,7 +442,7 @@ object BiQueries {
                 """
             SELECT id, child_id, date, absence_type, modified_at::text, modified_by, category, questionnaire_id
             FROM absence
-            WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.deltaWindowDays)}))::date
+            WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.windowDays)}))::date
             """
             )
         }
@@ -453,7 +453,7 @@ object BiQueries {
                 """
             select id, created_at::text AS created, updated_at::text AS updated, employee_id, group_id, arrived::text, departed::text, type, occupancy_coefficient, departed_automatically, arrived_added_at::text, arrived_added_by, arrived_modified_at::text, arrived_modified_by, departed_added_at::text, departed_added_by, departed_modified_at::text, departed_modified_by
             FROM staff_attendance_realtime
-            WHERE updated_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.deltaWindowDays)}))::date
+            WHERE updated_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.windowDays)}))::date
         """
             )
         }
@@ -464,7 +464,30 @@ object BiQueries {
                 """
             SELECT id, created_at::text, updated_at::text, child_id, date, start_time, end_time, created_by
             FROM attendance_reservation
-            WHERE updated_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.deltaWindowDays)}))::date
+            WHERE updated_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.windowDays)}))::date
+        """
+            )
+        }
+
+    // snapshot queries
+    val getAbsencesSnapshot =
+        csvQuery<BiAbsence> { config ->
+            sql(
+                """
+            SELECT id, child_id, date, absence_type, modified_at::text, modified_by, category, questionnaire_id
+            FROM absence
+            WHERE date BETWEEN (now() AT TIME ZONE 'Europe/Helsinki')::date - ${bind(config.windowDays)} AND (now() AT TIME ZONE 'Europe/Helsinki')::date - 1
+            """
+            )
+        }
+
+    val getStaffAttendanceRealtimeSnapshot =
+        csvQuery<BiStaffAttendanceRealtime> { config ->
+            sql(
+                """
+            select id, created_at::text AS created, updated_at::text AS updated, employee_id, group_id, arrived::text, departed::text, type, occupancy_coefficient, departed_automatically, arrived_added_at::text, arrived_added_by, arrived_modified_at::text, arrived_modified_by, departed_added_at::text, departed_added_by, departed_modified_at::text, departed_modified_by
+            FROM staff_attendance_realtime
+            WHERE (arrived AT TIME ZONE 'Europe/Helsinki')::date BETWEEN (now() AT TIME ZONE 'Europe/Helsinki')::date - ${bind(config.windowDays)} AND (now() AT TIME ZONE 'Europe/Helsinki')::date - 1
         """
             )
         }

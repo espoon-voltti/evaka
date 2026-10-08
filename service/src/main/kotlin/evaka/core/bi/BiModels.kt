@@ -598,7 +598,7 @@ data class BiServiceNeedOption(
     val fee_coefficient: BigDecimal,
     val occupancy_coefficient: BigDecimal,
     val part_day: Boolean,
-    val part_week: Boolean,
+    val part_week: Boolean?,
     val daycare_hours_per_week: Int,
     val default_option: Boolean,
     val fee_description_fi: String,

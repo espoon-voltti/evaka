@@ -37,7 +37,7 @@ class BiExportS3ClientTest : AbstractTampereIntegrationTest() {
                 BiExportConfig(
                     includePII = true,
                     includeLegacyColumns = true,
-                    deltaWindowDays = 60,
+                    windowDays = 60,
                 ),
             )
 

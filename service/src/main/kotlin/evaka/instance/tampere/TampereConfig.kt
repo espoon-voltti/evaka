@@ -153,7 +153,7 @@ class TampereConfig {
     fun tampereBiJob(biExportClient: BiExportClient): BiExportJob =
         BiExportJob(
             biExportClient,
-            BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60),
+            BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60),
         )
 
     @Bean
