@@ -14,6 +14,7 @@ import type { JsonOf } from 'lib-common/json'
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee/i18n/fi'
 import { sv } from './defaults/employee/i18n/sv'
+import { placementTypes } from './placementTypes'
 import type { EmployeeCustomizations } from './types'
 
 // oxlint-disable-next-line typescript/no-unsafe-assignment
@@ -43,7 +44,6 @@ const {
   daycareAssistanceLevels,
   otherAssistanceMeasureTypes,
   preschoolAssistanceLevels,
-  placementTypes,
   additionalPlacementTypesForDocumentTemplates,
   placementPlanRejectReasons,
   unitProviderTypes,
