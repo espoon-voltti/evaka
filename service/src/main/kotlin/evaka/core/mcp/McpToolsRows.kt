@@ -218,7 +218,7 @@ class McpToolsRows(private val jsonMapper: JsonMapper) {
             inserted.merge(group.type, ids.size, Int::plus)
             if (type.table != null) {
                 val rawIds = ids.map { if (it is Id<*>) it.raw else it as UUID }
-                track(ctx, batchId, type.table, rawIds, group.type)
+                ctx.trackAll(batchId, type.table, rawIds, group.type)
                 insertedIds.getOrPut(type.table) { mutableSetOf() }.addAll(rawIds)
             }
         }
@@ -267,30 +267,13 @@ class McpToolsRows(private val jsonMapper: JsonMapper) {
                 }
             }
             found.forEach { (table, ids) ->
-                track(ctx, batchId, table, ids, "Created by the inserted rows")
+                ctx.trackAll(batchId, table, ids, "Created by the inserted rows")
                 counts.merge(table, ids.size, Int::plus)
             }
             parents = found.mapValues { it.value.toList() }
         }
         return counts
     }
-
-    private fun track(
-        ctx: McpToolContext,
-        batchId: McpTestDataBatchId,
-        table: String,
-        ids: Collection<UUID>,
-        description: String,
-    ) =
-        ctx.tx.execute {
-            sql(
-                """
-INSERT INTO mcp_test_data_entity (created_at, batch_id, table_name, entity_id, description)
-SELECT ${bind(ctx.now)}, ${bind(batchId)}, ${bind(table)}, unnest(${bind(ids.toList())}), ${bind(description)}
-ON CONFLICT (table_name, entity_id) DO NOTHING
-"""
-            )
-        }
 
     /**
      * Generated test SSNs are unknown to the population register (VTJ), so the inserted relations

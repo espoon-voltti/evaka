@@ -15,6 +15,7 @@ import evaka.core.shared.McpTestDataBatchId
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.Forbidden
@@ -51,14 +52,14 @@ class McpToolContext(
         table: String,
         id: evaka.core.shared.Id<*>,
         description: String,
-    ) = McpTestDataService.track(tx, batchId, table, id, description, now)
+    ) = trackAll(batchId, table, listOf(id.raw), description)
 
     fun trackAll(
         batchId: McpTestDataBatchId,
         table: String,
         ids: Collection<UUID>,
         description: String,
-    ) = ids.forEach { tx.insertMcpTestDataEntity(batchId, table, it, description, now) }
+    ) = tx.insertMcpTestDataEntities(batchId, table, ids, description, now)
 
     /**
      * Tracks rows that were created indirectly (by a `Dev*` insert helper or by service code) and
@@ -77,7 +78,7 @@ class McpToolContext(
         val ids =
             tx.createQuery { sql("SELECT id FROM $table WHERE $column = ANY(${bind(parentIds)})") }
                 .toList<UUID>()
-        ids.forEach { tx.insertMcpTestDataEntity(batchId, table, it, description, now) }
+        trackAll(batchId, table, ids, description)
         return ids
     }
 }
@@ -209,7 +210,10 @@ ORDER BY ca.name
                     )
                 }
         val myBatches =
-            McpTestDataService.getBatchSummaries(ctx.tx, createdBy = ctx.user.evakaUserId)
+            McpTestDataService.getBatchSummaries(
+                ctx.tx,
+                Predicate { where("$it.created_by = ${bind(ctx.user.evakaUserId)}") },
+            )
         return mapOf(
             "today" to ctx.today,
             "appCommit" to System.getenv("APP_COMMIT"),

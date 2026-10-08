@@ -9,6 +9,7 @@ import evaka.core.shared.Id
 import evaka.core.shared.McpAuthorizationId
 import evaka.core.shared.McpTestDataBatchId
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -38,15 +39,6 @@ object McpTestDataService {
                 now = now,
             )
     }
-
-    fun track(
-        tx: Database.Transaction,
-        batchId: McpTestDataBatchId,
-        tableName: String,
-        entityId: Id<*>,
-        description: String,
-        now: HelsinkiDateTime,
-    ) = tx.insertMcpTestDataEntity(batchId, tableName, entityId.raw, description, now)
 
     fun getBatchOf(tx: Database.Read, tableName: String, entityId: Id<*>): McpTestDataBatchId? =
         tx.getMcpTestDataEntityBatch(tableName, entityId.raw)
@@ -125,9 +117,12 @@ object McpTestDataService {
         val totalEntities: Int,
     )
 
-    fun getBatchSummaries(tx: Database.Read, createdBy: EvakaUserId? = null): List<BatchSummary> {
+    fun getBatchSummaries(
+        tx: Database.Read,
+        where: Predicate = Predicate.alwaysTrue(),
+    ): List<BatchSummary> {
         val counts = tx.getMcpTestDataEntityCounts().groupBy { it.batchId }
-        return tx.getMcpTestDataBatches(createdBy).map { batch ->
+        return tx.getMcpTestDataBatches(where).map { batch ->
             val batchCounts =
                 counts[batch.id].orEmpty().associateTo(sortedMapOf()) { it.tableName to it.count }
             BatchSummary(

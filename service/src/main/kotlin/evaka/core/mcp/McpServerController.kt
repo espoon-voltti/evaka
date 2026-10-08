@@ -239,22 +239,23 @@ class McpServerController(
             )
     }
 
-    /** Returns null for notifications (no response) */
+    /**
+     * Returns null for notifications (messages without an id): they get no response and are
+     * ignored, since MCP clients only send methods in the `notifications/` namespace as
+     * notifications
+     */
     private fun handleMessage(
         db: Database,
         clock: EvakaClock,
         session: AuthResult.Success,
         message: JsonNode,
     ): ObjectNode? {
-        val id = message.get("id")?.takeUnless { it.isNull }
+        val id = message.get("id")?.takeUnless { it.isNull } ?: return null
         val method = message.get("method")?.takeIf { it.isString }?.asString()
         if (message.get("jsonrpc")?.takeIf { it.isString }?.asString() != "2.0" || method == null) {
-            // A response from the client (e.g. to a server request) or garbage: nothing to answer
-            return if (id == null) null
-            else errorResponse(id, INVALID_REQUEST, "Not a valid JSON-RPC 2.0 request")
+            return errorResponse(id, INVALID_REQUEST, "Not a valid JSON-RPC 2.0 request")
         }
         val params = message.get("params")?.takeIf { it.isObject } as ObjectNode?
-        val isNotification = id == null
 
         return try {
             val result: Any? =
@@ -267,19 +268,14 @@ class McpServerController(
                     "resources/templates/list" -> mapOf("resourceTemplates" to emptyList<Any>())
                     "prompts/list" -> mapOf("prompts" to emptyList<Any>())
                     "logging/setLevel" -> emptyMap<String, Any>()
-                    else -> {
-                        if (method.startsWith("notifications/")) return null
-                        return if (isNotification) null
-                        else errorResponse(id, METHOD_NOT_FOUND, "Method not found: $method")
-                    }
+                    else -> return errorResponse(id, METHOD_NOT_FOUND, "Method not found: $method")
                 }
-            if (isNotification) null else successResponse(id, result)
+            successResponse(id, result)
         } catch (e: BadRequest) {
-            if (isNotification) null else errorResponse(id, INVALID_PARAMS, e.message)
+            errorResponse(id, INVALID_PARAMS, e.message)
         } catch (e: Exception) {
             logger.error(e) { "MCP request failed: $method" }
-            if (isNotification) null
-            else errorResponse(id, INTERNAL_ERROR, e.message ?: "Internal error")
+            errorResponse(id, INTERNAL_ERROR, e.message ?: "Internal error")
         }
     }
 
