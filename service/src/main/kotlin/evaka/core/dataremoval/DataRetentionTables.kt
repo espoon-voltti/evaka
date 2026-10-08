@@ -479,6 +479,12 @@ fun buildDataRetentionSchema(): SchemaDefinition {
                 references =
                     listOf(optionalReference("application_id", referencedTable = "application")),
             ),
+            // The message removal expires a thread by the placements of the children it records,
+            // so the thread holds the child row and the placements it bundles
+            ExternalTable(
+                name = "message_thread_children",
+                references = listOf(secondaryReference("child_id", referencedTable = "child")),
+            ),
             ExternalTable(
                 name = "voucher_value_report_decision",
                 references =

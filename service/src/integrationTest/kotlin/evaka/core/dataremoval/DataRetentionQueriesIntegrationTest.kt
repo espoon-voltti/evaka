@@ -26,7 +26,11 @@ import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.incomestatement.IncomeStatementBody
 import evaka.core.incomestatement.IncomeStatementStatus
 import evaka.core.insertServiceNeedOptions
+import evaka.core.messaging.MessageType
 import evaka.core.messaging.createPersonMessageAccount
+import evaka.core.messaging.deleteExpiredRegularThreads
+import evaka.core.messaging.insertMessageThreadChildren
+import evaka.core.messaging.insertThread
 import evaka.core.placement.PlacementSource
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildDocumentId
@@ -511,6 +515,64 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         }
         assertEquals(mapOf("person" to 1), execute(guardian.id).deletedRowCountsByTable)
         assertEquals(false, personExists(guardian.id))
+    }
+
+    @Test
+    fun `a message thread that records the child holds the child row and its placements until the message removal deletes the thread`() {
+        db.transaction { tx ->
+            tx.insertFamily()
+            val threadId =
+                tx.insertThread(
+                    MessageType.MESSAGE,
+                    "About the child",
+                    urgent = false,
+                    sensitive = false,
+                    isCopy = false,
+                )
+            tx.insertMessageThreadChildren(listOf(threadId to setOf(child.id)))
+        }
+        execute(guardian.id)
+
+        execute(child.id)
+
+        assertEquals(
+            setOf(
+                "person",
+                "child",
+                "placement",
+                "service_need",
+                "daycare_group_placement",
+                "koski_study_right",
+                "koski_upload_error",
+                "varda_state",
+            ),
+            remaining(child.id),
+        )
+
+        // The thread expires by the placements it held
+        val deletedThreads = db.transaction {
+            it.deleteExpiredRegularThreads(
+                placementExpireDate = today.minusYears(5),
+                expiresBefore = now.minusYears(10),
+                limit = 100,
+            )
+        }
+        assertEquals(listOf(child.id), deletedThreads.threads.single().childIds)
+
+        assertEquals(
+            mapOf(
+                "service_need" to 1,
+                "daycare_group_placement" to 1,
+                "placement" to 2,
+                "koski_study_right" to 1,
+                "koski_upload_error" to 1,
+                "varda_state" to 1,
+                "child" to 1,
+                "person" to 1,
+            ),
+            execute(child.id).deletedRowCountsByTable,
+        )
+        assertEquals(false, personExists(child.id))
     }
 
     @Test

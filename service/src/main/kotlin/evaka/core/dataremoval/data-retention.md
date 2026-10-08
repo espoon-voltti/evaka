@@ -264,6 +264,22 @@ A leaf table whose rows should simply be deleted with the rows they reference ca
 
 The `child` row is deleted at the very end, but some information in it, such as diet, may need to be deleted earlier. That information can be cleared by a separate job.
 
+### 5.6 Messages
+
+Messages are deleted by the message removal, which is part of the nightly data removal job, not by this algorithm. A thread is shared by its participants and may record several children, so the rules of the message removal span several people. The message tables are therefore external. Their references into the graph hold the rows that the messages still need, until the message removal has deleted the messages.
+
+A thread that records children expires by their placements, so the placements must stay as long as the thread. The rows of `message_thread_children` hold the `child` row, and with it the placements that the child row bundles. Every rule of the message removal is eventually met while the child row still exists, so a thread never holds a child for good. Once the message removal has deleted the thread, the child's next run can delete the child. The selection of the persons to run must therefore give such a child another run after the message removal.
+
+The message removal deletes a thread about an application only after the application is gone, together with the application notes that copy the thread's messages. The thread does not hold the application: `message_thread.application_id` is an optional reference, which is cleared when the application is deleted. The notes are bundled by the application, so they are deleted with it.
+
+A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to a child as the child's guardian or foster parent, or through a parentship or a partnership. These rows are not held for the threads, since they normally expire only after the placements ended even longer ago:
+
+- A guardianship expires once the placements of its child ended ten years ago.
+- `foster_parent` is bundled by `child`, so a foster parent is deleted together with the child, after the placements of the child ended ten years ago.
+- A parentship or a partnership expires once the placements of the children it affects ended longer ago than the finance freeze, five years and a margin of one month.
+
+Deleting such a row therefore does not make a thread expire earlier. The exception is a parentship or a partnership that itself ended longer ago than the finance freeze. It expires even if the child is still placed, and the finance thread of that former head of the family or partner then expires by its messages alone. This is in line with the finance freeze, since no decisions are generated for the time of that parentship or partnership anymore.
+
 ## 6. Special cases
 
 ### 6.1 Missing child row
