@@ -832,6 +832,8 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 references =
                     listOf(optionalReference("application_id", referencedTable = "application")),
             ),
+            // The message removal expires a thread by the placements of the children it records,
+            // so the thread holds the child row and the placements deleted with it
             ExternalTable(
                 name = "message_thread_children",
                 references = listOf(secondaryReference("child_id", referencedTable = "child")),
