@@ -470,9 +470,25 @@ fun buildDataRetentionSchema(): SchemaDefinition {
                 auditIdType = DatabaseTable.FeeDecisionChild::class,
                 expirationRule = Always.safeFor(VARDA),
             ),
-            ExternalTable(
+            HandledTable(
                 name = "message_account",
-                references = listOf(secondaryReference("person_id", referencedTable = "person")),
+                handledBy = ADULT,
+                references = listOf(primaryReference("person_id", referencedTable = "person")),
+                auditIdType = DatabaseTable.MessageAccount::class,
+                expirationRule = Always,
+                bundledBy = "person",
+            ),
+            // The messages a citizen sent hold their account until the message removal deletes
+            // the threads
+            ExternalTable(
+                name = "message",
+                references =
+                    listOf(secondaryReference("sender_id", referencedTable = "message_account")),
+            ),
+            ExternalTable(
+                name = "message_content",
+                references =
+                    listOf(secondaryReference("author_id", referencedTable = "message_account")),
             ),
             ExternalTable(
                 name = "message_thread",

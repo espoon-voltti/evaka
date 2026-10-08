@@ -254,7 +254,7 @@ A table that the graph only references, and that references nothing in it, is ou
 
 `attachment` and `sfi_message` reference several tables of the graph through separate columns, of which only one is set per row, and `sfi_message_event` follows `sfi_message`. Supporting them would need a way to split a table's rows by the column that is set, for only two cases, so they are excluded by exception. Their foreign keys are refused in the validation of chapter 7, and the database takes care of their rows instead. Every foreign key from `attachment` into the graph is `ON DELETE SET NULL`, and a separate job deletes attachments that no longer belong to anything. The foreign keys of `sfi_message` and `sfi_message_event` are `ON DELETE CASCADE`, so that a message is deleted with what it was sent for or with the guardian it was sent to.
 
-A leaf table whose rows should simply be deleted with the rows they reference can be excluded the same way with `ON DELETE CASCADE`, as long as the rows need no rule and no deletion instruction of their own. `invoiced_fee_decision` and a citizen's login rows such as `citizen_user` and `citizen_passkey_registration` are excluded like this.
+A leaf table whose rows should simply be deleted with the rows they reference can be excluded the same way with `ON DELETE CASCADE`, as long as the rows need no rule and no deletion instruction of their own. `invoiced_fee_decision` and a citizen's login rows such as `citizen_user` and `citizen_passkey_registration` are excluded like this. So are the rows that connect a citizen's message account to the messages it received and the threads it takes part in, `message_recipients` and `message_thread_participant`, and the account's folders and drafts in `message_thread_folder` and `message_draft` (section 5.6).
 
 ### 5.4 The evaka_user row
 
@@ -279,6 +279,14 @@ A finance thread expires once the placements of the children connected to its re
 - A parentship or a partnership expires once the placements of the children it affects ended longer ago than the finance freeze, five years and a margin of one month.
 
 Deleting such a row therefore does not make a thread expire earlier. The exception is a parentship or a partnership that itself ended longer ago than the finance freeze. It expires even if the child is still placed, and the finance thread of that former head of the family or partner then expires by its messages alone. This is in line with the finance freeze, since no decisions are generated for the time of that parentship or partnership anymore.
+
+Every person gets a citizen message account when the person is created. `message_account` is handled by adult and bundled by `person`, so the account is deleted together with the person row.
+
+A message the citizen sent holds the account. `message` and `message_content` are external tables whose `sender_id` and `author_id` reference the account, so the account and the person row stay until the message removal has deleted the thread.
+
+Messages the citizen only received do not hold the account. When the account is deleted, the database also deletes the rows that connect it to the messages and threads, and its folders and drafts (section 5.3). The threads themselves stay for as long as the message removal keeps them for the other participants.
+
+Deleting these rows does not make a finance thread expire earlier. A finance thread finds its children through the connections of its recipients listed above, and a person row is deleted only after the person's own connections are gone. By then, the deleted rows no longer lead the thread to any child.
 
 ## 6. Special cases
 

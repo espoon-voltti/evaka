@@ -29,7 +29,10 @@ import evaka.core.insertServiceNeedOptions
 import evaka.core.messaging.MessageType
 import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.messaging.deleteExpiredRegularThreads
+import evaka.core.messaging.insertMessage
+import evaka.core.messaging.insertMessageContent
 import evaka.core.messaging.insertMessageThreadChildren
+import evaka.core.messaging.insertRecipients
 import evaka.core.messaging.insertThread
 import evaka.core.placement.PlacementSource
 import evaka.core.shared.ApplicationId
@@ -273,6 +276,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "income_statement" to 1,
                 "fee_decision" to 1,
                 "fee_decision_child" to 1,
+                "message_account" to 1,
             ),
             graph.rows(),
         )
@@ -289,7 +293,6 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "application.guardian_id",
                 "guardian.guardian_id",
                 "child_document_read.person_id",
-                "message_account.person_id",
                 "voucher_value_decision.head_of_family_id",
             ),
             graph.foreign(),
@@ -426,7 +429,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `an adult's run deletes the expired fee decision with its child rows, and the person row waits for the child's data, the messaging job, the adult's own rows and a recent login`() {
+    fun `an adult's run deletes the expired fee decision with its child rows, and the person row waits for the child's data, the adult's own rows and a recent login`() {
         val family = db.transaction { it.insertFamily() }
 
         assertEquals(
@@ -453,7 +456,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             0,
             count("fridge_partner WHERE partnership_id = '${family.partnershipId.raw}'"),
         )
-        assertEquals(setOf("person", "income"), remaining(guardian.id))
+        assertEquals(setOf("person", "income", "message_account"), remaining(guardian.id))
 
         val childRun = execute(child.id)
 
@@ -489,12 +492,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(emptyList(), childRun.childrenFrozenForVarda)
         assertEquals(false, personExists(child.id))
 
-        // The message account is handled elsewhere and holds the person row, and so does the
-        // income that has not expired
-        assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
-        db.transaction {
-            it.execute { sql("DELETE FROM message_account WHERE person_id = ${bind(guardian.id)}") }
-        }
+        // The income that has not expired holds the person row
         assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
         db.transaction {
             it.execute {
@@ -513,7 +511,10 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 sql("UPDATE person SET last_login = NULL WHERE id = ${bind(guardian.id)}")
             }
         }
-        assertEquals(mapOf("person" to 1), execute(guardian.id).deletedRowCountsByTable)
+        assertEquals(
+            mapOf("message_account" to 1, "person" to 1),
+            execute(guardian.id).deletedRowCountsByTable,
+        )
         assertEquals(false, personExists(guardian.id))
     }
 
@@ -573,6 +574,76 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             execute(child.id).deletedRowCountsByTable,
         )
         assertEquals(false, personExists(child.id))
+    }
+
+    @Test
+    fun `a citizen's message account goes with the person row, and a message the citizen sent holds both until the message removal deletes its thread`() {
+        val recipientAccount = db.transaction { tx ->
+            val senderAccount = tx.createPersonMessageAccount(guardian.id)
+            val recipientAccount = tx.createPersonMessageAccount(otherGuardian.id)
+            val threadId =
+                tx.insertThread(
+                    MessageType.MESSAGE,
+                    "From one citizen to another",
+                    urgent = false,
+                    sensitive = false,
+                    isCopy = false,
+                )
+            tx.execute {
+                sql(
+                    "UPDATE message_thread SET created = ${bind(longAgo)} WHERE id = ${bind(threadId)}"
+                )
+            }
+            val messageId =
+                tx.insertMessage(
+                    now = longAgo,
+                    contentId = tx.insertMessageContent("Hello", senderAccount),
+                    threadId = threadId,
+                    sender = senderAccount,
+                    recipientNames = emptyList(),
+                    municipalAccountName = "",
+                    serviceWorkerAccountName = "",
+                    financeAccountName = "",
+                )
+            tx.insertRecipients(listOf(messageId to setOf(recipientAccount)))
+            recipientAccount
+        }
+
+        // A received message holds nothing: its recipient row goes with the account
+        val recipientRun = execute(otherGuardian.id)
+        assertEquals(
+            mapOf("message_account" to 1, "person" to 1),
+            recipientRun.deletedRowCountsByTable,
+        )
+        assertEquals(
+            DeletedRows(
+                DatabaseTable.MessageAccount::class,
+                listOf(RowIdentity(mapOf("id" to recipientAccount.raw))),
+            ),
+            recipientRun.deletedRowsByTable["message_account"],
+        )
+        assertEquals(0, count("message_recipients"))
+
+        assertEquals(
+            setOf("message.sender_id", "message_content.author_id"),
+            load(guardian.id).foreign(),
+        )
+        assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
+
+        val deletedThreads = db.transaction {
+            it.deleteExpiredRegularThreads(
+                placementExpireDate = today.minusYears(5),
+                expiresBefore = now.minusYears(10),
+                limit = 100,
+            )
+        }
+        assertEquals(1, deletedThreads.threads.size)
+
+        assertEquals(
+            mapOf("message_account" to 1, "person" to 1),
+            execute(guardian.id).deletedRowCountsByTable,
+        )
+        assertEquals(false, personExists(guardian.id))
     }
 
     @Test
