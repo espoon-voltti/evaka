@@ -11,6 +11,7 @@ import evaka.core.application.DaycarePlacementPlan
 import evaka.core.application.SimpleApplicationAction
 import evaka.core.application.fetchApplicationDetails
 import evaka.core.decision.DecisionStatus
+import evaka.core.decision.DecisionType
 import evaka.core.decision.getDecisionsByApplication
 import evaka.core.messaging.MessageRecipient
 import evaka.core.messaging.MessageService
@@ -163,7 +164,9 @@ WHERE pp.unit_id = ${bind(unitId)}
                 return WorkflowRows(
                     placementPlans = ids("placement_plan", "application_id", application.id.raw),
                     decisions = ids("decision", "application_id", application.id.raw),
-                    placements = ids("placement", "child_id", application.childId.raw),
+                    // Not by child: accepting a decision can split the child's existing
+                    // placement, and the split-off remainder is not part of the test data
+                    placements = ids("placement", "source_application_id", application.id.raw),
                 )
             }
         }
@@ -341,13 +344,22 @@ WHERE pp.unit_id = ${bind(unitId)}
             }
             ApplicationAction.ACCEPT_DECISIONS,
             ApplicationAction.REJECT_DECISIONS -> {
-                val decisions =
+                fun pendingDecisions() =
                     ctx.tx
                         .getDecisionsByApplication(application.id, AccessControlFilter.PermitAll)
                         .filter { it.status == DecisionStatus.PENDING }
-                        .sortedBy { it.type.ordinal }
-                if (decisions.isEmpty()) throw BadRequest("Application has no pending decisions")
-                decisions.forEach { decision ->
+                // The primary decision must be handled before the connected daycare/club one,
+                // and rejecting the primary decision also rejects the connected one
+                val decisionIds =
+                    pendingDecisions()
+                        .sortedBy {
+                            it.type !in
+                                setOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
+                        }
+                        .map { it.id }
+                if (decisionIds.isEmpty()) throw BadRequest("Application has no pending decisions")
+                decisionIds.forEach { decisionId ->
+                    val decision = pendingDecisions().find { it.id == decisionId } ?: return@forEach
                     if (input.action == ApplicationAction.ACCEPT_DECISIONS) {
                         applicationStateService.acceptDecision(
                             ctx.tx,
