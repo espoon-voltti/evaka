@@ -106,7 +106,13 @@ class McpToolsRows(private val jsonMapper: JsonMapper) {
             row<DevDaycare>("daycare") { tx.insert(it) },
             row<DevDaycareGroup>("daycare_group") { tx.insert(it) },
             row<DevDaycareCaretaker>("daycare_caretaker") { tx.insert(it) },
-            row<DevEmployee>("employee") { tx.insert(it) },
+            row<DevEmployee>("employee") {
+                // A token must never be turned into an account with full access to the
+                // environment that outlives the authorization
+                if (UserRole.ADMIN in it.roles)
+                    throw BadRequest("Employees with the ADMIN role cannot be created via MCP")
+                tx.insert(it)
+            },
             row<DaycareAclRow>("daycare_acl", null) {
                 tx.insertDaycareAclRow(it.daycareId, it.employeeId, it.role, it.endDate)
             },

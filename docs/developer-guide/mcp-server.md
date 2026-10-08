@@ -109,6 +109,8 @@ someone else relies on:
 - `send_message` only sends as employees created via MCP.
 - `insert_rows` accepts `employee_pin` rows only for employees created via MCP, since a PIN allows logging in as the
   employee in the mobile app. Credential-like row types (mobile devices, citizen users) are not available at all.
+- `insert_rows` refuses employees with the `ADMIN` role, so that a token cannot create an account with full access that
+  outlives the authorization.
 - Upload URLs are single-use, expire in 10 minutes and are valid only while the authorization that created them is
   active. Upload tokens, access tokens and authorization codes are stored only as SHA-256 hashes.
 
