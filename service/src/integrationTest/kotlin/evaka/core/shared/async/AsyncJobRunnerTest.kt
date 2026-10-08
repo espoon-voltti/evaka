@@ -187,6 +187,47 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `permanent failure skips the remaining attempts`() {
+        assertFailsPermanentlyOnFirstAttempt(PermanentAsyncJobFailure("invalid data"))
+    }
+
+    @Test
+    fun `permanent failure wrapped in another exception skips the remaining attempts`() {
+        assertFailsPermanentlyOnFirstAttempt(
+            RuntimeException("wrapper", PermanentAsyncJobFailure("invalid data"))
+        )
+    }
+
+    private fun assertFailsPermanentlyOnFirstAttempt(exception: Throwable) {
+        db.transaction {
+            asyncJobRunner.plan(
+                it,
+                listOf(TestJob()),
+                retryCount = 20,
+                retryInterval = Duration.ZERO,
+                runAt = HelsinkiDateTime.now(),
+            )
+        }
+
+        var attemptCount = 0
+        val failingFuture =
+            this.setAsyncJobCallback {
+                attemptCount++
+                throw exception
+            }
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
+        assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
+
+        assertEquals(0, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
+        assertEquals(1, attemptCount)
+
+        val retryCount = db.read {
+            it.createQuery { sql("SELECT retry_count FROM async_job") }.exactlyOne<Int>()
+        }
+        assertEquals(0, retryCount)
+    }
+
+    @Test
     fun `one-shot job stores initial_retry_count correctly`() {
         val job = TestJob()
 

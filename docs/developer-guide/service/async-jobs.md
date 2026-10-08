@@ -103,6 +103,20 @@ Choose retry count based on likely failure types:
 - **High retry count** - Transient failures: network issues, email service downtime, temporary API unavailability
 - **Low retry count** - Likely permanent failures where retrying is futile
 
+### Permanent Failures
+
+Throw `PermanentAsyncJobFailure` from a handler when you know retrying cannot help. The job fails permanently on the first attempt and the remaining attempts are skipped, so the developer alert fires right away.
+
+```kotlin
+val application =
+    tx.fetchApplicationDetails(msg.applicationId)
+        ?: throw PermanentAsyncJobFailure("Application ${msg.applicationId} not found")
+```
+
+Use it only when nothing that could plausibly happen during the retry window would fix the failure. Examples are invalid data in the payload or a row that no longer exists. Don't use it based on an integration's HTTP status code, since a bug on either side may get fixed within the retry window. Don't use it for state that another job may still produce either, such as a missing document key.
+
+The runner also detects the exception when it is the cause of another exception, so you can wrap a known permanent failure: `throw PermanentAsyncJobFailure("...", e)`.
+
 ## Creating a New Job Type
 
 Adding a new job type requires three steps: define the payload, register the handler, and assign to a pool.

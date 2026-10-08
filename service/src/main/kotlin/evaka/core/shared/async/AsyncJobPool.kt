@@ -234,17 +234,20 @@ class AsyncJobPool<T : AsyncJobPayload>(
             Span.current().setStatus(StatusCode.ERROR)
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
             Span.current().recordException(exception)
-            if (job.remainingAttempts > 0) {
-                logger.warn(exception, logMeta) { "Failed to run async job $job" }
-            } else {
-                val isRetryableJob = job.initialRetryCount == null || job.initialRetryCount > 1
-                if (isRetryableJob) {
-                    logger.error(exception, logMeta) {
-                        "Async job $job permanently failed (remainingAttempts=0)"
-                    }
-                } else {
-                    logger.error(exception, logMeta) { "Failed to run async job $job" }
+            val isPermanentFailure =
+                generateSequence(exception) { it.cause }
+                    .take(5)
+                    .any { it is PermanentAsyncJobFailure }
+            val retriesCancelled =
+                isPermanentFailure &&
+                    job.remainingAttempts > 0 &&
+                    tryCancelRemainingRetries(db, job)
+            if (job.remainingAttempts == 0 || retriesCancelled) {
+                logger.error(exception, logMeta) {
+                    "Async job $job permanently failed (remainingAttempts=0)"
                 }
+            } else {
+                logger.warn(exception, logMeta) { "Failed to run async job $job" }
             }
         } finally {
             MdcKey.USER_ID_HASH.unset()
@@ -253,6 +256,14 @@ class AsyncJobPool<T : AsyncJobPayload>(
             MdcKey.TRACE_ID.unset()
         }
     }
+
+    private fun tryCancelRemainingRetries(db: Database.Connection, job: ClaimedJobRef<*>): Boolean =
+        try {
+            db.transaction { it.cancelRemainingRetries(job) }
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to cancel remaining retries of async job $job" }
+            false
+        }
 
     override fun close() {
         executor.shutdown()
