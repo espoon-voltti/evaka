@@ -22,4 +22,6 @@ if ! "$appium" driver list --installed --json | grep -q "\"xcuitest@$XCUITEST_DR
   "$appium" driver uninstall xcuitest 2>/dev/null || true
   "$appium" driver install "xcuitest@$XCUITEST_DRIVER_VERSION"
 fi
-"$appium" driver run xcuitest build-wda
+# Launching the prebuilt runner with simctl takes seconds, where xcodebuild
+# has taken minutes right after a simulator reboot
+"$appium" driver run xcuitest download-wda -- --kind sim --platform iOS --outdir "$APPIUM_HOME/wda"

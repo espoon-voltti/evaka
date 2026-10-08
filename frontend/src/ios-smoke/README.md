@@ -30,9 +30,9 @@ compared with the layout.
 
 ## Running
 
-macOS with Xcode and an iOS 26 simulator runtime. Appium and its XCUITest
-driver are installed into the gitignored `.appium` directory, so they are not
-dependencies of the project:
+macOS with Xcode and an iOS 26 simulator runtime. Appium, its XCUITest
+driver and a prebuilt WebDriverAgent are installed into the gitignored
+`.appium` directory, so they are not dependencies of the project:
 
 ```sh
 yarn ios-smoke:setup
@@ -45,11 +45,12 @@ Playwright tests). With the default ports:
 yarn ios-smoke
 ```
 
-The first run creates an `evaka-smoke` iPhone 17 simulator. Every run puts an
-eVaka icon on its home screen, reboots the simulator, launches the clip from
-the icon and logs in through the dev API inside the clip. A run takes about
-five minutes. Appium's log and the screenshots of failed tests are written to
-`ios-smoke-results/`.
+The first run creates an `evaka-smoke` iPhone 17 simulator, puts an eVaka
+icon on its home screen and reboots it (SpringBoard reads the icons only on
+start). Later runs reuse the icon and only close the app, so that it starts
+in a fresh process. Every run launches the clip from the icon and logs in
+through the dev API inside the clip. A run takes about two minutes. Appium's
+log and the screenshots of failed tests are written to `ios-smoke-results/`.
 
 ## Notes
 

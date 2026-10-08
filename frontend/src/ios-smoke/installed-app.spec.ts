@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { mkdirSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 
@@ -13,7 +14,7 @@ import {
 } from './support/fixtures'
 import { formatBox, painted } from './support/paint'
 import type { ScreenBox } from './support/paint'
-import { ensureSimulatorBooted, terminateApp } from './support/simulator'
+import { ensureSimulatorBooted } from './support/simulator'
 import {
   formatMeasurement,
   measureViewport,
@@ -24,7 +25,7 @@ import {
 } from './support/stale-viewport'
 import type { Rect, ViewportMeasurement } from './support/stale-viewport'
 import { launchWebClip, openInWebClip, seedWebClip } from './support/webclip'
-import { Session, sleep, startAppium } from './support/webdriver'
+import { Session, appiumHome, sleep, startAppium } from './support/webdriver'
 
 const resultsDir = 'ios-smoke-results'
 const minPaintedRatio = 0.95
@@ -37,7 +38,6 @@ let session: Session
 beforeAll(
   async () => {
     const udid = ensureSimulatorBooted()
-    terminateApp(udid, 'com.apple.webapp')
     seedWebClip(udid)
     stopAppium = await startAppium(resultsDir)
     // No browserName or app: the session starts on the home screen and the
@@ -46,12 +46,16 @@ beforeAll(
       platformName: 'iOS',
       'appium:automationName': 'XCUITest',
       'appium:udid': udid,
+      'appium:usePreinstalledWDA': true,
+      'appium:prebuiltWDAPath': path.join(
+        appiumHome,
+        'wda/WebDriverAgentRunner-Runner.app'
+      ),
       'appium:fullContextList': true,
       'appium:additionalWebviewBundleIds': ['com.apple.webapp', '*'],
       'appium:includeSafariInWebviews': true,
       'appium:webviewConnectTimeout': 20000,
       'appium:newCommandTimeout': 180,
-      'appium:wdaLaunchTimeout': 240000,
       // WebDriverAgent screenshots are HEIC by default, which blurs the edges
       // that the paint check counts
       'appium:settings[screenshotQuality]': 0

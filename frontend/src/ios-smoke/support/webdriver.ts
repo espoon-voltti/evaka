@@ -212,15 +212,7 @@ export class Session {
   }
 
   async isDisplayed(elementId: string) {
-    try {
-      return (
-        (await this.call('GET', `/element/${elementId}/displayed`)) === true
-      )
-    } catch (e) {
-      // Re-rendered between the find and this call
-      if (String(e).includes('stale element reference')) return false
-      throw e
-    }
+    return (await this.call('GET', `/element/${elementId}/displayed`)) === true
   }
 
   clickElement(elementId: string) {
@@ -228,22 +220,48 @@ export class Session {
   }
 
   /** Clicks the element when it is displayed. A synthetic click in a webview. */
-  async click(selector: string) {
-    await this.clickElement(await this.waitForDisplayed(selector))
+  click(selector: string) {
+    return this.withDisplayed(selector, (elementId) =>
+      this.clickElement(elementId)
+    )
   }
 
-  async type(selector: string, text: string) {
-    const elementId = await this.waitForDisplayed(selector)
-    await this.call('POST', `/element/${elementId}/value`, { text })
+  type(selector: string, text: string) {
+    return this.withDisplayed(selector, (elementId) =>
+      this.call('POST', `/element/${elementId}/value`, { text })
+    )
   }
 
-  async waitForDisplayed(selector: string, timeout = 15000) {
+  waitForDisplayed(selector: string, timeout = 15000) {
+    return this.withDisplayed(selector, () => Promise.resolve(), timeout)
+  }
+
+  /**
+   * Finds the element, waits until it is displayed and runs the action on
+   * it. The page may re-render between these steps, so a stale element
+   * reference starts over.
+   */
+  private async withDisplayed(
+    selector: string,
+    action: (elementId: string) => Promise<unknown>,
+    timeout = 15000
+  ) {
     return waitUntil(
       async () => {
         const elementId = await this.findElement(selector)
-        return elementId && (await this.isDisplayed(elementId))
-          ? elementId
-          : undefined
+        if (!elementId) return undefined
+        try {
+          const displayed = await this.call(
+            'GET',
+            `/element/${elementId}/displayed`
+          )
+          if (displayed !== true) return undefined
+          await action(elementId)
+          return elementId
+        } catch (e) {
+          if (String(e).includes('stale element reference')) return undefined
+          throw e
+        }
       },
       { timeout, message: `${selector} is not displayed` }
     )

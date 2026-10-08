@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url'
 import config from '../../e2e-test/config'
 import type { DevPerson } from '../../e2e-test/generated/api-types'
 
-import { rebootSimulator } from './simulator'
+import { rebootSimulator, terminateApp } from './simulator'
 import type { Context, Session } from './webdriver'
 import { sleep, waitUntil } from './webdriver'
 
@@ -58,11 +58,11 @@ const webClipsDir = (udid: string) =>
     'data/Library/WebClips'
   )
 
-const readTitle = (infoPlist: string) => {
+const readPlistKey = (infoPlist: string, key: string) => {
   try {
     return execFileSync(
       'plutil',
-      ['-extract', 'Title', 'raw', '-o', '-', infoPlist],
+      ['-extract', key, 'raw', '-o', '-', infoPlist],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
     ).trim()
   } catch {
@@ -106,29 +106,34 @@ const infoPlist = (
 
 /**
  * Puts an eVaka icon on the simulator's home screen, as if the user had added
- * the app with Safari's "Add to Home Screen". Replaces earlier eVaka clips.
+ * the app with Safari's "Add to Home Screen". An existing clip with the same
+ * URL is kept and only closed, so that the app starts in a fresh process.
  */
 export function seedWebClip(udid: string) {
+  const url = `${config.enduserUrl}/`
   const dir = webClipsDir(udid)
   mkdirSync(dir, { recursive: true })
+  let found = false
   for (const entry of readdirSync(dir)) {
     const plist = path.join(dir, entry, 'Info.plist')
-    if (
-      entry.endsWith('.webclip') &&
-      existsSync(plist) &&
-      readTitle(plist) === webClipTitle
-    ) {
+    if (!entry.endsWith('.webclip') || !existsSync(plist)) continue
+    if (readPlistKey(plist, 'Title') !== webClipTitle) continue
+    if (readPlistKey(plist, 'URL') === url && !found) {
+      found = true
+    } else {
       rmSync(path.join(dir, entry), { recursive: true, force: true })
     }
+  }
+  if (found) {
+    terminateApp(udid, 'com.apple.webapp')
+    terminateApp(udid, 'com.apple.SafariViewService')
+    return
   }
 
   const id = randomUUID().replace(/-/g, '').toUpperCase()
   const clipDir = path.join(dir, `${id}.webclip`)
   mkdirSync(clipDir)
-  writeFileSync(
-    path.join(clipDir, 'Info.plist'),
-    infoPlist(id, `${config.enduserUrl}/`)
-  )
+  writeFileSync(path.join(clipDir, 'Info.plist'), infoPlist(id, url))
   copyFileSync(iconFile, path.join(clipDir, 'icon.png'))
 
   for (const args of inspectorDefaults) {
