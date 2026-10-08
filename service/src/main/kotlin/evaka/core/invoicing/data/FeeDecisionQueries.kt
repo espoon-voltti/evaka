@@ -650,12 +650,7 @@ fun Database.Read.getDetailedFeeDecisionsByIds(
     if (ids.isEmpty()) return emptyList()
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
         .toList<FeeDecisionDetailed>()
-}
-
-fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
-    return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ${bind(uuid)}") }))
-        .exactlyOneOrNull<FeeDecisionDetailed>()
-        ?.let {
+        .map {
             it.copy(
                 partnerIsCodebtor =
                     it.partnerIsCodebtor
@@ -667,6 +662,10 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
                         )
             )
         }
+}
+
+fun Database.Read.getFeeDecision(id: FeeDecisionId): FeeDecisionDetailed? {
+    return getDetailedFeeDecisionsByIds(listOf(id)).firstOrNull()
 }
 
 fun Database.Read.findFeeDecisionsForHeadOfFamily(

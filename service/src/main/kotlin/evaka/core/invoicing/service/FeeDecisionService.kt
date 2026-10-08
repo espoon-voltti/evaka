@@ -20,7 +20,6 @@ import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.invoicing.data.approveFeeDecisionDraftsForSending
 import evaka.core.invoicing.data.deleteFeeDecisions
 import evaka.core.invoicing.data.findFeeDecisionsForHeadOfFamily
-import evaka.core.invoicing.data.getDetailedFeeDecisionsByIds
 import evaka.core.invoicing.data.getFeeDecision
 import evaka.core.invoicing.data.getFeeDecisionsByIds
 import evaka.core.invoicing.data.lockFeeDecisions
@@ -338,11 +337,7 @@ class FeeDecisionService(
             }
         }
 
-        asyncJobRunner.plan(
-            tx,
-            listOf(AsyncJob.SendNewFeeDecisionEmail(decisionId = decision.id)),
-            runAt = clock.now(),
-        )
+        planDecisionNotifications(tx, clock, listOf(decision))
 
         setSentAndUpdateProcess(
             tx,
@@ -400,17 +395,12 @@ class FeeDecisionService(
         tx: Database.Transaction,
         clock: EvakaClock,
         user: AuthenticatedUser,
-        ids: List<FeeDecisionId>,
-        audit: AuditContext,
+        decisions: List<FeeDecisionDetailed>,
     ) {
-        val decisions =
-            tx.getDetailedFeeDecisionsByIds(ids).onEach { decision ->
-                audit.observeDate(decision.validDuring.start)
-            }
         if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
         }
-        setSentAndUpdateProcess(tx, clock, user, ids)
+        setSentAndUpdateProcess(tx, clock, user, decisions.map { it.id })
     }
 
     fun setSentAndUpdateProcess(
@@ -479,6 +469,49 @@ class FeeDecisionService(
         tx.setFeeDecisionType(decisionId, type)
     }
 
+    fun planDecisionNotifications(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decisions: List<FeeDecisionDetailed>,
+    ) {
+        val childNames =
+            tx.getPushChildNames(
+                decisions.flatMap { decision -> decision.children.map { it.child.id } }
+            )
+
+        decisions.forEach { decision ->
+            val recipientIds =
+                listOfNotNull(
+                    decision.headOfFamily.id,
+                    decision.partner
+                        ?.takeIf { decision.partnerIsCodebtor == true && !it.ssn.isNullOrBlank() }
+                        ?.id,
+                )
+            asyncJobRunner.plan(
+                tx,
+                recipientIds.map { recipientId ->
+                    AsyncJob.SendNewFeeDecisionEmail(
+                        decisionId = decision.id,
+                        recipientId = recipientId,
+                    )
+                },
+                runAt = clock.now(),
+            )
+
+            recipientIds.forEach { recipientId ->
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    recipientId,
+                    CitizenPushNotification.FeeDecision(
+                        decisionId = decision.id,
+                        childNames = decision.children.map { childNames.getValue(it.child.id) },
+                    ),
+                )
+            }
+        }
+    }
+
     fun runSendNewFeeDecisionEmail(
         db: Database.Connection,
         clock: EvakaClock,
@@ -489,45 +522,26 @@ class FeeDecisionService(
             db.read { tx -> tx.getFeeDecision(feeDecisionId) }
                 ?: throw NotFound("Decision not found")
 
-        logger.info { "Sending fee decision emails for (decisionId: $feeDecisionId)" }
+        // Backwards compatibility: recipientId was added to the job later, so if it's null, we
+        // default to the head of family.
+        // Can be removed after a while when we are sure all old jobs have been processed.
+        val recipientId = msg.recipientId ?: decision.headOfFamily.id
 
-        val recipientIds =
-            listOfNotNull(
-                decision.headOfFamily.id,
-                decision.partner
-                    ?.takeIf { decision.partnerIsCodebtor == true && !it.ssn.isNullOrBlank() }
-                    ?.id,
-            )
+        logger.info { "Sending fee decision emails for (decisionId: $feeDecisionId)" }
 
         // simplified to get rid of superfluous language requirement
         val fromAddress = emailEnv.sender(Language.fi)
         val content =
             emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
-        recipientIds.forEach { recipientId ->
-            Email.create(
-                    db,
-                    recipientId,
-                    NotificationCategory.DECISION_NOTIFICATION,
-                    fromAddress,
-                    content,
-                    "$feeDecisionId - $recipientId",
-                )
-                ?.also { emailClient.send(it) }
-        }
-        db.transaction { tx ->
-            val childNames = tx.getPushChildNames(decision.children.map { it.child.id })
-            recipientIds.forEach { recipientId ->
-                citizenPushNotifications.plan(
-                    tx,
-                    clock.now(),
-                    recipientId,
-                    CitizenPushNotification.FeeDecision(
-                        decisionId = feeDecisionId,
-                        childNames = decision.children.map { childNames.getValue(it.child.id) },
-                    ),
-                )
-            }
-        }
+        Email.create(
+                db,
+                recipientId,
+                NotificationCategory.DECISION_NOTIFICATION,
+                fromAddress,
+                content,
+                "$feeDecisionId - $recipientId",
+            )
+            ?.also { emailClient.send(it) }
 
         logger.info { "Successfully sent fee decision email (id: $feeDecisionId)." }
     }

@@ -173,11 +173,7 @@ class VoucherValueDecisionService(
             )
         }
 
-        asyncJobRunner.plan(
-            tx,
-            listOf(AsyncJob.SendNewVoucherValueDecisionEmail(decisionId = decision.id)),
-            runAt = now,
-        )
+        planDecisionNotifications(tx, clock, listOf(decision))
         return true
     }
 
@@ -311,6 +307,45 @@ class VoucherValueDecisionService(
         tx.setVoucherValueDecisionType(decisionId, type)
     }
 
+    fun planDecisionNotifications(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decisions: List<VoucherValueDecisionDetailed>,
+    ) {
+        val childNames = tx.getPushChildNames(decisions.map { it.child.id })
+        decisions.forEach { decision ->
+            val recipientIds =
+                listOfNotNull(
+                    decision.headOfFamily.id,
+                    decision.partner
+                        ?.takeIf { decision.partnerIsCodebtor == true && !it.ssn.isNullOrBlank() }
+                        ?.id,
+                )
+            asyncJobRunner.plan(
+                tx,
+                recipientIds.map { recipientId ->
+                    AsyncJob.SendNewVoucherValueDecisionEmail(
+                        decisionId = decision.id,
+                        recipientId = recipientId,
+                    )
+                },
+                runAt = clock.now(),
+            )
+            recipientIds.forEach { recipientId ->
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    recipientId,
+                    CitizenPushNotification.VoucherValueDecision(
+                        decisionId = decision.id,
+                        childName = childNames.getValue(decision.child.id),
+                        unitName = decision.placement.unit.name,
+                    ),
+                )
+            }
+        }
+    }
+
     fun runSendNewVoucherValueDecisionEmail(
         db: Database.Connection,
         clock: EvakaClock,
@@ -321,17 +356,14 @@ class VoucherValueDecisionService(
             db.read { tx -> tx.getVoucherValueDecision(voucherValueDecisionId) }
                 ?: throw NotFound("Decision not found")
 
+        // Backwards compatibility: recipientId was added to the job later, so if it's null, we
+        // default to the head of family.
+        // Can be removed after a while when we are sure all old jobs have been processed.
+        val recipientId = msg.recipientId ?: decision.headOfFamily.id
+
         logger.info {
             "Sending voucher value decision emails for (decisionId: $voucherValueDecisionId)"
         }
-
-        val recipientIds =
-            listOfNotNull(
-                decision.headOfFamily.id,
-                decision.partner
-                    ?.takeIf { decision.partnerIsCodebtor == true && !it.ssn.isNullOrBlank() }
-                    ?.id,
-            )
 
         // simplified to get rid of superfluous language requirement
         val fromAddress = emailEnv.sender(Language.fi)
@@ -339,33 +371,15 @@ class VoucherValueDecisionService(
             emailMessageProvider.financeDecisionNotification(
                 FinanceDecisionType.VOUCHER_VALUE_DECISION
             )
-        recipientIds.forEach { recipientId ->
-            Email.create(
-                    db,
-                    recipientId,
-                    NotificationCategory.DECISION_NOTIFICATION,
-                    fromAddress,
-                    content,
-                    "$voucherValueDecisionId - $recipientId",
-                )
-                ?.also { emailClient.send(it) }
-        }
-        db.transaction { tx ->
-            val childName =
-                tx.getPushChildNames(listOf(decision.child.id)).getValue(decision.child.id)
-            recipientIds.forEach { recipientId ->
-                citizenPushNotifications.plan(
-                    tx,
-                    clock.now(),
-                    recipientId,
-                    CitizenPushNotification.VoucherValueDecision(
-                        decisionId = voucherValueDecisionId,
-                        childName = childName,
-                        unitName = decision.placement.unit.name,
-                    ),
-                )
-            }
-        }
+        Email.create(
+                db,
+                recipientId,
+                NotificationCategory.DECISION_NOTIFICATION,
+                fromAddress,
+                content,
+                "$voucherValueDecisionId - $recipientId",
+            )
+            ?.also { emailClient.send(it) }
 
         logger.info {
             "Successfully sent voucher value decision email (id: $voucherValueDecisionId)."

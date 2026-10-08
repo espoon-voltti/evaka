@@ -278,7 +278,11 @@ class VoucherValueDecisionController(
                     ids,
                 )
                 val decisions =
-                    tx.getValueDecisionsByIds(ids).onEach { audit.observeDate(it.validFrom) }
+                    ids.map {
+                            tx.getVoucherValueDecision(it)
+                                ?: throw NotFound("Voucher value decision not found with id $it")
+                        }
+                        .onEach { audit.observeDate(it.validFrom) }
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
                     throw BadRequest("Voucher value decision cannot be marked sent")
                 }
@@ -297,10 +301,10 @@ class VoucherValueDecisionController(
                     }
                 }
 
-                asyncJobRunner.plan(
+                valueDecisionService.planDecisionNotifications(
                     tx,
-                    ids.map { AsyncJob.SendNewVoucherValueDecisionEmail(decisionId = it) },
-                    runAt = clock.now(),
+                    clock,
+                    decisions,
                 )
             }
         }

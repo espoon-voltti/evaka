@@ -11,6 +11,7 @@ import evaka.core.EvakaEnv
 import evaka.core.document.archival.validateArchivability
 import evaka.core.invoicing.data.PagedFeeDecisionSummaries
 import evaka.core.invoicing.data.findFeeDecisionsForHeadOfFamily
+import evaka.core.invoicing.data.getDetailedFeeDecisionsByIds
 import evaka.core.invoicing.data.getFeeDecision
 import evaka.core.invoicing.data.searchFeeDecisions
 import evaka.core.invoicing.domain.FeeDecision
@@ -242,22 +243,28 @@ class FeeDecisionController(
     ) {
         val audit = AuditContext().add(feeDecisionIds)
         db.connect { dbc ->
-            dbc.transaction {
+            dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
-                    it,
+                    tx,
                     user,
                     clock,
                     Action.FeeDecision.UPDATE,
                     feeDecisionIds,
                 )
-                service.setManuallySent(it, clock, user, feeDecisionIds, audit)
+                val feeDecisions =
+                    tx.getDetailedFeeDecisionsByIds(feeDecisionIds).onEach { decision ->
+                        audit.observeDate(decision.validDuring.start)
+                    }
+                if (feeDecisions.size != feeDecisionIds.size) {
+                    throw NotFound(
+                        "Some fee decisions not found: ${feeDecisionIds - feeDecisions.map { it.id }}"
+                    )
+                }
+
+                service.setManuallySent(tx, clock, user, feeDecisions)
                 // emails should be sent only after decisions are actually visible to citizens in
                 // eVaka
-                asyncJobRunner.plan(
-                    it,
-                    feeDecisionIds.map { id -> AsyncJob.SendNewFeeDecisionEmail(decisionId = id) },
-                    runAt = clock.now(),
-                )
+                service.planDecisionNotifications(tx, clock, feeDecisions)
             }
         }
         audit.log(Audit.FeeDecisionMarkSent, clock)
