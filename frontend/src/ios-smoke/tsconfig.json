@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "../../dist/ios-smoke",
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "references": [
+    { "path": "../lib-common" },
+    { "path": "../lib-customizations" },
+    { "path": "../e2e-test" }
+  ]
+}
