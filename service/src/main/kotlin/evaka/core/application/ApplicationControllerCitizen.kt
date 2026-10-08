@@ -766,20 +766,14 @@ class ApplicationControllerCitizen(
                             audit.add(it.id).observeDate(it.validDuring.start)
                         }
 
-                    val citizenIds =
-                        feeDecisionRows
-                            .map { listOfNotNull(it.headOfFamilyId, it.partnerId) }
-                            .flatten()
-                            .toSet() +
-                            voucherValueDecisionRows
-                                .map { listOfNotNull(it.headOfFamilyId, it.partnerId) }
-                                .flatten()
-                                .toSet()
+                    val debtorIds =
+                        feeDecisionRows.flatMap { it.debtors() }.toSet() +
+                            voucherValueDecisionRows.flatMap { it.debtors() }.toSet()
 
                     val childIds = voucherValueDecisionRows.map { it.childId }.toSet()
-                    audit.add(citizenIds).add(childIds)
+                    audit.add(debtorIds).add(childIds)
                     val personMap =
-                        tx.getPersonNameDetailsById(citizenIds + childIds).associateBy { it.id }
+                        tx.getPersonNameDetailsById(debtorIds + childIds).associateBy { it.id }
                     val voucherValueDecisionInfos = voucherValueDecisionRows.map { row ->
                         val childInfo =
                             personMap[row.childId]
@@ -799,10 +793,8 @@ class ApplicationControllerCitizen(
                             validTo = row.validTo,
                             sentAt = row.sentAt,
                             coDebtors =
-                                listOfNotNull(
-                                        personMap[row.headOfFamilyId],
-                                        personMap[row.partnerId],
-                                    )
+                                row.debtors()
+                                    .mapNotNull { personMap[it] }
                                     .map {
                                         LiableCitizenInfo(
                                             id = it.id,
@@ -821,10 +813,8 @@ class ApplicationControllerCitizen(
                             validTo = row.validDuring.end,
                             sentAt = row.sentAt,
                             coDebtors =
-                                listOfNotNull(
-                                        personMap[row.headOfFamilyId],
-                                        personMap[row.partnerId],
-                                    )
+                                row.debtors()
+                                    .mapNotNull { personMap[it] }
                                     .map {
                                         LiableCitizenInfo(
                                             id = it.id,

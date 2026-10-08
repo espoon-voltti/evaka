@@ -860,13 +860,17 @@ SELECT fd.id,
        fd.valid_during,
        fd.sent_at,
        fd.head_of_family_id,
-       fd.partner_id
+       fd.partner_id,
+       fd.partner_is_codebtor
 FROM fee_decision fd
-WHERE fd.status in ('SENT')
-AND fd.document_key IS NOT NULL
-AND (fd.head_of_family_id = ${bind(citizenId)}
-    OR fd.partner_id = ${bind(citizenId)})
-    """
+WHERE
+    fd.status = 'SENT' AND
+    fd.document_key IS NOT NULL AND
+    (
+        fd.head_of_family_id = ${bind(citizenId)} OR
+        (fd.partner_id = ${bind(citizenId)} AND fd.partner_is_codebtor IS NOT FALSE)
+    )
+"""
         )
     }
         .toList<FeeDecisionCitizenInfoRow>()
@@ -876,9 +880,10 @@ data class FeeDecisionCitizenInfoRow(
     val id: FeeDecisionId,
     val validDuring: DateRange,
     val sentAt: HelsinkiDateTime,
-    val headOfFamilyId: PersonId,
-    val partnerId: PersonId?,
-)
+    override val headOfFamilyId: PersonId,
+    override val partnerId: PersonId?,
+    override val partnerIsCodebtor: Boolean?,
+) : HasDebtors
 
 fun Database.Transaction.markFeeDecisionAsArchived(id: FeeDecisionId, now: HelsinkiDateTime) =
     createUpdate {

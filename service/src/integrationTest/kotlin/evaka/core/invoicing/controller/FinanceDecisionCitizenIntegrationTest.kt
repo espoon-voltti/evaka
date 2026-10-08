@@ -12,7 +12,9 @@ import evaka.core.application.LiableCitizenInfo
 import evaka.core.insertServiceNeedOptions
 import evaka.core.invoicing.createFeeDecisionChildFixture
 import evaka.core.invoicing.data.markVoucherValueDecisionsSent
+import evaka.core.invoicing.data.setFeeDecisionPartnerIsCodebtor
 import evaka.core.invoicing.data.setFeeDecisionSent
+import evaka.core.invoicing.data.setVoucherValueDecisionPartnerIsCodebtor
 import evaka.core.invoicing.data.updateFeeDecisionDocumentKey
 import evaka.core.invoicing.data.updateVoucherValueDecisionDocumentKey
 import evaka.core.invoicing.data.upsertFeeDecisions
@@ -48,6 +50,8 @@ import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
 import evaka.core.snDaycareFullDay35
 import evaka.core.toFeeDecisionServiceNeed
 import evaka.core.toValueDecisionServiceNeed
@@ -55,6 +59,8 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -64,6 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
+    @Autowired private lateinit var accessControl: AccessControl
 
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 23), LocalTime.of(21, 0)))
@@ -196,7 +203,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
-    fun `fee decision found for partner`() {
+    fun `fee decision found for partner when codebtor status is not stored`() {
+        // Decisions created before the codebtor status was stored have partner_is_codebtor NULL
 
         val financeDecisions =
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
@@ -212,6 +220,87 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
+    fun `fee decision found for partner who is a codebtor`() {
+        db.transaction { tx -> tx.setFeeDecisionPartnerIsCodebtor(fdId, true) }
+
+        val financeDecisions =
+            applicationControllerCitizen.getLiableCitizenFinanceDecisions(
+                dbInstance(),
+                partner.user(CitizenAuthLevel.STRONG),
+                clock,
+            )
+
+        Assertions.assertThatIterable(financeDecisions)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .isEqualTo(feeDecisions)
+        assertTrue(canDownloadFeeDecision(partner, fdId))
+    }
+
+    @Test
+    fun `fee decision not found for partner who is not a codebtor`() {
+        db.transaction { tx -> tx.setFeeDecisionPartnerIsCodebtor(fdId, false) }
+
+        val partnerDecisions =
+            applicationControllerCitizen.getLiableCitizenFinanceDecisions(
+                dbInstance(),
+                partner.user(CitizenAuthLevel.STRONG),
+                clock,
+            )
+        val headOfFamilyDecisions =
+            applicationControllerCitizen.getLiableCitizenFinanceDecisions(
+                dbInstance(),
+                headOfFamily.user(CitizenAuthLevel.STRONG),
+                clock,
+            )
+
+        Assertions.assertThat(partnerDecisions).isEmpty()
+        Assertions.assertThat(headOfFamilyDecisions.single { it.id == fdId.raw }.coDebtors)
+            .containsExactly(headOfFamilyInfo)
+        assertFalse(canDownloadFeeDecision(partner, fdId))
+        assertTrue(canDownloadFeeDecision(headOfFamily, fdId))
+    }
+
+    @Test
+    fun `voucher value decision found for partner who is a codebtor`() {
+        val decisionId = insertSentVoucherValueDecisionWithPartner(partnerIsCodebtor = true)
+
+        val financeDecisions =
+            applicationControllerCitizen.getLiableCitizenFinanceDecisions(
+                dbInstance(),
+                partner.user(CitizenAuthLevel.STRONG),
+                clock,
+            )
+
+        Assertions.assertThat(financeDecisions.map { it.id }).contains(decisionId.raw)
+        assertTrue(canDownloadVoucherValueDecision(partner, decisionId))
+    }
+
+    @Test
+    fun `voucher value decision not found for partner who is not a codebtor`() {
+        val decisionId = insertSentVoucherValueDecisionWithPartner(partnerIsCodebtor = false)
+
+        val partnerDecisions =
+            applicationControllerCitizen.getLiableCitizenFinanceDecisions(
+                dbInstance(),
+                partner.user(CitizenAuthLevel.STRONG),
+                clock,
+            )
+        val headOfFamilyDecisions =
+            applicationControllerCitizen.getLiableCitizenFinanceDecisions(
+                dbInstance(),
+                headOfFamily.user(CitizenAuthLevel.STRONG),
+                clock,
+            )
+
+        Assertions.assertThat(partnerDecisions.map { it.id }).doesNotContain(decisionId.raw)
+        Assertions.assertThat(headOfFamilyDecisions.single { it.id == decisionId.raw }.coDebtors)
+            .containsExactly(headOfFamilyInfo)
+        assertFalse(canDownloadVoucherValueDecision(partner, decisionId))
+        assertTrue(canDownloadVoucherValueDecision(headOfFamily, decisionId))
+    }
+
+    @Test
     fun `no permission without strong auth`() {
 
         assertThrows<Forbidden> {
@@ -223,11 +312,61 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         }
     }
 
+    private val headOfFamilyInfo =
+        LiableCitizenInfo(headOfFamily.id, headOfFamily.firstName, headOfFamily.lastName)
+
+    private fun insertSentVoucherValueDecisionWithPartner(
+        partnerIsCodebtor: Boolean
+    ): VoucherValueDecisionId {
+        val decision =
+            createTestVoucherValueDecision(
+                id = VoucherValueDecisionId(UUID.randomUUID()),
+                validFrom = testPeriod2.end.plusDays(1),
+                validTo = testPeriod2.end.plusMonths(1),
+                headOfFamilyId = headOfFamily.id,
+                partnerId = partner.id,
+                childId = child.id,
+                dateOfBirth = child.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
+            )
+        db.transaction { tx ->
+            tx.upsertValueDecisions(listOf(decision))
+            tx.markVoucherValueDecisionsSent(ids = listOf(decision.id), now = voucherValueSentAt)
+            tx.updateVoucherValueDecisionDocumentKey(decision.id, "test-vvd-document-key")
+            tx.setVoucherValueDecisionPartnerIsCodebtor(decision.id, partnerIsCodebtor)
+        }
+        return decision.id
+    }
+
+    private fun canDownloadFeeDecision(citizen: DevPerson, id: FeeDecisionId) = db.read { tx ->
+        accessControl.hasPermissionFor(
+            tx,
+            citizen.user(CitizenAuthLevel.STRONG),
+            clock,
+            Action.Citizen.FeeDecision.DOWNLOAD,
+            id,
+        )
+    }
+
+    private fun canDownloadVoucherValueDecision(citizen: DevPerson, id: VoucherValueDecisionId) =
+        db.read { tx ->
+            accessControl.hasPermissionFor(
+                tx,
+                citizen.user(CitizenAuthLevel.STRONG),
+                clock,
+                Action.Citizen.VoucherValueDecision.DOWNLOAD,
+                id,
+            )
+        }
+
     private fun createTestVoucherValueDecision(
         id: VoucherValueDecisionId,
         validFrom: LocalDate,
         validTo: LocalDate,
         headOfFamilyId: PersonId,
+        partnerId: PersonId? = null,
         childId: ChildId,
         dateOfBirth: LocalDate,
         unitId: DaycareId,
@@ -250,7 +389,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             validFrom = validFrom,
             validTo = validTo,
             headOfFamilyId = headOfFamilyId,
-            partnerId = null,
+            partnerId = partnerId,
             headOfFamilyIncome = null,
             partnerIncome = null,
             childIncome = null,
