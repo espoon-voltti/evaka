@@ -516,12 +516,13 @@ WHERE decision.id = ${bind(id)}
         ?.let {
             it.copy(
                 partnerIsCodebtor =
-                    partnerIsCodebtor(
-                        this,
-                        it.partner?.id,
-                        listOf(it.child.id),
-                        FiniteDateRange(it.validFrom, it.validTo),
-                    )
+                    it.partnerIsCodebtor
+                        ?: partnerIsCodebtor(
+                            this,
+                            it.partner?.id,
+                            listOf(it.child.id),
+                            FiniteDateRange(it.validFrom, it.validTo),
+                        )
             )
         }
 }
@@ -607,12 +608,16 @@ SELECT vvd.id,
        vvd.sent_at,
        vvd.head_of_family_id,
        vvd.partner_id,
-       vvd.child_id
+       vvd.child_id,
+       vvd.partner_is_codebtor
 FROM voucher_value_decision vvd
-WHERE vvd.status IN ('SENT')
-AND vvd.document_key IS NOT NULL
-AND (vvd.head_of_family_id = ${bind(citizenId)}
-    OR vvd.partner_id = ${bind(citizenId)})
+WHERE
+    vvd.status = 'SENT' AND
+    vvd.document_key IS NOT NULL AND
+    (
+        vvd.head_of_family_id = ${bind(citizenId)} OR
+        (vvd.partner_id = ${bind(citizenId)} AND vvd.partner_is_codebtor IS NOT FALSE)
+    )
 """
         )
     }
@@ -624,10 +629,11 @@ data class VoucherValueDecisionCitizenInfoRow(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val sentAt: HelsinkiDateTime,
-    val headOfFamilyId: PersonId,
-    val partnerId: PersonId?,
+    override val headOfFamilyId: PersonId,
+    override val partnerId: PersonId?,
+    override val partnerIsCodebtor: Boolean?,
     val childId: PersonId,
-)
+) : HasDebtors
 
 fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
     id: VoucherValueDecisionId,
@@ -636,6 +642,18 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
     createUpdate {
         sql(
             "UPDATE voucher_value_decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(id)}"
+        )
+    }
+        .execute()
+}
+
+fun Database.Transaction.setVoucherValueDecisionPartnerIsCodebtor(
+    id: VoucherValueDecisionId,
+    partnerIsCodebtor: Boolean,
+) {
+    createUpdate {
+        sql(
+            "UPDATE voucher_value_decision SET partner_is_codebtor = ${bind(partnerIsCodebtor)} WHERE id = ${bind(id)}"
         )
     }
         .execute()

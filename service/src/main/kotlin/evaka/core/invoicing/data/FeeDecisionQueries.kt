@@ -116,6 +116,7 @@ SELECT
     decision.head_of_family_id AS head_id,
     decision.document_contains_contact_info,
     decision.archived_at,
+    decision.partner_is_codebtor,
     head.date_of_birth as head_date_of_birth,
     head.first_name as head_first_name,
     head.last_name as head_last_name,
@@ -649,22 +650,22 @@ fun Database.Read.getDetailedFeeDecisionsByIds(
     if (ids.isEmpty()) return emptyList()
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
         .toList<FeeDecisionDetailed>()
-}
-
-fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
-    return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ${bind(uuid)}") }))
-        .exactlyOneOrNull<FeeDecisionDetailed>()
-        ?.let {
+        .map {
             it.copy(
                 partnerIsCodebtor =
-                    partnerIsCodebtor(
-                        this,
-                        it.partner?.id,
-                        it.children.map { c -> c.child.id },
-                        it.validDuring,
-                    )
+                    it.partnerIsCodebtor
+                        ?: partnerIsCodebtor(
+                            this,
+                            it.partner?.id,
+                            it.children.map { c -> c.child.id },
+                            it.validDuring,
+                        )
             )
         }
+}
+
+fun Database.Read.getFeeDecision(id: FeeDecisionId): FeeDecisionDetailed? {
+    return getDetailedFeeDecisionsByIds(listOf(id)).firstOrNull()
 }
 
 fun Database.Read.findFeeDecisionsForHeadOfFamily(
@@ -786,6 +787,18 @@ fun Database.Transaction.updateFeeDecisionDocumentKey(id: FeeDecisionId, key: St
         .execute()
 }
 
+fun Database.Transaction.setFeeDecisionPartnerIsCodebtor(
+    id: FeeDecisionId,
+    partnerIsCodebtor: Boolean,
+) {
+    createUpdate {
+        sql(
+            "UPDATE fee_decision SET partner_is_codebtor = ${bind(partnerIsCodebtor)} WHERE id = ${bind(id)}"
+        )
+    }
+        .execute()
+}
+
 fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecisionType) {
     createUpdate {
         sql(
@@ -847,13 +860,17 @@ SELECT fd.id,
        fd.valid_during,
        fd.sent_at,
        fd.head_of_family_id,
-       fd.partner_id
+       fd.partner_id,
+       fd.partner_is_codebtor
 FROM fee_decision fd
-WHERE fd.status in ('SENT')
-AND fd.document_key IS NOT NULL
-AND (fd.head_of_family_id = ${bind(citizenId)}
-    OR fd.partner_id = ${bind(citizenId)})
-    """
+WHERE
+    fd.status = 'SENT' AND
+    fd.document_key IS NOT NULL AND
+    (
+        fd.head_of_family_id = ${bind(citizenId)} OR
+        (fd.partner_id = ${bind(citizenId)} AND fd.partner_is_codebtor IS NOT FALSE)
+    )
+"""
         )
     }
         .toList<FeeDecisionCitizenInfoRow>()
@@ -863,9 +880,10 @@ data class FeeDecisionCitizenInfoRow(
     val id: FeeDecisionId,
     val validDuring: DateRange,
     val sentAt: HelsinkiDateTime,
-    val headOfFamilyId: PersonId,
-    val partnerId: PersonId?,
-)
+    override val headOfFamilyId: PersonId,
+    override val partnerId: PersonId?,
+    override val partnerIsCodebtor: Boolean?,
+) : HasDebtors
 
 fun Database.Transaction.markFeeDecisionAsArchived(id: FeeDecisionId, now: HelsinkiDateTime) =
     createUpdate {

@@ -28,6 +28,7 @@ import evaka.core.invoicing.domain.VoucherValueDecision
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.controllers.ParentshipController
+import evaka.core.pis.service.insertGuardian
 import evaka.core.placement.PlacementController
 import evaka.core.placement.PlacementCreateRequestBody
 import evaka.core.placement.PlacementType
@@ -395,6 +396,49 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
+    }
+
+    @Test
+    fun `decision is sent via suomi fi and email to both the head of family and the codebtor`() {
+        db.transaction {
+            it.insertGuardian(adult2.id, child1.id)
+            it.setEmail(adult1, "head@example.com")
+            it.setEmail(adult2, "codebtor@example.com")
+        }
+        createPlacement(startDate, endDate)
+        val decisionId = sendAllValueDecisions().single()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(
+            setOf(adult1.ssn, adult2.ssn),
+            MockSfiMessagesClient.getMessages().map { it.ssn }.toSet(),
+        )
+        assertEquals(
+            setOf("head@example.com", "codebtor@example.com"),
+            MockEmailClient.emails.map { it.toAddress }.toSet(),
+        )
+
+        sfiAsyncJobs.getEvents(db, clock)
+        val metadata =
+            processMetadataController.getVoucherValueDecisionMetadata(
+                dbInstance(),
+                admin.user,
+                clock,
+                decisionId,
+            )
+        assertEquals(
+            setOf("Doe John", "Doe Joan"),
+            metadata.data?.primaryDocument?.sfiDeliveries?.map { it.recipientName }?.toSet(),
+        )
+    }
+
+    @Test
+    fun `decision is not sent to a partner who is not a codebtor`() {
+        createPlacement(startDate, endDate)
+        sendAllValueDecisions()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(listOf(adult1.ssn), MockSfiMessagesClient.getMessages().map { it.ssn })
     }
 
     @Test
@@ -1065,6 +1109,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             decisionIds,
         )
+    }
+
+    private fun Database.Transaction.setEmail(person: DevPerson, email: String) = execute {
+        sql("UPDATE person SET email = ${bind(email)} WHERE id = ${bind(person.id)}")
     }
 
     private fun getEmailFor(person: DevPerson): Email {

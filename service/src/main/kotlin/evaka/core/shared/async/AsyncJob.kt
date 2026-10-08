@@ -359,11 +359,17 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendNewFeeDecisionEmail(val decisionId: FeeDecisionId) : AsyncJob {
+    data class SendNewFeeDecisionEmail(
+        val decisionId: FeeDecisionId,
+        val recipientId: PersonId? = null,
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendNewVoucherValueDecisionEmail(val decisionId: VoucherValueDecisionId) : AsyncJob {
+    data class SendNewVoucherValueDecisionEmail(
+        val decisionId: VoucherValueDecisionId,
+        val recipientId: PersonId? = null,
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 

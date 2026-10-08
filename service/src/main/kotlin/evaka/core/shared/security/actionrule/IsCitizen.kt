@@ -557,7 +557,9 @@ WHERE guardian_id = ${bind(citizenId)}
                 """
 SELECT fd.id
 FROM fee_decision fd
-WHERE (fd.head_of_family_id = ${bind(citizenId)} OR fd.partner_id = ${bind(citizenId)}) 
+WHERE
+    fd.head_of_family_id = ${bind(citizenId)} OR
+    (fd.partner_id = ${bind(citizenId)} AND fd.partner_is_codebtor IS NOT FALSE)
             """
                     .trimIndent()
             )
@@ -569,7 +571,9 @@ WHERE (fd.head_of_family_id = ${bind(citizenId)} OR fd.partner_id = ${bind(citiz
                 """
 SELECT vvd.id
 FROM voucher_value_decision vvd
-WHERE (vvd.head_of_family_id = ${bind(citizenId)} OR vvd.partner_id = ${bind(citizenId)}) 
+WHERE
+    vvd.head_of_family_id = ${bind(citizenId)} OR
+    (vvd.partner_id = ${bind(citizenId)} AND vvd.partner_is_codebtor IS NOT FALSE)
             """
                     .trimIndent()
             )

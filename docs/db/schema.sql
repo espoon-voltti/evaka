@@ -2861,6 +2861,7 @@ CREATE TABLE public.fee_decision (
     document_contains_contact_info boolean DEFAULT false NOT NULL,
     process_id uuid,
     archived_at timestamp with time zone,
+    partner_is_codebtor boolean,
     CONSTRAINT "check$head_of_family_is_not_partner" CHECK (((partner_id IS NULL) OR (head_of_family_id <> partner_id))),
     CONSTRAINT "check$valid_range" CHECK ((NOT (lower_inf(valid_during) OR upper_inf(valid_during))))
 );
@@ -4137,6 +4138,7 @@ CREATE TABLE public.voucher_value_decision (
     document_contains_contact_info boolean DEFAULT false NOT NULL,
     process_id uuid,
     archived_at timestamp with time zone,
+    partner_is_codebtor boolean,
     CONSTRAINT "check$head_of_family_is_not_partner" CHECK (((partner_id IS NULL) OR (head_of_family_id <> partner_id))),
     CONSTRAINT "check$voucher_value_gte_co_payment" CHECK ((voucher_value >= co_payment)),
     CONSTRAINT non_empty_voucher_value_decisions CHECK (((0 = num_nonnulls(placement_unit_id, placement_type, service_need_fee_coefficient, service_need_voucher_value_coefficient, service_need_fee_description_fi, service_need_fee_description_sv, service_need_voucher_value_description_fi, service_need_voucher_value_description_sv)) OR (8 = num_nonnulls(placement_unit_id, placement_type, service_need_fee_coefficient, service_need_voucher_value_coefficient, service_need_fee_description_fi, service_need_fee_description_sv, service_need_voucher_value_description_fi, service_need_voucher_value_description_sv))))

@@ -20,12 +20,12 @@ import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.invoicing.data.approveFeeDecisionDraftsForSending
 import evaka.core.invoicing.data.deleteFeeDecisions
 import evaka.core.invoicing.data.findFeeDecisionsForHeadOfFamily
-import evaka.core.invoicing.data.getDetailedFeeDecisionsByIds
 import evaka.core.invoicing.data.getFeeDecision
 import evaka.core.invoicing.data.getFeeDecisionsByIds
 import evaka.core.invoicing.data.lockFeeDecisions
 import evaka.core.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import evaka.core.invoicing.data.removeFeeDecisionIgnore
+import evaka.core.invoicing.data.setFeeDecisionPartnerIsCodebtor
 import evaka.core.invoicing.data.setFeeDecisionProcessId
 import evaka.core.invoicing.data.setFeeDecisionSent
 import evaka.core.invoicing.data.setFeeDecisionToIgnored
@@ -42,12 +42,14 @@ import evaka.core.invoicing.domain.FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
 import evaka.core.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
 import evaka.core.invoicing.domain.FeeDecisionType
 import evaka.core.invoicing.domain.FinanceDecisionType
+import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.isRetroactive
 import evaka.core.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import evaka.core.invoicing.validateFinanceDecisionHandler
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.NotificationCategory
 import evaka.core.s3.DocumentKey
+import evaka.core.s3.DocumentLocation
 import evaka.core.s3.DocumentService
 import evaka.core.setting.getSettings
 import evaka.core.sficlient.SentSfiMessage
@@ -296,6 +298,10 @@ class FeeDecisionService(
                 .upload(DocumentKey.FeeDecision(decision.id, lang), pdfByteArray, "application/pdf")
                 .key
         tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
+        tx.setFeeDecisionPartnerIsCodebtor(
+            decision.id,
+            decision.partner != null && decision.partnerIsCodebtor == true,
+        )
     }
 
     fun sendDecision(tx: Database.Transaction, clock: EvakaClock, id: FeeDecisionId): Boolean {
@@ -315,30 +321,59 @@ class FeeDecisionService(
             return false
         }
 
-        val recipient = decision.headOfFamily
         val lang = getDecisionLanguage(decision)
-
-        // If address is missing (restricted info enabled), use the financial handling address
-        // instead
-        val sendAddress =
-            DecisionSendAddress.fromPerson(recipient)
-                ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
-
-        val feeDecisionDisplayName =
-            calculateDecisionFileName(decision, lang, FileNameType.DISPLAY_NAME)
-
         val documentLocation = documentClient.locate(DocumentKey.FeeDecision(decision.documentKey))
+
+        sendSfiMessage(tx, clock, decision, decision.headOfFamily, lang, documentLocation)
+
+        val codebtor = decision.partner?.takeIf { decision.partnerIsCodebtor == true }
+        if (codebtor != null) {
+            if (codebtor.ssn.isNullOrBlank()) {
+                logger.info {
+                    "Cannot deliver fee decision ${decision.id} to codebtor. SSN is missing."
+                }
+            } else {
+                sendSfiMessage(tx, clock, decision, codebtor, lang, documentLocation)
+            }
+        }
+
+        planDecisionNotifications(tx, clock, listOf(decision))
+
+        setSentAndUpdateProcess(
+            tx,
+            clock,
+            AuthenticatedUser.SystemInternalUser,
+            listOf(decision.id),
+        )
+
+        return true
+    }
+
+    private fun sendSfiMessage(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decision: FeeDecisionDetailed,
+        recipient: PersonDetailed,
+        lang: OfficialLanguage,
+        documentLocation: DocumentLocation,
+    ) {
+        val sendAddress =
+            DecisionSendAddress.fromPerson(recipient)?.takeUnless {
+                recipient.restrictedDetailsEnabled
+            } ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
 
         val messageId =
             tx.storeSentSfiMessage(
-                SentSfiMessage(guardianId = decision.headOfFamily.id, feeDecisionId = decision.id)
+                SentSfiMessage(guardianId = recipient.id, feeDecisionId = decision.id)
             )
 
         val message =
             SfiMessage(
                 messageId = messageId,
-                documentId = decision.id.toString(),
-                documentDisplayName = feeDecisionDisplayName,
+                // Suomi.fi requires a unique document ID for each message
+                documentId = "${decision.id}|${recipient.id}",
+                documentDisplayName =
+                    calculateDecisionFileName(decision, lang, FileNameType.DISPLAY_NAME),
                 documentBucket = documentLocation.bucket,
                 documentKey = documentLocation.key,
                 firstName = recipient.firstName,
@@ -354,37 +389,18 @@ class FeeDecisionService(
         logger.info { "Sending fee decision as suomi.fi message ${message.documentId}" }
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
-        asyncJobRunner.plan(
-            tx,
-            listOf(AsyncJob.SendNewFeeDecisionEmail(decisionId = decision.id)),
-            runAt = clock.now(),
-        )
-
-        setSentAndUpdateProcess(
-            tx,
-            clock,
-            AuthenticatedUser.SystemInternalUser,
-            listOf(decision.id),
-        )
-
-        return true
     }
 
     fun setManuallySent(
         tx: Database.Transaction,
         clock: EvakaClock,
         user: AuthenticatedUser,
-        ids: List<FeeDecisionId>,
-        audit: AuditContext,
+        decisions: List<FeeDecisionDetailed>,
     ) {
-        val decisions =
-            tx.getDetailedFeeDecisionsByIds(ids).onEach { decision ->
-                audit.observeDate(decision.validDuring.start)
-            }
         if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
         }
-        setSentAndUpdateProcess(tx, clock, user, ids)
+        setSentAndUpdateProcess(tx, clock, user, decisions.map { it.id })
     }
 
     fun setSentAndUpdateProcess(
@@ -453,6 +469,49 @@ class FeeDecisionService(
         tx.setFeeDecisionType(decisionId, type)
     }
 
+    fun planDecisionNotifications(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decisions: List<FeeDecisionDetailed>,
+    ) {
+        val childNames =
+            tx.getPushChildNames(
+                decisions.flatMap { decision -> decision.children.map { it.child.id } }
+            )
+
+        decisions.forEach { decision ->
+            val recipientIds =
+                listOfNotNull(
+                    decision.headOfFamily.id,
+                    decision.partner
+                        ?.takeIf { decision.partnerIsCodebtor == true && !it.ssn.isNullOrBlank() }
+                        ?.id,
+                )
+            asyncJobRunner.plan(
+                tx,
+                recipientIds.map { recipientId ->
+                    AsyncJob.SendNewFeeDecisionEmail(
+                        decisionId = decision.id,
+                        recipientId = recipientId,
+                    )
+                },
+                runAt = clock.now(),
+            )
+
+            recipientIds.forEach { recipientId ->
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    recipientId,
+                    CitizenPushNotification.FeeDecision(
+                        decisionId = decision.id,
+                        childNames = decision.children.map { childNames.getValue(it.child.id) },
+                    ),
+                )
+            }
+        }
+    }
+
     fun runSendNewFeeDecisionEmail(
         db: Database.Connection,
         clock: EvakaClock,
@@ -463,6 +522,11 @@ class FeeDecisionService(
             db.read { tx -> tx.getFeeDecision(feeDecisionId) }
                 ?: throw NotFound("Decision not found")
 
+        // Backwards compatibility: recipientId was added to the job later, so if it's null, we
+        // default to the head of family.
+        // Can be removed after a while when we are sure all old jobs have been processed.
+        val recipientId = msg.recipientId ?: decision.headOfFamily.id
+
         logger.info { "Sending fee decision emails for (decisionId: $feeDecisionId)" }
 
         // simplified to get rid of superfluous language requirement
@@ -471,25 +535,13 @@ class FeeDecisionService(
             emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
         Email.create(
                 db,
-                decision.headOfFamily.id,
+                recipientId,
                 NotificationCategory.DECISION_NOTIFICATION,
                 fromAddress,
                 content,
-                "$feeDecisionId - ${decision.headOfFamily.id}",
+                "$feeDecisionId - $recipientId",
             )
             ?.also { emailClient.send(it) }
-        db.transaction { tx ->
-            val childNames = tx.getPushChildNames(decision.children.map { it.child.id })
-            citizenPushNotifications.plan(
-                tx,
-                clock.now(),
-                decision.headOfFamily.id,
-                CitizenPushNotification.FeeDecision(
-                    decisionId = feeDecisionId,
-                    childNames = decision.children.map { childNames.getValue(it.child.id) },
-                ),
-            )
-        }
 
         logger.info { "Successfully sent fee decision email (id: $feeDecisionId)." }
     }
