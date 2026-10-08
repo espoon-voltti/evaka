@@ -239,8 +239,7 @@ const en: Translations = {
       username: 'Username',
       usernamePlaceholder: 'Email address',
       password: 'Password',
-      rateLimitError:
-        'Your account has been temporarily locked due to a large number of login attempts. Please try again later.',
+      rateLimitError: 'Too many login attempts. Please try again later.',
       forgotPassword: 'Forgot your password?',
       forgotPasswordInfo:
         'Authenticate in the Suomi.fi service to change your password on the Personal information page.',
