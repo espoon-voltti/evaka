@@ -63,6 +63,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.security.PilotFeature
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -538,6 +539,30 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
             limit = limit,
         )
 
+    private val retentionSchema =
+        buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
+
+    private fun runRetention(personId: PersonId) =
+        runDataRetention(db, clock, asyncJobRunner, retentionSchema, personId, dryRun = false)
+
+    // A person row waits a year after its creation, which the column default sets
+    private fun setCreatedLongAgo(vararg ids: PersonId) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                "UPDATE person SET created = ${bind(now.minusYears(20))} WHERE id = ANY(${bind(ids.toList())})"
+            )
+        }
+    }
+
+    private fun heldBy(personId: PersonId): Set<String> = db.transaction { tx ->
+        checkNotNull(tx.loadPersonGraph(retentionSchema, personId))
+            .foreignNodes
+            .map { "${it.table.name}.${it.referenceColumn}" }
+            .toSet()
+    }
+
+    private fun personExists(id: PersonId) = rowCount("person WHERE id = '${id.raw}'") == 1
+
     @Test
     fun `deleteExpiredBulletinThreads deletes a bulletin thread with its messages, recipients, participants, children and content five years after its children left care`() {
         insertGroupPlacement(child.id, expiredPlacementPeriod)
@@ -888,6 +913,28 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
 
         assertEquals(sent.threadIds, batch.threads.map { it.threadId })
         assertEquals(setOf(child.id, sibling), batch.threads.single().childIds.toSet())
+    }
+
+    @Test
+    fun `runDataRetention keeps a child that a thread records until deleteExpiredRegularThreads deletes the thread`() {
+        val leftCareOverTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
+        insertGroupPlacement(child.id, leftCareOverTenYearsAgo)
+        setCreatedLongAgo(child.id)
+        // Staff can message the child's guardian only while the child is placed
+        sendMessage(
+            sentAt = HelsinkiDateTime.of(leftCareOverTenYearsAgo.start.plusDays(1), LocalTime.NOON),
+            type = MessageType.MESSAGE,
+        )
+
+        runRetention(child.id)
+
+        assertContains(heldBy(child.id), "message_thread_children.child_id")
+        assertEquals(true, personExists(child.id))
+
+        deleteExpiredRegularThreads()
+        runRetention(child.id)
+
+        assertEquals(false, personExists(child.id))
     }
 
     @Test
