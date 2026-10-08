@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import { z } from 'zod'
 
 import type { EvakaSessionUser } from '../../shared/auth/index.ts'
+import { clientIpKey } from '../../shared/client-ip.ts'
 import {
   filterValidDeviceAuthHistory,
   setDeviceAuthHistoryCookie
@@ -28,11 +29,20 @@ const Request = z.object({
 
 const eventCode = (name: string) => `evaka.citizen_weak.${name}`
 
+export interface WeakLoginRateLimits {
+  /** Attempts per hour per username, 0 means no limit */
+  perUsername: number
+  /** Attempts per hour per client IP, 0 means no limit */
+  perIp: number
+  /** If false, exceeding perIp is only logged */
+  enforcePerIp: boolean
+}
+
 export const authWeakLogin = (
   sessions: Sessions<'citizen'>,
-  loginAttemptsPerHour: number,
   redis: RedisClient,
-  cookieSecret: string
+  cookieSecret: string,
+  rateLimits: WeakLoginRateLimits
 ) => [
   cookieParser(cookieSecret),
   toRequestHandler(async (req, res) => {
@@ -51,18 +61,45 @@ export const authWeakLogin = (
         }
       )
 
+      // Checked before the username limit so that attempts rejected here don't
+      // count against the usernames they target
+      const ipKey = clientIpKey(req.ip)
+      if (rateLimits.perIp > 0 && ipKey !== undefined) {
+        const { allowed, count } = await consumeRateLimit(
+          redis,
+          `citizen-weak-login-ip:${ipKey}`,
+          rateLimits.perIp,
+          60 * 60
+        )
+        if (count === rateLimits.perIp + 1) {
+          const realIp = req.headers['x-real-ip']
+          logWarn('Login request exceeded IP rate limit', req, {
+            eventCode: eventCode('ip_rate_limit_exceeded'),
+            ipKey,
+            xRealIpMatches:
+              typeof realIp === 'string' && clientIpKey(realIp) === ipKey,
+            enforced: rateLimits.enforcePerIp
+          })
+        }
+        if (!allowed && rateLimits.enforcePerIp) {
+          res.sendStatus(429)
+          return
+        }
+      }
+
       if (
-        loginAttemptsPerHour > 0 &&
+        rateLimits.perUsername > 0 &&
         !(
           await consumeRateLimit(
             redis,
             `citizen-weak-login:${username}`,
-            loginAttemptsPerHour,
+            rateLimits.perUsername,
             60 * 60
           )
         ).allowed
       ) {
         logWarn('Login request hit rate limit', req, {
+          eventCode: eventCode('rate_limited'),
           username
         })
         res.sendStatus(429)

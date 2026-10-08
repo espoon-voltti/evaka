@@ -17,6 +17,7 @@ import { Cookie, CookieJar } from 'tough-cookie'
 import { apiRouter } from '../../app.ts'
 import type { Config } from '../config.ts'
 import { evakaServiceUrl } from '../config.ts'
+import { trustReverseProxy } from '../reverse-proxy.ts'
 import type { CitizenUser, EmployeeUser } from '../service-client.ts'
 import type { SessionType } from '../session.ts'
 import { sessionCookie } from '../session.ts'
@@ -152,6 +153,7 @@ export class GatewayTester {
     redisClient?: MockRedisClient
   ): Promise<GatewayTester> {
     const app = express()
+    trustReverseProxy(app)
     const redis = redisClient ?? new MockRedisClient()
     app.use('/api', apiRouter(config, redis))
     return new Promise((resolve) => {
