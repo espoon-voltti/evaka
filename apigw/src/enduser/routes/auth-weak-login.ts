@@ -53,12 +53,14 @@ export const authWeakLogin = (
 
       if (
         loginAttemptsPerHour > 0 &&
-        !(await consumeRateLimit(
-          redis,
-          `citizen-weak-login:${username}`,
-          loginAttemptsPerHour,
-          60 * 60
-        ))
+        !(
+          await consumeRateLimit(
+            redis,
+            `citizen-weak-login:${username}`,
+            loginAttemptsPerHour,
+            60 * 60
+          )
+        ).allowed
       ) {
         logWarn('Login request hit rate limit', req, {
           username
