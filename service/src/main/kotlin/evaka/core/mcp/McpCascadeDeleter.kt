@@ -126,11 +126,38 @@ JOIN mcp_test_data_batch b ON b.id = e.batch_id
                     }
             }
         }
+        val externallyArchivedTemplate =
+            if (table == "child_document") suspendExternalArchiving(id) else null
         val count =
             tx.createUpdate { sql("DELETE FROM $table WHERE id = ${bind(id)}") }
                 .executeAndReturnCount()
+        externallyArchivedTemplate?.let { templateId ->
+            tx.execute {
+                sql(
+                    "UPDATE document_template SET archive_externally = true WHERE id = ${bind(templateId)}"
+                )
+            }
+        }
         countDeleted(table, count, untracked = tracked == null)
     }
+
+    /**
+     * A trigger refuses to delete a child document whose template is archived externally until the
+     * document has been archived. Test documents are never archived, so the template's flag is
+     * cleared for the duration of the delete. Returns the template id if the flag was cleared.
+     */
+    private fun suspendExternalArchiving(childDocumentId: UUID): UUID? =
+        tx.createUpdate {
+                sql(
+                    """
+UPDATE document_template SET archive_externally = false
+WHERE archive_externally AND id = (SELECT template_id FROM child_document WHERE id = ${bind(childDocumentId)})
+RETURNING id
+"""
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            .exactlyOneOrNull<UUID>()
 
     private fun countDeleted(table: String, count: Int, untracked: Boolean) {
         if (count == 0) return

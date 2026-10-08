@@ -5,12 +5,18 @@
 package evaka.core.mcp
 
 import evaka.core.PureJdbiTest
+import evaka.core.document.DocumentTemplateContent
+import evaka.core.document.childdocument.DocumentContent
+import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.shared.Id
 import evaka.core.shared.McpTestDataBatchId
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevChildDocument
+import evaka.core.shared.dev.DevChildDocumentPublishedVersion
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDocumentTemplate
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
@@ -18,6 +24,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.Conflict
+import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
@@ -201,6 +208,63 @@ class McpTestDataServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(emptyMap(), result.untrackedRowCounts)
         assertEquals(1, countRows("person"), "the guardian person was not part of the batch")
         assertEquals(0, countRows("guardian"))
+    }
+
+    @Test
+    fun `child documents of externally archived templates can be deleted`() {
+        val child = DevPerson()
+        val template =
+            DevDocumentTemplate(
+                validity = DateRange(LocalDate.of(2026, 1, 1), null),
+                content = DocumentTemplateContent(sections = emptyList()),
+                archiveExternally = true,
+                processDefinitionNumber = "12.06.01",
+                archiveDurationMonths = 120,
+            )
+        val content = DocumentContent(answers = emptyList())
+        val document =
+            DevChildDocument(
+                childId = child.id,
+                templateId = template.id,
+                status = DocumentStatus.COMPLETED,
+                content = content,
+                modifiedAt = now,
+                modifiedBy = admin.evakaUserId,
+                contentLockedAt = now,
+                contentLockedBy = null,
+                publishedVersions =
+                    listOf(
+                        DevChildDocumentPublishedVersion(
+                            versionNumber = 1,
+                            createdAt = now,
+                            createdBy = admin.evakaUserId,
+                            publishedContent = content,
+                        )
+                    ),
+            )
+        val batchId = db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(template)
+            tx.insert(document)
+            val batchId = tx.batch("documents")
+            tx.track(batchId, "child_document", document.id)
+            batchId
+        }
+
+        val result = db.transaction { tx -> tx.deleteBatch(batchId) }
+        assertEquals(1, result.deletedRowCounts["child_document"])
+        assertEquals(0, countRows("child_document"))
+        assertTrue(
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            "SELECT archive_externally FROM document_template WHERE id = ${bind(template.id)}"
+                        )
+                    }
+                    .exactlyOne<Boolean>()
+            },
+            "the template is still archived externally",
+        )
     }
 
     private fun Database.Transaction.batch(
