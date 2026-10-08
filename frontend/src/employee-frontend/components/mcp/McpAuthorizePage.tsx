@@ -210,6 +210,7 @@ const ConsentForm = React.memo(function ConsentForm({
           wide
           noMargin
         />
+        <Gap />
         {approved ? (
           <P>{mcp.authorize.approved}</P>
         ) : (
