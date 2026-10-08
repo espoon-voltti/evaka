@@ -43,6 +43,7 @@ import evaka.core.shared.IncomeId
 import evaka.core.shared.IncomeStatementId
 import evaka.core.shared.InvoiceCorrectionId
 import evaka.core.shared.InvoiceId
+import evaka.core.shared.McpAuthorizationId
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.OtherAssistanceMeasureId
@@ -1612,6 +1613,14 @@ sealed interface Action {
     ) : ScopedAction<InvoiceCorrectionId> {
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         UPDATE_NOTE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF));
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class McpAuthorization(
+        override vararg val defaultRules: ScopedActionRule<in McpAuthorizationId>
+    ) : ScopedAction<McpAuthorizationId> {
+        REVOKE(IsEmployee.ownerOfMcpAuthorization());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

@@ -225,6 +225,14 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // Revocation
         val authorizationId =
             employeeController.getMcpAuthorizations(dbInstance(), admin.user, clock).single().id
+        assertThrows<Forbidden> {
+            employeeController.revokeMcpAuthorization(
+                dbInstance(),
+                otherAdmin.user,
+                clock,
+                authorizationId,
+            )
+        }
         employeeController.revokeMcpAuthorization(dbInstance(), admin.user, clock, authorizationId)
         val revoked =
             serverController.handle(

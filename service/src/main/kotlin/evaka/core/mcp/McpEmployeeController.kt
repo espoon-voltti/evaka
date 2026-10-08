@@ -268,11 +268,9 @@ class McpEmployeeController(
                     tx,
                     user,
                     clock,
-                    Action.Global.MANAGE_MCP_AUTHORIZATIONS,
+                    Action.McpAuthorization.REVOKE,
+                    id,
                 )
-                val authorization = tx.getMcpAuthorization(id)
-                if (authorization == null || authorization.employeeId != user.id)
-                    throw NotFound("Authorization not found")
                 if (!tx.revokeMcpAuthorization(id, user.id, clock.now())) {
                     throw BadRequest("Authorization has already been revoked")
                 }
