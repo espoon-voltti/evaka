@@ -24,4 +24,10 @@ if ! "$appium" driver list --installed --json | grep -q "\"xcuitest@$XCUITEST_DR
 fi
 # Launching the prebuilt runner with simctl takes seconds, where xcodebuild
 # has taken minutes right after a simulator reboot
-"$appium" driver run xcuitest download-wda -- --kind sim --platform iOS --outdir "$APPIUM_HOME/wda"
+wda="$APPIUM_HOME/wda/WebDriverAgentRunner-Runner.app"
+if [ -d "$wda" ]; then
+  echo "WebDriverAgent is already downloaded at $wda"
+else
+  rm -rf "$APPIUM_HOME/wda"
+  "$appium" driver run xcuitest download-wda -- --kind sim --platform iOS --outdir "$APPIUM_HOME/wda"
+fi
