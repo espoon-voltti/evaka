@@ -23,6 +23,8 @@ export interface PaintResult {
   box: ScreenBox | undefined
   /** How much of the element's layout area is drawn, 0..1 */
   ratio: number
+  /** The screen size in points */
+  screen: { width: number; height: number }
 }
 
 export const formatBox = (box: ScreenBox | undefined) =>
@@ -82,16 +84,21 @@ export async function painted(
     throw new Error(`Cannot colour ${cssSelector}: ${size.error}`)
   const { width, height, dpr } = size
   const expectedArea = Math.round(width * dpr) * Math.round(height * dpr)
-  let result: PaintResult = { box: undefined, ratio: 0 }
+  let result: PaintResult = {
+    box: undefined,
+    ratio: 0,
+    screen: { width: 0, height: 0 }
+  }
   try {
     const deadline = Date.now() + paintTimeoutMs
     for (let attempt = 0; ; attempt++) {
       if (attempt > 0) await sleep(paintRetryIntervalMs)
-      const magenta = measureMagenta(
+      const { magenta, screen } = measureMagenta(
         await session.screenshot(),
         Math.round(ignoreAbove * dpr)
       )
       result = {
+        screen: { width: screen.width / dpr, height: screen.height / dpr },
         box: magenta && {
           left: magenta.minX / dpr,
           top: magenta.minY / dpr,
@@ -137,11 +144,8 @@ interface Magenta {
 
 // The screen coordinates of the web viewport are unknown, so the painted
 // area is measured on the whole screen below row `fromRow`
-function measureMagenta(
-  screenshot: Buffer,
-  fromRow: number
-): Magenta | undefined {
-  const { width, pixels, channels } = decodePng(screenshot)
+function measureMagenta(screenshot: Buffer, fromRow: number) {
+  const { width, height, pixels, channels } = decodePng(screenshot)
   let count = 0
   let minX = Infinity
   let maxX = -Infinity
@@ -159,7 +163,9 @@ function measureMagenta(
       maxY = Math.max(maxY, y)
     }
   }
-  return count === 0
-    ? undefined
-    : { count, minX, minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+  const magenta: Magenta | undefined =
+    count === 0
+      ? undefined
+      : { count, minX, minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+  return { magenta, screen: { width, height } }
 }

@@ -13,17 +13,15 @@ import {
   testAdult
 } from './support/fixtures'
 import { formatBox, painted } from './support/paint'
-import type { ScreenBox } from './support/paint'
+import type { PaintResult } from './support/paint'
 import { ensureSimulatorBooted } from './support/simulator'
 import {
   formatMeasurement,
-  measureViewport,
   scrollCalendar,
   selectors,
   triggerStaleViewport,
   waitForKeyboardClosed
 } from './support/stale-viewport'
-import type { Rect, ViewportMeasurement } from './support/stale-viewport'
 import { launchWebClip, openInWebClip, seedWebClip } from './support/webclip'
 import { Session, appiumHome, sleep, startAppium } from './support/webdriver'
 
@@ -34,6 +32,8 @@ const maxStaleViewportLoops = 3
 
 let stopAppium: () => void
 let session: Session
+// The page starts below the status bar in portrait
+let statusBarHeight: number
 
 beforeAll(
   async () => {
@@ -62,6 +62,9 @@ beforeAll(
     })
     await session.setScriptTimeout(30000)
     await launchWebClip(session)
+    statusBarHeight = await session.execute(
+      () => Math.max(screen.width, screen.height) - window.innerHeight
+    )
   },
   10 * 60 * 1000
 )
@@ -82,65 +85,80 @@ afterEach(async ({ task }) => {
 const waitForCalendar = () =>
   session.waitForDisplayed('[data-qa="calendar-page"][data-isloading="false"]')
 
-const close = (a: number | undefined, b: number | undefined) =>
-  a !== undefined && b !== undefined && Math.abs(a - b) <= tolerancePx
+const close = (a: number, b: number) => Math.abs(a - b) <= tolerancePx
+
+/**
+ * What the user sees: where the element is drawn on the screen, measured from
+ * a screenshot (see support/paint.ts)
+ */
+const onScreen = (selector: string, minRatio = 0) =>
+  painted(session, selector, { ignoreAbove: statusBarHeight, minRatio })
+
+const drawnBox = (name: string, { box }: PaintResult) => {
+  expect(box, `${name} is not drawn on the screen at all`).toBeDefined()
+  return box!
+}
+
+/** The header must sit right below the status bar, across the screen */
+async function expectHeaderBelowStatusBar(when: string) {
+  const result = await onScreen(selectors.header)
+  const box = drawnBox('the header', result)
+  expect(
+    close(box.top, statusBarHeight) && close(box.width, result.screen.width),
+    `${when} the header is drawn at ${formatBox(box)}, expected it right below the status bar (${statusBarHeight}) across the ${result.screen.width} wide screen`
+  ).toBe(true)
+}
+
+/** The bottom navigation must sit at the bottom edge of the screen */
+async function expectNavigationAtScreenBottom(when: string) {
+  const result = await onScreen(selectors.nav)
+  const box = drawnBox('the bottom navigation', result)
+  const { width, height } = result.screen
+  expect(
+    close(box.top + box.height, height) && close(box.width, width),
+    `${when} the bottom navigation is drawn at ${formatBox(box)}, expected it at the bottom of the ${width}x${height} screen`
+  ).toBe(true)
+}
+
+/**
+ * The button must be drawn whole on the screen and nothing may be on top of
+ * it. iOS WebKit can draw a fixed modal clipped by the app's scrolling area
+ * while geometry and hit testing still report the button as visible (PR
+ * #9975), so the drawn area is what counts.
+ */
+async function expectButtonOnScreen(dataQa: string) {
+  const selector = `[data-qa="${dataQa}"]`
+  await session.waitForDisplayed(selector)
+  const { box, ratio } = await onScreen(selector, minPaintedRatio)
+  expect(
+    ratio,
+    `${selector} is not drawn whole on the screen: ${Math.round(ratio * 100)}% of it is visible, drawn area ${formatBox(box)} (clipped or something drawn over it)`
+  ).toBeGreaterThanOrEqual(minPaintedRatio)
+  const coveredBy = await session.execute((sel: string) => {
+    const el = document.querySelector(sel)!
+    const rect = el.getBoundingClientRect()
+    const hit = document.elementFromPoint(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2
+    )
+    return hit === null
+      ? 'nothing'
+      : el.contains(hit)
+        ? null
+        : `${hit.tagName.toLowerCase()} in [data-qa="${hit.closest('[data-qa]')?.getAttribute('data-qa')}"]`
+  }, selector)
+  expect(
+    coveredBy,
+    `${selector} is covered by ${coveredBy} at its centre point`
+  ).toBeNull()
+}
 
 // The tests run the app as a real home screen web clip, where iOS sets
 // `navigator.standalone` and the app lays itself out as an app shell. The
 // Playwright suite runs Chromium only, which does not reproduce the iOS
 // WebKit layout bugs these tests are for.
 describe('Citizen app installed on the iOS home screen', () => {
-  /**
-   * A button is reachable when it is fully inside the viewport, nothing is on
-   * top of it in hit testing, and it is actually painted on screen. The last
-   * check is the one that matters: iOS WebKit can paint a fixed element
-   * clipped by a scrolling ancestor while hit testing and geometry still
-   * report it as visible (PR #9975).
-   */
-  async function expectReachable(dataQa: string) {
-    const selector = `[data-qa="${dataQa}"]`
-    await session.waitForDisplayed(selector)
-    const geometry = await session.execute((sel: string) => {
-      const el = document.querySelector(sel)!
-      const rect = el.getBoundingClientRect()
-      const hit = document.elementFromPoint(
-        rect.left + rect.width / 2,
-        rect.top + rect.height / 2
-      )
-      return {
-        inViewport:
-          rect.left >= 0 &&
-          rect.top >= 0 &&
-          rect.right <= window.innerWidth &&
-          rect.bottom <= window.innerHeight,
-        coveredBy:
-          hit === null
-            ? 'nothing'
-            : el.contains(hit)
-              ? null
-              : `${hit.tagName.toLowerCase()} in [data-qa="${hit.closest('[data-qa]')?.getAttribute('data-qa')}"]`,
-        rect: `${rect.left},${rect.top} ${rect.width}x${rect.height}`,
-        viewport: `${window.innerWidth}x${window.innerHeight}`
-      }
-    }, selector)
-    expect(
-      geometry.inViewport,
-      `${selector} is not fully inside the viewport (rect ${geometry.rect}, viewport ${geometry.viewport})`
-    ).toBe(true)
-    expect(
-      geometry.coveredBy,
-      `${selector} is covered by ${geometry.coveredBy} at its centre point`
-    ).toBeNull()
-    const { box, ratio } = await painted(session, selector, {
-      minRatio: minPaintedRatio
-    })
-    expect(
-      ratio,
-      `${selector} is not painted on screen: ${Math.round(ratio * 100)}% of its ${geometry.rect} area is visible, painted box ${formatBox(box)} (something is drawn over it or it is clipped)`
-    ).toBeGreaterThanOrEqual(minPaintedRatio)
-  }
-
-  it('calendar modal buttons are reachable', async () => {
+  it('calendar modal buttons are drawn whole on the screen', async () => {
     await createFamilyWithPlacement()
     await openInWebClip(session, testAdult, '/calendar')
     await waitForCalendar()
@@ -150,6 +168,8 @@ describe('Citizen app installed on the iOS home screen', () => {
       ),
       'The clip does not run as a standalone app'
     ).toBe(true)
+    await expectHeaderBelowStatusBar('on the calendar')
+    await expectNavigationAtScreenBottom('on the calendar')
 
     for (const action of [
       'calendar-action-reservations',
@@ -157,62 +177,12 @@ describe('Citizen app installed on the iOS home screen', () => {
     ]) {
       await session.click('[data-qa="open-calendar-actions-modal"]')
       await session.click(`[data-qa="${action}"]`)
-      await expectReachable('modal-cancelBtn')
-      await expectReachable('modal-okBtn')
+      await expectButtonOnScreen('modal-cancelBtn')
+      await expectButtonOnScreen('modal-okBtn')
       await session.click('[data-qa="modal-cancelBtn"]')
       await session.waitForGone('[data-qa="modal-cancelBtn"]')
     }
   })
-
-  interface Snapshot {
-    m: ViewportMeasurement
-    header: ScreenBox | undefined
-    nav: ScreenBox | undefined
-  }
-
-  async function snapshot(statusBarHeight: number): Promise<Snapshot> {
-    const options = { ignoreAbove: statusBarHeight }
-    return {
-      m: await measureViewport(session),
-      header: (await painted(session, selectors.header, options)).box,
-      nav: (await painted(session, selectors.nav, options)).box
-    }
-  }
-
-  const formatSnapshot = ({ m, header, nav }: Snapshot) =>
-    `${formatMeasurement(m)}; painted on screen: header ${formatBox(header)}, nav ${formatBox(nav)}`
-
-  /**
-   * Where the header and the bottom navigation are laid out and painted must
-   * not depend on the visual viewport: compared with the clean state before
-   * the loops
-   */
-  function expectAnchored(when: string, clean: Snapshot, now: Snapshot) {
-    const { m } = now
-    const sameRect = (a: Rect | null, b: Rect | null) =>
-      !!a && !!b && close(a.top, b.top) && close(a.bottom, b.bottom)
-    const samePainted = (a: ScreenBox | undefined, b: ScreenBox | undefined) =>
-      close(a?.top, b?.top) && close(a?.height, b?.height)
-    const failures = [
-      !(m.header && close(m.header.top, 0)) &&
-        `the header is laid out at ${m.header?.top ?? 'missing'}, expected 0`,
-      !sameRect(m.header, clean.m.header) &&
-        'the header rect differs from the clean state',
-      !(m.nav && close(m.nav.bottom, m.ih)) &&
-        `the bottom navigation ends at ${m.nav?.bottom ?? 'missing'}, expected innerHeight ${m.ih}`,
-      !sameRect(m.nav, clean.m.nav) &&
-        'the bottom navigation rect differs from the clean state',
-      !samePainted(now.header, clean.header) &&
-        'the header is painted elsewhere than in the clean state',
-      !samePainted(now.nav, clean.nav) &&
-        'the bottom navigation is painted elsewhere than in the clean state',
-      m.scrollY !== 0 && `the document is scrolled (scrollY ${m.scrollY})`
-    ].filter((failure): failure is string => typeof failure === 'string')
-    expect(
-      failures,
-      `With a stale visual viewport ${when}: ${failures.join('; ')}.\n  Now:   ${formatSnapshot(now)}\n  Clean: ${formatSnapshot(clean)}`
-    ).toEqual([])
-  }
 
   async function sendNewMessage() {
     await session.click('[data-qa="new-message-btn-mobile"]')
@@ -229,10 +199,10 @@ describe('Citizen app installed on the iOS home screen', () => {
 
   // iOS WebKit can leave the visual viewport stale in a home screen app after
   // the software keyboard closes and the device rotates, and it resolves
-  // `position: fixed` against it (WebKit bugs 254861 and 297779). The app
-  // shell layout of PR #9798 keeps the header and the navigation in place
-  // anyway. This test drives the simulator into the stale state and checks
-  // that.
+  // `position: fixed` against it (WebKit bugs 254861 and 297779): the user
+  // saw the header and the bottom navigation in the middle of the screen.
+  // The app shell layout of PR #9798 keeps them in place anyway. This test
+  // drives the simulator into the stale state and checks that.
   it(
     'header and bottom navigation stay in place with a stale visual viewport',
     async () => {
@@ -248,17 +218,8 @@ describe('Citizen app installed on the iOS home screen', () => {
       await session.click(selectors.navCalendar)
       await waitForCalendar()
       await sleep(1000)
-      // The page starts below the status bar in portrait
-      const statusBarHeight = await session.execute(
-        () => Math.max(screen.width, screen.height) - window.innerHeight
-      )
-      const clean = await snapshot(statusBarHeight)
-      console.warn(`Clean state: ${formatSnapshot(clean)}`)
-      expect(
-        clean.m.header &&
-          close(clean.header?.top, clean.m.header.top + statusBarHeight),
-        `The header is painted at ${formatBox(clean.header)}, expected its layout top ${clean.m.header?.top} plus the status bar ${statusBarHeight}: the screen coordinates used for native taps are off`
-      ).toBe(true)
+      await expectHeaderBelowStatusBar('before the stale viewport')
+      await expectNavigationAtScreenBottom('before the stale viewport')
 
       const { reached, loops } = await triggerStaleViewport(
         session,
@@ -272,16 +233,18 @@ describe('Citizen app installed on the iOS home screen', () => {
         `The WebKit precondition was not reached: the visual viewport did not go stale in ${maxStaleViewportLoops} loops, so the layout was not tested.\n  ${measured}`
       ).toBe(true)
 
-      expectAnchored(
-        'after rotating back',
-        clean,
-        await snapshot(statusBarHeight)
+      await expectHeaderBelowStatusBar(
+        'with a stale viewport after rotating back'
+      )
+      await expectNavigationAtScreenBottom(
+        'with a stale viewport after rotating back'
       )
       await scrollCalendar(session)
-      expectAnchored(
-        'after scrolling the calendar',
-        clean,
-        await snapshot(statusBarHeight)
+      await expectHeaderBelowStatusBar(
+        'with a stale viewport after scrolling the calendar'
+      )
+      await expectNavigationAtScreenBottom(
+        'with a stale viewport after scrolling the calendar'
       )
     },
     10 * 60 * 1000
