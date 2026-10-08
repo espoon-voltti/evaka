@@ -10,6 +10,7 @@ import evaka.core.shared.McpAuthorizationId
 import evaka.core.shared.McpClientId
 import evaka.core.shared.McpTestDataBatchId
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.util.UUID
 
@@ -218,7 +219,7 @@ data class McpTestDataBatch(
     val description: String,
 )
 
-fun Database.Read.getMcpTestDataBatch(id: McpTestDataBatchId): McpTestDataBatch? = createQuery {
+fun Database.Read.getMcpTestDataBatches(where: Predicate): List<McpTestDataBatch> = createQuery {
     sql(
         """
 SELECT b.id, b.created_at, b.created_by, u.name AS created_by_name, c.client_name, b.name, b.description
@@ -226,28 +227,24 @@ FROM mcp_test_data_batch b
 JOIN evaka_user u ON u.id = b.created_by
 LEFT JOIN mcp_authorization a ON a.id = b.authorization_id
 LEFT JOIN mcp_client c ON c.id = a.client_id
-WHERE b.id = ${bind(id)}
+WHERE ${predicate(where.forTable("b"))}
+ORDER BY b.created_at DESC
 """
     )
 }
-    .exactlyOneOrNull()
+    .toList()
+
+fun Database.Read.getMcpTestDataBatch(id: McpTestDataBatchId): McpTestDataBatch? =
+    getMcpTestDataBatches(Predicate { where("$it.id = ${bind(id)}") }).singleOrNull()
 
 fun Database.Read.getMcpTestDataBatchByName(
     name: String,
     createdBy: EvakaUserId,
-): McpTestDataBatch? = createQuery {
-    sql(
-        """
-SELECT b.id, b.created_at, b.created_by, u.name AS created_by_name, c.client_name, b.name, b.description
-FROM mcp_test_data_batch b
-JOIN evaka_user u ON u.id = b.created_by
-LEFT JOIN mcp_authorization a ON a.id = b.authorization_id
-LEFT JOIN mcp_client c ON c.id = a.client_id
-WHERE b.name = ${bind(name)} AND b.created_by = ${bind(createdBy)}
-"""
-    )
-}
-    .exactlyOneOrNull()
+): McpTestDataBatch? =
+    getMcpTestDataBatches(
+            Predicate { where("$it.name = ${bind(name)} AND $it.created_by = ${bind(createdBy)}") }
+        )
+        .singleOrNull()
 
 fun Database.Transaction.insertMcpTestDataBatch(
     name: String,
@@ -278,17 +275,17 @@ fun Database.Read.getMcpTestDataEntityBatch(
 }
     .exactlyOneOrNull<McpTestDataBatchId>()
 
-fun Database.Transaction.insertMcpTestDataEntity(
+fun Database.Transaction.insertMcpTestDataEntities(
     batchId: McpTestDataBatchId,
     tableName: String,
-    entityId: UUID,
+    entityIds: Collection<UUID>,
     description: String,
     now: HelsinkiDateTime,
 ) = execute {
     sql(
         """
 INSERT INTO mcp_test_data_entity (created_at, batch_id, table_name, entity_id, description)
-VALUES (${bind(now)}, ${bind(batchId)}, ${bind(tableName)}, ${bind(entityId)}, ${bind(description)})
+SELECT ${bind(now)}, ${bind(batchId)}, ${bind(tableName)}, unnest(${bind(entityIds.toList())}), ${bind(description)}
 ON CONFLICT (table_name, entity_id) DO NOTHING
 """
     )
@@ -320,22 +317,6 @@ data class McpTestDataEntityCount(
     val tableName: String,
     val count: Int,
 )
-
-fun Database.Read.getMcpTestDataBatches(createdBy: EvakaUserId? = null): List<McpTestDataBatch> =
-    createQuery {
-        sql(
-            """
-SELECT b.id, b.created_at, b.created_by, u.name AS created_by_name, c.client_name, b.name, b.description
-FROM mcp_test_data_batch b
-JOIN evaka_user u ON u.id = b.created_by
-LEFT JOIN mcp_authorization a ON a.id = b.authorization_id
-LEFT JOIN mcp_client c ON c.id = a.client_id
-WHERE (${bind(createdBy)}::uuid IS NULL OR b.created_by = ${bind(createdBy)})
-ORDER BY b.created_at DESC
-"""
-        )
-    }
-    .toList()
 
 fun Database.Read.getMcpTestDataEntityCounts(): List<McpTestDataEntityCount> = createQuery {
     sql(

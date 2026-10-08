@@ -5,8 +5,6 @@
 package evaka.core.mcp
 
 import evaka.core.pis.getEmployee
-import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.EmployeeId
@@ -28,13 +26,11 @@ inline fun <reified T : Any> mcpTool(
     noinline handler: (ctx: McpToolContext, input: T) -> Any,
 ) = McpToolDefinition(name, description, T::class, readOnly, destructive, handler)
 
-@IgnorableReturnValue
-fun McpToolContext.requireChild(childId: ChildId): PersonDTO {
+fun McpToolContext.requireChild(childId: ChildId) {
     val isChild =
         tx.createQuery { sql("SELECT EXISTS (SELECT FROM child WHERE id = ${bind(childId)})") }
             .exactlyOne<Boolean>()
     if (!isChild) throw NotFound("Child $childId not found (the person must be created as a child)")
-    return tx.getPersonById(childId) ?: throw NotFound("Child $childId not found")
 }
 
 @IgnorableReturnValue

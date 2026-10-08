@@ -210,7 +210,7 @@ class McpTestDataServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         McpTestDataService.getOrCreateBatch(this, name, createdBy.evakaUserId, null, now)
 
     private fun Database.Transaction.track(batchId: McpTestDataBatchId, table: String, id: Id<*>) =
-        McpTestDataService.track(this, batchId, table, id, "", now)
+        insertMcpTestDataEntities(batchId, table, listOf(id.raw), "", now)
 
     private fun Database.Transaction.deleteBatch(
         batchId: McpTestDataBatchId,

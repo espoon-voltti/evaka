@@ -707,7 +707,9 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     ) {
         val batchId =
             McpTestDataService.getOrCreateBatch(this, batchName, admin.evakaUserId, null, now)
-        rows.forEach { (table, id) -> McpTestDataService.track(this, batchId, table, id, "", now) }
+        rows.forEach { (table, id) ->
+            insertMcpTestDataEntities(batchId, table, listOf(id.raw), "", now)
+        }
     }
 
     private fun countRows(table: String): Int = db.read { tx ->
