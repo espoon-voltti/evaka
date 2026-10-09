@@ -6,12 +6,14 @@ package evaka.core.dvv
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 private val logger = KotlinLogging.logger {}
 
@@ -29,6 +31,10 @@ class MockDvvModificationsService {
     @PostMapping("/v1/muutokset")
     fun getModifications(@RequestBody body: DvvModificationsRequest): ByteArray {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
+
+        if (body.hetulista.contains("fail-on-token-${body.viimeisinKirjausavain}")) {
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
+        }
 
         val nextToken = body.viimeisinKirjausavain + 1
         return """
