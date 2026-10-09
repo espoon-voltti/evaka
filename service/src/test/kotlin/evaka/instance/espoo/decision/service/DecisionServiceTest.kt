@@ -147,7 +147,7 @@ private fun validServiceNeed() =
 private fun validDecision(type: DecisionType, decisionUnit: DecisionUnit) =
     Decision(
         DecisionId(UUID.randomUUID()),
-        createdByName = "Pekka Palveluohjaaja",
+        decidedByName = "Pekka Palveluohjaaja",
         type,
         startDate = LocalDate.now(),
         endDate = LocalDate.now().plusMonths(3),

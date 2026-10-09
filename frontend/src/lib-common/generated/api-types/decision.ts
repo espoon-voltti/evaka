@@ -27,7 +27,7 @@ export interface Decision {
   childFirstName: string
   childId: PersonId
   childLastName: string
-  createdByName: string
+  decidedByName: string
   decisionNumber: number
   documentContainsContactInfo: boolean
   documentKey: string | null

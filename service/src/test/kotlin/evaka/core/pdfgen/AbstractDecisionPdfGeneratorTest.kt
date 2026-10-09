@@ -412,7 +412,7 @@ private fun createValidDecisionUnit(
 private fun createValidDecision(type: DecisionType, unit: DecisionUnit): Decision =
     Decision(
         id = DecisionId(UUID.randomUUID()),
-        createdByName = "John Doe",
+        decidedByName = "John Doe",
         type = type,
         startDate = LocalDate.of(2019, 1, 1),
         endDate = LocalDate.of(2019, 12, 31),

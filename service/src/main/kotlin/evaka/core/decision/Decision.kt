@@ -17,7 +17,7 @@ import java.time.LocalDate
 
 data class Decision(
     val id: DecisionId,
-    val createdByName: String,
+    val decidedByName: String,
     val type: DecisionType,
     val startDate: LocalDate,
     val endDate: LocalDate,
