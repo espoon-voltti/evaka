@@ -74,7 +74,7 @@ class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "esiopetus_jarjestelma",
                 DecisionType.PRESCHOOL,
                 serviceNeed = standardServiceNeed,
-                customize = { it.copy(createdBy = "eVaka") },
+                customize = { it.copy(createdByName = "eVaka") },
             ),
             DecisionScenario(
                 "vaka_ilman_asetuksia",

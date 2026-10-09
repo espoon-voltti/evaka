@@ -423,11 +423,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <p>
             <strong th:if="${type == 'notice'}" th:text="#{notice.approver.prefix}">Ilmoituksentekijä</strong>
             <strong th:unless="${type == 'notice'}" th:text="#{decision.approver.prefix}">Päätöksentekijä</strong>
-            <div th:if="${decision.createdBy == 'eVaka'}" th:text="${decisionMakerName}"></div>
-            <div th:unless="${decision.createdBy == 'eVaka'}" th:text="${decision.createdBy}"></div>
+            <div th:if="${decision.createdByName == 'eVaka'}" th:text="${decisionMakerName}"></div>
+            <div th:unless="${decision.createdByName == 'eVaka'}" th:text="${decision.createdByName}"></div>
             <div th:text="#{decision.approver.additionalInfo}"></div>
-            <div th:if="${decision.createdBy == 'eVaka'}" th:text="${decisionMakerTitle}"></div>
-            <div th:unless="${decision.createdBy == 'eVaka'}" th:text="#{decision.unitmanagertitle}"></div>
+            <div th:if="${decision.createdByName == 'eVaka'}" th:text="${decisionMakerTitle}"></div>
+            <div th:unless="${decision.createdByName == 'eVaka'}" th:text="#{decision.unitmanagertitle}"></div>
             <div>
                 <a th:href="'mailto:' + #{decision.approver.email.email}"
                    th:text="#{decision.approver.email.email}"></a>

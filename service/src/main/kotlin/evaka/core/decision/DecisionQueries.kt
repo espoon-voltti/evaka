@@ -34,7 +34,7 @@ private fun Database.Read.createDecisionQuery(
             u.phone,
             unit_manager_name AS manager,
             ap.child_id, ap.guardian_id,
-            (SELECT name FROM evaka_user WHERE id = d.created_by) AS created_by,
+            (SELECT name FROM evaka_user WHERE id = d.created_by) AS created_by_name,
             c.first_name AS child_first_name, c.last_name AS child_last_name,
             eu.name AS resolved_by_name
         FROM decision d
@@ -51,7 +51,7 @@ private fun Database.Read.createDecisionQuery(
 private fun Row.decisionFromResultSet(): Decision =
     Decision(
         id = column("id"),
-        createdBy = column("created_by"),
+        createdByName = column("created_by_name"),
         type = column("type"),
         startDate = column("start_date"),
         endDate = column("end_date"),

@@ -391,7 +391,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <strong th:text="${#messages.msgOrNull('decision.approver.prefix.' + decision.type)} ?: #{decision.approver.prefix}">Päätöksentekijä</strong>
         </p>
         <th:block th:if="${decision.type.name() == 'CLUB'}">
-            <div th:text="${decision.createdBy}"></div>
+            <div th:text="${decision.createdByName}"></div>
             <div th:text="#{notice.approver.title}">Koordinaattori</div>
             <div th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
         </th:block>
@@ -402,7 +402,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               <div th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
             </th:block>
             <th:block th:unless="${decision.type.name() == 'PRESCHOOL' or decision.type.name() == 'PRESCHOOL_DAYCARE'}">
-              <div th:text="${decision.createdBy}"></div>
+              <div th:text="${decision.createdByName}"></div>
               <div th:text="#{decision.approver.decisionMakerTitle}">Koordinaattori</div>
               <div th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
             </th:block>

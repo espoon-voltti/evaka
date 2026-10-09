@@ -250,7 +250,7 @@ class DecisionReasoningPdfRenderTest {
 private fun validDecision(type: DecisionType = DecisionType.PRESCHOOL) =
     Decision(
         DecisionId(UUID.randomUUID()),
-        createdBy = "Matti Käsittelijä",
+        createdByName = "Matti Käsittelijä",
         type,
         startDate = LocalDate.now(),
         endDate = LocalDate.now().plusMonths(3),
