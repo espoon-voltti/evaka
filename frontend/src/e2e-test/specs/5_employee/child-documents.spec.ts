@@ -227,6 +227,120 @@ test.describe('Employee - Child documents', () => {
     await expect(childDocument.status).toHaveText('Valmis')
   })
 
+  test('Document of an ended template is read-only', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_ASSESSMENT',
+      published: true,
+      name: 'Pedagoginen arvio 2021-2022',
+      validity: new DateRange(
+        LocalDate.of(2021, 8, 1),
+        LocalDate.of(2022, 7, 31)
+      )
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id
+    }).save()
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-documents/${document.id}`)
+    const childDocument = new ChildDocumentPage(page)
+
+    await expect(childDocument.status).toHaveText('Luonnos')
+    await expect(childDocument.templateValidityEndedInfo).toBeVisible()
+    await expect(childDocument.editButton).toBeHidden()
+    await expect(childDocument.publishButton).toBeHidden()
+    await expect(childDocument.nextStatusButton).toBeHidden()
+  })
+
+  test('Edit view of an ended template redirects to the read view', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_ASSESSMENT',
+      published: true,
+      name: 'Pedagoginen arvio 2021-2022',
+      validity: new DateRange(
+        LocalDate.of(2021, 8, 1),
+        LocalDate.of(2022, 7, 31)
+      )
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id
+    }).save()
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-documents/${document.id}/edit`)
+    const childDocument = new ChildDocumentPage(page)
+
+    await expect(childDocument.templateValidityEndedInfo).toBeVisible()
+    await expect(page.page).toHaveURL(
+      `${config.employeeUrl}/child-documents/${document.id}`
+    )
+  })
+
+  test('Pending decision proposal of an ended template has no read-only info', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      endDecisionWhenUnitChanges: true,
+      published: true,
+      name: 'Päätösasiakirja 2021-2022',
+      validity: new DateRange(
+        LocalDate.of(2021, 8, 1),
+        LocalDate.of(2022, 7, 31)
+      )
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id,
+      status: 'DECISION_PROPOSAL',
+      decisionMaker: director.id
+    }).save()
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, director)
+    await page.goto(`${config.employeeUrl}/child-documents/${document.id}`)
+    const childDocument = new ChildDocumentPage(page)
+
+    await expect(childDocument.status).toHaveText('Päätösesitys')
+    await expect(childDocument.acceptDecisionButton).toBeVisible()
+    await expect(childDocument.templateValidityEndedInfo).toBeHidden()
+  })
+
+  test('Completed document of an ended template has no read-only info', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_ASSESSMENT',
+      published: true,
+      name: 'Pedagoginen arvio 2021-2022',
+      validity: new DateRange(
+        LocalDate.of(2021, 8, 1),
+        LocalDate.of(2022, 7, 31)
+      )
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id,
+      status: 'COMPLETED'
+    }).save()
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-documents/${document.id}`)
+    const childDocument = new ChildDocumentPage(page)
+
+    await expect(childDocument.status).toHaveText('Valmis')
+    await expect(childDocument.templateValidityEndedInfo).toBeHidden()
+  })
+
   test('Accepting, editing validity, and annulling decision', async ({
     newEvakaPage
   }) => {
