@@ -75,6 +75,12 @@ class OuluActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>)
             }
 
+            Action.Unit.READ_CHILD_DOCUMENTS_REPORT -> {
+                @Suppress("UNCHECKED_CAST")
+                action.defaultRules.asSequence() +
+                    sequenceOf(HasGlobalRole(UserRole.SERVICE_WORKER) as ScopedActionRule<in T>)
+            }
+
             Action.Unit.READ_TRANSFER_APPLICATIONS -> {
                 @Suppress("UNCHECKED_CAST")
                 action.defaultRules.asSequence() +

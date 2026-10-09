@@ -14,6 +14,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import java.time.LocalDate
@@ -90,12 +91,15 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
         val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Global.READ_DOCUMENT_TEMPLATE,
+                    if (
+                        !accessControl.isPermittedForSomeTarget(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_CHILD_DOCUMENTS_REPORT,
+                        )
                     )
+                        throw Forbidden()
                     val templateTypes =
                         setOf(
                             ChildDocumentType.PEDAGOGICAL_REPORT,

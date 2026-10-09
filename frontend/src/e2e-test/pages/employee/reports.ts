@@ -717,11 +717,11 @@ export class ChildAttendanceReservationByChildReport {
 }
 
 export class ChildDocumentsReport {
-  unitSelector: MultiSelect
+  unitSelector: TreeDropdown
   templateSelector: TreeDropdown
 
   constructor(private page: Page) {
-    this.unitSelector = new MultiSelect(page.findByDataQa('unit-select'))
+    this.unitSelector = new TreeDropdown(page.findByDataQa('unit-select'))
     this.templateSelector = new TreeDropdown(
       page.findByDataQa('template-select')
     )
@@ -753,6 +753,14 @@ export class ChildDocumentsReport {
       noDocuments: row.findByDataQa('no-documents-count'),
       total: row.findByDataQa('total-count')
     }
+  }
+
+  async getCsvReport(): Promise<string> {
+    const [download] = await Promise.all([
+      this.page.waitForDownload(),
+      this.page.findByDataQa('download-csv').click()
+    ])
+    return captureTextualDownload(download)
   }
 }
 

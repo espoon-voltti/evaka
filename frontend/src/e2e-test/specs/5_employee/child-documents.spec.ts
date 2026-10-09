@@ -701,7 +701,9 @@ test.describe('Employee - Child documents', () => {
     await page.goto(`${config.employeeUrl}/reports/child-documents`)
 
     const report = new ChildDocumentsReport(page)
-    await report.unitSelector.fillAndSelectFirst(testDaycare.name)
+    await report.unitSelector.open()
+    await report.unitSelector.expandAll()
+    await report.unitSelector.option(testDaycare.id).check()
     await report.unitSelector.close()
     await report.templateSelector.open()
     await report.templateSelector.expandAll()
@@ -724,6 +726,13 @@ test.describe('Employee - Child documents', () => {
     await expect(groupRow.completed).toHaveText('0')
     await expect(groupRow.noDocuments).toHaveText('1')
     await expect(groupRow.total).toHaveText('2')
+
+    const csvReport = await report.getCsvReport()
+    expect(csvReport.split('\n').slice(1)).toEqual([
+      `${testCareArea.name};${testDaycare.name};;1;0;0;1;2`,
+      `${testCareArea.name};${testDaycare.name};${daycareGroup.name};1;0;0;1;2`,
+      ''
+    ])
   })
 
   test('Document archiving', async ({ newEvakaPage }) => {

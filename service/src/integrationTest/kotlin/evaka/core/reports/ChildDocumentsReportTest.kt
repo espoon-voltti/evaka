@@ -26,11 +26,14 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.UiLanguage
 import evaka.core.shared.security.PilotFeature
 import java.util.stream.Stream
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -145,5 +148,45 @@ class ChildDocumentsReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         val row = rows.single()
         assertEquals(expectedCount, row.total)
         assertEquals(expectedCount, row.completed)
+    }
+
+    @Test
+    fun `report viewer can read template options and the report`() {
+        val setup = setupUnitWithChildAndTemplate(Language.fi, UiLanguage.FI)
+        val reportViewer = DevEmployee(roles = setOf(UserRole.REPORT_VIEWER))
+        db.transaction { tx -> tx.insert(reportViewer) }
+
+        val templates =
+            controller.getChildDocumentsReportTemplateOptions(
+                db = dbInstance(),
+                clock = clock,
+                user = reportViewer.user,
+            )
+        assertEquals(listOf(setup.templateId), templates.map { it.id })
+
+        val rows =
+            controller.getChildDocumentsReport(
+                db = dbInstance(),
+                clock = clock,
+                user = reportViewer.user,
+                templateIds = setOf(setup.templateId),
+                unitIds = setOf(setup.unitId),
+            )
+        assertEquals(1, rows.single().none)
+    }
+
+    @Test
+    fun `staff cannot read template options`() {
+        val setup = setupUnitWithChildAndTemplate(Language.fi, UiLanguage.FI)
+        val staff = DevEmployee()
+        db.transaction { tx -> tx.insert(staff, unitRoles = mapOf(setup.unitId to UserRole.STAFF)) }
+
+        assertThrows<Forbidden> {
+            controller.getChildDocumentsReportTemplateOptions(
+                db = dbInstance(),
+                clock = clock,
+                user = staff.user,
+            )
+        }
     }
 }
