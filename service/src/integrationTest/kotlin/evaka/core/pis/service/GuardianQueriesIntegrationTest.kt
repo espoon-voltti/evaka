@@ -5,10 +5,13 @@
 package evaka.core.pis.service
 
 import evaka.core.FullApplicationTest
+import evaka.core.shared.ChildId
+import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.HelsinkiDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -45,17 +48,62 @@ class GuardianQueriesIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     }
 
     @Test
-    fun deleteGuardianChildren() {
-        db.transaction { tx ->
-            insertGuardianTestFixtures(tx)
-            tx.deleteGuardianChildRelationShips(adult1.id)
+    fun `replacing guardian children changes only the added and removed relations`() {
+        db.transaction { insertGuardianTestFixtures(it) }
+        val createdBefore = db.read { it.getGuardianCreated(adult1.id, child2.id) }
+
+        val changes = db.transaction { it.replaceGuardianChildren(adult1.id, setOf(child2.id)) }
+
+        assertEquals(
+            GuardianRelationChanges(added = emptyList(), removed = listOf(child1.id)),
+            changes,
+        )
+        db.read { tx ->
+            assertEquals(listOf(child2.id), tx.getGuardianChildIds(adult1.id))
+            assertEquals(createdBefore, tx.getGuardianCreated(adult1.id, child2.id))
+            assertEquals(listOf(child2.id), tx.getGuardianChildIds(adult2.id))
+        }
+    }
+
+    @Test
+    fun `replacing child guardians changes only the added and removed relations`() {
+        db.transaction { insertGuardianTestFixtures(it) }
+        val createdBefore = db.read { it.getGuardianCreated(adult1.id, child1.id) }
+
+        val changes = db.transaction {
+            it.replaceChildGuardians(child1.id, setOf(adult1.id, adult2.id))
         }
 
+        assertEquals(
+            GuardianRelationChanges(added = listOf(adult2.id), removed = emptyList()),
+            changes,
+        )
+        db.read { tx ->
+            assertEquals(setOf(adult1.id, adult2.id), tx.getChildGuardians(child1.id).toSet())
+            assertEquals(createdBefore, tx.getGuardianCreated(adult1.id, child1.id))
+        }
+    }
+
+    @Test
+    fun `replacing with an empty set removes all relations`() {
+        db.transaction { insertGuardianTestFixtures(it) }
+
+        val changes = db.transaction { it.replaceGuardianChildren(adult1.id, emptySet()) }
+
+        assertEquals(setOf(child1.id, child2.id), changes.removed.toSet())
         db.read { tx ->
             assertEquals(0, tx.getGuardianChildIds(adult1.id).size)
             assertEquals(1, tx.getGuardianChildIds(adult2.id).size)
         }
     }
+
+    private fun Database.Read.getGuardianCreated(guardianId: PersonId, childId: ChildId) =
+        createQuery {
+            sql(
+                "SELECT created FROM guardian WHERE guardian_id = ${bind(guardianId)} AND child_id = ${bind(childId)}"
+            )
+        }
+        .exactlyOne<HelsinkiDateTime>()
 
     private fun insertGuardianTestFixtures(tx: Database.Transaction) {
         // adult1 is the guardian of child1 and child2

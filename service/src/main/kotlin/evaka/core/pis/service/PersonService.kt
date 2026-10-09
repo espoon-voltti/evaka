@@ -707,8 +707,11 @@ private fun upsertVtjGuardians(
         vtjPersonDTO.guardians
             .map { upsertVtjPerson(tx, it) }
             .filterNot { tx.isGuardianBlocked(it.id, child.id) }
-    createOrReplaceChildRelationships(tx, childId = child.id, guardianIds = guardians.map { it.id })
-    logger.info { "Created or replaced child ${child.id} guardians as ${guardians.map { it.id }}" }
+    val changes = tx.replaceChildGuardians(child.id, guardians.map { it.id }.toSet())
+    tx.updateVtjGuardiansQueriedTimestamp(child.id)
+    logger.info {
+        "Created or replaced child ${child.id} guardians as ${guardians.map { it.id }} (added ${changes.added}, removed ${changes.removed})"
+    }
     return child.toVtjPersonDTO().copy(guardians = guardians.map { it.toVtjPersonDTO() })
 }
 
@@ -724,13 +727,10 @@ private fun upsertVtjChildren(
                 upsertVtjPerson(tx, it).also { child -> initChildIfNotExists(tx, now, child.id) }
             }
             .filterNot { tx.isGuardianBlocked(guardian.id, it.id) }
-    createOrReplaceGuardianRelationships(
-        tx,
-        guardianId = guardian.id,
-        childIds = children.map { it.id },
-    )
+    val changes = tx.replaceGuardianChildren(guardian.id, children.map { it.id }.toSet())
+    tx.updateVtjDependantsQueriedTimestamp(guardian.id)
     logger.info {
-        "Created or replaced guardian ${guardian.id} children as ${children.map { it.id }}"
+        "Created or replaced guardian ${guardian.id} children as ${children.map { it.id }} (added ${changes.added}, removed ${changes.removed})"
     }
 
     return guardian.toVtjPersonDTO().copy(children = children.map { it.toVtjPersonDTO() })
@@ -757,26 +757,6 @@ private fun initChildIfNotExists(
     if (tx.getChild(childId) == null) {
         tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()), now)
     }
-}
-
-private fun createOrReplaceGuardianRelationships(
-    tx: Database.Transaction,
-    guardianId: PersonId,
-    childIds: List<ChildId>,
-) {
-    tx.deleteGuardianChildRelationShips(guardianId)
-    tx.insertGuardianChildren(guardianId, childIds)
-    tx.updateVtjDependantsQueriedTimestamp(guardianId)
-}
-
-private fun createOrReplaceChildRelationships(
-    tx: Database.Transaction,
-    childId: ChildId,
-    guardianIds: List<PersonId>,
-) {
-    tx.deleteChildGuardianRelationships(childId)
-    tx.insertChildGuardians(childId, guardianIds)
-    tx.updateVtjGuardiansQueriedTimestamp(childId)
 }
 
 private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO =
