@@ -42,6 +42,7 @@ import evaka.core.vtjclient.dto.VtjPersonDTO
 import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
+import kotlin.reflect.full.memberProperties
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -745,6 +746,16 @@ private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO)
         createPersonFromVtj(tx, newPerson)
     } else {
         val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
+        val changedFields =
+            PersonDTO::class
+                .memberProperties
+                .filter { it.get(existingPerson) != it.get(updatedPerson) }
+                .map { it.name }
+        if (changedFields.isNotEmpty()) {
+            logger.info {
+                "Updated person ${existingPerson.id} from VTJ, changed fields: $changedFields"
+            }
+        }
         tx.updatePersonFromVtj(updatedPerson)
     }
 }
