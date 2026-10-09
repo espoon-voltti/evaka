@@ -103,6 +103,18 @@ class AppMiscLoggersTest {
     }
 
     @Test
+    fun `throwable and all arguments included in warn log entry`() {
+        val exception = RuntimeException("This is a test exception")
+        val args = mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2")
+        logger.warn(exception, args) { message }
+
+        val event = logger.getTestAppender().getEvents().first()
+        assertEquals(message, event.message)
+        compareArgs(args, event)
+        assertEquals((event.throwableProxy as ThrowableProxy).throwable, exception)
+    }
+
+    @Test
     fun `error log message logged`() {
         logger.error(mapOf("argKey" to "argVal")) { message }
         assertEquals(message, logger.getTestMessages().first())

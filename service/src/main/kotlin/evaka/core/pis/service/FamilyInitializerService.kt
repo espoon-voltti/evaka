@@ -19,6 +19,7 @@ import evaka.core.shared.ApplicationId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.async.PermanentAsyncJobFailure
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.psqlCause
@@ -49,7 +50,9 @@ class FamilyInitializerService(
         val user = msg.user
         val application =
             db.read { it.fetchApplicationDetails(msg.applicationId) }
-                ?: error("Could not initialize family, application ${msg.applicationId} not found")
+                ?: throw PermanentAsyncJobFailure(
+                    "Could not initialize family, application ${msg.applicationId} not found"
+                )
 
         val members = db.transaction {
             parseFridgeFamilyMembersFromApplication(it, clock, user, application)
@@ -144,10 +147,14 @@ class FamilyInitializerService(
 
         val headOfFamily =
             tx.getPersonById(application.guardianId)
-                ?: error("Application guardian not found with id ${application.guardianId}")
+                ?: throw PermanentAsyncJobFailure(
+                    "Application guardian not found with id ${application.guardianId}"
+                )
         val child =
             tx.getPersonById(application.childId)
-                ?: error("Application child not found with id ${application.childId}")
+                ?: throw PermanentAsyncJobFailure(
+                    "Application child not found with id ${application.childId}"
+                )
 
         val otherGuardian =
             personService

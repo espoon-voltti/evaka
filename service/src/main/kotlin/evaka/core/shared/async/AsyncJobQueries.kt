@@ -148,6 +148,19 @@ WHERE id = ${bind(job.jobId)}
 }
     .execute()
 
+fun Database.Transaction.cancelRemainingRetries(job: ClaimedJobRef<*>): Boolean = createUpdate {
+    sql(
+        """
+UPDATE async_job
+SET retry_count = 0
+WHERE id = ${bind(job.jobId)}
+AND claimed_by = ${bind(job.txId)}
+AND completed_at IS NULL
+"""
+    )
+}
+    .updateNoneOrOne()
+
 @IgnorableReturnValue
 fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int =
     createUpdate {

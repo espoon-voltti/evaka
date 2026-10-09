@@ -14,6 +14,7 @@ import evaka.core.shared.withValue
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
+import fi.espoo.voltti.logging.loggers.warn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Gauge
@@ -233,13 +234,20 @@ class AsyncJobPool<T : AsyncJobPayload>(
             Span.current().setStatus(StatusCode.ERROR)
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
             Span.current().recordException(exception)
-            val isRetryableJob = job.initialRetryCount == null || job.initialRetryCount > 1
-            if (job.remainingAttempts == 0 && isRetryableJob) {
+            val isPermanentFailure =
+                generateSequence(exception) { it.cause }
+                    .take(5)
+                    .any { it is PermanentAsyncJobFailure }
+            val retriesCancelled =
+                isPermanentFailure &&
+                    job.remainingAttempts > 0 &&
+                    tryCancelRemainingRetries(db, job)
+            if (job.remainingAttempts == 0 || retriesCancelled) {
                 logger.error(exception, logMeta) {
                     "Async job $job permanently failed (remainingAttempts=0)"
                 }
             } else {
-                logger.error(exception, logMeta) { "Failed to run async job $job" }
+                logger.warn(exception, logMeta) { "Failed to run async job $job" }
             }
         } finally {
             MdcKey.USER_ID_HASH.unset()
@@ -248,6 +256,14 @@ class AsyncJobPool<T : AsyncJobPayload>(
             MdcKey.TRACE_ID.unset()
         }
     }
+
+    private fun tryCancelRemainingRetries(db: Database.Connection, job: ClaimedJobRef<*>): Boolean =
+        try {
+            db.transaction { it.cancelRemainingRetries(job) }
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to cancel remaining retries of async job $job" }
+            false
+        }
 
     override fun close() {
         executor.shutdown()

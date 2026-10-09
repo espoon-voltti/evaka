@@ -62,10 +62,10 @@ import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.async.PermanentAsyncJobFailure
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
-import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
@@ -285,7 +285,7 @@ class FeeDecisionService(
             tx.getFeeDecision(id) ?: throw NotFound("No fee decision found with ID ($id)")
 
         if (!decision.documentKey.isNullOrBlank()) {
-            throw Conflict("Fee decision $id has document key already!")
+            throw PermanentAsyncJobFailure("Fee decision $id has document key already!")
         }
 
         val settings = tx.getSettings()
@@ -309,7 +309,9 @@ class FeeDecisionService(
             tx.getFeeDecision(id) ?: throw NotFound("No fee decision found with given ID ($id)")
 
         if (decision.status != WAITING_FOR_SENDING) {
-            error("Cannot send fee decision ${decision.id} - has status ${decision.status}")
+            throw PermanentAsyncJobFailure(
+                "Cannot send fee decision ${decision.id} - has status ${decision.status}"
+            )
         }
 
         if (decision.documentKey == null) {

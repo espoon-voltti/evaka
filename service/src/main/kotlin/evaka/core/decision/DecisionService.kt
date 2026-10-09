@@ -45,6 +45,7 @@ import evaka.core.shared.DecisionId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.async.PermanentAsyncJobFailure
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
@@ -426,11 +427,13 @@ internal fun buildPdfReasoning(
     val swedish = lang == OfficialLanguage.SV
     val generic =
         source.generic?.let { if (swedish) it.textSv else it.textFi }?.takeIf { it.isNotBlank() }
-            ?: error("Cannot render decision reasoning: generic reasoning text is missing or blank")
+            ?: throw PermanentAsyncJobFailure(
+                "Cannot render decision reasoning: generic reasoning text is missing or blank"
+            )
     val individual =
         source.individual.map { reasoning ->
             reasoning.text.takeIf { it.isNotBlank() }
-                ?: error(
+                ?: throw PermanentAsyncJobFailure(
                     "Cannot render decision reasoning: individual reasoning ${reasoning.id} has blank text"
                 )
         }
