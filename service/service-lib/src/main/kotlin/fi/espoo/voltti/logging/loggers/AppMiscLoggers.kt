@@ -31,6 +31,12 @@ fun KLogger.warn(meta: Map<String, Any?>, m: () -> Any?) = atWarn {
     arguments = arrayOf(metaToLoggerArgs(meta))
 }
 
+fun KLogger.warn(error: Throwable, meta: Map<String, Any?>, m: () -> Any?) = atWarn {
+    message = m.toStringSafe()
+    cause = error
+    arguments = arrayOf(metaToLoggerArgs(meta))
+}
+
 fun KLogger.error(meta: Map<String, Any?>, m: () -> Any?) = atError {
     message = m.toStringSafe()
     arguments = arrayOf(metaToLoggerArgs(meta))
