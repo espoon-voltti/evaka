@@ -1814,7 +1814,8 @@ CREATE TABLE public.decision (
     document_contains_contact_info boolean DEFAULT false NOT NULL,
     archived_at timestamp with time zone,
     sent_time time without time zone,
-    generic_reasoning_id uuid
+    generic_reasoning_id uuid,
+    decided_by uuid
 );
 
 -- Name: placement_plan; Type: TABLE; Schema: public
@@ -5294,6 +5295,10 @@ CREATE INDEX "fk$created_by" ON public.placement USING btree (created_by);
 
 CREATE INDEX "fk$daycare_assistance_modified_by" ON public.daycare_assistance USING btree (modified_by);
 
+-- Name: fk$decision_decided_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$decision_decided_by" ON public.decision USING btree (decided_by);
+
 -- Name: fk$decision_generic_reasoning_id; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$decision_generic_reasoning_id" ON public.decision USING btree (generic_reasoning_id);
@@ -7172,6 +7177,11 @@ ALTER TABLE ONLY public.daycare_group_acl
 
 ALTER TABLE ONLY public.daycare_group
     ADD CONSTRAINT daycare_group_daycare_id_fkey FOREIGN KEY (daycare_id) REFERENCES public.daycare(id) ON DELETE CASCADE;
+
+-- Name: decision decision_decided_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision
+    ADD CONSTRAINT decision_decided_by_fkey FOREIGN KEY (decided_by) REFERENCES public.evaka_user(id);
 
 -- Name: decision decision_generic_reasoning_id_fkey; Type: FK CONSTRAINT; Schema: public
 

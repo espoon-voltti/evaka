@@ -713,7 +713,7 @@ private val testApplicationDaycare =
 private val testDecisionDaycare =
     Decision(
         id = DecisionId(UUID.fromString("c74c1dad-f448-41ce-83af-e37d0c095286")),
-        createdBy = "todo",
+        decidedByName = "todo",
         type = DecisionType.DAYCARE,
         startDate = LocalDate.of(2022, 2, 1),
         endDate = LocalDate.of(2022, 7, 31),
