@@ -7,7 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { useSearchParams, useLocation } from 'wouter'
+import { Redirect, useSearchParams, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { useForm } from 'lib-common/form/hooks'
@@ -18,6 +18,7 @@ import type {
 } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -50,6 +51,8 @@ import {
   childDocumentWriteLockQuery,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
+
+import { isTemplateValidityEnded } from './statuses'
 
 export const ActionBar = styled.div`
   position: sticky;
@@ -203,13 +206,17 @@ const ChildDocumentEditViewInner = React.memo(
         if (result.isSuccess) {
           setLastSaved(HelsinkiDateTime.now())
           setLastSavedContent(content)
-        } else {
-          if (result.isFailure) {
+        } else if (result.isFailure) {
+          if (result.errorCode === 'template-validity-ended') {
+            navigate(
+              `/child-documents/${document.id}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+            )
+          } else {
             setError(result.errorCode === 'invalid-lock' ? 'lock' : 'other')
           }
         }
       },
-      [updateChildDocumentContent, document.id]
+      [updateChildDocumentContent, document.id, navigate, childIdFromUrl]
     )
 
     const saved = useMemo(
@@ -327,7 +334,27 @@ export default React.memo(function ChildDocumentEditView() {
   const childIdFromUrl = searchParams.get('childId') // duplicate child workaround
 
   const documentResult = useQueryResult(childDocumentQuery({ documentId }))
-  const lockResult = useQueryResult(childDocumentWriteLockQuery({ documentId }))
+  const templateValidityEnded = documentResult
+    .map(({ data }) =>
+      isTemplateValidityEnded(
+        data.template.validity,
+        LocalDate.todayInHelsinkiTz()
+      )
+    )
+    .getOrElse(undefined)
+  const lockResult = useQueryResult(
+    childDocumentWriteLockQuery({ documentId }),
+    { enabled: templateValidityEnded === false }
+  )
+
+  if (templateValidityEnded) {
+    return (
+      <Redirect
+        to={`/child-documents/${documentId}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`}
+        replace
+      />
+    )
+  }
 
   return renderResult(
     combine(documentResult, lockResult),

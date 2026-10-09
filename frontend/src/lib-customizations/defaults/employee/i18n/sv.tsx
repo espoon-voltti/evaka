@@ -1053,6 +1053,8 @@ export const sv: typeof fi = {
         archiveDisabledNotExternallyArchived:
           'Dokumentet har inte konfigurerats för att överföras till ett externt arkiv',
         archiveDisabledNotCompleted: 'Dokumentet är inte i klar-status',
+        templateValidityEnded:
+          'Dokumentmallens giltighetstid har gått ut, så dokumentet kan inte längre redigeras, publiceras eller flyttas till en annan status.',
         goToNextStatus: {
           DRAFT: 'Publicera i utkast-status',
           PREPARED: 'Publicera i upprättad-status',

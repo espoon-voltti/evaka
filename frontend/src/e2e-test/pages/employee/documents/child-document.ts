@@ -20,6 +20,9 @@ export class ChildDocumentPage {
   savingIndicator: Element
   previewButton: Element
   editButton: Element
+  publishButton: Element
+  nextStatusButton: Element
+  templateValidityEndedInfo: Element
   returnButton: Element
   sendButton: Element
   archiveButton: AsyncButton
@@ -35,6 +38,11 @@ export class ChildDocumentPage {
     this.savingIndicator = page.findByDataQa('saving-spinner')
     this.previewButton = page.findByDataQa('preview-button')
     this.editButton = page.findByDataQa('edit-button')
+    this.publishButton = page.findByDataQa('publish-button')
+    this.nextStatusButton = page.findByDataQa('next-status-button')
+    this.templateValidityEndedInfo = page.findByDataQa(
+      'template-validity-ended-info'
+    )
     this.returnButton = page.findByDataQa('return-button')
     this.sendButton = new AsyncButton(page.findByDataQa('send-button'))
     this.archiveButton = new AsyncButton(page.findByDataQa('archive-button'))
