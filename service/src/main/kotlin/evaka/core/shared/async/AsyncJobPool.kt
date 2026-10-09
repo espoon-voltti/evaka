@@ -14,6 +14,7 @@ import evaka.core.shared.withValue
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
+import fi.espoo.voltti.logging.loggers.warn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Gauge
@@ -233,13 +234,17 @@ class AsyncJobPool<T : AsyncJobPayload>(
             Span.current().setStatus(StatusCode.ERROR)
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
             Span.current().recordException(exception)
-            val isRetryableJob = job.initialRetryCount == null || job.initialRetryCount > 1
-            if (job.remainingAttempts == 0 && isRetryableJob) {
-                logger.error(exception, logMeta) {
-                    "Async job $job permanently failed (remainingAttempts=0)"
-                }
+            if (job.remainingAttempts > 0) {
+                logger.warn(exception, logMeta) { "Failed to run async job $job" }
             } else {
-                logger.error(exception, logMeta) { "Failed to run async job $job" }
+                val isRetryableJob = job.initialRetryCount == null || job.initialRetryCount > 1
+                if (isRetryableJob) {
+                    logger.error(exception, logMeta) {
+                        "Async job $job permanently failed (remainingAttempts=0)"
+                    }
+                } else {
+                    logger.error(exception, logMeta) { "Failed to run async job $job" }
+                }
             }
         } finally {
             MdcKey.USER_ID_HASH.unset()
