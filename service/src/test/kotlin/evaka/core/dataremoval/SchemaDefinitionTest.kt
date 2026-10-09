@@ -20,6 +20,7 @@ import evaka.core.dataremoval.Handler.ADULT
 import evaka.core.dataremoval.Handler.CHILD
 import evaka.core.dataremoval.Integration.KOSKI
 import evaka.core.dataremoval.Integration.VARDA
+import evaka.core.invoicing.domain.financeInputTables
 import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.shared.DatabaseTable
 import evaka.core.varda.VARDA_INPUT_TABLES
@@ -571,10 +572,12 @@ class SchemaDefinitionTest {
         )
     }
 
-    private val declaredSchema = buildDataRetentionSchema()
+    private val declaredSchema =
+        buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
 
+    /** The child row bundles the sync state of each integration */
     @Test
-    fun `every declared table an integration reads is safe for that integration directly, and no table claims an integration that does not read it`() {
+    fun `every declared table an integration reads, and the child row, is safe for that integration directly, and no other table claims an integration`() {
         val inputTablesByIntegration =
             mapOf(KOSKI to KOSKI_INPUT_TABLES, VARDA to VARDA_INPUT_TABLES)
         val invalid =
@@ -582,16 +585,46 @@ class SchemaDefinitionTest {
                 val declared =
                     (table.expirationRule as? SafeForIntegrations)?.integrations.orEmpty()
                 inputTablesByIntegration.mapNotNull { (integration, inputTables) ->
+                    val mustBeSafe = table.name in inputTables || table == declaredSchema.child
                     when {
-                        table.name in inputTables && integration !in declared ->
-                            "$table is read by $integration but is not declared safe for it"
-                        table.name !in inputTables && integration in declared ->
+                        mustBeSafe && integration !in declared ->
+                            "$table must be declared safe for $integration"
+                        !mustBeSafe && integration in declared ->
                             "$table is declared safe for $integration, which does not read it"
                         else -> null
                     }
                 }
             }
         assertEquals(emptyList(), invalid)
+    }
+
+    /**
+     * A coalesce may fall back to a rule without the freeze, for rows that no decision can use, so
+     * one of its alternatives waiting for the freeze is enough
+     */
+    @Test
+    fun `every declared table the finance generators read waits for the finance freeze, directly or through its bundle`() {
+        fun ExpirationRule.waitsForFinanceFreeze(): Boolean =
+            when (this) {
+                is After -> period == FINANCE_FREEZE_WITH_MARGIN
+                is AllOf -> rules.any { it.waitsForFinanceFreeze() }
+                is AnyOf -> rules.all { it.waitsForFinanceFreeze() }
+                is Coalesce -> rules.any { it.waitsForFinanceFreeze() }
+                is SafeForIntegrations -> rule.waitsForFinanceFreeze()
+                else -> false
+            }
+        for (valueDecisionCapacityFactorEnabled in listOf(false, true)) {
+            val schema = buildDataRetentionSchema(valueDecisionCapacityFactorEnabled)
+            fun HandledTable.waitsForFinanceFreeze(): Boolean =
+                expirationRule.waitsForFinanceFreeze() ||
+                    bundledBy?.let { schema.handled(it).waitsForFinanceFreeze() } == true
+            assertEquals(
+                emptyList(),
+                financeInputTables(valueDecisionCapacityFactorEnabled).filterNot {
+                    schema.handled(it).waitsForFinanceFreeze()
+                },
+            )
+        }
     }
 
     /** Always on its own would delete the rows the first time a run reaches them */

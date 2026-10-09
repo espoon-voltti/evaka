@@ -15,6 +15,29 @@ import java.util.UUID
 
 val FINANCE_FREEZE_PERIOD: Period = Period.ofYears(5)
 
+/**
+ * Person-scoped tables feeding the finance decision and invoice generators. The person rows they
+ * read are held by these. Keep in sync by hand.
+ */
+fun financeInputTables(valueDecisionCapacityFactorEnabled: Boolean): Set<String> =
+    setOf(
+        "placement",
+        "service_need",
+        "absence",
+        "income",
+        "fee_alteration",
+        "fridge_child",
+        "fridge_partner",
+        if (valueDecisionCapacityFactorEnabled) "assistance_factor"
+        else "assistance_need_voucher_coefficient",
+        "fee_decision",
+        "fee_decision_child",
+        "voucher_value_decision",
+        "invoice",
+        "invoice_row",
+        "invoice_correction",
+    )
+
 /** Finance decisions are never generated for days before this */
 fun financeFreezeDate(today: LocalDate): LocalDate = today.minus(FINANCE_FREEZE_PERIOD)
 
