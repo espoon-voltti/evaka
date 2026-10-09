@@ -57,6 +57,8 @@ class DvvModificationsService(
         page: DvvModificationsResponse,
         ssnCount: Int,
     ) {
+        logModifications(db, page.muutokset)
+
         val ssnsToUpdateFromVtj: MutableSet<String> = mutableSetOf()
 
         page.muutokset.forEach { personModifications ->
@@ -112,7 +114,7 @@ class DvvModificationsService(
             }
         }
 
-        val personIds = db.read { it.getPersonIdsBySsns(ssnsToUpdateFromVtj.toList()) }
+        val personIds = db.read { it.getPersonIdsBySsns(ssnsToUpdateFromVtj.toList()) }.values
         logger.info {
             "Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ, of which existing persons are: $personIds"
         }
@@ -132,6 +134,56 @@ class DvvModificationsService(
                 )
             }
         }
+    }
+
+    private fun logModifications(db: Database.Connection, modifications: List<DvvModification>) {
+        val personIds = db.read { tx ->
+            tx.getPersonIdsBySsns(modifications.map { it.henkilotunnus }.distinct())
+        }
+        modifications.forEach { modification ->
+            val person = personIds[modification.henkilotunnus]?.toString() ?: "not in eVaka"
+            logger.info {
+                "Dvv modification for $person at ${modification.muutospv}: ${
+                    modification.tietoryhmat.joinToString(", ") { it.describe() }
+                }"
+            }
+        }
+    }
+
+    private fun DvvInfoGroup.describe(): String {
+        val dates =
+            when (this) {
+                is DefaultDvvInfoGroup -> {
+                    listOf(
+                        "alkupv" to alkupv,
+                        "loppupv" to loppupv,
+                        "huoltosuhteenAlkupv" to huoltosuhteenAlkupv,
+                        "huoltosuhteenLoppupv" to huoltosuhteenLoppupv,
+                    )
+                }
+
+                is CaretakerLimitedDvvInfoGroup -> {
+                    listOf(
+                        "huoltosuhteenAlkupv" to huoltosuhteenAlkupv,
+                        "huoltosuhteenLoppupv" to huoltosuhteenLoppupv,
+                    )
+                }
+
+                is DeathDvvInfoGroup -> {
+                    listOf("kuolinpv" to kuolinpv)
+                }
+
+                is RestrictedInfoDvvInfoGroup -> {
+                    listOf("turvaLoppuPv" to turvaLoppuPv)
+                }
+
+                else -> {
+                    emptyList()
+                }
+            }
+        return (listOf(tietoryhma, muutosattribuutti ?: "-") +
+                dates.mapNotNull { (name, date) -> date?.let { "$name=${it.arvo}" } })
+            .joinToString(" ", prefix = "[", postfix = "]")
     }
 
     private fun handleDeath(
