@@ -54,21 +54,28 @@ data class DvvModification(
 )
 interface DvvInfoGroup {
     val tietoryhma: String
+    val muutosattribuutti: String?
 }
 
-data class DefaultDvvInfoGroup(override val tietoryhma: String, val muutosattribuutti: String?) :
-    DvvInfoGroup
+data class DefaultDvvInfoGroup(
+    override val tietoryhma: String,
+    override val muutosattribuutti: String?,
+    val alkupv: DvvDate?,
+    val loppupv: DvvDate?,
+    val huoltosuhteenAlkupv: DvvDate?,
+    val huoltosuhteenLoppupv: DvvDate?,
+) : DvvInfoGroup
 
 data class RestrictedInfoDvvInfoGroup(
     override val tietoryhma: String,
-    val muutosattribuutti: String?,
+    override val muutosattribuutti: String?,
     val turvakieltoAktiivinen: Boolean,
     val turvaLoppuPv: DvvDate?,
 ) : DvvInfoGroup
 
 data class CaretakerLimitedDvvInfoGroup(
     override val tietoryhma: String,
-    val muutosattribuutti: String?,
+    override val muutosattribuutti: String?,
     val huoltaja: DvvSsn,
     val huoltajanRooli: String,
     val huoltajanLaji: String,
@@ -80,14 +87,14 @@ data class DvvSsn(val henkilotunnus: String?)
 
 data class DeathDvvInfoGroup(
     override val tietoryhma: String,
-    val muutosattribuutti: String?,
+    override val muutosattribuutti: String?,
     val kuollut: Boolean?,
     val kuolinpv: DvvDate?,
 ) : DvvInfoGroup
 
 data class SsnDvvInfoGroup(
     override val tietoryhma: String,
-    val muutosattribuutti: String?,
+    override val muutosattribuutti: String?,
     val voimassaolo: String,
     val muutettuHenkilotunnus: String,
     val aktiivinenHenkilotunnus: String?,

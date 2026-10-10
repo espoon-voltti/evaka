@@ -264,26 +264,38 @@ class DvvModificationsServiceIntegrationTest :
     @Test
     fun `paging works`() {
         // The mock server has been rigged so that if the token is negative, it will return the
-        // requested batch with
-        // ajanTasalla=false and next token = token + 1 causing the dvv client to do a request for
-        // the subsequent page,
-        // until token is 0 and then it will return ajanTasalla=true
-        // So if the paging works correctly there should Math.abs(original_token) + 1 identical
-        // records
+        // requested batch with ajanTasalla=false and next token = token + 1 causing the dvv client
+        // to do a request for the subsequent page, until token is 0 and then it will return
+        // ajanTasalla=true. So if the paging works correctly there should be
+        // Math.abs(original_token) + 1 identical records
         db.transaction { it.storeDvvModificationToken("10000", "-2", 0, 0) }
-        try {
-            createTestPerson(testPerson.copy(ssn = "010180-999A"))
-            assertEquals(3, updatePeopleFromDvv(listOf("010180-999A")))
-            db.read {
-                assertEquals("1", it.getNextDvvModificationToken())
-                assertEquals(
-                    LocalDate.parse("2019-07-30"),
-                    it.getPersonBySSN("010180-999A")?.dateOfDeath,
-                )
-            }
-        } finally {
-            db.transaction { it.deleteDvvModificationToken("0") }
+        createTestPerson(testPerson.copy(ssn = "010180-999A"))
+        assertEquals(3, updatePeopleFromDvv(listOf("010180-999A")))
+        db.read {
+            assertEquals("1", it.getNextDvvModificationToken())
+            assertEquals(
+                LocalDate.parse("2019-07-30"),
+                it.getPersonBySSN("010180-999A")?.dateOfDeath,
+            )
+            assertEquals(
+                DvvModificationToken("-2", "-1", 1, 1),
+                it.getDvvModificationToken("-2"),
+            )
+            assertEquals(DvvModificationToken("-1", "0", 1, 1), it.getDvvModificationToken("-1"))
+            assertEquals(DvvModificationToken("0", "1", 1, 1), it.getDvvModificationToken("0"))
         }
+    }
+
+    @Test
+    fun `after a failure on a page the next run continues from that page`() {
+        db.transaction { it.storeDvvModificationToken("10000", "-2", 0, 0) }
+
+        // The mock server fails when the token is 0, which is the third page
+        assertThrows<Exception> { updatePeopleFromDvv(listOf("fail-on-token-0")) }
+        db.read { assertEquals("0", it.getNextDvvModificationToken()) }
+
+        assertEquals(0, updatePeopleFromDvv(emptyList()))
+        db.read { assertEquals("1", it.getNextDvvModificationToken()) }
     }
 
     @Test
