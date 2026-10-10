@@ -4904,7 +4904,7 @@ __metadata:
     typescript: "npm:7.0.2"
     vite: "npm:8.3.2"
     vitest: "npm:4.1.11"
-    wouter: "npm:3.11.1"
+    wouter: "npm:3.13.0"
   peerDependencies:
     "@fortawesome/pro-light-svg-icons": 7.2.0
     "@fortawesome/pro-regular-svg-icons": 7.2.0
@@ -8262,15 +8262,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wouter@npm:3.11.1":
-  version: 3.11.1
-  resolution: "wouter@npm:3.11.1"
+"wouter@npm:3.13.0":
+  version: 3.13.0
+  resolution: "wouter@npm:3.13.0"
   dependencies:
     regexparam: "npm:^3.0.0"
     use-sync-external-store: "npm:^1.0.0"
   peerDependencies:
     react: ">=16.8.0"
-  checksum: 10/0aa61cf1113dd5ba67b4a1e42333bbcdbaea74ff2191771e6bb83fe2a8edcb252a83d577bf2db0dc7c162644458597c557901f7ae87a298216e0293d20d01435
+  checksum: 10/7e4d030b8d569f0c0949ffe199c16c74c071a5a6c8dee218760c82757da7d5de2b2353d0ecd0abc61e1fdec3955ef7707f36aa8ea2dc3fd93594974b5d406af6
   languageName: node
   linkType: hard
 
