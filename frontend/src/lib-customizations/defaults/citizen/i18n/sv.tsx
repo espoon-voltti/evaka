@@ -238,8 +238,7 @@ const sv: Translations = {
       username: 'Användarnamn',
       usernamePlaceholder: 'E-postadress',
       password: 'Lösenord',
-      rateLimitError:
-        'Ditt användarnamn är tillfälligt låst på grund av antalet inloggningsförsök. Försök igen senare.',
+      rateLimitError: 'För många inloggningsförsök. Försök igen senare.',
       forgotPassword: 'Glömt lösenordet?',
       forgotPasswordInfo:
         'Autentisera dig i tjänsten Suomi.fi för att byta lösenord på sidan Egna uppgifter.',

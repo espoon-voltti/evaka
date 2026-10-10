@@ -280,12 +280,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.post(
     '/citizen/auth/weak-login',
     express.json(),
-    authWeakLogin(
-      citizenSessions,
-      config.citizen.weakLoginRateLimit,
-      redisClient,
-      config.citizen.cookieSecret
-    )
+    authWeakLogin(citizenSessions, redisClient, config.citizen.cookieSecret, {
+      perUsername: config.citizen.weakLoginRateLimit,
+      perIp: config.citizen.weakLoginIpRateLimit,
+      enforcePerIp: config.citizen.weakLoginIpRateLimitEnforce
+    })
   )
   router.post(
     '/citizen/auth/passkey-login/options',

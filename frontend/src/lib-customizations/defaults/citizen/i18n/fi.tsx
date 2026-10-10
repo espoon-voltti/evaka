@@ -238,7 +238,7 @@ export default {
       usernamePlaceholder: 'Sähköpostiosoite',
       password: 'Salasana',
       rateLimitError:
-        'Käyttäjätunnuksesi on väliaikaisesti lukittu kirjautumisyritysten määrästä johtuen. Kokeile myöhemmin uudelleen.',
+        'Kirjautumisyrityksiä on tehty liian monta. Kokeile myöhemmin uudelleen.',
       forgotPassword: 'Salasana unohtui?',
       forgotPasswordInfo:
         'Tunnistaudu Suomi.fi-palvelussa vaihtaaksesi salasanan Omat tiedot -sivulla.',
