@@ -52,7 +52,7 @@ dependencies {
         api(libs.ktlint.test)
 
         // These constraints are needed for CVE fixes
-        api("org.apache.httpcomponents.client5:httpclient5:5.6.4")
+        api("org.apache.httpcomponents.client5:httpclient5:5.6.5")
         api("org.apache.httpcomponents.core5:httpcore5:5.4.4")
         api("org.apache.httpcomponents.core5:httpcore5-h2:5.4.4")
         api("org.apache.logging.log4j:log4j-api:2.26.1")
