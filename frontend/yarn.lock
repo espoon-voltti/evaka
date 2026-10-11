@@ -3126,13 +3126,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/bundler-plugins@npm:^10.64.0":
-  version: 10.66.0
-  resolution: "@sentry/bundler-plugins@npm:10.66.0"
+"@sentry/bundler-plugins@npm:^10.76.0":
+  version: 10.76.2
+  resolution: "@sentry/bundler-plugins@npm:10.76.2"
   dependencies:
     "@babel/core": "npm:^7.18.5"
     "@sentry/cli": "npm:^2.58.6"
-    "@sentry/core": "npm:10.66.0"
+    "@sentry/core": "npm:10.76.2"
     dotenv: "npm:^17.4.2"
     find-up: "npm:^5.0.0"
     glob: "npm:^13.0.6"
@@ -3145,7 +3145,7 @@ __metadata:
       optional: true
     webpack:
       optional: true
-  checksum: 10/4579460b29cefd39aca9e57c3b2b16f2e866121b3c712a605a75c80d4ef93670a7c6ca8c4719a0c35408f50f6be3f9391a5e7afdd1bc10df5962170489e13b71
+  checksum: 10/49b44abf3d9f046923e212d6e5a4e759f9696ac06275c16844d9f7932fc0a9d1ec8b0856517c92fa2262828497d127c8600ca79945f213044d18c0056690e154
   languageName: node
   linkType: hard
 
@@ -3259,12 +3259,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/core@npm:10.66.0":
-  version: 10.66.0
-  resolution: "@sentry/core@npm:10.66.0"
+"@sentry/core@npm:10.76.2":
+  version: 10.76.2
+  resolution: "@sentry/core@npm:10.76.2"
   dependencies:
     "@sentry/conventions": "npm:^0.16.0"
-  checksum: 10/aaf03e88779a3081f52ecfd2ebcd56ddb6bb90d17d935c69b6eaaec47fdb96eb11415ffabe8c56d518169e76d951f014ae8190721e9cb6b9c4c4d7398eeee478
+  checksum: 10/5cedcb018d962bb27cbf85a790cb83ea9b8efb170d082352e5e65be69505d9ad7b65170ebef2efcb36c90d566092efc8bbee6b54ca036b80e57366a659754a8d
   languageName: node
   linkType: hard
 
@@ -3323,12 +3323,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/vite-plugin@npm:5.4.0":
-  version: 5.4.0
-  resolution: "@sentry/vite-plugin@npm:5.4.0"
+"@sentry/vite-plugin@npm:5.4.1":
+  version: 5.4.1
+  resolution: "@sentry/vite-plugin@npm:5.4.1"
   dependencies:
-    "@sentry/bundler-plugins": "npm:^10.64.0"
-  checksum: 10/0582bae87d0dbb641c6831ca5e29f13c3134dbee7115dd32eef0b6fe59dc3f4b740fcfb57d5caa27a2b358a933982678189e2af1bf39fda91aca51d733bd90ef
+    "@sentry/bundler-plugins": "npm:^10.76.0"
+  checksum: 10/cd0792ee31c70a3b897d033c57abc85f2044c90ae9212fdaddd8e434b58688a90ffe200a9a2518204ae7d06ab22e0fc84a3e0397d0a3d61b1a101623e26f3ea8
   languageName: node
   linkType: hard
 
@@ -4866,7 +4866,7 @@ __metadata:
     "@react-spring/web": "npm:10.1.2"
     "@sentry/browser": "npm:11.1.0"
     "@sentry/react": "npm:11.1.0"
-    "@sentry/vite-plugin": "npm:5.4.0"
+    "@sentry/vite-plugin": "npm:5.4.1"
     "@tanstack/react-query": "npm:5.104.1"
     "@testing-library/dom": "npm:10.4.2"
     "@testing-library/jest-dom": "npm:7.0.1"
