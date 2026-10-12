@@ -54,7 +54,7 @@ const prod: FeatureFlags = {
   placementDesktop: true,
   employeeLanguageSelection: true,
   sharedApplicationEditor: true,
-  citizenPwa: false
+  citizenPwa: true
 }
 
 const features: Features = {
@@ -66,14 +66,12 @@ const features: Features = {
     nekkuIntegration: false,
     forceUnpublishDocumentTemplate: true,
     serviceApplications: true,
-    showCitizenApplicationPreschoolTerms: true,
-    citizenPwa: true
+    showCitizenApplicationPreschoolTerms: true
   },
   staging: {
     ...prod,
     environmentLabel: 'Staging',
-    forceUnpublishDocumentTemplate: true,
-    citizenPwa: true
+    forceUnpublishDocumentTemplate: true
   },
   prod
 }

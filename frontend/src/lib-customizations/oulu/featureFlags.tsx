@@ -136,7 +136,8 @@ const features: Features = {
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
     placementDesktop: true,
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   }
 }
 
