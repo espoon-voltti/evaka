@@ -346,6 +346,43 @@ class ChildDocumentControllerCitizenIntegrationTest :
     }
 
     @Test
+    fun `published HOJKS document is not counted as unread`() {
+        db.transaction { tx ->
+            val hojksTemplate =
+                DevDocumentTemplate(
+                    type = ChildDocumentType.HOJKS,
+                    name = "HOJKS",
+                    validity = DateRange(clock.today(), clock.today()),
+                    content = templateContent,
+                )
+            tx.insert(hojksTemplate)
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.DRAFT,
+                    childId = child.id,
+                    templateId = hojksTemplate.id,
+                    content = documentContent,
+                    modifiedAt = clock.now(),
+                    modifiedBy = employeeUser.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = employeeUser.id,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = employeeUser.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
+                )
+            )
+        }
+
+        assertEquals(mapOf(child.id to 0), getUnreadCount())
+    }
+
+    @Test
     fun `guardian sees child documents only for own child`() {
         publishDocument(documentId)
         asyncJobRunner.runPendingJobsSync(clock)
