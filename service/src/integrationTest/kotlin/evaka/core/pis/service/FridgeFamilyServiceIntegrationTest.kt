@@ -10,8 +10,10 @@ import evaka.core.pis.Creator
 import evaka.core.pis.createPartnership
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevFosterParent
 import evaka.core.shared.dev.DevPerson
@@ -191,6 +193,35 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
     }
 
+    @Test
+    fun `refresh keeps existing guardian relations and removes ended ones`() {
+        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
+        MockPersonDetailsService.addDependants(adult2.identity, child1.identity)
+        fridgeFamilyService.updateGuardianOrChildFromVtj(
+            db,
+            AuthenticatedUser.SystemInternalUser,
+            mockToday,
+            child1.id,
+        )
+        val createdBefore = db.read { it.getGuardianCreated(adult1.id, child1.id) }
+
+        // adult2 is no longer a guardian of child1 in VTJ
+        MockPersonDetailsService.reset()
+        MockPersonDetailsService.addPersons(adult1, adult2, child1, child2)
+        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
+        fridgeFamilyService.updateGuardianOrChildFromVtj(
+            db,
+            AuthenticatedUser.SystemInternalUser,
+            mockToday,
+            child1.id,
+        )
+
+        db.read { tx ->
+            assertEquals(listOf(adult1.id), tx.getChildGuardians(child1.id))
+            assertEquals(createdBefore, tx.getGuardianCreated(adult1.id, child1.id))
+        }
+    }
+
     @Autowired lateinit var parentshipService: ParentshipService
 
     @Test
@@ -240,4 +271,12 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             it.getPersonById(id)!!
         }
     }
+
+    private fun Database.Read.getGuardianCreated(guardianId: PersonId, childId: PersonId) =
+        createQuery {
+            sql(
+                "SELECT created FROM guardian WHERE guardian_id = ${bind(guardianId)} AND child_id = ${bind(childId)}"
+            )
+        }
+        .exactlyOne<HelsinkiDateTime>()
 }

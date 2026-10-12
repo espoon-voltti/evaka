@@ -14,11 +14,63 @@ private data class GuardianChildPair(val guardianId: PersonId, val childId: Chil
 fun Database.Transaction.insertGuardian(guardianId: PersonId, childId: ChildId) =
     insertGuardians(listOf(GuardianChildPair(guardianId, childId)))
 
-fun Database.Transaction.insertGuardianChildren(guardianId: PersonId, childIds: List<ChildId>) =
-    insertGuardians(childIds.map { GuardianChildPair(guardianId, it) })
+data class GuardianRelationChanges<T>(val added: List<T>, val removed: List<T>)
 
-fun Database.Transaction.insertChildGuardians(childId: ChildId, guardianIds: List<PersonId>) =
-    insertGuardians(guardianIds.map { GuardianChildPair(it, childId) })
+fun Database.Transaction.replaceGuardianChildren(
+    guardianId: PersonId,
+    childIds: Set<ChildId>,
+): GuardianRelationChanges<ChildId> {
+    val removed = createQuery {
+        sql(
+            """
+DELETE FROM guardian
+WHERE guardian_id = ${bind(guardianId)} AND NOT child_id = ANY(${bind(childIds)})
+RETURNING child_id
+"""
+        )
+    }
+        .toList<ChildId>()
+    val added = createQuery {
+        sql(
+            """
+INSERT INTO guardian (guardian_id, child_id)
+SELECT ${bind(guardianId)}, child_id FROM unnest(${bind(childIds)}) child_id
+ON CONFLICT DO NOTHING
+RETURNING child_id
+"""
+        )
+    }
+        .toList<ChildId>()
+    return GuardianRelationChanges(added = added, removed = removed)
+}
+
+fun Database.Transaction.replaceChildGuardians(
+    childId: ChildId,
+    guardianIds: Set<PersonId>,
+): GuardianRelationChanges<PersonId> {
+    val removed = createQuery {
+        sql(
+            """
+DELETE FROM guardian
+WHERE child_id = ${bind(childId)} AND NOT guardian_id = ANY(${bind(guardianIds)})
+RETURNING guardian_id
+"""
+        )
+    }
+        .toList<PersonId>()
+    val added = createQuery {
+        sql(
+            """
+INSERT INTO guardian (guardian_id, child_id)
+SELECT guardian_id, ${bind(childId)} FROM unnest(${bind(guardianIds)}) guardian_id
+ON CONFLICT DO NOTHING
+RETURNING guardian_id
+"""
+        )
+    }
+        .toList<PersonId>()
+    return GuardianRelationChanges(added = added, removed = removed)
+}
 
 fun Database.Read.isGuardianBlocked(guardianId: PersonId, childId: ChildId): Boolean = createQuery {
     sql(
@@ -163,28 +215,4 @@ fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
         )
     }
         .toList<ChildId>()
-}
-
-fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId) {
-    return createUpdate {
-        sql(
-            """
-                DELETE FROM guardian
-                WHERE guardian_id = ${bind(guardianId)}
-                """
-        )
-    }
-        .execute()
-}
-
-fun Database.Transaction.deleteChildGuardianRelationships(childId: ChildId) {
-    return createUpdate {
-        sql(
-            """
-                DELETE FROM guardian
-                WHERE child_id = ${bind(childId)}
-                """
-        )
-    }
-        .execute()
 }

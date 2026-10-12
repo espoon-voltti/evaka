@@ -32,107 +32,158 @@ class DvvModificationsService(
 ) {
 
     fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
-        val result =
-            db.transaction { getDvvModifications(it, ssns) }
-                .let { modificationsForPersons ->
-                    val ssnsToUpdateFromVtj: MutableSet<String> = emptySet<String>().toMutableSet()
+        var token = db.read { it.getNextDvvModificationToken() }
+        var modificationCount = 0
+        while (true) {
+            logger.debug {
+                "Fetching dvv modifications with $token, found modifications so far: $modificationCount"
+            }
+            val page = dvvModificationsServiceClient.getModifications(token, ssns)
+            processModifications(db, clock, token, page, ssns.size)
+            modificationCount += page.muutokset.size
 
-                    modificationsForPersons.dvvModifications.forEach { personModifications ->
-                        personModifications.tietoryhmat.forEach { infoGroup ->
-                            try {
-                                when (infoGroup) {
-                                    is DeathDvvInfoGroup -> {
-                                        handleDeath(
-                                            db,
-                                            clock,
-                                            personModifications.henkilotunnus,
-                                            infoGroup,
-                                        )
-                                    }
+            if (page.ajanTasalla) return modificationCount
+            if (page.viimeisinKirjausavain == token) {
+                error("DVV returned the same token $token for a page that is not up to date")
+            }
+            token = page.viimeisinKirjausavain
+        }
+    }
 
-                                    is RestrictedInfoDvvInfoGroup -> {
-                                        handleRestrictedInfo(
-                                            db,
-                                            personModifications.henkilotunnus,
-                                            infoGroup,
-                                        )
-                                    }
+    private fun processModifications(
+        db: Database.Connection,
+        clock: EvakaClock,
+        token: String,
+        page: DvvModificationsResponse,
+        ssnCount: Int,
+    ) {
+        logModifications(db, page.muutokset)
 
-                                    is SsnDvvInfoGroup -> {
-                                        handleSsnDvvInfoGroup(
-                                            db,
-                                            personModifications.henkilotunnus,
-                                            infoGroup,
-                                        )
-                                    }
+        val ssnsToUpdateFromVtj: MutableSet<String> = mutableSetOf()
 
-                                    is CaretakerLimitedDvvInfoGroup -> {
-                                        if (infoGroup.huoltaja.henkilotunnus != null) {
-                                            ssnsToUpdateFromVtj.add(
-                                                infoGroup.huoltaja.henkilotunnus
-                                            )
-                                        } else {
-                                            logger.info {
-                                                "Dvv modification ignored for caretaker: ssn is null"
-                                            }
-                                        }
-                                    }
+        page.muutokset.forEach { personModifications ->
+            personModifications.tietoryhmat.forEach { infoGroup ->
+                try {
+                    when (infoGroup) {
+                        is DeathDvvInfoGroup -> {
+                            handleDeath(db, clock, personModifications.henkilotunnus, infoGroup)
+                        }
 
-                                    is DefaultDvvInfoGroup -> {
-                                        ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
-                                    }
+                        is RestrictedInfoDvvInfoGroup -> {
+                            handleRestrictedInfo(db, personModifications.henkilotunnus, infoGroup)
+                        }
 
-                                    else -> {
-                                        logger.error {
-                                            "Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${
-                                                personModifications.tietoryhmat.joinToString(", ") { it.tietoryhma }
-                                            })"
-                                        }
-                                        ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
-                                    }
+                        is SsnDvvInfoGroup -> {
+                            handleSsnDvvInfoGroup(db, personModifications.henkilotunnus, infoGroup)
+                        }
+
+                        is CaretakerLimitedDvvInfoGroup -> {
+                            if (infoGroup.huoltaja.henkilotunnus != null) {
+                                ssnsToUpdateFromVtj.add(infoGroup.huoltaja.henkilotunnus)
+                            } else {
+                                logger.info {
+                                    "Dvv modification ignored for caretaker: ssn is null"
                                 }
-                            } catch (e: Throwable) {
-                                logger.error(e) {
-                                    "Could not process dvv modification for ${
-                                        personModifications.henkilotunnus.substring(
-                                            0,
-                                            6,
-                                        )
-                                    }: ${e.message}"
-                                }
-                                throw e
                             }
                         }
-                    }
 
-                    val personIds = db.read { it.getPersonIdsBySsns(ssnsToUpdateFromVtj.toList()) }
-                    logger.info {
-                        "Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ, of which existing persons are: $personIds"
-                    }
+                        is DefaultDvvInfoGroup -> {
+                            ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                        }
 
-                    db.transaction { tx ->
-                        asyncJobRunner.plan(
-                            tx,
-                            payloads = ssnsToUpdateFromVtj.map { AsyncJob.UpdateFromVtj(it) },
-                            runAt = clock.now(),
-                        )
+                        else -> {
+                            logger.error {
+                                "Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${
+                                    personModifications.tietoryhmat.joinToString(", ") { it.tietoryhma }
+                                })"
+                            }
+                            ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                        }
                     }
-
-                    modificationsForPersons
+                } catch (e: Throwable) {
+                    logger.error(e) {
+                        "Could not process dvv modification for ${
+                            personModifications.henkilotunnus.substring(
+                                0,
+                                6,
+                            )
+                        }: ${e.message}"
+                    }
+                    throw e
                 }
-
-        if (result.token != result.nextToken) {
-            db.transaction {
-                it.storeDvvModificationToken(
-                    result.token,
-                    result.nextToken,
-                    ssns.size,
-                    result.dvvModifications.size,
-                )
             }
         }
 
-        return result.dvvModifications.size
+        val personIds = db.read { it.getPersonIdsBySsns(ssnsToUpdateFromVtj.toList()) }.values
+        logger.info {
+            "Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ, of which existing persons are: $personIds"
+        }
+
+        db.transaction { tx ->
+            asyncJobRunner.plan(
+                tx,
+                payloads = ssnsToUpdateFromVtj.map { AsyncJob.UpdateFromVtj(it) },
+                runAt = clock.now(),
+            )
+            if (token != page.viimeisinKirjausavain) {
+                tx.storeDvvModificationToken(
+                    token,
+                    page.viimeisinKirjausavain,
+                    ssnCount,
+                    page.muutokset.size,
+                )
+            }
+        }
+    }
+
+    private fun logModifications(db: Database.Connection, modifications: List<DvvModification>) {
+        val personIds = db.read { tx ->
+            tx.getPersonIdsBySsns(modifications.map { it.henkilotunnus }.distinct())
+        }
+        modifications.forEach { modification ->
+            val person = personIds[modification.henkilotunnus]?.toString() ?: "not in eVaka"
+            logger.info {
+                "Dvv modification for $person at ${modification.muutospv}: ${
+                    modification.tietoryhmat.joinToString(", ") { it.describe() }
+                }"
+            }
+        }
+    }
+
+    private fun DvvInfoGroup.describe(): String {
+        val dates =
+            when (this) {
+                is DefaultDvvInfoGroup -> {
+                    listOf(
+                        "alkupv" to alkupv,
+                        "loppupv" to loppupv,
+                        "huoltosuhteenAlkupv" to huoltosuhteenAlkupv,
+                        "huoltosuhteenLoppupv" to huoltosuhteenLoppupv,
+                    )
+                }
+
+                is CaretakerLimitedDvvInfoGroup -> {
+                    listOf(
+                        "huoltosuhteenAlkupv" to huoltosuhteenAlkupv,
+                        "huoltosuhteenLoppupv" to huoltosuhteenLoppupv,
+                    )
+                }
+
+                is DeathDvvInfoGroup -> {
+                    listOf("kuolinpv" to kuolinpv)
+                }
+
+                is RestrictedInfoDvvInfoGroup -> {
+                    listOf("turvaLoppuPv" to turvaLoppuPv)
+                }
+
+                else -> {
+                    emptyList()
+                }
+            }
+        return (listOf(tietoryhma, muutosattribuutti ?: "-") +
+                dates.mapNotNull { (name, date) -> date?.let { "$name=${it.arvo}" } })
+            .joinToString(" ", prefix = "[", postfix = "]")
     }
 
     private fun handleDeath(
@@ -268,45 +319,6 @@ class DvvModificationsService(
                 } else {
                     logger.error { "Dvv modification for ${it.id}: ssn is set to null or empty" }
                 }
-            }
-        }
-    }
-
-    data class DvvModificationsWithToken(
-        val dvvModifications: List<DvvModification>,
-        val token: String,
-        val nextToken: String,
-    )
-
-    fun getDvvModifications(tx: Database.Read, ssns: List<String>): DvvModificationsWithToken {
-        val token = tx.getNextDvvModificationToken()
-        return getAllPagesOfDvvModifications(ssns, token, emptyList())
-    }
-
-    fun getAllPagesOfDvvModifications(
-        ssns: List<String>,
-        token: String,
-        alreadyFoundDvvModifications: List<DvvModification>,
-    ): DvvModificationsWithToken {
-        logger.debug {
-            "Fetching dvv modifications with $token, found modifications so far: ${alreadyFoundDvvModifications.size}"
-        }
-        return dvvModificationsServiceClient.getModifications(token, ssns).let {
-            dvvModificationsResponse ->
-            val combinedModifications =
-                alreadyFoundDvvModifications + dvvModificationsResponse.muutokset
-            if (dvvModificationsResponse.ajanTasalla) {
-                DvvModificationsWithToken(
-                    dvvModifications = combinedModifications,
-                    token = token,
-                    nextToken = dvvModificationsResponse.viimeisinKirjausavain,
-                )
-            } else {
-                getAllPagesOfDvvModifications(
-                    ssns,
-                    dvvModificationsResponse.viimeisinKirjausavain,
-                    combinedModifications,
-                )
             }
         }
     }
