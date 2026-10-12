@@ -150,9 +150,8 @@ class ChildDocumentControllerCitizen(
                     val children =
                         tx.getCitizenChildIds(clock.today(), user.id).also { audit.add(it) }
 
-                    children.associateWith { childId ->
-                        tx.getChildDocumentCitizenSummaries(user, childId).count { it.unread }
-                    }
+                    val unreadCounts = tx.getUnreadChildDocumentCounts(user, children)
+                    children.associateWith { unreadCounts[it] ?: 0 }
                 }
             }
             .also { audit.log(Audit.ChildDocumentUnreadCount, clock) }

@@ -6,6 +6,7 @@ package evaka.core.document.childdocument
 
 import evaka.core.document.ChildDocumentType
 import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
@@ -75,6 +76,28 @@ fun Database.Read.getChildDocumentCitizenSummaries(
             ),
         )
         .toList<ChildDocumentCitizenSummary>()
+
+fun Database.Read.getUnreadChildDocumentCounts(
+    user: AuthenticatedUser.Citizen,
+    childIds: Collection<ChildId>,
+): Map<ChildId, Int> = createQuery {
+    sql(
+        """
+SELECT cd.child_id, count(*) AS unread_count
+FROM child_document cd
+WHERE
+    cd.child_id = ANY (${bind(childIds)}) AND
+    cd.type <> ${bind(ChildDocumentType.HOJKS)} AND
+    EXISTS (SELECT FROM child_document_published_version v WHERE v.child_document_id = cd.id)
+    AND NOT EXISTS (
+        SELECT FROM child_document_read cdr
+        WHERE cdr.person_id = ${bind(user.id)} AND cdr.document_id = cd.id
+    )
+GROUP BY cd.child_id
+"""
+    )
+}
+    .toMap { columnPair("child_id", "unread_count") }
 
 fun Database.Read.getUnansweredChildDocuments(
     user: AuthenticatedUser.Citizen,
