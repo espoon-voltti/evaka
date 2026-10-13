@@ -28,7 +28,7 @@ References must not form a cycle: following them from any table always ends at t
 
 The tables that a table references, directly or transitively, are its *ancestors* (i.e. closer to the root), and the tables with references leading to it are its *descendants*. Because of the foreign key constraints, deletion always proceeds leaves first: a row cannot be deleted while some descendant table's row references it. 
 
-A table can also name an ancestor in a property `bundledBy`. Its rows are then always deleted together with the rows of that ancestor, never one without the other.
+A table can also declare a property `deletedWithParent`. Its rows are then always deleted together with the rows they reference through their primary reference (section 1.3). Neither is ever deleted without the other.
 
 By default, all the person's rows in a table are evaluated and deleted as a whole, for example, a certain period after the child's last placement ends. If the expiration rule is such that different rows should be deleted independently of each other at different times, for example, a certain period after the creation, then a property `independentRows` can be set.
 
@@ -40,7 +40,7 @@ A *node* holds rows of one table. There are two kinds of nodes. An *own node* ho
 
 A graph edge goes from a node to every node that holds a row that one of its rows references through a blocking reference. A node that holds no rows will not be part of the graph.
 
-The rules of each table are then evaluated over the graph. An own node whose expiration rule is met is *expired*. For a node to be deletable, every other node that has a blocking reference to it or bundles with it must also be expired and deletable. Nodes that are expired but cannot be deleted are considered *blocked* by another node. At the end, all the deletable nodes are deleted, leaves first. Chapter 4 describes the evaluation in detail.
+The rules of each table are then evaluated over the graph. An own node whose expiration rule is met is *expired*. For a node to be deletable, every node that has a blocking reference to it must also be expired and deletable. The same holds for every node that must be deleted together with it (section 1.4). Nodes that are expired but cannot be deleted are considered *blocked* by another node. At the end, all the deletable nodes are deleted, leaves first. Chapter 4 describes the evaluation in detail.
 
 ### 1.3 Handlers and reference kinds
 
@@ -58,7 +58,7 @@ In a person's run, a table's *own rows* are the rows that lead to the target per
 
 Rows of the same table that reach the target person through a secondary reference are *foreign*. The foreign rows found through one secondary reference form a foreign node, which blocks the own nodes it references as long as it has rows. Foreign rows will be deleted only by another person's run, or in another job if the table is external.
 
-Following primary references always leads to the target person through tables which all have the same handler. This *primary path* is unique for every table, so the primary references form a tree. If the handler is child, then the path goes to `person` through `child`. If the handler is adult, then it goes directly to `person` without passing through `child`. Apart from the shared `person` root, the graph therefore splits into two separate parts, where one holds data about them as a child, and the other as an adult. This split lets us write the data expiration rules for each table from a known perspective of child or adult.
+Following primary references always leads to the target person through tables which all have the same handler. This *primary path* is unique for every table, so the primary references form a tree. The table that a table's primary reference points to is its *parent*. If the handler is child, then the path goes to `person` through `child`. If the handler is adult, then it goes directly to `person` without passing through `child`. Apart from the shared `person` root, the graph therefore splits into two separate parts, where one holds data about them as a child, and the other as an adult. This split lets us write the data expiration rules for each table from a known perspective of child or adult.
 
 Some young adults might have data about them in both roles, so in one run a table may have both own and foreign rows. The own rows form the table's own node as usual, and the foreign rows form foreign nodes. For example, `application` can contain both applications where they were the child and more recent applications that they made for their own children. The first ones are own rows while the others are foreign rows through the guardian reference.
 
@@ -66,13 +66,21 @@ When a table leads to both child and adult, then picking the handler is a judgme
 
 ### 1.4 Deletion bundles
 
-The ancestor that `bundledBy` names must lie on the table's primary path. The declaration is an additional virtual reference from the ancestor back to the table, in the opposite direction to the real one, which forces a cyclic dependency. As a result, the descendant also cannot be deleted before the ancestor is deleted, so both need to be deleted at the same time. If the table has no other rules of its own, but should simply be deleted once the ancestor can be deleted, then the expiration rule can be set to `Always`.
+Some rows are parts of a larger whole. A fee decision, for example, consists of a `fee_decision` row and its `fee_decision_child` rows. Deleting only some of the parts would leave the whole broken.
 
-If there are nodes connecting the two nodes, none of them can be deleted independently either. All of these tables form an atomic *deletion bundle*: in a person's run, either the rows of the entire set are deleted, or none are. If a table outside the bundle bundles one of its tables, or is bundled by one of them, then it and all the tables between them become part of the same bundle.
+A table declares this with `deletedWithParent`. Each of its rows is then deleted together with the row it references in the parent. Neither is ever deleted without the other.
 
-Because the bundling table lies on the primary path of the bundled table, the two always have the same handler, and whenever a bundled row is loaded in a run, the row that bundles it is loaded too. 
+Tables can be linked this way in a chain. For example, `service_need` is deleted with its parent `placement`, and `placement` with its parent `child`. Tables linked by `deletedWithParent`, directly or through other linked tables, form a *deletion bundle*. In a person's run, a bundle is deleted all at once, or not at all. If any of its own nodes is not expired, or something outside blocks any of them, the whole bundle stays.
 
-As an example, `fee_decision_child` is expected to declare `bundledBy = fee_decision`, so that a decision and its child rows are always deleted together. `fee_decision_child` is then adult-handled through its reference to `fee_decision`, and its reference to `child` is secondary. In the child's run, `fee_decision_child` rows are thus foreign, while `fee_decision` has no node at all, since none of its rows have references leading to `child`.
+For some tables, the desired expiration rule could also be that their rows are deleted at the same time as something else, even if they are not part of it. For example, some things should be deleted together with the `child` row as the final removal step of child data. This too can be achieved by setting `deletedWithParent` on all of the tables along the primary path to `child`. The expiration rule may then be `Always`, if no other conditions are needed.
+
+#### Example: fee decisions
+
+`fee_decision` references two adults, the head of family and the partner, but no children. Of the two, the head of family is the natural primary reference. In any case, the table must be adult-handled, since its primary path does not pass through `child`.
+
+`fee_decision_child`, on the other hand, references both `fee_decision` and `child`. It is an integral part of the fee decision, so it must declare `deletedWithParent`, and its parent must be `fee_decision`. Its primary reference must therefore be the one to `fee_decision`. All tables on a primary path share the same handler, so `fee_decision_child` is adult-handled too, even though on its own it is data about a single child. The decision and its child rows are deleted together, so the rule of `fee_decision` decides for all of them. It is natural to write that rule from the perspective of the head of family. A fee decision always has exactly one head of family, but it may concern several children, or none at all.
+
+In the child's run, the `fee_decision_child` rows are then foreign rows. They block the deletion of the child through their secondary reference. The `fee_decision` rows are not part of the graph at all, since their references do not lead to `child`.
 
 ### 1.5 Independent rows
 
@@ -82,7 +90,9 @@ This is allowed for a table with `independentRows`. Each of its rows then gets a
 
 With a graph A<-B<-C, where B has independent rows while A and C are evaluated as a whole, no rows in A can be deleted before every row of B has been deleted, and no row of B can be deleted before all of C is deleted. However, once C has been fully deleted and no longer blocks, then the rows of B can be deleted individually.
 
-Next, let's assume that B references A and A bundles B. Bundling follows the primary references row by row. If both have independent rows, then a row of A bundles the rows of B that reference it specifically, creating multiple small deletion bundles. If either of the tables is evaluated as a whole, or there is any such table between them, then it follows that every node must still be deleted together and they are all part of the same deletion bundle. This makes the row level evaluations fully redundant and wasteful, so validation of the schema definition checks that within a deletion bundle either every table has `independentRows` or none of them has.
+Next, let's assume that B is deleted with its parent A. If both have independent rows, each row of B is deleted together with the row of A it references, and not with the other rows of A. The deletion bundle of the two tables then splits into smaller bundles, one for each row of A together with the rows of B that reference it.
+
+Validation checks that a table that declares `deletedWithParent` has `independentRows` exactly when its parent has. If only one of the two had independent rows, the other would be evaluated as a whole, with a single node. Every row linked to that node would be in the same bundle with it. Those rows could then only be deleted all at once, so there would be no point in evaluating them one by one.
 
 ### 1.6 Optional references
 
@@ -98,7 +108,7 @@ The following are examples of different kinds of expiration rules. They can be c
 
 ### 2.1 Always and never
 
-The simplest rules return a constant. Under `Always` the nodes are expired from the start and are deleted as soon as nothing blocks them, which suits a table such as `fee_decision_child` whose rows are deleted together with the row that bundles them. A table that is not bundled must not use `Always`. Under `Never` a node never expires, which is mostly useful as a building block when rules are combined.
+The simplest rules return a constant. Under `Always` the nodes are expired from the start and are deleted as soon as nothing blocks them, which suits a table such as `fee_decision_child` whose rows are deleted with the `fee_decision` row they reference. A table that does not declare `deletedWithParent` must not have `Always` as its only rule. Under `Never` a node never expires, which is mostly useful as a building block when rules are combined.
 
 ### 2.2 Reference date from a date source
 
@@ -128,7 +138,7 @@ An application that is still open keeps its node too. The parentships and partne
 
 ### 2.4 Safe for integrations
 
-Koski and Varda read a fixed set of tables. The rule of every table an integration reads is wrapped in a rule that names the integration, and so is the rule of `child`, which bundles the state of each sync. The node then expires only if the wrapped rule is met and every child the node concerns is *safe* for each named integration. More details in section 3.3.
+Koski and Varda read a fixed set of tables. The rule of every table an integration reads is wrapped in a rule that names the integration, and so is the rule of `child`, since the state of each sync is deleted with it. The node then expires only if the wrapped rule is met and every child the node concerns is *safe* for each named integration. More details in section 3.3.
 
 ## 3. Deletion instructions
 
@@ -154,7 +164,7 @@ Koski and Varda read a fixed set of tables. Deleting rows from any of them must 
 
 The rows are not always deleted in the child's own run. When an adult's run deletes a fee decision, for example, the freeze must be recorded for every child on that decision.
 
-The tables that hold the state of each sync, `koski_study_right`, `koski_upload_error` and `varda_state`, are bundled by `child`, so that all of them are deleted together. The rule of `child` is safe for both integrations, so the state of a child who was sent stays until the safe data removal age, even when the rows the integrations read were deleted by hand. The `child` row may still be recreated without the freeze timestamps, for example if a guardian logs in before the child turns 18. Creating new placements for such a child is not realistic, but as an additional safeguard both integrations refuse to start syncing a child past that age who has no previous integration state rows. First sync happening at that age is clearly an error.
+The tables that hold the state of each sync, `koski_study_right`, `koski_upload_error` and `varda_state`, are deleted with their parent `child`, so that all of them are deleted together. The rule of `child` is safe for both integrations, so the state of a child who was sent stays until the safe data removal age, even when the rows the integrations read were deleted by hand. The `child` row may still be recreated without the freeze timestamps, for example if a guardian logs in before the child turns 18. Since the integration state rows were deleted too, the sync still would not restart and cause destructive operations unless a placement is created for the child. Creating new placements for such a child is not realistic, but as an additional safeguard both integrations refuse to start syncing a child past that age who has no previous integration state rows. First sync happening at that age is clearly an error.
 
 ## 4. Running the algorithm
 
@@ -176,9 +186,9 @@ It then runs the query sources and not while rules of the table for the rows. Th
 
 Foreign rows are found next. The loader goes through every secondary reference whose target table has an own node. The rows that hold the id of one of those rows in the reference column, apart from the own rows, form a foreign node.
 
-Finally, for the target and every child the own rows reference, the loader reads the date of birth and whether the child has been sent to Koski and to Varda, which the safe for integrations rules and the freezes need. Nothing needs to be checked for bundles: the validation of chapter 7 guarantees that a bundling row is loaded whenever a bundled row is.
+Finally, for the target and every child the own rows reference, the loader reads the date of birth and whether the child has been sent to Koski and to Varda, which the safe for integrations rules and the freezes need.
 
-**Step 2: drop the empty nodes.** Nodes with no rows are dropped from the graph: they have nothing to delete and reference nothing, so they take no part in the evaluation. The `child` node is however kept even when the child row is missing, so that blocking and bundling pass through it to `person` (section 6.1). With no rows it counts as expired, so it blocks nothing on its own.
+**Step 2: drop the empty nodes.** Nodes with no rows are dropped from the graph: they have nothing to delete and reference nothing, so they take no part in the evaluation. The `child` node is however kept even when the child row is missing, so that blocking passes through it to `person`, and the tables that must be deleted with it still form one bundle (section 6.1). With no rows it counts as expired, so it blocks nothing on its own.
 
 **Step 3: evaluate the rules.** The rules are evaluated over the loaded graph in the two passes described below. This is a pure function of the loaded data, the rules and today's date. Its result is a *plan*:
 
@@ -198,7 +208,7 @@ Nodes with no rows were dropped before this pass, so a foreign node exists only 
 
 ### 4.3 Second pass: blocking
 
-An expired node still cannot be deleted if a node that references it is not expired, because its rows are still referenced. We say the non-expired node *blocks* it: the expiration mark is removed, and the node in turn blocks the nodes it references. Likewise, a node that is not expired blocks the nodes it bundles.
+An expired node still cannot be deleted if a node that references it is not expired, because its rows are still referenced. We say the non-expired node *blocks* it: the expiration mark is removed, and the node in turn blocks the nodes it references. Likewise, a node that is not expired blocks the nodes that must be deleted together with it. A node that stays therefore keeps its whole deletion bundle.
 
 ```
 for each loaded node n:
@@ -207,7 +217,7 @@ for each loaded node n:
 for each node n that is NOT expired after the first pass: block(n)
 
 block(n):
-    for each node m that n references and each node m that n bundles:
+    for each node m that n references and each node m that references n and must be deleted with it:
         if m is expired:
             m is no longer expired
             block(m)
@@ -215,7 +225,7 @@ block(n):
 
 Every node goes through `block` at most once, either from the outer loop or when it loses its mark, so the work is linear in the size of the graph. This is the mark phase of a [mark-and-sweep garbage collector](https://en.wikipedia.org/wiki/Tracing_garbage_collection#Naive_mark-and-sweep), with the non-expired nodes as its roots: what they reach stays, and the rest is swept.
 
-The nodes that are still expired at the end are deleted leaf-first, in an order that follows the real edges only. They form the largest set in which every node's own rule is met, every node referencing a node in the set is in the set too (no foreign key violations on deletion), and every deletion bundle is either entirely in the set or entirely outside it.
+The nodes that are still expired at the end are deleted leaf-first, in an order that follows the edges. They form the largest set in which every node's own rule is met, every node referencing a node in the set is in the set too (no foreign key violations on deletion), and every deletion bundle is either entirely in the set or entirely outside it.
 
 ### 4.4 Executing the plan
 
@@ -270,7 +280,7 @@ The `child` row is deleted at the very end, but some information in it, such as 
 
 Not every person with data as a child has a `child` row. The row is created when a guardian logs in, when a placement is created and in a few other places, but not for a sibling who only gets a parentship from an application, nor when a parentship or family contact is added by hand. Such a person might still have rows like `fridge_child` and `family_contact` that belong to them as a child, but which currently reference `person` directly.
 
-Therefore the `child` node is part of every graph, identified by the person id, with one row or none. References to `child` find their rows by that id whether or not the row exists, and the node blocks and bundles like any other. With no rows it counts as expired, and deleting it does nothing. Nothing is sent to Koski or Varda about such a child, so the missing freeze columns do not matter.
+Therefore the `child` node is part of every graph, identified by the person id, with one row or none. References to `child` find their rows by that id whether or not the row exists, and the node takes part in blocking and in deletion bundles like any other. With no rows it counts as expired, and deleting it does nothing. Nothing is sent to Koski or Varda about such a child, so the missing freeze columns do not matter.
 
 ### 6.2 Partnerships
 
@@ -286,7 +296,7 @@ Finance decisions are generated from the family and income data, the parentships
 
 A row expires only when no decision that can still be generated needs it. For most tables, the rules require the row's period to have ended longer ago than the freeze, in addition to possible other expiration rules. The rules add a margin of one month to the freeze, so that data is deleted only after the generator no longer reads it. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
 
-The freeze is written into the rule of every table the generators read, even where a longer period such as ten years already outlasts it, so that shortening that period later cannot break it. A test checks this against a list of those tables, kept by hand next to the freeze period. A bundled table may rely on the rule of the table that bundles it.
+The freeze is written into the rule of every table the generators read, even where a longer period such as ten years already outlasts it, so that shortening that period later cannot break it. A test checks this against a list of those tables, kept by hand next to the freeze period. A table that is deleted with its parent may rely on the rule of the parent.
 
 The voucher value decision generator reads the assistance coefficients from `assistance_factor` when the municipality uses capacity factors, and from `assistance_need_voucher_coefficient` otherwise. The schema definition is therefore built for that setting, and only the table the generator reads waits for the freeze.
 
@@ -297,15 +307,14 @@ The schema definition is validated when it is constructed:
 - `person` and `child` have their fixed shape, every table declares a primary key, no column carries two references, no reference is a self-reference, and every reference leads to a declared table whose primary key is one column.
 - References form no cycle, and every table reaches the root through them.
 - Every handled table other than `person` declares exactly one primary reference, and its role is the table's handler. `child` is the exception, since its primary reference leads to `person`. An external table has no handler and declares no primary reference.
-- `bundledBy` names an ancestor on the table's primary path.
-- Within a deletion bundle, either every table has `independentRows` or none has.
+- A table that declares `deletedWithParent` has `independentRows` exactly when its parent has.
 - A date source that reads another table reads `person` or a table with the same handler, and a column is read the same way everywhere. A query source and a not while rule need a primary key of one column.
 - An orphan to delete points outside the schema definition from a column that is not a declared reference.
 
 Unit tests check the declared schema definition:
 
 - Every table an integration reads, and `child`, has the safe for integrations rule directly, and no other table names an integration.
-- Every table whose rule is `Always` is bundled.
+- Every table whose rule is `Always` is deleted with its parent.
 
 Integration tests then compare the schema definition against the database schema:
 
