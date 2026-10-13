@@ -46,7 +46,6 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.vtjclient.service.persondetails.MockVtjDataset
 import evaka.core.vtjclient.service.persondetails.MockVtjPerson
-import evaka.core.vtjclient.service.persondetails.Ssn
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -492,7 +491,7 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
 
 fun buildVtjDataset(families: List<SeededFamily>): MockVtjDataset {
     val persons = mutableListOf<MockVtjPerson>()
-    val guardianDependants = mutableMapOf<Ssn, List<Ssn>>()
+    val guardianDependants = mutableMapOf<String, List<String>>()
 
     for (family in families) {
         persons.add(MockVtjPerson.from(family.guardian))

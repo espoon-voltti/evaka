@@ -15,7 +15,7 @@ import evaka.core.decision.DecisionType
 import evaka.core.decision.DecisionUnit
 import evaka.core.decision.PdfReasoning
 import evaka.core.decision.createDecisionPdf
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.invoicing.domain.EmployeeWithName
 import evaka.core.invoicing.domain.FeeDecisionChildDetailed
 import evaka.core.invoicing.domain.FeeDecisionDetailed
@@ -121,7 +121,7 @@ abstract class AbstractDecisionPdfGeneratorTest {
         PersonDTO(
             testChild.id,
             null,
-            ExternalIdentifier.SSN.getInstance(testChild.ssn!!),
+            Ssn.parse(testChild.ssn!!),
             false,
             "Kullervo Kyöstinpoika",
             "Pöysti",

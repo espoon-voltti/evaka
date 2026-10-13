@@ -4,6 +4,7 @@
 
 package evaka.core.dvv
 
+import evaka.core.identity.Ssn
 import evaka.core.pis.Modifier
 import evaka.core.pis.ModifySource
 import evaka.core.pis.addSSNToPerson
@@ -314,10 +315,11 @@ class DvvModificationsService(
             tx.getPersonBySSN(ssn)?.let {
                 logger.info { "Dvv modification for ${it.id}: ssn change" }
 
-                if (!ssnDvvInfoGroup.aktiivinenHenkilotunnus.isNullOrEmpty()) {
-                    tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
+                val newSsn = ssnDvvInfoGroup.aktiivinenHenkilotunnus?.let { ssn -> Ssn.parse(ssn) }
+                if (newSsn != null) {
+                    tx.addSSNToPerson(it.id, newSsn)
                 } else {
-                    logger.error { "Dvv modification for ${it.id}: ssn is set to null or empty" }
+                    logger.error { "Dvv modification for ${it.id}: ssn is missing or invalid" }
                 }
             }
         }

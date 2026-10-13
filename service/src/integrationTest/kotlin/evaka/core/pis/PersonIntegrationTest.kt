@@ -5,7 +5,7 @@
 package evaka.core.pis
 
 import evaka.core.PureJdbiTest
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.pis.controllers.CreatePersonBody
 import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.PersonId
@@ -24,7 +24,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 PersonDTO(
                     id = PersonId(UUID.randomUUID()),
                     duplicateOf = null,
-                    identity = ExternalIdentifier.SSN.getInstance("080512A918W"),
+                    ssn = Ssn.parse("080512A918W"),
                     ssnAddingDisabled = false,
                     dateOfBirth = LocalDate.of(2012, 5, 8),
                     firstName = "Matti",

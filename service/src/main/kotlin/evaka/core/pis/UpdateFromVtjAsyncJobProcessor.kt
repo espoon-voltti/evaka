@@ -4,8 +4,7 @@
 
 package evaka.core.pis
 
-import evaka.core.identity.ExternalIdentifier
-import evaka.core.identity.isValidSSN
+import evaka.core.identity.Ssn
 import evaka.core.pis.service.FridgeFamilyService
 import evaka.core.pis.service.PersonService
 import evaka.core.shared.async.AsyncJob
@@ -36,14 +35,14 @@ class UpdateFromVtjAsyncJobProcessor(
         evakaClock: EvakaClock,
         msg: AsyncJob.UpdateFromVtj,
     ) {
-        if (!isValidSSN(msg.ssn)) {
-            throw PermanentAsyncJobFailure("Invalid SSN in UpdateFromVtj payload")
-        }
+        val ssn =
+            Ssn.parse(msg.ssn)
+                ?: throw PermanentAsyncJobFailure("Invalid SSN in UpdateFromVtj payload")
         db.transaction { tx ->
                 personService.getOrCreatePerson(
                     tx,
                     AuthenticatedUser.SystemInternalUser,
-                    ExternalIdentifier.SSN.getInstance(msg.ssn),
+                    ssn,
                     audit = null,
                 )
             }

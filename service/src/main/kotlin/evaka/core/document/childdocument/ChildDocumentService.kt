@@ -16,7 +16,6 @@ import evaka.core.document.ChildDocumentType
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.identity.ExternalIdentifier
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
@@ -175,7 +174,7 @@ class ChildDocumentService(
             tx.getChildGuardiansAndFosterParents(document.child.id, clock.today())
                 .mapNotNull { tx.getPersonById(it) }
                 .forEach { guardian ->
-                    if (guardian.identity !is ExternalIdentifier.SSN) {
+                    if (guardian.ssn == null) {
                         logger.info {
                             "Cannot deliver child document decision $documentId to guardian via Sfi. SSN is missing."
                         }
@@ -206,7 +205,7 @@ class ChildDocumentService(
                             streetAddress = sendAddress.street,
                             postalCode = sendAddress.postalCode,
                             postOffice = sendAddress.postOffice,
-                            ssn = guardian.identity.ssn,
+                            ssn = guardian.ssn.value,
                             messageHeader = messageProvider.getChildDocumentDecisionHeader(lang),
                             messageContent = messageProvider.getChildDocumentDecisionContent(lang),
                         )

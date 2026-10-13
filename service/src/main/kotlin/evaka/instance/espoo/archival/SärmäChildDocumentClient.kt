@@ -77,7 +77,7 @@ class SärmäChildDocumentClient(
                 documentMetadata,
                 caseProcess,
                 Paths.get(documentContent.name).fileName.toString(),
-                childInfo.identity,
+                childInfo.ssn,
                 childInfo.dateOfBirth,
                 masterId = archiveEnv.masterId,
                 virtualArchiveId = archiveEnv.virtualArchiveId,

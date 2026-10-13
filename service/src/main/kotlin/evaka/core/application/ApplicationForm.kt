@@ -7,7 +7,6 @@ package evaka.core.application
 import evaka.core.application.persistence.DatabaseForm
 import evaka.core.application.persistence.club.ClubFormV0
 import evaka.core.application.persistence.daycare.DaycareFormV0
-import evaka.core.identity.ExternalIdentifier
 import evaka.core.pis.service.PersonDTO
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ServiceNeedOptionId
@@ -334,8 +333,7 @@ data class ApplicationForm(
                             PersonBasics(
                                 firstName = child.firstName,
                                 lastName = child.lastName,
-                                socialSecurityNumber =
-                                    (child.identity as? ExternalIdentifier.SSN)?.ssn,
+                                socialSecurityNumber = child.ssn?.value,
                             ),
                         dateOfBirth = child.dateOfBirth,
                         address =
@@ -358,8 +356,7 @@ data class ApplicationForm(
                             PersonBasics(
                                 firstName = guardian.firstName,
                                 lastName = guardian.lastName,
-                                socialSecurityNumber =
-                                    (guardian.identity as? ExternalIdentifier.SSN)?.ssn,
+                                socialSecurityNumber = guardian.ssn?.value,
                             ),
                         address =
                             Address(

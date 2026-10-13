@@ -5,7 +5,7 @@
 package evaka.core.shared.db
 
 import evaka.core.identity.ExternalId
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.invoicing.service.ProductKey
 import evaka.core.shared.DatabaseTable
 import evaka.core.shared.Id
@@ -102,13 +102,8 @@ val coordinateArgumentFactory =
         }
     }
 
-val identityArgumentFactory =
-    customArgumentFactory<ExternalIdentifier>(Types.VARCHAR) {
-        when (it) {
-            is ExternalIdentifier.SSN -> CustomStringArgument(it.ssn)
-            is ExternalIdentifier.NoID -> null
-        }
-    }
+val ssnArgumentFactory =
+    customArgumentFactory<Ssn>(Types.VARCHAR) { CustomStringArgument(it.value) }
 
 val externalIdArgumentFactory = toStringArgumentFactory<ExternalId>()
 
@@ -340,6 +335,11 @@ val helsinkiDateTimeColumnMapper = ColumnMapper { r, columnNumber, _ ->
 val yearMonthColumnMapper = ColumnMapper { r, columnNumber, _ ->
     r.getObject(columnNumber, LocalDate::class.java)?.let { YearMonth.from(it) }
 }
+
+val ssnColumnMapper =
+    ColumnMapper<Ssn> { rs, columnNumber, _ ->
+        rs.getString(columnNumber)?.let { Ssn.parse(it) ?: error("Invalid SSN in the database") }
+    }
 
 val productKeyColumnMapper = ColumnMapper { rs, columnNumber, _ ->
     ProductKey(rs.getString(columnNumber))

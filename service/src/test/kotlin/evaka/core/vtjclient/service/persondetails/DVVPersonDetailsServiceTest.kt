@@ -4,7 +4,7 @@
 
 package evaka.core.vtjclient.service.persondetails
 
-import evaka.core.identity.ExternalIdentifier.SSN
+import evaka.core.identity.Ssn
 import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
@@ -73,7 +73,7 @@ class DVVPersonDetailsServiceTest {
         val expectedChildQuery =
             DetailsQuery(
                 requestingUser = query.requestingUser,
-                targetIdentifier = SSN.getInstance(expectedChildResult.socialSecurityNumber),
+                ssn = Ssn.parse(expectedChildResult.socialSecurityNumber)!!,
             )
         val expectedChildVtjQuery =
             expectedChildQuery.mapToVtjQuery(IVtjClientService.RequestType.PERUSSANOMA3)
@@ -115,7 +115,7 @@ class DVVPersonDetailsServiceTest {
         vtjPerson.toPersonDTO().let {
             DetailsQuery(
                 requestingUser = EvakaUserId(it.id.raw),
-                targetIdentifier = it.identity as SSN,
+                ssn = it.ssn!!,
             )
         }
 
@@ -128,7 +128,7 @@ class DVVPersonDetailsServiceTest {
         PersonDTO(
             id = PersonId(randomUUID()),
             duplicateOf = null,
-            identity = SSN.getInstance(socialSecurityNumber),
+            ssn = Ssn.parse(socialSecurityNumber),
             ssnAddingDisabled = false,
             firstName = firstNames,
             lastName = lastName,

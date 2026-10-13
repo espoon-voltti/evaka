@@ -4,7 +4,6 @@
 
 package evaka.trevaka.invoice
 
-import evaka.core.identity.ExternalIdentifier
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.pis.service.PersonDTO
 
@@ -17,13 +16,7 @@ fun PersonDTO.toPersonDetailed() =
         dateOfDeath = this.dateOfDeath,
         firstName = this.firstName,
         lastName = this.lastName,
-        ssn =
-            this.identity.let {
-                when (it) {
-                    is ExternalIdentifier.SSN -> it.toString()
-                    is ExternalIdentifier.NoID -> null
-                }
-            },
+        ssn = this.ssn?.value,
         streetAddress = this.streetAddress,
         postalCode = this.postalCode,
         postOffice = this.postOffice,

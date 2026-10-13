@@ -83,5 +83,5 @@ class DummyIdpPersonDetailsService(baseUrl: String, jsonMapper: JsonMapper) :
     }
 
     private fun fetch(query: IPersonDetailsService.DetailsQuery): DummyIdpVtjPerson =
-        httpClient.get<DummyIdpVtjPerson>("idp/users/${query.targetIdentifier.ssn}")
+        httpClient.get<DummyIdpVtjPerson>("idp/users/${query.ssn.value}")
 }

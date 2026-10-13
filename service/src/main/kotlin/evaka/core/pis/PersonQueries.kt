@@ -4,7 +4,7 @@
 
 package evaka.core.pis
 
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.pis.controllers.CreatePersonBody
 import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.PersonPatch
@@ -279,7 +279,7 @@ VALUES (
     ${bind(p.lastName)},
     ${bind(p.dateOfBirth)},
     ${bind(p.dateOfDeath)},
-    ${bind(p.identity)},
+    ${bind(p.ssn)},
     ${bind(p.language)},
     ${bind(p.nationalities)},
     ${bind(p.streetAddress)},
@@ -371,7 +371,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
 UPDATE person SET
     first_name = ${bind(p.firstName)},
     last_name = ${bind(p.lastName)},
-    social_security_number = ${bind(p.identity)},
+    social_security_number = ${bind(p.ssn)},
     date_of_birth = ${bind(p.dateOfBirth)},
     date_of_death = ${bind(p.dateOfDeath)},
     language = ${bind(p.language)},
@@ -413,8 +413,8 @@ RETURNING id
 }
 
 // Update those person fields which do not come from VTJ
-fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPatch): Boolean {
-    return createQuery {
+fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPatch) {
+    execute {
         sql(
             """
 UPDATE person SET
@@ -432,11 +432,10 @@ RETURNING id
 """
         )
     }
-        .exactlyOneOrNull<PersonId>() != null
 }
 
-fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPatch): Boolean {
-    return createQuery {
+fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPatch) {
+    execute {
         sql(
             """
 UPDATE person SET
@@ -461,10 +460,9 @@ RETURNING id
 """
         )
     }
-        .exactlyOneOrNull<PersonId>() != null
 }
 
-fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
+fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: Ssn) {
     createUpdate {
         sql("UPDATE person SET social_security_number = ${bind(ssn)} WHERE id = ${bind(id)}")
     }
@@ -475,10 +473,7 @@ private val toPersonDTO: Row.() -> PersonDTO = {
     PersonDTO(
         id = PersonId(column("id")),
         duplicateOf = column<UUID?>("duplicate_of")?.let { PersonId(it) },
-        identity =
-            column<String?>("social_security_number")?.let { ssn ->
-                ExternalIdentifier.SSN.getInstance(ssn)
-            } ?: ExternalIdentifier.NoID,
+        ssn = column<Ssn?>("social_security_number"),
         ssnAddingDisabled = column("ssn_adding_disabled"),
         firstName = column("first_name"),
         lastName = column("last_name"),

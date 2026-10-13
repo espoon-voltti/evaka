@@ -229,7 +229,7 @@ class DvvModificationsServiceIntegrationTest :
             db.read { tx ->
                 tx.getChildGuardians(dvvCustodian.id)
                     .mapNotNull { tx.getPersonById(it) }
-                    .any { guardian -> guardian.identity.toString() == caretaker.ssn }
+                    .any { guardian -> guardian.ssn!!.value == caretaker.ssn }
             }
         )
     }
@@ -253,7 +253,7 @@ class DvvModificationsServiceIntegrationTest :
             db.read { tx ->
                 tx.getGuardianChildIds(dvvCaretaker.id)
                     .mapNotNull { tx.getPersonById(it) }
-                    .any { child -> child.identity.toString() == custodian.ssn }
+                    .any { child -> child.ssn!!.value == custodian.ssn }
             }
         )
     }
@@ -277,7 +277,7 @@ class DvvModificationsServiceIntegrationTest :
             db.read { tx ->
                 tx.getGuardianChildIds(dvvCaretaker.id)
                     .mapNotNull { tx.getPersonById(it) }
-                    .any { child -> child.identity.toString() == custodian.ssn }
+                    .any { child -> child.ssn!!.value == custodian.ssn }
             }
         )
     }

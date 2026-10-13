@@ -20,7 +20,7 @@ import evaka.core.document.childdocument.ChildDocumentDetails
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.document.childdocument.generateChildDocumentHtml
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.createAddressPagePdf
 import evaka.core.placement.PlacementType
@@ -49,7 +49,7 @@ private val guardian =
     PersonDTO(
         testAdult.id,
         null,
-        ExternalIdentifier.SSN.getInstance(testAdult.ssn!!),
+        Ssn.parse(testAdult.ssn!!),
         false,
         "Kyösti Taavetinpoika",
         "Pöysti",

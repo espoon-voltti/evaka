@@ -5,7 +5,7 @@
 package evaka.core.vtjclient
 
 import evaka.core.FullApplicationTest
-import evaka.core.identity.ExternalIdentifier.SSN
+import evaka.core.identity.Ssn
 import evaka.core.lookup
 import evaka.core.pis.Employee
 import evaka.core.shared.EmployeeId
@@ -186,10 +186,10 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
         val result = ResidentCountExample.residentCountFromHenkilo(response!!)
 
         with(result) {
-            assertThat(ssn.ssn).isEqualTo(expectedSSN)
+            assertThat(ssn.value).isEqualTo(expectedSSN)
             assertThat(residentCount).isEqualTo(4)
             assertThat(underageResidentCount).isEqualTo(expectedUnderageSSNs.size)
-            assertThat(underageResidentSSns.map(SSN::ssn))
+            assertThat(underageResidentSSns.map { it.value })
                 .containsExactlyInAnyOrder(*expectedUnderageSSNs.toTypedArray())
         }
         mockServer?.verify()
@@ -261,19 +261,18 @@ private val popovsWithBasicChildData: VtjPerson by lazy {
 // an example model for resident count. Decide actual model/useage later based on confirmed
 // requirements
 class ResidentCountExample(
-    val ssn: SSN,
+    val ssn: Ssn,
     val residentCount: Int,
     val underageResidentCount: Int,
-    val underageResidentSSns: List<SSN>,
+    val underageResidentSSns: List<Ssn>,
 ) {
     companion object Factory {
         fun residentCountFromHenkilo(henkilo: Henkilo) =
             ResidentCountExample(
-                ssn = SSN.getInstance(henkilo.henkilotunnus.value),
+                ssn = Ssn.parse(henkilo.henkilotunnus.value)!!,
                 residentCount = henkilo.asukasLkm.toInt(),
                 underageResidentCount = henkilo.asukkaatAlle18V.asukasLkm.toInt(),
-                underageResidentSSns =
-                    henkilo.asukasAlle18V.map { SSN.getInstance(it.henkilotunnus) },
+                underageResidentSSns = henkilo.asukasAlle18V.map { Ssn.parse(it.henkilotunnus)!! },
             )
     }
 }

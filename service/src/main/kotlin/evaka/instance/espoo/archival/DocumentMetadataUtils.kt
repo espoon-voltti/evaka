@@ -9,7 +9,7 @@ import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.DocumentMetadata
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.childdocument.ChildDocumentDetails
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.instance.espoo.archival.model.*
 import java.time.LocalDate
 
@@ -134,7 +134,7 @@ fun createDocumentDescription(
     document: ChildDocumentDetails,
     documentMetadata: DocumentMetadata,
     caseProcess: CaseProcess?,
-    childIdentifier: ExternalIdentifier,
+    childSsn: Ssn?,
     childBirthDate: LocalDate,
 ): DocumentDescription {
     return DocumentDescription(
@@ -179,8 +179,7 @@ fun createDocumentDescription(
             "Rekisterinpitäjän lakisääteisten velvoitteiden noudattaminen",
         firstName = document.child.firstName,
         lastName = document.child.lastName,
-        socialSecurityNumber =
-            if (childIdentifier is ExternalIdentifier.SSN) childIdentifier.ssn else null,
+        socialSecurityNumber = childSsn?.value,
         birthDate = childBirthDate,
         agents = createAgents(caseProcess),
     )
@@ -257,7 +256,7 @@ fun createDocumentMetadata(
     documentMetadata: DocumentMetadata,
     caseProcess: CaseProcess?,
     filename: String,
-    childIdentifier: ExternalIdentifier,
+    childSsn: Ssn?,
     birthDate: LocalDate,
     masterId: String,
     virtualArchiveId: String,
@@ -281,7 +280,7 @@ fun createDocumentMetadata(
                         document,
                         documentMetadata,
                         caseProcess,
-                        childIdentifier,
+                        childSsn,
                         birthDate,
                     ),
                 format = createFormat(filename),

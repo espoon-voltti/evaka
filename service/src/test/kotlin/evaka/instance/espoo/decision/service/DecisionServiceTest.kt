@@ -14,7 +14,7 @@ import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
 import evaka.core.decision.DecisionUnit
 import evaka.core.decision.createDecisionPdf
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.service.PersonDTO
 import evaka.core.setting.SettingType
@@ -192,7 +192,7 @@ private fun validChild() =
     PersonDTO(
         PersonId(UUID.randomUUID()),
         duplicateOf = null,
-        ExternalIdentifier.SSN.getInstance("010115A9532"),
+        Ssn.parse("010115A9532"),
         ssnAddingDisabled = false,
         firstName = "Matti",
         lastName = "Meikäläinen",

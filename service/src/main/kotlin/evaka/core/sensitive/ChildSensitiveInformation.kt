@@ -22,7 +22,7 @@ data class ChildBasicInformation(
 
 data class ChildSensitiveInformation(
     val id: ChildId,
-    val ssn: String,
+    val ssn: String?,
     val childAddress: String,
     val allergies: String,
     val diet: String,

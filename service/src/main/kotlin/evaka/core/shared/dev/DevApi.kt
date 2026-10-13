@@ -79,7 +79,7 @@ import evaka.core.holidayperiod.createFixedPeriodQuestionnaire
 import evaka.core.holidayperiod.createOpenRangesQuestionnaire
 import evaka.core.holidayperiod.insertHolidayPeriod
 import evaka.core.identity.ExternalId
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.incomestatement.IncomeStatementStatus
 import evaka.core.incomestatement.updateIncomeStatementHandled
 import evaka.core.invoicing.data.markVoucherValueDecisionsSent
@@ -156,6 +156,7 @@ import evaka.core.shared.auth.*
 import evaka.core.shared.data.DateSet
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.psqlCause
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Coordinate
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
@@ -2194,8 +2195,7 @@ data class DevPerson(
         PersonDTO(
             id = this.id,
             duplicateOf = this.duplicateOf,
-            identity =
-                this.ssn?.let { ExternalIdentifier.SSN.getInstance(it) } ?: ExternalIdentifier.NoID,
+            ssn = this.ssn?.let { Ssn.parse(it) ?: throw BadRequest("Invalid SSN") },
             ssnAddingDisabled = this.ssnAddingDisabled ?: false,
             firstName = this.firstName,
             lastName = this.lastName,

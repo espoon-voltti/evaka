@@ -4,7 +4,7 @@
 
 package evaka.core.vtjclient.service.persondetails
 
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.shared.EvakaUserId
 import evaka.core.vtjclient.dto.VtjPerson
 
@@ -15,8 +15,5 @@ interface IPersonDetailsService {
 
     fun getBasicDetailsFor(query: DetailsQuery): VtjPerson
 
-    data class DetailsQuery(
-        val requestingUser: EvakaUserId,
-        val targetIdentifier: ExternalIdentifier.SSN,
-    )
+    data class DetailsQuery(val requestingUser: EvakaUserId, val ssn: Ssn)
 }
