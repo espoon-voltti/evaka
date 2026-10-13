@@ -1270,21 +1270,20 @@ FROM snapshot
     @Test
     fun `the loaded graph carries the integration facts of the target and of every child the own rows name`() {
         db.transaction { it.insertFamily() }
-        val childFacts =
-            ChildIntegrationFacts(child.dateOfBirth, sentToKoski = true, sentToVarda = true)
+        val childFacts = IntegrationFacts(child.dateOfBirth, sentToKoski = true, sentToVarda = true)
         assertEquals(
             mapOf(
                 guardian.id to
-                    ChildIntegrationFacts(
+                    IntegrationFacts(
                         guardian.dateOfBirth,
                         sentToKoski = false,
                         sentToVarda = false,
                     ),
                 child.id to childFacts,
             ),
-            load(guardian.id).integrationFactsByChild,
+            load(guardian.id).integrationFactsByPerson,
         )
-        assertEquals(mapOf(child.id to childFacts), load(child.id).integrationFactsByChild)
+        assertEquals(mapOf(child.id to childFacts), load(child.id).integrationFactsByPerson)
     }
 
     @Test
@@ -1303,7 +1302,7 @@ FROM snapshot
                 )
             }
         }
-        assertEquals(true, load(young.id).integrationFactsByChild.getValue(young.id).sentToVarda)
+        assertEquals(true, load(young.id).integrationFactsByPerson.getValue(young.id).sentToVarda)
         // The application expired ten years after it was sent, but Varda has read it
         assertEquals(emptyMap(), execute(young.id).deletedRowCountsByTable)
         assertEquals(noFreezes, freezes(young.id))

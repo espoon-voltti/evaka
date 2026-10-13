@@ -87,7 +87,7 @@ val targetId = PersonId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
 val targetChildId = ChildId(targetId.raw)
 
 /** A child under the safe data removal age that no integration has seen */
-val neverSent = ChildIntegrationFacts(today.minusYears(5), sentToKoski = false, sentToVarda = false)
+val neverSent = IntegrationFacts(today.minusYears(5), sentToKoski = false, sentToVarda = false)
 
 /** The unit tests give the dates and results of custom sources and not while rules by hand */
 fun customSource(mayHaveNoDate: Boolean = true) =
@@ -169,8 +169,7 @@ fun SchemaDefinition.graph(
     vararg ownNodes: OwnNode,
     childRow: Boolean = true,
     foreignNodes: List<ForeignNode> = emptyList(),
-    integrationFactsByChild: Map<ChildId, ChildIntegrationFacts> =
-        mapOf(targetChildId to neverSent),
+    integrationFactsByPerson: Map<PersonId, IntegrationFacts> = mapOf(targetChildId to neverSent),
 ): PersonGraph {
     val id = targetId.raw
     val child = if (childRow) ownNode("child", row("id" to id, id = id)) else ownNode("child")
@@ -179,7 +178,7 @@ fun SchemaDefinition.graph(
         targetId,
         listOf(ownNode("person", row(id = id)), child) + ownNodes,
         foreignNodes,
-        integrationFactsByChild,
+        integrationFactsByPerson,
     )
 }
 

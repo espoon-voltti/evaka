@@ -91,7 +91,7 @@ data class ForeignNode(
             table.blockingReferences.first { it.referenceColumn == referenceColumn }.referencedTable
 }
 
-data class ChildIntegrationFacts(
+data class IntegrationFacts(
     val dateOfBirth: LocalDate,
     val sentToKoski: Boolean,
     val sentToVarda: Boolean,
@@ -118,7 +118,7 @@ class PersonGraph(
     val ownNodes: List<OwnNode>,
     val foreignNodes: List<ForeignNode>,
     /** For the target and every child the own rows reference */
-    val integrationFactsByChild: Map<ChildId, ChildIntegrationFacts>,
+    val integrationFactsByPerson: Map<PersonId, IntegrationFacts>,
 ) {
     private val ownNodesById: Map<OwnNodeId, OwnNode> = ownNodes.associateBy { it.id }
 
@@ -444,8 +444,8 @@ private fun PersonGraph.childrenConcernedBy(node: OwnNode): Set<ChildId> = build
     }
 }
 
-private fun PersonGraph.integrationFacts(childId: ChildId, node: OwnNode): ChildIntegrationFacts =
-    checkNotNull(integrationFactsByChild[childId]) {
+private fun PersonGraph.integrationFacts(childId: ChildId, node: OwnNode): IntegrationFacts =
+    checkNotNull(integrationFactsByPerson[childId]) {
         "$node: the loader did not read the integration facts of child $childId"
     }
 

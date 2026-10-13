@@ -49,15 +49,15 @@ WHERE p.id = ${bind(personId)}
     val (ownNodes, idsOfOwnRowsByTable) = readOwnNodes(schema, personId)
     val foreignNodes = readForeignNodes(schema, idsOfOwnRowsByTable)
 
-    val childIds = setOf(ChildId(personId.raw)) + ownNodes.flatMap { it.referencedChildIds() }
-    val integrationFactsByChild = readChildIntegrationFacts(childIds)
+    val personIds = setOf(personId) + ownNodes.flatMap { it.referencedChildIds() }
+    val integrationFactsByPerson = readIntegrationFacts(personIds)
 
     return PersonGraph(
         schema,
         personId,
         ownNodes,
         foreignNodes,
-        integrationFactsByChild,
+        integrationFactsByPerson,
     )
 }
 
@@ -166,9 +166,9 @@ private fun notAnOwnRowPredicate(
 }
 
 /** The sent conditions are the ones the freezes and the sync refusals use */
-private fun Database.Read.readChildIntegrationFacts(
-    childIds: Set<ChildId>
-): Map<ChildId, ChildIntegrationFacts> = createQuery {
+private fun Database.Read.readIntegrationFacts(
+    personIds: Set<PersonId>
+): Map<PersonId, IntegrationFacts> = createQuery {
     sql(
         """
 SELECT
@@ -177,13 +177,13 @@ SELECT
   ${predicate(childSentToKoski.forTable("p"))} AS sent_to_koski,
   ${predicate(childSentToVarda.forTable("p"))} AS sent_to_varda
 FROM person p
-WHERE p.id = ANY(${bind(childIds)})
+WHERE p.id = ANY(${bind(personIds)})
 """
     )
 }
     .toList {
-        column<ChildId>("id") to
-            ChildIntegrationFacts(
+        column<PersonId>("id") to
+            IntegrationFacts(
                 dateOfBirth = column("date_of_birth"),
                 sentToKoski = column("sent_to_koski"),
                 sentToVarda = column("sent_to_varda"),
