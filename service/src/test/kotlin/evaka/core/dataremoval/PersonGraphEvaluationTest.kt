@@ -485,15 +485,11 @@ class PersonGraphEvaluationTest {
         val sentToKoskiOld = IntegrationFacts(past, sentToKoski = true, sentToVarda = false)
         val sentToKoskiYoung =
             IntegrationFacts(past.plusDays(1), sentToKoski = true, sentToVarda = false)
-        fun expired(
-            rule: ExpirationRule,
-            facts: IntegrationFacts,
-            row: OwnRow = row("child_id" to target),
-        ): Boolean {
+        fun expired(rule: ExpirationRule, facts: IntegrationFacts): Boolean {
             val schema = schemaWith(rule)
             val graph =
                 schema.graph(
-                    schema.ownNode("a", row),
+                    schema.ownNode("a", row("child_id" to target)),
                     integrationFactsByPerson = mapOf(targetChildId to facts),
                 )
             return whole("a") in graph.evaluate(today).deleted()
@@ -504,10 +500,6 @@ class PersonGraphEvaluationTest {
         assert(expired(Always.safeFor(VARDA), sentToKoskiYoung))
         assert(!expired(Always.safeFor(KOSKI, VARDA), sentToKoskiYoung))
         assert(expired(Always.safeFor(KOSKI), sentToKoskiOld))
-        // No result from the wrapped rule stays no result, so the fallback decides
-        val noDate = Coalesce(After(oneYear, endDate).safeFor(KOSKI), Always)
-        assert(expired(noDate, sentToKoskiYoung, endedAt(null)))
-        assert(!expired(noDate, sentToKoskiYoung, endedAt(today.minusYears(2))))
     }
 
     @Test

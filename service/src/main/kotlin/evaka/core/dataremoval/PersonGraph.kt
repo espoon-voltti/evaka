@@ -417,8 +417,10 @@ private fun PersonGraph.evaluateRule(
         is After -> dateOf(rule.dateSource, node)?.let { it.plus(rule.period) < today }
         is NotWhile -> node.rows.all { it.mayExpireUnder(rule, node) }
         is SafeForIntegrations ->
-            evaluateRule(rule.rule, node, today)?.let { expired ->
-                expired && isSafeForIntegrations(rule.integrations, node, today)
+            if (isSafeForIntegrations(rule.integrations, node, today)) {
+                evaluateRule(rule.rule, node, today)
+            } else {
+                false
             }
     }
 
