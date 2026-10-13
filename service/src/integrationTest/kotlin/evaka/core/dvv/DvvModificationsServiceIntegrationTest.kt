@@ -13,6 +13,7 @@ import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.service.getChildGuardians
 import evaka.core.pis.service.getGuardianChildIds
 import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.dev.DevFridgePartnership
 import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
@@ -29,6 +30,7 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.mock
 
 class DvvModificationsServiceIntegrationTest :
     DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
@@ -100,6 +102,25 @@ class DvvModificationsServiceIntegrationTest :
             )
             assertEquals("100000023", it.getNextDvvModificationToken())
         }
+    }
+
+    @Test
+    fun `the refresh job reads the SSNs of the persons from the database`() {
+        createTestPerson(testPerson.copy(ssn = "010180-999A"))
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2020, 1, 1), LocalTime.of(3, 0)))
+
+        DvvModificationsBatchRefreshService(mock(), dvvModificationsService)
+            .doDvvModificationsRefresh(
+                db,
+                clock,
+                AsyncJob.DvvModificationsRefresh(requestingUserId = UUID.randomUUID()),
+            )
+
+        assertEquals(
+            LocalDate.of(2019, 7, 30),
+            db.read { it.getPersonBySSN("010180-999A") }?.dateOfDeath,
+        )
     }
 
     @Test

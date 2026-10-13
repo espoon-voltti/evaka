@@ -30,38 +30,30 @@ class DvvModificationsBatchRefreshService(
         clock: EvakaClock,
         msg: AsyncJob.DvvModificationsRefresh,
     ) {
-        logger.info { "DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns" }
-        val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, clock, msg.ssns)
+        val ssns = db.read { it.getPersonSsnsToUpdate() }
+        logger.info { "DvvModificationsRefresh: starting to process ${ssns.size} ssns" }
+        val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, clock, ssns)
         logger.info {
-            "DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns"
+            "DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${ssns.size} ssns"
         }
     }
 
-    @IgnorableReturnValue
-    fun scheduleBatch(db: Database.Connection, clock: EvakaClock): Int {
-        val jobCount = db.transaction { tx ->
+    fun scheduleBatch(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
             tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.DvvModificationsRefresh::class)))
-
-            val ssns = tx.getPersonSsnsToUpdate()
-
             asyncJobRunner.plan(
                 tx,
                 payloads =
                     listOf(
                         AsyncJob.DvvModificationsRefresh(
-                            ssns = ssns,
                             requestingUserId =
-                                UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                                UUID.fromString("00000000-0000-0000-0000-000000000000")
                         )
                     ),
                 runAt = clock.now(),
                 retryCount = 10,
             )
-
-            ssns.size
         }
-
-        return jobCount
     }
 }
 
