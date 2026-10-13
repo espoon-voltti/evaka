@@ -134,10 +134,10 @@ class HandledTable(
     val handledBy: Handler,
     override val references: List<Reference>,
     /**
-     * An ancestor on the primary path whose rows these rows always go with, never one without the
-     * other
+     * Each row is deleted together with the row its primary reference points to. Neither is ever
+     * deleted without the other.
      */
-    val bundledBy: String? = null,
+    val deletedWithParent: Boolean = false,
     /**
      * When true, the rows may expire at different times and each is evaluated and deleted on its
      * own. When false, the rows expire all at once and are evaluated and deleted as one node.
@@ -204,11 +204,11 @@ class SchemaDefinition(tables: List<Table>) {
         require(
             person.handledBy == Handler.ADULT &&
                 person.references.isEmpty() &&
-                person.bundledBy == null &&
+                !person.deletedWithParent &&
                 !person.independentRows &&
                 person.identifiedByCols == listOf("id")
         ) {
-            "$PERSON_TABLE is deleted in the run of the person it is: it is handled by adult, references nothing, is evaluated as a whole and is identified by id"
+            "$PERSON_TABLE is deleted in the run of the person it is: it is handled by adult, references nothing, is not deleted with a parent, is evaluated as a whole and is identified by id"
         }
         child =
             requireNotNull(tablesByName[CHILD_TABLE] as? HandledTable) {
@@ -289,17 +289,12 @@ class SchemaDefinition(tables: List<Table>) {
             }
         }
 
-        for (table in handledTables) {
-            val bundler = table.bundledBy ?: continue
-            val bundlerTable =
-                requireNotNull(tablesByName[bundler]) {
-                    "$table is bundled by unknown table $bundler"
-                }
-            require(getPrimaryPath(table).drop(1).any { it == bundlerTable }) {
-                "$table is bundled by $bundler, which is not on its primary path"
+        for (table in handledTables.filter { it.deletedWithParent }) {
+            val parent = checkNotNull(parentOf(table))
+            require(table.independentRows == parent.independentRows) {
+                "$table is deleted with its parent $parent, but only one of them has independent rows"
             }
         }
-        requireBundlesAgreeOnIndependentRows()
 
         val dateColumnTypesAccumulator = mutableMapOf<String, MutableMap<String, DateColumnType>>()
         fun recordDateColumn(
@@ -371,17 +366,13 @@ class SchemaDefinition(tables: List<Table>) {
     fun primaryReference(table: HandledTable): Reference.Primary? =
         primaryReferenceByReferencingTable[table.name]
 
+    /** The table the primary reference points to. Null for `person` only. */
+    fun parentOf(table: HandledTable): HandledTable? =
+        primaryReference(table)?.let { tablesByName.getValue(it.referencedTable) as HandledTable }
+
     /** From the table up to and including `person`, along primary references */
     fun getPrimaryPath(table: HandledTable): List<HandledTable> =
-        generateSequence(table) {
-                primaryReference(it)?.let { reference ->
-                    tablesByName.getValue(reference.referencedTable) as HandledTable
-                }
-            }
-            .toList()
-
-    fun bundlerOf(table: HandledTable): HandledTable? =
-        table.bundledBy?.let { tablesByName.getValue(it) as HandledTable }
+        generateSequence(table) { parentOf(it) }.toList()
 
     /** The optional references whose target is the table */
     fun optionalReferencesInto(table: Table): List<DeclaredOptionalReference> =
@@ -432,32 +423,5 @@ class SchemaDefinition(tables: List<Table>) {
             )
         }
         tablesKnownToReachRoot += table.name
-    }
-
-    /**
-     * The tables between a bundled table and its bundler form one deletion bundle. A bundle should
-     * either evaluate every table as a whole or every table row by row
-     */
-    private fun requireBundlesAgreeOnIndependentRows() {
-        // Each table starts as its own bundle
-        val bundleByTable: MutableMap<String, MutableSet<HandledTable>> =
-            handledTables.associateTo(mutableMapOf()) { it.name to mutableSetOf(it) }
-
-        // The tables between a table and its bundler are merged into one bundle, together with
-        // whatever they were already bundled with
-        for (table in handledTables) {
-            val bundler = bundlerOf(table) ?: continue
-            val path = getPrimaryPath(table)
-            val bundledTogether = path.take(path.indexOf(bundler) + 1)
-            val mergedBundle =
-                bundledTogether.flatMapTo(mutableSetOf()) { bundleByTable.getValue(it.name) }
-            for (member in mergedBundle) bundleByTable[member.name] = mergedBundle
-        }
-
-        for (bundle in bundleByTable.values.distinct()) {
-            require(bundle.map { it.independentRows }.distinct().size == 1) {
-                "Deletion bundle $bundle mixes tables with independent rows and tables evaluated as a whole"
-            }
-        }
     }
 }

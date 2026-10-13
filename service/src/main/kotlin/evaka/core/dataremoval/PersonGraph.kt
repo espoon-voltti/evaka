@@ -131,8 +131,12 @@ class PersonGraph(
     /** The edges: from an own node to the own nodes holding the rows its rows reference */
     internal val edgesByOwnNode: Map<OwnNodeId, List<OwnNodeId>>
 
-    /** From an own node to the own nodes it bundles */
-    internal val ownNodeIdsByBundler: Map<OwnNodeId, List<OwnNodeId>>
+    /**
+     * From an own node to the own nodes whose table declares deletedWithParent and whose primary
+     * references point to its rows. These are only the direct links. Blocking reaches the rest of a
+     * deletion bundle transitively.
+     */
+    internal val deletedWithParentNodeIdsByParent: Map<OwnNodeId, List<OwnNodeId>>
 
     init {
         require(ownNodesById.size == ownNodes.size) { "Duplicate own nodes" }
@@ -171,19 +175,19 @@ class PersonGraph(
                         .filter { it != node.id }
                 }
         }
-        val bundledOwnNodeIdsByBundler = mutableMapOf<OwnNodeId, MutableList<OwnNodeId>>()
-        for (node in ownNodes) {
-            val bundler = schema.bundlerOf(node.table) ?: continue
-            var current = node
-            while (current.table != bundler) {
-                current =
-                    checkNotNull(primaryParent(current)) {
-                        "$node: the bundling table $bundler is not on its loaded primary path"
-                    }
-            }
-            bundledOwnNodeIdsByBundler.getOrPut(current.id) { mutableListOf() }.add(node.id)
-        }
-        this.ownNodeIdsByBundler = bundledOwnNodeIdsByBundler
+        deletedWithParentNodeIdsByParent =
+            ownNodes
+                .filter { it.table.deletedWithParent }
+                .groupBy(
+                    { node ->
+                        val parent =
+                            checkNotNull(primaryParent(node)) {
+                                "$node is deleted with its parent, but the parent node is not loaded"
+                            }
+                        parent.id
+                    },
+                    { it.id },
+                )
     }
 
     fun ownNode(id: OwnNodeId): OwnNode = ownNodesById.getValue(id)
@@ -283,14 +287,15 @@ fun describeFreezes(koski: Collection<ChildId>, varda: Collection<ChildId>): Str
 
 /**
  * Decides what to delete. First, every node whose own rule is met is marked expired. Then a node
- * that is not expired, or a foreign node, blocks the nodes it references and the nodes it bundles,
- * transitively. What stays expired can be deleted leaf-first.
+ * that is not expired, or a foreign node, blocks the nodes it references and the nodes that must be
+ * deleted with it, transitively. What stays expired can be deleted leaf-first.
  */
 fun PersonGraph.evaluate(today: LocalDate): DeletionPlan {
     val expiredOwnNodeIds = ownNodes.filter { isExpired(it, today) }.mapTo(mutableSetOf()) { it.id }
 
     fun block(id: OwnNodeId) {
-        for (other in edgesByOwnNode.getValue(id) + ownNodeIdsByBundler[id].orEmpty()) {
+        val blocked = edgesByOwnNode.getValue(id) + deletedWithParentNodeIdsByParent[id].orEmpty()
+        for (other in blocked) {
             if (expiredOwnNodeIds.remove(other)) block(other)
         }
     }
@@ -434,8 +439,8 @@ private fun PersonGraph.childrenConcernedBy(node: OwnNode): Set<ChildId> = build
         add(targetPersonId)
     }
     addAll(node.referencedChildIds())
-    for (bundledNodeId in ownNodeIdsByBundler[node.id].orEmpty()) {
-        addAll(childrenConcernedBy(ownNode(bundledNodeId)))
+    for (other in deletedWithParentNodeIdsByParent[node.id].orEmpty()) {
+        addAll(childrenConcernedBy(ownNode(other)))
     }
 }
 

@@ -257,11 +257,11 @@ class PersonGraphEvaluationTest {
     }
 
     @Test
-    fun `bundled nodes go together or not at all`() {
+    fun `a node and the nodes deleted with it are deleted together or not at all`() {
         val schema =
             schema(
                 table("a", CHILD, "child_id" to "child", expirationRule = Never),
-                table("b", CHILD, "a_id" to "a", bundledBy = "a"),
+                table("b", CHILD, "a_id" to "a", deletedWithParent = true),
                 table("c", CHILD, "b_id" to "b"),
             )
         val a = UUID.randomUUID()
@@ -274,50 +274,82 @@ class PersonGraphEvaluationTest {
                     schema.ownNode("c", row("b_id" to b)),
                 )
                 .evaluate(today)
-        // a is not expired, so it holds b through the bundle; c only references b and goes
+        // a is not expired, so it keeps b, which must be deleted with it. Nothing keeps c.
         assertEquals(listOf(whole("c")), plan.deleted())
     }
 
     @Test
-    fun `a row bundles only the rows whose primary path leads to it`() {
+    fun `the middle of a deletion bundle stays with the top even when the bottom has no rows`() {
         val schema =
             schema(
-                table("a", CHILD, "child_id" to "child", independentRows = true),
-                table("b", CHILD, "a_id" to "a", independentRows = true),
+                table("a", CHILD, "child_id" to "child", expirationRule = Never),
+                table("b", CHILD, "a_id" to "a", deletedWithParent = true),
+                table("c", CHILD, "b_id" to "b", deletedWithParent = true),
+            )
+        val a = UUID.randomUUID()
+        val plan =
+            schema
+                .graph(
+                    schema.ownNode("a", row("child_id" to target, id = a)),
+                    schema.ownNode("b", row("a_id" to a)),
+                )
+                .evaluate(today)
+        // b is linked to a by its own declaration, so no c row is needed to keep it
+        assertEquals(emptyList(), plan.deleted())
+    }
+
+    @Test
+    fun `a row is deleted only with the rows that reference it as their parent`() {
+        val schema =
+            schema(
                 table(
-                    "c",
+                    "a",
                     CHILD,
-                    "b_id" to "b",
+                    "child_id" to "child",
                     independentRows = true,
-                    bundledBy = "a",
                     expirationRule = After(oneYear, endDate),
                 ),
+                table("b", CHILD, "a_id" to "a", independentRows = true, deletedWithParent = true),
+                table("c", CHILD, "b_id" to "b", independentRows = true, deletedWithParent = true),
             )
         val a1 = UUID.randomUUID()
         val a2 = UUID.randomUUID()
         val b1 = UUID.randomUUID()
         val b2 = UUID.randomUUID()
-        val c1 = row("b_id" to b1, dateByColumn = mapOf("end_date" to today.minusYears(2)))
-        val c2 = row("b_id" to b2, dateByColumn = mapOf("end_date" to today))
+        val c1 = UUID.randomUUID()
+        val c2 = UUID.randomUUID()
         val graph =
             schema.graph(
-                schema.ownRowNode("a", row("child_id" to target, id = a1)),
-                schema.ownRowNode("a", row("child_id" to target, id = a2)),
+                schema.ownRowNode(
+                    "a",
+                    row(
+                        "child_id" to target,
+                        id = a1,
+                        dateByColumn = mapOf("end_date" to today.minusYears(2)),
+                    ),
+                ),
+                schema.ownRowNode(
+                    "a",
+                    row("child_id" to target, id = a2, dateByColumn = mapOf("end_date" to today)),
+                ),
                 schema.ownRowNode("b", row("a_id" to a1, id = b1)),
                 schema.ownRowNode("b", row("a_id" to a2, id = b2)),
-                schema.ownRowNode("c", c1),
-                schema.ownRowNode("c", c2),
+                schema.ownRowNode("c", row("b_id" to b1, id = c1)),
+                schema.ownRowNode("c", row("b_id" to b2, id = c2)),
             )
         assertEquals(
             mapOf<OwnNodeId, List<OwnNodeId>>(
-                single("a", a1) to listOf(OwnNodeId.SingleRow("c", c1.id)),
-                single("a", a2) to listOf(OwnNodeId.SingleRow("c", c2.id)),
+                single("a", a1) to listOf(single("b", b1)),
+                single("a", a2) to listOf(single("b", b2)),
+                single("b", b1) to listOf(single("c", c1)),
+                single("b", b2) to listOf(single("c", c2)),
             ),
-            graph.ownNodeIdsByBundler,
+            graph.deletedWithParentNodeIdsByParent,
         )
-        // The second c row is not expired: it holds b2, which holds a2, which bundles nothing else
+        // The second a row is not expired, so it keeps the b and c rows that must be deleted with
+        // it
         assertEquals(
-            listOf(OwnNodeId.SingleRow("c", c1.id), single("b", b1), single("a", a1)),
+            listOf(single("c", c1), single("b", b1), single("a", a1)),
             graph.evaluate(today).deleted(),
         )
     }
@@ -395,7 +427,7 @@ class PersonGraphEvaluationTest {
                 ADULT,
                 "fee_decision_id" to "fee_decision",
                 "child_id" to "child",
-                bundledBy = "fee_decision",
+                deletedWithParent = true,
             ),
             child = childTable(childRule),
         )
@@ -478,7 +510,7 @@ class PersonGraphEvaluationTest {
     }
 
     @Test
-    fun `a rule safe for an integration concerns the children an adult-handled table names directly and through the nodes it bundles`() {
+    fun `a rule safe for an integration concerns the children an adult-handled table names directly and through the nodes deleted with it`() {
         val schema =
             schema(
                 table(
@@ -492,7 +524,7 @@ class PersonGraphEvaluationTest {
                     ADULT,
                     "fee_decision_id" to "fee_decision",
                     "child_id" to "child",
-                    bundledBy = "fee_decision",
+                    deletedWithParent = true,
                 ),
             )
         val decision = UUID.randomUUID()
@@ -543,7 +575,7 @@ class PersonGraphEvaluationTest {
                     ADULT,
                     "fee_decision_id" to "fee_decision",
                     "child_id" to "child",
-                    bundledBy = "fee_decision",
+                    deletedWithParent = true,
                 ),
             )
         val secondChild = ChildId(UUID.randomUUID())

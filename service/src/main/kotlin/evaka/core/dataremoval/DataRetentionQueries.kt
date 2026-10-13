@@ -94,8 +94,8 @@ private fun Database.Read.readOwnNodes(
                 }
             }
 
-        // The child row may be missing, but its node is kept so that blocking and bundling still
-        // pass through it to person
+        // The child row may be missing, but its node is kept so that blocking still passes through
+        // it to person and to the nodes that must be deleted with it
         if (table == schema.child) idsByTable[table.name] = listOf(personId.raw)
         else if (rows.isEmpty()) continue
         else if (table.identifiedByCols.size == 1)

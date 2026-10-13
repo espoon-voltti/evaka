@@ -352,61 +352,26 @@ class SchemaDefinitionTest {
     }
 
     @Test
-    fun `a table is bundled by an ancestor on its primary path`() {
-        invalid("is bundled by unknown table") {
-            schema(table("a", CHILD, "child_id" to "child", bundledBy = "b"))
-        }
-        invalid("is bundled by a, which is not on its primary path") {
-            schema(table("a", CHILD, "child_id" to "child", bundledBy = "a"))
-        }
-        invalid("is bundled by a, which is not on its primary path") {
-            schema(
-                table("a", CHILD, "child_id" to "child"),
-                table("b", CHILD, "child_id" to "child", bundledBy = "a"),
-            )
-        }
-        invalid("is bundled by b, which is not on its primary path") {
-            // c reaches b only through a secondary reference
-            schema(
-                table("a", CHILD, "child_id" to "child"),
-                table("b", CHILD, "child_id" to "child"),
-                table("c", CHILD, "a_id" to "a", "b_id" to "b", bundledBy = "b"),
-            )
-        }
-        val schema =
-            schema(
-                table("a", CHILD, "child_id" to "child"),
-                table("b", CHILD, "a_id" to "a"),
-                table("c", CHILD, "b_id" to "b", bundledBy = "a"),
-            )
-        assertEquals("a", schema.bundlerOf(schema.handled("c"))?.name)
-        assertNull(schema.bundlerOf(schema.handled("b")))
-    }
-
-    @Test
-    fun `a deletion bundle has independent rows in every table or in none`() {
-        invalid("mixes tables") {
+    fun `a table deleted with its parent has independent rows exactly when its parent has`() {
+        invalid("only one of them has independent rows") {
             schema(
                 table("a", CHILD, "child_id" to "child", independentRows = true),
-                table("b", CHILD, "a_id" to "a", bundledBy = "a"),
+                table("b", CHILD, "a_id" to "a", deletedWithParent = true),
             )
         }
-        invalid("mixes tables") {
-            // The table between a and c belongs to the bundle too
+        invalid("only one of them has independent rows") {
             schema(
-                table("a", CHILD, "child_id" to "child", independentRows = true),
-                table("b", CHILD, "a_id" to "a"),
-                table("c", CHILD, "b_id" to "b", independentRows = true, bundledBy = "a"),
+                table("a", CHILD, "child_id" to "child"),
+                table("b", CHILD, "a_id" to "a", independentRows = true, deletedWithParent = true),
             )
         }
-        val schema =
+        valid {
             schema(
                 table("a", CHILD, "child_id" to "child", independentRows = true),
-                table("b", CHILD, "a_id" to "a", independentRows = true),
-                table("c", CHILD, "b_id" to "b", independentRows = true, bundledBy = "a"),
-                table("d", CHILD, "a_id" to "a"),
+                table("b", CHILD, "a_id" to "a", independentRows = true, deletedWithParent = true),
+                table("c", CHILD, "b_id" to "b"),
             )
-        assertEquals(6, schema.tablesByName.size)
+        }
     }
 
     @Test
@@ -575,7 +540,7 @@ class SchemaDefinitionTest {
     private val declaredSchema =
         buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
 
-    /** The child row bundles the sync state of each integration */
+    /** The sync state of each integration is deleted with the child row */
     @Test
     fun `every declared table an integration reads, and the child row, is safe for that integration directly, and no other table claims an integration`() {
         val inputTablesByIntegration =
@@ -603,7 +568,7 @@ class SchemaDefinitionTest {
      * one of its alternatives waiting for the freeze is enough
      */
     @Test
-    fun `every declared table the finance generators read waits for the finance freeze, directly or through its bundle`() {
+    fun `every declared table the finance generators read waits for the finance freeze, directly or through the parent it is deleted with`() {
         fun ExpirationRule.waitsForFinanceFreeze(): Boolean =
             when (this) {
                 is After -> period == FINANCE_FREEZE_WITH_MARGIN
@@ -617,7 +582,7 @@ class SchemaDefinitionTest {
             val schema = buildDataRetentionSchema(valueDecisionCapacityFactorEnabled)
             fun HandledTable.waitsForFinanceFreeze(): Boolean =
                 expirationRule.waitsForFinanceFreeze() ||
-                    bundledBy?.let { schema.handled(it).waitsForFinanceFreeze() } == true
+                    (deletedWithParent && schema.parentOf(this)?.waitsForFinanceFreeze() == true)
             assertEquals(
                 emptyList(),
                 financeInputTables(valueDecisionCapacityFactorEnabled).filterNot {
@@ -629,12 +594,12 @@ class SchemaDefinitionTest {
 
     /** Always on its own would delete the rows the first time a run reaches them */
     @Test
-    fun `every declared table whose rule is Always, wrapped or not, is bundled`() {
+    fun `every declared table whose rule is Always, wrapped or not, is deleted with its parent`() {
         val invalid =
             declaredSchema.handledTables.filter { table ->
                 val rule = table.expirationRule
                 val always = rule == Always || (rule is SafeForIntegrations && rule.rule == Always)
-                always && table.bundledBy == null
+                always && !table.deletedWithParent
             }
         assertEquals(emptyList(), invalid)
     }
