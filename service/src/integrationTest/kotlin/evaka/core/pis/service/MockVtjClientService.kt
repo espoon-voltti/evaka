@@ -8,6 +8,7 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.vtjclient.service.vtjclient.IVtjClientService
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.test.assertEquals
 
 class MockVtjClientService : IVtjClientService {
 
@@ -92,6 +93,17 @@ class MockVtjClientService : IVtjClientService {
                 Pair(person.ssn!!, IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA)] ?: 0
         }
 
+        /**
+         * Asserts that exactly the given requests were made since the last reset. A request that
+         * was made N times must be given N times.
+         */
+        fun assertRequests(vararg requests: Pair<IVtjClientService.RequestType, DevPerson>) {
+            assertEquals(
+                requests.groupingBy { (type, person) -> Pair(person.ssn!!, type) }.eachCount(),
+                queryCounts.toMap(),
+            )
+        }
+
         private fun devPersonToVTJHenkiloVastaussanomaHenkilo(
             person: DevPerson
         ): VTJHenkiloVastaussanoma.Henkilo =
@@ -115,7 +127,10 @@ class MockVtjClientService : IVtjClientService {
                         s.sukunimi = person.lastName
                     }
                 it.aidinkieli = VTJHenkiloVastaussanoma.Henkilo.Aidinkieli()
-                it.turvakielto = VTJHenkiloVastaussanoma.Henkilo.Turvakielto()
+                it.turvakielto =
+                    VTJHenkiloVastaussanoma.Henkilo.Turvakielto().also { t ->
+                        if (person.restrictedDetailsEnabled) t.turvakieltoTieto = "1"
+                    }
                 it.kuolintiedot = VTJHenkiloVastaussanoma.Henkilo.Kuolintiedot()
             }
     }
