@@ -11,7 +11,6 @@ import evaka.core.pis.createPartnership
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
-import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevEmployee
@@ -72,7 +71,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+        fridgeFamilyService.doVTJRefresh(db, mockToday, adult1.id)
 
         db.read {
             assertEquals(
@@ -108,7 +107,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+        fridgeFamilyService.doVTJRefresh(db, mockToday, adult1.id)
 
         db.read {
             assertEquals(
@@ -142,7 +141,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+        fridgeFamilyService.doVTJRefresh(db, mockToday, adult1.id)
 
         db.read {
             assertEquals(
@@ -159,7 +158,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         // detect that her partner already has a fridge family and add the child to that one instead
         // of
         // creating a new fridge family for this other adult2
-        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+        fridgeFamilyService.doVTJRefresh(db, mockToday, adult1.id)
 
         db.read {
             assertEquals(

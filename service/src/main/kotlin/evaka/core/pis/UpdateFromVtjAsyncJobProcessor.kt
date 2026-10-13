@@ -49,7 +49,7 @@ class UpdateFromVtjAsyncJobProcessor(
             }
             ?.let {
                 logger.info { "Refreshing all VTJ information for person ${it.id}" }
-                fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id), evakaClock)
+                fridgeFamilyService.doVTJRefresh(db, evakaClock, it.id)
             }
     }
 }

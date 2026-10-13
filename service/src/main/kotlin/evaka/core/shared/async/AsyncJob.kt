@@ -179,11 +179,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser,
     ) : AsyncJob
 
-    @JsonIgnoreProperties("requestingUser") // only present in old jobs
-    data class VTJRefresh(val personId: PersonId) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class RunScheduledJob(val job: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -598,7 +593,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     CleanNekkuOrdersReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,
-                    VTJRefresh::class,
                 ),
             )
         val nightly =
