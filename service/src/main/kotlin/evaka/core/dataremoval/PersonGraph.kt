@@ -129,14 +129,14 @@ class PersonGraph(
     private val ownNodeIdByRow: Map<SingleIdRowRef, OwnNodeId>
 
     /** The edges: from an own node to the own nodes holding the rows its rows reference */
-    internal val edgesByOwnNode: Map<OwnNodeId, List<OwnNodeId>>
+    val edgesByOwnNode: Map<OwnNodeId, List<OwnNodeId>>
 
     /**
      * From an own node to the own nodes whose table declares deletedWithParent and whose primary
      * references point to its rows. These are only the direct links. Blocking reaches the rest of a
      * deletion bundle transitively.
      */
-    internal val deletedWithParentNodeIdsByParent: Map<OwnNodeId, List<OwnNodeId>>
+    val deletedWithParentNodeIdsByParent: Map<OwnNodeId, List<OwnNodeId>>
 
     init {
         require(ownNodesById.size == ownNodes.size) { "Duplicate own nodes" }
