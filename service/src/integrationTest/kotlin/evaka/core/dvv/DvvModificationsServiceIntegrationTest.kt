@@ -7,11 +7,14 @@ package evaka.core.dvv
 import evaka.core.pis.Creator
 import evaka.core.pis.createParentship
 import evaka.core.pis.getParentships
+import evaka.core.pis.getPartnersForPerson
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.service.getChildGuardians
 import evaka.core.pis.service.getGuardianChildIds
 import evaka.core.shared.PersonId
+import evaka.core.shared.dev.DevFridgePartnership
+import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
@@ -74,6 +77,52 @@ class DvvModificationsServiceIntegrationTest :
             LocalDate.parse("2019-07-30"),
             db.read { it.getPersonBySSN("010180-999A") }?.dateOfDeath,
         )
+    }
+
+    @Test
+    fun `person date of death ends the fridge relations on the date of death`() {
+        val dead = testPerson.copy(ssn = "010180-999A")
+        val partner = testPerson.copy(id = PersonId(UUID.randomUUID()), ssn = null)
+        val child =
+            testPerson.copy(
+                id = PersonId(UUID.randomUUID()),
+                ssn = null,
+                dateOfBirth = LocalDate.of(2017, 6, 1),
+            )
+        createTestPerson(dead)
+        createTestPerson(partner)
+        createTestPerson(child)
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child.id,
+                    headOfChildId = dead.id,
+                    startDate = LocalDate.of(2018, 1, 1),
+                    endDate = LocalDate.of(2035, 5, 31),
+                )
+            )
+            tx.insert(
+                DevFridgePartnership(
+                    first = dead.id,
+                    second = partner.id,
+                    startDate = LocalDate.of(2018, 1, 1),
+                )
+            )
+        }
+
+        updatePeopleFromDvv(listOf("010180-999A"))
+
+        val dateOfDeath = LocalDate.of(2019, 7, 30)
+        db.read { tx ->
+            assertEquals(
+                listOf(dateOfDeath),
+                tx.getParentships(headOfChildId = dead.id, childId = null).map { it.endDate },
+            )
+            assertEquals(
+                listOf(dateOfDeath),
+                tx.getPartnersForPerson(dead.id, includeConflicts = false).map { it.endDate },
+            )
+        }
     }
 
     @Test

@@ -222,6 +222,42 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
     }
 
+    @Test
+    fun `refreshing a child adds it once to the family of its guardians who are partners`() {
+        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
+        MockPersonDetailsService.addDependants(adult2.identity, child1.identity)
+
+        db.transaction {
+            it.insert(employee)
+            it.createPartnership(
+                adult1.id,
+                adult2.id,
+                mockToday.today(),
+                null,
+                false,
+                Creator.User(partnershipCreator),
+                mockToday.now(),
+            )
+        }
+
+        fridgeFamilyService.updateGuardianOrChildFromVtj(
+            db,
+            AuthenticatedUser.SystemInternalUser,
+            mockToday,
+            child1.id,
+        )
+
+        db.read {
+            assertEquals(
+                listOf(adult1.id),
+                it.getParentships(null, child1.id, false, DateRange(mockToday.today(), null)).map {
+                    parentship ->
+                    parentship.headOfChildId
+                },
+            )
+        }
+    }
+
     @Autowired lateinit var parentshipService: ParentshipService
 
     @Test
