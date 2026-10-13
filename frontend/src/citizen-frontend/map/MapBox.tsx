@@ -4,6 +4,7 @@
 
 import type { LatLngTuple, LeafletEventHandlerFnMap } from 'leaflet'
 import leaflet from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import type { Dispatch, SetStateAction } from 'react'
 import React, { useEffect, useMemo, useRef } from 'react'
 import {
