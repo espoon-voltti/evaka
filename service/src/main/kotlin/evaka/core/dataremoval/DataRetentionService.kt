@@ -55,14 +55,15 @@ fun runDataRetention(
     dryRun: Boolean,
 ) {
     val started = TimeSource.Monotonic.markNow()
+    val today = clock.today()
     val deletionResult =
         dbc.transaction { tx ->
-            val graph = tx.loadPersonGraph(schema, personId)
+            val graph = tx.loadPersonGraph(schema, personId, today, optimized = true)
             if (graph == null) {
                 logger.warn { "Data retention for person $personId: the person no longer exists" }
                 return@transaction null
             }
-            val plan = graph.evaluate(clock.today())
+            val plan = graph.evaluate(today)
             if (dryRun) {
                 logger.info {
                     "Dry run of data retention for person $personId: would ${plan.describe()}, evaluated in ${started.elapsedNow().inWholeMilliseconds} ms"

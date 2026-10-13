@@ -25,6 +25,8 @@ import kotlin.reflect.KClass
 fun Database.Transaction.loadPersonGraph(
     schema: SchemaDefinition,
     personId: PersonId,
+    today: LocalDate,
+    optimized: Boolean,
 ): PersonGraph? {
     // Jobs working on people related to each other might interfere with each other.
     // This makes sure that different instances do not run this job in parallel
@@ -46,11 +48,41 @@ WHERE p.id = ${bind(personId)}
         "Person $personId is a duplicate of another person or has duplicates, so it is refused"
     }
 
-    val (ownNodes, idsOfOwnRowsByTable) = readOwnNodes(schema, personId)
-    val foreignNodes = readForeignNodes(schema, idsOfOwnRowsByTable)
+    val idsOfOwnRowsByTable = mutableMapOf<String, List<UUID>>()
+    val preloadedNodes =
+        readOwnNodes(
+            schema,
+            personId,
+            schema.preloadedTables,
+            tablesKnownToStay = emptySet(),
+            idsByTable = idsOfOwnRowsByTable,
+        )
+    val integrationFacts = readIntegrationFacts(setOf(personId)).getValue(personId)
 
-    val personIds = setOf(personId) + ownNodes.flatMap { it.referencedChildIds() }
-    val integrationFactsByPerson = readIntegrationFacts(personIds)
+    val tablesKnownToStay =
+        if (optimized) {
+            schema.tablesKnownToStay(preloadedNodes, integrationFacts, today)
+        } else {
+            emptySet()
+        }
+    val skippedTables = schema.tablesToSkip(tablesKnownToStay)
+
+    val ownNodes =
+        preloadedNodes +
+            readOwnNodes(
+                schema,
+                personId,
+                schema.handledTables
+                    .filter { it !in schema.preloadedTables && it.name !in skippedTables }
+                    .toSet(),
+                tablesKnownToStay,
+                idsOfOwnRowsByTable,
+            )
+    val foreignNodes = readForeignNodes(schema, idsOfOwnRowsByTable, tablesKnownToStay)
+
+    val otherChildIds = ownNodes.flatMapTo(mutableSetOf()) { it.referencedChildIds() } - personId
+    val integrationFactsByPerson =
+        mapOf(personId to integrationFacts) + readIntegrationFacts(otherChildIds)
 
     return PersonGraph(
         schema,
@@ -58,6 +90,7 @@ WHERE p.id = ${bind(personId)}
         ownNodes,
         foreignNodes,
         integrationFactsByPerson,
+        tablesKnownToStay,
     )
 }
 
@@ -65,20 +98,29 @@ WHERE p.id = ${bind(personId)}
  * Own nodes contain the rows that are owned by the target person and potentially deleted in this
  * run.
  *
- * @return a pair containing the list of own nodes and a map from table names to lists of row IDs
+ * The ids of the rows read are added to [idsByTable], where each table finds the ids of its parent
+ * rows. A later call finds there the ids that an earlier call read.
  */
 private fun Database.Read.readOwnNodes(
     schema: SchemaDefinition,
     personId: PersonId,
-): Pair<List<OwnNode>, Map<String, List<UUID>>> {
-    val idsByTable = mutableMapOf<String, List<UUID>>()
+    tablesToRead: Set<HandledTable>,
+    tablesKnownToStay: Set<String>,
+    idsByTable: MutableMap<String, List<UUID>>,
+): List<OwnNode> {
     val nodes = mutableListOf<OwnNode>()
-    for (table in schema.rootFirstOrder) {
+    for (table in schema.rootFirstOrder.filter { it in tablesToRead }) {
+        val knownToStay = table.name in tablesKnownToStay
         val rows =
             when (table) {
                 schema.person,
                 schema.child ->
-                    readOwnRows(schema, table, Predicate { where("$it.id = ${bind(personId)}") })
+                    readOwnRows(
+                        schema,
+                        table,
+                        Predicate { where("$it.id = ${bind(personId)}") },
+                        knownToStay,
+                    )
                 else -> {
                     val primaryReference = checkNotNull(schema.primaryReference(table))
                     val parentIds = idsByTable[primaryReference.referencedTable] ?: continue
@@ -90,6 +132,7 @@ private fun Database.Read.readOwnNodes(
                                 "$it.${primaryReference.referenceColumn} = ANY(${bind(parentIds)})"
                             )
                         },
+                        knownToStay,
                     )
                 }
             }
@@ -106,7 +149,7 @@ private fun Database.Read.readOwnNodes(
                 rows.map { OwnNode(OwnNodeId.SingleRow(table.name, it.id), table, listOf(it)) }
             else listOf(OwnNode(OwnNodeId.WholeTable(table.name), table, rows))
     }
-    return Pair(nodes, idsByTable)
+    return nodes
 }
 
 /**
@@ -118,10 +161,13 @@ private fun Database.Read.readOwnNodes(
 private fun Database.Read.readForeignNodes(
     schema: SchemaDefinition,
     idsOfOwnRowsByTable: Map<String, List<UUID>>,
+    tablesKnownToStay: Set<String>,
 ): List<ForeignNode> =
     schema.tablesByName.values.flatMap { table ->
         val notAnOwnRow = notAnOwnRowPredicate(schema, table, idsOfOwnRowsByTable)
         table.secondaryReferences.mapNotNull { secondaryReference ->
+            // The foreign rows could only block rows that stay anyway
+            if (secondaryReference.referencedTable in tablesKnownToStay) return@mapNotNull null
             val referencedIds =
                 idsOfOwnRowsByTable[secondaryReference.referencedTable] ?: return@mapNotNull null
             val foreignRowsPredicate =
@@ -168,9 +214,11 @@ private fun notAnOwnRowPredicate(
 /** The sent conditions are the ones the freezes and the sync refusals use */
 private fun Database.Read.readIntegrationFacts(
     personIds: Set<PersonId>
-): Map<PersonId, IntegrationFacts> = createQuery {
-    sql(
-        """
+): Map<PersonId, IntegrationFacts> {
+    if (personIds.isEmpty()) return emptyMap()
+    return createQuery {
+        sql(
+            """
 SELECT
   p.id,
   p.date_of_birth,
@@ -179,22 +227,24 @@ SELECT
 FROM person p
 WHERE p.id = ANY(${bind(personIds)})
 """
-    )
-}
-    .toList {
-        column<PersonId>("id") to
-            IntegrationFacts(
-                dateOfBirth = column("date_of_birth"),
-                sentToKoski = column("sent_to_koski"),
-                sentToVarda = column("sent_to_varda"),
-            )
+        )
     }
-    .toMap()
+        .toList {
+            column<PersonId>("id") to
+                IntegrationFacts(
+                    dateOfBirth = column("date_of_birth"),
+                    sentToKoski = column("sent_to_koski"),
+                    sentToVarda = column("sent_to_varda"),
+                )
+        }
+        .toMap()
+}
 
 private fun Database.Read.readOwnRows(
     schema: SchemaDefinition,
     table: HandledTable,
     where: Predicate,
+    knownToStay: Boolean,
 ): List<OwnRow> {
     val dateColumnTypes = schema.dateColumnsToRead(table)
     val jobColumns = table.asyncJobsPlannedOnDelete?.columnsToRead.orEmpty()
@@ -244,7 +294,9 @@ WHERE ${predicate(where.forTable(table.name))}
 
     val customSources = table.expirationRule.usedCustomDateSources()
     val notWhileRules = table.expirationRule.usedNotWhileRules()
-    if (rows.isEmpty() || (customSources.isEmpty() && notWhileRules.isEmpty())) return rows
+    if (knownToStay || rows.isEmpty() || (customSources.isEmpty() && notWhileRules.isEmpty())) {
+        return rows
+    }
 
     // Tables that have customSources or notWhileRules are guaranteed by validation to have a
     // single identifying column

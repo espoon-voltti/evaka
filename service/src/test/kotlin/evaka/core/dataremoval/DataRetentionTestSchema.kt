@@ -161,25 +161,36 @@ fun SchemaDefinition.foreign(
 }
 
 /**
- * A graph of the target person's person and child rows and the given nodes. Without the child row
- * the child node is empty, as for a person who has never had one. The target is a child no
- * integration has seen unless the facts say otherwise.
+ * The nodes of the target person's person and child rows and the given nodes. Without the child row
+ * the child node is empty, as for a person who has never had one.
+ */
+fun SchemaDefinition.withPersonAndChild(
+    vararg ownNodes: OwnNode,
+    childRow: Boolean = true,
+): List<OwnNode> {
+    val id = targetId.raw
+    val child = if (childRow) ownNode("child", row("id" to id, id = id)) else ownNode("child")
+    return listOf(ownNode("person", row(id = id)), child) + ownNodes
+}
+
+/**
+ * A graph of the target person's person and child rows and the given nodes. The target is a child
+ * no integration has seen unless the facts say otherwise.
  */
 fun SchemaDefinition.graph(
     vararg ownNodes: OwnNode,
     childRow: Boolean = true,
     foreignNodes: List<ForeignNode> = emptyList(),
     integrationFactsByPerson: Map<PersonId, IntegrationFacts> = mapOf(targetChildId to neverSent),
-): PersonGraph {
-    val id = targetId.raw
-    val child = if (childRow) ownNode("child", row("id" to id, id = id)) else ownNode("child")
-    return PersonGraph(
+    tablesKnownToStay: Set<String> = emptySet(),
+): PersonGraph =
+    PersonGraph(
         this,
         targetId,
-        listOf(ownNode("person", row(id = id)), child) + ownNodes,
+        withPersonAndChild(*ownNodes, childRow = childRow),
         foreignNodes,
         integrationFactsByPerson,
+        tablesKnownToStay,
     )
-}
 
 fun DeletionPlan.deleted(): List<OwnNodeId> = ownNodeDeletions.map { it.node.id }

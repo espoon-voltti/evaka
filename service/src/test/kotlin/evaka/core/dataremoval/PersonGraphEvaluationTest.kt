@@ -168,6 +168,7 @@ class PersonGraphEvaluationTest {
                     listOf(schema.ownNode("child")),
                     emptyList(),
                     mapOf(targetChildId to neverSent),
+                    tablesKnownToStay = emptySet(),
                 )
             }
         assertContains(error.message!!, "person node")
@@ -239,6 +240,20 @@ class PersonGraphEvaluationTest {
                 .graph(blockingSchema.ownNode("c", row("child_id" to target)), childRow = false)
                 .evaluate(today)
         assertEquals(listOf(whole("c"), person), plan.deleted())
+    }
+
+    @Test
+    fun `a node of a table known to stay is not evaluated and keeps the nodes it references`() {
+        // The row lacks the date the rule reads, so evaluating the rule would fail
+        val schema = schemaWith(After(oneYear, endDate))
+        val plan =
+            schema
+                .graph(
+                    schema.ownNode("a", row("child_id" to target)),
+                    tablesKnownToStay = setOf("a"),
+                )
+                .evaluate(today)
+        assertEquals(emptyList(), plan.deleted())
     }
 
     @Test
