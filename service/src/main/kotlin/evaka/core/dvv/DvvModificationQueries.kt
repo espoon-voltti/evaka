@@ -24,7 +24,7 @@ VALUES (${bind(token)}, ${bind(nextToken)}, ${bind(ssnsSent)}, ${bind(modificati
         .execute()
 }
 
-fun Database.Read.getNextDvvModificationToken(): String {
+fun Database.Read.getNextDvvModificationToken(): String? {
     return createQuery {
         sql(
             """
@@ -35,7 +35,7 @@ LIMIT 1
 """
         )
     }
-        .exactlyOne<String>()
+        .exactlyOneOrNull<String>()
 }
 
 fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken {

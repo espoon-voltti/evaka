@@ -61,6 +61,48 @@ class DvvModificationsServiceIntegrationTest :
     }
 
     @Test
+    fun `the first run seeds the token from DVV and reads the modifications`() {
+        db.transaction { tx -> tx.deleteDvvModificationToken("100") }
+        val ssn = "010179-9992"
+        createTestPerson(testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = ssn))
+        MockPersonDetailsService.addPersons(
+            testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = ssn)
+        )
+
+        assertEquals(1, updatePeopleFromDvv(listOf(ssn)))
+
+        db.read {
+            assertEquals(
+                DvvModificationToken("seed-2020-01-01", "100000021", 0, 0),
+                it.getDvvModificationToken("seed-2020-01-01"),
+            )
+            assertEquals(
+                DvvModificationToken("100000021", "100000022", 1, 1),
+                it.getDvvModificationToken("100000021"),
+            )
+            assertEquals("100000022", it.getNextDvvModificationToken())
+            assertEquals("Urkki", it.getPersonBySSN(ssn)?.firstName)
+        }
+    }
+
+    @Test
+    fun `a seeded first run with no modifications is continued by the next run`() {
+        db.transaction { tx -> tx.deleteDvvModificationToken("100") }
+
+        assertEquals(0, updatePeopleFromDvv(emptyList(), LocalDate.of(2020, 1, 1)))
+        assertEquals(0, updatePeopleFromDvv(emptyList(), LocalDate.of(2020, 1, 2)))
+
+        db.read {
+            assertEquals(
+                listOf("seed-2020-01-01", "100000021", "100000022"),
+                it.createQuery { sql("SELECT token FROM dvv_modification_token ORDER BY created") }
+                    .toList<String>(),
+            )
+            assertEquals("100000023", it.getNextDvvModificationToken())
+        }
+    }
+
+    @Test
     fun `modification token is not updated if there is an exception during update`() {
         db.read { assertEquals("101", it.getNextDvvModificationToken()) }
 

@@ -33,7 +33,7 @@ class DvvModificationsService(
 ) {
 
     fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
-        var token = db.read { it.getNextDvvModificationToken() }
+        var token = db.read { it.getNextDvvModificationToken() } ?: seedToken(db, clock)
         var modificationCount = 0
         while (true) {
             logger.debug {
@@ -49,6 +49,18 @@ class DvvModificationsService(
             }
             token = page.viimeisinKirjausavain
         }
+    }
+
+    private fun seedToken(db: Database.Connection, clock: EvakaClock): String {
+        val today = clock.today()
+        val firstToken =
+            dvvModificationsServiceClient
+                .getFirstModificationToken(today)
+                ?.latestModificationToken
+                ?.toString() ?: error("Could not fetch the first DVV modification token of $today")
+        logger.info { "Seeding the DVV modification token from $today: $firstToken" }
+        db.transaction { tx -> tx.storeDvvModificationToken("seed-$today", firstToken, 0, 0) }
+        return firstToken
     }
 
     private fun processModifications(

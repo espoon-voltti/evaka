@@ -5,8 +5,8 @@
 package evaka.core.identity
 
 /**
- * A valid Finnish social security number. [toString] masks the value, so an Ssn in a log line or
- * an error message does not reveal it.
+ * A valid Finnish social security number. [toString] masks the value, so an Ssn in a log line or an
+ * error message does not reveal it.
  */
 @JvmInline
 value class Ssn private constructor(val value: String) {
