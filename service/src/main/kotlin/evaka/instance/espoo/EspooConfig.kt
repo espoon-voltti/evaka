@@ -10,6 +10,8 @@ import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.Sensitive
 import evaka.core.VtjXroadEnv
+import evaka.core.bi.BiExportConfig
+import evaka.core.bi.BiExportJob
 import evaka.core.document.archival.ArchivalClient
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.EvakaEmailMessageProvider
@@ -54,6 +56,7 @@ import evaka.instance.espoo.archival.SärmäHttpClient
 import evaka.instance.espoo.archival.SärmäMockClient
 import evaka.instance.espoo.bi.EspooBiHttpClient
 import evaka.instance.espoo.bi.EspooBiJob
+import evaka.instance.espoo.bi.EspooBiS3ExportClient
 import evaka.instance.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import io.opentelemetry.api.trace.Tracer
 import java.net.URI
@@ -70,6 +73,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.ws.transport.WebServiceMessageSender
 import org.thymeleaf.ITemplateEngine
+import software.amazon.awssdk.services.s3.S3Client
 import tools.jackson.databind.json.JsonMapper
 
 @Configuration
@@ -200,6 +204,29 @@ class EspooConfig {
             false -> null
         }
 
+    @Bean @Lazy fun espooBiS3Env(env: Environment) = EspooBiS3Env.fromEnvironment(env)
+
+    @Bean
+    fun espooBiS3Job(
+        env: EspooEnv,
+        biS3Env: ObjectProvider<EspooBiS3Env>,
+        s3Client: S3Client,
+    ): BiExportJob? =
+        when (env.biS3IntegrationEnabled) {
+            true ->
+                biS3Env.getObject().let {
+                    BiExportJob(
+                        EspooBiS3ExportClient(s3Client, it),
+                        BiExportConfig(
+                            includePII = false,
+                            includeLegacyColumns = false,
+                            windowDays = it.windowDays,
+                        ),
+                    )
+                }
+            false -> null
+        }
+
     @Bean
     fun linkityEnv(espooEnv: EspooEnv, env: Environment): LinkityEnv? =
         when (espooEnv.linkityEnabled) {
@@ -293,6 +320,7 @@ class EspooConfig {
         jsonMapper: JsonMapper,
         childDocumentArchivalEnv: ChildDocumentArchivalEnv,
         espooBiJob: EspooBiJob?,
+        espooBiS3Job: BiExportJob?,
         evakaEnv: EvakaEnv,
     ): EspooScheduledJobs =
         EspooScheduledJobs(
@@ -302,6 +330,7 @@ class EspooConfig {
             linkityEnv,
             jsonMapper,
             espooBiJob,
+            espooBiS3Job,
             evakaEnv,
         )
 
@@ -344,6 +373,7 @@ data class EspooEnv(
     val invoiceIntegrationEnabled: Boolean,
     val patuIntegrationEnabled: Boolean,
     val biIntegrationEnabled: Boolean,
+    val biS3IntegrationEnabled: Boolean,
     val linkityEnabled: Boolean,
 ) {
     companion object {
@@ -356,6 +386,7 @@ data class EspooEnv(
                     ) ?: true,
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
                 biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false,
+                biS3IntegrationEnabled = env.lookup("espoo.integration.bi_s3.enabled") ?: false,
                 linkityEnabled = env.lookup("espoo.integration.linkity.enabled") ?: false,
             )
     }
@@ -396,6 +427,17 @@ data class EspooBiEnv(val url: String, val username: String, val password: Sensi
                 url = env.lookup("espoo.integration.bi.url"),
                 username = env.lookup("espoo.integration.bi.username"),
                 password = Sensitive(env.lookup("espoo.integration.bi.password")),
+            )
+    }
+}
+
+data class EspooBiS3Env(val bucket: String, val prefix: String, val windowDays: Int) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            EspooBiS3Env(
+                bucket = env.lookup("espoo.integration.bi_s3.bucket"),
+                prefix = env.lookup("espoo.integration.bi_s3.prefix"),
+                windowDays = env.lookup("espoo.integration.bi_s3.window_days"),
             )
     }
 }
