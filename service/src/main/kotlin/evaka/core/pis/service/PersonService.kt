@@ -224,6 +224,9 @@ class PersonService(private val vtjClient: VtjClient) {
         }
 
         val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
+        if (vtjPerson.socialSecurityNumber != ssn.value) {
+            throw BadRequest("VTJ returned a different SSN than the one being added")
+        }
 
         tx.updatePersonSsnAddingDisabled(id, false)
         val _ = tx.setSsnFromVtj(id, vtjPerson, now)
