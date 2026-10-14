@@ -22,8 +22,6 @@ data class VtjPersonDTO(
     val postalCode: String,
     val postOffice: String,
     val residenceCode: String,
-    val children: List<VtjPersonDTO> = listOf(),
-    val guardians: List<VtjPersonDTO> = listOf(),
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
     val streetAddressSe: String,

@@ -13,12 +13,12 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
+import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.VtjClient.DetailsQuery
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
-import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.VTJQuery
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import java.time.LocalDate
 import java.util.UUID.randomUUID
@@ -29,7 +29,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -44,7 +43,7 @@ class SoapVtjClientTest {
     @Mock lateinit var henkiloMapper: VtjHenkiloMapper
 
     @Test
-    fun `basic query should return results without dependants details with a successful query`() {
+    fun `basic query should return the person with a successful query`() {
         val expectedResult = validPerson
         val query = queryAboutSelf(vtjPerson = expectedResult)
         val expectedVtjQuery = query.mapToVtjQuery(PERUSSANOMA3)
@@ -56,59 +55,31 @@ class SoapVtjClientTest {
         val result = service.fetchPerson(query)
         assertThat(result.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
         assertThat(result.address).isEqualTo(expectedResult.address)
-        assertThat(result.dependants).isEmpty()
     }
 
     @Test
-    fun `details query service should return results with dependant details with a successful query`() {
-        val expectedChildResult =
-            validPerson.copy(firstNames = "Lapsi Lapsonen", socialSecurityNumber = "291013A950S")
-        val expectedResult = validPerson.copy(dependants = listOf(expectedChildResult))
-
-        val query = queryAboutSelf(vtjPerson = expectedResult)
-
-        val expectedVtjQuery = query.mapToVtjQuery(HUOLTAJA_HUOLLETTAVA)
-        val expectedVTJResponse = query.asMinimalVtjResponse()
-
-        val expectedChildQuery =
-            DetailsQuery(
-                requestingUser = query.requestingUser,
-                ssn = Ssn.parse(expectedChildResult.socialSecurityNumber)!!,
+    fun `dependants query should return the dependants as stubs with one request`() {
+        val expectedChild =
+            VtjRelative(
+                ssn = Ssn.parse("291013A950S")!!,
+                dateOfBirth = LocalDate.of(2013, 10, 29),
+                firstNames = "Lapsi Lapsonen",
+                lastName = "Testaaja",
             )
-        val expectedChildVtjQuery =
-            expectedChildQuery.mapToVtjQuery(VtjSoapTransport.RequestType.PERUSSANOMA3)
-        val expectedChildVtjResponse = expectedChildQuery.asMinimalVtjResponse()
+        val query = queryAboutSelf(vtjPerson = validPerson)
+        val expectedVtjQuery = query.mapToVtjQuery(HUOLTAJA_HUOLLETTAVA)
+        val expectedVtjResponse = query.asMinimalVtjResponse()
 
-        whenever(vtjService.query(any()))
-            .thenReturn(expectedVTJResponse)
-            .thenReturn(expectedChildVtjResponse)
-        whenever(henkiloMapper.mapToVtjPerson(any()))
-            .thenReturn(expectedResult)
-            .thenReturn(expectedChildResult)
+        whenever(vtjService.query(expectedVtjQuery)).thenReturn(expectedVtjResponse)
+        whenever(henkiloMapper.mapToVtjPerson(expectedVtjResponse)).thenReturn(validPerson)
+        whenever(henkiloMapper.mapDependants(expectedVtjResponse)).thenReturn(listOf(expectedChild))
 
         val result = service.fetchWithDependants(query)
-        assertThat(result.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
-        assertThat(result.firstNames).isEqualTo(expectedResult.firstNames)
+        assertThat(result.person.socialSecurityNumber).isEqualTo(validPerson.socialSecurityNumber)
+        assertThat(result.person.firstNames).isEqualTo(validPerson.firstNames)
+        assertThat(result.relatives).containsExactly(expectedChild)
 
-        assertThat(result.dependants).size().isEqualTo(1)
-        val childResult = result.dependants[0]
-
-        assertThat(childResult.socialSecurityNumber)
-            .isEqualTo(expectedChildResult.socialSecurityNumber)
-        assertThat(childResult.firstNames).isEqualTo(expectedChildResult.firstNames)
-        assertThat(childResult.address).isEqualTo(expectedChildResult.address)
-
-        argumentCaptor<VTJQuery>().apply {
-            val _ = verify(vtjService, times(2)).query(capture())
-            assertThat(firstValue).isEqualTo(expectedVtjQuery)
-            assertThat(secondValue).isEqualTo(expectedChildVtjQuery)
-        }
-
-        argumentCaptor<Henkilo>().apply {
-            val _ = verify(henkiloMapper, times(2)).mapToVtjPerson(capture())
-            assertThat(firstValue).isEqualTo(expectedVTJResponse)
-            assertThat(secondValue).isEqualTo(expectedChildVtjResponse)
-        }
+        val _ = verify(vtjService, times(1)).query(any())
     }
 
     private fun queryAboutSelf(vtjPerson: VtjPerson = validPerson) =
@@ -166,6 +137,5 @@ class SoapVtjClientTest {
                 ),
             restrictedDetails = RestrictedDetails(enabled = false),
             nationalities = listOf(Nationality(countryCode = "246", countryName = "Suomi")),
-            dependants = emptyList(),
         )
 }

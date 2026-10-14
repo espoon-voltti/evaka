@@ -38,6 +38,7 @@ import evaka.core.shared.domain.Rectangle
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.VtjPersonDTO
+import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
@@ -124,17 +125,16 @@ class PersonService(private val vtjClient: VtjClient) {
         return if (guardian.ssn == null) {
             toPersonWithChildrenDTO(guardian)
         } else if (forceRefresh || guardian.vtjDependantsQueried == null) {
-            getPersonWithDependants(user, guardian.ssn)
-                .let { upsertVtjChildren(tx, now, it) }
-                .let {
-                    toPersonWithChildrenDTO(
-                        it,
-                        guardian.preferredName,
-                        guardian.phone,
-                        guardian.backupPhone,
-                        guardian.email,
-                    )
-                }
+            val (vtjGuardian, vtjChildren) = getPersonWithDependants(user, guardian.ssn)
+            val (upsertedGuardian, children) = upsertVtjChildren(tx, now, vtjGuardian, vtjChildren)
+            toPersonWithChildrenDTO(
+                upsertedGuardian,
+                children,
+                guardian.preferredName,
+                guardian.phone,
+                guardian.backupPhone,
+                guardian.email,
+            )
         } else {
             val children = tx.getGuardianDependants(id).map { toPersonWithChildrenDTO(it) }
             toPersonWithChildrenDTO(guardian).copy(children = children)
@@ -154,10 +154,8 @@ class PersonService(private val vtjClient: VtjClient) {
         return if (child.ssn == null) {
             emptyList()
         } else if (forceRefresh || child.vtjGuardiansQueried == null) {
-            getPersonWithGuardians(user, child.ssn)
-                .let { upsertVtjGuardians(tx, now, it) }
-                .guardians
-                .map(::toPersonDTO)
+            val (vtjChild, vtjGuardians) = getPersonWithGuardians(user, child.ssn)
+            upsertVtjGuardians(tx, now, vtjChild, vtjGuardians).map(::toPersonDTO)
         } else {
             tx.getDependantGuardians(id)
         }
@@ -254,20 +252,25 @@ class PersonService(private val vtjClient: VtjClient) {
     private fun getPersonWithDependants(
         user: AuthenticatedUser,
         ssn: Ssn,
-    ): VtjPersonDTO {
-        return vtjClient
-            .fetchWithDependants(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-            .mapToDto()
+    ): Pair<VtjPersonDTO, List<VtjPersonDTO>> {
+        val result = vtjClient.fetchWithDependants(VtjClient.DetailsQuery(user.evakaUserId, ssn))
+        return result.person.mapToDto() to fetchRelativesInFull(user, result.relatives)
     }
 
     // Does a request to VTJ
     private fun getPersonWithGuardians(
         user: AuthenticatedUser,
         ssn: Ssn,
-    ): VtjPersonDTO {
-        return vtjClient
-            .fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-            .mapToDto()
+    ): Pair<VtjPersonDTO, List<VtjPersonDTO>> {
+        val result = vtjClient.fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, ssn))
+        return result.person.mapToDto() to fetchRelativesInFull(user, result.relatives)
+    }
+
+    private fun fetchRelativesInFull(
+        user: AuthenticatedUser,
+        relatives: List<VtjRelative>,
+    ): List<VtjPersonDTO> = relatives.map {
+        vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn)).mapToDto()
     }
 
     private fun toPersonDTO(person: VtjPersonDTO): PersonDTO =
@@ -296,6 +299,7 @@ class PersonService(private val vtjClient: VtjClient) {
 
     private fun toPersonWithChildrenDTO(
         person: VtjPersonDTO,
+        children: List<VtjPersonDTO> = emptyList(),
         preferredName: String = "",
         phone: String = "",
         backupPhone: String = "",
@@ -340,7 +344,7 @@ class PersonService(private val vtjClient: VtjClient) {
             phone = phone,
             backupPhone = backupPhone,
             email = email,
-            children = person.children.map(::toPersonWithChildrenDTO),
+            children = children.map { toPersonWithChildrenDTO(it) },
         )
 
     private fun toPersonWithChildrenDTO(person: PersonDTO): PersonWithChildrenDTO =
@@ -669,11 +673,12 @@ private fun upsertVtjGuardians(
     tx: Database.Transaction,
     now: HelsinkiDateTime,
     vtjPersonDTO: VtjPersonDTO,
-): VtjPersonDTO {
+    vtjGuardians: List<VtjPersonDTO>,
+): List<VtjPersonDTO> {
     val child = upsertVtjPerson(tx, vtjPersonDTO)
     initChildIfNotExists(tx, now, child.id)
     val guardians =
-        vtjPersonDTO.guardians
+        vtjGuardians
             .map { upsertVtjPerson(tx, it) }
             .filterNot { tx.isGuardianBlocked(it.id, child.id) }
     val changes = tx.replaceChildGuardians(child.id, guardians.map { it.id }.toSet())
@@ -681,17 +686,18 @@ private fun upsertVtjGuardians(
     logger.info {
         "Created or replaced child ${child.id} guardians as ${guardians.map { it.id }} (added ${changes.added}, removed ${changes.removed})"
     }
-    return child.toVtjPersonDTO().copy(guardians = guardians.map { it.toVtjPersonDTO() })
+    return guardians.map { it.toVtjPersonDTO() }
 }
 
 private fun upsertVtjChildren(
     tx: Database.Transaction,
     now: HelsinkiDateTime,
     vtjPersonDTO: VtjPersonDTO,
-): VtjPersonDTO {
+    vtjChildren: List<VtjPersonDTO>,
+): Pair<VtjPersonDTO, List<VtjPersonDTO>> {
     val guardian = upsertVtjPerson(tx, vtjPersonDTO)
     val children =
-        vtjPersonDTO.children
+        vtjChildren
             .map {
                 upsertVtjPerson(tx, it).also { child -> initChildIfNotExists(tx, now, child.id) }
             }
@@ -702,7 +708,7 @@ private fun upsertVtjChildren(
         "Created or replaced guardian ${guardian.id} children as ${children.map { it.id }} (added ${changes.added}, removed ${changes.removed})"
     }
 
-    return guardian.toVtjPersonDTO().copy(children = children.map { it.toVtjPersonDTO() })
+    return guardian.toVtjPersonDTO() to children.map { it.toVtjPersonDTO() }
 }
 
 @IgnorableReturnValue

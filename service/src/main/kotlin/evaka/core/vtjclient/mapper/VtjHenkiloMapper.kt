@@ -4,12 +4,15 @@
 
 package evaka.core.vtjclient.mapper
 
+import evaka.core.identity.Ssn
+import evaka.core.identity.getDobFromSsn
 import evaka.core.shared.domain.europeHelsinki
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
+import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -23,6 +26,10 @@ private val logger = KotlinLogging.logger {}
 @Service
 class VtjHenkiloMapper {
     fun mapToVtjPerson(henkilo: Henkilo) = henkilo.mapToVtjPerson()
+
+    fun mapGuardians(henkilo: Henkilo) = henkilo.mapGuardians()
+
+    fun mapDependants(henkilo: Henkilo) = henkilo.mapDependants()
 }
 
 // As per
@@ -121,8 +128,6 @@ fun Henkilo.mapToVtjPerson(): VtjPerson {
         lastName = nykyinenSukunimi.sukunimi,
         socialSecurityNumber = henkilotunnus.value,
         nationalities = mapNationalities(),
-        dependants = mapDependants(),
-        guardians = mapGuardians(),
         address = address,
         residenceCode = vakinainenAsuinpaikka?.asuinpaikantunnus,
         nativeLanguage = mapNativeLanguage(),
@@ -133,21 +138,26 @@ fun Henkilo.mapToVtjPerson(): VtjPerson {
     )
 }
 
-fun Henkilo.Huollettava.mapToPerson() =
-    VtjPerson(
-        firstNames = nykyisetEtunimet.etunimet,
-        lastName = nykyinenSukunimi.sukunimi,
-        socialSecurityNumber = henkilotunnus,
-        restrictedDetails = null,
-    )
+fun Henkilo.Huollettava.mapToRelative() =
+    toRelative(henkilotunnus, syntymaaika, nykyisetEtunimet.etunimet, nykyinenSukunimi.sukunimi)
 
-fun Henkilo.Huoltaja.mapToPerson() =
-    VtjPerson(
-        firstNames = nykyisetEtunimet.etunimet,
-        lastName = nykyinenSukunimi.sukunimi,
-        socialSecurityNumber = henkilotunnus,
-        restrictedDetails = null,
+fun Henkilo.Huoltaja.mapToRelative() =
+    toRelative(henkilotunnus, syntymaaika, nykyisetEtunimet.etunimet, nykyinenSukunimi.sukunimi)
+
+private fun toRelative(
+    henkilotunnus: String,
+    syntymaaika: String?,
+    firstNames: String,
+    lastName: String,
+): VtjRelative {
+    val ssn = Ssn.parse(henkilotunnus) ?: error("VTJ returned an invalid SSN")
+    return VtjRelative(
+        ssn = ssn,
+        dateOfBirth = parseLocalDateFromString(syntymaaika) ?: getDobFromSsn(ssn.value),
+        firstNames = firstNames,
+        lastName = lastName,
     )
+}
 
 /*
    kansalaisuuskoodi3: "ISO 3166-1-koodiston mukainen kolminumeroinen valtionimeen liittyva tunnus.
@@ -160,11 +170,11 @@ fun Henkilo.mapNationalities() =
         .filter { it.kansalaisuuskoodi3.isNotBlank() && it.kansalaisuusS.isNotBlank() }
         .map { Nationality(countryName = it.kansalaisuusS, countryCode = it.kansalaisuuskoodi3) }
 
-fun Henkilo.mapDependants() =
-    huollettava.filter { !it.henkilotunnus.isNullOrEmpty() }.map { it.mapToPerson() }
+fun Henkilo.mapDependants(): List<VtjRelative> =
+    huollettava.filter { !it.henkilotunnus.isNullOrEmpty() }.map { it.mapToRelative() }
 
-fun Henkilo.mapGuardians() =
-    huoltaja.filter { !it.henkilotunnus.isNullOrEmpty() }.map { it.mapToPerson() }
+fun Henkilo.mapGuardians(): List<VtjRelative> =
+    huoltaja.filter { !it.henkilotunnus.isNullOrEmpty() }.map { it.mapToRelative() }
 
 /*
    kieliS:     "Henkilon kielen nimi. Muoto 0-30 merkkia."

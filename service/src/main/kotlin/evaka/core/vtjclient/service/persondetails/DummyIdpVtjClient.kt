@@ -4,6 +4,8 @@
 
 package evaka.core.vtjclient.service.persondetails
 
+import evaka.core.identity.Ssn
+import evaka.core.identity.getDobFromSsn
 import evaka.core.shared.buildHttpClient
 import evaka.core.shared.utils.get
 import evaka.core.shared.utils.headerInterceptor
@@ -13,6 +15,8 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
+import evaka.core.vtjclient.dto.VtjPersonWithRelatives
+import evaka.core.vtjclient.dto.VtjRelative
 import java.net.URI
 import java.time.LocalDate
 import tools.jackson.databind.json.JsonMapper
@@ -31,7 +35,7 @@ data class DummyIdpVtjPerson(
     val guardians: List<DummyIdpVtjPerson> = emptyList(),
     val dependants: List<DummyIdpVtjPerson> = emptyList(),
 ) {
-    fun toVtjPerson(includeGuardians: Boolean, includeDependants: Boolean): VtjPerson =
+    fun toVtjPerson(): VtjPerson =
         VtjPerson(
             firstNames = firstNames,
             lastName = lastName,
@@ -43,13 +47,17 @@ data class DummyIdpVtjPerson(
             dateOfDeath = dateOfDeath,
             residenceCode = residenceCode,
             municipalityOfResidence = municipalityOfResidence,
-            guardians =
-                if (includeGuardians) guardians.map { it.toVtjPerson(false, false) }
-                else emptyList(),
-            dependants =
-                if (includeDependants) dependants.map { it.toVtjPerson(false, false) }
-                else emptyList(),
         )
+
+    fun toVtjRelative(): VtjRelative {
+        val ssn = Ssn.parse(socialSecurityNumber) ?: error("dummy-idp returned an invalid SSN")
+        return VtjRelative(
+            ssn = ssn,
+            dateOfBirth = getDobFromSsn(ssn.value),
+            firstNames = firstNames,
+            lastName = lastName,
+        )
+    }
 }
 
 class DummyIdpVtjClient(baseUrl: String, jsonMapper: JsonMapper) : VtjClient {
@@ -60,14 +68,23 @@ class DummyIdpVtjClient(baseUrl: String, jsonMapper: JsonMapper) : VtjClient {
             interceptors = listOf(headerInterceptor("Accept", "application/json")),
         )
 
-    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson =
-        fetch(query).toVtjPerson(includeGuardians = false, includeDependants = false)
+    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson = fetch(query).toVtjPerson()
 
-    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPerson =
-        fetch(query).toVtjPerson(includeGuardians = false, includeDependants = true)
+    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPersonWithRelatives =
+        fetch(query).let { person ->
+            VtjPersonWithRelatives(
+                person.toVtjPerson(),
+                person.dependants.map { it.toVtjRelative() },
+            )
+        }
 
-    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPerson =
-        fetch(query).toVtjPerson(includeGuardians = true, includeDependants = false)
+    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPersonWithRelatives =
+        fetch(query).let { person ->
+            VtjPersonWithRelatives(
+                person.toVtjPerson(),
+                person.guardians.map { it.toVtjRelative() },
+            )
+        }
 
     fun clearAll() {
         httpClient.post<Unit>("idp/users/clear", jsonBody = emptyMap<String, String>())

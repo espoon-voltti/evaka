@@ -5,29 +5,31 @@
 package evaka.core.pis.service
 
 import evaka.core.PureJdbiTest
+import evaka.core.identity.Ssn
 import evaka.core.pis.getPersonById
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
+import evaka.core.vtjclient.dto.VtjPersonWithRelatives
+import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * What a [VtjClient] returning name+SSN stubs does to the database. No shipped implementation
- * behaves this way, but nothing in the write path prevents it and DVV's REST `/perustiedot` returns
- * relatives in exactly this shape.
+ * A [VtjClient] returns relatives as stubs (SSN, date of birth and names), so a refresh must not
+ * write a stub over the VTJ-owned fields of a relative's person row.
  */
 class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val user = AuthenticatedUser.SystemInternalUser
@@ -65,7 +67,7 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
         )
 
-    private val personService = PersonService(StubRelativeDetailsService(guardian, child))
+    private val personService = PersonService(StubRelativeVtjClient(guardian, child))
 
     @BeforeEach
     fun insertFamily() {
@@ -76,36 +78,36 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `refreshing a guardian blanks every VTJ-owned field of their dependant`() {
+    fun `refreshing a guardian keeps every VTJ-owned field of their dependant`() {
         refreshGuardian()
 
         val refreshed = db.read { it.getPersonById(child.id) }!!
-        assertEquals("", refreshed.streetAddress)
-        assertEquals("", refreshed.postalCode)
-        assertEquals("", refreshed.postOffice)
-        assertEquals("", refreshed.residenceCode)
-        assertEquals("", refreshed.municipalityOfResidence)
-        assertEquals("", refreshed.language)
-        assertEquals(emptyList(), refreshed.nationalities)
+        assertEquals(child.streetAddress, refreshed.streetAddress)
+        assertEquals(child.postalCode, refreshed.postalCode)
+        assertEquals(child.postOffice, refreshed.postOffice)
+        assertEquals(child.residenceCode, refreshed.residenceCode)
+        assertEquals(child.municipalityOfResidence, refreshed.municipalityOfResidence)
+        assertEquals(child.language, refreshed.language)
+        assertEquals(child.nationalities, refreshed.nationalities)
     }
 
     @Test
-    fun `refreshing a guardian clears their dependant's restricted details`() {
+    fun `refreshing a guardian keeps their dependant's restricted details`() {
         refreshGuardian()
 
         val refreshed = db.read { it.getPersonById(child.id) }!!
-        assertFalse(refreshed.restrictedDetailsEnabled)
-        assertNull(refreshed.restrictedDetailsEndDate)
+        assertTrue(refreshed.restrictedDetailsEnabled)
+        assertEquals(child.restrictedDetailsEndDate, refreshed.restrictedDetailsEndDate)
     }
 
-    /** `personsLiveInTheSameAddress` gates `createParentship`, so no fridge family forms. */
     @Test
-    fun `a blanked dependant stops counting as living with their guardian`() {
-        refreshGuardian()
+    fun `refreshing a child keeps their guardian's address`() {
+        db.transaction { personService.getGuardians(it, user, now, child.id, forceRefresh = true) }
 
-        val refreshedGuardian = db.read { it.getPersonById(guardian.id) }!!
-        val refreshedChild = db.read { it.getPersonById(child.id) }!!
-        assertFalse(personService.personsLiveInTheSameAddress(refreshedChild, refreshedGuardian))
+        val refreshed = db.read { it.getPersonById(guardian.id) }!!
+        assertEquals(guardian.streetAddress, refreshed.streetAddress)
+        assertEquals(guardian.postalCode, refreshed.postalCode)
+        assertEquals(guardian.postOffice, refreshed.postOffice)
     }
 
     private fun refreshGuardian() {
@@ -115,19 +117,15 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 }
 
-/**
- * Returns the queried person in full but their relatives as name+SSN only — the shape of VTJ's
- * HUOLTAJA_HUOLLETTAVA response and of DVV's REST `/perustiedot` response before hydration.
- */
-private class StubRelativeDetailsService(private vararg val persons: DevPerson) : VtjClient {
+private class StubRelativeVtjClient(private vararg val persons: DevPerson) : VtjClient {
     override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson =
         persons.single { it.ssn == query.ssn.value }.toFullVtjPerson()
 
-    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPerson =
-        fetchPerson(query).copy(dependants = relativesOf(query))
+    override fun fetchWithDependants(query: VtjClient.DetailsQuery) =
+        VtjPersonWithRelatives(fetchPerson(query), relativesOf(query))
 
-    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPerson =
-        fetchPerson(query).copy(guardians = relativesOf(query))
+    override fun fetchWithGuardians(query: VtjClient.DetailsQuery) =
+        VtjPersonWithRelatives(fetchPerson(query), relativesOf(query))
 
     private fun relativesOf(query: VtjClient.DetailsQuery) =
         persons.filter { it.ssn != query.ssn.value }.map { it.toRelativeStub() }
@@ -140,15 +138,16 @@ private fun DevPerson.toFullVtjPerson() =
         socialSecurityNumber = ssn!!,
         address = PersonAddress(streetAddress, postalCode, postOffice),
         nativeLanguage = language?.let { NativeLanguage(code = it) },
+        nationalities = nationalities.map { Nationality(countryName = it, countryCode = it) },
         residenceCode = residenceCode,
         municipalityOfResidence = municipalityOfResidence,
         restrictedDetails = RestrictedDetails(restrictedDetailsEnabled, restrictedDetailsEndDate),
     )
 
 private fun DevPerson.toRelativeStub() =
-    VtjPerson(
+    VtjRelative(
+        ssn = Ssn.parse(ssn!!)!!,
+        dateOfBirth = dateOfBirth,
         firstNames = firstName,
         lastName = lastName,
-        socialSecurityNumber = ssn!!,
-        restrictedDetails = null,
     )
