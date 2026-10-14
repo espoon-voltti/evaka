@@ -264,9 +264,10 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
         MockVtjSoapTransport.resetQueryCounts()
 
+        val vtjClient = SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper())
         val service =
             FridgeFamilyService(
-                PersonService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper())),
+                PersonService(vtjClient, VtjSyncService(vtjClient)),
                 parentshipService,
             )
 
