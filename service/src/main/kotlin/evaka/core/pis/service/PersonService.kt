@@ -16,7 +16,6 @@ import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.setSsnFromVtj
 import evaka.core.pis.splitFirstNames
 import evaka.core.pis.updateNonSsnPersonDetails
 import evaka.core.pis.updatePersonNonVtjDetails
@@ -222,7 +221,7 @@ class PersonService(
         }
 
         tx.updatePersonSsnAddingDisabled(id, false)
-        val _ = tx.setSsnFromVtj(id, vtjPerson, now)
+        vtjSyncService.applySsnFromVtj(tx, now, id, vtjPerson)
         return tx.getPersonById(id)!!
     }
 

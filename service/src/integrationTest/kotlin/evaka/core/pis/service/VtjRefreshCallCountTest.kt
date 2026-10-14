@@ -16,6 +16,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 
 /**
  * A guardian refresh costs one HUOLTAJA_HUOLLETTAVA plus one PERUSSANOMA3 per dependant; reading
@@ -56,7 +57,7 @@ class VtjRefreshCallCountTest : PureJdbiTest(resetDbBeforeEach = true) {
         MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(guardian, children)
         children.forEach { MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(it) }
         val vtjClient = SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
-        val personService = PersonService(vtjClient, VtjSyncService(vtjClient))
+        val personService = PersonService(vtjClient, VtjSyncService(vtjClient, mock()))
 
         db.transaction {
             personService.getPersonWithChildren(
