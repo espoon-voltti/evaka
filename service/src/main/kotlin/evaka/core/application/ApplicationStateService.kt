@@ -41,6 +41,7 @@ import evaka.core.daycare.upsertChild
 import evaka.core.decision.DecisionService
 import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
+import evaka.core.decision.clearDecisionDecidedBy
 import evaka.core.decision.clearDecisionDrafts
 import evaka.core.decision.createDecisionDrafts
 import evaka.core.decision.fetchDecisionDrafts
@@ -50,6 +51,7 @@ import evaka.core.decision.markApplicationDecisionsSent
 import evaka.core.decision.markDecisionAccepted
 import evaka.core.decision.markDecisionRejected
 import evaka.core.decision.reasoning.clearGenericReasoningFromUnsentDecisions
+import evaka.core.decision.setDecisionDecidedBy
 import evaka.core.identity.ExternalIdentifier
 import evaka.core.messaging.MessageRecipient
 import evaka.core.messaging.MessageService
@@ -745,6 +747,7 @@ class ApplicationStateService(
         audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_DECISION)
         decisionService.freezeGenericDecisionReasonings(tx, application.id)
+        tx.setDecisionDecidedBy(application.id, user.evakaUserId)
         finalizeDecisions(tx, user, clock, audit, application, config)
         tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
     }
@@ -768,6 +771,7 @@ class ApplicationStateService(
         audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_DECISION)
         decisionService.freezeGenericDecisionReasonings(tx, application.id)
+        tx.setDecisionDecidedBy(application.id, user.evakaUserId)
         tx.syncApplicationOtherGuardians(application.id, clock.today()).also { audit.add(it) }
         tx.updateApplicationStatus(
             application.id,
@@ -796,6 +800,7 @@ class ApplicationStateService(
         audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
         tx.clearGenericReasoningFromUnsentDecisions(application.id)
+        tx.clearDecisionDecidedBy(application.id)
         tx.syncApplicationOtherGuardians(application.id, clock.today()).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
     }

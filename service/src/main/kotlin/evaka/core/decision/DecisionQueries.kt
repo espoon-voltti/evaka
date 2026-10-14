@@ -8,6 +8,7 @@ import evaka.core.application.DecisionSummary
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
@@ -34,7 +35,7 @@ private fun Database.Read.createDecisionQuery(
             u.phone,
             unit_manager_name AS manager,
             ap.child_id, ap.guardian_id,
-            (SELECT name FROM evaka_user WHERE id = d.created_by) AS created_by,
+            (SELECT name FROM evaka_user WHERE id = COALESCE(d.decided_by, d.created_by)) AS decided_by_name,
             c.first_name AS child_first_name, c.last_name AS child_last_name,
             eu.name AS resolved_by_name
         FROM decision d
@@ -51,7 +52,7 @@ private fun Database.Read.createDecisionQuery(
 private fun Row.decisionFromResultSet(): Decision =
     Decision(
         id = column("id"),
-        createdBy = column("created_by"),
+        decidedByName = column("decided_by_name"),
         type = column("type"),
         startDate = column("start_date"),
         endDate = column("end_date"),
@@ -271,6 +272,31 @@ fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentAt: Helsin
             """
 UPDATE decision SET sent_date = ${bind(sentAt.toLocalDate())}, sent_time = ${bind(sentAt.toLocalTime())}
 WHERE sent_date IS NULL AND id = ${bind(decisionId)} AND planned = true
+"""
+        )
+    }
+}
+
+fun Database.Transaction.setDecisionDecidedBy(
+    applicationId: ApplicationId,
+    decidedBy: EvakaUserId,
+) {
+    execute {
+        sql(
+            """
+UPDATE decision SET decided_by = ${bind(decidedBy)}
+WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned = true
+"""
+        )
+    }
+}
+
+fun Database.Transaction.clearDecisionDecidedBy(applicationId: ApplicationId) {
+    execute {
+        sql(
+            """
+UPDATE decision SET decided_by = NULL
+WHERE sent_date IS NULL AND application_id = ${bind(applicationId)}
 """
         )
     }

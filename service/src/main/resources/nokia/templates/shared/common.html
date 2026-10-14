@@ -386,7 +386,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <strong th:text="${#messages.msgOrNull('decision.approver.prefix.' + decision.type)} ?: #{decision.approver.prefix}">Päätöksentekijä</strong>
         </p>
         <th:block th:if="${type == 'notice'}">
-            <div th:text="${decision.createdBy}"></div>
+            <div th:text="${decision.decidedByName}"></div>
             <div th:text="#{notice.approver.title}">Koordinaattori</div>
             <div th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
         </th:block>
