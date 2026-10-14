@@ -9,6 +9,8 @@ import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevGuardian
@@ -30,6 +32,7 @@ import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -39,8 +42,8 @@ import org.junit.jupiter.api.assertThrows
  * guardian is C. M is a minor guardian of Y, and P is the guardian of M.
  */
 class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val vtjSyncService =
-        VtjSyncService(SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper()))
+    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private lateinit var vtjSyncService: VtjSyncService
     private val user = AuthenticatedUser.SystemInternalUser
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2026, 3, 2), LocalTime.of(12, 0)))
@@ -56,6 +59,12 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
+        asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
+        vtjSyncService =
+            VtjSyncService(
+                SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper()),
+                asyncJobRunner,
+            )
         MockVtjSoapTransport.resetQueryCounts()
         addToVtj(a, dependants = listOf(x))
         addToVtj(b, dependants = listOf(x, z))
@@ -271,6 +280,11 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertNotNull(getPerson(a).vtjDependantsQueried)
         assertGuardians(a to x)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        asyncJobRunner.close()
     }
 
     private fun person(ssn: String, firstName: String) =

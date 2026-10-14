@@ -26,6 +26,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 
 /**
  * A [VtjClient] returns relatives as stubs (SSN, date of birth and names), so a refresh must not
@@ -68,7 +69,7 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
     private val vtjClient = StubRelativeVtjClient(guardian, child)
-    private val personService = PersonService(vtjClient, VtjSyncService(vtjClient))
+    private val personService = PersonService(vtjClient, VtjSyncService(vtjClient, mock()))
 
     @BeforeEach
     fun insertFamily() {

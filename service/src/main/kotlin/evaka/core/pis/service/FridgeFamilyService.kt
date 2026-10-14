@@ -70,6 +70,7 @@ class FridgeFamilyService(
     ) {
         val today = clock.today()
         val guardian = db.read { it.getPersonById(guardianId) } ?: return
+        if (guardian.dateOfDeath != null) return
 
         val partnerAtSameAddress =
             db.read { getPartnerId(it, clock, guardianId) }

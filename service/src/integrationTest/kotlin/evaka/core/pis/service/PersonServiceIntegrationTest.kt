@@ -6,9 +6,13 @@ package evaka.core.pis.service
 
 import evaka.core.PureJdbiTest
 import evaka.core.identity.Ssn
+import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
@@ -25,6 +29,7 @@ import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -32,6 +37,7 @@ import org.junit.jupiter.api.assertThrows
 class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
+    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private lateinit var vtjSyncService: VtjSyncService
     private lateinit var personService: PersonService
 
@@ -89,8 +95,14 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         MockVtjSoapTransport.resetQueryCounts()
         val vtjClient = SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper())
-        vtjSyncService = VtjSyncService(vtjClient)
+        asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
+        vtjSyncService = VtjSyncService(vtjClient, asyncJobRunner)
         personService = PersonService(vtjClient, vtjSyncService)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        asyncJobRunner.close()
     }
 
     @Test
@@ -150,6 +162,47 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `addSsn applies the death effects when VTJ reports a date of death`() {
+        val dateOfDeath = LocalDate.of(2026, 2, 1)
+        val person = DevPerson(ssn = null)
+        val child = DevPerson(ssn = null, dateOfBirth = LocalDate.of(2020, 1, 1))
+        val vtjRecord = DevPerson(ssn = "070644-937X", dateOfDeath = dateOfDeath)
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevParentship(
+                    childId = child.id,
+                    headOfChildId = person.id,
+                    startDate = LocalDate.of(2020, 1, 1),
+                    endDate = LocalDate.of(2037, 12, 31),
+                )
+            )
+        }
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(vtjRecord)
+
+        db.transaction {
+            personService.addSsn(it, user, now, person.id, Ssn.parse(vtjRecord.ssn!!)!!)
+        }
+
+        db.read { tx ->
+            assertEquals(
+                listOf(dateOfDeath),
+                tx.getParentships(headOfChildId = person.id, childId = null).map { it.endDate },
+            )
+            assertEquals(
+                2,
+                tx.createQuery {
+                        sql(
+                            "SELECT count(*) FROM async_job WHERE type = 'GenerateFinanceDecisions'"
+                        )
+                    }
+                    .exactlyOne<Int>(),
+            )
+        }
+    }
+
+    @Test
     fun `addSsn fails when VTJ returns a different SSN than the requested one`() {
         val person = DevPerson(ssn = null)
         db.transaction { it.insert(person, DevPersonType.ADULT) }
@@ -173,7 +226,7 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction {
                 PersonService(
                         vtjClientReturningAnotherSsn,
-                        VtjSyncService(vtjClientReturningAnotherSsn),
+                        VtjSyncService(vtjClientReturningAnotherSsn, asyncJobRunner),
                     )
                     .addSsn(it, user, now, person.id, requestedSsn)
             }

@@ -352,6 +352,50 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `a death found by the VTJ button ends the fridge relations and plans finance decisions`() {
+        val (dead, child) = insertDeadHeadOfFamily()
+
+        personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, dead.id)
+
+        assertEquals(dateOfDeath, db.read { it.getPersonBySSN(dead.ssn!!) }?.dateOfDeath)
+        assertPersons(dead, child)
+        assertFridgeChildren()
+        assertEquals(2, countFinanceDecisionJobs())
+    }
+
+    @Test
+    fun `a death found by the VTJ button does not make the deceased citizen a head of family again`() {
+        val (dead, _) = insertDeadHeadOfFamily()
+        // The citizen_user row makes the deceased person a dependant-sync person, so the fridge
+        // step runs for them after the death effects have ended their fridge rows
+        db.transaction { tx -> tx.updateLastStrongLogin(clock.now(), dead.id) }
+
+        personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, dead.id)
+
+        assertFridgeChildren()
+    }
+
+    @Test
+    fun `a DVV death followed by a refresh runs the death effects once`() {
+        val (dead, _) = insertDeadHeadOfFamily()
+
+        runDvvUpdate(dead)
+        personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, dead.id)
+
+        assertEquals(2, countFinanceDecisionJobs())
+    }
+
+    @Test
+    fun `a refresh followed by a DVV death runs the death effects once`() {
+        val (dead, _) = insertDeadHeadOfFamily()
+
+        personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, dead.id)
+        runDvvUpdate(dead)
+
+        assertEquals(2, countFinanceDecisionJobs())
+    }
+
+    @Test
     fun `DVV restricted details are written directly, and the address change refreshes the person`() {
         val restricted = person("020180-999Y", "Turva", "Kotikatu 1")
         db.transaction { tx -> tx.insert(restricted, DevPersonType.RAW_ROW) }
@@ -562,6 +606,35 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 person.lastName,
             ),
         )
+    }
+
+    private val dateOfDeath = LocalDate.of(2019, 7, 30)
+
+    /** The DVV mock reports a death on 2019-07-30 for 010180-999A. */
+    private fun insertDeadHeadOfFamily(): Pair<DevPerson, DevPerson> {
+        val dead = person("010180-999A", "Kuollut", "Kotikatu 1")
+        val child = person("010617A123U", "Lapsi", "Kotikatu 1")
+        db.transaction { tx ->
+            tx.insert(dead, DevPersonType.RAW_ROW)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevParentship(
+                    childId = child.id,
+                    headOfChildId = dead.id,
+                    startDate = LocalDate.of(2018, 1, 1),
+                    endDate = LocalDate.of(2035, 5, 31),
+                )
+            )
+        }
+        addToVtj(dead.copy(dateOfDeath = dateOfDeath), dependants = listOf(child))
+        return dead to child
+    }
+
+    private fun countFinanceDecisionJobs(): Int = db.read { tx ->
+        tx.createQuery {
+                sql("SELECT count(*) FROM async_job WHERE type = 'GenerateFinanceDecisions'")
+            }
+            .exactlyOne()
     }
 
     private fun runPlacementTool(child: DevPerson) {
