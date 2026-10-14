@@ -427,26 +427,55 @@ child_placement AS MATERIALIZED (
     FROM backup_care bc
     WHERE EXISTS(SELECT 1 FROM child WHERE bc.child_id = child.id)
       AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
+),
+placement_group AS MATERIALIZED (
+    SELECT
+        cp.child_id,
+        cp.unit_id,
+        cp.period,
+        coalesce(cp.backup_group_id, dgp.daycare_group_id) AS group_id,
+        daterange(dgp.start_date, dgp.end_date, '[]') AS group_period
+    FROM child_placement cp
+    LEFT JOIN daycare_group_placement dgp ON cp.backup_group_id IS NULL AND dgp.daycare_placement_id = cp.id
+    WHERE daterange(dgp.start_date, dgp.end_date, '[]') && cp.period
+),
+attendee AS MATERIALIZED (
+    SELECT
+        pg.child_id,
+        pg.period,
+        pg.group_period,
+        cea.calendar_event_id,
+        cea.child_id AS attendee_child_id,
+        cea.group_id AS attendee_group_id,
+        cea.unit_id AS attendee_unit_id
+    FROM placement_group pg
+    JOIN calendar_event_attendee cea
+        ON cea.unit_id = pg.unit_id
+        AND (cea.child_id IS NULL OR cea.child_id = pg.child_id)
+        AND (cea.group_id IS NULL OR cea.group_id = pg.group_id)
+),
+-- Most attendee rows of a unit belong to past events. Filtering the events by period here, and not
+-- by joining calendar_event on the attendee rows, avoids reading the table rows of all those past events.
+event_in_range AS MATERIALIZED (
+    SELECT id, period
+    FROM calendar_event
+    WHERE event_type = 'DAYCARE_EVENT' AND period && ${bind(range)}
+),
+matching_attendee AS MATERIALIZED (
+    SELECT a.*
+    FROM attendee a
+    JOIN event_in_range e ON e.id = a.calendar_event_id
+    WHERE a.period && e.period AND a.group_period && e.period
 )
-SELECT ce.id, cp.child_id, ce.period * daterange(dgp.start_date, dgp.end_date, '[]') * cp.period period, ce.period event_period, ce.title, ce.description, (
-    CASE WHEN cea.child_id IS NOT NULL THEN 'INDIVIDUAL'
-         WHEN cea.group_id IS NOT NULL THEN 'GROUP'
+SELECT ce.id, ma.child_id, ce.period * ma.group_period * ma.period period, ce.period event_period, ce.title, ce.description, (
+    CASE WHEN ma.attendee_child_id IS NOT NULL THEN 'INDIVIDUAL'
+         WHEN ma.attendee_group_id IS NOT NULL THEN 'GROUP'
          ELSE 'UNIT' END
 ) type, dg.id group_id, dg.name group_name, unit.id unit_id, unit.name unit_name
-FROM child_placement cp
-LEFT JOIN daycare_group_placement dgp ON cp.backup_group_id IS NULL AND dgp.daycare_placement_id = cp.id
-LEFT JOIN calendar_event_attendee cea
-    ON cea.unit_id = cp.unit_id
-    AND (cea.child_id IS NULL OR cea.child_id = cp.child_id)
-    AND (cea.group_id IS NULL OR cea.group_id = coalesce(cp.backup_group_id, dgp.daycare_group_id))
-JOIN calendar_event ce ON ce.id = cea.calendar_event_id
-LEFT JOIN daycare_group dg ON dg.id = cea.group_id
-LEFT JOIN daycare unit ON unit.id = cea.unit_id
-WHERE cp.period && ce.period
-  AND ce.period && ${bind(range)}
-  AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
-  AND daterange(dgp.start_date, dgp.end_date, '[]') && cp.period
-  AND ce.event_type = 'DAYCARE_EVENT'
+FROM matching_attendee ma
+JOIN calendar_event ce ON ce.id = ma.calendar_event_id
+LEFT JOIN daycare_group dg ON dg.id = ma.attendee_group_id
+LEFT JOIN daycare unit ON unit.id = ma.attendee_unit_id
 """
     )
 }
