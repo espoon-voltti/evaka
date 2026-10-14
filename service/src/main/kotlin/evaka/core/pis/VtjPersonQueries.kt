@@ -82,7 +82,7 @@ ON CONFLICT (social_security_number) DO UPDATE SET
     postal_code = excluded.postal_code,
     post_office = excluded.post_office,
     residence_code = excluded.residence_code,
-    municipality_of_residence = ${bind(person.municipalityOfResidence ?: "")},
+    municipality_of_residence = excluded.municipality_of_residence,
     restricted_details_enabled = excluded.restricted_details_enabled,
     restricted_details_end_date = excluded.restricted_details_end_date,
     updated_from_vtj = excluded.updated_from_vtj
@@ -129,7 +129,7 @@ UPDATE person SET
     postal_code = ${bind(person.address?.postalCode ?: "")},
     post_office = ${bind(person.postOfficeByLanguage())},
     residence_code = ${bind(person.residenceCode ?: "")},
-    municipality_of_residence = ${bind(person.municipalityOfResidence ?: "")},
+    municipality_of_residence = ${bind(person.municipalityOfResidenceByLanguage())},
     restricted_details_enabled = ${bind(person.restrictedDetails?.enabled ?: false)},
     restricted_details_end_date = ${bind(person.restrictedDetails?.endDate)},
     updated_from_vtj = ${bind(now)}

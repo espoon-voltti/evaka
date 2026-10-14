@@ -106,6 +106,40 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `applyPerson uses the Swedish address of a Swedish speaker when it updates an existing row`() {
+        val existing = DevPerson(ssn = vtjPerson.socialSecurityNumber)
+        db.transaction { it.insert(existing, DevPersonType.ADULT) }
+
+        db.transaction {
+            it.applyPerson(vtjPerson.copy(nativeLanguage = NativeLanguage(code = "sv")), now)
+        }
+
+        val person = db.read { it.getPersonById(existing.id) }!!
+        assertEquals("Någonvägen 66", person.streetAddress)
+        assertEquals("Helsingfors", person.postOffice)
+        assertEquals("Helsingfors", person.municipalityOfResidence)
+    }
+
+    @Test
+    fun `setSsnFromVtj uses the Swedish address of a Swedish speaker`() {
+        val person = DevPerson(ssn = null)
+        db.transaction { it.insert(person, DevPersonType.ADULT) }
+
+        db.transaction {
+            it.setSsnFromVtj(
+                person.id,
+                vtjPerson.copy(nativeLanguage = NativeLanguage(code = "sv")),
+                now,
+            )
+        }
+
+        val updated = db.read { it.getPersonById(person.id) }!!
+        assertEquals("Någonvägen 66", updated.streetAddress)
+        assertEquals("Helsingfors", updated.postOffice)
+        assertEquals("Helsingfors", updated.municipalityOfResidence)
+    }
+
+    @Test
     fun `applyPerson uses the Finnish address of a Swedish speaker who has no Swedish address`() {
         val result = db.transaction {
             it.applyPerson(
