@@ -5,47 +5,14 @@
 package evaka.core.pis
 
 import evaka.core.PureJdbiTest
-import evaka.core.identity.Ssn
 import evaka.core.pis.controllers.CreatePersonBody
-import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.PersonId
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    @Test
-    fun `creating a person creates a message account`() {
-        val person = db.transaction {
-            createPersonFromVtj(
-                it,
-                PersonDTO(
-                    id = PersonId(UUID.randomUUID()),
-                    duplicateOf = null,
-                    ssn = Ssn.parse("080512A918W"),
-                    ssnAddingDisabled = false,
-                    dateOfBirth = LocalDate.of(2012, 5, 8),
-                    firstName = "Matti",
-                    lastName = "Meikäläinen",
-                    preferredName = "",
-                    email = "matti.meikalainen@example.com",
-                    phone = "1234567890",
-                    backupPhone = "",
-                    language = "fi",
-                    streetAddress = "",
-                    postalCode = "",
-                    postOffice = "",
-                    residenceCode = "",
-                    municipalityOfResidence = "",
-                ),
-            )
-        }
-
-        assertTrue(personHasMessageAccount(person.id))
-    }
-
     @Test
     fun `creating a person from request body creates a message account`() {
         val body =

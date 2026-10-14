@@ -860,7 +860,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val user = AuthenticatedUser.SystemInternalUser
-                val _ = personService.getUpToDatePersonFromVtj(tx, user, person)
+                val _ = personService.getUpToDatePersonFromVtj(tx, user, now, person)
                 val _ = personService.getGuardians(tx, user, now, person)
                 val _ = personService.getPersonWithChildren(tx, user, now, person)
             }

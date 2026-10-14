@@ -83,7 +83,12 @@ class DvvModificationsService(
                         }
 
                         is RestrictedInfoDvvInfoGroup -> {
-                            handleRestrictedInfo(db, personModifications.henkilotunnus, infoGroup)
+                            handleRestrictedInfo(
+                                db,
+                                clock,
+                                personModifications.henkilotunnus,
+                                infoGroup,
+                            )
                         }
 
                         is SsnDvvInfoGroup -> {
@@ -211,7 +216,7 @@ class DvvModificationsService(
             tx.getPersonBySSN(ssn)?.let { person ->
                 val dateOfDeath = deathDvvInfoGroup.kuolinpv.asLocalDate()
                 logger.info { "Dvv modification for ${person.id}: marking dead since $dateOfDeath" }
-                tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
+                tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath), clock.now())
 
                 endFamilyRelations(tx, person.id, dateOfDeath, clock)
                 asyncJobRunner.plan(
@@ -287,6 +292,7 @@ class DvvModificationsService(
 
     private fun handleRestrictedInfo(
         db: Database.Connection,
+        clock: EvakaClock,
         ssn: String,
         restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup,
     ) {
@@ -312,7 +318,8 @@ class DvvModificationsService(
                         municipalityOfResidence =
                             if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
                             else it.municipalityOfResidence,
-                    )
+                    ),
+                    clock.now(),
                 )
             }
         }

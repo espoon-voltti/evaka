@@ -298,6 +298,7 @@ fun savePaperApplication(
                     .getOrCreatePerson(
                         tx,
                         user,
+                        clock.now(),
                         Ssn.parse(body.guardianSsn) ?: throw BadRequest("Invalid guardian SSN"),
                         audit = null,
                     )

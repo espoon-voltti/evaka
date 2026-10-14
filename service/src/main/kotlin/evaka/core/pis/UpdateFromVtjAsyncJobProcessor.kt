@@ -42,6 +42,7 @@ class UpdateFromVtjAsyncJobProcessor(
                 personService.getOrCreatePerson(
                     tx,
                     AuthenticatedUser.SystemInternalUser,
+                    evakaClock.now(),
                     ssn,
                     audit = null,
                 )

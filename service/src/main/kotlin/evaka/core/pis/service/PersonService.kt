@@ -5,23 +5,21 @@
 package evaka.core.pis.service
 
 import evaka.core.AuditContext
-import evaka.core.daycare.controllers.AdditionalInformation
-import evaka.core.daycare.controllers.Child
-import evaka.core.daycare.createChild
-import evaka.core.daycare.getChild
 import evaka.core.decision.DecisionSendAddress
 import evaka.core.identity.Ssn
+import evaka.core.identity.getDobFromSsn
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pis.createPersonFromVtj
+import evaka.core.pis.applyDependants
+import evaka.core.pis.applyGuardians
+import evaka.core.pis.applyPerson
 import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.lockPersonBySSN
+import evaka.core.pis.setSsnFromVtj
 import evaka.core.pis.splitFirstNames
 import evaka.core.pis.updateNonSsnPersonDetails
-import evaka.core.pis.updatePersonFromVtj
 import evaka.core.pis.updatePersonNonVtjDetails
 import evaka.core.pis.updatePersonSsnAddingDisabled
 import evaka.core.s3.Document
@@ -37,15 +35,12 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.Rectangle
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
-import evaka.core.vtjclient.dto.VtjPersonDTO
+import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.service.persondetails.VtjClient
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import kotlin.reflect.full.memberProperties
+import java.util.UUID
 import org.springframework.stereotype.Service
-
-private val logger = KotlinLogging.logger {}
 
 @Service
 class PersonService(private val vtjClient: VtjClient) {
@@ -53,16 +48,14 @@ class PersonService(private val vtjClient: VtjClient) {
     fun getUpToDatePersonFromVtj(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         id: PersonId,
     ): PersonDTO? {
         val person = tx.getPersonById(id) ?: return null
-        return if (person.ssn != null) {
-            val personDetails =
-                vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, person.ssn))
-            upsertVtjPerson(tx, personDetails.mapToDto())
-        } else {
-            person
-        }
+        if (person.ssn == null) return person
+        val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, person.ssn))
+        val _ = applyFromVtj(tx, now, vtjPerson)
+        return tx.getPersonById(id)
     }
 
     fun personsLiveInTheSameAddress(
@@ -121,24 +114,21 @@ class PersonService(private val vtjClient: VtjClient) {
         forceRefresh: Boolean = false,
     ): PersonWithChildrenDTO? {
         val guardian = tx.getPersonById(id) ?: return null
+        if (guardian.ssn == null) return toPersonWithChildrenDTO(guardian)
 
-        return if (guardian.ssn == null) {
-            toPersonWithChildrenDTO(guardian)
-        } else if (forceRefresh || guardian.vtjDependantsQueried == null) {
-            val (vtjGuardian, vtjChildren) = getPersonWithDependants(user, guardian.ssn)
-            val (upsertedGuardian, children) = upsertVtjChildren(tx, now, vtjGuardian, vtjChildren)
-            toPersonWithChildrenDTO(
-                upsertedGuardian,
-                children,
-                guardian.preferredName,
-                guardian.phone,
-                guardian.backupPhone,
-                guardian.email,
-            )
-        } else {
-            val children = tx.getGuardianDependants(id).map { toPersonWithChildrenDTO(it) }
-            toPersonWithChildrenDTO(guardian).copy(children = children)
+        if (forceRefresh || guardian.vtjDependantsQueried == null) {
+            val snapshot =
+                vtjClient.fetchWithDependants(
+                    VtjClient.DetailsQuery(user.evakaUserId, guardian.ssn)
+                )
+            val children = fetchRelativesInFull(user, snapshot.relatives)
+            val guardianId = applyFromVtj(tx, now, snapshot.person)
+            val childIds = children.map { applyFromVtj(tx, now, it) }.toSet()
+            tx.applyDependants(guardianId, childIds, now)
         }
+
+        val children = tx.getGuardianDependants(id).map { toPersonWithChildrenDTO(it) }
+        return tx.getPersonById(id)?.let { toPersonWithChildrenDTO(it).copy(children = children) }
     }
 
     // Does a request to VTJ if SSN is present
@@ -150,15 +140,18 @@ class PersonService(private val vtjClient: VtjClient) {
         forceRefresh: Boolean = false,
     ): List<PersonDTO> {
         val child = tx.getPersonById(id) ?: return emptyList()
+        if (child.ssn == null) return emptyList()
 
-        return if (child.ssn == null) {
-            emptyList()
-        } else if (forceRefresh || child.vtjGuardiansQueried == null) {
-            val (vtjChild, vtjGuardians) = getPersonWithGuardians(user, child.ssn)
-            upsertVtjGuardians(tx, now, vtjChild, vtjGuardians).map(::toPersonDTO)
-        } else {
-            tx.getDependantGuardians(id)
+        if (forceRefresh || child.vtjGuardiansQueried == null) {
+            val snapshot =
+                vtjClient.fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, child.ssn))
+            val guardians = fetchRelativesInFull(user, snapshot.relatives)
+            val childId = applyFromVtj(tx, now, snapshot.person)
+            val guardianIds = guardians.map { applyFromVtj(tx, now, it) }.toSet()
+            tx.applyGuardians(childId, guardianIds, now)
         }
+
+        return tx.getDependantGuardians(id)
     }
 
     // In extremely rare cases there might be more than 2 guardians, but it was agreed with product
@@ -180,6 +173,7 @@ class PersonService(private val vtjClient: VtjClient) {
     fun getOrCreatePerson(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         ssn: Ssn,
         readonly: Boolean = false,
         audit: AuditContext?,
@@ -187,10 +181,10 @@ class PersonService(private val vtjClient: VtjClient) {
         val person = tx.getPersonBySSN(ssn.value)
         audit?.add(listOfNotNull(person?.id))
         return if (person?.updatedFromVtj == null) {
-            val personDetails = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-            if (readonly) return toPersonDTO(personDetails.mapToDto())
+            val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
+            if (readonly) return toPreviewPersonDTO(vtjPerson)
 
-            upsertVtjPerson(tx, personDetails.mapToDto())
+            val _ = applyFromVtj(tx, now, vtjPerson)
             tx.getPersonBySSN(ssn.value).also {
                 audit?.add(listOfNotNull(it?.id))?.addMeta("created", person == null)
             }
@@ -216,6 +210,7 @@ class PersonService(private val vtjClient: VtjClient) {
     fun addSsn(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         id: PersonId,
         ssn: Ssn,
     ): PersonDTO {
@@ -228,14 +223,11 @@ class PersonService(private val vtjClient: VtjClient) {
             throw Conflict("User with same ssn already exists")
         }
 
-        val personDetails = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-
-        val updatedPerson =
-            getPersonWithUpdatedProperties(personDetails.mapToDto(), person.copy(ssn = ssn))
+        val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
 
         tx.updatePersonSsnAddingDisabled(id, false)
-        tx.updatePersonFromVtj(updatedPerson)
-        return upsertVtjPerson(tx, personDetails.mapToDto())
+        val _ = tx.setSsnFromVtj(id, vtjPerson, now)
+        return tx.getPersonById(id)!!
     }
 
     fun disableSsn(tx: Database.Transaction, personId: PersonId, disabled: Boolean) {
@@ -248,103 +240,41 @@ class PersonService(private val vtjClient: VtjClient) {
         tx.updatePersonSsnAddingDisabled(personId, disabled)
     }
 
-    // Does a request to VTJ
-    private fun getPersonWithDependants(
-        user: AuthenticatedUser,
-        ssn: Ssn,
-    ): Pair<VtjPersonDTO, List<VtjPersonDTO>> {
-        val result = vtjClient.fetchWithDependants(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-        return result.person.mapToDto() to fetchRelativesInFull(user, result.relatives)
-    }
-
-    // Does a request to VTJ
-    private fun getPersonWithGuardians(
-        user: AuthenticatedUser,
-        ssn: Ssn,
-    ): Pair<VtjPersonDTO, List<VtjPersonDTO>> {
-        val result = vtjClient.fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-        return result.person.mapToDto() to fetchRelativesInFull(user, result.relatives)
-    }
+    private fun applyFromVtj(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime,
+        person: VtjPerson,
+    ): PersonId = tx.applyPerson(person, now).id
 
     private fun fetchRelativesInFull(
         user: AuthenticatedUser,
         relatives: List<VtjRelative>,
-    ): List<VtjPersonDTO> = relatives.map {
-        vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn)).mapToDto()
+    ): List<VtjPerson> = relatives.map {
+        vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
     }
 
-    private fun toPersonDTO(person: VtjPersonDTO): PersonDTO =
+    private fun toPreviewPersonDTO(person: VtjPerson): PersonDTO =
         PersonDTO(
-            id = PersonId(person.id),
+            id = PersonId(UUID(0, 0)),
             duplicateOf = null,
             ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN"),
             ssnAddingDisabled = false,
-            firstName = person.firstName,
+            firstName = person.firstNames,
             lastName = person.lastName,
             preferredName = "",
             email = null,
             phone = "",
             backupPhone = "",
             language = person.nativeLanguage?.toString(),
-            dateOfBirth = person.dateOfBirth,
+            dateOfBirth = getDobFromSsn(person.socialSecurityNumber),
             dateOfDeath = person.dateOfDeath,
-            streetAddress = person.streetAddress,
-            postalCode = person.postalCode,
-            postOffice = person.postOffice,
-            residenceCode = person.residenceCode,
-            municipalityOfResidence = person.municipalityOfResidence,
-            restrictedDetailsEnabled = person.restrictedDetailsEnabled,
-            restrictedDetailsEndDate = person.restrictedDetailsEndDate,
-        )
-
-    private fun toPersonWithChildrenDTO(
-        person: VtjPersonDTO,
-        children: List<VtjPersonDTO> = emptyList(),
-        preferredName: String = "",
-        phone: String = "",
-        backupPhone: String = "",
-        email: String? = null,
-    ): PersonWithChildrenDTO =
-        PersonWithChildrenDTO(
-            id = PersonId(person.id),
-            duplicateOf = null,
-            socialSecurityNumber = person.socialSecurityNumber,
-            firstName = person.firstName,
-            lastName = person.lastName,
-            preferredName = preferredName,
-            dateOfBirth = person.dateOfBirth,
-            dateOfDeath = person.dateOfDeath,
-            nationalities = person.nationalities.toSet(),
-            nativeLanguage = person.nativeLanguage,
-            restrictedDetails =
-                RestrictedDetails(
-                    enabled = person.restrictedDetailsEnabled,
-                    endDate = person.restrictedDetailsEndDate,
-                ),
-            address =
-                if (hasAddress(person) && !hasRestriction(person)) {
-                    PersonAddressDTO(
-                        origin = PersonAddressDTO.Origin.VTJ,
-                        streetAddress = person.streetAddress,
-                        postalCode = person.postalCode,
-                        postOffice = person.postOffice,
-                        residenceCode = person.residenceCode,
-                    )
-                } else {
-                    PersonAddressDTO(
-                        origin = PersonAddressDTO.Origin.VTJ,
-                        streetAddress = "",
-                        postalCode = "",
-                        postOffice = "",
-                        residenceCode = "",
-                    )
-                },
-            residenceCode = person.residenceCode,
-            municipalityOfResidence = person.municipalityOfResidence,
-            phone = phone,
-            backupPhone = backupPhone,
-            email = email,
-            children = children.map { toPersonWithChildrenDTO(it) },
+            streetAddress = person.address?.streetAddress ?: "",
+            postalCode = person.address?.postalCode ?: "",
+            postOffice = person.address?.postOffice ?: "",
+            residenceCode = person.residenceCode ?: "",
+            municipalityOfResidence = person.municipalityOfResidence ?: "",
+            restrictedDetailsEnabled = person.restrictedDetails?.enabled ?: false,
+            restrictedDetailsEndDate = person.restrictedDetails?.endDate,
         )
 
     private fun toPersonWithChildrenDTO(person: PersonDTO): PersonWithChildrenDTO =
@@ -375,11 +305,6 @@ class PersonService(private val vtjClient: VtjClient) {
             email = person.email,
             children = emptyList(),
         )
-
-    private fun hasRestriction(person: VtjPersonDTO) = person.restrictedDetailsEnabled
-
-    private fun hasAddress(person: VtjPersonDTO): Boolean =
-        setOf(person.streetAddress, person.postalCode, person.postOffice).all(String::isNotBlank)
 }
 
 data class PersonDTO(
@@ -413,28 +338,7 @@ data class PersonDTO(
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
     val ophPersonOid: String? = "",
-) {
-    fun toVtjPersonDTO() =
-        VtjPersonDTO(
-            id = this.id.raw,
-            firstName = this.firstName,
-            lastName = this.lastName,
-            dateOfBirth = this.dateOfBirth,
-            dateOfDeath = this.dateOfDeath,
-            socialSecurityNumber = checkNotNull(this.ssn) { "Person $id has no SSN" }.value,
-            restrictedDetailsEndDate = this.restrictedDetailsEndDate,
-            restrictedDetailsEnabled = this.restrictedDetailsEnabled,
-            nativeLanguage = NativeLanguage(code = this.language ?: ""),
-            streetAddress = this.streetAddress,
-            postalCode = this.postalCode,
-            postOffice = this.postOffice,
-            streetAddressSe = "",
-            postOfficeSe = "",
-            residenceCode = this.residenceCode,
-            municipalityOfResidence = this.municipalityOfResidence,
-            municipalityOfResidenceSe = "",
-        )
-}
+)
 
 fun PersonDTO.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
     this.let {
@@ -668,175 +572,6 @@ data class PersonAddressDTO(
 }
 
 data class RestrictedDetails(val enabled: Boolean, val endDate: LocalDate? = null)
-
-private fun upsertVtjGuardians(
-    tx: Database.Transaction,
-    now: HelsinkiDateTime,
-    vtjPersonDTO: VtjPersonDTO,
-    vtjGuardians: List<VtjPersonDTO>,
-): List<VtjPersonDTO> {
-    val child = upsertVtjPerson(tx, vtjPersonDTO)
-    initChildIfNotExists(tx, now, child.id)
-    val guardians =
-        vtjGuardians
-            .map { upsertVtjPerson(tx, it) }
-            .filterNot { tx.isGuardianBlocked(it.id, child.id) }
-    val changes = tx.replaceChildGuardians(child.id, guardians.map { it.id }.toSet())
-    tx.updateVtjGuardiansQueriedTimestamp(child.id)
-    logger.info {
-        "Created or replaced child ${child.id} guardians as ${guardians.map { it.id }} (added ${changes.added}, removed ${changes.removed})"
-    }
-    return guardians.map { it.toVtjPersonDTO() }
-}
-
-private fun upsertVtjChildren(
-    tx: Database.Transaction,
-    now: HelsinkiDateTime,
-    vtjPersonDTO: VtjPersonDTO,
-    vtjChildren: List<VtjPersonDTO>,
-): Pair<VtjPersonDTO, List<VtjPersonDTO>> {
-    val guardian = upsertVtjPerson(tx, vtjPersonDTO)
-    val children =
-        vtjChildren
-            .map {
-                upsertVtjPerson(tx, it).also { child -> initChildIfNotExists(tx, now, child.id) }
-            }
-            .filterNot { tx.isGuardianBlocked(guardian.id, it.id) }
-    val changes = tx.replaceGuardianChildren(guardian.id, children.map { it.id }.toSet())
-    tx.updateVtjDependantsQueriedTimestamp(guardian.id)
-    logger.info {
-        "Created or replaced guardian ${guardian.id} children as ${children.map { it.id }} (added ${changes.added}, removed ${changes.removed})"
-    }
-
-    return guardian.toVtjPersonDTO() to children.map { it.toVtjPersonDTO() }
-}
-
-@IgnorableReturnValue
-private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): PersonDTO {
-    val existingPerson = tx.lockPersonBySSN(inputPerson.socialSecurityNumber)
-
-    return if (existingPerson == null) {
-        val newPerson = newPersonFromVtjData(inputPerson)
-        createPersonFromVtj(tx, newPerson)
-    } else {
-        val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
-        val changedFields =
-            PersonDTO::class
-                .memberProperties
-                .filter { it.get(existingPerson) != it.get(updatedPerson) }
-                .map { it.name }
-        if (changedFields.isNotEmpty()) {
-            logger.info {
-                "Updated person ${existingPerson.id} from VTJ, changed fields: $changedFields"
-            }
-        }
-        tx.updatePersonFromVtj(updatedPerson)
-    }
-}
-
-private fun initChildIfNotExists(
-    tx: Database.Transaction,
-    now: HelsinkiDateTime,
-    childId: ChildId,
-) {
-    if (tx.getChild(childId) == null) {
-        tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()), now)
-    }
-}
-
-private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO =
-    PersonDTO(
-        id = PersonId(inputPerson.id), // This will be overwritten
-        duplicateOf = null,
-        ssn = Ssn.parse(inputPerson.socialSecurityNumber) ?: error("VTJ returned an invalid SSN"),
-        ssnAddingDisabled = false,
-        firstName = inputPerson.firstName,
-        lastName = inputPerson.lastName,
-        preferredName = "",
-        streetAddress = getStreetAddressByLanguage(inputPerson),
-        postalCode = inputPerson.postalCode,
-        postOffice = getPostOfficeByLanguage(inputPerson),
-        residenceCode = inputPerson.residenceCode,
-        municipalityOfResidence = getMunicipalityOfResidenceByLanguage(inputPerson),
-        restrictedDetailsEnabled = inputPerson.restrictedDetailsEnabled,
-        restrictedDetailsEndDate = inputPerson.restrictedDetailsEndDate,
-        nationalities = inputPerson.nationalities.map { it.countryCode },
-        language = inputPerson.nativeLanguage?.code ?: "",
-        dateOfBirth = inputPerson.dateOfBirth,
-        dateOfDeath = inputPerson.dateOfDeath,
-        email = null,
-        phone = "",
-        backupPhone = "",
-    )
-
-private fun getPersonWithUpdatedProperties(
-    sourcePerson: VtjPersonDTO,
-    existingPerson: PersonDTO,
-): PersonDTO =
-    existingPerson.copy(
-        firstName = sourcePerson.firstName,
-        lastName = sourcePerson.lastName,
-        dateOfBirth = sourcePerson.dateOfBirth,
-        dateOfDeath = sourcePerson.dateOfDeath,
-        streetAddress = getStreetAddressByLanguage(sourcePerson),
-        postalCode = sourcePerson.postalCode,
-        postOffice = getPostOfficeByLanguage(sourcePerson),
-        residenceCode = sourcePerson.residenceCode,
-        municipalityOfResidence = sourcePerson.municipalityOfResidence,
-        restrictedDetailsEnabled = sourcePerson.restrictedDetailsEnabled,
-        restrictedDetailsEndDate = sourcePerson.restrictedDetailsEndDate,
-        nationalities = sourcePerson.nationalities.map { it.countryCode },
-        language = sourcePerson.nativeLanguage?.code ?: "",
-    )
-
-private fun getStreetAddressByLanguage(vtjPerson: VtjPersonDTO): String {
-    if (vtjPerson.nativeLanguage == null || vtjPerson.streetAddressSe == "") {
-        return vtjPerson.streetAddress
-    }
-
-    return when (vtjPerson.nativeLanguage.code) {
-        "sv" -> vtjPerson.streetAddressSe
-        else -> vtjPerson.streetAddress
-    }
-}
-
-private fun getPostOfficeByLanguage(vtjPerson: VtjPersonDTO): String {
-    if (vtjPerson.nativeLanguage == null || vtjPerson.postOfficeSe == "") {
-        return vtjPerson.postOffice
-    }
-
-    return when (vtjPerson.nativeLanguage.code) {
-        "sv" -> vtjPerson.postOfficeSe
-        else -> vtjPerson.postOffice
-    }
-}
-
-private fun getMunicipalityOfResidenceByLanguage(vtjPerson: VtjPersonDTO): String {
-    if (vtjPerson.nativeLanguage == null || vtjPerson.municipalityOfResidenceSe == "") {
-        return vtjPerson.municipalityOfResidence
-    }
-
-    return when (vtjPerson.nativeLanguage.code) {
-        "sv" -> vtjPerson.municipalityOfResidenceSe
-        else -> vtjPerson.municipalityOfResidence
-    }
-}
-
-private fun Database.Transaction.updateVtjDependantsQueriedTimestamp(personId: PersonId) =
-    createUpdate {
-        sql(
-            "UPDATE person SET vtj_dependants_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
-        )
-    }
-    .execute()
-
-private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: ChildId) =
-    createUpdate {
-        sql(
-            "UPDATE person SET vtj_guardians_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
-        )
-    }
-    .execute()
 
 fun createAddressPagePdf(
     pdfGenerator: PdfGenerator,

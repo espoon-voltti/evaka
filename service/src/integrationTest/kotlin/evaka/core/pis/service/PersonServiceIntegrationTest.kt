@@ -84,7 +84,12 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `getUpToDatePersonFromVtj fetches person vtj info only once`() {
         MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonWithoutVtjChildren)
         db.transaction {
-            personService.getUpToDatePersonFromVtj(it, user, testPersonWithoutVtjChildren.id)
+            personService.getUpToDatePersonFromVtj(
+                it,
+                user,
+                HelsinkiDateTime.now(),
+                testPersonWithoutVtjChildren.id,
+            )
         }
         assertEquals(
             1,

@@ -252,52 +252,6 @@ RETURNING id
         .exactlyOne<PersonId>()
 }
 
-fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
-    val p = person.copy(updatedFromVtj = HelsinkiDateTime.now())
-    return createQuery {
-            sql(
-                """
-INSERT INTO person (
-    first_name,
-    last_name,
-    date_of_birth,
-    date_of_death,
-    social_security_number,
-    language,
-    nationalities,
-    street_address,
-    postal_code,
-    post_office,
-    residence_code,
-    municipality_of_residence,
-    restricted_details_enabled,
-    restricted_details_end_date,
-    updated_from_vtj
-)
-VALUES (
-    ${bind(p.firstName)},
-    ${bind(p.lastName)},
-    ${bind(p.dateOfBirth)},
-    ${bind(p.dateOfDeath)},
-    ${bind(p.ssn)},
-    ${bind(p.language)},
-    ${bind(p.nationalities)},
-    ${bind(p.streetAddress)},
-    ${bind(p.postalCode)},
-    ${bind(p.postOffice)},
-    ${bind(p.residenceCode)},
-    ${bind(p.municipalityOfResidence)},
-    ${bind(p.restrictedDetailsEnabled)},
-    ${bind(p.restrictedDetailsEndDate)},
-    ${bind(p.updatedFromVtj)}
-)
-RETURNING *
-"""
-            )
-        }
-        .exactlyOne(toPersonDTO)
-}
-
 fun Database.Transaction.duplicatePerson(id: PersonId): PersonId? = createUpdate {
     sql(
         """
@@ -363,8 +317,8 @@ RETURNING id
     .exactlyOneOrNull<PersonId>()
 
 @IgnorableReturnValue
-fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
-    val p = person.copy(updatedFromVtj = HelsinkiDateTime.now())
+fun Database.Transaction.updatePersonFromVtj(person: PersonDTO, now: HelsinkiDateTime): PersonDTO {
+    val p = person.copy(updatedFromVtj = now)
     return createQuery {
             sql(
                 """
@@ -469,7 +423,7 @@ fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: Ssn) {
         .execute()
 }
 
-private val toPersonDTO: Row.() -> PersonDTO = {
+internal val toPersonDTO: Row.() -> PersonDTO = {
     PersonDTO(
         id = PersonId(column("id")),
         duplicateOf = column<UUID?>("duplicate_of")?.let { PersonId(it) },
