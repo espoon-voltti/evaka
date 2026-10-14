@@ -359,7 +359,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(listOf(child.id), result.childrenFrozenForVarda)
 
         // The fee decision child and parentship rows of the adult's data hold the child row, and
-        // with it the placements, backup placements and guardianships the child row bundles
+        // with it the placements, backup placements and guardianships that must be deleted with it
         assertEquals(
             setOf(
                 "person",

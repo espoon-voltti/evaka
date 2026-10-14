@@ -45,7 +45,7 @@ internal fun table(
     vararg secondary: Pair<String, String>,
     optional: List<Reference> = emptyList(),
     expirationRule: ExpirationRule = Always,
-    bundledBy: String? = null,
+    deletedWithParent: Boolean = false,
     independentRows: Boolean = false,
     identifiedByCols: List<String> = listOf("id"),
     auditIdType: KClass<out DatabaseTable>? =
@@ -62,7 +62,7 @@ internal fun table(
             ) +
                 secondary.map { secondaryReference(it.first, referencedTable = it.second) } +
                 optional,
-        bundledBy = bundledBy,
+        deletedWithParent = deletedWithParent,
         independentRows = independentRows,
         identifiedByCols = identifiedByCols,
         auditIdType = auditIdType,
