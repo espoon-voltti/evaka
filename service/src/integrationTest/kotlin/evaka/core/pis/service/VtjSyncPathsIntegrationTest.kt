@@ -56,6 +56,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -181,42 +183,56 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `VTJ button on an adult refreshes the dependants and adds them to the fridge family`() {
+    fun `VTJ button on a citizen refreshes the dependants and adds them to the fridge family`() {
         db.transaction { tx ->
-            tx.insert(a, DevPersonType.ADULT)
+            tx.insertCitizen(a)
             tx.insert(x, DevPersonType.CHILD)
         }
 
         personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, a.id)
 
-        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a)
         assertPersons(a, x)
         assertGuardians(a to x)
         assertFridgeChildren(a to x)
     }
 
     @Test
-    fun `VTJ button on a child refreshes the families of all guardians`() {
-        db.transaction { tx ->
-            tx.insert(a, DevPersonType.ADULT)
-            tx.insert(x, DevPersonType.CHILD)
-        }
+    fun `VTJ button on a leaf adult refreshes the dependants and adds them to the fridge family`() {
+        db.transaction { tx -> tx.insert(b, DevPersonType.RAW_ROW) }
 
-        personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, x.id)
+        personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, b.id)
 
-        // This will be changed later: refreshing leaf guardian B should not create Z or B's fridge
-        // family
         MockVtjSoapTransport.assertRequests(
-            HUOLLETTAVA_HUOLTAJAT to x,
-            PERUSSANOMA3 to a,
-            PERUSSANOMA3 to b,
-            HUOLTAJA_HUOLLETTAVA to a,
-            PERUSSANOMA3 to x,
             HUOLTAJA_HUOLLETTAVA to b,
             PERUSSANOMA3 to x,
             PERUSSANOMA3 to z,
         )
-        assertPersons(a, b, x, z)
+        assertPersons(b, x, z)
+        assertGuardians(b to x, b to z)
+        assertFridgeChildren(b to z)
+    }
+
+    @Test
+    fun `VTJ button on a child refreshes the families of its current guardians`() {
+        db.transaction { tx ->
+            tx.insertCitizen(a)
+            tx.insert(c, DevPersonType.RAW_ROW)
+            tx.insert(x, DevPersonType.CHILD)
+            // C is no longer a guardian of X in VTJ, so the refresh does not query C
+            tx.insert(DevGuardian(guardianId = c.id, childId = x.id))
+        }
+
+        personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, x.id)
+
+        MockVtjSoapTransport.assertRequests(
+            HUOLLETTAVA_HUOLTAJAT to x,
+            PERUSSANOMA3 to b,
+            HUOLTAJA_HUOLLETTAVA to a,
+            HUOLTAJA_HUOLLETTAVA to b,
+            PERUSSANOMA3 to z,
+        )
+        assertPersons(a, b, c, x, z)
         assertGuardians(a to x, b to x, b to z)
         assertFridgeChildren(a to x, b to z)
     }
@@ -239,58 +255,84 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             PersonController.EvakaRightsRequest(guardianId = b.id, denied = false),
         )
 
-        MockVtjSoapTransport.assertRequests(
-            HUOLLETTAVA_HUOLTAJAT to x,
-            PERUSSANOMA3 to a,
-            PERUSSANOMA3 to b,
-        )
+        MockVtjSoapTransport.assertRequests(HUOLLETTAVA_HUOLTAJAT to x)
         assertPersons(a, b, x)
         assertGuardians(a to x, b to x)
         assertFridgeChildren()
     }
 
     @Test
-    fun `UpdateFromVtj on a leaf guardian creates the guardian's other children`() {
+    fun `UpdateFromVtj on a leaf guardian refreshes only the basic details and clears the dependants marker`() {
         insertFamilyOfA()
+        db.transaction { it.setVtjDependantsQueried(b) }
 
         runUpdateFromVtj(b)
 
-        // This will be changed later: B is a leaf guardian, so Z should not be created
-        MockVtjSoapTransport.assertRequests(
-            HUOLTAJA_HUOLLETTAVA to b,
-            PERUSSANOMA3 to x,
-            PERUSSANOMA3 to z,
-        )
-        assertPersons(a, b, x, z)
-        assertGuardians(a to x, b to x, b to z)
-        assertFridgeChildren(b to z)
+        MockVtjSoapTransport.assertRequests(PERUSSANOMA3 to b)
+        assertPersons(a, b, x)
+        assertGuardians(a to x, b to x)
+        assertFridgeChildren()
+        assertNull(db.read { it.getPersonBySSN(b.ssn!!) }?.vtjDependantsQueried)
     }
 
     @Test
-    fun `UpdateFromVtj on a child queries the child's dependants, not the guardians`() {
+    fun `UpdateFromVtj on a citizen refreshes the dependants and adds them to the fridge family`() {
+        insertFamilyOfA()
+
+        runUpdateFromVtj(a)
+
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a)
+        assertPersons(a, b, x)
+        assertGuardians(a to x, b to x)
+        assertFridgeChildren(a to x)
+    }
+
+    @Test
+    fun `UpdateFromVtj on a child queries the child's guardians and adds it to the citizen's family`() {
         insertFamilyOfA()
 
         runUpdateFromVtj(x)
 
-        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to x)
+        MockVtjSoapTransport.assertRequests(HUOLLETTAVA_HUOLTAJAT to x)
         assertPersons(a, b, x)
         assertGuardians(a to x, b to x)
-        assertFridgeChildren()
+        assertFridgeChildren(a to x)
     }
 
     @Test
-    fun `UpdateFromVtj on an unknown SSN creates the person and the dependants`() {
-        runUpdateFromVtj(b)
+    fun `UpdateFromVtj on a minor citizen creates the new child and adds it to the minor's family`() {
+        val p = person("010170-903M", "Pertti", "Kotikatu 1")
+        val m = person("010609A901V", "Minna", "Kotikatu 1")
+        val y = person("011025A9028", "Ykä", "Kotikatu 1")
+        addToVtj(p, dependants = listOf(m))
+        addToVtj(m, dependants = listOf(y), guardians = listOf(p))
+        addToVtj(y, guardians = listOf(m))
+        db.transaction { tx ->
+            tx.insert(p, DevPersonType.RAW_ROW)
+            tx.insertCitizen(m)
+            tx.insert(DevGuardian(guardianId = p.id, childId = m.id))
+        }
+
+        runUpdateFromVtj(m)
 
         MockVtjSoapTransport.assertRequests(
-            PERUSSANOMA3 to b,
-            HUOLTAJA_HUOLLETTAVA to b,
-            PERUSSANOMA3 to x,
-            PERUSSANOMA3 to z,
+            HUOLLETTAVA_HUOLTAJAT to m,
+            HUOLTAJA_HUOLLETTAVA to m,
+            PERUSSANOMA3 to y,
         )
-        assertPersons(b, x, z)
-        assertGuardians(b to x, b to z)
-        assertFridgeChildren(b to z)
+        assertPersons(p, m, y)
+        assertGuardians(p to m, m to y)
+        assertFridgeChildren(m to y)
+    }
+
+    @Test
+    fun `UpdateFromVtj on an SSN that is not in eVaka does nothing`() {
+        runUpdateFromVtj(b)
+
+        MockVtjSoapTransport.assertRequests()
+        assertPersons()
+        assertGuardians()
+        assertFridgeChildren()
     }
 
     @Test
@@ -329,7 +371,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         runDvvUpdate(restricted)
 
-        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to restricted)
+        MockVtjSoapTransport.assertRequests(PERUSSANOMA3 to restricted)
         assertTrue(db.read { it.getPersonBySSN(restricted.ssn!!) }!!.restrictedDetailsEnabled)
         assertPersons(restricted)
         assertGuardians()
@@ -351,7 +393,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `DVV HUOLTAJA_SUPPEA on a child refreshes the guardian named in the event`() {
+    fun `DVV HUOLTAJA_SUPPEA on a child refreshes the guardians of the child`() {
         val guardian = person("060180-999J", "Huoltaja", "Kotikatu 1")
         val child = person("060118A999J", "Lapsi", "Kotikatu 1")
         db.transaction { tx -> tx.insert(child, DevPersonType.CHILD) }
@@ -361,28 +403,17 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         runDvvUpdate(child)
 
         MockVtjSoapTransport.assertRequests(
+            HUOLLETTAVA_HUOLTAJAT to child,
             PERUSSANOMA3 to guardian,
-            HUOLTAJA_HUOLLETTAVA to guardian,
-            PERUSSANOMA3 to child,
         )
         assertPersons(guardian, child)
         assertGuardians(guardian to child)
-        assertFridgeChildren(guardian to child)
+        assertFridgeChildren()
     }
 
     @Test
-    fun `placement tool with a new child creates the child and refreshes the families of all guardians`() {
-        placementToolService.createPlacementToolApplicationsFromSsn(
-            db,
-            clock,
-            AsyncJob.PlacementToolFromSSN(
-                admin.user,
-                x.ssn!!,
-                daycare.id,
-                null,
-                PreschoolTermId(UUID.randomUUID()),
-            ),
-        )
+    fun `placement tool with a new child creates the child and sets up the families of all guardians`() {
+        runPlacementTool(x)
 
         MockVtjSoapTransport.assertRequests(
             PERUSSANOMA3 to x,
@@ -390,14 +421,57 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             PERUSSANOMA3 to a,
             PERUSSANOMA3 to b,
             HUOLTAJA_HUOLLETTAVA to a,
-            PERUSSANOMA3 to x,
             HUOLTAJA_HUOLLETTAVA to b,
-            PERUSSANOMA3 to x,
             PERUSSANOMA3 to z,
         )
         assertPersons(a, b, x, z)
         assertGuardians(a to x, b to x, b to z)
         assertFridgeChildren(a to x, b to z)
+    }
+
+    @Test
+    fun `placement tool with a child whose guardians are synced sets up no family`() {
+        db.transaction { tx ->
+            tx.insertCitizen(a)
+            tx.insert(x, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = a.id, childId = x.id))
+            tx.setVtjGuardiansQueried(x)
+        }
+
+        runPlacementTool(x)
+
+        MockVtjSoapTransport.assertRequests()
+        assertPersons(a, x)
+        assertGuardians(a to x)
+        assertFridgeChildren()
+    }
+
+    @Test
+    fun `placement tool sets up the family of an old guardian that VTJ no longer lists`() {
+        val d = person("030182-9983", "Daniel", "Kotikatu 1")
+        addToVtj(d)
+        db.transaction { tx ->
+            tx.insert(a, DevPersonType.ADULT)
+            tx.insert(d, DevPersonType.ADULT)
+            tx.insert(x, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = a.id, childId = x.id))
+            tx.insert(DevGuardian(guardianId = d.id, childId = x.id))
+        }
+
+        runPlacementTool(x)
+
+        MockVtjSoapTransport.assertRequests(
+            HUOLLETTAVA_HUOLTAJAT to x,
+            PERUSSANOMA3 to b,
+            HUOLTAJA_HUOLLETTAVA to a,
+            HUOLTAJA_HUOLLETTAVA to d,
+            HUOLTAJA_HUOLLETTAVA to b,
+            PERUSSANOMA3 to z,
+        )
+        assertPersons(a, b, d, x, z)
+        assertGuardians(a to x, b to x, b to z)
+        assertFridgeChildren(a to x, b to z)
+        assertNotNull(db.read { it.getPersonBySSN(d.ssn!!) }?.vtjDependantsQueried)
     }
 
     @Test
@@ -479,7 +553,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     private fun insertFamilyOfA() {
         db.transaction { tx ->
-            tx.insert(a, DevPersonType.ADULT)
+            tx.insertCitizen(a)
             tx.insert(b, DevPersonType.RAW_ROW)
             tx.insert(x, DevPersonType.CHILD)
             tx.insert(DevGuardian(guardianId = a.id, childId = x.id))
@@ -499,6 +573,20 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 person.ssn!!,
                 person.firstName,
                 person.lastName,
+            ),
+        )
+    }
+
+    private fun runPlacementTool(child: DevPerson) {
+        placementToolService.createPlacementToolApplicationsFromSsn(
+            db,
+            clock,
+            AsyncJob.PlacementToolFromSSN(
+                admin.user,
+                child.ssn!!,
+                daycare.id,
+                null,
+                PreschoolTermId(UUID.randomUUID()),
             ),
         )
     }
@@ -564,6 +652,11 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     serviceEnd = "16:00",
                 ),
         )
+
+    private fun Database.Transaction.insertCitizen(person: DevPerson) {
+        insert(person, DevPersonType.ADULT)
+        updateLastStrongLogin(clock.now(), person.id)
+    }
 
     private fun Database.Transaction.setVtjDependantsQueried(person: DevPerson) = execute {
         sql(

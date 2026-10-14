@@ -89,6 +89,23 @@ class VtjSyncService(private val vtjClient: VtjClient) {
         }
     }
 
+    /**
+     * Unlike refreshPerson, this syncs the dependants also when the person is not a dependant-sync
+     * person, and then marks them synced.
+     */
+    fun refreshPersonAndDependants(
+        dbc: Database.Connection,
+        requestingUserId: EvakaUserId,
+        clock: EvakaClock,
+        personId: PersonId,
+    ) {
+        val person = dbc.read { it.getPersonById(personId) } ?: return
+        if (person.ssn == null) return
+        if (isMinor(person.dateOfBirth, clock.today()))
+            syncGuardians(dbc, requestingUserId, clock, person.ssn)
+        syncDependants(dbc, requestingUserId, clock, person.ssn)
+    }
+
     fun applyFromVtj(tx: Database.Transaction, now: HelsinkiDateTime, person: VtjPerson): PersonId =
         tx.applyPerson(person, now).id
 

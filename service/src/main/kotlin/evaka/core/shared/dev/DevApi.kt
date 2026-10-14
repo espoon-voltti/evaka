@@ -134,7 +134,7 @@ import evaka.core.pis.Employee
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getEmployees
 import evaka.core.pis.service.PersonDTO
-import evaka.core.pis.service.PersonService
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.placement.PlacementPlanService
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.PlacementType
@@ -216,7 +216,7 @@ private val logger = KotlinLogging.logger {}
 @RestController
 @RequestMapping("/dev-api")
 class DevApi(
-    private val personService: PersonService,
+    private val vtjSyncService: VtjSyncService,
     private val asyncJobRunners: List<AsyncJobRunner<*>>,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
@@ -856,14 +856,13 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @PostMapping("/persons/{person}/force-full-vtj-refresh")
     fun forceFullVtjRefresh(db: Database, clock: EvakaClock, @PathVariable person: PersonId) {
-        val now = clock.now()
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                val user = AuthenticatedUser.SystemInternalUser
-                val _ = personService.getUpToDatePersonFromVtj(tx, user, now, person)
-                val _ = personService.getGuardians(tx, user, now, person)
-                val _ = personService.getPersonWithChildren(tx, user, now, person)
-            }
+            vtjSyncService.refreshPerson(
+                dbc,
+                AuthenticatedUser.SystemInternalUser.evakaUserId,
+                clock,
+                person,
+            )
         }
     }
 

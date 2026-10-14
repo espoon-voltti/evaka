@@ -388,6 +388,33 @@ val modifications =
       "muutospv": "2019-09-24T21:00:00.000Z"
     }
     """,
+        "020182-998E" to
+            """
+{
+  "henkilotunnus": "020182-998E",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "HENKILOTUNNUS_KORJAUS",
+      "voimassaolo": "AKTIIVI",
+      "muutosattribuutti": "LISATTY",
+      "muutettuHenkilotunnus": "030182-9983",
+      "aktiivinenHenkilotunnus": "030182-9983",
+      "edellisetHenkilotunnukset": [
+        "020182-998E"
+      ]
+    },
+    {
+      "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+      "muutosattribuutti": "LISATTY",
+      "alkupv": {
+        "arvo": "2020-10-01",
+        "tarkkuus": "PAIVA"
+      }
+    }
+  ],
+  "muutospv": "2019-09-24T21:00:00.000Z"
+}
+    """,
         "040180-9998" to
             """
 {
