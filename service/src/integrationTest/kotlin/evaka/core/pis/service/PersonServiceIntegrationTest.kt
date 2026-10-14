@@ -86,7 +86,8 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(testPersonDependantChild, DevPersonType.CHILD)
         }
         MockVtjSoapTransport.resetQueryCounts()
-        personService = PersonService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()))
+        val vtjClient = SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper())
+        personService = PersonService(vtjClient, VtjSyncService(vtjClient))
     }
 
     @Test
@@ -169,7 +170,10 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertThrows<BadRequest> {
             db.transaction {
-                PersonService(vtjClientReturningAnotherSsn)
+                PersonService(
+                        vtjClientReturningAnotherSsn,
+                        VtjSyncService(vtjClientReturningAnotherSsn),
+                    )
                     .addSsn(it, user, now, person.id, requestedSsn)
             }
         }

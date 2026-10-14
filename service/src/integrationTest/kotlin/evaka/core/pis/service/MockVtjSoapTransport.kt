@@ -84,6 +84,10 @@ class MockVtjSoapTransport : VtjSoapTransport {
                 }
         }
 
+        fun removeRequestExpectation(person: DevPerson, type: VtjSoapTransport.RequestType) {
+            queryRequestResponse.remove(Pair(person.ssn!!, type))
+        }
+
         fun getPERUSSANOMA3RequestCount(person: DevPerson): Int {
             return queryCounts[Pair(person.ssn!!, VtjSoapTransport.RequestType.PERUSSANOMA3)] ?: 0
         }
