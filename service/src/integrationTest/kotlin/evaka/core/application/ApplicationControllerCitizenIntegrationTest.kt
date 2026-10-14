@@ -34,7 +34,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.security.Action.Citizen
 import evaka.core.test.getApplicationStatus
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.Test
@@ -72,8 +72,8 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(decisionMaker)
             tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
         }
-        MockPersonDetailsService.addPersons(adult, child)
-        MockPersonDetailsService.addDependants(adult, child)
+        MockVtjClient.addPersons(adult, child)
+        MockVtjClient.addDependants(adult, child)
     }
 
     @Test
@@ -192,8 +192,8 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 document = preschoolApplicationDocument(),
             )
         }
-        MockPersonDetailsService.addPersons(child2)
-        MockPersonDetailsService.addDependants(adult, child2)
+        MockVtjClient.addPersons(child2)
+        MockVtjClient.addDependants(adult, child2)
 
         val result =
             applicationControllerCitizen.getGuardianApplications(
@@ -226,8 +226,8 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     DaycareFormV0.fromApplication2(createTestApplicationDetails(adult, child)),
             )
         }
-        MockPersonDetailsService.addPersons(otherGuardian)
-        MockPersonDetailsService.addDependants(otherGuardian, child)
+        MockVtjClient.addPersons(otherGuardian)
+        MockVtjClient.addDependants(otherGuardian, child)
 
         val result =
             applicationControllerCitizen.getGuardianApplications(
@@ -536,7 +536,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             )
         }
 
-        MockPersonDetailsService.addPersons(fosterParent, fosterChild)
+        MockVtjClient.addPersons(fosterParent, fosterChild)
 
         val pendingDecisions =
             applicationControllerCitizen.getPendingDecisions(

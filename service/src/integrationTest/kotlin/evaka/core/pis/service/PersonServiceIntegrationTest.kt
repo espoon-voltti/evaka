@@ -12,8 +12,8 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService
+import evaka.core.vtjclient.service.persondetails.SoapVtjClient
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
 import java.time.LocalDate
 import java.util.*
 import kotlin.test.assertEquals
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 
 class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
-    private val mockVtjClientService: IVtjClientService = MockVtjClientService()
+    private val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
     private lateinit var personService: PersonService
 
     val user = AuthenticatedUser.SystemInternalUser
@@ -76,31 +76,30 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(testPersonWithVtjChildren, DevPersonType.ADULT)
             it.insert(testPersonDependantChild, DevPersonType.CHILD)
         }
-        MockVtjClientService.resetQueryCounts()
-        personService =
-            PersonService(VTJPersonDetailsService(mockVtjClientService, VtjHenkiloMapper()))
+        MockVtjSoapTransport.resetQueryCounts()
+        personService = PersonService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()))
     }
 
     @Test
     fun `getUpToDatePersonFromVtj fetches person vtj info only once`() {
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonWithoutVtjChildren)
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonWithoutVtjChildren)
         db.transaction {
             personService.getUpToDatePersonFromVtj(it, user, testPersonWithoutVtjChildren.id)
         }
         assertEquals(
             1,
-            MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren),
+            MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren),
         )
     }
 
     @Test
     fun `getPersonWithDependants fetches person and children from vtj only once`() {
-        MockVtjClientService.addHUOLTAJAHUOLLETTAVARequestExpectation(
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(
             testPersonWithVtjChildren,
             listOf(testPersonDependantChild),
         )
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonWithVtjChildren)
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonDependantChild)
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonWithVtjChildren)
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonDependantChild)
         db.transaction {
             personService.getPersonWithChildren(
                 it,
@@ -109,11 +108,11 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 testPersonWithVtjChildren.id,
             )
         }
-        assertEquals(0, MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonWithVtjChildren))
-        assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonDependantChild))
+        assertEquals(0, MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonWithVtjChildren))
+        assertEquals(1, MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonDependantChild))
         assertEquals(
             1,
-            MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(testPersonWithVtjChildren),
+            MockVtjSoapTransport.getHUOLTAJAHUOLLETTAVARequestCount(testPersonWithVtjChildren),
         )
     }
 }

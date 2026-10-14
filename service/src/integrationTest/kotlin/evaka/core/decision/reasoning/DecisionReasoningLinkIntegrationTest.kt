@@ -53,7 +53,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.security.actionrule.AccessControlFilter
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -351,8 +351,8 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 postOffice = "Espoo",
             )
 
-        MockPersonDetailsService.addPersons(guardian, child)
-        MockPersonDetailsService.addDependants(guardian, child)
+        MockVtjClient.addPersons(guardian, child)
+        MockVtjClient.addDependants(guardian, child)
 
         val (decisionId, applicationId) =
             createPlannedDecisionWithApplication(DAYCARE, guardian = guardian, child = child)

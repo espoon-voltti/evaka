@@ -52,8 +52,7 @@ data class DummyIdpVtjPerson(
         )
 }
 
-class DummyIdpPersonDetailsService(baseUrl: String, jsonMapper: JsonMapper) :
-    IPersonDetailsService {
+class DummyIdpVtjClient(baseUrl: String, jsonMapper: JsonMapper) : VtjClient {
     private val httpClient =
         buildHttpClient(
             rootUrl = URI(baseUrl),
@@ -61,13 +60,13 @@ class DummyIdpPersonDetailsService(baseUrl: String, jsonMapper: JsonMapper) :
             interceptors = listOf(headerInterceptor("Accept", "application/json")),
         )
 
-    override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): VtjPerson =
+    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson =
         fetch(query).toVtjPerson(includeGuardians = false, includeDependants = false)
 
-    override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): VtjPerson =
+    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPerson =
         fetch(query).toVtjPerson(includeGuardians = false, includeDependants = true)
 
-    override fun getPersonWithGuardians(query: IPersonDetailsService.DetailsQuery): VtjPerson =
+    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPerson =
         fetch(query).toVtjPerson(includeGuardians = true, includeDependants = false)
 
     fun clearAll() {
@@ -82,6 +81,6 @@ class DummyIdpPersonDetailsService(baseUrl: String, jsonMapper: JsonMapper) :
         httpClient.post<Unit>("idp/test-mode/exit", jsonBody = emptyMap<String, String>())
     }
 
-    private fun fetch(query: IPersonDetailsService.DetailsQuery): DummyIdpVtjPerson =
+    private fun fetch(query: VtjClient.DetailsQuery): DummyIdpVtjPerson =
         httpClient.get<DummyIdpVtjPerson>("idp/users/${query.ssn.value}")
 }

@@ -25,7 +25,7 @@ import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -85,8 +85,8 @@ class FamilyInitializerServiceIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
             tx.insert(DevGuardian(guardianId = adult.id, childId = child2.id))
         }
-        MockPersonDetailsService.addPersons(adult, child, child2)
-        MockPersonDetailsService.addDependants(adult, child, child2)
+        MockVtjClient.addPersons(adult, child, child2)
+        MockVtjClient.addDependants(adult, child, child2)
     }
 
     @Test

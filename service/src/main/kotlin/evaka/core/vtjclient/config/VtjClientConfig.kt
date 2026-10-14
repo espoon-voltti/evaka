@@ -6,28 +6,28 @@ package evaka.core.vtjclient.config
 
 import evaka.core.EvakaEnv
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.persondetails.DummyIdpPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
-import evaka.core.vtjclient.service.vtjclient.VtjClientService
+import evaka.core.vtjclient.service.persondetails.DummyIdpVtjClient
+import evaka.core.vtjclient.service.persondetails.SoapVtjClient
+import evaka.core.vtjclient.service.persondetails.VtjClient
+import evaka.core.vtjclient.service.vtjclient.XroadVtjSoapTransport
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class PersonDetailsServiceConfig {
+class VtjClientConfig {
     @Bean
-    fun pisPersonDetailsService(
+    fun vtjClient(
         evakaEnv: EvakaEnv,
         jsonMapper: tools.jackson.databind.json.JsonMapper,
         ctx: ApplicationContext,
-    ): IPersonDetailsService =
+    ): VtjClient =
         when (evakaEnv.vtjEnabled) {
             true ->
-                VTJPersonDetailsService(
-                    vtjClientService = ctx.getBean(VtjClientService::class.java),
+                SoapVtjClient(
+                    vtjSoapTransport = ctx.getBean(XroadVtjSoapTransport::class.java),
                     henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
                 )
-            false -> DummyIdpPersonDetailsService(evakaEnv.vtjMockUrl, jsonMapper)
+            false -> DummyIdpVtjClient(evakaEnv.vtjMockUrl, jsonMapper)
         }
 }

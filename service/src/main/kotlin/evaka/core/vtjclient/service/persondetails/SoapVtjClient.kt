@@ -8,23 +8,23 @@ import evaka.core.identity.Ssn
 import evaka.core.shared.domain.NotFound
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLLETTAVA_HUOLTAJAT
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
+import evaka.core.vtjclient.service.persondetails.VtjClient.DetailsQuery
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.VTJQuery
 
-class VTJPersonDetailsService(
-    private val vtjClientService: IVtjClientService,
+class SoapVtjClient(
+    private val vtjSoapTransport: VtjSoapTransport,
     private val henkiloMapper: VtjHenkiloMapper,
-) : IPersonDetailsService {
+) : VtjClient {
     /*
        Fetches person with dependants from VTJ, then for each dependant, fetches
        the dependant basic details from VTJ.
     */
-    override fun getPersonWithDependants(query: DetailsQuery): VtjPerson {
+    override fun fetchWithDependants(query: DetailsQuery): VtjPerson {
         val guardianResult = doVtjQuery(query, HUOLTAJA_HUOLLETTAVA)
 
         val dependants =
@@ -46,7 +46,7 @@ class VTJPersonDetailsService(
         Fetches person with guardians from VTJ, then for each guardian, fetches
         the guardian basic details from VTJ.
     */
-    override fun getPersonWithGuardians(query: DetailsQuery): VtjPerson {
+    override fun fetchWithGuardians(query: DetailsQuery): VtjPerson {
         val childResult = doVtjQuery(query, HUOLLETTAVA_HUOLTAJAT)
 
         val guardians =
@@ -64,7 +64,7 @@ class VTJPersonDetailsService(
         return childResult.copy(guardians = guardians)
     }
 
-    override fun getBasicDetailsFor(query: DetailsQuery): VtjPerson {
+    override fun fetchPerson(query: DetailsQuery): VtjPerson {
         return doVtjQuery(query, PERUSSANOMA3)
     }
 
@@ -73,7 +73,7 @@ class VTJPersonDetailsService(
     }
 
     private fun doVtjQuery(vtjQuery: VTJQuery): VtjPerson {
-        return vtjClientService.query(vtjQuery)?.let(henkiloMapper::mapToVtjPerson)
+        return vtjSoapTransport.query(vtjQuery)?.let(henkiloMapper::mapToVtjPerson)
             ?: throw NotFound("VTJ person not found")
     }
 }

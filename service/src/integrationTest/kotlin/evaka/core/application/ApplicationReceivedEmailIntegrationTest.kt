@@ -34,7 +34,7 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -115,8 +115,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insert(child1, DevPersonType.CHILD)
             tx.insert(child2, DevPersonType.CHILD)
         }
-        MockPersonDetailsService.addPersons(guardian, child1, child2)
-        MockPersonDetailsService.addDependants(guardian, child1, child2)
+        MockVtjClient.addPersons(guardian, child1, child2)
+        MockVtjClient.addDependants(guardian, child1, child2)
     }
 
     @Test

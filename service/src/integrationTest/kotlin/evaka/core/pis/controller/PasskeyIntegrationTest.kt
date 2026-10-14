@@ -28,7 +28,7 @@ import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.user.CitizenPasskey
 import evaka.core.user.DeviceClass
 import evaka.core.user.getCitizenPasskeys
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import kotlin.test.assertContains
@@ -59,7 +59,7 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
     }
 
     @Test

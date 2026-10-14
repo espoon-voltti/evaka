@@ -100,7 +100,7 @@ data class MockVtjPerson(
     }
 }
 
-class MockPersonDetailsService : IPersonDetailsService {
+class MockVtjClient : VtjClient {
     companion object {
         private val readCounts: ConcurrentHashMap<String, Int> = ConcurrentHashMap()
 
@@ -182,13 +182,13 @@ class MockPersonDetailsService : IPersonDetailsService {
         }
     }
 
-    override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        getBasicDetailsFor(query).copy(dependants = getDependants(query.ssn.value))
+    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPerson =
+        fetchPerson(query).copy(dependants = getDependants(query.ssn.value))
 
-    override fun getPersonWithGuardians(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        getBasicDetailsFor(query).copy(guardians = getGuardians(query.ssn.value))
+    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPerson =
+        fetchPerson(query).copy(guardians = getGuardians(query.ssn.value))
 
-    override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): VtjPerson {
+    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson {
         val ssn = query.ssn.value
         readCounts.merge(ssn, 1, Int::plus)
         return persons[ssn]?.toVtjPerson() ?: error("Mock VTJ person with ${query.ssn} not found")

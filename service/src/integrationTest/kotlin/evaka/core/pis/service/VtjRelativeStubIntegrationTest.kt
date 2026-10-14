@@ -15,7 +15,7 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -25,9 +25,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * What an [IPersonDetailsService] returning name+SSN stubs does to the database. No shipped
- * implementation behaves this way, but nothing in the write path prevents it and DVV's REST
- * `/perustiedot` returns relatives in exactly this shape.
+ * What a [VtjClient] returning name+SSN stubs does to the database. No shipped implementation
+ * behaves this way, but nothing in the write path prevents it and DVV's REST `/perustiedot` returns
+ * relatives in exactly this shape.
  */
 class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val user = AuthenticatedUser.SystemInternalUser
@@ -119,18 +119,17 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
  * Returns the queried person in full but their relatives as name+SSN only — the shape of VTJ's
  * HUOLTAJA_HUOLLETTAVA response and of DVV's REST `/perustiedot` response before hydration.
  */
-private class StubRelativeDetailsService(private vararg val persons: DevPerson) :
-    IPersonDetailsService {
-    override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): VtjPerson =
+private class StubRelativeDetailsService(private vararg val persons: DevPerson) : VtjClient {
+    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson =
         persons.single { it.ssn == query.ssn.value }.toFullVtjPerson()
 
-    override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        getBasicDetailsFor(query).copy(dependants = relativesOf(query))
+    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPerson =
+        fetchPerson(query).copy(dependants = relativesOf(query))
 
-    override fun getPersonWithGuardians(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        getBasicDetailsFor(query).copy(guardians = relativesOf(query))
+    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPerson =
+        fetchPerson(query).copy(guardians = relativesOf(query))
 
-    private fun relativesOf(query: IPersonDetailsService.DetailsQuery) =
+    private fun relativesOf(query: VtjClient.DetailsQuery) =
         persons.filter { it.ssn != query.ssn.value }.map { it.toRelativeStub() }
 }
 

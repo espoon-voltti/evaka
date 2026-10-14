@@ -60,7 +60,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.domain.TimeRange
 import evaka.core.snDefaultDaycare
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -363,8 +363,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a transfer application with a decision does not get canceled`() {
         val preferredStartDate = LocalDate.now()
-        MockPersonDetailsService.addPersons(adult1, child1)
-        MockPersonDetailsService.addDependants(adult1, child1)
+        MockVtjClient.addPersons(adult1, child1)
+        MockVtjClient.addDependants(adult1, child1)
         val applicationId =
             createTransferApplication(
                 ApplicationType.PRESCHOOL,

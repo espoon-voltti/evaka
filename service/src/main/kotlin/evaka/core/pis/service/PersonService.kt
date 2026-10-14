@@ -38,7 +38,7 @@ import evaka.core.shared.domain.Rectangle
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.VtjPersonDTO
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.VtjClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import kotlin.reflect.full.memberProperties
@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service
 private val logger = KotlinLogging.logger {}
 
 @Service
-class PersonService(private val personDetailsService: IPersonDetailsService) {
+class PersonService(private val vtjClient: VtjClient) {
     // Does a request to VTJ if the person has a SSN and updates person data
     fun getUpToDatePersonFromVtj(
         tx: Database.Transaction,
@@ -57,9 +57,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         val person = tx.getPersonById(id) ?: return null
         return if (person.ssn != null) {
             val personDetails =
-                personDetailsService.getBasicDetailsFor(
-                    IPersonDetailsService.DetailsQuery(user.evakaUserId, person.ssn)
-                )
+                vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, person.ssn))
             upsertVtjPerson(tx, personDetails.mapToDto())
         } else {
             person
@@ -191,10 +189,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         val person = tx.getPersonBySSN(ssn.value)
         audit?.add(listOfNotNull(person?.id))
         return if (person?.updatedFromVtj == null) {
-            val personDetails =
-                personDetailsService.getBasicDetailsFor(
-                    IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn)
-                )
+            val personDetails = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
             if (readonly) return toPersonDTO(personDetails.mapToDto())
 
             upsertVtjPerson(tx, personDetails.mapToDto())
@@ -235,10 +230,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             throw Conflict("User with same ssn already exists")
         }
 
-        val personDetails =
-            personDetailsService.getBasicDetailsFor(
-                IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn)
-            )
+        val personDetails = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
 
         val updatedPerson =
             getPersonWithUpdatedProperties(personDetails.mapToDto(), person.copy(ssn = ssn))
@@ -263,8 +255,8 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         user: AuthenticatedUser,
         ssn: Ssn,
     ): VtjPersonDTO {
-        return personDetailsService
-            .getPersonWithDependants(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
+        return vtjClient
+            .fetchWithDependants(VtjClient.DetailsQuery(user.evakaUserId, ssn))
             .mapToDto()
     }
 
@@ -273,8 +265,8 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         user: AuthenticatedUser,
         ssn: Ssn,
     ): VtjPersonDTO {
-        return personDetailsService
-            .getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
+        return vtjClient
+            .fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, ssn))
             .mapToDto()
     }
 

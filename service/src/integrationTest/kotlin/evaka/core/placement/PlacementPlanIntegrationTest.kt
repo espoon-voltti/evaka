@@ -39,7 +39,7 @@ import evaka.core.test.getPlacementPlanRowByApplication
 import evaka.core.toApplicationType
 import evaka.core.toDaycareFormAdult
 import evaka.core.toDaycareFormChild
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -89,9 +89,9 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             tx.insert(preschoolTerm)
             tx.insertDefaultDecisionGenericReasonings()
         }
-        MockPersonDetailsService.addPersons(adult, restrictedAdult, child)
-        MockPersonDetailsService.addDependants(adult, child)
-        MockPersonDetailsService.addDependants(restrictedAdult, child)
+        MockVtjClient.addPersons(adult, restrictedAdult, child)
+        MockVtjClient.addDependants(adult, child)
+        MockVtjClient.addDependants(restrictedAdult, child)
     }
 
     @Test

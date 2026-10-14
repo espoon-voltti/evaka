@@ -22,7 +22,7 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.MockEvakaClock
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -89,20 +89,20 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(admin)
             tx.insert(serviceWorker)
         }
-        MockPersonDetailsService.addPersons(
+        MockVtjClient.addPersons(
             johannesKarhula,
             villeVilkas,
             jariPetteriKarhula,
             kaarinaKarhula,
             porriKarhula,
         )
-        MockPersonDetailsService.addDependants(
+        MockVtjClient.addDependants(
             johannesKarhula,
             jariPetteriKarhula,
             kaarinaKarhula,
             porriKarhula,
         )
-        MockPersonDetailsService.addDependants(villeVilkas, jariPetteriKarhula)
+        MockVtjClient.addDependants(villeVilkas, jariPetteriKarhula)
     }
 
     @Test

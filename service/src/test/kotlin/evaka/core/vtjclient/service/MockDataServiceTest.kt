@@ -9,10 +9,10 @@ import evaka.core.shared.EvakaUserId
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import evaka.core.vtjclient.service.persondetails.MockVtjDataset
 import evaka.core.vtjclient.service.persondetails.MockVtjPerson
+import evaka.core.vtjclient.service.persondetails.VtjClient.DetailsQuery
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -23,12 +23,11 @@ import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
 class MockDataServiceTest {
-    private val mockDetailsService =
-        MockPersonDetailsService().also { MockPersonDetailsService.add(testDataset()) }
+    private val mockDetailsService = MockVtjClient().also { MockVtjClient.add(testDataset()) }
 
     @Test
     fun `check that second child is less than three years old (2)`() {
-        val kaarinaAnttola = mockDetailsService.getPersonWithDependants(mapToQuery("270372-905L"))
+        val kaarinaAnttola = mockDetailsService.fetchWithDependants(mapToQuery("270372-905L"))
 
         val children = kaarinaAnttola.dependants
         val childTwo = children[1]
@@ -40,7 +39,7 @@ class MockDataServiceTest {
 
     @Test
     fun `check that second child is less than three years old (1)`() {
-        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("060195-966B"))
+        val parent = mockDetailsService.fetchWithDependants(mapToQuery("060195-966B"))
 
         val children = parent.dependants
         val childTwo = children[1]
@@ -52,7 +51,7 @@ class MockDataServiceTest {
 
     @Test
     fun `check that second child is less than three years old (0)`() {
-        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("081181-9984"))
+        val parent = mockDetailsService.fetchWithDependants(mapToQuery("081181-9984"))
 
         val children = parent.dependants
         val childTwo = children[1]
@@ -64,7 +63,7 @@ class MockDataServiceTest {
 
     @Test
     fun `check that normal user and their children have addresses`() {
-        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("081181-9984"))
+        val parent = mockDetailsService.fetchWithDependants(mapToQuery("081181-9984"))
 
         val expectedAddress = "Raivaajantie 13"
 
@@ -85,7 +84,7 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with both them and their children having details restrictions`() {
-        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("150978-9025"))
+        val parent = mockDetailsService.fetchWithDependants(mapToQuery("150978-9025"))
 
         val expectedEmptyAddress = ""
 
@@ -103,7 +102,7 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with no restrictions but whose children have details restrictions`() {
-        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("300190-9257"))
+        val parent = mockDetailsService.fetchWithDependants(mapToQuery("300190-9257"))
 
         val expectedGuardianAddress = "Raivaajantie 18"
         val expectedEmptyAddress = ""
@@ -122,7 +121,7 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with details restriction but whose children don't have details restrictions`() {
-        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("031083-910S"))
+        val parent = mockDetailsService.fetchWithDependants(mapToQuery("031083-910S"))
 
         val expectedChildAddress = "Raivaajantie 19"
 
@@ -140,14 +139,14 @@ class MockDataServiceTest {
 
     @Test
     fun `mr Karhula has 3 children`() {
-        val parent = mockDetailsService.getPersonWithDependants(mapToQuery("070644-937X"))
+        val parent = mockDetailsService.fetchWithDependants(mapToQuery("070644-937X"))
 
         assertEquals(3, parent.dependants.size)
     }
 
     @Test
     fun `nationalities come through`() {
-        val parent = mockDetailsService.getBasicDetailsFor(mapToQuery("070644-937X"))
+        val parent = mockDetailsService.fetchPerson(mapToQuery("070644-937X"))
 
         val expectedNationality = Nationality("Suomi", "FIN")
 

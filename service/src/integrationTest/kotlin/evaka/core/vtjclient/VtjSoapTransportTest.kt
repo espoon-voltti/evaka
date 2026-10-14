@@ -15,13 +15,13 @@ import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.ASUKASMAARA
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLLETTAVA_HUOLTAJAT
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.ASUKASMAARA
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.VTJQuery
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
@@ -41,9 +41,9 @@ import org.springframework.xml.transform.StringSource
 
 val NIL_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
-class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
+class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
 
-    @Autowired lateinit var vtjClientService: IVtjClientService
+    @Autowired lateinit var vtjSoapTransport: VtjSoapTransport
 
     @Autowired lateinit var mapper: VtjHenkiloMapper
 
@@ -94,7 +94,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
                 type = PERUSSANOMA3,
                 ssn = "020501A999T",
             )
-        val response = vtjClientService.query(query)
+        val response = vtjSoapTransport.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
 
@@ -127,7 +127,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
                 type = HUOLTAJA_HUOLLETTAVA,
                 ssn = "020190-9521",
             )
-        val response = vtjClientService.query(query)
+        val response = vtjSoapTransport.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
 
@@ -152,7 +152,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
                 type = HUOLLETTAVA_HUOLTAJAT,
                 ssn = "311211A9527",
             )
-        val response = vtjClientService.query(query)
+        val response = vtjSoapTransport.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
 
@@ -181,7 +181,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
                 type = ASUKASMAARA,
                 ssn = expectedSSN,
             )
-        val response = vtjClientService.query(query)
+        val response = vtjSoapTransport.query(query)
 
         val result = ResidentCountExample.residentCountFromHenkilo(response!!)
 

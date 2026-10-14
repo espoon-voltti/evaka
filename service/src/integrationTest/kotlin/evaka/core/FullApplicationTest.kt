@@ -13,7 +13,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.db.configureJdbi
 import evaka.core.shared.dev.resetDatabase
 import evaka.core.vtjclient.VtjIntegrationTestConfig
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import io.opentelemetry.api.trace.Tracer
 import java.net.URL
 import org.jdbi.v3.core.Jdbi
@@ -74,7 +74,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
         if (resetDbBeforeEach) {
             db.transaction { it.resetDatabase() }
         }
-        MockPersonDetailsService.reset()
+        MockVtjClient.reset()
         MockEmailClient.clear()
     }
 

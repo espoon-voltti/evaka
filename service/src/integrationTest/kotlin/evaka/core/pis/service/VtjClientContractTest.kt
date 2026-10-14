@@ -12,9 +12,9 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtjclient.service.persondetails.SoapVtjClient
+import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -24,9 +24,9 @@ import org.junit.jupiter.api.Test
 /**
  * Relatives must come back fully populated: `upsertVtjPerson` writes each one into `person` with an
  * unconditional SET, so a name+SSN stub blanks their address, language, nationalities and
- * turvakielto. Subclass this for every new [IPersonDetailsService].
+ * turvakielto. Subclass this for every new [VtjClient].
  */
-abstract class PersonDetailsServiceContract : PureJdbiTest(resetDbBeforeEach = true) {
+abstract class VtjClientContract : PureJdbiTest(resetDbBeforeEach = true) {
     private val user = AuthenticatedUser.SystemInternalUser
     private val now = HelsinkiDateTime.of(LocalDate.of(2026, 1, 1), LocalTime.of(12, 0))
 
@@ -55,7 +55,7 @@ abstract class PersonDetailsServiceContract : PureJdbiTest(resetDbBeforeEach = t
         )
 
     /** Seed the implementation's backing store with [guardian] as the parent of [child]. */
-    protected abstract fun createServiceReturningTheFamily(): IPersonDetailsService
+    protected abstract fun createServiceReturningTheFamily(): VtjClient
 
     @BeforeEach
     fun insertFamily() {
@@ -93,23 +93,23 @@ abstract class PersonDetailsServiceContract : PureJdbiTest(resetDbBeforeEach = t
 }
 
 /** The production implementation, which hydrates by re-querying each relative with PERUSSANOMA3. */
-class VtjSoapPersonDetailsServiceContractTest : PersonDetailsServiceContract() {
-    override fun createServiceReturningTheFamily(): IPersonDetailsService {
-        MockVtjClientService.resetQueryCounts()
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(guardian)
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(child)
-        MockVtjClientService.addHUOLTAJAHUOLLETTAVARequestExpectation(guardian, listOf(child))
-        MockVtjClientService.addHUOLLETTAVAHUOLTAJATRequestExpectation(child, listOf(guardian))
-        return VTJPersonDetailsService(MockVtjClientService(), VtjHenkiloMapper())
+class SoapVtjClientContractTest : VtjClientContract() {
+    override fun createServiceReturningTheFamily(): VtjClient {
+        MockVtjSoapTransport.resetQueryCounts()
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(guardian)
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(child)
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(guardian, listOf(child))
+        MockVtjSoapTransport.addHUOLLETTAVAHUOLTAJATRequestExpectation(child, listOf(guardian))
+        return SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
     }
 }
 
 /** Enrolled because the rest of the integration suite depends on this double staying hydrated. */
-class MockPersonDetailsServiceContractTest : PersonDetailsServiceContract() {
-    override fun createServiceReturningTheFamily(): IPersonDetailsService {
-        MockPersonDetailsService.reset()
-        MockPersonDetailsService.addPersons(guardian, child)
-        MockPersonDetailsService.addDependants(guardian, child)
-        return MockPersonDetailsService()
+class MockVtjClientContractTest : VtjClientContract() {
+    override fun createServiceReturningTheFamily(): VtjClient {
+        MockVtjClient.reset()
+        MockVtjClient.addPersons(guardian, child)
+        MockVtjClient.addDependants(guardian, child)
+        return MockVtjClient()
     }
 }

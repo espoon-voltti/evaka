@@ -14,11 +14,11 @@ import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
+import evaka.core.vtjclient.service.persondetails.VtjClient.DetailsQuery
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.VTJQuery
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import java.time.LocalDate
 import java.util.UUID.randomUUID
@@ -35,11 +35,11 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @ExtendWith(MockitoExtension::class)
-class DVVPersonDetailsServiceTest {
+class SoapVtjClientTest {
 
-    @InjectMocks lateinit var service: VTJPersonDetailsService
+    @InjectMocks lateinit var service: SoapVtjClient
 
-    @Mock lateinit var vtjService: IVtjClientService
+    @Mock lateinit var vtjService: VtjSoapTransport
 
     @Mock lateinit var henkiloMapper: VtjHenkiloMapper
 
@@ -53,7 +53,7 @@ class DVVPersonDetailsServiceTest {
         whenever(vtjService.query(expectedVtjQuery)).thenReturn(expectedVtjResponse)
         whenever(henkiloMapper.mapToVtjPerson(expectedVtjResponse)).thenReturn(expectedResult)
 
-        val result = service.getBasicDetailsFor(query)
+        val result = service.fetchPerson(query)
         assertThat(result.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
         assertThat(result.address).isEqualTo(expectedResult.address)
         assertThat(result.dependants).isEmpty()
@@ -76,7 +76,7 @@ class DVVPersonDetailsServiceTest {
                 ssn = Ssn.parse(expectedChildResult.socialSecurityNumber)!!,
             )
         val expectedChildVtjQuery =
-            expectedChildQuery.mapToVtjQuery(IVtjClientService.RequestType.PERUSSANOMA3)
+            expectedChildQuery.mapToVtjQuery(VtjSoapTransport.RequestType.PERUSSANOMA3)
         val expectedChildVtjResponse = expectedChildQuery.asMinimalVtjResponse()
 
         whenever(vtjService.query(any()))
@@ -86,7 +86,7 @@ class DVVPersonDetailsServiceTest {
             .thenReturn(expectedResult)
             .thenReturn(expectedChildResult)
 
-        val result = service.getPersonWithDependants(query)
+        val result = service.fetchWithDependants(query)
         assertThat(result.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
         assertThat(result.firstNames).isEqualTo(expectedResult.firstNames)
 
