@@ -4,7 +4,7 @@
 
 package evaka.core.vtjclient.service.persondetails
 
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.shared.domain.NotFound
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
@@ -32,8 +32,9 @@ class VTJPersonDetailsService(
                 .map {
                     DetailsQuery(
                         requestingUser = query.requestingUser,
-                        targetIdentifier =
-                            ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber),
+                        ssn =
+                            Ssn.parse(it.socialSecurityNumber)
+                                ?: error("VTJ returned an invalid SSN"),
                     )
                 }
                 .map { doVtjQuery(it, PERUSSANOMA3) }
@@ -53,8 +54,9 @@ class VTJPersonDetailsService(
                 .map {
                     DetailsQuery(
                         requestingUser = query.requestingUser,
-                        targetIdentifier =
-                            ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber),
+                        ssn =
+                            Ssn.parse(it.socialSecurityNumber)
+                                ?: error("VTJ returned an invalid SSN"),
                     )
                 }
                 .map { doVtjQuery(it, PERUSSANOMA3) }
@@ -77,4 +79,4 @@ class VTJPersonDetailsService(
 }
 
 fun DetailsQuery.mapToVtjQuery(type: RequestType) =
-    VTJQuery(requestingUserId = requestingUser.raw, ssn = targetIdentifier.ssn, type = type)
+    VTJQuery(requestingUserId = requestingUser.raw, ssn = ssn.value, type = type)

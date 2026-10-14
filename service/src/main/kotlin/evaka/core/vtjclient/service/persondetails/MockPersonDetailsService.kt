@@ -4,7 +4,6 @@
 
 package evaka.core.vtjclient.service.persondetails
 
-import evaka.core.identity.ExternalIdentifier
 import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.dev.DevPerson
 import evaka.core.vtjclient.dto.Nationality
@@ -15,17 +14,15 @@ import evaka.core.vtjclient.dto.VtjPerson
 import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap
 
-typealias Ssn = String
-
 data class MockVtjDataset(
     val persons: List<MockVtjPerson>,
-    val guardianDependants: Map<Ssn, List<Ssn>>,
+    val guardianDependants: Map<String, List<String>>,
 )
 
 data class MockVtjPerson(
     val firstNames: String,
     val lastName: String,
-    val socialSecurityNumber: Ssn,
+    val socialSecurityNumber: String,
     val restrictedDetails: RestrictedDetails?,
     val address: PersonAddress? = null,
     val nativeLanguage: NativeLanguage? = null,
@@ -82,7 +79,8 @@ data class MockVtjPerson(
             MockVtjPerson(
                 firstNames = dto.firstName,
                 lastName = dto.lastName,
-                socialSecurityNumber = dto.identity.toString(),
+                socialSecurityNumber =
+                    checkNotNull(dto.ssn) { "Person ${dto.id} has no SSN" }.value,
                 restrictedDetails =
                     RestrictedDetails(dto.restrictedDetailsEnabled, dto.restrictedDetailsEndDate),
                 address =
@@ -104,11 +102,13 @@ data class MockVtjPerson(
 
 class MockPersonDetailsService : IPersonDetailsService {
     companion object {
-        private val readCounts: ConcurrentHashMap<Ssn, Int> = ConcurrentHashMap()
+        private val readCounts: ConcurrentHashMap<String, Int> = ConcurrentHashMap()
 
-        private val persons: ConcurrentHashMap<Ssn, MockVtjPerson> = ConcurrentHashMap()
-        private val dependantsOfGuardian: ConcurrentHashMap<Ssn, Set<Ssn>> = ConcurrentHashMap()
-        private val guardiansOfDependant: ConcurrentHashMap<Ssn, Set<Ssn>> = ConcurrentHashMap()
+        private val persons: ConcurrentHashMap<String, MockVtjPerson> = ConcurrentHashMap()
+        private val dependantsOfGuardian: ConcurrentHashMap<String, Set<String>> =
+            ConcurrentHashMap()
+        private val guardiansOfDependant: ConcurrentHashMap<String, Set<String>> =
+            ConcurrentHashMap()
 
         fun reset() {
             readCounts.clear()
@@ -117,7 +117,7 @@ class MockPersonDetailsService : IPersonDetailsService {
             guardiansOfDependant.clear()
         }
 
-        fun getPerson(ssn: Ssn) =
+        fun getPerson(ssn: String) =
             persons[ssn]
                 ?.toVtjPerson()
                 ?.copy(guardians = getGuardians(ssn), dependants = getDependants(ssn))
@@ -131,10 +131,10 @@ class MockPersonDetailsService : IPersonDetailsService {
                     )
             }
 
-        fun getGuardians(ssn: Ssn): List<VtjPerson> =
+        fun getGuardians(ssn: String): List<VtjPerson> =
             (guardiansOfDependant[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
 
-        fun getDependants(ssn: Ssn): List<VtjPerson> =
+        fun getDependants(ssn: String): List<VtjPerson> =
             (dependantsOfGuardian[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
 
         fun add(dataset: MockVtjDataset) {
@@ -160,21 +160,21 @@ class MockPersonDetailsService : IPersonDetailsService {
             persons.forEach { addPerson(MockVtjPerson.from(it)) }
         }
 
-        fun addDependants(guardian: Ssn, dependants: Sequence<Ssn>) {
+        fun addDependants(guardian: String, dependants: Sequence<String>) {
             require(persons.containsKey(guardian)) { "Guardian $guardian not found" }
             dependants.forEach { dependant ->
                 require(persons.containsKey(dependant)) { "Dependant $dependant not found" }
-                dependantsOfGuardian.merge(guardian, linkedSetOf(dependant), Set<Ssn>::plus)
-                guardiansOfDependant.merge(dependant, linkedSetOf(guardian), Set<Ssn>::plus)
+                dependantsOfGuardian.merge(guardian, linkedSetOf(dependant), Set<String>::plus)
+                guardiansOfDependant.merge(dependant, linkedSetOf(guardian), Set<String>::plus)
             }
         }
 
-        fun addDependants(guardian: Ssn, vararg dependants: Ssn) {
+        fun addDependants(guardian: String, vararg dependants: String) {
             addDependants(guardian, dependants.asSequence())
         }
 
-        fun addDependants(guardian: ExternalIdentifier, vararg dependants: ExternalIdentifier) {
-            addDependants(guardian.toString(), dependants.asSequence().map { it.toString() })
+        fun addDependants(guardian: PersonDTO, vararg dependants: PersonDTO) {
+            addDependants(guardian.ssn!!.value, dependants.asSequence().map { it.ssn!!.value })
         }
 
         fun addDependants(guardian: DevPerson, vararg dependants: DevPerson) {
@@ -183,15 +183,14 @@ class MockPersonDetailsService : IPersonDetailsService {
     }
 
     override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        getBasicDetailsFor(query).copy(dependants = getDependants(query.targetIdentifier.ssn))
+        getBasicDetailsFor(query).copy(dependants = getDependants(query.ssn.value))
 
     override fun getPersonWithGuardians(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        getBasicDetailsFor(query).copy(guardians = getGuardians(query.targetIdentifier.ssn))
+        getBasicDetailsFor(query).copy(guardians = getGuardians(query.ssn.value))
 
     override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): VtjPerson {
-        val ssn = query.targetIdentifier.ssn
+        val ssn = query.ssn.value
         readCounts.merge(ssn, 1, Int::plus)
-        return persons[query.targetIdentifier.ssn]?.toVtjPerson()
-            ?: error("Mock VTJ person with ${query.targetIdentifier.ssn} not found")
+        return persons[ssn]?.toVtjPerson() ?: error("Mock VTJ person with ${query.ssn} not found")
     }
 }

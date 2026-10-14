@@ -5,7 +5,7 @@
 package evaka.core.application
 
 import evaka.core.ConstList
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.pis.createPerson
 import evaka.core.pis.getPersonById
 import evaka.core.pis.service.PersonService
@@ -298,7 +298,7 @@ fun savePaperApplication(
                     .getOrCreatePerson(
                         tx,
                         user,
-                        ExternalIdentifier.SSN.getInstance(body.guardianSsn),
+                        Ssn.parse(body.guardianSsn) ?: throw BadRequest("Invalid guardian SSN"),
                         audit = null,
                     )
                     ?.id

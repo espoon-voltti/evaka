@@ -1224,6 +1224,7 @@ CREATE TABLE public.person (
     verified_email text,
     disabled_push_types public.notification_category[] DEFAULT '{}'::public.notification_category[] NOT NULL,
     CONSTRAINT person_disabled_ssn_no_ssn CHECK (((NOT ssn_adding_disabled) OR (social_security_number IS NULL))),
+    CONSTRAINT person_ssn_not_empty CHECK ((social_security_number <> ''::text)),
     CONSTRAINT ssn_require_vtj_update CHECK (((social_security_number IS NULL) OR (updated_from_vtj IS NOT NULL)))
 );
 
@@ -1437,12 +1438,12 @@ END) STORED,
 
 CREATE VIEW public.koski_child AS
  SELECT id,
-    NULLIF(social_security_number, ''::text) AS ssn,
+    social_security_number AS ssn,
     NULLIF(oph_person_oid, ''::text) AS oph_person_oid,
     first_name,
     last_name
    FROM public.person
-  WHERE ((NULLIF(social_security_number, ''::text) IS NOT NULL) OR (NULLIF(oph_person_oid, ''::text) IS NOT NULL));
+  WHERE ((social_security_number IS NOT NULL) OR (NULLIF(oph_person_oid, ''::text) IS NOT NULL));
 
 -- Name: koski_unit; Type: VIEW; Schema: public
 
@@ -2794,7 +2795,8 @@ CREATE TABLE public.employee (
     temporary_in_unit_id uuid,
     active boolean NOT NULL,
     social_security_number text,
-    CONSTRAINT "chk$valid_role" CHECK ((ARRAY['ADMIN'::public.user_role, 'DIRECTOR'::public.user_role, 'REPORT_VIEWER'::public.user_role, 'FINANCE_ADMIN'::public.user_role, 'FINANCE_STAFF'::public.user_role, 'SERVICE_WORKER'::public.user_role, 'MESSAGING'::public.user_role] @> roles))
+    CONSTRAINT "chk$valid_role" CHECK ((ARRAY['ADMIN'::public.user_role, 'DIRECTOR'::public.user_role, 'REPORT_VIEWER'::public.user_role, 'FINANCE_ADMIN'::public.user_role, 'FINANCE_STAFF'::public.user_role, 'SERVICE_WORKER'::public.user_role, 'MESSAGING'::public.user_role] @> roles)),
+    CONSTRAINT employee_ssn_not_empty CHECK ((social_security_number <> ''::text))
 );
 
 -- Name: employee_pin; Type: TABLE; Schema: public

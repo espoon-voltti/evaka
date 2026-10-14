@@ -44,8 +44,11 @@ interface AsyncJobPayload {
 }
 
 sealed interface AsyncJob : AsyncJobPayload {
-    data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) :
-        AsyncJob {
+    data class DvvModificationsRefresh(
+        @Deprecated("Ignored. Present only in jobs planned by older versions")
+        val ssns: List<String>? = null,
+        val requestingUserId: UUID,
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -178,11 +181,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         val applicationId: ApplicationId,
         override val user: AuthenticatedUser,
     ) : AsyncJob
-
-    @JsonIgnoreProperties("requestingUser") // only present in old jobs
-    data class VTJRefresh(val personId: PersonId) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
 
     data class RunScheduledJob(val job: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -598,7 +596,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     CleanNekkuOrdersReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,
-                    VTJRefresh::class,
                 ),
             )
         val nightly =

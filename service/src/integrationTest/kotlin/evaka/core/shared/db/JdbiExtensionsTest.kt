@@ -6,6 +6,7 @@ package evaka.core.shared.db
 
 import evaka.core.PureJdbiTest
 import evaka.core.identity.ExternalId
+import evaka.core.identity.Ssn
 import evaka.core.shared.PersonId
 import evaka.core.shared.data.DateSet
 import evaka.core.shared.domain.Coordinate
@@ -20,6 +21,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.jdbi.v3.json.Json
@@ -35,6 +37,38 @@ private inline fun <reified T : Any> Database.Read.checkMatch(sql: QuerySql, inp
 
 class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val utc: ZoneId = ZoneId.of("UTC")
+
+    @Test
+    fun testSsn() {
+        val input = Ssn.parse("010199-8137")!!
+
+        val match = db.read {
+            it.checkMatch(QuerySql { sql("SELECT ${bind(input)} = '010199-8137'") }, input)
+        }
+        assertTrue(match)
+
+        val output = db.read { it.passThrough(input) }
+        assertEquals(input, output)
+    }
+
+    @Test
+    fun testNullSsn() {
+        val result = db.read {
+            it.createQuery { sql("SELECT NULL::text AS value") }
+                .exactlyOne { column<Ssn?>("value") }
+        }
+        assertNull(result)
+    }
+
+    @Test
+    fun testInvalidSsn() {
+        assertFailsWith<IllegalStateException> {
+            db.read {
+                it.createQuery { sql("SELECT 'NoID' AS value") }
+                    .exactlyOne { column<Ssn?>("value") }
+            }
+        }
+    }
 
     @Test
     fun testCoordinate() {

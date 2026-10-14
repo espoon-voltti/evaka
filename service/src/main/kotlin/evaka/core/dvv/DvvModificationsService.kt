@@ -4,6 +4,7 @@
 
 package evaka.core.dvv
 
+import evaka.core.identity.Ssn
 import evaka.core.pis.Modifier
 import evaka.core.pis.ModifySource
 import evaka.core.pis.addSSNToPerson
@@ -32,7 +33,7 @@ class DvvModificationsService(
 ) {
 
     fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
-        var token = db.read { it.getNextDvvModificationToken() }
+        var token = db.read { it.getNextDvvModificationToken() } ?: seedToken(db, clock)
         var modificationCount = 0
         while (true) {
             logger.debug {
@@ -48,6 +49,18 @@ class DvvModificationsService(
             }
             token = page.viimeisinKirjausavain
         }
+    }
+
+    private fun seedToken(db: Database.Connection, clock: EvakaClock): String {
+        val today = clock.today()
+        val firstToken =
+            dvvModificationsServiceClient
+                .getFirstModificationToken(today)
+                ?.latestModificationToken
+                ?.toString() ?: error("Could not fetch the first DVV modification token of $today")
+        logger.info { "Seeding the DVV modification token from $today: $firstToken" }
+        db.transaction { tx -> tx.storeDvvModificationToken("seed-$today", firstToken, 0, 0) }
+        return firstToken
     }
 
     private fun processModifications(
@@ -314,10 +327,11 @@ class DvvModificationsService(
             tx.getPersonBySSN(ssn)?.let {
                 logger.info { "Dvv modification for ${it.id}: ssn change" }
 
-                if (!ssnDvvInfoGroup.aktiivinenHenkilotunnus.isNullOrEmpty()) {
-                    tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
+                val newSsn = ssnDvvInfoGroup.aktiivinenHenkilotunnus?.let { ssn -> Ssn.parse(ssn) }
+                if (newSsn != null) {
+                    tx.addSSNToPerson(it.id, newSsn)
                 } else {
-                    logger.error { "Dvv modification for ${it.id}: ssn is set to null or empty" }
+                    logger.error { "Dvv modification for ${it.id}: ssn is missing or invalid" }
                 }
             }
         }

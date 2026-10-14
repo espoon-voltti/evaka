@@ -52,7 +52,6 @@ import evaka.core.decision.markDecisionAccepted
 import evaka.core.decision.markDecisionRejected
 import evaka.core.decision.reasoning.clearGenericReasoningFromUnsentDecisions
 import evaka.core.decision.setDecisionDecidedBy
-import evaka.core.identity.ExternalIdentifier
 import evaka.core.messaging.MessageRecipient
 import evaka.core.messaging.MessageService
 import evaka.core.messaging.MessageType
@@ -1738,8 +1737,8 @@ class ApplicationStateService(
         application: ApplicationDetails,
     ): Boolean {
         val hasSsn =
-            (tx.getPersonById(application.guardianId)!!.identity is ExternalIdentifier.SSN &&
-                tx.getPersonById(application.childId)!!.identity is ExternalIdentifier.SSN)
+            (tx.getPersonById(application.guardianId)!!.ssn != null &&
+                tx.getPersonById(application.childId)!!.ssn != null)
         val guardianIsVtjGuardian =
             personService
                 .getGuardians(tx, user, now, application.childId)

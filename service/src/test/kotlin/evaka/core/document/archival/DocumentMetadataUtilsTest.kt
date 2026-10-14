@@ -13,7 +13,7 @@ import evaka.core.document.childdocument.ChildBasics
 import evaka.core.document.childdocument.ChildDocumentDetails
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.placement.PlacementType
 import evaka.core.shared.*
 import evaka.core.shared.domain.DateRange
@@ -160,7 +160,7 @@ class DocumentMetadataUtilsTest {
     fun `createDocumentDescription sets correct document type and specifier for VASU`() {
         val document = createTestDocument(ChildDocumentType.VASU)
         val documentMetadata = createTestDocumentMetadata()
-        val childIdentifier = ExternalIdentifier.SSN.getInstance("160616A978U")
+        val childIdentifier = Ssn.parse("160616A978U")
         val childBirthDate = LocalDate.parse("2016-06-06")
 
         val result =
@@ -186,7 +186,7 @@ class DocumentMetadataUtilsTest {
     fun `createDocumentDescription sets correct document type and specifier for LEOPS`() {
         val document = createTestDocument(ChildDocumentType.LEOPS)
         val documentMetadata = createTestDocumentMetadata()
-        val childIdentifier = ExternalIdentifier.SSN.getInstance("160616A978U")
+        val childIdentifier = Ssn.parse("160616A978U")
         val childBirthDate = LocalDate.parse("2016-06-06")
 
         val result =
@@ -206,7 +206,7 @@ class DocumentMetadataUtilsTest {
     fun `createDocumentDescription sets correct document type and specifier for PEDAGOGICAL_ASSESSMENT`() {
         val document = createTestDocument(ChildDocumentType.PEDAGOGICAL_ASSESSMENT)
         val documentMetadata = createTestDocumentMetadata()
-        val childIdentifier = ExternalIdentifier.SSN.getInstance("160616A978U")
+        val childIdentifier = Ssn.parse("160616A978U")
         val childBirthDate = LocalDate.parse("2016-06-06")
 
         val result =
@@ -227,7 +227,7 @@ class DocumentMetadataUtilsTest {
         val document = createTestDocument()
         val documentMetadata = createTestDocumentMetadata()
         val caseProcess = createTestCaseProcess(null)
-        val childIdentifier = ExternalIdentifier.SSN.getInstance("160616A978U")
+        val childIdentifier = Ssn.parse("160616A978U")
         val childBirthDate = LocalDate.parse("2016-06-06")
 
         val result =
@@ -253,7 +253,7 @@ class DocumentMetadataUtilsTest {
     fun `createDocumentDescription handles non-SSN identifiers correctly`() {
         val document = createTestDocument()
         val documentMetadata = createTestDocumentMetadata()
-        val childIdentifier = ExternalIdentifier.NoID
+        val childIdentifier = null
         val childBirthDate = LocalDate.parse("2016-06-06")
 
         val result =
@@ -377,7 +377,7 @@ class DocumentMetadataUtilsTest {
                 documentMetadata,
                 null,
                 "test.pdf",
-                ExternalIdentifier.SSN.getInstance("160616A978U"),
+                Ssn.parse("160616A978U"),
                 LocalDate.parse("2016-06-06"),
                 masterId = TEST_MASTER_ID,
                 virtualArchiveId = TEST_VIRTUAL_ARCHIVE_ID,
@@ -409,7 +409,7 @@ class DocumentMetadataUtilsTest {
                 documentMetadata,
                 null,
                 "test.pdf",
-                ExternalIdentifier.SSN.getInstance("160616A978U"),
+                Ssn.parse("160616A978U"),
                 LocalDate.parse("2016-06-06"),
                 masterId = TEST_MASTER_ID,
                 virtualArchiveId = TEST_VIRTUAL_ARCHIVE_ID,
@@ -437,7 +437,7 @@ class DocumentMetadataUtilsTest {
                 documentMetadata,
                 null,
                 "test.pdf",
-                ExternalIdentifier.SSN.getInstance("160616A978U"),
+                Ssn.parse("160616A978U"),
                 LocalDate.parse("2016-06-06"),
                 masterId = TEST_MASTER_ID,
                 virtualArchiveId = TEST_VIRTUAL_ARCHIVE_ID,

@@ -17,7 +17,6 @@ import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.reasoning.getApplicationDecisionReasoningStats
 import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
 import evaka.core.decision.updateDecisionDrafts
-import evaka.core.identity.ExternalIdentifier
 import evaka.core.pis.controllers.CreatePersonBody
 import evaka.core.pis.getPersonById
 import evaka.core.pis.service.PersonJSON
@@ -668,16 +667,14 @@ class ApplicationControllerV2(
                             GuardianInfo(
                                 firstName = applicationGuardian.firstName,
                                 lastName = applicationGuardian.lastName,
-                                ssn =
-                                    (applicationGuardian.identity as? ExternalIdentifier.SSN)
-                                        ?.toString(),
+                                ssn = applicationGuardian.ssn?.value,
                                 isVtjGuardian = applicationGuardianIsVtjGuardian,
                             ),
                         child =
                             ChildInfo(
                                 firstName = child.firstName,
                                 lastName = child.lastName,
-                                ssn = (child.identity as? ExternalIdentifier.SSN)?.toString(),
+                                ssn = child.ssn?.value,
                             ),
                         otherGuardian =
                             otherGuardian?.let {
@@ -685,7 +682,7 @@ class ApplicationControllerV2(
                                     id = it.id,
                                     firstName = it.firstName,
                                     lastName = it.lastName,
-                                    ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
+                                    ssn = it.ssn?.value,
                                     isVtjGuardian = true,
                                 )
                             },

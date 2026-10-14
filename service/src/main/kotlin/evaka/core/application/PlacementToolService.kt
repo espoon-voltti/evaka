@@ -11,7 +11,7 @@ import evaka.core.daycare.PreschoolTerm
 import evaka.core.daycare.getDaycare
 import evaka.core.daycare.getPreschoolTerm
 import evaka.core.daycare.getPreschoolTerms
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.identity.isValidSSN
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
@@ -29,6 +29,7 @@ import evaka.core.shared.PreschoolTermId
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.async.PermanentAsyncJobFailure
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.DateRange
@@ -197,7 +198,8 @@ WHERE application.type = 'PRESCHOOL'
             personService.getOrCreatePerson(
                 tx,
                 user,
-                ExternalIdentifier.SSN.getInstance(ssn),
+                Ssn.parse(ssn)
+                    ?: throw PermanentAsyncJobFailure("Invalid SSN in placement tool job"),
                 audit = null,
             )
         }

@@ -12,7 +12,7 @@ import evaka.core.Sensitive
 import evaka.core.daycare.anyUnitHasFeature
 import evaka.core.holidayperiod.QuestionnaireType
 import evaka.core.identity.ExternalId
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.pairing.*
 import evaka.core.pis.service.PersonService
 import evaka.core.shared.EmployeeId
@@ -69,9 +69,8 @@ class SystemController(
                                 .getOrCreatePerson(
                                     tx,
                                     user,
-                                    ExternalIdentifier.SSN.getInstance(
-                                        request.socialSecurityNumber
-                                    ),
+                                    Ssn.parse(request.socialSecurityNumber)
+                                        ?: throw BadRequest("Invalid SSN"),
                                     audit = null,
                                 )
                                 ?.let { CitizenUserIdentity(it.id) }

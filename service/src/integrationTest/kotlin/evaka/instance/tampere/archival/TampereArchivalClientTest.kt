@@ -46,7 +46,7 @@ import evaka.core.document.childdocument.ChildDocumentDecisionStatus
 import evaka.core.document.childdocument.ChildDocumentDetails
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.FeeDecisionType
@@ -535,7 +535,7 @@ private fun PersonDTO.toChildBasics() = ChildBasics(id, firstName, lastName, dat
 
 private fun PersonDTO.toChildDetails() =
     ChildDetails(
-        PersonBasics(firstName, lastName, identity.toString()),
+        PersonBasics(firstName, lastName, ssn?.value),
         dateOfBirth,
         null,
         null,
@@ -548,7 +548,7 @@ private fun PersonDTO.toChildDetails() =
     )
 
 private fun PersonDTO.toGuardian() =
-    Guardian(PersonBasics(firstName, lastName, identity.toString()), null, null, "", null)
+    Guardian(PersonBasics(firstName, lastName, ssn?.value), null, null, "", null)
 
 private fun ChildDocumentDetails.toDocumentMetadata() =
     DocumentMetadata(
@@ -568,7 +568,7 @@ private val testChildInfo =
     PersonDTO(
         id = PersonId(UUID.randomUUID()),
         duplicateOf = null,
-        identity = ExternalIdentifier.SSN.getInstance("081222A9859"),
+        ssn = Ssn.parse("081222A9859"),
         ssnAddingDisabled = false,
         firstName = "John",
         lastName = "Smith",
@@ -590,7 +590,7 @@ private val testAdultInfo =
     PersonDTO(
         id = PersonId(UUID.randomUUID()),
         duplicateOf = null,
-        identity = ExternalIdentifier.SSN.getInstance("020998-958R"),
+        ssn = Ssn.parse("020998-958R"),
         ssnAddingDisabled = false,
         firstName = "Jane",
         lastName = "Smith",

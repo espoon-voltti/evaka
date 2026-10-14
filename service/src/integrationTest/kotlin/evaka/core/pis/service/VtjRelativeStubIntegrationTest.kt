@@ -122,7 +122,7 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 private class StubRelativeDetailsService(private vararg val persons: DevPerson) :
     IPersonDetailsService {
     override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        persons.single { it.ssn == query.targetIdentifier.ssn }.toFullVtjPerson()
+        persons.single { it.ssn == query.ssn.value }.toFullVtjPerson()
 
     override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): VtjPerson =
         getBasicDetailsFor(query).copy(dependants = relativesOf(query))
@@ -131,7 +131,7 @@ private class StubRelativeDetailsService(private vararg val persons: DevPerson) 
         getBasicDetailsFor(query).copy(guardians = relativesOf(query))
 
     private fun relativesOf(query: IPersonDetailsService.DetailsQuery) =
-        persons.filter { it.ssn != query.targetIdentifier.ssn }.map { it.toRelativeStub() }
+        persons.filter { it.ssn != query.ssn.value }.map { it.toRelativeStub() }
 }
 
 private fun DevPerson.toFullVtjPerson() =

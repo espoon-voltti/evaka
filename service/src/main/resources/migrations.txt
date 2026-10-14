@@ -615,3 +615,4 @@ V616__titania_error_type.sql
 V617__finance_decision_partner_is_codebtor.sql
 V618__invoice_correction_finite_period.sql
 V619__decision_decided_by.sql
+V620__ssn_not_empty.sql

@@ -8,8 +8,7 @@ import evaka.core.Audit
 import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
-import evaka.core.identity.ExternalIdentifier
-import evaka.core.identity.isValidSSN
+import evaka.core.identity.Ssn
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.PersonSummary
 import evaka.core.pis.createPerson
@@ -426,20 +425,9 @@ class PersonController(
                     }
                 }
 
-                if (!isValidSSN(body.ssn)) {
-                    throw BadRequest("Invalid social security number")
-                }
+                val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid social security number")
 
-                PersonJSON.from(
-                    dbc.transaction {
-                        personService.addSsn(
-                            it,
-                            user,
-                            personId,
-                            ExternalIdentifier.SSN.getInstance(body.ssn),
-                        )
-                    }
-                )
+                PersonJSON.from(dbc.transaction { personService.addSsn(it, user, personId, ssn) })
             }
             .also { Audit.PersonUpdate.log(targetId = AuditId(personId)) }
     }
@@ -485,7 +473,7 @@ class PersonController(
         clock: EvakaClock,
         @RequestBody body: GetOrCreatePersonBySsnRequest,
     ): PersonJSON {
-        if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
+        val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid SSN")
 
         val audit = AuditContext().addMeta("readonly", body.readonly)
         return db.connect { dbc ->
@@ -497,13 +485,7 @@ class PersonController(
                         Action.Global.CREATE_PERSON_FROM_VTJ,
                     )
 
-                    personService.getOrCreatePerson(
-                        it,
-                        user,
-                        ExternalIdentifier.SSN.getInstance(body.ssn),
-                        body.readonly,
-                        audit,
-                    )
+                    personService.getOrCreatePerson(it, user, ssn, body.readonly, audit)
                 } ?: throw NotFound()
             }
             .let { PersonJSON.from(it) }

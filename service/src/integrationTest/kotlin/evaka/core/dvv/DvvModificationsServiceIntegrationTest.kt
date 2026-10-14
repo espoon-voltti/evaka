@@ -7,11 +7,15 @@ package evaka.core.dvv
 import evaka.core.pis.Creator
 import evaka.core.pis.createParentship
 import evaka.core.pis.getParentships
+import evaka.core.pis.getPartnersForPerson
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.service.getChildGuardians
 import evaka.core.pis.service.getGuardianChildIds
 import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.dev.DevFridgePartnership
+import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
@@ -26,6 +30,7 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.mock
 
 class DvvModificationsServiceIntegrationTest :
     DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
@@ -58,6 +63,67 @@ class DvvModificationsServiceIntegrationTest :
     }
 
     @Test
+    fun `the first run seeds the token from DVV and reads the modifications`() {
+        db.transaction { tx -> tx.deleteDvvModificationToken("100") }
+        val ssn = "010179-9992"
+        createTestPerson(testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = ssn))
+        MockPersonDetailsService.addPersons(
+            testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = ssn)
+        )
+
+        assertEquals(1, updatePeopleFromDvv(listOf(ssn)))
+
+        db.read {
+            assertEquals(
+                DvvModificationToken("seed-2020-01-01", "100000021", 0, 0),
+                it.getDvvModificationToken("seed-2020-01-01"),
+            )
+            assertEquals(
+                DvvModificationToken("100000021", "100000022", 1, 1),
+                it.getDvvModificationToken("100000021"),
+            )
+            assertEquals("100000022", it.getNextDvvModificationToken())
+            assertEquals("Urkki", it.getPersonBySSN(ssn)?.firstName)
+        }
+    }
+
+    @Test
+    fun `a seeded first run with no modifications is continued by the next run`() {
+        db.transaction { tx -> tx.deleteDvvModificationToken("100") }
+
+        assertEquals(0, updatePeopleFromDvv(emptyList(), LocalDate.of(2020, 1, 1)))
+        assertEquals(0, updatePeopleFromDvv(emptyList(), LocalDate.of(2020, 1, 2)))
+
+        db.read {
+            assertEquals(
+                listOf("seed-2020-01-01", "100000021", "100000022"),
+                it.createQuery { sql("SELECT token FROM dvv_modification_token ORDER BY created") }
+                    .toList<String>(),
+            )
+            assertEquals("100000023", it.getNextDvvModificationToken())
+        }
+    }
+
+    @Test
+    fun `the refresh job reads the SSNs of the persons from the database`() {
+        createTestPerson(testPerson.copy(ssn = "010180-999A"))
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2020, 1, 1), LocalTime.of(3, 0)))
+
+        DvvModificationsBatchRefreshService(mock(), dvvModificationsService)
+            .doDvvModificationsRefresh(
+                db,
+                clock,
+                AsyncJob.DvvModificationsRefresh(requestingUserId = UUID.randomUUID()),
+            )
+
+        assertEquals(
+            LocalDate.of(2019, 7, 30),
+            db.read { it.getPersonBySSN("010180-999A") }?.dateOfDeath,
+        )
+    }
+
+    @Test
     fun `modification token is not updated if there is an exception during update`() {
         db.read { assertEquals("101", it.getNextDvvModificationToken()) }
 
@@ -74,6 +140,52 @@ class DvvModificationsServiceIntegrationTest :
             LocalDate.parse("2019-07-30"),
             db.read { it.getPersonBySSN("010180-999A") }?.dateOfDeath,
         )
+    }
+
+    @Test
+    fun `person date of death ends the fridge relations on the date of death`() {
+        val dead = testPerson.copy(ssn = "010180-999A")
+        val partner = testPerson.copy(id = PersonId(UUID.randomUUID()), ssn = null)
+        val child =
+            testPerson.copy(
+                id = PersonId(UUID.randomUUID()),
+                ssn = null,
+                dateOfBirth = LocalDate.of(2017, 6, 1),
+            )
+        createTestPerson(dead)
+        createTestPerson(partner)
+        createTestPerson(child)
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child.id,
+                    headOfChildId = dead.id,
+                    startDate = LocalDate.of(2018, 1, 1),
+                    endDate = LocalDate.of(2035, 5, 31),
+                )
+            )
+            tx.insert(
+                DevFridgePartnership(
+                    first = dead.id,
+                    second = partner.id,
+                    startDate = LocalDate.of(2018, 1, 1),
+                )
+            )
+        }
+
+        updatePeopleFromDvv(listOf("010180-999A"))
+
+        val dateOfDeath = LocalDate.of(2019, 7, 30)
+        db.read { tx ->
+            assertEquals(
+                listOf(dateOfDeath),
+                tx.getParentships(headOfChildId = dead.id, childId = null).map { it.endDate },
+            )
+            assertEquals(
+                listOf(dateOfDeath),
+                tx.getPartnersForPerson(dead.id, includeConflicts = false).map { it.endDate },
+            )
+        }
     }
 
     @Test
@@ -180,7 +292,7 @@ class DvvModificationsServiceIntegrationTest :
             db.read { tx ->
                 tx.getChildGuardians(dvvCustodian.id)
                     .mapNotNull { tx.getPersonById(it) }
-                    .any { guardian -> guardian.identity.toString() == caretaker.ssn }
+                    .any { guardian -> guardian.ssn!!.value == caretaker.ssn }
             }
         )
     }
@@ -204,7 +316,7 @@ class DvvModificationsServiceIntegrationTest :
             db.read { tx ->
                 tx.getGuardianChildIds(dvvCaretaker.id)
                     .mapNotNull { tx.getPersonById(it) }
-                    .any { child -> child.identity.toString() == custodian.ssn }
+                    .any { child -> child.ssn!!.value == custodian.ssn }
             }
         )
     }
@@ -228,7 +340,7 @@ class DvvModificationsServiceIntegrationTest :
             db.read { tx ->
                 tx.getGuardianChildIds(dvvCaretaker.id)
                     .mapNotNull { tx.getPersonById(it) }
-                    .any { child -> child.identity.toString() == custodian.ssn }
+                    .any { child -> child.ssn!!.value == custodian.ssn }
             }
         )
     }

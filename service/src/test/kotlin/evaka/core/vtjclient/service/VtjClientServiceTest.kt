@@ -9,8 +9,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.Appender
 import evaka.core.Sensitive
 import evaka.core.VtjEnv
-import evaka.core.identity.ExternalIdentifier
-import evaka.core.identity.ExternalIdentifier.SSN
+import evaka.core.identity.Ssn
 import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.PersonId
 import evaka.core.vtjclient.config.SoapRequestAdapter
@@ -91,7 +90,7 @@ class VtjClientServiceTest {
         val mockAppender = mockAppender()
 
         val ssn = "050482-9741"
-        val requestedBy = createPerson(externalId = SSN.getInstance(ssn))
+        val requestedBy = createPerson(ssn = Ssn.parse(ssn))
         val query =
             VTJQuery(requestingUserId = requestedBy.id.raw, type = HUOLTAJA_HUOLLETTAVA, ssn = ssn)
 
@@ -236,7 +235,7 @@ class VtjClientServiceTest {
             VTJQuery(
                 requestingUserId = requestedBy.id.raw,
                 type = HUOLTAJA_HUOLLETTAVA,
-                ssn = requestedBy.identity.toString(),
+                ssn = requestedBy.ssn!!.value,
             )
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
@@ -256,7 +255,7 @@ class VtjClientServiceTest {
             VTJQuery(
                 requestingUserId = requestedBy.id.raw,
                 type = HUOLTAJA_HUOLLETTAVA,
-                ssn = requestedBy.identity.toString(),
+                ssn = requestedBy.ssn!!.value,
             )
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
@@ -275,7 +274,7 @@ class VtjClientServiceTest {
         argumentCaptor<JAXBElement<HenkiloTunnusKyselyReqBody>>().apply {
             verify(mockWSTemplate).marshalSendAndReceive(capture(), eq(mockCallback))
             val request = firstValue.value.request
-            assertThat(request.henkilotunnus).isEqualTo(requestedBy.identity.toString())
+            assertThat(request.henkilotunnus).isEqualTo(requestedBy.ssn.value)
             assertThat(request.kayttajatunnus).isEqualTo(userName)
             assertThat(request.salasana).isEqualTo(password)
             assertThat(request.soSoNimi).isEqualTo(query.type.queryName)
@@ -285,7 +284,7 @@ class VtjClientServiceTest {
 
     private fun createPerson(
         id: PersonId = PersonId(UUID.randomUUID()),
-        externalId: ExternalIdentifier = SSN.getInstance(DEFAULT_PERSON_SSN),
+        ssn: Ssn? = Ssn.parse(DEFAULT_PERSON_SSN),
         firstName: String = "Tomi",
         lastName: String = "Testing",
         preferredName: String = "Tomi",
@@ -302,7 +301,7 @@ class VtjClientServiceTest {
         PersonDTO(
             id = id,
             duplicateOf = null,
-            identity = externalId,
+            ssn = ssn,
             ssnAddingDisabled = false,
             firstName = firstName,
             lastName = lastName,
@@ -328,7 +327,7 @@ class VtjClientServiceTest {
         ssn: String = DEFAULT_PERSON_SSN,
         type: RequestType = HUOLTAJA_HUOLLETTAVA,
     ): VTJQuery {
-        val requestedBy = createPerson(externalId = SSN.getInstance(ssn))
+        val requestedBy = createPerson(ssn = Ssn.parse(ssn))
         return VTJQuery(requestingUserId = requestedBy.id.raw, type = type, ssn = ssn)
     }
 

@@ -11,7 +11,6 @@ import evaka.core.pis.getPersonById
 import evaka.core.pis.personIsHeadOfFamily
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
-import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
@@ -27,13 +26,8 @@ class FridgeFamilyService(
     private val personService: PersonService,
     private val parentshipService: ParentshipService,
 ) {
-    fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh, clock: EvakaClock) {
-        updateGuardianAndFamilyFromVtj(
-            db,
-            AuthenticatedUser.SystemInternalUser,
-            clock,
-            msg.personId,
-        )
+    fun doVTJRefresh(db: Database.Connection, clock: EvakaClock, personId: PersonId) {
+        updateGuardianAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, clock, personId)
     }
 
     fun updateGuardianOrChildFromVtj(

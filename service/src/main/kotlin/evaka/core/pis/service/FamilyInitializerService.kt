@@ -6,7 +6,7 @@ package evaka.core.pis.service
 
 import evaka.core.application.ApplicationDetails
 import evaka.core.application.fetchApplicationDetails
-import evaka.core.identity.ExternalIdentifier.SSN
+import evaka.core.identity.Ssn
 import evaka.core.pis.Creator
 import evaka.core.pis.createParentship
 import evaka.core.pis.createPartnership
@@ -165,8 +165,7 @@ class FamilyInitializerService(
                 }
 
         val fridgePartnerSSN =
-            application.form.otherPartner?.socialSecurityNumber
-                ?: (otherGuardian?.identity as? SSN)?.ssn
+            application.form.otherPartner?.socialSecurityNumber ?: otherGuardian?.ssn?.value
 
         val existingFridgePartnerInSameAddressAsGuardianSSN =
             if (otherGuardian != null || fridgePartnerSSN != null) {
@@ -201,7 +200,7 @@ class FamilyInitializerService(
 
         val fridgePartner =
             (fridgePartnerSSN ?: existingFridgePartnerInSameAddressAsGuardianSSN)
-                ?.let { stringToSSN(it) }
+                ?.let { Ssn.parse(it) }
                 ?.let {
                     try {
                         personService.getOrCreatePerson(tx, user, it, audit = null)
@@ -216,7 +215,7 @@ class FamilyInitializerService(
         val fridgeSiblings =
             application.form.otherChildren
                 .mapNotNull { it.socialSecurityNumber }
-                .mapNotNull { stringToSSN(it) }
+                .mapNotNull { Ssn.parse(it) }
                 .mapNotNull {
                     try {
                         personService.getOrCreatePerson(tx, user, it, audit = null)
@@ -229,14 +228,6 @@ class FamilyInitializerService(
                 }
 
         return FridgeFamilyMembers(headOfFamily, fridgePartner, child, fridgeSiblings)
-    }
-
-    private fun stringToSSN(ssn: String): SSN? {
-        return try {
-            SSN.getInstance(ssn)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
     }
 
     private fun createParentship(

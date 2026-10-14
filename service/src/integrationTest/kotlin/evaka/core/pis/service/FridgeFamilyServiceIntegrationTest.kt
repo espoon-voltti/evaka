@@ -11,7 +11,6 @@ import evaka.core.pis.createPartnership
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
-import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevEmployee
@@ -56,8 +55,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `First adult becomes the head of all common children`() {
-        MockPersonDetailsService.addDependants(adult1.identity, child1.identity, child2.identity)
-        MockPersonDetailsService.addDependants(adult2.identity, child1.identity, child2.identity)
+        MockPersonDetailsService.addDependants(adult1, child1, child2)
+        MockPersonDetailsService.addDependants(adult2, child1, child2)
 
         db.transaction {
             it.insert(employee)
@@ -72,7 +71,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+        fridgeFamilyService.doVTJRefresh(db, mockToday, adult1.id)
 
         db.read {
             assertEquals(
@@ -90,7 +89,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `Do not add fridge parentships automatically for children with foster parent`() {
-        MockPersonDetailsService.addDependants(adult1.identity, child1.identity, child2.identity)
+        MockPersonDetailsService.addDependants(adult1, child1, child2)
 
         db.transaction { tx ->
             tx.insert(
@@ -108,7 +107,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+        fridgeFamilyService.doVTJRefresh(db, mockToday, adult1.id)
 
         db.read {
             assertEquals(
@@ -126,8 +125,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `New child is added to existing head of family`() {
-        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
-        MockPersonDetailsService.addDependants(adult2.identity, child1.identity)
+        MockPersonDetailsService.addDependants(adult1, child1)
+        MockPersonDetailsService.addDependants(adult2, child1)
 
         db.transaction {
             it.insert(employee)
@@ -142,7 +141,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+        fridgeFamilyService.doVTJRefresh(db, mockToday, adult1.id)
 
         db.read {
             assertEquals(
@@ -152,14 +151,14 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        MockPersonDetailsService.addDependants(adult1.identity, child2.identity)
-        MockPersonDetailsService.addDependants(adult2.identity, child2.identity)
+        MockPersonDetailsService.addDependants(adult1, child2)
+        MockPersonDetailsService.addDependants(adult2, child2)
 
         // Note: the person to update here is the other adult2. Implementation should
         // detect that her partner already has a fridge family and add the child to that one instead
         // of
         // creating a new fridge family for this other adult2
-        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
+        fridgeFamilyService.doVTJRefresh(db, mockToday, adult1.id)
 
         db.read {
             assertEquals(
@@ -177,8 +176,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `guardians are added to child`() {
-        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
-        MockPersonDetailsService.addDependants(adult2.identity, child1.identity)
+        MockPersonDetailsService.addDependants(adult1, child1)
+        MockPersonDetailsService.addDependants(adult2, child1)
 
         fridgeFamilyService.updateGuardianOrChildFromVtj(
             db,
@@ -195,8 +194,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `refresh keeps existing guardian relations and removes ended ones`() {
-        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
-        MockPersonDetailsService.addDependants(adult2.identity, child1.identity)
+        MockPersonDetailsService.addDependants(adult1, child1)
+        MockPersonDetailsService.addDependants(adult2, child1)
         fridgeFamilyService.updateGuardianOrChildFromVtj(
             db,
             AuthenticatedUser.SystemInternalUser,
@@ -208,7 +207,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         // adult2 is no longer a guardian of child1 in VTJ
         MockPersonDetailsService.reset()
         MockPersonDetailsService.addPersons(adult1, adult2, child1, child2)
-        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
+        MockPersonDetailsService.addDependants(adult1, child1)
         fridgeFamilyService.updateGuardianOrChildFromVtj(
             db,
             AuthenticatedUser.SystemInternalUser,
@@ -219,6 +218,42 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         db.read { tx ->
             assertEquals(listOf(adult1.id), tx.getChildGuardians(child1.id))
             assertEquals(createdBefore, tx.getGuardianCreated(adult1.id, child1.id))
+        }
+    }
+
+    @Test
+    fun `refreshing a child adds it once to the family of its guardians who are partners`() {
+        MockPersonDetailsService.addDependants(adult1, child1)
+        MockPersonDetailsService.addDependants(adult2, child1)
+
+        db.transaction {
+            it.insert(employee)
+            it.createPartnership(
+                adult1.id,
+                adult2.id,
+                mockToday.today(),
+                null,
+                false,
+                Creator.User(partnershipCreator),
+                mockToday.now(),
+            )
+        }
+
+        fridgeFamilyService.updateGuardianOrChildFromVtj(
+            db,
+            AuthenticatedUser.SystemInternalUser,
+            mockToday,
+            child1.id,
+        )
+
+        db.read {
+            assertEquals(
+                listOf(adult1.id),
+                it.getParentships(null, child1.id, false, DateRange(mockToday.today(), null)).map {
+                    parentship ->
+                    parentship.headOfChildId
+                },
+            )
         }
     }
 
@@ -235,8 +270,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 parentshipService,
             )
 
-        val parent = DevPerson(ssn = adult1.identity.toString())
-        val child = DevPerson(ssn = child1.identity.toString())
+        val parent = DevPerson(ssn = adult1.ssn!!.value)
+        val child = DevPerson(ssn = child1.ssn!!.value)
 
         MockVtjClientService.addHUOLTAJAHUOLLETTAVARequestExpectation(parent, listOf(child))
         MockVtjClientService.addPERUSSANOMA3RequestExpectation(child)

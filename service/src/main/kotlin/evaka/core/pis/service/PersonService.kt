@@ -5,13 +5,12 @@
 package evaka.core.pis.service
 
 import evaka.core.AuditContext
-import evaka.core.application.utils.exhaust
 import evaka.core.daycare.controllers.AdditionalInformation
 import evaka.core.daycare.controllers.Child
 import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
 import evaka.core.decision.DecisionSendAddress
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.createPersonFromVtj
@@ -56,10 +55,10 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         id: PersonId,
     ): PersonDTO? {
         val person = tx.getPersonById(id) ?: return null
-        return if (person.identity is ExternalIdentifier.SSN) {
+        return if (person.ssn != null) {
             val personDetails =
                 personDetailsService.getBasicDetailsFor(
-                    IPersonDetailsService.DetailsQuery(user.evakaUserId, person.identity)
+                    IPersonDetailsService.DetailsQuery(user.evakaUserId, person.ssn)
                 )
             upsertVtjPerson(tx, personDetails.mapToDto())
         } else {
@@ -124,29 +123,23 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     ): PersonWithChildrenDTO? {
         val guardian = tx.getPersonById(id) ?: return null
 
-        return when (guardian.identity) {
-            is ExternalIdentifier.NoID -> {
-                toPersonWithChildrenDTO(guardian)
-            }
-
-            is ExternalIdentifier.SSN -> {
-                if (forceRefresh || guardian.vtjDependantsQueried == null) {
-                    getPersonWithDependants(user, guardian.identity)
-                        .let { upsertVtjChildren(tx, now, it) }
-                        .let {
-                            toPersonWithChildrenDTO(
-                                it,
-                                guardian.preferredName,
-                                guardian.phone,
-                                guardian.backupPhone,
-                                guardian.email,
-                            )
-                        }
-                } else {
-                    val children = tx.getGuardianDependants(id).map { toPersonWithChildrenDTO(it) }
-                    toPersonWithChildrenDTO(guardian).copy(children = children)
+        return if (guardian.ssn == null) {
+            toPersonWithChildrenDTO(guardian)
+        } else if (forceRefresh || guardian.vtjDependantsQueried == null) {
+            getPersonWithDependants(user, guardian.ssn)
+                .let { upsertVtjChildren(tx, now, it) }
+                .let {
+                    toPersonWithChildrenDTO(
+                        it,
+                        guardian.preferredName,
+                        guardian.phone,
+                        guardian.backupPhone,
+                        guardian.email,
+                    )
                 }
-            }
+        } else {
+            val children = tx.getGuardianDependants(id).map { toPersonWithChildrenDTO(it) }
+            toPersonWithChildrenDTO(guardian).copy(children = children)
         }
     }
 
@@ -160,21 +153,15 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     ): List<PersonDTO> {
         val child = tx.getPersonById(id) ?: return emptyList()
 
-        return when (child.identity) {
-            is ExternalIdentifier.NoID -> {
-                emptyList()
-            }
-
-            is ExternalIdentifier.SSN -> {
-                if (forceRefresh || child.vtjGuardiansQueried == null) {
-                    getPersonWithGuardians(user, child.identity)
-                        .let { upsertVtjGuardians(tx, now, it) }
-                        .guardians
-                        .map(::toPersonDTO)
-                } else {
-                    tx.getDependantGuardians(id)
-                }
-            }
+        return if (child.ssn == null) {
+            emptyList()
+        } else if (forceRefresh || child.vtjGuardiansQueried == null) {
+            getPersonWithGuardians(user, child.ssn)
+                .let { upsertVtjGuardians(tx, now, it) }
+                .guardians
+                .map(::toPersonDTO)
+        } else {
+            tx.getDependantGuardians(id)
         }
     }
 
@@ -197,11 +184,11 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     fun getOrCreatePerson(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        ssn: ExternalIdentifier.SSN,
+        ssn: Ssn,
         readonly: Boolean = false,
         audit: AuditContext?,
     ): PersonDTO? {
-        val person = tx.getPersonBySSN(ssn.ssn)
+        val person = tx.getPersonBySSN(ssn.value)
         audit?.add(listOfNotNull(person?.id))
         return if (person?.updatedFromVtj == null) {
             val personDetails =
@@ -211,7 +198,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             if (readonly) return toPersonDTO(personDetails.mapToDto())
 
             upsertVtjPerson(tx, personDetails.mapToDto())
-            tx.getPersonBySSN(ssn.ssn).also {
+            tx.getPersonBySSN(ssn.value).also {
                 audit?.add(listOfNotNull(it?.id))?.addMeta("created", person == null)
             }
         } else {
@@ -224,10 +211,11 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         // People with SSN get basic details from VTJ which should not be modified
-        when (person.identity) {
-            is ExternalIdentifier.SSN -> tx.updatePersonNonVtjDetails(id, data)
-            is ExternalIdentifier.NoID -> tx.updateNonSsnPersonDetails(id, data)
-        }.exhaust()
+        if (person.ssn != null) {
+            tx.updatePersonNonVtjDetails(id, data)
+        } else {
+            tx.updateNonSsnPersonDetails(id, data)
+        }
 
         return tx.getPersonById(id)!!
     }
@@ -236,42 +224,34 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         tx: Database.Transaction,
         user: AuthenticatedUser,
         id: PersonId,
-        ssn: ExternalIdentifier.SSN,
+        ssn: Ssn,
     ): PersonDTO {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
-        return when (person.identity) {
-            is ExternalIdentifier.SSN -> {
-                throw BadRequest("User already has ssn")
-            }
+        if (person.ssn != null) {
+            throw BadRequest("User already has ssn")
+        }
+        if (tx.getPersonBySSN(ssn.value) != null) {
+            throw Conflict("User with same ssn already exists")
+        }
 
-            is ExternalIdentifier.NoID -> {
-                if (tx.getPersonBySSN(ssn.ssn) != null) {
-                    throw Conflict("User with same ssn already exists")
-                }
+        val personDetails =
+            personDetailsService.getBasicDetailsFor(
+                IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn)
+            )
 
-                val personDetails =
-                    personDetailsService.getBasicDetailsFor(
-                        IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn)
-                    )
+        val updatedPerson =
+            getPersonWithUpdatedProperties(personDetails.mapToDto(), person.copy(ssn = ssn))
 
-                val updatedPerson =
-                    getPersonWithUpdatedProperties(
-                        personDetails.mapToDto(),
-                        person.copy(identity = ssn),
-                    )
-
-                tx.updatePersonSsnAddingDisabled(id, false)
-                tx.updatePersonFromVtj(updatedPerson)
-                upsertVtjPerson(tx, personDetails.mapToDto())
-            }
-        }.exhaust()
+        tx.updatePersonSsnAddingDisabled(id, false)
+        tx.updatePersonFromVtj(updatedPerson)
+        return upsertVtjPerson(tx, personDetails.mapToDto())
     }
 
     fun disableSsn(tx: Database.Transaction, personId: PersonId, disabled: Boolean) {
         val person = tx.getPersonById(personId) ?: throw NotFound("Person $personId not found")
 
-        if (person.identity is ExternalIdentifier.SSN) {
+        if (person.ssn != null) {
             throw BadRequest("Cannot disable a SSN, person $personId already has a SSN")
         }
 
@@ -281,7 +261,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     // Does a request to VTJ
     private fun getPersonWithDependants(
         user: AuthenticatedUser,
-        ssn: ExternalIdentifier.SSN,
+        ssn: Ssn,
     ): VtjPersonDTO {
         return personDetailsService
             .getPersonWithDependants(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
@@ -291,7 +271,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     // Does a request to VTJ
     private fun getPersonWithGuardians(
         user: AuthenticatedUser,
-        ssn: ExternalIdentifier.SSN,
+        ssn: Ssn,
     ): VtjPersonDTO {
         return personDetailsService
             .getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
@@ -302,7 +282,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         PersonDTO(
             id = PersonId(person.id),
             duplicateOf = null,
-            identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
+            ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN"),
             ssnAddingDisabled = false,
             firstName = person.firstName,
             lastName = person.lastName,
@@ -375,7 +355,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         PersonWithChildrenDTO(
             id = person.id,
             duplicateOf = person.duplicateOf,
-            socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.toString(),
+            socialSecurityNumber = person.ssn?.value,
             firstName = person.firstName,
             lastName = person.lastName,
             preferredName = person.preferredName,
@@ -409,7 +389,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
 data class PersonDTO(
     val id: PersonId,
     val duplicateOf: PersonId?,
-    val identity: ExternalIdentifier,
+    val ssn: Ssn?,
     val ssnAddingDisabled: Boolean,
     val firstName: String,
     val lastName: String,
@@ -445,7 +425,7 @@ data class PersonDTO(
             lastName = this.lastName,
             dateOfBirth = this.dateOfBirth,
             dateOfDeath = this.dateOfDeath,
-            socialSecurityNumber = this.identity.toString(),
+            socialSecurityNumber = checkNotNull(this.ssn) { "Person $id has no SSN" }.value,
             restrictedDetailsEndDate = this.restrictedDetailsEndDate,
             restrictedDetailsEnabled = this.restrictedDetailsEnabled,
             nativeLanguage = NativeLanguage(code = this.language ?: ""),
@@ -514,7 +494,7 @@ data class PersonJSON(
             PersonJSON(
                 id = p.id,
                 duplicateOf = p.duplicateOf,
-                socialSecurityNumber = (p.identity as? ExternalIdentifier.SSN)?.ssn,
+                socialSecurityNumber = p.ssn?.value,
                 ssnAddingDisabled = p.ssnAddingDisabled,
                 firstName = p.firstName,
                 lastName = p.lastName,
@@ -557,7 +537,7 @@ data class PersonBasicInfo(
             PersonBasicInfo(
                 id = p.id,
                 duplicateOf = p.duplicateOf,
-                hasSsn = p.identity is ExternalIdentifier.SSN,
+                hasSsn = p.ssn != null,
                 ssnAddingDisabled = p.ssnAddingDisabled,
                 firstName = p.firstName,
                 lastName = p.lastName,
@@ -590,7 +570,7 @@ data class PersonSensitiveDetails(
     companion object {
         fun from(p: PersonDTO, includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
             PersonSensitiveDetails(
-                socialSecurityNumber = (p.identity as? ExternalIdentifier.SSN)?.ssn,
+                socialSecurityNumber = p.ssn?.value,
                 language = p.language,
                 streetAddress = p.streetAddress,
                 postalCode = p.postalCode,
@@ -656,11 +636,7 @@ data class PersonWithChildrenDTO(
         PersonDTO(
             id = id,
             duplicateOf = duplicateOf,
-            identity =
-                when (socialSecurityNumber) {
-                    is String -> ExternalIdentifier.SSN.getInstance(socialSecurityNumber)
-                    else -> ExternalIdentifier.NoID
-                },
+            ssn = socialSecurityNumber?.let { Ssn.parse(it) ?: error("Invalid SSN") },
             ssnAddingDisabled = false,
             dateOfBirth = dateOfBirth,
             dateOfDeath = dateOfDeath,
@@ -774,7 +750,7 @@ private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO =
     PersonDTO(
         id = PersonId(inputPerson.id), // This will be overwritten
         duplicateOf = null,
-        identity = ExternalIdentifier.SSN.getInstance(inputPerson.socialSecurityNumber),
+        ssn = Ssn.parse(inputPerson.socialSecurityNumber) ?: error("VTJ returned an invalid SSN"),
         ssnAddingDisabled = false,
         firstName = inputPerson.firstName,
         lastName = inputPerson.lastName,

@@ -5,7 +5,7 @@
 package evaka.core.pis.dao
 
 import evaka.core.PureJdbiTest
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.createPersonFromVtj
 import evaka.core.pis.searchPeople
@@ -16,13 +16,25 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.insert
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+    @Test
+    fun `an empty SSN is rejected by the database`() {
+        assertThrows<UnableToExecuteStatementException> {
+            db.transaction { tx -> tx.insert(DevPerson(ssn = ""), DevPersonType.RAW_ROW) }
+        }
+    }
+
     @Test
     fun `createPersonFromVtj creates person with correct data`() {
         val tempId = PersonId(UUID.randomUUID())
@@ -34,7 +46,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertNotEquals(tempId, created.id)
 
-        assertEquals(validSSN, created.identity.toString())
+        assertEquals(validSSN, created.ssn!!.value)
         assertEquals(inputPerson.dateOfBirth, created.dateOfBirth)
         assertEquals(inputPerson.firstName, created.firstName)
         assertEquals(inputPerson.lastName, created.lastName)
@@ -78,7 +90,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(updated.id, actual.id)
 
-        assertEquals(updated.identity.toString(), actual.identity.toString())
+        assertEquals(updated.ssn!!.value, actual.ssn!!.value)
         assertEquals(updated.dateOfBirth, actual.dateOfBirth)
         assertEquals(updated.firstName, actual.firstName)
         assertEquals(updated.lastName, actual.lastName)
@@ -281,7 +293,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         return PersonDTO(
             id = PersonId(UUID.randomUUID()),
             duplicateOf = null,
-            identity = ExternalIdentifier.SSN.getInstance(validSSN),
+            ssn = Ssn.parse(validSSN),
             ssnAddingDisabled = false,
             dateOfBirth = getDobFromSsn(validSSN),
             firstName = "Matti Yrjö Jari-Ville",

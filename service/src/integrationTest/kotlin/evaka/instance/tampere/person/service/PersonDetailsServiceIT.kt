@@ -11,7 +11,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.verify
-import evaka.core.identity.ExternalIdentifier
+import evaka.core.identity.Ssn
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
 import evaka.instance.tampere.AbstractTampereIntegrationTest
@@ -41,7 +41,7 @@ internal class PersonDetailsServiceIT : AbstractTampereIntegrationTest() {
             personDetailsService.getBasicDetailsFor(
                 IPersonDetailsService.DetailsQuery(
                     AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    ExternalIdentifier.SSN.getInstance("070644-937X"),
+                    Ssn.parse("070644-937X")!!,
                 )
             )
 

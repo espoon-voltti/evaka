@@ -75,7 +75,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(timeRangeEndpointArgumentFactory)
     jdbi.registerArgument(timeRangeArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)
-    jdbi.registerArgument(identityArgumentFactory)
+    jdbi.registerArgument(ssnArgumentFactory)
     jdbi.registerArgument(externalIdArgumentFactory)
     jdbi.registerArgument(idArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
@@ -102,6 +102,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.register(yearMonthColumnMapper)
     jdbi.register(productKeyColumnMapper)
+    jdbi.register(ssnColumnMapper)
     jdbi.register(dateSetColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
     jdbi.registerArrayType(FiniteDateRange::class.java, "daterange") {

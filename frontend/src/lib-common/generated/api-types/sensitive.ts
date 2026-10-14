@@ -34,7 +34,7 @@ export interface ChildSensitiveInformation {
   diet: string
   id: PersonId
   medication: string
-  ssn: string
+  ssn: string | null
 }
 
 

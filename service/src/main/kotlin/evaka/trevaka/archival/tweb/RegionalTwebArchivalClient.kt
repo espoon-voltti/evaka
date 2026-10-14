@@ -13,7 +13,6 @@ import evaka.core.caseprocess.DocumentMetadata
 import evaka.core.decision.Decision
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.document.childdocument.ChildDocumentDetails
-import evaka.core.identity.ExternalIdentifier
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
@@ -181,8 +180,7 @@ internal fun childTitle(type: String, status: String, owner: PersonDTO): String 
             type,
             status,
             "${owner.firstName} ${owner.lastName}",
-            if (owner.identity == ExternalIdentifier.NoID) error("No owner ssn available")
-            else owner.identity.toString(),
+            owner.ssn?.value ?: error("No owner ssn available"),
         )
         .joinToString(SEPARATOR_CHARACTER)
 

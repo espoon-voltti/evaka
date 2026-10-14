@@ -23,7 +23,6 @@ import evaka.core.decision.reasoning.validateResolvedGenericReasoning
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.identity.ExternalIdentifier
 import evaka.core.pdfgen.Page
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pdfgen.Template
@@ -304,7 +303,7 @@ class DecisionService(
         documentLocation: DocumentLocation,
         skipGuardianApproval: Boolean?,
     ) {
-        if (guardian.identity !is ExternalIdentifier.SSN) {
+        if (guardian.ssn == null) {
             logger.info {
                 "Cannot deliver daycare decision ${decision.id} to guardian. SSN is missing."
             }
@@ -334,7 +333,7 @@ class DecisionService(
                 streetAddress = sendAddress.street,
                 postalCode = sendAddress.postalCode,
                 postOffice = sendAddress.postOffice,
-                ssn = guardian.identity.ssn,
+                ssn = guardian.ssn.value,
                 messageHeader = messageProvider.getDecisionHeader(lang),
                 messageContent = messageProvider.getDecisionContent(lang, skipGuardianApproval),
             )

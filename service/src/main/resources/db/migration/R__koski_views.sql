@@ -21,12 +21,12 @@ AND nullif(oph_organizer_oid, '') IS NOT NULL;
 CREATE VIEW koski_child (id, ssn, oph_person_oid, first_name, last_name) AS
 SELECT
     id,
-    nullif(social_security_number, '') AS ssn,
+    social_security_number AS ssn,
     nullif(oph_person_oid, '') AS oph_person_oid,
     first_name,
     last_name
 FROM person
-WHERE nullif(social_security_number, '') IS NOT NULL
+WHERE social_security_number IS NOT NULL
 OR nullif(oph_person_oid, '') IS NOT NULL;
 
 CREATE FUNCTION koski_placement(today date, sync_range_start date) RETURNS

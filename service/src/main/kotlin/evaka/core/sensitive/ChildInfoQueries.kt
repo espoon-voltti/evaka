@@ -65,7 +65,7 @@ fun Database.Read.getChildSensitiveInfo(childId: ChildId): ChildSensitiveInforma
 
     return ChildSensitiveInformation(
         id = person.id,
-        ssn = person.identity.toString(),
+        ssn = person.ssn?.value,
         childAddress = person.streetAddress,
         allergies = child?.additionalInformation?.allergies ?: "",
         diet = child?.additionalInformation?.diet ?: "",

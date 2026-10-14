@@ -12,6 +12,7 @@ import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
 import org.springframework.ws.transport.WebServiceMessageSender
 
@@ -19,7 +20,7 @@ import org.springframework.ws.transport.WebServiceMessageSender
 @Profile("integration-test")
 @Import(XroadSoapClientConfig::class)
 class VtjIntegrationTestConfig {
-    @Bean fun personDetailsService(): IPersonDetailsService = MockPersonDetailsService()
+    @Bean @Primary fun personDetailsService(): IPersonDetailsService = MockPersonDetailsService()
 
     @Bean
     fun localWebServiceMessageSender(xroadEnv: VtjXroadEnv): WebServiceMessageSender =

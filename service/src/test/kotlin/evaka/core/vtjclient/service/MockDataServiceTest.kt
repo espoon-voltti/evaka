@@ -4,7 +4,7 @@
 
 package evaka.core.vtjclient.service
 
-import evaka.core.identity.ExternalIdentifier.SSN.Companion.getInstance
+import evaka.core.identity.Ssn
 import evaka.core.shared.EvakaUserId
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.PersonAddress
@@ -156,7 +156,7 @@ class MockDataServiceTest {
 
     private fun mapToQuery(ssn: String) =
         DetailsQuery(
-            targetIdentifier = getInstance(ssn),
+            ssn = Ssn.parse(ssn)!!,
             requestingUser = EvakaUserId(UUID.randomUUID()),
         )
 
