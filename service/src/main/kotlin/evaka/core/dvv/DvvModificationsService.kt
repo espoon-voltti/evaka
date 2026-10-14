@@ -5,25 +5,19 @@
 package evaka.core.dvv
 
 import evaka.core.identity.Ssn
-import evaka.core.pis.Modifier
-import evaka.core.pis.ModifySource
 import evaka.core.pis.addSSNToPerson
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPartnersForPerson
+import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.getPersonIdsBySsns
-import evaka.core.pis.updateParentshipDuration
-import evaka.core.pis.updatePartnershipDuration
+import evaka.core.pis.lockPersonBySSN
 import evaka.core.pis.updatePersonFromVtj
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
-import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.time.LocalDate
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -214,80 +208,14 @@ class DvvModificationsService(
         if (deathDvvInfoGroup.kuollut != true || deathDvvInfoGroup.kuolinpv == null) return
 
         db.transaction { tx ->
-            tx.getPersonBySSN(ssn)?.let { person ->
+            tx.lockPersonBySSN(ssn)?.let { person ->
                 val dateOfDeath = deathDvvInfoGroup.kuolinpv.asLocalDate()
                 logger.info { "Dvv modification for ${person.id}: marking dead since $dateOfDeath" }
                 tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath), now)
-
-                endFamilyRelations(tx, person.id, dateOfDeath, now)
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            person.id,
-                            DateRange(dateOfDeath, null),
-                        )
-                    ),
-                    runAt = now,
-                )
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            person.id,
-                            DateRange(dateOfDeath, null),
-                        )
-                    ),
-                    runAt = now,
-                )
+                if (person.dateOfDeath == null) {
+                    tx.applyDeathEffects(asyncJobRunner, now, person.id, dateOfDeath)
+                }
             }
-        }
-    }
-
-    private fun endFamilyRelations(
-        tx: Database.Transaction,
-        personId: PersonId,
-        dateOfDeath: LocalDate,
-        now: HelsinkiDateTime,
-    ) {
-        tx.getPartnersForPerson(
-                personId,
-                includeConflicts = true,
-                period = DateRange(dateOfDeath, dateOfDeath),
-            )
-            .forEach {
-                tx.updatePartnershipDuration(
-                    it.partnershipId,
-                    it.startDate,
-                    dateOfDeath,
-                    ModifySource.DVV,
-                    now,
-                    null,
-                )
-            }
-
-        val parentships =
-            tx.getParentships(
-                headOfChildId = personId,
-                childId = null,
-                includeConflicts = true,
-                period = DateRange(dateOfDeath, dateOfDeath),
-            ) +
-                tx.getParentships(
-                    headOfChildId = null,
-                    childId = personId,
-                    includeConflicts = true,
-                    period = DateRange(dateOfDeath, dateOfDeath),
-                )
-
-        parentships.forEach {
-            tx.updateParentshipDuration(
-                id = it.id,
-                startDate = it.startDate,
-                endDate = dateOfDeath,
-                now = now,
-                modifier = Modifier.DVV,
-            )
         }
     }
 

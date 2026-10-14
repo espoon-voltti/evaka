@@ -11,6 +11,8 @@ import evaka.core.pis.createPartnership
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevEmployee
@@ -316,13 +318,15 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     @Autowired lateinit var parentshipService: ParentshipService
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Test
     fun testVtjRequestCounts() {
         val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
         MockVtjSoapTransport.resetQueryCounts()
 
-        val vtjSyncService = VtjSyncService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()))
+        val vtjSyncService =
+            VtjSyncService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()), asyncJobRunner)
         val service =
             FridgeFamilyService(
                 PersonService(

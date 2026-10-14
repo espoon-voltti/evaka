@@ -5,6 +5,8 @@
 package evaka.core.pis.service
 
 import evaka.core.identity.Ssn
+import evaka.core.pis.ApplyResult
+import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.applyDependants
 import evaka.core.pis.applyGuardians
 import evaka.core.pis.applyPerson
@@ -13,9 +15,12 @@ import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonIdsBySsns
 import evaka.core.pis.isDependantSyncPerson
 import evaka.core.pis.isMinor
+import evaka.core.pis.setSsnFromVtj
 import evaka.core.shared.ChildId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -27,7 +32,10 @@ import org.springframework.stereotype.Service
 private val logger = KotlinLogging.logger {}
 
 @Service
-class VtjSyncService(private val vtjClient: VtjClient) {
+class VtjSyncService(
+    private val vtjClient: VtjClient,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+) {
     fun ensureDependantsSynced(
         dbc: Database.Connection,
         requestingUserId: EvakaUserId,
@@ -107,7 +115,27 @@ class VtjSyncService(private val vtjClient: VtjClient) {
     }
 
     fun applyFromVtj(tx: Database.Transaction, now: HelsinkiDateTime, person: VtjPerson): PersonId =
-        tx.applyPerson(person, now).id
+        applyDeathEffectsOf(tx, now, tx.applyPerson(person, now))
+
+    fun applySsnFromVtj(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime,
+        personId: PersonId,
+        person: VtjPerson,
+    ) {
+        val _ = applyDeathEffectsOf(tx, now, tx.setSsnFromVtj(personId, person, now))
+    }
+
+    private fun applyDeathEffectsOf(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime,
+        result: ApplyResult,
+    ): PersonId {
+        if (result.newDateOfDeath != null) {
+            tx.applyDeathEffects(asyncJobRunner, now, result.id, result.newDateOfDeath)
+        }
+        return result.id
+    }
 
     private fun syncGuardians(
         dbc: Database.Connection,
