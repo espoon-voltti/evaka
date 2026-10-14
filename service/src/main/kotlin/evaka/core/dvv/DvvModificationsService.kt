@@ -20,6 +20,7 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service
@@ -40,7 +41,7 @@ class DvvModificationsService(
                 "Fetching dvv modifications with $token, found modifications so far: $modificationCount"
             }
             val page = dvvModificationsServiceClient.getModifications(token, ssns)
-            processModifications(db, clock, token, page, ssns.size)
+            processModifications(db, clock.now(), token, page, ssns.size)
             modificationCount += page.muutokset.size
 
             if (page.ajanTasalla) return modificationCount
@@ -65,7 +66,7 @@ class DvvModificationsService(
 
     private fun processModifications(
         db: Database.Connection,
-        clock: EvakaClock,
+        now: HelsinkiDateTime,
         token: String,
         page: DvvModificationsResponse,
         ssnCount: Int,
@@ -79,13 +80,13 @@ class DvvModificationsService(
                 try {
                     when (infoGroup) {
                         is DeathDvvInfoGroup -> {
-                            handleDeath(db, clock, personModifications.henkilotunnus, infoGroup)
+                            handleDeath(db, now, personModifications.henkilotunnus, infoGroup)
                         }
 
                         is RestrictedInfoDvvInfoGroup -> {
                             handleRestrictedInfo(
                                 db,
-                                clock,
+                                now,
                                 personModifications.henkilotunnus,
                                 infoGroup,
                             )
@@ -141,7 +142,7 @@ class DvvModificationsService(
             asyncJobRunner.plan(
                 tx,
                 payloads = ssnsToUpdateFromVtj.map { AsyncJob.UpdateFromVtj(it) },
-                runAt = clock.now(),
+                runAt = now,
             )
             if (token != page.viimeisinKirjausavain) {
                 tx.storeDvvModificationToken(
@@ -206,7 +207,7 @@ class DvvModificationsService(
 
     private fun handleDeath(
         db: Database.Connection,
-        clock: EvakaClock,
+        now: HelsinkiDateTime,
         ssn: String,
         deathDvvInfoGroup: DeathDvvInfoGroup,
     ) {
@@ -216,9 +217,9 @@ class DvvModificationsService(
             tx.getPersonBySSN(ssn)?.let { person ->
                 val dateOfDeath = deathDvvInfoGroup.kuolinpv.asLocalDate()
                 logger.info { "Dvv modification for ${person.id}: marking dead since $dateOfDeath" }
-                tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath), clock.now())
+                tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath), now)
 
-                endFamilyRelations(tx, person.id, dateOfDeath, clock)
+                endFamilyRelations(tx, person.id, dateOfDeath, now)
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -227,7 +228,7 @@ class DvvModificationsService(
                             DateRange(dateOfDeath, null),
                         )
                     ),
-                    runAt = clock.now(),
+                    runAt = now,
                 )
                 asyncJobRunner.plan(
                     tx,
@@ -237,7 +238,7 @@ class DvvModificationsService(
                             DateRange(dateOfDeath, null),
                         )
                     ),
-                    runAt = clock.now(),
+                    runAt = now,
                 )
             }
         }
@@ -247,7 +248,7 @@ class DvvModificationsService(
         tx: Database.Transaction,
         personId: PersonId,
         dateOfDeath: LocalDate,
-        clock: EvakaClock,
+        now: HelsinkiDateTime,
     ) {
         tx.getPartnersForPerson(
                 personId,
@@ -260,7 +261,7 @@ class DvvModificationsService(
                     it.startDate,
                     dateOfDeath,
                     ModifySource.DVV,
-                    clock.now(),
+                    now,
                     null,
                 )
             }
@@ -284,7 +285,7 @@ class DvvModificationsService(
                 id = it.id,
                 startDate = it.startDate,
                 endDate = dateOfDeath,
-                now = clock.now(),
+                now = now,
                 modifier = Modifier.DVV,
             )
         }
@@ -292,7 +293,7 @@ class DvvModificationsService(
 
     private fun handleRestrictedInfo(
         db: Database.Connection,
-        clock: EvakaClock,
+        now: HelsinkiDateTime,
         ssn: String,
         restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup,
     ) {
@@ -319,7 +320,7 @@ class DvvModificationsService(
                             if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
                             else it.municipalityOfResidence,
                     ),
-                    clock.now(),
+                    now,
                 )
             }
         }
