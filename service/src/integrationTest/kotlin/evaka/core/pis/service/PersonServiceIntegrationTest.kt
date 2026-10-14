@@ -14,6 +14,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.assertThrows
 class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
+    private lateinit var vtjSyncService: VtjSyncService
     private lateinit var personService: PersonService
 
     val user = AuthenticatedUser.SystemInternalUser
@@ -87,20 +89,19 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         MockVtjSoapTransport.resetQueryCounts()
         val vtjClient = SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper())
-        personService = PersonService(vtjClient, VtjSyncService(vtjClient))
+        vtjSyncService = VtjSyncService(vtjClient)
+        personService = PersonService(vtjClient, vtjSyncService)
     }
 
     @Test
-    fun `getUpToDatePersonFromVtj fetches person vtj info only once`() {
+    fun `refreshPerson fetches the basic details of a leaf adult only once`() {
         MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonWithoutVtjChildren)
-        db.transaction {
-            personService.getUpToDatePersonFromVtj(
-                it,
-                user,
-                HelsinkiDateTime.now(),
-                testPersonWithoutVtjChildren.id,
-            )
-        }
+        vtjSyncService.refreshPerson(
+            db,
+            user,
+            MockEvakaClock(now),
+            testPersonWithoutVtjChildren.id,
+        )
         assertEquals(
             1,
             MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren),

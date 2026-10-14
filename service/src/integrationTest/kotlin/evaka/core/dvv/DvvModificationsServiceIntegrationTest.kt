@@ -21,6 +21,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.user.updateLastStrongLogin
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
@@ -275,12 +276,27 @@ class DvvModificationsServiceIntegrationTest :
     }
 
     @Test
-    fun `new custodian added`() {
+    fun `an SSN correction with other changes refreshes the person by the new SSN`() {
+        val person = testPerson.copy(ssn = "020182-998E")
+        createTestPerson(person)
+        MockVtjClient.addPersons(person.copy(ssn = "030182-9983", streetAddress = "Uusitie 17"))
+
+        updatePeopleFromDvv(listOf("020182-998E"))
+
+        val updated = db.read { it.getPersonById(person.id) }!!
+        assertEquals("030182-9983", updated.ssn?.value)
+        assertEquals("Uusitie 17", updated.streetAddress)
+    }
+
+    @Test
+    fun `new custodian of a dependant-sync person added`() {
         val custodian =
             testPerson.copy(firstName = "Harri", lastName = "Huollettava", ssn = "050118A999W")
-        val caretaker: DevPerson = testPerson.copy(ssn = "050180-999W")
+        val caretaker: DevPerson =
+            testPerson.copy(id = PersonId(UUID.randomUUID()), ssn = "050180-999W")
 
         createTestPerson(custodian)
+        createCitizen(caretaker)
         MockVtjClient.addPersons(caretaker, custodian)
         MockVtjClient.addDependants(caretaker, custodian)
 
@@ -299,7 +315,8 @@ class DvvModificationsServiceIntegrationTest :
 
     @Test
     fun `new caretaker added`() {
-        val custodian: DevPerson = testPerson.copy(ssn = "060118A999J")
+        val custodian: DevPerson =
+            testPerson.copy(ssn = "060118A999J", dateOfBirth = LocalDate.of(2018, 1, 6))
         val caretaker =
             testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "060180-999J")
 
@@ -325,9 +342,15 @@ class DvvModificationsServiceIntegrationTest :
     fun `new single caretaker modification groups cause only one VTJ update`() {
         val custodian: DevPerson = testPerson.copy(ssn = "010118-999A")
         val caretaker =
-            testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999")
+            testPerson.copy(
+                id = PersonId(UUID.randomUUID()),
+                firstName = "Harri",
+                lastName = "Huoltaja",
+                ssn = "010579-9999",
+            )
 
         createTestPerson(custodian)
+        createCitizen(caretaker)
         MockVtjClient.addPersons(caretaker, custodian)
         MockVtjClient.addDependants(caretaker, custodian)
 
@@ -417,7 +440,7 @@ class DvvModificationsServiceIntegrationTest :
         val childDateOfBirth = LocalDate.of(2020, 1, 1)
         val child = testPerson.copy(dateOfBirth = childDateOfBirth, ssn = "010120A123K")
 
-        createTestPerson(personWithoutChildren)
+        createCitizen(personWithoutChildren)
         MockVtjClient.addPersons(personWithoutChildren, child)
         MockVtjClient.addDependants(personWithoutChildren, child)
 
@@ -445,7 +468,7 @@ class DvvModificationsServiceIntegrationTest :
         val child = testPerson.copy(dateOfBirth = childDateOfBirth, ssn = "010120A123K")
         val currentDate = childDateOfBirth.plusMonths(3)
 
-        createTestPerson(personWithoutChildren)
+        createCitizen(personWithoutChildren)
         MockVtjClient.addPersons(personWithoutChildren, child)
         MockVtjClient.addDependants(personWithoutChildren, child)
 
@@ -473,7 +496,7 @@ class DvvModificationsServiceIntegrationTest :
         val child = testPerson.copy(dateOfBirth = childDateOfBirth, ssn = "010120A123K")
         val currentDate = childDateOfBirth.plusMonths(4)
 
-        createTestPerson(personWithoutChildren)
+        createCitizen(personWithoutChildren)
         MockVtjClient.addPersons(personWithoutChildren, child)
         MockVtjClient.addDependants(personWithoutChildren, child)
 
@@ -506,7 +529,7 @@ class DvvModificationsServiceIntegrationTest :
                 ssn = "010120A123K",
             )
 
-        createTestPerson(personWithoutChildren)
+        createCitizen(personWithoutChildren)
         createTestPerson(parent)
         createTestPerson(child)
         MockVtjClient.addPersons(personWithoutChildren, child)
@@ -562,5 +585,15 @@ class DvvModificationsServiceIntegrationTest :
 
     private fun createTestPerson(devPerson: DevPerson): PersonId = db.transaction { tx ->
         tx.insert(devPerson, DevPersonType.RAW_ROW)
+    }
+
+    private fun createCitizen(devPerson: DevPerson) {
+        db.transaction { tx ->
+            tx.insert(devPerson, DevPersonType.RAW_ROW)
+            tx.updateLastStrongLogin(
+                HelsinkiDateTime.of(LocalDate.of(2020, 1, 1), LocalTime.MIN),
+                devPerson.id,
+            )
+        }
     }
 }

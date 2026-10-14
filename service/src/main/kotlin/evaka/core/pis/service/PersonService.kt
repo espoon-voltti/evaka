@@ -46,20 +46,6 @@ class PersonService(
     private val vtjClient: VtjClient,
     private val vtjSyncService: VtjSyncService,
 ) {
-    // Does a request to VTJ if the person has a SSN and updates person data
-    fun getUpToDatePersonFromVtj(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
-        id: PersonId,
-    ): PersonDTO? {
-        val person = tx.getPersonById(id) ?: return null
-        if (person.ssn == null) return person
-        val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, person.ssn))
-        val _ = vtjSyncService.applyFromVtj(tx, now, vtjPerson)
-        return tx.getPersonById(id)
-    }
-
     fun personsLiveInTheSameAddress(
         db: Database.Read,
         person1Id: PersonId,
