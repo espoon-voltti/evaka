@@ -11,6 +11,7 @@ import evaka.core.pis.addSSNToPerson
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPartnersForPerson
 import evaka.core.pis.getPersonBySSN
+import evaka.core.pis.getPersonIdsBySsns
 import evaka.core.pis.updateParentshipDuration
 import evaka.core.pis.updatePartnershipDuration
 import evaka.core.pis.updatePersonFromVtj
@@ -71,11 +72,19 @@ class DvvModificationsService(
         page: DvvModificationsResponse,
         ssnCount: Int,
     ) {
-        logModifications(db, page.muutokset)
+        val personIds = db.read { tx ->
+            tx.getPersonIdsBySsns(
+                    page.muutokset.mapNotNull { Ssn.parse(it.henkilotunnus) }.distinct()
+                )
+                .found
+                .mapKeys { it.key.value }
+        }
+        logModifications(personIds, page.muutokset)
 
-        val ssnsToUpdateFromVtj: MutableSet<String> = mutableSetOf()
+        val personsToUpdateFromVtj: MutableSet<PersonId> = mutableSetOf()
 
         page.muutokset.forEach { personModifications ->
+            val personId = personIds[personModifications.henkilotunnus]
             personModifications.tietoryhmat.forEach { infoGroup ->
                 try {
                     when (infoGroup) {
@@ -96,18 +105,9 @@ class DvvModificationsService(
                             handleSsnDvvInfoGroup(db, personModifications.henkilotunnus, infoGroup)
                         }
 
-                        is CaretakerLimitedDvvInfoGroup -> {
-                            if (infoGroup.huoltaja.henkilotunnus != null) {
-                                ssnsToUpdateFromVtj.add(infoGroup.huoltaja.henkilotunnus)
-                            } else {
-                                logger.info {
-                                    "Dvv modification ignored for caretaker: ssn is null"
-                                }
-                            }
-                        }
-
+                        is CaretakerLimitedDvvInfoGroup,
                         is DefaultDvvInfoGroup -> {
-                            ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            personId?.let { personsToUpdateFromVtj.add(it) }
                         }
 
                         else -> {
@@ -116,7 +116,7 @@ class DvvModificationsService(
                                     personModifications.tietoryhmat.joinToString(", ") { it.tietoryhma }
                                 })"
                             }
-                            ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            personId?.let { personsToUpdateFromVtj.add(it) }
                         }
                     }
                 } catch (e: Throwable) {
@@ -133,15 +133,15 @@ class DvvModificationsService(
             }
         }
 
-        val personIds = db.read { it.getPersonIdsBySsns(ssnsToUpdateFromVtj.toList()) }.values
-        logger.info {
-            "Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ, of which existing persons are: $personIds"
-        }
+        logger.info { "Dvv modifications: updating persons from VTJ: $personsToUpdateFromVtj" }
 
         db.transaction { tx ->
+            // Read the SSNs after the loop: an SSN correction on this page may have changed them,
+            // and the job finds the person by SSN
             asyncJobRunner.plan(
                 tx,
-                payloads = ssnsToUpdateFromVtj.map { AsyncJob.UpdateFromVtj(it) },
+                payloads =
+                    tx.getSsnsOfPersons(personsToUpdateFromVtj).map { AsyncJob.UpdateFromVtj(it) },
                 runAt = now,
             )
             if (token != page.viimeisinKirjausavain) {
@@ -155,10 +155,10 @@ class DvvModificationsService(
         }
     }
 
-    private fun logModifications(db: Database.Connection, modifications: List<DvvModification>) {
-        val personIds = db.read { tx ->
-            tx.getPersonIdsBySsns(modifications.map { it.henkilotunnus }.distinct())
-        }
+    private fun logModifications(
+        personIds: Map<String, PersonId>,
+        modifications: List<DvvModification>,
+    ) {
         modifications.forEach { modification ->
             val person = personIds[modification.henkilotunnus]?.toString() ?: "not in eVaka"
             logger.info {

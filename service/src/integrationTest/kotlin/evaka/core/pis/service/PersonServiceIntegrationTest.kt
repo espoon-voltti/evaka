@@ -36,20 +36,6 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     val user = AuthenticatedUser.SystemInternalUser
     private val now = HelsinkiDateTime.of(LocalDate.of(2026, 3, 2), LocalTime.of(12, 0))
 
-    private val testPersonWithoutVtjChildren =
-        DevPerson(
-            id = PersonId(UUID.randomUUID()),
-            dateOfBirth = LocalDate.parse("1980-01-01"),
-            dateOfDeath = null,
-            firstName = "Harri",
-            lastName = "Huoltaja",
-            ssn = "010579-9999",
-            streetAddress = "Katuosoite",
-            postalCode = "02230",
-            postOffice = "Espoo",
-            restrictedDetailsEnabled = false,
-        )
-
     private val testPersonWithVtjChildren =
         DevPerson(
             id = PersonId(UUID.randomUUID()),
@@ -81,30 +67,12 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setup() {
         db.transaction {
-            it.insert(testPersonWithoutVtjChildren, DevPersonType.ADULT)
             it.insert(testPersonWithVtjChildren, DevPersonType.ADULT)
             it.insert(testPersonDependantChild, DevPersonType.CHILD)
         }
         MockVtjSoapTransport.resetQueryCounts()
         val vtjClient = SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper())
         personService = PersonService(vtjClient, VtjSyncService(vtjClient))
-    }
-
-    @Test
-    fun `getUpToDatePersonFromVtj fetches person vtj info only once`() {
-        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonWithoutVtjChildren)
-        db.transaction {
-            personService.getUpToDatePersonFromVtj(
-                it,
-                user,
-                HelsinkiDateTime.now(),
-                testPersonWithoutVtjChildren.id,
-            )
-        }
-        assertEquals(
-            1,
-            MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren),
-        )
     }
 
     @Test

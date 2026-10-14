@@ -6,7 +6,7 @@ package evaka.core.pis
 
 import evaka.core.identity.Ssn
 import evaka.core.pis.service.FridgeFamilyService
-import evaka.core.pis.service.PersonService
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.PermanentAsyncJobFailure
@@ -21,7 +21,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class UpdateFromVtjAsyncJobProcessor(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val personService: PersonService,
+    private val vtjSyncService: VtjSyncService,
     private val fridgeFamilyService: FridgeFamilyService,
 ) {
     init {
@@ -32,24 +32,23 @@ class UpdateFromVtjAsyncJobProcessor(
 
     fun updateFromVtj(
         db: Database.Connection,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         msg: AsyncJob.UpdateFromVtj,
     ) {
         val ssn =
             Ssn.parse(msg.ssn)
                 ?: throw PermanentAsyncJobFailure("Invalid SSN in UpdateFromVtj payload")
-        db.transaction { tx ->
-                personService.getOrCreatePerson(
-                    tx,
-                    AuthenticatedUser.SystemInternalUser,
-                    evakaClock.now(),
-                    ssn,
-                    audit = null,
-                )
-            }
-            ?.let {
-                logger.info { "Refreshing all VTJ information for person ${it.id}" }
-                fridgeFamilyService.doVTJRefresh(db, evakaClock, it.id)
-            }
+        val person = db.read { it.getPersonBySSN(ssn.value) }
+        if (person == null) {
+            logger.info { "Person of an UpdateFromVtj job is not in eVaka, nothing to refresh" }
+            return
+        }
+        vtjSyncService.refreshPerson(
+            db,
+            AuthenticatedUser.SystemInternalUser.evakaUserId,
+            clock,
+            person.id,
+        )
+        fridgeFamilyService.addChildrenToFridgeFamilies(db, clock, person.id)
     }
 }
