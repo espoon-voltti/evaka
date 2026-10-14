@@ -55,7 +55,8 @@ class VtjRefreshCallCountTest : PureJdbiTest(resetDbBeforeEach = true) {
         MockVtjSoapTransport.resetQueryCounts()
         MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(guardian, children)
         children.forEach { MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(it) }
-        val personService = PersonService(SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper()))
+        val vtjClient = SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
+        val personService = PersonService(vtjClient, VtjSyncService(vtjClient))
 
         db.transaction {
             personService.getPersonWithChildren(

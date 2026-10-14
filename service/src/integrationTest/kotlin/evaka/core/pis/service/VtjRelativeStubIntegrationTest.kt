@@ -68,7 +68,8 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
         )
 
-    private val personService = PersonService(StubRelativeVtjClient(guardian, child))
+    private val vtjClient = StubRelativeVtjClient(guardian, child)
+    private val personService = PersonService(vtjClient, VtjSyncService(vtjClient))
 
     @BeforeEach
     fun insertFamily() {

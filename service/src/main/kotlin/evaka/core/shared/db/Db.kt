@@ -4,6 +4,7 @@
 
 package evaka.core.shared.db
 
+import evaka.core.identity.Ssn
 import evaka.core.shared.Id
 import evaka.core.shared.config.defaultJsonMapperBuilder
 import evaka.core.shared.domain.FiniteDateRange
@@ -113,6 +114,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     }
     jdbi.registerArrayType(TimeRange::class.java, "timerange") { tr -> tr?.toDbString() }
     jdbi.registerArrayType(LocalDate::class.java, "date")
+    jdbi.registerArrayType(Ssn::class.java, "text") { it.value }
     jdbi.registerArrayType { elementType, _ ->
         Optional.ofNullable(
             (elementType as? Class<*>)?.let { elementClass ->

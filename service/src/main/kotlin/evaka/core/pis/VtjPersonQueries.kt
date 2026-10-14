@@ -181,6 +181,10 @@ fun Database.Transaction.applyDependants(
     }
 }
 
+fun Database.Transaction.clearDependantsSynced(personId: PersonId) = execute {
+    sql("UPDATE person SET vtj_dependants_queried = NULL WHERE id = ${bind(personId)}")
+}
+
 /**
  * A person who should have synced dependants: a citizen user, or a head of family or a partner in a
  * current fridge family.
