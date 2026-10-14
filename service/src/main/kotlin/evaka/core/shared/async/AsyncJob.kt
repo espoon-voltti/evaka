@@ -276,7 +276,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class DeleteExpiredPersonData(val personId: PersonId, val dryRun: Boolean) : AsyncJob {
+    data class DeleteExpiredPersonData(
+        val personId: PersonId,
+        val dryRun: Boolean,
+        val optimized: Boolean? = true,
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
