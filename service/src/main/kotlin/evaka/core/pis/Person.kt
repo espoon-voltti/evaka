@@ -8,6 +8,7 @@ import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.pis.controllers.CreatePersonBody
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
+import java.time.LocalDate
 
 fun createPerson(tx: Database.Transaction, person: CreatePersonBody): PersonId {
     val personId = tx.createPerson(person)
@@ -20,3 +21,5 @@ private val whitespace = "\\s+".toRegex()
 /** Splits the first name field, which holds all of a person's first names */
 fun splitFirstNames(firstNames: String): List<String> =
     firstNames.trim().split(whitespace).filter { it.isNotEmpty() }
+
+fun isMinor(dateOfBirth: LocalDate, today: LocalDate): Boolean = today < dateOfBirth.plusYears(18)
