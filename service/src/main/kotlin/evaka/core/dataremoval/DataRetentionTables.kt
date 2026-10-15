@@ -198,10 +198,13 @@ fun buildDataRetentionSchema(
                     listOf(primaryReference("application_id", referencedTable = "application")),
                 auditIdType = DatabaseTable.Decision::class,
                 expirationRule =
-                    Coalesce(
-                        tenYearsAfterLastPlacement,
-                        After(tenYears, OwnColumn("sent_date")),
-                        Always,
+                    AllOf(
+                        Coalesce(
+                            tenYearsAfterLastPlacement,
+                            After(tenYears, OwnColumn("sent_date")),
+                            Always,
+                        ),
+                        notWhileDecisionAwaitingArchival,
                     ),
                 safeForIntegrations = setOf(VARDA),
                 deletedWithParent = true,
@@ -600,7 +603,13 @@ fun buildDataRetentionSchema(
                     ),
                 auditIdType = DatabaseTable.VoucherValueDecision::class,
                 expirationRule =
-                    Coalesce(tenYearsAfterLastPlacement, After(tenYears, OwnColumn("valid_to"))),
+                    AllOf(
+                        Coalesce(
+                            tenYearsAfterLastPlacement,
+                            After(tenYears, OwnColumn("valid_to")),
+                        ),
+                        notWhileVoucherValueDecisionAwaitingArchival,
+                    ),
                 financeFreeze = After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("valid_to")),
                 safeForIntegrations = setOf(VARDA),
                 asyncJobsPlannedOnDelete =
@@ -737,7 +746,11 @@ fun buildDataRetentionSchema(
                         secondaryReference("partner_id", referencedTable = "person"),
                     ),
                 auditIdType = DatabaseTable.FeeDecision::class,
-                expirationRule = After(tenYears, feeDecisionChildrenPlacementOrValidityEnd),
+                expirationRule =
+                    AllOf(
+                        After(tenYears, feeDecisionChildrenPlacementOrValidityEnd),
+                        notWhileFeeDecisionAwaitingArchival,
+                    ),
                 financeFreeze =
                     After(
                         FINANCE_FREEZE_WITH_MARGIN,

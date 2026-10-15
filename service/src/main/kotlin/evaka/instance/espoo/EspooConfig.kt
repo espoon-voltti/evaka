@@ -306,7 +306,7 @@ class EspooConfig {
             it.setDisableMBeanRegistry(false)
         }
 
-    @Bean fun dataRetentionOverrides(): DataRetentionOverrides = DataRetentionOverrides.NONE
+    @Bean fun dataRetentionOverrides(): DataRetentionOverrides = espooDataRetentionOverrides
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = EspooActionRuleMapping()
 
