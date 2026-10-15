@@ -377,6 +377,64 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS: false
 
+      # Restoring and injecting the dependency cache takes about half a minute and helps only when the
+      # registry cache does not have the layer that runs resolveDependencies. The registry cache comes
+      # mostly from the build of the latest master commit.
+      - name: Compare Gradle dependency layer inputs with the registry cache
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        id: gradle-deps-inputs
+        env:
+          WEEK: ${{ needs.cache-bust.outputs.cache-bust }}
+          REFERENCE: ${{ github.event_name == 'pull_request' && 'master' || github.event.before }}
+        run: bin/service-deps-layer-inputs.sh "$WEEK" "$REFERENCE" >> "$GITHUB_OUTPUT"
+
+      # The week from cache-bust keeps dependency versions that are no longer used from piling up
+      - name: Restore Gradle dependency cache
+        if: ${{ steps.gradle-deps-inputs.outputs.changed == 'true' }}
+        uses: actions/cache/restore@v6
+        with:
+          path: gradle-deps
+          key: service-gradle-deps-${{ needs.cache-bust.outputs.cache-bust }}-${{ steps.gradle-deps-inputs.outputs.hash }}
+          restore-keys: service-gradle-deps-${{ needs.cache-bust.outputs.cache-bust }}-
+
+      # A run with the same service/ tree as an earlier run gets an exact cache hit and saves
+      # nothing. This is correct only while the Gradle builds in service/Dockerfile read no files
+      # from outside service/.
+      - name: Get Git tree hash of service sources
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        id: service-tree
+        run: echo "hash=$(git rev-parse HEAD:service)" >> "$GITHUB_OUTPUT"
+
+      - name: Persist Gradle build cache
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        id: gradle-build-cache
+        uses: actions/cache@v6
+        with:
+          path: gradle-build-cache-assemble
+          key: service-gradle-build-cache-runtime-${{ steps.service-tree.outputs.hash }}
+          restore-keys: service-gradle-build-cache-runtime-
+
+      # The ids must match the cache mount ids in service/Dockerfile. The post step of the cache
+      # dance action extracts the cache mounts after the build. Post steps run in the reverse order
+      # of the main steps, so a cache dance step must come after the step that saves its directory.
+      - name: Inject Gradle dependency cache into BuildKit
+        if: ${{ steps.gradle-deps-inputs.outputs.changed == 'true' }}
+        continue-on-error: true
+        uses: reproducible-containers/buildkit-cache-dance@e475a9cbcb5052f85fd3830f1266fa0c91ef8595
+        with:
+          cache-map: '{"gradle-deps": {"id": "evaka-gradle-deps", "target": "/gradle-deps"}}'
+          utility-image: busybox:1.37.0
+          skip-extraction: true
+
+      - name: Inject Gradle build cache into BuildKit
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        continue-on-error: true
+        uses: reproducible-containers/buildkit-cache-dance@e475a9cbcb5052f85fd3830f1266fa0c91ef8595
+        with:
+          cache-map: '{"gradle-build-cache-assemble": {"id": "evaka-gradle-build-cache-assemble", "target": "/root/.gradle/caches/build-cache-1"}}'
+          utility-image: busybox:1.37.0
+          skip-extraction: ${{ steps.gradle-build-cache.outputs.cache-hit == 'true' }}
+
       - name: Build Evaka Service image
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-registry@master
@@ -416,6 +474,71 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS: false
+
+      - name: Compare Gradle dependency layer inputs with the registry cache
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        id: gradle-deps-inputs
+        env:
+          WEEK: ${{ needs.cache-bust.outputs.cache-bust }}
+          REFERENCE: ${{ github.event_name == 'pull_request' && 'master' || github.event.before }}
+        run: bin/service-deps-layer-inputs.sh "$WEEK" "$REFERENCE" >> "$GITHUB_OUTPUT"
+
+      # Only pushes to master save the dependency cache, because one entry is about 700 MB and
+      # the cache storage of the repository is limited
+      - name: Persist Gradle dependency cache
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && steps.gradle-deps-inputs.outputs.changed == 'true' }}
+        id: gradle-deps
+        uses: actions/cache@v6
+        with:
+          path: gradle-deps
+          key: service-gradle-deps-${{ needs.cache-bust.outputs.cache-bust }}-${{ steps.gradle-deps-inputs.outputs.hash }}
+          restore-keys: service-gradle-deps-${{ needs.cache-bust.outputs.cache-bust }}-
+
+      - name: Restore Gradle dependency cache
+        if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/master') && steps.gradle-deps-inputs.outputs.changed == 'true' }}
+        uses: actions/cache/restore@v6
+        with:
+          path: gradle-deps
+          key: service-gradle-deps-${{ needs.cache-bust.outputs.cache-bust }}-${{ steps.gradle-deps-inputs.outputs.hash }}
+          restore-keys: service-gradle-deps-${{ needs.cache-bust.outputs.cache-bust }}-
+
+      - name: Get Git tree hash of service sources
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        id: service-tree
+        run: echo "hash=$(git rev-parse HEAD:service)" >> "$GITHUB_OUTPUT"
+
+      - name: Persist Gradle build cache
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        id: gradle-build-cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            gradle-build-cache-assemble
+            gradle-build-cache-tests
+          key: service-gradle-build-cache-builder-${{ steps.service-tree.outputs.hash }}
+          restore-keys: service-gradle-build-cache-builder-
+
+      - name: Inject Gradle dependency cache into BuildKit
+        if: ${{ steps.gradle-deps-inputs.outputs.changed == 'true' }}
+        continue-on-error: true
+        uses: reproducible-containers/buildkit-cache-dance@e475a9cbcb5052f85fd3830f1266fa0c91ef8595
+        with:
+          cache-map: '{"gradle-deps": {"id": "evaka-gradle-deps", "target": "/gradle-deps"}}'
+          utility-image: busybox:1.37.0
+          skip-extraction: ${{ steps.gradle-deps.outcome != 'success' || steps.gradle-deps.outputs.cache-hit == 'true' }}
+
+      - name: Inject Gradle build cache into BuildKit
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        continue-on-error: true
+        uses: reproducible-containers/buildkit-cache-dance@e475a9cbcb5052f85fd3830f1266fa0c91ef8595
+        with:
+          cache-map: |
+            {
+              "gradle-build-cache-assemble": {"id": "evaka-gradle-build-cache-assemble", "target": "/root/.gradle/caches/build-cache-1"},
+              "gradle-build-cache-tests": {"id": "evaka-gradle-build-cache-tests", "target": "/root/.gradle/caches/build-cache-1"}
+            }
+          utility-image: busybox:1.37.0
+          skip-extraction: ${{ steps.gradle-build-cache.outputs.cache-hit == 'true' }}
 
       - name: Build Evaka Service builder image
         if: ${{ !github.event.pull_request.head.repo.fork }}
