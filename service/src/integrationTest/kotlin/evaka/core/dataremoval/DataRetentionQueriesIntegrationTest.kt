@@ -318,6 +318,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "income_statement" to 1,
                 "fee_decision" to 1,
                 "fee_decision_child" to 1,
+                "message_account" to 1,
             ),
             graph.rows(),
         )
@@ -334,7 +335,6 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 "application.guardian_id",
                 "guardian.guardian_id",
                 "child_document_read.person_id",
-                "message_account.person_id",
                 "voucher_value_decision.head_of_family_id",
             ),
             graph.foreign(),
@@ -464,7 +464,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `an adult's run deletes the expired fee decision with its child rows, and the person row waits for the child's data, the messaging job, the adult's own rows and a recent login`() {
+    fun `an adult's run deletes the expired fee decision with its child rows, and the person row waits for the child's data, the adult's own rows and a recent login`() {
         val family = db.transaction { it.insertFamily() }
         // The same guardian's row for a sibling shares one column of the composite key
         val sibling = DevPerson(dateOfBirth = LocalDate.of(2013, 1, 1))
@@ -497,7 +497,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             0,
             count("fridge_partner WHERE partnership_id = '${family.partnershipId.raw}'"),
         )
-        assertEquals(setOf("person", "income"), remaining(guardian.id))
+        assertEquals(setOf("person", "income", "message_account"), remaining(guardian.id))
 
         val childRun = execute(child.id)
 
@@ -538,12 +538,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
         assertEquals(1, execute(sibling.id).deletedRowCountsByTable["guardian"])
 
-        // The message account is handled elsewhere and holds the person row, and so does the
-        // income that has not expired
-        assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
-        db.transaction {
-            it.execute { sql("DELETE FROM message_account WHERE person_id = ${bind(guardian.id)}") }
-        }
+        // The income that has not expired holds the person row
         assertEquals(emptyMap(), execute(guardian.id).deletedRowCountsByTable)
         db.transaction {
             it.execute {
@@ -562,7 +557,10 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 sql("UPDATE person SET last_login = NULL WHERE id = ${bind(guardian.id)}")
             }
         }
-        assertEquals(mapOf("person" to 1), execute(guardian.id).deletedRowCountsByTable)
+        assertEquals(
+            mapOf("message_account" to 1, "person" to 1),
+            execute(guardian.id).deletedRowCountsByTable,
+        )
         assertEquals(false, personExists(guardian.id))
     }
 
