@@ -17,8 +17,8 @@ import evaka.core.messaging.DeletedMessageThreadBatch
 import evaka.core.messaging.deleteExpiredBulletinThreads
 import evaka.core.messaging.deleteExpiredFinanceThreads
 import evaka.core.messaging.deleteExpiredMessageDrafts
+import evaka.core.messaging.deleteExpiredRegularThreads
 import evaka.core.messaging.deleteExpiredServiceWorkerThreads
-import evaka.core.messaging.deleteMessageThreadsOfExpiredChildren
 import evaka.core.messaging.personIdsWithFinanceThreads
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
@@ -181,17 +181,18 @@ class DataRemovalService(
             limit = limit,
         )
 
-        deleteMessageThreadsOfExpiredChildren(
+        deleteExpiredRegularThreads(
             dbc,
             now,
-            expiredChildIdsQuery = expiredChildIdsQuery(),
+            placementExpireDate = today.minusYears(5),
+            expiresBefore = now.minusYears(10),
             limit = limit,
         )
 
         deleteExpiredBulletinThreads(
             dbc,
             now,
-            recipientExpireDate = today.minusYears(5),
+            placementExpireDate = today.minusYears(5),
             expiresBefore = now.minusYears(5),
             limit = limit,
         )
@@ -211,6 +212,7 @@ class DataRemovalService(
 
         deleteExpiredChildImages(dbc, now, expireDate = today.minusMonths(1), limit)
 
+        val financePlacementExpireDate = today.minusYears(5)
         val financeExpiresBefore = now.minusYears(5)
         val citizenUserExpireDate = today.minusYears(1)
 
@@ -219,18 +221,16 @@ class DataRemovalService(
         deleteExpiredFinanceThreads(
             dbc,
             now,
-            expiredChildIdsQuery = expiredChildIdsQuery(),
+            placementExpireDate = financePlacementExpireDate,
             expiresBefore = financeExpiresBefore,
             limit = limit,
         )
 
         deleteExpiredCitizenUsers(dbc, expireDate = citizenUserExpireDate, limit)
 
-        // Guardian and foster parent relationships are the links used above to discover expired
-        // citizen users and finance data, so guardian and foster parent records are deleted only
-        // after citizen users, finance notes and finance threads are deleted. They are skipped for
-        // persons whose citizen user removal is still pending, and for persons who have any finance
-        // note or finance thread, because finance data concerns every child of the family.
+        // Citizen users and finance data are linked to children through guardians and foster
+        // parents, so these are deleted after them, and kept while the person's citizen user
+        // removal is pending or they have finance data, which concerns the whole family.
         deleteExpiredGuardians(
             dbc,
             now,
@@ -438,7 +438,7 @@ class DataRemovalService(
     fun deleteExpiredBulletinThreads(
         dbc: Database.Connection,
         now: HelsinkiDateTime,
-        recipientExpireDate: LocalDate,
+        placementExpireDate: LocalDate,
         expiresBefore: HelsinkiDateTime,
         limit: Int,
     ) {
@@ -450,26 +450,35 @@ class DataRemovalService(
                 auditMeta =
                     mapOf(
                         "expireDate" to expiresBefore.toLocalDate(),
-                        "recipientExpireDate" to recipientExpireDate,
+                        "placementExpireDate" to placementExpireDate,
                     ),
             ) { tx ->
-                tx.deleteExpiredBulletinThreads(recipientExpireDate, expiresBefore, limit)
+                tx.deleteExpiredBulletinThreads(placementExpireDate, expiresBefore, limit)
             }
         logger.info { "Deleted $deletedCount expired bulletin thread(s)" }
     }
 
-    fun deleteMessageThreadsOfExpiredChildren(
+    fun deleteExpiredRegularThreads(
         dbc: Database.Connection,
         now: HelsinkiDateTime,
-        expiredChildIdsQuery: QuerySql,
+        placementExpireDate: LocalDate,
+        expiresBefore: HelsinkiDateTime,
         limit: Int,
     ) {
-        logger.info { "Deleting at most $limit message threads of expired children" }
+        logger.info { "Deleting at most $limit expired regular message threads" }
         val deletedCount =
-            deleteMessageThreads(dbc, now) { tx ->
-                tx.deleteMessageThreadsOfExpiredChildren(expiredChildIdsQuery, limit)
+            deleteMessageThreads(
+                dbc,
+                now,
+                auditMeta =
+                    mapOf(
+                        "expireDate" to expiresBefore.toLocalDate(),
+                        "placementExpireDate" to placementExpireDate,
+                    ),
+            ) { tx ->
+                tx.deleteExpiredRegularThreads(placementExpireDate, expiresBefore, limit)
             }
-        logger.info { "Deleted $deletedCount message thread(s) of expired children" }
+        logger.info { "Deleted $deletedCount expired regular message thread(s)" }
     }
 
     fun deleteExpiredServiceWorkerThreads(
@@ -489,17 +498,18 @@ class DataRemovalService(
     fun deleteExpiredFinanceThreads(
         dbc: Database.Connection,
         now: HelsinkiDateTime,
-        expiredChildIdsQuery: QuerySql,
+        placementExpireDate: LocalDate,
         expiresBefore: HelsinkiDateTime,
         limit: Int,
     ) {
         logger.info { "Deleting at most $limit expired finance threads" }
-        val auditMeta = mapOf("expiresBefore" to expiresBefore)
+        val auditMeta =
+            mapOf("expiresBefore" to expiresBefore, "placementExpireDate" to placementExpireDate)
         val deletedCount =
             deleteMessageThreads(dbc, now, auditMeta = auditMeta) { tx ->
                 tx.deleteExpiredFinanceThreads(
                     financeConnectionsQuery(),
-                    expiredChildIdsQuery,
+                    placementExpireDate,
                     expiresBefore,
                     limit,
                 )
@@ -932,9 +942,8 @@ fun deleteExpiredFinanceNotes(
 }
 
 /**
- * Deletes the finance notes of persons whose finance connections have all expired. A person with no
- * finance connections at all has nothing to anchor the expiry to, so their notes expire once they
- * have not been modified during the retention period.
+ * Notes expire once the last placement of the children connected to the person has ended before
+ * [expiresBefore], or, if the person has no finance connections, once unmodified since then.
  */
 private fun Database.Transaction.deleteExpiredFinanceNotesBatch(
     expiresBefore: HelsinkiDateTime,
@@ -1489,11 +1498,3 @@ HAVING max(p.end_date) < ${bind(date)}
 """
     )
 }
-
-/**
- * Selects the ids of the children whose data can be removed altogether. A child can be removed only
- * once every other row depending on the child can be removed, and the data that is kept for as long
- * as the child is kept, such as their message threads, is removed together with the child. Child
- * removal is not implemented yet, so no child expires.
- */
-private fun expiredChildIdsQuery() = QuerySql { sql("SELECT id FROM child WHERE FALSE") }
