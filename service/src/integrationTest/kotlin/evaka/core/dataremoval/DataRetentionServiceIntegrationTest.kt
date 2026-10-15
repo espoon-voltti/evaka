@@ -91,6 +91,7 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
             buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false),
             id,
             dryRun = false,
+            optimized = true,
         )
 
     @Test

@@ -120,16 +120,57 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         }
     }
 
-    private fun load(id: PersonId) = db.transaction { checkNotNull(it.loadPersonGraph(schema, id)) }
+    /** Without the optimization, so that the graph holds everything the person has */
+    private fun load(id: PersonId) = db.transaction {
+        checkNotNull(it.loadPersonGraph(schema, id, today, optimized = false))
+    }
 
-    private fun plan(id: PersonId) = load(id).evaluate(today)
+    /** Asserts that the optimization does not change the plan */
+    private fun Database.Transaction.optimizedPlan(id: PersonId): DeletionPlan {
+        val unoptimizedPlan =
+            checkNotNull(loadPersonGraph(schema, id, today, optimized = false)).evaluate(today)
+        val optimizedPlan =
+            checkNotNull(loadPersonGraph(schema, id, today, optimized = true)).evaluate(today)
+        assertEquals(ComparablePlan(unoptimizedPlan), ComparablePlan(optimizedPlan))
+        return optimizedPlan
+    }
+
+    private fun plan(id: PersonId) = db.transaction { it.optimizedPlan(id) }
 
     private fun execute(id: PersonId) = db.transaction { tx ->
-        tx.executeDeletionPlan(
-            checkNotNull(tx.loadPersonGraph(schema, id)).evaluate(today),
-            now,
+        tx.executeDeletionPlan(tx.optimizedPlan(id), now)
+    }
+
+    private data class ComparablePlan(
+        val deletions: List<ComparableDeletion>,
+        val childrenToFreezeForKoski: Set<ChildId>,
+        val childrenToFreezeForVarda: Set<ChildId>,
+        val asyncJobs: List<AsyncJob>,
+    ) {
+        constructor(
+            plan: DeletionPlan
+        ) : this(
+            deletions =
+                plan.ownNodeDeletions.map {
+                    ComparableDeletion(
+                        nodeId = it.node.id,
+                        rows = it.node.rows,
+                        referenceClearings = it.referenceClearings,
+                        orphanDeletions = it.orphanDeletions,
+                    )
+                },
+            childrenToFreezeForKoski = plan.childrenToFreezeForKoski,
+            childrenToFreezeForVarda = plan.childrenToFreezeForVarda,
+            asyncJobs = plan.asyncJobs,
         )
     }
+
+    private data class ComparableDeletion(
+        val nodeId: OwnNodeId,
+        val rows: List<OwnRow>,
+        val referenceClearings: List<ReferenceClearing>,
+        val orphanDeletions: List<OrphanDeletion>,
+    )
 
     /** The loaded rows by table */
     private fun PersonGraph.rows(): Map<String, Int> =
@@ -552,6 +593,28 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
 
         assertEquals(emptyMap(), execute(child.id).deletedRowCountsByTable)
         assertEquals(noFreezes, freezes(child.id))
+    }
+
+    @Test
+    fun `after a recent placement, the optimization leaves out the tables known to stay and the foreign rows that could only block them`() {
+        db.transaction { it.insertFamily(lastPlacementEnd = today.minusDays(1)) }
+
+        val graph = db.transaction {
+            checkNotNull(it.loadPersonGraph(schema, child.id, today, optimized = true))
+        }
+        assertEquals(
+            mapOf(
+                "person" to 1,
+                "child" to 1,
+                "placement" to 2,
+                "child_document" to 1,
+                "child_document_read" to 1,
+                "child_document_published_version" to 1,
+            ),
+            graph.rows(),
+        )
+        assertEquals(emptySet(), graph.foreign())
+        assertEquals(emptyList(), plan(child.id).ownNodeDeletions)
     }
 
     @Test
@@ -1270,21 +1333,20 @@ FROM snapshot
     @Test
     fun `the loaded graph carries the integration facts of the target and of every child the own rows name`() {
         db.transaction { it.insertFamily() }
-        val childFacts =
-            ChildIntegrationFacts(child.dateOfBirth, sentToKoski = true, sentToVarda = true)
+        val childFacts = IntegrationFacts(child.dateOfBirth, sentToKoski = true, sentToVarda = true)
         assertEquals(
             mapOf(
                 guardian.id to
-                    ChildIntegrationFacts(
+                    IntegrationFacts(
                         guardian.dateOfBirth,
                         sentToKoski = false,
                         sentToVarda = false,
                     ),
                 child.id to childFacts,
             ),
-            load(guardian.id).integrationFactsByChild,
+            load(guardian.id).integrationFactsByPerson,
         )
-        assertEquals(mapOf(child.id to childFacts), load(child.id).integrationFactsByChild)
+        assertEquals(mapOf(child.id to childFacts), load(child.id).integrationFactsByPerson)
     }
 
     @Test
@@ -1303,7 +1365,7 @@ FROM snapshot
                 )
             }
         }
-        assertEquals(true, load(young.id).integrationFactsByChild.getValue(young.id).sentToVarda)
+        assertEquals(true, load(young.id).integrationFactsByPerson.getValue(young.id).sentToVarda)
         // The application expired ten years after it was sent, but Varda has read it
         assertEquals(emptyMap(), execute(young.id).deletedRowCountsByTable)
         assertEquals(noFreezes, freezes(young.id))
