@@ -32,4 +32,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 
 - `ec95a645-d8b5-4027-8536-746281a9dd4e`: Ajastetun PlanDocumentArchival-ajon viemä: initiator on järjestelmäkäyttäjä (00000000-…, "eVaka"). Tuotannossa valtaosa viennistä kulkee näin; käsin (ADMIN-käyttäjän arkistointipainike) käynnistetyissä vienneissä initiatorina on kyseinen työntekijä.
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

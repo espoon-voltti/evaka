@@ -271,6 +271,7 @@ Jokaisessa hakemistossa on:
   `Content-Length` on alkuperäinen.
 - `metadata.xml`: `instance_1_md_instance` muotoiltuna.
 - `response.http`: paikallisen vastaanottimen vastaus.
+- `asiakirja.pdf`: lähetetty PDF (`instance_1_record_payload_data`).
 
 | Hakemisto | Tyyppi | Reitti | Mitä havainnollistaa |
 |---|---|---|---|

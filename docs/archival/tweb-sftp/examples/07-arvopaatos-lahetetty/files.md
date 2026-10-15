@@ -32,4 +32,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 
 - `6a0cf122-ad19-44c4-af3e-afa376c4b5ce`: Ajastetun ajon viemä (järjestelmäkäyttäjä initiatorina).
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

@@ -25,4 +25,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 |---|---|
 | `4e323ee4-c896-11f1-a98a-2bf5d59fa3b1` | 04.01.00.22 | Päätös tuen palveluista varhaiskasvatuksessa;Mitätöity;Lumi Esimerkki;110222A974T | 2026-08-01 | 2026-10-15 | Pääkäyttäjä Päivi | Laatija Esimies Eemeli, Päättäjä Esimies Essi |
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

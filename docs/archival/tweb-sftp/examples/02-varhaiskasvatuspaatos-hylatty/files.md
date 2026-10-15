@@ -25,4 +25,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 |---|---|
 | `07451ab0-c896-11f1-ba5f-cb35cb9045f3` | 04.01.00.11 | Varhaiskasvatuspäätös;Hylätty;Eeli Esimerkki;021224A907D | 2027-08-01 | 2026-10-15 | Pääkäyttäjä Päivi | Päättäjä Pääkäyttäjä Päivi |
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

@@ -25,4 +25,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 |---|---|
 | `4d5befba-c896-11f1-a98a-97c45d910581` | 04.01.00.20 | Varhaiskasvatussuunnitelma 2026-2027;Valmis;Lumi Esimerkki;110222A974T | 2026-08-01 | 2026-10-15 | Pääkäyttäjä Päivi | Laatija Esimies Essi, Laatija Esimies Eemeli |
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

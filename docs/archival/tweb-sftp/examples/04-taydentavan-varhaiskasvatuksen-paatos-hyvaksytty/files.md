@@ -25,4 +25,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 |---|---|
 | `06b1625c-c896-11f1-ba5f-0ba846bb147c` | 04.01.00.11 | Täydentävän varhaiskasvatuksen päätös;Hyväksytty;Iida Esimerkki;040720A996H | 2027-06-02 | 2026-10-15 | Pääkäyttäjä Päivi | Päättäjä Pääkäyttäjä Päivi |
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

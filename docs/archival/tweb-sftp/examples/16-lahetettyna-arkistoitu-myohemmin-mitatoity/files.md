@@ -28,4 +28,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 | `413eed98-c522-41cf-b500-6199b9e8c1e0` | 04.01.02.59 | Arvopäätös;Lähetetty;Sanna Esimerkki;210489-952E | 2026-10-15 | 2026-10-15 | Pääkäyttäjä Päivi | Päättäjä Laskuttaja Lasse |
 | `b1270fba-0280-4d09-b685-1f931fe0e355` | 04.01.00.12 | Maksupäätös;Lähetetty;Sanna Esimerkki;210489-952E | 2026-10-15 | 2026-10-15 | Pääkäyttäjä Päivi | Päättäjä Laskuttaja Lasse |
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

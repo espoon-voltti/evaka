@@ -25,4 +25,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 |---|---|
 | `06b11eaa-c896-11f1-ba5f-171b9528ebee` | 04.01.03.41 | Esiopetuspäätös;Hyväksytty;Iida Esimerkki;040720A996H | 2027-06-02 | 2026-10-15 | Pääkäyttäjä Päivi | Päättäjä Pääkäyttäjä Päivi |
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

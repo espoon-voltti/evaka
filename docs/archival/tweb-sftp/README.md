@@ -180,7 +180,7 @@ Muita tilarajoituksia:
 | 13–15-lapsen-paatosasiakirja-* | OTHER_DECISION: hyväksytty, hylätty, mitätöity |
 | 16-lahetettyna-arkistoitu-myohemmin-mitatoity | ks. luku 11, kohta 1 |
 
-Kussakin hakemistossa on XML-tiedosto(t) sellaisinaan alkuperäisillä tiedostonimillä sekä `files.md`, jossa on tiedostonimet ja metatietojen yhteenveto. PDF-tiedostot eivät ole mukana.
+Kussakin hakemistossa on XML-tiedosto(t) sellaisinaan alkuperäisillä tiedostonimillä vastaavat PDF:t sekä `files.md`, jossa on tiedostonimet ja metatietojen yhteenveto.
 
 Tuotantotapa: dev-api:lla luotiin henkilöt (myös VTJ-mockiin) ja asiakirjapohjat. Työntekijän rajapinnoilla tehtiin paperihakemus → sijoitusehdotus → päätösten lähetys → hyväksyntä/hylkäys, maksu- ja arvopäätösten vahvistus ja lähetys sekä mitätöinti tulotiedon muutoksella. Lapsen asiakirjat kulkivat tilasiirtymien läpi, ja päätösasiakirjat ehdotettiin päättäjälle, joka hyväksyi, hylkäsi tai mitätöi ne. Vienti käynnistettiin ADMIN-käyttäjän arkistointiendpointeilla. Lisäksi ajettiin `PlanDocumentArchival` lisäämällä async-jonoon `RunScheduledJob`-työ, sillä db-scheduler käynnistyy vain `production`-profiilissa (`ScheduledJobConfig.kt`). Tämä on sama työ, jonka tuotannon ajastin lisää. Ajastetussa ajossa viiveet asetettiin nollaan tai negatiivisiksi, jotta saman päivän asiakirjat kelpasivat.
 

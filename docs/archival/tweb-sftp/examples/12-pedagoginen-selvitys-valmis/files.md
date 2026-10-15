@@ -25,4 +25,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 |---|---|
 | `7d15fbe2-c896-11f1-a98a-7353000d6590` | 04.01.00.23 | Pedagoginen selvitys 2026-2027;Valmis;Lumi Esimerkki;110222A974T | 2026-08-01 | 2026-10-15 | eVaka | Laatija Esimies Essi |
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.

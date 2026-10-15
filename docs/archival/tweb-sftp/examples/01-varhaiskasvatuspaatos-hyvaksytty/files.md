@@ -32,4 +32,4 @@ Kirjoitusjärjestys: ensin PDF, sitten XML (kumpikin omalla SFTP-yhteydellään)
 
 - `063239c8-c896-11f1-ba5f-1fd1e9714fac`: Sama asiakirjatyyppi palveluseteliyksikköön (Palveluseteli A) – palvelusetelipäätös viedään samalla otsikolla ja tehtäväluokalla kuin kunnallinen varhaiskasvatuspäätös.
 
-Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot eivät ole mukana repossa.
+Henkilöt ja henkilötunnukset ovat keksittyjä. PDF-tiedostot ovat samassa hakemistossa.
