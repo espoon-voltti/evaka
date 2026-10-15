@@ -86,7 +86,7 @@ ON CONFLICT (social_security_number) DO UPDATE SET
     restricted_details_enabled = excluded.restricted_details_enabled,
     restricted_details_end_date = excluded.restricted_details_end_date,
     updated_from_vtj = excluded.updated_from_vtj
-RETURNING *, xmax = 0 AS inserted
+RETURNING *, old.id IS NULL AS inserted
 """
             )
         }
