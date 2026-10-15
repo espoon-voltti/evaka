@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM azul/zulu-openjdk:25-latest AS builder
+FROM azul/zulu-openjdk:25-latest AS assemble
 ARG CACHE_BUST
 
 ENV LC_ALL=C.UTF-8
@@ -35,11 +35,18 @@ RUN ./gradlew --no-daemon resolveDependencies
 COPY ./service/vtjclient/ ./vtjclient/
 RUN ./gradlew --no-daemon :vtjclient:wsdl2java
 
-COPY . /evaka
+COPY ./service/ /evaka/service/
 
 # --offline is used to be sure that all dependencies are installed in previous steps
-RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin copyDownloadOnlyDeps \
+RUN ./gradlew --offline --no-daemon assemble copyDownloadOnlyDeps \
  && unzip -oq build/libs/evaka-service-boot.jar -d target
+
+FROM assemble AS builder
+
+RUN ./gradlew --offline --no-daemon compileIntegrationTestKotlin
+
+# codegenCheck in test.Dockerfile compares the generated API clients against these sources
+COPY ./frontend/src/ /evaka/frontend/src/
 
 FROM azul/zulu-openjdk:25-jre-headless-latest
 ARG CACHE_BUST
@@ -68,7 +75,7 @@ RUN curl -sSL https://github.com/espoon-voltti/s3-downloader/releases/download/$
  && echo "${S3_DOWNLOADER_SHA256}  /usr/local/bin/s3download" | sha256sum -c - \
  && chmod +x /usr/local/bin/s3download
 
-COPY --chmod=0644 --from=builder /evaka/service/build/download-only/dd-java-agent.jar /opt/dd-java-agent.jar
+COPY --chmod=0644 --from=assemble /evaka/service/build/download-only/dd-java-agent.jar /opt/dd-java-agent.jar
 COPY ./service/dd-jmxfetch/ /etc/jmxfetch/
 
 COPY ./service/entrypoint.sh entrypoint.sh
@@ -88,7 +95,7 @@ RUN addgroup --gid ${GROUP_ID} ${USERNAME} \
 VOLUME /config
 VOLUME /tmp
 
-COPY --from=builder /evaka/service/target/ .
+COPY --from=assemble /evaka/service/target/ .
 
 USER ${USERNAME}
 
