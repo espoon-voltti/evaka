@@ -296,9 +296,9 @@ A thread that records children expires by their placements, so the placements mu
 
 The message removal deletes a thread about an application only after the application is gone, together with the application notes that copy the thread's messages. The thread does not hold the application: `message_thread.application_id` is an optional reference, which is cleared when the application is deleted. The notes are deleted with their parent application.
 
-A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to the children they are a guardian or a foster parent of, and to the children whose placements the rules of their parentships and partnerships wait for (section 6.4). The message removal finds the latter with the same queries as those rules.
+A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to the children they are a guardian or a foster parent of, and to the children whose placements the finance freeze conditions of their parentships and partnerships wait for (section 6.4). The message removal finds the latter with the same queries as those conditions.
 
-These rows are not held for the threads. Instead, each of them waits until the five years of the threads have passed the same placements. The period is written into the rules of `fridge_child` and `fridge_partner`, and into the rule of `placement` for `guardian` and `foster_parent`, which are deleted with their parent `child` and so with the placements. A test checks this against a list of the tables that connect a recipient to the children, kept by hand next to the query that finds them. Deleting such a row therefore does not make a thread expire earlier.
+These rows are not held for the threads. Instead, each of them waits until the five years of the threads have passed the same placements. The period is written into the finance freeze conditions of `fridge_child` and `fridge_partner`, and into that of `placement` for `guardian` and `foster_parent`, which are deleted with their parent `child` and so with the placements. Overrides cannot remove it, since it is part of a safety condition (chapter 2). The construction checks this against a list of the tables that connect a recipient to the children, kept by hand next to the query that finds them. Deleting such a row therefore does not make a thread expire earlier.
 
 The exception is a parentship or a partnership that itself ended longer ago than the finance freeze. It expires even if the children are still placed, and the finance thread of that former head of the family or partner then no longer waits for them. This is in line with the finance freeze, since no decisions are generated for the time of that parentship or partnership anymore.
 
@@ -334,6 +334,8 @@ A row expires only when no decision that can still be generated needs it. For mo
 
 Every table the generators read declares the freeze as a safety condition (chapter 2), so that overriding its rule cannot break it. This holds even where a longer period such as ten years already outlasts the freeze. The condition is written like an expiration rule and validated the same way, since its dates and fallbacks vary by table. The list of those tables is kept by hand next to the freeze period. A table that is deleted with its parent may rely on the condition of the parent.
 
+The condition of `placement`, `fridge_child` and `fridge_partner` also waits for the placements that the finance threads wait for (section 5.6).
+
 The voucher value decision generator reads the assistance coefficients from `assistance_factor` when the municipality uses capacity factors, and from `assistance_need_voucher_coefficient` otherwise. The schema definition is therefore built for that setting, and only the table the generator reads waits for the freeze.
 
 ## 7. Validation
@@ -350,6 +352,7 @@ The schema definition is validated when it is constructed, with the overrides of
 - Every table an integration reads, and `child`, names that integration, and no other table names one.
 - The tables that hold the sync state of an integration are deleted with `child`.
 - Every table the finance generators read waits for the finance freeze, or is deleted with a parent that does.
+- Every table that connects a recipient of a finance thread to children waits for the thread period after their placements, or is deleted together with a table that does.
 - Every table whose rule is `Always` is deleted with its parent or waits for the finance freeze.
 
 Integration tests then compare the schema definition against the database schema:

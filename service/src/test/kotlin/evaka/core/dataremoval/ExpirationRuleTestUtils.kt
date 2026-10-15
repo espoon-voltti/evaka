@@ -11,7 +11,6 @@ import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
 import evaka.core.dataremoval.ExpirationRule.NotWhile
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
 
 /**
  * Null never reaches all of or any of: every member of them returns a result, and a rule that may
@@ -39,7 +38,6 @@ private fun ExpirationRule.alwaysApplies(mayHaveNoDate: (DateSource) -> Boolean)
         is AllOf -> rules.all { it.alwaysApplies(mayHaveNoDate) }
         is AnyOf -> rules.all { it.alwaysApplies(mayHaveNoDate) }
         is Coalesce -> rules.any { it.alwaysApplies(mayHaveNoDate) }
-        is SafeForIntegrations -> rule.alwaysApplies(mayHaveNoDate)
     }
 
 private fun ExpirationRule.validateMembers(
@@ -57,7 +55,6 @@ private fun ExpirationRule.validateMembers(
             }
             rules.forEach { it.validateMembers(context, mayHaveNoDate) }
         }
-        is SafeForIntegrations -> rule.validateMembers(context, mayHaveNoDate)
         Always,
         Never,
         is After,

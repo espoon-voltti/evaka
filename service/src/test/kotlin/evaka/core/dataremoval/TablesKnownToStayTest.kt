@@ -12,7 +12,6 @@ import evaka.core.dataremoval.ExpirationRule.Always
 import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations.Companion.safeFor
 import evaka.core.dataremoval.Handler.ADULT
 import evaka.core.dataremoval.Handler.CHILD
 import evaka.core.dataremoval.Integration.KOSKI
@@ -44,12 +43,20 @@ class TablesKnownToStayTest {
         )
 
     /** A child-handled table whose primary reference points to child */
-    private fun underChild(name: String, rule: ExpirationRule, deletedWithParent: Boolean = false) =
+    private fun underChild(
+        name: String,
+        rule: ExpirationRule,
+        deletedWithParent: Boolean = false,
+        financeFreeze: ExpirationRule? = null,
+        safeForIntegrations: Set<Integration> = emptySet(),
+    ) =
         table(
             name,
             CHILD,
             "child_id" to "child",
             expirationRule = rule,
+            financeFreeze = financeFreeze,
+            safeForIntegrations = safeForIntegrations,
             deletedWithParent = deletedWithParent,
         )
 
@@ -121,25 +128,43 @@ class TablesKnownToStayTest {
     }
 
     @Test
-    fun `a rule safe for an integration stays while the target is not safe to delete for it, if the table concerns the target, and otherwise the rule it wraps decides`() {
+    fun `a table whose finance freeze cannot be met stays, whatever its rule`() {
         val schema =
             schema(
                 placementTable(),
-                underChild("child_handled", Always.safeFor(KOSKI)),
+                underChild("freeze_by_placements", Always, financeFreeze = placementRule),
+                underChild(
+                    "freeze_by_own_column",
+                    Always,
+                    financeFreeze = Coalesce(After(oneYear, ownEndDate), Never),
+                ),
+            )
+        assertEquals(setOf("freeze_by_placements"), schema.knownToStay(recently))
+        assertEquals(emptySet(), schema.knownToStay(longAgo))
+    }
+
+    @Test
+    fun `a table safe for an integration stays while the target is not safe to delete for it, if the table concerns the target, and otherwise its rule decides`() {
+        val schema =
+            schema(
+                placementTable(),
+                underChild("child_handled", Always, safeForIntegrations = setOf(KOSKI)),
                 table(
                     "adult_handled",
                     ADULT,
                     "person_id" to "person",
-                    expirationRule = Always.safeFor(KOSKI),
+                    expirationRule = Always,
+                    safeForIntegrations = setOf(KOSKI),
                 ),
-                underChild("placement_rule", placementRule.safeFor(KOSKI)),
+                underChild("placement_rule", placementRule, safeForIntegrations = setOf(KOSKI)),
                 person =
                     HandledTable(
                         "person",
                         ADULT,
                         references = emptyList(),
                         auditIdType = DatabaseTable.Person::class,
-                        expirationRule = Always.safeFor(KOSKI),
+                        expirationRule = Always,
+                        safeForIntegrations = setOf(KOSKI),
                     ),
             )
         val young = today.minusYears(5)
@@ -159,7 +184,7 @@ class TablesKnownToStayTest {
         )
         assertEquals(emptySet(), knownToStay(young, sentToKoski = false, sentToVarda = true))
         assertEquals(emptySet(), knownToStay(pastSafeAge, sentToKoski = true, sentToVarda = true))
-        // When the check passes, the rule it wraps decides
+        // When the check passes, the rule decides
         assertEquals(setOf("placement_rule"), schema.knownToStay(recently))
     }
 

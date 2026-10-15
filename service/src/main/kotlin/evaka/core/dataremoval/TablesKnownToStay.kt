@@ -11,7 +11,6 @@ import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
 import evaka.core.dataremoval.ExpirationRule.NotWhile
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
 import java.time.LocalDate
 
 fun SchemaDefinition.tablesKnownToStay(
@@ -32,17 +31,17 @@ fun SchemaDefinition.tablesKnownToStay(
     }
 
     for (table in handledTables) {
-        val ruleCannotBeMet =
+        val cannotExpire =
             if (table in preloadedTables) {
                 table.name in preloadedTablesWithRows &&
-                    !preloadedData.ruleMightBeMet(
+                    !preloadedData.mightExpire(
                         table,
                         node = preloadedNodes.single { it.table == table },
                     )
             } else {
-                !preloadedData.ruleMightBeMet(table, node = null)
+                !preloadedData.mightExpire(table, node = null)
             }
-        if (ruleCannotBeMet) add(table)
+        if (cannotExpire) add(table)
     }
     while (toFollow.isNotEmpty()) {
         val table = toFollow.removeFirst()
@@ -87,41 +86,35 @@ private class PreloadedData(
     private val today: LocalDate,
 ) {
     /** [node] is a node of a preloaded table, or null for a table that is not preloaded */
-    fun ruleMightBeMet(table: HandledTable, node: OwnNode?): Boolean =
-        possibleResults(table.expirationRule, table, node).mightBeMet
+    fun mightExpire(table: HandledTable, node: OwnNode?): Boolean {
+        if (!possibleResults(table.expirationRule, node).mightBeMet) return false
+        val financeFreeze = table.financeFreeze
+        if (financeFreeze != null && !possibleResults(financeFreeze, node).mightBeMet) return false
+        if (!table.mayHoldChildData) return true
+        return table.safeForIntegrations.all { integrationFacts.safeToDeleteFor(it, today) }
+    }
 
-    private fun possibleResults(
-        rule: ExpirationRule,
-        table: HandledTable,
-        node: OwnNode?,
-    ): PossibleResults =
+    private fun possibleResults(rule: ExpirationRule, node: OwnNode?): PossibleResults =
         when (rule) {
             Always -> PossibleResults(mightBeMet = true, mightReturnNoVerdict = false)
             Never -> PossibleResults(mightBeMet = false, mightReturnNoVerdict = false)
             is AllOf ->
                 PossibleResults(
-                    mightBeMet = rule.rules.all { possibleResults(it, table, node).mightBeMet },
+                    mightBeMet = rule.rules.all { possibleResults(it, node).mightBeMet },
                     mightReturnNoVerdict = false,
                 )
             is AnyOf ->
                 PossibleResults(
-                    mightBeMet = rule.rules.any { possibleResults(it, table, node).mightBeMet },
+                    mightBeMet = rule.rules.any { possibleResults(it, node).mightBeMet },
                     mightReturnNoVerdict = false,
                 )
-            is Coalesce -> coalesced(rule.rules.map { possibleResults(it, table, node) })
+            is Coalesce -> coalesced(rule.rules.map { possibleResults(it, node) })
             is After -> possibleResults(rule, node)
             is NotWhile ->
                 PossibleResults(
                     mightBeMet = node?.mayExpireUnder(rule) ?: true,
                     mightReturnNoVerdict = false,
                 )
-            is SafeForIntegrations -> {
-                val checkFails =
-                    table.mayHoldChildData &&
-                        rule.integrations.any { !integrationFacts.safeToDeleteFor(it, today) }
-                if (checkFails) PossibleResults(mightBeMet = false, mightReturnNoVerdict = false)
-                else possibleResults(rule.rule, table, node)
-            }
         }
 
     /** The rules after the first one that always returns a verdict are never reached */

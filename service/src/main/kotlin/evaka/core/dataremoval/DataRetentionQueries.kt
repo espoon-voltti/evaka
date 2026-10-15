@@ -292,8 +292,8 @@ WHERE ${predicate(where.forTable(table.name))}
             )
         }
 
-    val customSources = table.expirationRule.usedCustomDateSources()
-    val notWhileRules = table.expirationRule.usedNotWhileRules()
+    val customSources = table.usedCustomDateSources()
+    val notWhileRules = table.usedNotWhileRules()
     if (knownToStay || rows.isEmpty() || (customSources.isEmpty() && notWhileRules.isEmpty())) {
         return rows
     }
