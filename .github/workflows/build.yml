@@ -453,7 +453,7 @@ jobs:
           ./compose-integration pull
           args=$(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
           echo "Running tests with args: $args"
-          ./compose-integration run integration-test $args
+          ./compose-integration run integration-test -PintegrationTestForks=2 $args
           ./compose-integration logs db > test-results/db.log
 
       - name: Run service integration tests for fork
@@ -463,7 +463,7 @@ jobs:
           cd ./compose
           args=$(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
           echo "Running tests with args: $args"
-          ./compose-integration run integration-test $args
+          ./compose-integration run integration-test -PintegrationTestForks=2 $args
 
       - name: Store test results
         uses: actions/upload-artifact@v7
