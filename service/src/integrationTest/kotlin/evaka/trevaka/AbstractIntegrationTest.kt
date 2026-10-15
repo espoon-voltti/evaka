@@ -4,6 +4,7 @@
 
 package evaka.trevaka
 
+import evaka.core.shared.config.parallelTestWorkerId
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.resetDatabase
 import evaka.core.shared.dev.runSqlScripts
@@ -19,6 +20,8 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.wiremock.spring.ConfigureWireMock
 import org.wiremock.spring.EnableWireMock
 import software.amazon.awssdk.core.ResponseInputStream
@@ -32,6 +35,9 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier
 
 private val reportsPath: String = "${Paths.get("build").toAbsolutePath()}/reports"
+
+// Every parallel test fork gets its own bucket, because setup() empties it before each test
+private val exportBucket = "trevaka-export-it" + (parallelTestWorkerId?.let { "-$it" } ?: "")
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(classes = [IntegrationTestConfiguration::class])
@@ -54,13 +60,21 @@ abstract class AbstractIntegrationTest(private val municipality: String) {
             it.resetDatabase()
             it.runSqlScripts("$municipality/db/migration")
         }
-        clearBucket("trevaka-export-it")
+        clearBucket(exportBucket)
         MockVtjClient.reset()
     }
 
     @AfterAll
     protected fun afterAll() {
         db.close()
+    }
+
+    companion object {
+        @JvmStatic
+        @DynamicPropertySource
+        fun exportBucketProperty(registry: DynamicPropertyRegistry) {
+            registry.add("evaka.integration_test.trevaka_export_bucket") { exportBucket }
+        }
     }
 
     protected fun writeReportsFile(filename: String, bytes: ByteArray) {

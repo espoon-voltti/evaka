@@ -302,6 +302,9 @@ tasks {
         outputs.upToDateWhen { false }
         maxHeapSize = "2g"
         systemProperty("spring.test.context.cache.maxSize", "8")
+        val forks = providers.gradleProperty("integrationTestForks").map(String::toInt).getOrElse(1)
+        maxParallelForks = forks
+        systemProperty("evaka.integration_test.forks", forks)
     }
 
     bootRun {

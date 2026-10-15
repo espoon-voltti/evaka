@@ -151,7 +151,7 @@ tampere:
   payment:
     url: http://localhost:${wiremock.server.port}/mock/frends/payableAccounting
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   bi-export:
     prefix: bi
   archival:
@@ -160,7 +160,7 @@ tampere:
     base-url: http://localhost:${wiremock.server.port}/mock/frends/archival
 vesilahti:
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   primus:
     sftp: &test-sftp
       host: localhost
@@ -178,43 +178,43 @@ vesilahti:
       prefix: upload/
 hameenkyro:
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   primus:
     sftp: *test-sftp
 ylojarvi:
   invoice:
     sftp: *test-sftp
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   primus:
     sftp: *test-sftp
 pirkkala:
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   primus:
     sftp: *test-sftp
 nokia:
   invoice:
     sftp: *test-sftp
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   archival:
     sftp: *test-sftp
   primus:
     sftp: *test-sftp
 kangasala:
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   primus:
     sftp: *test-sftp
 lempaala:
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   primus:
     sftp: *test-sftp
 orivesi:
   bucket:
-    export: trevaka-export-it
+    export: ${evaka.integration_test.trevaka_export_bucket}
   primus:
     sftp: *test-sftp
 
