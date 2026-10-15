@@ -20,6 +20,8 @@ RUN apt-get update \
 
 WORKDIR /evaka
 
+# bin/service-deps-layer-inputs.sh finds the inputs of the resolveDependencies layer from these
+# COPY instructions. It does not read continuation lines, so keep each COPY on one line.
 COPY ./service/gradle/ ./service/gradle/
 COPY ./service/custom-ktlint-rules/ ./service/custom-ktlint-rules/
 COPY ./service/gradlew ./service/build.gradle.kts ./service/gradle.properties ./service/settings.gradle.kts ./service/
@@ -30,7 +32,16 @@ COPY ./service/codegen/build.gradle.kts ./service/codegen/
 
 WORKDIR /evaka/service
 
-RUN ./gradlew --no-daemon resolveDependencies
+# The cache mount lets CI carry downloads over from earlier builds. A cache mount is not part of
+# the image, so the dependencies are also copied into the image: the --offline builds below and
+# the users of the builder image do not mount the cache.
+RUN --mount=type=cache,id=evaka-gradle-deps,target=/gradle-deps,sharing=locked \
+    mkdir -p /gradle-deps/caches/modules-2 /gradle-deps/wrapper/dists /root/.gradle/caches /root/.gradle/wrapper \
+ && cp -a /gradle-deps/caches/modules-2 /root/.gradle/caches/ \
+ && cp -a /gradle-deps/wrapper/dists /root/.gradle/wrapper/ \
+ && ./gradlew --no-daemon resolveDependencies \
+ && cp -a -u /root/.gradle/caches/modules-2 /gradle-deps/caches/ \
+ && cp -a -u /root/.gradle/wrapper/dists /gradle-deps/wrapper/
 
 COPY ./service/vtjclient/ ./vtjclient/
 RUN ./gradlew --no-daemon :vtjclient:wsdl2java
@@ -38,12 +49,24 @@ RUN ./gradlew --no-daemon :vtjclient:wsdl2java
 COPY ./service/ /evaka/service/
 
 # --offline is used to be sure that all dependencies are installed in previous steps
-RUN ./gradlew --offline --no-daemon assemble copyDownloadOnlyDeps \
+#
+# CI saves the build cache after every build. To keep it small, entries that were not read or
+# written in the last hour are deleted. Gradle does not mark the entries it reads, so file access
+# times are used instead: an access time of 0 makes the kernel (relatime) update it on the next read.
+RUN --mount=type=cache,id=evaka-gradle-build-cache-assemble,target=/root/.gradle/caches/build-cache-1,sharing=locked \
+    find /root/.gradle/caches/build-cache-1 -type f -amin +60 -exec touch -a -d @0 {} + \
+ && ./gradlew --offline --no-daemon assemble copyDownloadOnlyDeps \
+ && find /root/.gradle/caches/build-cache-1 -type f -amin +60 -delete \
  && unzip -oq build/libs/evaka-service-boot.jar -d target
 
 FROM assemble AS builder
 
-RUN ./gradlew --offline --no-daemon compileIntegrationTestKotlin
+# This stage has its own build cache because the pruning in the assemble stage would delete the
+# entries of this stage.
+RUN --mount=type=cache,id=evaka-gradle-build-cache-tests,target=/root/.gradle/caches/build-cache-1,sharing=locked \
+    find /root/.gradle/caches/build-cache-1 -type f -amin +60 -exec touch -a -d @0 {} + \
+ && ./gradlew --offline --no-daemon compileIntegrationTestKotlin \
+ && find /root/.gradle/caches/build-cache-1 -type f -amin +60 -delete
 
 # codegenCheck in test.Dockerfile compares the generated API clients against these sources
 COPY ./frontend/src/ /evaka/frontend/src/
