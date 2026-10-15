@@ -14,15 +14,17 @@ import evaka.core.dataremoval.ExpirationRule.Always
 import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations.Companion.safeFor
 import evaka.core.dataremoval.Handler.ADULT
 import evaka.core.dataremoval.Handler.CHILD
 import evaka.core.dataremoval.Integration.KOSKI
 import evaka.core.dataremoval.Integration.VARDA
 import evaka.core.invoicing.domain.FINANCE_FREEZE_PERIOD
+import evaka.core.invoicing.domain.financeInputTables
+import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.shared.ChildImageId
 import evaka.core.shared.DatabaseTable
 import evaka.core.shared.async.AsyncJob
+import evaka.core.varda.VARDA_INPUT_TABLES
 import java.time.Period
 
 /** A month past the finance freeze, so that nothing the generator still reads is deleted */
@@ -41,33 +43,9 @@ private val oneYearAfterLastPlacement = After(oneYear, lastPlacementEnd)
 private val fiveYearsAfterLastPlacement = After(fiveYears, lastPlacementEnd)
 private val tenYearsAfterLastPlacement = After(tenYears, lastPlacementEnd)
 
-/**
- * Ten years after the child's last placement, or after the end of the rows' period when the child
- * has no placements, and never before the finance freeze has passed the end of the rows' period
- */
-private fun childFinanceRule(periodEnd: DateSource) =
-    AllOf(
-        After(FINANCE_FREEZE_WITH_MARGIN, periodEnd),
-        Coalesce(After(tenYears, lastPlacementEnd), After(tenYears, periodEnd)),
-    )
-
-/**
- * Ten years after the last placement of the children of each row, or after the end of the row's
- * period when none of them has placements, and never before the finance freeze has passed the end
- * of the rows' period
- */
-private fun headOfFamilyFinanceRule(
-    periodEnd: DateSource,
-    childrenPlacementOrPeriodEnd: DateSource,
-) =
-    AllOf(
-        After(FINANCE_FREEZE_WITH_MARGIN, periodEnd),
-        After(tenYears, childrenPlacementOrPeriodEnd),
-    )
-
 /** The tables whose rows the algorithm deletes or waits for, and their expiration rules */
 fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): SchemaDefinition {
-    return SchemaDefinition(
+    val tables =
         listOf(
             HandledTable(
                 name = "person",
@@ -76,10 +54,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 auditIdType = DatabaseTable.Person::class,
                 expirationRule =
                     Coalesce(
-                            After(oneYear, OwnColumn("last_login", TIMESTAMP_WITH_TIME_ZONE)),
-                            After(oneYear, OwnColumn("created", TIMESTAMP_WITH_TIME_ZONE)),
-                        )
-                        .safeFor(KOSKI, VARDA),
+                        After(oneYear, OwnColumn("last_login", TIMESTAMP_WITH_TIME_ZONE)),
+                        After(oneYear, OwnColumn("created", TIMESTAMP_WITH_TIME_ZONE)),
+                    ),
+                safeForIntegrations = setOf(KOSKI, VARDA),
             ),
             HandledTable(
                 name = "child",
@@ -88,10 +66,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 auditIdType = DatabaseTable.Person::class,
                 expirationRule =
                     After(
-                            sixMonths,
-                            GraphTableColumn("person", "created", TIMESTAMP_WITH_TIME_ZONE),
-                        )
-                        .safeFor(KOSKI, VARDA),
+                        sixMonths,
+                        GraphTableColumn("person", "created", TIMESTAMP_WITH_TIME_ZONE),
+                    ),
+                safeForIntegrations = setOf(KOSKI, VARDA),
             ),
             HandledTable(
                 name = "placement",
@@ -111,12 +89,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         ),
                     ),
                 auditIdType = DatabaseTable.Placement::class,
-                expirationRule =
-                    AllOf(
-                            After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("end_date")),
-                            After(tenYears, OwnColumn("end_date")),
-                        )
-                        .safeFor(KOSKI, VARDA),
+                expirationRule = After(tenYears, OwnColumn("end_date")),
+                financeFreeze = After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("end_date")),
+                safeForIntegrations = setOf(KOSKI, VARDA),
                 deletedWithParent = true,
             ),
             HandledTable(
@@ -125,7 +100,8 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 references =
                     listOf(primaryReference("placement_id", referencedTable = "placement")),
                 auditIdType = DatabaseTable.ServiceNeed::class,
-                expirationRule = Always.safeFor(VARDA),
+                expirationRule = Always,
+                safeForIntegrations = setOf(VARDA),
                 deletedWithParent = true,
             ),
             HandledTable(
@@ -156,14 +132,14 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 auditIdType = DatabaseTable.Application::class,
                 expirationRule =
                     AllOf(
-                            Coalesce(tenYearsAfterLastPlacement, Always),
-                            Coalesce(
-                                After(tenYears, OwnColumn("sentdate")),
-                                After(tenYears, OwnColumn("created_at", TIMESTAMP_WITH_TIME_ZONE)),
-                            ),
-                            notWhileApplicationPending,
-                        )
-                        .safeFor(VARDA),
+                        Coalesce(tenYearsAfterLastPlacement, Always),
+                        Coalesce(
+                            After(tenYears, OwnColumn("sentdate")),
+                            After(tenYears, OwnColumn("created_at", TIMESTAMP_WITH_TIME_ZONE)),
+                        ),
+                        notWhileApplicationPending,
+                    ),
+                safeForIntegrations = setOf(VARDA),
             ),
             HandledTable(
                 name = "application_note",
@@ -213,11 +189,11 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 auditIdType = DatabaseTable.Decision::class,
                 expirationRule =
                     Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(tenYears, OwnColumn("sent_date")),
-                            Always,
-                        )
-                        .safeFor(VARDA),
+                        tenYearsAfterLastPlacement,
+                        After(tenYears, OwnColumn("sent_date")),
+                        Always,
+                    ),
+                safeForIntegrations = setOf(VARDA),
                 deletedWithParent = true,
                 asyncJobsPlannedOnDelete =
                     AsyncJobsOnDelete(listOf("document_key", "other_guardian_document_key")) { row
@@ -310,7 +286,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 handledBy = CHILD,
                 references =
                     listOf(
-                        primaryReference("child_document_id", referencedTable = "child_document")
+                        primaryReference(
+                            "child_document_id",
+                            referencedTable = "child_document",
+                        )
                     ),
                 independentRows = true,
                 auditIdType = DatabaseTable.ChildDocumentPublishedVersion::class,
@@ -332,7 +311,8 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         secondaryReference("guardian_id", referencedTable = "person"),
                     ),
                 identifiedByCols = listOf("guardian_id", "child_id"),
-                expirationRule = Always.safeFor(VARDA),
+                expirationRule = Always,
+                safeForIntegrations = setOf(VARDA),
                 deletedWithParent = true,
             ),
             HandledTable(
@@ -376,14 +356,9 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
                 auditIdType = DatabaseTable.Absence::class,
                 expirationRule =
-                    AllOf(
-                            After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("date")),
-                            Coalesce(
-                                fiveYearsAfterLastPlacement,
-                                After(fiveYears, OwnColumn("date")),
-                            ),
-                        )
-                        .safeFor(KOSKI),
+                    Coalesce(fiveYearsAfterLastPlacement, After(fiveYears, OwnColumn("date"))),
+                financeFreeze = After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("date")),
+                safeForIntegrations = setOf(KOSKI),
             ),
             HandledTable(
                 name = "absence_application",
@@ -391,7 +366,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
                 auditIdType = DatabaseTable.AbsenceApplication::class,
                 expirationRule =
-                    Coalesce(fiveYearsAfterLastPlacement, After(oneYear, OwnColumn("start_date"))),
+                    Coalesce(
+                        fiveYearsAfterLastPlacement,
+                        After(oneYear, OwnColumn("start_date")),
+                    ),
             ),
             HandledTable(
                 name = "child_attendance",
@@ -435,7 +413,8 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 handledBy = CHILD,
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
                 auditIdType = DatabaseTable.ChildDailyNote::class,
-                // In practice the scheduled job removeExpiredNotes deletes a note 14 hours after
+                // In practice the scheduled job removeExpiredNotes deletes a note 14 hours
+                // after
                 // its last change.
                 expirationRule =
                     After(Period.ofDays(1), OwnColumn("modified_at", TIMESTAMP_WITH_TIME_ZONE)),
@@ -467,13 +446,17 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
                 auditIdType = DatabaseTable.AssistanceFactor::class,
                 expirationRule =
+                    Coalesce(
+                        tenYearsAfterLastPlacement,
+                        After(tenYears, OwnColumn("valid_during", FINITE_DATE_RANGE_END)),
+                    ),
+                financeFreeze =
                     if (valueDecisionCapacityFactorEnabled)
-                        childFinanceRule(OwnColumn("valid_during", FINITE_DATE_RANGE_END))
-                    else
-                        Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(tenYears, OwnColumn("valid_during", FINITE_DATE_RANGE_END)),
-                        ),
+                        After(
+                            FINANCE_FREEZE_WITH_MARGIN,
+                            OwnColumn("valid_during", FINITE_DATE_RANGE_END),
+                        )
+                    else null,
             ),
             HandledTable(
                 name = "daycare_assistance",
@@ -493,10 +476,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 auditIdType = DatabaseTable.PreschoolAssistance::class,
                 expirationRule =
                     Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(tenYears, OwnColumn("valid_during", FINITE_DATE_RANGE_END)),
-                        )
-                        .safeFor(KOSKI),
+                        tenYearsAfterLastPlacement,
+                        After(tenYears, OwnColumn("valid_during", FINITE_DATE_RANGE_END)),
+                    ),
+                safeForIntegrations = setOf(KOSKI),
             ),
             HandledTable(
                 name = "other_assistance_measure",
@@ -505,10 +488,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 auditIdType = DatabaseTable.OtherAssistanceMeasure::class,
                 expirationRule =
                     Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(tenYears, OwnColumn("valid_during", FINITE_DATE_RANGE_END)),
-                        )
-                        .safeFor(KOSKI),
+                        tenYearsAfterLastPlacement,
+                        After(tenYears, OwnColumn("valid_during", FINITE_DATE_RANGE_END)),
+                    ),
+                safeForIntegrations = setOf(KOSKI),
             ),
             HandledTable(
                 name = "assistance_action",
@@ -516,7 +499,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
                 auditIdType = DatabaseTable.AssistanceAction::class,
                 expirationRule =
-                    Coalesce(tenYearsAfterLastPlacement, After(tenYears, OwnColumn("end_date"))),
+                    Coalesce(
+                        tenYearsAfterLastPlacement,
+                        After(tenYears, OwnColumn("end_date")),
+                    ),
             ),
             HandledTable(
                 name = "assistance_action_option_ref",
@@ -533,12 +519,17 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
                 auditIdType = DatabaseTable.AssistanceNeedVoucherCoefficient::class,
                 expirationRule =
-                    if (valueDecisionCapacityFactorEnabled)
-                        Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(tenYears, OwnColumn("validity_period", FINITE_DATE_RANGE_END)),
-                        )
-                    else childFinanceRule(OwnColumn("validity_period", FINITE_DATE_RANGE_END)),
+                    Coalesce(
+                        tenYearsAfterLastPlacement,
+                        After(tenYears, OwnColumn("validity_period", FINITE_DATE_RANGE_END)),
+                    ),
+                financeFreeze =
+                    if (valueDecisionCapacityFactorEnabled) null
+                    else
+                        After(
+                            FINANCE_FREEZE_WITH_MARGIN,
+                            OwnColumn("validity_period", FINITE_DATE_RANGE_END),
+                        ),
             ),
             HandledTable(
                 name = "pedagogical_document",
@@ -576,7 +567,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                     ),
                 auditIdType = DatabaseTable.ServiceApplication::class,
                 expirationRule =
-                    Coalesce(fiveYearsAfterLastPlacement, After(oneYear, OwnColumn("start_date"))),
+                    Coalesce(
+                        fiveYearsAfterLastPlacement,
+                        After(oneYear, OwnColumn("start_date")),
+                    ),
             ),
             HandledTable(
                 name = "fee_alteration",
@@ -586,15 +580,16 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 expirationRule =
                     AllOf(
                         Coalesce(
-                            After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("valid_to")),
-                            After(FINANCE_FREEZE_WITH_MARGIN, lastPlacementEnd),
-                            Always,
-                        ),
-                        Coalesce(
                             After(tenYears, OwnColumn("valid_to")),
                             After(tenYears, OwnColumn("valid_from")),
                         ),
                         Coalesce(tenYearsAfterLastPlacement, Always),
+                    ),
+                financeFreeze =
+                    Coalesce(
+                        After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("valid_to")),
+                        After(FINANCE_FREEZE_WITH_MARGIN, lastPlacementEnd),
+                        Always,
                     ),
             ),
             HandledTable(
@@ -607,7 +602,13 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         secondaryReference("partner_id", referencedTable = "person"),
                     ),
                 auditIdType = DatabaseTable.VoucherValueDecision::class,
-                expirationRule = childFinanceRule(OwnColumn("valid_to")).safeFor(VARDA),
+                expirationRule =
+                    Coalesce(
+                        tenYearsAfterLastPlacement,
+                        After(tenYears, OwnColumn("valid_to")),
+                    ),
+                financeFreeze = After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("valid_to")),
+                safeForIntegrations = setOf(VARDA),
                 asyncJobsPlannedOnDelete =
                     AsyncJobsOnDelete(listOf("document_key")) { row ->
                         listOfNotNull(row.valuesByColumn["document_key"]).map {
@@ -629,17 +630,21 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         ),
                     ),
                 independentRows = true,
+                auditIdType = DatabaseTable.Parentship::class,
+                expirationRule = Always,
                 // Parentship expires once no finance decision it affects
                 // can be regenerated: its own period or the placements of the children it affects
                 // ended longer ago than the finance freeze, and none of them has a pending
                 // application.
-                auditIdType = DatabaseTable.Parentship::class,
-                expirationRule =
+                financeFreeze =
                     AnyOf(
                         After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("end_date")),
                         AllOf(
                             Coalesce(
-                                After(FINANCE_FREEZE_WITH_MARGIN, fridgeChildRelevantPlacementEnd),
+                                After(
+                                    FINANCE_FREEZE_WITH_MARGIN,
+                                    fridgeChildRelevantPlacementEnd,
+                                ),
                                 Always,
                             ),
                             notWhileFridgeChildRelevantApplicationPending,
@@ -660,14 +665,18 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                     ),
                 identifiedByCols = listOf("partnership_id"),
                 independentRows = true,
+                auditIdType = DatabaseTable.Partnership::class,
+                expirationRule = Always,
                 // Partnership expires once no finance decision it affects
                 // can be regenerated: its own period or the placements of the children it affects
                 // ended longer ago than the finance freeze, and none of them has a pending
                 // application.
-                auditIdType = DatabaseTable.Partnership::class,
-                expirationRule =
+                financeFreeze =
                     AnyOf(
-                        Coalesce(After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("end_date")), Never),
+                        Coalesce(
+                            After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("end_date")),
+                            Never,
+                        ),
                         AllOf(
                             Coalesce(
                                 After(
@@ -691,22 +700,21 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 independentRows = true,
                 auditIdType = DatabaseTable.Income::class,
                 expirationRule =
-                    AllOf(
-                        Coalesce(
-                            After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("valid_to")),
-                            After(FINANCE_FREEZE_WITH_MARGIN, incomePersonLastFinanceDecisionEnd),
-                            Always,
-                        ),
-                        Coalesce(
-                            After(tenYears, OwnColumn("valid_to")),
-                            AllOf(
-                                After(tenYears, OwnColumn("valid_from")),
-                                Coalesce(
-                                    After(tenYears, incomePersonLastFinanceDecisionEnd),
-                                    Always,
-                                ),
+                    Coalesce(
+                        After(tenYears, OwnColumn("valid_to")),
+                        AllOf(
+                            After(tenYears, OwnColumn("valid_from")),
+                            Coalesce(
+                                After(tenYears, incomePersonLastFinanceDecisionEnd),
+                                Always,
                             ),
                         ),
+                    ),
+                financeFreeze =
+                    Coalesce(
+                        After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("valid_to")),
+                        After(FINANCE_FREEZE_WITH_MARGIN, incomePersonLastFinanceDecisionEnd),
+                        Always,
                     ),
             ),
             HandledTable(
@@ -730,12 +738,13 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         secondaryReference("partner_id", referencedTable = "person"),
                     ),
                 auditIdType = DatabaseTable.FeeDecision::class,
-                expirationRule =
-                    headOfFamilyFinanceRule(
-                            OwnColumn("valid_during", FINITE_DATE_RANGE_END),
-                            feeDecisionChildrenPlacementOrValidityEnd,
-                        )
-                        .safeFor(VARDA),
+                expirationRule = After(tenYears, feeDecisionChildrenPlacementOrValidityEnd),
+                financeFreeze =
+                    After(
+                        FINANCE_FREEZE_WITH_MARGIN,
+                        OwnColumn("valid_during", FINITE_DATE_RANGE_END),
+                    ),
+                safeForIntegrations = setOf(VARDA),
                 asyncJobsPlannedOnDelete =
                     AsyncJobsOnDelete(listOf("document_key")) { row ->
                         listOfNotNull(row.valuesByColumn["document_key"]).map {
@@ -752,7 +761,8 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         secondaryReference("child_id", referencedTable = "child"),
                     ),
                 auditIdType = DatabaseTable.FeeDecisionChild::class,
-                expirationRule = Always.safeFor(VARDA),
+                expirationRule = Always,
+                safeForIntegrations = setOf(VARDA),
                 deletedWithParent = true,
             ),
             HandledTable(
@@ -789,11 +799,8 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         secondaryReference("codebtor", referencedTable = "person"),
                     ),
                 auditIdType = DatabaseTable.Invoice::class,
-                expirationRule =
-                    headOfFamilyFinanceRule(
-                        OwnColumn("period_end"),
-                        invoiceChildrenPlacementOrPeriodEnd,
-                    ),
+                expirationRule = After(tenYears, invoiceChildrenPlacementOrPeriodEnd),
+                financeFreeze = After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("period_end")),
             ),
             HandledTable(
                 name = "invoice_row",
@@ -802,7 +809,10 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                     listOf(
                         primaryReference("invoice_id", referencedTable = "invoice"),
                         secondaryReference("child", referencedTable = "child"),
-                        secondaryReference("correction_id", referencedTable = "invoice_correction"),
+                        secondaryReference(
+                            "correction_id",
+                            referencedTable = "invoice_correction",
+                        ),
                     ),
                 auditIdType = DatabaseTable.InvoiceRow::class,
                 expirationRule = Always,
@@ -817,10 +827,11 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         secondaryReference("child_id", referencedTable = "child"),
                     ),
                 auditIdType = DatabaseTable.InvoiceCorrection::class,
-                expirationRule =
-                    headOfFamilyFinanceRule(
+                expirationRule = After(tenYears, invoiceCorrectionChildPlacementOrPeriodEnd),
+                financeFreeze =
+                    After(
+                        FINANCE_FREEZE_WITH_MARGIN,
                         OwnColumn("period", FINITE_DATE_RANGE_END),
-                        invoiceCorrectionChildPlacementOrPeriodEnd,
                     ),
             ),
             ExternalTable(
@@ -847,5 +858,60 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                     ),
             ),
         )
-    )
+    val schema = SchemaDefinition(tables)
+    requireSafetyConditions(schema, valueDecisionCapacityFactorEnabled)
+    return schema
 }
+
+/**
+ * The safety conditions are declared apart from the expiration rules, so that overriding a rule
+ * cannot remove them
+ */
+private fun requireSafetyConditions(
+    schema: SchemaDefinition,
+    valueDecisionCapacityFactorEnabled: Boolean,
+) {
+    for (table in schema.handledTables) {
+        // The sync state of each integration is deleted with the child row
+        val readingIntegrations = buildSet {
+            if (table.name in KOSKI_INPUT_TABLES || table == schema.child) add(KOSKI)
+            if (table.name in VARDA_INPUT_TABLES || table == schema.child) add(VARDA)
+        }
+        require(table.safeForIntegrations == readingIntegrations) {
+            "$table is safe for ${table.safeForIntegrations}, but it must be safe for exactly $readingIntegrations"
+        }
+        // Always on its own would delete the rows the first time a run reaches them
+        require(
+            table.expirationRule != Always || table.deletedWithParent || table.financeFreeze != null
+        ) {
+            "$table: Always is the only rule, so the table must be deleted with its parent or wait for the finance freeze"
+        }
+    }
+    fun HandledTable.waitsForFinanceFreeze(): Boolean =
+        financeFreeze?.waitsForFinanceFreeze() == true ||
+            (deletedWithParent && schema.parentOf(this)?.waitsForFinanceFreeze() == true)
+    for (name in financeInputTables(valueDecisionCapacityFactorEnabled)) {
+        val table =
+            requireNotNull(schema.tablesByName[name] as? HandledTable) {
+                "The finance generators read $name, which is not declared as a handled table"
+            }
+        require(table.waitsForFinanceFreeze()) {
+            "The finance generators read $table, so it must wait for the finance freeze, directly or through the parent it is deleted with"
+        }
+    }
+}
+
+/**
+ * A coalesce may fall back to a rule without the freeze, for rows that no decision can use, so one
+ * of its alternatives waiting for the freeze is enough
+ */
+private fun ExpirationRule.waitsForFinanceFreeze(): Boolean =
+    when (this) {
+        is After -> period == FINANCE_FREEZE_WITH_MARGIN
+        is AllOf -> rules.any { it.waitsForFinanceFreeze() }
+        is AnyOf -> rules.all { it.waitsForFinanceFreeze() }
+        is Coalesce -> rules.any { it.waitsForFinanceFreeze() }
+        Always,
+        Never,
+        is ExpirationRule.NotWhile -> false
+    }

@@ -11,7 +11,6 @@ import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
 import evaka.core.dataremoval.ExpirationRule.NotWhile
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
 import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.shared.ChildId
 import evaka.core.shared.DatabaseTable
@@ -396,7 +395,10 @@ private fun PersonGraph.isExpired(node: OwnNode, today: LocalDate): Boolean {
     if (node.table.name in tablesKnownToStay) return false
     // A missing child row counts as expired, so that it blocks nothing on its own
     if (node.table == schema.child && node.rows.isEmpty()) return true
-    return requireResult(node.table.expirationRule, node, today)
+    val financeFreeze = node.table.financeFreeze
+    return requireResult(node.table.expirationRule, node, today) &&
+        (financeFreeze == null || requireResult(financeFreeze, node, today)) &&
+        isSafeForIntegrations(node.table.safeForIntegrations, node, today)
 }
 
 private fun PersonGraph.requireResult(
@@ -422,12 +424,6 @@ private fun PersonGraph.evaluateRule(
         is Coalesce -> rule.rules.firstNotNullOfOrNull { evaluateRule(it, node, today) }
         is After -> dateOf(rule.dateSource, node)?.let { it.plus(rule.period) < today }
         is NotWhile -> node.mayExpireUnder(rule)
-        is SafeForIntegrations ->
-            if (isSafeForIntegrations(rule.integrations, node, today)) {
-                evaluateRule(rule.rule, node, today)
-            } else {
-                false
-            }
     }
 
 private fun PersonGraph.isSafeForIntegrations(
@@ -435,6 +431,7 @@ private fun PersonGraph.isSafeForIntegrations(
     node: OwnNode,
     today: LocalDate,
 ): Boolean {
+    if (integrations.isEmpty()) return true
     val children = childrenConcernedBy(node)
     return integrations.all { integration ->
         children.all { integrationFacts(it, node).safeToDeleteFor(integration, today) }

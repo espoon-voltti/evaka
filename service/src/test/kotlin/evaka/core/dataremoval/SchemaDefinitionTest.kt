@@ -14,16 +14,9 @@ import evaka.core.dataremoval.ExpirationRule.Always
 import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations.Companion.safeFor
 import evaka.core.dataremoval.Handler.ADULT
 import evaka.core.dataremoval.Handler.CHILD
-import evaka.core.dataremoval.Integration.KOSKI
-import evaka.core.dataremoval.Integration.VARDA
-import evaka.core.invoicing.domain.financeInputTables
-import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.shared.DatabaseTable
-import evaka.core.varda.VARDA_INPUT_TABLES
 import java.time.Period
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -540,91 +533,28 @@ class SchemaDefinitionTest {
     }
 
     @Test
-    fun `a rule safe for integrations is validated, and its sources and not while rules found, through the wrapper`() {
-        invalid("add a fallback with Coalesce") { validated(nullableOwn.safeFor(VARDA)) }
-        invalid("wrap it in Coalesce") { validated(AllOf(nullableOwn, Always).safeFor(VARDA)) }
-        valid { validated(Coalesce(nullableOwn, ownDate).safeFor(VARDA)) }
-        valid { validated(AllOf(Coalesce(nullableOwn, ownDate).safeFor(VARDA), Always)) }
-        invalid("safe for no integration") { Always.safeFor() }
-
+    fun `the date sources and not while rules of the finance freeze are read like those of the rule`() {
         val source = customSource()
         val notWhile = notWhileRule()
-        val rule = AllOf(Coalesce(After(oneYear, source), ownDate), notWhile).safeFor(KOSKI, VARDA)
-        assertEquals(setOf(source, OwnColumn("created")), rule.usedDateSources())
-        assertEquals(setOf(notWhile), rule.usedNotWhileRules())
-        assertEquals(setOf(KOSKI, VARDA), rule.integrations)
+        val table =
+            table(
+                "a",
+                CHILD,
+                "child_id" to "child",
+                expirationRule = nullableOwn,
+                financeFreeze = AllOf(Coalesce(After(oneYear, source), ownDate), notWhile),
+            )
+        assertEquals(setOf(endDate, source, OwnColumn("created")), table.usedDateSources())
+        assertEquals(setOf(source), table.usedCustomDateSources())
+        assertEquals(setOf(notWhile), table.usedNotWhileRules())
         assertEquals(
-            mapOf("created" to DATE),
-            withRule(rule).dateColumnsToRead(withRule(rule).handled("a")),
+            mapOf("end_date" to DATE, "created" to DATE),
+            schema(table).dateColumnsToRead(table),
         )
     }
 
     private val declaredSchema =
         buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
-
-    /** The sync state of each integration is deleted with the child row */
-    @Test
-    fun `every declared table an integration reads, and the child row, is safe for that integration directly, and no other table claims an integration`() {
-        val inputTablesByIntegration =
-            mapOf(KOSKI to KOSKI_INPUT_TABLES, VARDA to VARDA_INPUT_TABLES)
-        val invalid =
-            declaredSchema.handledTables.flatMap { table ->
-                val declared =
-                    (table.expirationRule as? SafeForIntegrations)?.integrations.orEmpty()
-                inputTablesByIntegration.mapNotNull { (integration, inputTables) ->
-                    val mustBeSafe = table.name in inputTables || table == declaredSchema.child
-                    when {
-                        mustBeSafe && integration !in declared ->
-                            "$table must be declared safe for $integration"
-                        !mustBeSafe && integration in declared ->
-                            "$table is declared safe for $integration, which does not read it"
-                        else -> null
-                    }
-                }
-            }
-        assertEquals(emptyList(), invalid)
-    }
-
-    /**
-     * A coalesce may fall back to a rule without the freeze, for rows that no decision can use, so
-     * one of its alternatives waiting for the freeze is enough
-     */
-    @Test
-    fun `every declared table the finance generators read waits for the finance freeze, directly or through the parent it is deleted with`() {
-        fun ExpirationRule.waitsForFinanceFreeze(): Boolean =
-            when (this) {
-                is After -> period == FINANCE_FREEZE_WITH_MARGIN
-                is AllOf -> rules.any { it.waitsForFinanceFreeze() }
-                is AnyOf -> rules.all { it.waitsForFinanceFreeze() }
-                is Coalesce -> rules.any { it.waitsForFinanceFreeze() }
-                is SafeForIntegrations -> rule.waitsForFinanceFreeze()
-                else -> false
-            }
-        for (valueDecisionCapacityFactorEnabled in listOf(false, true)) {
-            val schema = buildDataRetentionSchema(valueDecisionCapacityFactorEnabled)
-            fun HandledTable.waitsForFinanceFreeze(): Boolean =
-                expirationRule.waitsForFinanceFreeze() ||
-                    (deletedWithParent && schema.parentOf(this)?.waitsForFinanceFreeze() == true)
-            assertEquals(
-                emptyList(),
-                financeInputTables(valueDecisionCapacityFactorEnabled).filterNot {
-                    schema.handled(it).waitsForFinanceFreeze()
-                },
-            )
-        }
-    }
-
-    /** Always on its own would delete the rows the first time a run reaches them */
-    @Test
-    fun `every declared table whose rule is Always, wrapped or not, is deleted with its parent`() {
-        val invalid =
-            declaredSchema.handledTables.filter { table ->
-                val rule = table.expirationRule
-                val always = rule == Always || (rule is SafeForIntegrations && rule.rule == Always)
-                always && !table.deletedWithParent
-            }
-        assertEquals(emptyList(), invalid)
-    }
 
     @Test
     fun `the declared schema definition is valid and loads every table after the one its primary reference points to`() {

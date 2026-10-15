@@ -12,7 +12,6 @@ import evaka.core.dataremoval.ExpirationRule.Always
 import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations.Companion.safeFor
 import evaka.core.dataremoval.Handler.ADULT
 import evaka.core.dataremoval.Handler.CHILD
 import evaka.core.dataremoval.Integration.KOSKI
@@ -495,13 +494,47 @@ class PersonGraphEvaluationTest {
     }
 
     @Test
-    fun `a rule safe for an integration expires only when every child concerned is never sent to it or past the safe age`() {
+    fun `a node expires only when its finance freeze is met too`() {
+        fun expired(rule: ExpirationRule, financeFreeze: ExpirationRule): Boolean {
+            val schema =
+                schema(
+                    table(
+                        "a",
+                        CHILD,
+                        "child_id" to "child",
+                        expirationRule = rule,
+                        financeFreeze = financeFreeze,
+                    )
+                )
+            val plan = schema.graph(schema.ownNode("a", row("child_id" to target))).evaluate(today)
+            return whole("a") in plan.deleted()
+        }
+        assert(expired(rule = Always, financeFreeze = Always))
+        assert(!expired(rule = Always, financeFreeze = Never))
+        assert(!expired(rule = Never, financeFreeze = Always))
+    }
+
+    @Test
+    fun `a table safe for an integration expires only when every child concerned is never sent to it or past the safe age`() {
         val past = today.minusYears(SAFE_DATA_REMOVAL_AGE).minusDays(1)
         val sentToKoskiOld = IntegrationFacts(past, sentToKoski = true, sentToVarda = false)
         val sentToKoskiYoung =
             IntegrationFacts(past.plusDays(1), sentToKoski = true, sentToVarda = false)
-        fun expired(rule: ExpirationRule, facts: IntegrationFacts): Boolean {
-            val schema = schemaWith(rule)
+        fun expired(
+            rule: ExpirationRule,
+            safeFor: Set<Integration>,
+            facts: IntegrationFacts,
+        ): Boolean {
+            val schema =
+                schema(
+                    table(
+                        "a",
+                        CHILD,
+                        "child_id" to "child",
+                        expirationRule = rule,
+                        safeForIntegrations = safeFor,
+                    )
+                )
             val graph =
                 schema.graph(
                     schema.ownNode("a", row("child_id" to target)),
@@ -509,23 +542,24 @@ class PersonGraphEvaluationTest {
                 )
             return whole("a") in graph.evaluate(today).deleted()
         }
-        assert(!expired(Never.safeFor(KOSKI), neverSent))
-        assert(expired(Always.safeFor(KOSKI), neverSent))
-        assert(!expired(Always.safeFor(KOSKI), sentToKoskiYoung))
-        assert(expired(Always.safeFor(VARDA), sentToKoskiYoung))
-        assert(!expired(Always.safeFor(KOSKI, VARDA), sentToKoskiYoung))
-        assert(expired(Always.safeFor(KOSKI), sentToKoskiOld))
+        assert(!expired(Never, setOf(KOSKI), neverSent))
+        assert(expired(Always, setOf(KOSKI), neverSent))
+        assert(!expired(Always, setOf(KOSKI), sentToKoskiYoung))
+        assert(expired(Always, setOf(VARDA), sentToKoskiYoung))
+        assert(!expired(Always, setOf(KOSKI, VARDA), sentToKoskiYoung))
+        assert(expired(Always, setOf(KOSKI), sentToKoskiOld))
     }
 
     @Test
-    fun `a rule safe for an integration concerns the children an adult-handled table names directly and through the nodes deleted with it`() {
+    fun `a table safe for an integration concerns the children an adult-handled table names directly and through the nodes deleted with it`() {
         val schema =
             schema(
                 table(
                     "fee_decision",
                     ADULT,
                     "head_of_family_id" to "person",
-                    expirationRule = Always.safeFor(VARDA),
+                    expirationRule = Always,
+                    safeForIntegrations = setOf(VARDA),
                 ),
                 table(
                     "fee_decision_child",
@@ -569,14 +603,15 @@ class PersonGraphEvaluationTest {
     }
 
     @Test
-    fun `a rule safe for an integration keeps the row while any child it concerns is sent to it and under the safe age`() {
+    fun `a table safe for an integration keeps the row while any child it concerns is sent to it and under the safe age`() {
         val schema =
             schema(
                 table(
                     "fee_decision",
                     ADULT,
                     "head_of_family_id" to "person",
-                    expirationRule = Always.safeFor(VARDA),
+                    expirationRule = Always,
+                    safeForIntegrations = setOf(VARDA),
                 ),
                 table(
                     "fee_decision_child",

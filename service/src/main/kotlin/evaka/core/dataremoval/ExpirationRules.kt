@@ -11,7 +11,6 @@ import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
 import evaka.core.dataremoval.ExpirationRule.NotWhile
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
 import evaka.core.shared.db.Database
 import java.time.LocalDate
 import java.time.Period
@@ -99,28 +98,6 @@ sealed interface ExpirationRule {
     ) : ExpirationRule {
         override fun toString(): String = "not while $description"
     }
-
-    /**
-     * Wrapping a rule with this adds an additional condition that the node cannot expire before it
-     * is safe from an external data sync's point of view.
-     *
-     * If data has already been sent to the integration, it must not be removed before the child has
-     * reached [SAFE_DATA_REMOVAL_AGE] and the sync can be frozen permanently.
-     */
-    class SafeForIntegrations
-    private constructor(val integrations: Set<Integration>, val rule: ExpirationRule) :
-        ExpirationRule {
-        init {
-            require(integrations.isNotEmpty()) { "$rule is safe for no integration" }
-        }
-
-        override fun toString(): String = "$rule.safeFor(${integrations.joinToString()})"
-
-        companion object {
-            fun ExpirationRule.safeFor(vararg integrations: Integration): SafeForIntegrations =
-                SafeForIntegrations(integrations.toSet(), this)
-        }
-    }
 }
 
 fun ExpirationRule.usedDateSources(): Set<DateSource> =
@@ -128,15 +105,11 @@ fun ExpirationRule.usedDateSources(): Set<DateSource> =
         is AllOf -> rules.flatMapTo(mutableSetOf()) { it.usedDateSources() }
         is AnyOf -> rules.flatMapTo(mutableSetOf()) { it.usedDateSources() }
         is Coalesce -> rules.flatMapTo(mutableSetOf()) { it.usedDateSources() }
-        is SafeForIntegrations -> rule.usedDateSources()
         is After -> setOf(dateSource)
         Always,
         Never,
         is NotWhile -> emptySet()
     }
-
-fun ExpirationRule.usedCustomDateSources(): Set<DateSource.Custom> =
-    usedDateSources().filterIsInstance<DateSource.Custom>().toSet()
 
 fun ExpirationRule.usedNotWhileRules(): Set<NotWhile> =
     when (this) {
@@ -144,7 +117,6 @@ fun ExpirationRule.usedNotWhileRules(): Set<NotWhile> =
         is AllOf -> rules.flatMapTo(mutableSetOf()) { it.usedNotWhileRules() }
         is AnyOf -> rules.flatMapTo(mutableSetOf()) { it.usedNotWhileRules() }
         is Coalesce -> rules.flatMapTo(mutableSetOf()) { it.usedNotWhileRules() }
-        is SafeForIntegrations -> rule.usedNotWhileRules()
         Always,
         Never,
         is After -> emptySet()

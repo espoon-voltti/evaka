@@ -45,6 +45,8 @@ fun table(
     vararg secondary: Pair<String, String>,
     optional: List<Reference> = emptyList(),
     expirationRule: ExpirationRule = Always,
+    financeFreeze: ExpirationRule? = null,
+    safeForIntegrations: Set<Integration> = emptySet(),
     deletedWithParent: Boolean = false,
     independentRows: Boolean = false,
     identifiedByCols: List<String> = listOf("id"),
@@ -67,6 +69,8 @@ fun table(
         identifiedByCols = identifiedByCols,
         auditIdType = auditIdType,
         expirationRule = expirationRule,
+        financeFreeze = financeFreeze,
+        safeForIntegrations = safeForIntegrations,
         asyncJobsPlannedOnDelete = asyncJobsPlannedOnDelete,
         orphansToDelete = orphansToDelete,
     )
