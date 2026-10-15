@@ -54,6 +54,56 @@ WHERE cd.id = ANY(${bind(ids)}) AND cd.status <> 'DRAFT' AND dt.archive_external
     }
 
 /**
+ * An accepted or rejected decision waits until it has been archived. Club decisions are not
+ * archived.
+ */
+val notWhileDecisionAwaitingArchival =
+    NotWhile("the decision awaits archival") { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT id
+FROM decision
+WHERE id = ANY(${bind(ids)}) AND status IN ('ACCEPTED', 'REJECTED') AND type <> 'CLUB' AND archived_at IS NULL
+"""
+                )
+            }
+            .toSet<UUID>()
+    }
+
+/** A fee decision other than a draft or an ignored one waits until it has been archived */
+val notWhileFeeDecisionAwaitingArchival =
+    NotWhile("the fee decision awaits archival") { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT id
+FROM fee_decision
+WHERE id = ANY(${bind(ids)}) AND status NOT IN ('DRAFT', 'IGNORED') AND archived_at IS NULL
+"""
+                )
+            }
+            .toSet<UUID>()
+    }
+
+/**
+ * A voucher value decision other than a draft or an ignored one waits until it has been archived
+ */
+val notWhileVoucherValueDecisionAwaitingArchival =
+    NotWhile("the voucher value decision awaits archival") { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT id
+FROM voucher_value_decision
+WHERE id = ANY(${bind(ids)}) AND status NOT IN ('DRAFT', 'IGNORED') AND archived_at IS NULL
+"""
+                )
+            }
+            .toSet<UUID>()
+    }
+
+/**
  * A draft expires a year after it was created. A sent statement that a fee decision of its person
  * overlaps, other than an ignored one, expires ten years after its period, and a missing end date
  * counts as a year after the start. Any other sent statement expires a year after it was sent.
