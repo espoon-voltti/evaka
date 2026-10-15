@@ -324,6 +324,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
                 if (body.rows.any { it.arrived.toLocalDate() != body.date })
                     throw BadRequest("Attendances outside given date")
+                if (body.rows.any { !it.departsAfterArrival() })
+                    throw BadRequest("Departure time must be after arrival time")
 
                 dbc.transaction { tx ->
                     val groupIds = body.rows.mapNotNull { it.groupId }.distinct()

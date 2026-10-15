@@ -448,12 +448,14 @@ export class StaffAttendanceEditPage {
   private page: Page
   addLink: Element
   cancelButton: Element
+  saveButton: Element
   occupancyEffect: Checkbox
 
   constructor(page: Page) {
     this.page = page
     this.addLink = page.findByDataQa('add')
     this.cancelButton = page.findByDataQa('cancel')
+    this.saveButton = page.findByDataQa('save')
     this.occupancyEffect = new Checkbox(
       this.page.findByDataQa('occupancy-effect')
     )
@@ -500,7 +502,7 @@ export class StaffAttendanceEditPage {
   }
 
   async submit(pinCode: string) {
-    await this.page.findByDataQa('save').click()
+    await this.saveButton.click()
     await new PinInput(this.page.findByDataQa('pin-input')).fill(pinCode)
     await new AsyncButton(this.page.findByDataQa('confirm')).click()
   }

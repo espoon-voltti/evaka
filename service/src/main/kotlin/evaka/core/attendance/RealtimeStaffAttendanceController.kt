@@ -182,7 +182,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val departed: HelsinkiDateTime?,
         val type: StaffAttendanceType,
         val hasStaffOccupancyEffect: Boolean,
-    )
+    ) {
+        fun departsAfterArrival(): Boolean = departed == null || departed > arrived
+    }
 
     data class StaffAttendanceBody(
         val unitId: DaycareId,
@@ -207,6 +209,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         }
         if (body.date.isAfter(clock.today())) {
             throw BadRequest("Date cannot be in the future")
+        }
+        if (body.entries.any { !it.departsAfterArrival() }) {
+            throw BadRequest("Departure time must be after arrival time")
         }
 
         val (updates, changes) =
