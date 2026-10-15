@@ -57,7 +57,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
-import { H3, Label, Light } from 'lib-components/typography'
+import { H3, InformationText, Label, Light } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
@@ -407,7 +407,11 @@ export default React.memo(function Group({
                     icon={faPen}
                     text={i18n.common.edit}
                   />
-                ) : null}
+                ) : (
+                  <InformationText>
+                    {i18n.unit.groups.caretakersNotEditableInfo}
+                  </InformationText>
+                )}
               </FixedSpaceRow>
             </div>
             {headcounts && (

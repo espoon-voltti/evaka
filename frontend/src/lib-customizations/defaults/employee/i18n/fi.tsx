@@ -2440,6 +2440,7 @@ export const fi = {
       startDate: 'Perustettu',
       endDate: 'Viimeinen toimintapäivä',
       caretakers: 'Henkilökuntaa',
+      caretakersNotEditableInfo: '(vain pääkäyttäjän muokattavissa)',
       childrenLabel: 'Lapsia',
       childrenValue: {
         single: 'lapsi',
