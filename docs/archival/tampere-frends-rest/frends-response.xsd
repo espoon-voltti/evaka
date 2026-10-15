@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Frends-arkistointirajapinnan (POST /records/add) vastaukset siinä muodossa,
+  jossa eVaka ne lukee (evaka.instance.tampere.archival.TampereArchivalSchema).
+  Johdettu eVakan JAXB-luokista, ei toimittajan virallinen skeema.
+  Onnistunut vastaus: juurielementti <success>, virhe: <errors>. Ei nimiavaruutta.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+  <xs:element name="success">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="records" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="record" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="otherId" type="xs:string" minOccurs="0"/>
+                    <xs:element name="archiveid" type="xs:string" minOccurs="0"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="files" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="entry" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="originalId" type="xs:string" minOccurs="0"/>
+                    <xs:element name="name" type="xs:string" minOccurs="0"/>
+                    <xs:element name="archiveid" type="xs:string" minOccurs="0"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="errors">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="error" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="error_code" type="xs:string" minOccurs="0"/>
+              <xs:element name="error_summary" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

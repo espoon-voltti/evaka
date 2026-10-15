@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<collections xmlns="http://www.profium.com/reception/2022/03" xmlns:ns2="http://www.profium.com/sahke2">
+    <initiator>
+        <source_system>eVaka</source_system>
+        <initiator_id>9cca4214-c895-11f1-ba5f-db03d04ebed8</initiator_id>
+        <initiator_name>Pääkäyttäjä Päivi</initiator_name>
+    </initiator>
+    <collection>
+        <type>record</type>
+        <folder>04.01.03.42</folder>
+        <metadata>
+            <ns2:title>Esiopetuksen oppimissuunnitelma 2026-2027;Valmis;Iida Esimerkki;040720A996H</ns2:title>
+            <ns2:calculationBaseDate>2026-08-01</ns2:calculationBaseDate>
+            <ns2:created>2026-10-15</ns2:created>
+            <ns2:agent>
+                <ns2:agentRole>Laatija</ns2:agentRole>
+                <ns2:agentName>Pääkäyttäjä Päivi</ns2:agentName>
+            </ns2:agent>
+        </metadata>
+        <content>
+            <file name="4db57fda-c896-11f1-a98a-9bbee5eb8ae8.pdf" originalId="4db57fda-c896-11f1-a98a-9bbee5eb8ae8"/>
+        </content>
+    </collection>
+</collections>

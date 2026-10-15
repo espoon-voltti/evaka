@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<collections xmlns="http://www.profium.com/reception/2022/03" xmlns:ns2="http://www.profium.com/sahke2">
+    <initiator>
+        <source_system>eVaka</source_system>
+        <initiator_id>9cca4214-c895-11f1-ba5f-db03d04ebed8</initiator_id>
+        <initiator_name>Pääkäyttäjä Päivi</initiator_name>
+    </initiator>
+    <collection>
+        <type>record</type>
+        <folder>04.01.00.11</folder>
+        <metadata>
+            <ns2:title>Varhaiskasvatuspäätös;Hylätty;Eeli Esimerkki;021224A907D</ns2:title>
+            <ns2:calculationBaseDate>2027-08-01</ns2:calculationBaseDate>
+            <ns2:created>2026-10-15</ns2:created>
+            <ns2:agent>
+                <ns2:agentRole>Päättäjä</ns2:agentRole>
+                <ns2:agentName>Pääkäyttäjä Päivi</ns2:agentName>
+            </ns2:agent>
+        </metadata>
+        <content>
+            <file name="07451ab0-c896-11f1-ba5f-cb35cb9045f3.pdf" originalId="07451ab0-c896-11f1-ba5f-cb35cb9045f3"/>
+        </content>
+    </collection>
+</collections>
