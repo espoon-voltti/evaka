@@ -71,8 +71,12 @@ services:
     command: foo:pass:::upload
 
   dummy-idp:
+    image: ghcr.io/espoon-voltti/evaka/dummy-idp:${TAG:-master}
     build:
       context: ../dummy-idp
+      cache_from:
+        - ghcr.io/espoon-voltti/evaka/dummy-idp:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/dummy-idp:cache-master
     init: true
     restart: on-failure
     ports:
