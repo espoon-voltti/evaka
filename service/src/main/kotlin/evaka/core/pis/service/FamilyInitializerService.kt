@@ -203,7 +203,7 @@ class FamilyInitializerService(
                 ?.let { Ssn.parse(it) }
                 ?.let {
                     try {
-                        personService.getOrCreatePerson(tx, user, it, audit = null)
+                        personService.getOrCreatePerson(tx, user, now, it, audit = null)
                     } catch (e: NotFound) {
                         logger.error(e) {
                             "Family initialization failed for application ${application.id} partner with a valid SSN that cannot be found in VTJ"
@@ -218,7 +218,7 @@ class FamilyInitializerService(
                 .mapNotNull { Ssn.parse(it) }
                 .mapNotNull {
                     try {
-                        personService.getOrCreatePerson(tx, user, it, audit = null)
+                        personService.getOrCreatePerson(tx, user, now, it, audit = null)
                     } catch (e: NotFound) {
                         logger.error(e) {
                             "Family initialization failed for application ${application.id} other child with a valid SSN that cannot be found in VTJ"

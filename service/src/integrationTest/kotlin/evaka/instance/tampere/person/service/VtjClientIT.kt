@@ -13,18 +13,18 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.verify
 import evaka.core.identity.Ssn
 import evaka.core.shared.auth.AuthenticatedUser
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.VtjClient
 import evaka.instance.tampere.AbstractTampereIntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-internal class PersonDetailsServiceIT : AbstractTampereIntegrationTest() {
+internal class VtjClientIT : AbstractTampereIntegrationTest() {
 
-    @Autowired lateinit var personDetailsService: IPersonDetailsService
+    @Autowired lateinit var vtjClient: VtjClient
 
     @Test
-    fun getBasicDetailsFor() {
+    fun fetchPerson() {
         stubFor(
             post(urlEqualTo("/mock/vtj"))
                 .willReturn(
@@ -38,8 +38,8 @@ internal class PersonDetailsServiceIT : AbstractTampereIntegrationTest() {
         )
 
         val person =
-            personDetailsService.getBasicDetailsFor(
-                IPersonDetailsService.DetailsQuery(
+            vtjClient.fetchPerson(
+                VtjClient.DetailsQuery(
                     AuthenticatedUser.SystemInternalUser.evakaUserId,
                     Ssn.parse("070644-937X")!!,
                 )

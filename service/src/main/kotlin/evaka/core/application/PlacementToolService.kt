@@ -198,6 +198,7 @@ WHERE application.type = 'PRESCHOOL'
             personService.getOrCreatePerson(
                 tx,
                 user,
+                clock.now(),
                 Ssn.parse(ssn)
                     ?: throw PermanentAsyncJobFailure("Invalid SSN in placement tool job"),
                 audit = null,

@@ -47,11 +47,11 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
 import evaka.core.user.updateWeakLoginCredentials
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLLETTAVA_HUOLTAJAT
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
+import evaka.core.vtjclient.service.persondetails.SoapVtjClient
+import evaka.core.vtjclient.service.persondetails.VtjClient
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -70,8 +70,8 @@ import org.springframework.test.context.bean.override.convention.TestBean
  * guardian is C. A and X live at one address, B and Z at another, C at a third.
  */
 class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @TestBean(name = "personDetailsService", methodName = "countingPersonDetailsService")
-    private lateinit var personDetailsService: IPersonDetailsService
+    @TestBean(name = "mockVtjClient", methodName = "countingVtjClient")
+    private lateinit var vtjClient: VtjClient
 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var systemController: SystemController
@@ -102,7 +102,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             tx.insert(daycare)
             tx.insert(admin)
         }
-        MockVtjClientService.resetQueryCounts()
+        MockVtjSoapTransport.resetQueryCounts()
         addToVtj(a, dependants = listOf(x))
         addToVtj(b, dependants = listOf(x, z))
         addToVtj(c, dependants = listOf(z))
@@ -114,7 +114,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun `first strong login creates the citizen and the dependants, but not the other guardian`() {
         strongLogin(a)
 
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             PERUSSANOMA3 to a,
             HUOLTAJA_HUOLLETTAVA to a,
             PERUSSANOMA3 to x,
@@ -135,7 +135,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         strongLogin(a)
 
-        MockVtjClientService.assertRequests()
+        MockVtjSoapTransport.assertRequests()
         assertPersons(a, x)
         assertGuardians(a to x)
         assertFridgeChildren()
@@ -147,7 +147,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         strongLogin(a)
 
-        MockVtjClientService.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
         assertPersons(a, x)
         assertGuardians(a to x)
         assertFridgeChildren()
@@ -174,7 +174,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             SystemController.CitizenWeakLoginRequest("aino@example.com", password, emptyList()),
         )
 
-        MockVtjClientService.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
         assertPersons(a, x)
         assertGuardians(a to x)
         assertFridgeChildren()
@@ -189,7 +189,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         personController.updatePersonAndFamilyFromVtj(dbInstance(), admin.user, clock, a.id)
 
-        MockVtjClientService.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
         assertPersons(a, x)
         assertGuardians(a to x)
         assertFridgeChildren(a to x)
@@ -206,7 +206,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         // This will be changed later: refreshing leaf guardian B should not create Z or B's fridge
         // family
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             HUOLLETTAVA_HUOLTAJAT to x,
             PERUSSANOMA3 to a,
             PERUSSANOMA3 to b,
@@ -239,7 +239,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             PersonController.EvakaRightsRequest(guardianId = b.id, denied = false),
         )
 
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             HUOLLETTAVA_HUOLTAJAT to x,
             PERUSSANOMA3 to a,
             PERUSSANOMA3 to b,
@@ -256,7 +256,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         runUpdateFromVtj(b)
 
         // This will be changed later: B is a leaf guardian, so Z should not be created
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             HUOLTAJA_HUOLLETTAVA to b,
             PERUSSANOMA3 to x,
             PERUSSANOMA3 to z,
@@ -272,7 +272,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         runUpdateFromVtj(x)
 
-        MockVtjClientService.assertRequests(HUOLTAJA_HUOLLETTAVA to x)
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to x)
         assertPersons(a, b, x)
         assertGuardians(a to x, b to x)
         assertFridgeChildren()
@@ -282,7 +282,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun `UpdateFromVtj on an unknown SSN creates the person and the dependants`() {
         runUpdateFromVtj(b)
 
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             PERUSSANOMA3 to b,
             HUOLTAJA_HUOLLETTAVA to b,
             PERUSSANOMA3 to x,
@@ -312,7 +312,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         runDvvUpdate(dead)
 
-        MockVtjClientService.assertRequests()
+        MockVtjSoapTransport.assertRequests()
         assertEquals(
             LocalDate.of(2019, 7, 30),
             db.read { it.getPersonBySSN(dead.ssn!!) }?.dateOfDeath,
@@ -329,7 +329,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         runDvvUpdate(restricted)
 
-        MockVtjClientService.assertRequests(HUOLTAJA_HUOLLETTAVA to restricted)
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to restricted)
         assertTrue(db.read { it.getPersonBySSN(restricted.ssn!!) }!!.restrictedDetailsEnabled)
         assertPersons(restricted)
         assertGuardians()
@@ -343,7 +343,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         runDvvUpdate(corrected)
 
-        MockVtjClientService.assertRequests()
+        MockVtjSoapTransport.assertRequests()
         assertEquals(corrected.id, db.read { it.getPersonBySSN("010281-999C") }?.id)
         assertPersons(corrected.copy(ssn = "010281-999C"))
         assertGuardians()
@@ -360,7 +360,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         runDvvUpdate(child)
 
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             PERUSSANOMA3 to guardian,
             HUOLTAJA_HUOLLETTAVA to guardian,
             PERUSSANOMA3 to child,
@@ -384,7 +384,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             ),
         )
 
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             PERUSSANOMA3 to x,
             HUOLLETTAVA_HUOLTAJAT to x,
             PERUSSANOMA3 to a,
@@ -420,7 +420,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             ),
         )
 
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             HUOLLETTAVA_HUOLTAJAT to x,
             PERUSSANOMA3 to a,
             PERUSSANOMA3 to b,
@@ -446,7 +446,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             applicationId,
         )
 
-        MockVtjClientService.assertRequests(
+        MockVtjSoapTransport.assertRequests(
             HUOLLETTAVA_HUOLTAJAT to x,
             PERUSSANOMA3 to a,
             PERUSSANOMA3 to b,
@@ -472,9 +472,9 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         dependants: List<DevPerson> = emptyList(),
         guardians: List<DevPerson> = emptyList(),
     ) {
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(person)
-        MockVtjClientService.addHUOLTAJAHUOLLETTAVARequestExpectation(person, dependants)
-        MockVtjClientService.addHUOLLETTAVAHUOLTAJATRequestExpectation(person, guardians)
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(person)
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(person, dependants)
+        MockVtjSoapTransport.addHUOLLETTAVAHUOLTAJATRequestExpectation(person, guardians)
     }
 
     private fun insertFamilyOfA() {
@@ -627,7 +627,7 @@ WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(clock.today())}
 
     companion object {
         @JvmStatic
-        fun countingPersonDetailsService(): IPersonDetailsService =
-            VTJPersonDetailsService(MockVtjClientService(), VtjHenkiloMapper())
+        fun countingVtjClient(): VtjClient =
+            SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
     }
 }

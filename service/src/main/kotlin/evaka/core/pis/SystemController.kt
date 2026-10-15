@@ -69,6 +69,7 @@ class SystemController(
                                 .getOrCreatePerson(
                                     tx,
                                     user,
+                                    clock.now(),
                                     Ssn.parse(request.socialSecurityNumber)
                                         ?: throw BadRequest("Invalid SSN"),
                                     audit = null,

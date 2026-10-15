@@ -7,13 +7,14 @@ package evaka.core.vtjclient.service.persondetails
 import evaka.core.identity.Ssn
 import evaka.core.shared.EvakaUserId
 import evaka.core.vtjclient.dto.VtjPerson
+import evaka.core.vtjclient.dto.VtjPersonWithRelatives
 
-interface IPersonDetailsService {
-    fun getPersonWithDependants(query: DetailsQuery): VtjPerson
+interface VtjClient {
+    fun fetchPerson(query: DetailsQuery): VtjPerson
 
-    fun getPersonWithGuardians(query: DetailsQuery): VtjPerson
+    fun fetchWithGuardians(query: DetailsQuery): VtjPersonWithRelatives
 
-    fun getBasicDetailsFor(query: DetailsQuery): VtjPerson
+    fun fetchWithDependants(query: DetailsQuery): VtjPersonWithRelatives
 
     data class DetailsQuery(val requestingUser: EvakaUserId, val ssn: Ssn)
 }

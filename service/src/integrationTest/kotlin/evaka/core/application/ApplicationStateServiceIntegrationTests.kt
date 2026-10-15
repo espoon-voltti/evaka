@@ -87,7 +87,7 @@ import evaka.core.snPreschoolClub45
 import evaka.core.snPreschoolDaycare45
 import evaka.core.test.getDecisionRowById
 import evaka.core.toApplicationType
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import evaka.core.webpush.ApplicationDecision
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.getPlannedCitizenPushNotifications
@@ -263,11 +263,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             listOf(child1, child2, child6, child7).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insert(preschoolTerm2020)
         }
-        MockPersonDetailsService.addPersons(adult1, adult2, adult5, adult6, child1, child2, child6)
-        MockPersonDetailsService.addDependants(adult1, child1, child2)
-        MockPersonDetailsService.addDependants(adult2, child1)
-        MockPersonDetailsService.addDependants(adult5, child6)
-        MockPersonDetailsService.addDependants(adult6, child6)
+        MockVtjClient.addPersons(adult1, adult2, adult5, adult6, child1, child2, child6)
+        MockVtjClient.addDependants(adult1, child1, child2)
+        MockVtjClient.addDependants(adult2, child1)
+        MockVtjClient.addDependants(adult5, child6)
+        MockVtjClient.addDependants(adult6, child6)
     }
 
     @Test

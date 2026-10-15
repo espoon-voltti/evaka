@@ -43,7 +43,7 @@ import evaka.core.shared.job.ScheduledJobs
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.security.PilotFeature
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import evaka.core.vtjclient.service.persondetails.MockVtjDataset
 import evaka.core.vtjclient.service.persondetails.MockVtjPerson
 import java.math.BigDecimal
@@ -216,8 +216,8 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     preschoolTerm.termBreaks,
                 )
             )
-            MockPersonDetailsService.addPersons(adult, child)
-            MockPersonDetailsService.addDependants(adult, child)
+            MockVtjClient.addPersons(adult, child)
+            MockVtjClient.addDependants(adult, child)
             tx.createServiceWorkerMessageAccount()
         }
     }
@@ -379,8 +379,8 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.insert(adult2, DevPersonType.ADULT)
             tx.insert(DevGuardian(adult2.id, child.id))
-            MockPersonDetailsService.addPersons(adult2)
-            MockPersonDetailsService.addDependants(adult2, child)
+            MockVtjClient.addPersons(adult2)
+            MockVtjClient.addDependants(adult2, child)
         }
         val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
         service.createApplication(
@@ -491,7 +491,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `create application from ssn`() {
-        MockPersonDetailsService.add(
+        MockVtjClient.add(
             MockVtjDataset(
                 persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
                 guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),
@@ -544,7 +544,7 @@ ${child.ssn!!};${unit.id}
         whenever(featureConfig.placementToolApplicationStatus)
             .thenReturn(ApplicationStatus.WAITING_DECISION)
         db.transaction { tx -> tx.insert(child, DevPersonType.RAW_ROW) }
-        MockPersonDetailsService.add(
+        MockVtjClient.add(
             MockVtjDataset(
                 persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
                 guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),

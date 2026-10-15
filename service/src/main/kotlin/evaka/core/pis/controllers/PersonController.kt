@@ -427,7 +427,9 @@ class PersonController(
 
                 val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid social security number")
 
-                PersonJSON.from(dbc.transaction { personService.addSsn(it, user, personId, ssn) })
+                PersonJSON.from(
+                    dbc.transaction { personService.addSsn(it, user, clock.now(), personId, ssn) }
+                )
             }
             .also { Audit.PersonUpdate.log(targetId = AuditId(personId)) }
     }
@@ -485,7 +487,14 @@ class PersonController(
                         Action.Global.CREATE_PERSON_FROM_VTJ,
                     )
 
-                    personService.getOrCreatePerson(it, user, ssn, body.readonly, audit)
+                    personService.getOrCreatePerson(
+                        it,
+                        user,
+                        clock.now(),
+                        ssn,
+                        body.readonly,
+                        audit,
+                    )
                 } ?: throw NotFound()
             }
             .let { PersonJSON.from(it) }

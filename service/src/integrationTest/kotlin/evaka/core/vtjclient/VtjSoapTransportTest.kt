@@ -6,6 +6,7 @@ package evaka.core.vtjclient
 
 import evaka.core.FullApplicationTest
 import evaka.core.identity.Ssn
+import evaka.core.identity.getDobFromSsn
 import evaka.core.lookup
 import evaka.core.pis.Employee
 import evaka.core.shared.EmployeeId
@@ -14,14 +15,15 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
+import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.ASUKASMAARA
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLLETTAVA_HUOLTAJAT
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.ASUKASMAARA
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.VTJQuery
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
@@ -41,9 +43,9 @@ import org.springframework.xml.transform.StringSource
 
 val NIL_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
-class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
+class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
 
-    @Autowired lateinit var vtjClientService: IVtjClientService
+    @Autowired lateinit var vtjSoapTransport: VtjSoapTransport
 
     @Autowired lateinit var mapper: VtjHenkiloMapper
 
@@ -94,14 +96,13 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
                 type = PERUSSANOMA3,
                 ssn = "020501A999T",
             )
-        val response = vtjClientService.query(query)
+        val response = vtjSoapTransport.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
 
         with(result) {
             assertThat(firstNames).isEqualTo("Albert Kristian")
             assertThat(lastName).isEqualTo("Jäppinen")
-            assertThat(dependants).size().isEqualTo(0)
             with(address!!) {
                 assertThat(streetAddress).isEqualTo("Kauppa Puistikko 6 B 23")
                 assertThat(postOffice).isEqualTo("VAASA")
@@ -127,7 +128,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
                 type = HUOLTAJA_HUOLLETTAVA,
                 ssn = "020190-9521",
             )
-        val response = vtjClientService.query(query)
+        val response = vtjSoapTransport.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
 
@@ -135,8 +136,9 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             assertThat(firstNames).isEqualTo("Anna Alexandra")
             assertThat(lastName).isEqualTo("Popov")
 
-            assertThat(result).isEqualTo(popovsWithBasicChildData)
+            assertThat(result).isEqualTo(annaPopov)
         }
+        assertThat(mapper.mapDependants(response)).isEqualTo(annaPopovsChildren)
         mockServer?.verify()
     }
 
@@ -152,7 +154,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
                 type = HUOLLETTAVA_HUOLTAJAT,
                 ssn = "311211A9527",
             )
-        val response = vtjClientService.query(query)
+        val response = vtjSoapTransport.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
 
@@ -160,9 +162,9 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             assertThat(firstNames).isEqualTo("Minja Zavutina")
             assertThat(lastName).isEqualTo("Popov")
             assertThat(socialSecurityNumber).isEqualTo("311211A9527")
-            assertThat(guardians.any { it.socialSecurityNumber == "010181-9533" })
-            assertThat(guardians.any { it.socialSecurityNumber == "020190-9521" })
         }
+        assertThat(mapper.mapGuardians(response).map { it.ssn.value })
+            .containsExactlyInAnyOrder("010181-9533", "020190-9521")
         mockServer?.verify()
     }
 
@@ -181,7 +183,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
                 type = ASUKASMAARA,
                 ssn = expectedSSN,
             )
-        val response = vtjClientService.query(query)
+        val response = vtjSoapTransport.query(query)
 
         val result = ResidentCountExample.residentCountFromHenkilo(response!!)
 
@@ -218,45 +220,43 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
     private val queryNamespaces = mapOf("ns2" to "http://xml.vrk.fi/ws/vtj/vtjkysely/1")
 }
 
-private val popovsWithBasicChildData: VtjPerson by lazy {
-    val address =
-        PersonAddress(
-            streetAddress = "Kurteninkatu 13 H 45",
-            postalCode = "65100",
-            postOffice = "VAASA",
-            streetAddressSe = "Kurtensgatan 13 H 45",
-            postOfficeSe = "VASA",
-        )
-
-    val kakTy =
-        VtjPerson(
-            firstNames = "Kak Ty",
-            lastName = "Popov",
-            socialSecurityNumber = "011014A9510",
-            restrictedDetails = null,
-        )
-
-    val minja = kakTy.copy(firstNames = "Minja Zavutina", socialSecurityNumber = "311211A9527")
-
-    val mir = kakTy.copy(firstNames = "Mir", socialSecurityNumber = "010110A951P")
-
-    val petrus = kakTy.copy(firstNames = "Petrus", socialSecurityNumber = "010108A9516")
-
-    val pan = kakTy.copy(firstNames = "Pan Olov", socialSecurityNumber = "010506A951W")
-
-    kakTy.copy(
+private val annaPopov =
+    VtjPerson(
         firstNames = "Anna Alexandra",
+        lastName = "Popov",
         socialSecurityNumber = "020190-9521",
         nativeLanguage = NativeLanguage("viro, eesti", "et"),
-        address = address,
+        address =
+            PersonAddress(
+                streetAddress = "Kurteninkatu 13 H 45",
+                postalCode = "65100",
+                postOffice = "VAASA",
+                streetAddressSe = "Kurtensgatan 13 H 45",
+                postOfficeSe = "VASA",
+            ),
         residenceCode = "90000130991H045 ",
         municipalityOfResidence = "Vaasa",
         municipalityOfResidenceSe = "Vasa",
         restrictedDetails = RestrictedDetails(false),
         nationalities = emptyList(),
-        dependants = listOf(kakTy, minja, mir, petrus, pan),
     )
-}
+
+private val annaPopovsChildren =
+    listOf(
+            "011014A9510" to "Kak Ty",
+            "311211A9527" to "Minja Zavutina",
+            "010110A951P" to "Mir",
+            "010108A9516" to "Petrus",
+            "010506A951W" to "Pan Olov",
+        )
+        .map { (ssn, firstNames) ->
+            VtjRelative(
+                ssn = Ssn.parse(ssn)!!,
+                dateOfBirth = getDobFromSsn(ssn),
+                firstNames = firstNames,
+                lastName = "Popov",
+            )
+        }
 
 // an example model for resident count. Decide actual model/useage later based on confirmed
 // requirements

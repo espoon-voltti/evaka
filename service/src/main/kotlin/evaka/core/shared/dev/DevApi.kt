@@ -177,7 +177,7 @@ import evaka.core.user.EvakaUser
 import evaka.core.user.EvakaUserType
 import evaka.core.user.updateLastStrongLogin
 import evaka.core.user.updateWeakLoginCredentials
-import evaka.core.vtjclient.service.persondetails.DummyIdpPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.DummyIdpVtjClient
 import evaka.core.webpush.PushNotificationCategory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
@@ -231,8 +231,7 @@ class DevApi(
     private val templateDbManager: TemplateDbManager,
     private val jsonMapper: JsonMapper,
 ) {
-    private val personDetailsService: DummyIdpPersonDetailsService =
-        DummyIdpPersonDetailsService(env.vtjMockUrl, jsonMapper)
+    private val vtjClient: DummyIdpVtjClient = DummyIdpVtjClient(env.vtjMockUrl, jsonMapper)
     private val digitransit = MockDigitransit()
 
     private fun runAllAsyncJobs(clock: EvakaClock) {
@@ -251,10 +250,10 @@ class DevApi(
     @PostMapping("/test-mode")
     fun setTestMode(db: Database, @RequestParam enabled: Boolean) {
         if (enabled) {
-            personDetailsService.enterTestMode()
+            vtjClient.enterTestMode()
         } else {
             templateDbManager.resetToOriginal()
-            personDetailsService.exitTestMode()
+            vtjClient.exitTestMode()
         }
         asyncJobRunners.forEach {
             if (enabled) {
@@ -271,7 +270,7 @@ class DevApi(
     fun resetServiceState() {
         templateDbManager.resetToTemplate()
         MockEmailClient.clear()
-        personDetailsService.clearAll()
+        vtjClient.clearAll()
     }
 
     @PostMapping("/run-jobs")
@@ -861,7 +860,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val user = AuthenticatedUser.SystemInternalUser
-                val _ = personService.getUpToDatePersonFromVtj(tx, user, person)
+                val _ = personService.getUpToDatePersonFromVtj(tx, user, now, person)
                 val _ = personService.getGuardians(tx, user, now, person)
                 val _ = personService.getPersonWithChildren(tx, user, now, person)
             }

@@ -5,29 +5,35 @@
 package evaka.core.pis.dao
 
 import evaka.core.PureJdbiTest
-import evaka.core.identity.Ssn
-import evaka.core.identity.getDobFromSsn
-import evaka.core.pis.createPersonFromVtj
+import evaka.core.pis.applyPerson
+import evaka.core.pis.getPersonById
 import evaka.core.pis.searchPeople
 import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.updatePersonFromVtj
 import evaka.core.shared.EmployeeId
-import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.vtjclient.dto.Nationality
+import evaka.core.vtjclient.dto.NativeLanguage
+import evaka.core.vtjclient.dto.PersonAddress
+import evaka.core.vtjclient.dto.RestrictedDetails
+import evaka.core.vtjclient.dto.VtjPerson
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val now = HelsinkiDateTime.of(LocalDate.of(2026, 1, 1), LocalTime.of(12, 0))
+
     @Test
     fun `an empty SSN is rejected by the database`() {
         assertThrows<UnableToExecuteStatementException> {
@@ -36,41 +42,10 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `createPersonFromVtj creates person with correct data`() {
-        val tempId = PersonId(UUID.randomUUID())
-        val validSSN = "010199-8137"
-
-        val inputPerson = testPerson(validSSN)
-
-        val created = db.transaction { it.createPersonFromVtj(inputPerson) }
-
-        assertNotEquals(tempId, created.id)
-
-        assertEquals(validSSN, created.ssn!!.value)
-        assertEquals(inputPerson.dateOfBirth, created.dateOfBirth)
-        assertEquals(inputPerson.firstName, created.firstName)
-        assertEquals(inputPerson.lastName, created.lastName)
-
-        assertEquals(inputPerson.email, created.email)
-        assertEquals(inputPerson.phone, created.phone)
-        assertEquals(inputPerson.language, created.language)
-        assertEquals(inputPerson.nationalities, created.nationalities)
-
-        assertEquals(inputPerson.streetAddress, created.streetAddress)
-        assertEquals(inputPerson.postalCode, created.postalCode)
-        assertEquals(inputPerson.postOffice, created.postOffice)
-        assertEquals(inputPerson.municipalityOfResidence, created.municipalityOfResidence)
-
-        assertEquals(inputPerson.restrictedDetailsEndDate, created.restrictedDetailsEndDate)
-    }
-
-    @Test
     fun `updatePersonFromVtj updates person with correct data`() {
         val validSSN = "230493-332S"
 
-        val originalPerson = testPerson(validSSN)
-
-        val beforeUpdate = db.transaction { it.createPersonFromVtj(originalPerson) }
+        val beforeUpdate = db.transaction { createVtjPerson(it, validSSN) }
 
         val updated =
             beforeUpdate.copy(
@@ -86,7 +61,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 restrictedDetailsEndDate = null,
             )
 
-        val actual = db.transaction { it.updatePersonFromVtj(updated) }
+        val actual = db.transaction { it.updatePersonFromVtj(updated, now) }
 
         assertEquals(updated.id, actual.id)
 
@@ -285,32 +260,20 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         tx: Database.Transaction,
         validSSN: String = "010199-8137",
     ): PersonDTO {
-        val inputPerson = testPerson(validSSN)
-        return tx.createPersonFromVtj(inputPerson)
+        val id = tx.applyPerson(testVtjPerson(validSSN), now).id
+        return tx.getPersonById(id)!!
     }
 
-    private fun testPerson(validSSN: String): PersonDTO {
-        return PersonDTO(
-            id = PersonId(UUID.randomUUID()),
-            duplicateOf = null,
-            ssn = Ssn.parse(validSSN),
-            ssnAddingDisabled = false,
-            dateOfBirth = getDobFromSsn(validSSN),
-            firstName = "Matti Yrjö Jari-Ville",
+    private fun testVtjPerson(validSSN: String) =
+        VtjPerson(
+            firstNames = "Matti Yrjö Jari-Ville",
             lastName = "O'Brien",
-            preferredName = "Matti",
-            email = null,
-            phone = "",
-            backupPhone = "",
-            language = "fi",
-            nationalities = listOf("248", "060"),
-            streetAddress = "Jokutie 66",
-            postalCode = "00000",
-            postOffice = "Jokula",
-            residenceCode = "",
+            socialSecurityNumber = validSSN,
+            nativeLanguage = NativeLanguage(code = "fi"),
+            nationalities =
+                listOf(Nationality(countryCode = "248"), Nationality(countryCode = "060")),
+            address = PersonAddress("Jokutie 66", "00000", "Jokula", null, null),
             municipalityOfResidence = "Jokunta",
-            restrictedDetailsEnabled = true,
-            restrictedDetailsEndDate = LocalDate.now().plusYears(1),
+            restrictedDetails = RestrictedDetails(true, LocalDate.now().plusYears(1)),
         )
-    }
 }

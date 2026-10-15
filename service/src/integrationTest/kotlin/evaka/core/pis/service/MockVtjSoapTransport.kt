@@ -5,23 +5,23 @@
 package evaka.core.pis.service
 
 import evaka.core.shared.dev.DevPerson
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.test.assertEquals
 
-class MockVtjClientService : IVtjClientService {
+class MockVtjSoapTransport : VtjSoapTransport {
 
     companion object {
         private var queryRequestResponse:
             ConcurrentHashMap<
-                Pair<String, IVtjClientService.RequestType>,
+                Pair<String, VtjSoapTransport.RequestType>,
                 VTJHenkiloVastaussanoma.Henkilo,
             > =
             ConcurrentHashMap()
 
         private var queryCounts:
-            ConcurrentHashMap<Pair<String, IVtjClientService.RequestType>, Int> =
+            ConcurrentHashMap<Pair<String, VtjSoapTransport.RequestType>, Int> =
             ConcurrentHashMap()
 
         fun resetQueryCounts() {
@@ -30,14 +30,14 @@ class MockVtjClientService : IVtjClientService {
         }
 
         fun addPERUSSANOMA3RequestExpectation(person: DevPerson) {
-            queryRequestResponse[Pair(person.ssn!!, IVtjClientService.RequestType.PERUSSANOMA3)] =
+            queryRequestResponse[Pair(person.ssn!!, VtjSoapTransport.RequestType.PERUSSANOMA3)] =
                 devPersonToVTJHenkiloVastaussanomaHenkilo(person)
         }
 
         fun addHUOLTAJAHUOLLETTAVARequestExpectation(person: DevPerson, children: List<DevPerson>) {
             // HUOLTAJA_HUOLLETTAVA request
             queryRequestResponse[
-                Pair(person.ssn!!, IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA)] =
+                Pair(person.ssn!!, VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA)] =
                 devPersonToVTJHenkiloVastaussanomaHenkilo(person).also { huoltaja ->
                     huoltaja.huollettava.addAll(
                         0,
@@ -63,7 +63,7 @@ class MockVtjClientService : IVtjClientService {
             guardians: List<DevPerson>,
         ) {
             queryRequestResponse[
-                Pair(person.ssn!!, IVtjClientService.RequestType.HUOLLETTAVA_HUOLTAJAT)] =
+                Pair(person.ssn!!, VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT)] =
                 devPersonToVTJHenkiloVastaussanomaHenkilo(person).also { huollettava ->
                     huollettava.huoltaja.addAll(
                         0,
@@ -85,19 +85,19 @@ class MockVtjClientService : IVtjClientService {
         }
 
         fun getPERUSSANOMA3RequestCount(person: DevPerson): Int {
-            return queryCounts[Pair(person.ssn!!, IVtjClientService.RequestType.PERUSSANOMA3)] ?: 0
+            return queryCounts[Pair(person.ssn!!, VtjSoapTransport.RequestType.PERUSSANOMA3)] ?: 0
         }
 
         fun getHUOLTAJAHUOLLETTAVARequestCount(person: DevPerson): Int {
             return queryCounts[
-                Pair(person.ssn!!, IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA)] ?: 0
+                Pair(person.ssn!!, VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA)] ?: 0
         }
 
         /**
          * Asserts that exactly the given requests were made since the last reset. A request that
          * was made N times must be given N times.
          */
-        fun assertRequests(vararg requests: Pair<IVtjClientService.RequestType, DevPerson>) {
+        fun assertRequests(vararg requests: Pair<VtjSoapTransport.RequestType, DevPerson>) {
             assertEquals(
                 requests.groupingBy { (type, person) -> Pair(person.ssn!!, type) }.eachCount(),
                 queryCounts.toMap(),
@@ -135,7 +135,7 @@ class MockVtjClientService : IVtjClientService {
             }
     }
 
-    override fun query(query: IVtjClientService.VTJQuery): VTJHenkiloVastaussanoma.Henkilo? {
+    override fun query(query: VtjSoapTransport.VTJQuery): VTJHenkiloVastaussanoma.Henkilo? {
         queryCounts.compute(Pair(query.ssn, query.type)) { _, value -> value?.plus(1) ?: 1 }
         return queryRequestResponse[Pair(query.ssn, query.type)]
     }

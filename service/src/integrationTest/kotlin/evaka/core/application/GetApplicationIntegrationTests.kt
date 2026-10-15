@@ -36,7 +36,7 @@ import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.job.ScheduledJobs
 import evaka.core.toDaycareFormAdult
 import evaka.core.toDaycareFormChild
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -117,9 +117,9 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             listOf(child1, child2, child3).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insertDefaultDecisionGenericReasonings()
         }
-        MockPersonDetailsService.addPersons(adult1, adult2, child1)
-        MockPersonDetailsService.addDependants(adult1, child1)
-        MockPersonDetailsService.addDependants(adult2, child1)
+        MockVtjClient.addPersons(adult1, adult2, child1)
+        MockVtjClient.addDependants(adult1, child1)
+        MockVtjClient.addDependants(adult2, child1)
     }
 
     @Test

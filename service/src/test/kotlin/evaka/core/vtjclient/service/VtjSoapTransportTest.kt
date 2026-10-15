@@ -14,11 +14,11 @@ import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.PersonId
 import evaka.core.vtjclient.config.SoapRequestAdapter
 import evaka.core.vtjclient.mapper.VTJResponseMapper
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
-import evaka.core.vtjclient.service.vtjclient.VtjClientService
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.VTJQuery
+import evaka.core.vtjclient.service.vtjclient.XroadVtjSoapTransport
 import evaka.core.vtjclient.soap.HenkiloTunnusKyselyReqBody
 import evaka.core.vtjclient.soap.HenkiloTunnusKyselyResBody
 import evaka.core.vtjclient.soap.ObjectFactory
@@ -56,7 +56,7 @@ const val STATUS_ERROR_DURING_REQUEST = "error during request"
 const val DEFAULT_PERSON_SSN = "270372-905L"
 
 @ExtendWith(MockitoExtension::class)
-class VtjClientServiceTest {
+class VtjSoapTransportTest {
 
     @Spy var vtjObjectFactory: ObjectFactory = ObjectFactory()
 
@@ -70,7 +70,7 @@ class VtjClientServiceTest {
 
     @Mock lateinit var responseMapper: VTJResponseMapper
 
-    @InjectMocks lateinit var service: VtjClientService
+    @InjectMocks lateinit var service: XroadVtjSoapTransport
 
     lateinit var responseBody: HenkiloTunnusKyselyResBody
 

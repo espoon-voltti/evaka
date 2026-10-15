@@ -21,7 +21,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -43,7 +43,7 @@ class DvvModificationsServiceIntegrationTest :
     fun `get modification token for today`() {
         val caretaker =
             testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999")
-        MockPersonDetailsService.addPersons(caretaker)
+        MockVtjClient.addPersons(caretaker)
 
         db.read { assertEquals("101", it.getNextDvvModificationToken()) }
 
@@ -67,7 +67,7 @@ class DvvModificationsServiceIntegrationTest :
         db.transaction { tx -> tx.deleteDvvModificationToken("100") }
         val ssn = "010179-9992"
         createTestPerson(testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = ssn))
-        MockPersonDetailsService.addPersons(
+        MockVtjClient.addPersons(
             testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = ssn)
         )
 
@@ -191,7 +191,7 @@ class DvvModificationsServiceIntegrationTest :
     @Test
     fun `person restricted details started`() {
         createTestPerson(testPerson.copy(ssn = "020180-999Y"))
-        MockPersonDetailsService.addPersons(
+        MockVtjClient.addPersons(
             testPerson.copy(
                 ssn = "020180-999Y",
                 streetAddress = "",
@@ -223,7 +223,7 @@ class DvvModificationsServiceIntegrationTest :
                 municipalityOfResidence = "",
             )
         )
-        MockPersonDetailsService.addPersons(
+        MockVtjClient.addPersons(
             testPerson.copy(
                 ssn = "030180-999L",
                 streetAddress = "Uusitie 17 A 2",
@@ -246,7 +246,7 @@ class DvvModificationsServiceIntegrationTest :
     @Test
     fun `person address change`() {
         createTestPerson(testPerson.copy(ssn = "040180-9998"))
-        MockPersonDetailsService.addPersons(
+        MockVtjClient.addPersons(
             testPerson.copy(
                 ssn = "040180-9998",
                 streetAddress = "Uusitie 17 A 2",
@@ -281,8 +281,8 @@ class DvvModificationsServiceIntegrationTest :
         val caretaker: DevPerson = testPerson.copy(ssn = "050180-999W")
 
         createTestPerson(custodian)
-        MockPersonDetailsService.addPersons(caretaker, custodian)
-        MockPersonDetailsService.addDependants(caretaker, custodian)
+        MockVtjClient.addPersons(caretaker, custodian)
+        MockVtjClient.addDependants(caretaker, custodian)
 
         updatePeopleFromDvv(listOf("050180-999W"))
         val dvvCustodian = db.read { it.getPersonBySSN("050118A999W") }!!
@@ -304,8 +304,8 @@ class DvvModificationsServiceIntegrationTest :
             testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "060180-999J")
 
         createTestPerson(custodian)
-        MockPersonDetailsService.addPersons(caretaker, custodian)
-        MockPersonDetailsService.addDependants(caretaker, custodian)
+        MockVtjClient.addPersons(caretaker, custodian)
+        MockVtjClient.addDependants(caretaker, custodian)
 
         updatePeopleFromDvv(listOf("060118A999J"))
         val dvvCaretaker = db.read { it.getPersonBySSN("060180-999J") }!!
@@ -328,8 +328,8 @@ class DvvModificationsServiceIntegrationTest :
             testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999")
 
         createTestPerson(custodian)
-        MockPersonDetailsService.addPersons(caretaker, custodian)
-        MockPersonDetailsService.addDependants(caretaker, custodian)
+        MockVtjClient.addPersons(caretaker, custodian)
+        MockVtjClient.addDependants(caretaker, custodian)
 
         updatePeopleFromDvv(listOf("yksinhuoltaja-muutos"))
         val dvvCaretaker = db.read { it.getPersonBySSN(caretaker.ssn!!) }!!
@@ -350,7 +350,7 @@ class DvvModificationsServiceIntegrationTest :
         val targetPerson: DevPerson =
             testPerson.copy(ssn = "140921A999X", streetAddress = "Tuntemattoman katuosoite")
         createTestPerson(targetPerson)
-        MockPersonDetailsService.addPersons(targetPerson)
+        MockVtjClient.addPersons(targetPerson)
         updatePeopleFromDvv(listOf("tuntematon_muutos"))
         val updatedPerson = db.read { it.getPersonBySSN(targetPerson.ssn!!) }!!
         assertEquals(targetPerson.streetAddress, updatedPerson.streetAddress)
@@ -365,7 +365,7 @@ class DvvModificationsServiceIntegrationTest :
             testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = SSN)
 
         createTestPerson(personWithOldName)
-        MockPersonDetailsService.addPersons(personWithNewName)
+        MockVtjClient.addPersons(personWithNewName)
 
         updatePeopleFromDvv(listOf(SSN))
         val updatedPerson = db.read { it.getPersonBySSN(SSN) }!!
@@ -418,8 +418,8 @@ class DvvModificationsServiceIntegrationTest :
         val child = testPerson.copy(dateOfBirth = childDateOfBirth, ssn = "010120A123K")
 
         createTestPerson(personWithoutChildren)
-        MockPersonDetailsService.addPersons(personWithoutChildren, child)
-        MockPersonDetailsService.addDependants(personWithoutChildren, child)
+        MockVtjClient.addPersons(personWithoutChildren, child)
+        MockVtjClient.addDependants(personWithoutChildren, child)
 
         db.read { tx ->
             val person = tx.getPersonBySSN(ssn)
@@ -446,8 +446,8 @@ class DvvModificationsServiceIntegrationTest :
         val currentDate = childDateOfBirth.plusMonths(3)
 
         createTestPerson(personWithoutChildren)
-        MockPersonDetailsService.addPersons(personWithoutChildren, child)
-        MockPersonDetailsService.addDependants(personWithoutChildren, child)
+        MockVtjClient.addPersons(personWithoutChildren, child)
+        MockVtjClient.addDependants(personWithoutChildren, child)
 
         db.read { tx ->
             val person = tx.getPersonBySSN(ssn)
@@ -474,8 +474,8 @@ class DvvModificationsServiceIntegrationTest :
         val currentDate = childDateOfBirth.plusMonths(4)
 
         createTestPerson(personWithoutChildren)
-        MockPersonDetailsService.addPersons(personWithoutChildren, child)
-        MockPersonDetailsService.addDependants(personWithoutChildren, child)
+        MockVtjClient.addPersons(personWithoutChildren, child)
+        MockVtjClient.addDependants(personWithoutChildren, child)
 
         db.read { tx ->
             val person = tx.getPersonBySSN(ssn)
@@ -509,8 +509,8 @@ class DvvModificationsServiceIntegrationTest :
         createTestPerson(personWithoutChildren)
         createTestPerson(parent)
         createTestPerson(child)
-        MockPersonDetailsService.addPersons(personWithoutChildren, child)
-        MockPersonDetailsService.addDependants(personWithoutChildren, child)
+        MockVtjClient.addPersons(personWithoutChildren, child)
+        MockVtjClient.addDependants(personWithoutChildren, child)
         db.transaction {
             it.createParentship(
                 child.id,

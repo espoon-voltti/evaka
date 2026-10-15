@@ -8,7 +8,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.dev.resetDatabase
 import evaka.core.shared.dev.runSqlScripts
 import evaka.core.shared.noopTracer
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import org.jdbi.v3.core.Jdbi
@@ -55,7 +55,7 @@ abstract class AbstractIntegrationTest(private val municipality: String) {
             it.runSqlScripts("$municipality/db/migration")
         }
         clearBucket("trevaka-export-it")
-        MockPersonDetailsService.reset()
+        MockVtjClient.reset()
     }
 
     @AfterAll

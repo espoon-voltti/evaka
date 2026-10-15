@@ -7,7 +7,6 @@ package evaka.core.vtjclient.service.vtjclient
 import evaka.core.VtjEnv
 import evaka.core.vtjclient.config.SoapRequestAdapter
 import evaka.core.vtjclient.mapper.VTJResponseMapper
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 import evaka.core.vtjclient.service.vtjclient.QueryStatus.CREATING_REQUEST
 import evaka.core.vtjclient.service.vtjclient.QueryStatus.ERROR_DURING_REQUEST
 import evaka.core.vtjclient.service.vtjclient.QueryStatus.RESPONSE_PARSING_FAILURE
@@ -16,28 +15,45 @@ import evaka.core.vtjclient.soap.HenkiloTunnusKyselyReqBody
 import evaka.core.vtjclient.soap.HenkiloTunnusKyselyReqBodyTiedot
 import evaka.core.vtjclient.soap.HenkiloTunnusKyselyResBody
 import evaka.core.vtjclient.soap.ObjectFactory
+import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import fi.espoo.voltti.logging.loggers.auditVTJ
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.xml.bind.JAXBElement
+import java.util.UUID
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.ws.client.core.WebServiceMessageCallback
 import org.springframework.ws.client.core.WebServiceTemplate
 
+interface VtjSoapTransport {
+
+    data class VTJQuery(val requestingUserId: UUID, val type: RequestType, val ssn: String)
+
+    fun query(query: VTJQuery): VTJHenkiloVastaussanoma.Henkilo?
+
+    enum class RequestType(val queryName: String) {
+        HUOLTAJA_HUOLLETTAVA("Huoltaja-Huollettavat"),
+        HUOLLETTAVA_HUOLTAJAT("Huollettava-Huoltajat"),
+        PERUSSANOMA3("Perussanoma 3"),
+        VANHEMPI_LAPSET_JA_HUOLLETTAVAT("Vanhempi -lapset ja huollettavat"),
+        ASUKASMAARA("ASUKASLKM2"),
+    }
+}
+
 @Service
 @Profile("production", "vtj-dev", "integration-test")
-class VtjClientService(
+class XroadVtjSoapTransport(
     private val vtjObjectFactory: ObjectFactory,
     private val wsTemplate: WebServiceTemplate,
     private val vtjEnv: VtjEnv,
     private val requestAdapter: SoapRequestAdapter,
     private val responseMapper: VTJResponseMapper,
-) : IVtjClientService {
+) : VtjSoapTransport {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun query(query: VTJQuery): Henkilo? {
+    override fun query(query: VtjSoapTransport.VTJQuery): Henkilo? {
         val request = query.toRequest()
 
         logger.auditVTJ(toLogParamsMap(query = query, status = CREATING_REQUEST)) {
@@ -87,7 +103,7 @@ class VtjClientService(
                 }
             }
 
-    fun VTJQuery.toRequest(): JAXBElement<HenkiloTunnusKyselyReqBody> {
+    fun VtjSoapTransport.VTJQuery.toRequest(): JAXBElement<HenkiloTunnusKyselyReqBody> {
         val requestContent =
             HenkiloTunnusKyselyReqBodyTiedot().also {
                 it.soSoNimi = type.queryName
@@ -103,7 +119,7 @@ class VtjClientService(
     }
 }
 
-fun toLogParamsMap(query: VTJQuery, status: QueryStatus) =
+fun toLogParamsMap(query: VtjSoapTransport.VTJQuery, status: QueryStatus) =
     mapOf(
         "meta" to mapOf("queryName" to query.type.queryName),
         "status" to status.value,

@@ -39,7 +39,7 @@ import evaka.core.shared.security.actionrule.AccessControlFilter
 import evaka.core.test.getApplicationStatus
 import evaka.core.toDaycareFormAdult
 import evaka.core.toDaycareFormChild
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
@@ -102,9 +102,9 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insert(daycare)
             tx.insert(serviceWorker)
         }
-        MockPersonDetailsService.addPersons(guardian, child, otherVtjGuardian)
-        MockPersonDetailsService.addDependants(guardian, child)
-        MockPersonDetailsService.addDependants(otherVtjGuardian, child)
+        MockVtjClient.addPersons(guardian, child, otherVtjGuardian)
+        MockVtjClient.addDependants(guardian, child)
+        MockVtjClient.addDependants(otherVtjGuardian, child)
     }
 
     @Test
@@ -142,7 +142,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 }
                 .execute()
         }
-        MockPersonDetailsService.addPersons(sameAddressGuardian)
+        MockVtjClient.addPersons(sameAddressGuardian)
 
         executeTestApplicationProcess(clock) {}
 

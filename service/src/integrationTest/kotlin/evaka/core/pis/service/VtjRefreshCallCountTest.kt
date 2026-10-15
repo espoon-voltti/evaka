@@ -11,7 +11,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -52,11 +52,10 @@ class VtjRefreshCallCountTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(guardian, DevPersonType.ADULT)
             children.forEach { tx.insert(it, DevPersonType.CHILD) }
         }
-        MockVtjClientService.resetQueryCounts()
-        MockVtjClientService.addHUOLTAJAHUOLLETTAVARequestExpectation(guardian, children)
-        children.forEach { MockVtjClientService.addPERUSSANOMA3RequestExpectation(it) }
-        val personService =
-            PersonService(VTJPersonDetailsService(MockVtjClientService(), VtjHenkiloMapper()))
+        MockVtjSoapTransport.resetQueryCounts()
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(guardian, children)
+        children.forEach { MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(it) }
+        val personService = PersonService(SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper()))
 
         db.transaction {
             personService.getPersonWithChildren(
@@ -68,7 +67,7 @@ class VtjRefreshCallCountTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        assertEquals(1, MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(guardian))
-        children.forEach { assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(it)) }
+        assertEquals(1, MockVtjSoapTransport.getHUOLTAJAHUOLLETTAVARequestCount(guardian))
+        children.forEach { assertEquals(1, MockVtjSoapTransport.getPERUSSANOMA3RequestCount(it)) }
     }
 }

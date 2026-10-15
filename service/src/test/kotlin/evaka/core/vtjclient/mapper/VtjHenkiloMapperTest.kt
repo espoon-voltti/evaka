@@ -4,11 +4,14 @@
 
 package evaka.core.vtjclient.mapper
 
+import evaka.core.identity.Ssn
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.RestrictedDetails
+import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.Aidinkieli
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.Huollettava
+import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.Huoltaja
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.Kansalaisuus
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.NykyinenSukunimi
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.NykyisetEtunimet
@@ -34,16 +37,6 @@ class VtjHenkiloMapperTest {
                     Kansalaisuus().apply {
                         kansalaisuusS = "Suomi"
                         kansalaisuuskoodi3 = "247"
-                    }
-                )
-                huollettava.clear()
-                huollettava.add(
-                    Huollettava().apply {
-                        henkilotunnus = "020202A0202"
-                        nykyisetEtunimet =
-                            Huollettava.NykyisetEtunimet().apply { etunimet = "Lapsi" }
-                        nykyinenSukunimi =
-                            Huollettava.NykyinenSukunimi().apply { sukunimi = "Lapsonen" }
                     }
                 )
                 vakinainenKotimainenLahiosoite =
@@ -81,11 +74,6 @@ class VtjHenkiloMapperTest {
         assertThat(result.firstNames).isEqualTo(value.nykyisetEtunimet.etunimet)
         assertThat(result.lastName).isEqualTo(value.nykyinenSukunimi.sukunimi)
 
-        assertThat(result.dependants).size().isEqualTo(1)
-        assertThat(result.dependants).allMatch {
-            it.socialSecurityNumber == value.huollettava[0].henkilotunnus
-        }
-
         assertThat(result.address!!.streetAddress)
             .isEqualTo(value.vakinainenKotimainenLahiosoite.lahiosoiteS)
         assertThat(result.address!!.postOffice)
@@ -107,10 +95,11 @@ class VtjHenkiloMapperTest {
     }
 
     @Test
-    fun `valid dependants should be mapped to person's children`() {
+    fun `valid dependants should be mapped to relative stubs`() {
         val dependant =
             Huollettava().apply {
                 henkilotunnus = "010104A123E"
+                syntymaaika = "20040101"
                 nykyisetEtunimet =
                     Huollettava.NykyisetEtunimet().apply { etunimet = "Karlo Jaskari Jooseppi" }
                 nykyinenSukunimi =
@@ -127,13 +116,43 @@ class VtjHenkiloMapperTest {
         assertThat(result).size().isEqualTo(1)
 
         val child = result[0]
-        assertThat(child.socialSecurityNumber).isEqualTo(dependant.henkilotunnus)
+        assertThat(child.ssn.value).isEqualTo(dependant.henkilotunnus)
+        assertThat(child.dateOfBirth).isEqualTo(LocalDate.of(2004, 1, 1))
         assertThat(child.firstNames).isEqualTo(dependant.nykyisetEtunimet.etunimet)
         assertThat(child.lastName).isEqualTo(dependant.nykyinenSukunimi.sukunimi)
     }
 
     @Test
-    fun `empty dependants should be mapped to person's children`() {
+    fun `valid guardians should be mapped to relative stubs`() {
+        val guardian =
+            Huoltaja().apply {
+                henkilotunnus = "070644-937X"
+                nykyisetEtunimet = Huoltaja.NykyisetEtunimet().apply { etunimet = "Johannes" }
+                nykyinenSukunimi = Huoltaja.NykyinenSukunimi().apply { sukunimi = "Karhula" }
+            }
+
+        val value =
+            Henkilo().apply {
+                huoltaja.clear()
+                huoltaja.add(guardian)
+            }
+
+        val result = value.mapGuardians()
+
+        // With no syntymaaika in the response, the date of birth comes from the SSN
+        assertThat(result)
+            .containsExactly(
+                VtjRelative(
+                    ssn = Ssn.parse("070644-937X")!!,
+                    dateOfBirth = LocalDate.of(1944, 6, 7),
+                    firstNames = "Johannes",
+                    lastName = "Karhula",
+                )
+            )
+    }
+
+    @Test
+    fun `empty dependants should be mapped to no relatives`() {
         val value = Henkilo().apply { huollettava.clear() }
 
         val result = value.mapDependants()

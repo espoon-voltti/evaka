@@ -4,6 +4,8 @@
 
 package evaka.core.vtjclient.service.persondetails
 
+import evaka.core.identity.Ssn
+import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.dev.DevPerson
 import evaka.core.vtjclient.dto.Nationality
@@ -11,6 +13,8 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
+import evaka.core.vtjclient.dto.VtjPersonWithRelatives
+import evaka.core.vtjclient.dto.VtjRelative
 import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap
 
@@ -43,9 +47,17 @@ data class MockVtjPerson(
             dateOfDeath = dateOfDeath,
             residenceCode = residenceCode,
             municipalityOfResidence = municipalityOfResidence,
-            dependants = emptyList(),
-            guardians = emptyList(),
         )
+
+    fun toVtjRelative(): VtjRelative {
+        val ssn = checkNotNull(Ssn.parse(socialSecurityNumber)) { "Invalid mock VTJ SSN" }
+        return VtjRelative(
+            ssn = ssn,
+            dateOfBirth = getDobFromSsn(ssn.value),
+            firstNames = firstNames,
+            lastName = lastName,
+        )
+    }
 
     companion object {
         fun from(person: DevPerson): MockVtjPerson =
@@ -100,7 +112,7 @@ data class MockVtjPerson(
     }
 }
 
-class MockPersonDetailsService : IPersonDetailsService {
+class MockVtjClient : VtjClient {
     companion object {
         private val readCounts: ConcurrentHashMap<String, Int> = ConcurrentHashMap()
 
@@ -117,25 +129,11 @@ class MockPersonDetailsService : IPersonDetailsService {
             guardiansOfDependant.clear()
         }
 
-        fun getPerson(ssn: String) =
-            persons[ssn]
-                ?.toVtjPerson()
-                ?.copy(guardians = getGuardians(ssn), dependants = getDependants(ssn))
+        fun getGuardians(ssn: String): List<VtjRelative> =
+            (guardiansOfDependant[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjRelative() }
 
-        fun getAllPersons(): List<VtjPerson> =
-            persons.values.map {
-                it.toVtjPerson()
-                    .copy(
-                        guardians = getGuardians(it.socialSecurityNumber),
-                        dependants = getDependants(it.socialSecurityNumber),
-                    )
-            }
-
-        fun getGuardians(ssn: String): List<VtjPerson> =
-            (guardiansOfDependant[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
-
-        fun getDependants(ssn: String): List<VtjPerson> =
-            (dependantsOfGuardian[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
+        fun getDependants(ssn: String): List<VtjRelative> =
+            (dependantsOfGuardian[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjRelative() }
 
         fun add(dataset: MockVtjDataset) {
             dataset.persons.forEach(::addPerson)
@@ -182,13 +180,13 @@ class MockPersonDetailsService : IPersonDetailsService {
         }
     }
 
-    override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        getBasicDetailsFor(query).copy(dependants = getDependants(query.ssn.value))
+    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPersonWithRelatives =
+        VtjPersonWithRelatives(fetchPerson(query), getDependants(query.ssn.value))
 
-    override fun getPersonWithGuardians(query: IPersonDetailsService.DetailsQuery): VtjPerson =
-        getBasicDetailsFor(query).copy(guardians = getGuardians(query.ssn.value))
+    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPersonWithRelatives =
+        VtjPersonWithRelatives(fetchPerson(query), getGuardians(query.ssn.value))
 
-    override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): VtjPerson {
+    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson {
         val ssn = query.ssn.value
         readCounts.merge(ssn, 1, Int::plus)
         return persons[ssn]?.toVtjPerson() ?: error("Mock VTJ person with ${query.ssn} not found")

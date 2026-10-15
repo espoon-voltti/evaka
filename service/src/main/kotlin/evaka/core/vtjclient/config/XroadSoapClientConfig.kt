@@ -8,7 +8,7 @@ import evaka.core.KeystoreEnv
 import evaka.core.VtjXroadEnv
 import evaka.core.vtjclient.mapper.toClientHeader
 import evaka.core.vtjclient.mapper.toServiceHeader
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.VTJQuery
 import evaka.core.vtjclient.soap.ObjectFactory
 import fi.espoo.voltti.logging.MdcKey
 import io.github.oshai.kotlinlogging.KotlinLogging

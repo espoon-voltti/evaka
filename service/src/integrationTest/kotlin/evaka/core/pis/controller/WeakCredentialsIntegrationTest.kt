@@ -25,7 +25,7 @@ import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -49,7 +49,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `a person without a verified email cannot activate weak credentials`() {
         db.transaction { tx -> tx.insert(person.copy(verifiedEmail = null), DevPersonType.ADULT) }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         citizenStrongLogin()
         val error =
@@ -62,7 +62,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `a person with a verified email can activate weak credentials and log in`() {
         db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         citizenStrongLogin()
         val password = Sensitive("test123123")
@@ -84,7 +84,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 DevPersonType.ADULT,
             )
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         citizenStrongLogin()
         val password = Sensitive("test123123")
@@ -104,7 +104,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(person, DevPersonType.ADULT)
             tx.insert(citizenUser(person.id, email, password))
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         val newPassword = Sensitive("test256256")
         updateWeakLoginCredentials(password = newPassword)
@@ -123,7 +123,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `a person can't use a password that does not match constraints`() {
         db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         citizenStrongLogin()
         val password = Sensitive("nope")
@@ -144,7 +144,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 sequenceOf(password.value),
             )
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         citizenStrongLogin()
         val error = assertThrows<BadRequest> { updateWeakLoginCredentials(password = password) }
@@ -163,7 +163,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(person, DevPersonType.ADULT)
             tx.insert(citizenUser(person.id, email, correctPassword))
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         assertThrows<Forbidden> { citizenWeakLogin(username = email, password = wrongPassword) }
     }
@@ -177,7 +177,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(person, DevPersonType.ADULT)
             tx.insert(citizenUser(person.id, email, password))
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         // Login with empty deviceAuthHistory (simulating new device)
         val identity =
@@ -207,7 +207,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(person, DevPersonType.ADULT)
             tx.insert(citizenUser(person.id, email, password))
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         // Generate the expected user hash for this person
         val userIdHash =
@@ -236,7 +236,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(person, DevPersonType.ADULT)
             tx.insert(citizenUser(person.id, email, password))
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         val newEmail = "newemail@example.com"
         db.transaction { tx ->
@@ -297,7 +297,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 ),
             )
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         sendEmailVerificationCode(otherUser)
         val verificationCode = getVerificationCodeFromEmail(email)
@@ -328,7 +328,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(person, DevPersonType.ADULT)
             tx.insert(citizenUser(person.id, email, password))
         }
-        MockPersonDetailsService.addPersons(person)
+        MockVtjClient.addPersons(person)
 
         deleteWeakLoginCredentials()
 

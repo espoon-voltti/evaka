@@ -5,27 +5,36 @@
 package evaka.core.pis.service
 
 import evaka.core.PureJdbiTest
+import evaka.core.identity.Ssn
+import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
-import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
-import evaka.core.vtjclient.service.vtjclient.IVtjClientService
+import evaka.core.vtjclient.service.persondetails.SoapVtjClient
+import evaka.core.vtjclient.service.persondetails.VtjClient
+import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
-    private val mockVtjClientService: IVtjClientService = MockVtjClientService()
+    private val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
     private lateinit var personService: PersonService
 
     val user = AuthenticatedUser.SystemInternalUser
+    private val now = HelsinkiDateTime.of(LocalDate.of(2026, 3, 2), LocalTime.of(12, 0))
 
     private val testPersonWithoutVtjChildren =
         DevPerson(
@@ -76,31 +85,35 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(testPersonWithVtjChildren, DevPersonType.ADULT)
             it.insert(testPersonDependantChild, DevPersonType.CHILD)
         }
-        MockVtjClientService.resetQueryCounts()
-        personService =
-            PersonService(VTJPersonDetailsService(mockVtjClientService, VtjHenkiloMapper()))
+        MockVtjSoapTransport.resetQueryCounts()
+        personService = PersonService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()))
     }
 
     @Test
     fun `getUpToDatePersonFromVtj fetches person vtj info only once`() {
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonWithoutVtjChildren)
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonWithoutVtjChildren)
         db.transaction {
-            personService.getUpToDatePersonFromVtj(it, user, testPersonWithoutVtjChildren.id)
+            personService.getUpToDatePersonFromVtj(
+                it,
+                user,
+                HelsinkiDateTime.now(),
+                testPersonWithoutVtjChildren.id,
+            )
         }
         assertEquals(
             1,
-            MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren),
+            MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren),
         )
     }
 
     @Test
     fun `getPersonWithDependants fetches person and children from vtj only once`() {
-        MockVtjClientService.addHUOLTAJAHUOLLETTAVARequestExpectation(
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(
             testPersonWithVtjChildren,
             listOf(testPersonDependantChild),
         )
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonWithVtjChildren)
-        MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonDependantChild)
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonWithVtjChildren)
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonDependantChild)
         db.transaction {
             personService.getPersonWithChildren(
                 it,
@@ -109,11 +122,58 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 testPersonWithVtjChildren.id,
             )
         }
-        assertEquals(0, MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonWithVtjChildren))
-        assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonDependantChild))
+        assertEquals(0, MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonWithVtjChildren))
+        assertEquals(1, MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonDependantChild))
         assertEquals(
             1,
-            MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(testPersonWithVtjChildren),
+            MockVtjSoapTransport.getHUOLTAJAHUOLLETTAVARequestCount(testPersonWithVtjChildren),
         )
+    }
+
+    @Test
+    fun `addSsn writes the requested SSN and the VTJ details`() {
+        val person = DevPerson(ssn = null, firstName = "Tuntematon")
+        val vtjRecord = DevPerson(ssn = "070644-937X", firstName = "Johannes", lastName = "Karhula")
+        db.transaction { it.insert(person, DevPersonType.ADULT) }
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(vtjRecord)
+
+        db.transaction {
+            personService.addSsn(it, user, now, person.id, Ssn.parse(vtjRecord.ssn!!)!!)
+        }
+
+        val updated = db.read { it.getPersonById(person.id) }!!
+        assertEquals(vtjRecord.ssn, updated.ssn?.value)
+        assertEquals("Johannes", updated.firstName)
+        assertEquals(now, updated.updatedFromVtj)
+    }
+
+    @Test
+    fun `addSsn fails when VTJ returns a different SSN than the requested one`() {
+        val person = DevPerson(ssn = null)
+        db.transaction { it.insert(person, DevPersonType.ADULT) }
+        val requestedSsn = Ssn.parse("070644-937X")!!
+        val vtjClientReturningAnotherSsn =
+            object : VtjClient {
+                override fun fetchPerson(query: VtjClient.DetailsQuery) =
+                    VtjPerson(
+                        firstNames = "Johannes",
+                        lastName = "Karhula",
+                        socialSecurityNumber = "010199-8137",
+                        restrictedDetails = null,
+                    )
+
+                override fun fetchWithGuardians(query: VtjClient.DetailsQuery) = error("unused")
+
+                override fun fetchWithDependants(query: VtjClient.DetailsQuery) = error("unused")
+            }
+
+        assertThrows<BadRequest> {
+            db.transaction {
+                PersonService(vtjClientReturningAnotherSsn)
+                    .addSsn(it, user, now, person.id, requestedSsn)
+            }
+        }
+
+        assertNull(db.read { it.getPersonById(person.id) }!!.ssn)
     }
 }
