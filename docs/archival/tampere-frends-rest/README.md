@@ -95,7 +95,7 @@ Kun asiakirja on merkitty arkistoiduksi, sitä ei viedä uudelleen ajastetusti. 
 ```
 examples/<nn-tyyppi>/
   metadata.xml    multipart-osa "xml" sellaisenaan
-  request.http    koko HTTP-pyyntö (tunnistautuminen peitetty, PDF korvattu viittauksella)
+  request.http    koko HTTP-pyyntö (tunnistautumistiedot on korvattu placeholdereilla, PDF korvattu viittauksella)
 responses/        esimerkkivastaukset
 frends-response.xsd
 ```

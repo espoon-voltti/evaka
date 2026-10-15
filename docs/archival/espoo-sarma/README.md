@@ -266,8 +266,8 @@ Esimerkit 12 ja 13 on tuotettu tällä reitillä.
 
 Jokaisessa hakemistossa on:
 
-- `request.http`: koko HTTP-pyyntö. Peitetty `Host` (`<sarma-host>`) ja `user_id`
-  (`<käyttäjätunnus>`), ja PDF:n binäärisisältö on korvattu viittauksella.
+- `request.http`: koko HTTP-pyyntö. Tunnistautumistiedot on korvattu placeholdereilla
+  (`Host` = `<sarma-host>`, `user_id` = `<käyttäjätunnus>`), ja PDF:n binäärisisältö on korvattu viittauksella.
   `Content-Length` on alkuperäinen.
 - `metadata.xml`: `instance_1_md_instance` muotoiltuna.
 - `response.http`: paikallisen vastaanottimen vastaus.
