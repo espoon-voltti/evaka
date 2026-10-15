@@ -95,7 +95,11 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     private val today = LocalDate.of(2026, 9, 12)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(2, 0))
     private val longAgo = HelsinkiDateTime.of(LocalDate.of(2011, 1, 1), LocalTime.NOON)
-    private val schema = buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
+    private val schema =
+        buildDataRetentionSchema(
+            valueDecisionCapacityFactorEnabled = false,
+            overrides = DataRetentionOverrides.NONE,
+        )
 
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)

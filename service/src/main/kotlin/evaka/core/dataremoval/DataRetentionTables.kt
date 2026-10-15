@@ -43,8 +43,14 @@ private val oneYearAfterLastPlacement = After(oneYear, lastPlacementEnd)
 private val fiveYearsAfterLastPlacement = After(fiveYears, lastPlacementEnd)
 private val tenYearsAfterLastPlacement = After(tenYears, lastPlacementEnd)
 
-/** The tables whose rows the algorithm deletes or waits for, and their expiration rules */
-fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): SchemaDefinition {
+/**
+ * The tables whose rows the algorithm deletes or waits for, and their expiration rules, with the
+ * municipality's overrides applied
+ */
+fun buildDataRetentionSchema(
+    valueDecisionCapacityFactorEnabled: Boolean,
+    overrides: DataRetentionOverrides,
+): SchemaDefinition {
     val tables =
         listOf(
             HandledTable(
@@ -858,7 +864,7 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                     ),
             ),
         )
-    val schema = SchemaDefinition(tables)
+    val schema = SchemaDefinition(overrides.applyTo(tables))
     requireSafetyConditions(schema, valueDecisionCapacityFactorEnabled)
     return schema
 }

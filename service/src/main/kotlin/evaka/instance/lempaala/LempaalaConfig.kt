@@ -6,6 +6,7 @@ package evaka.instance.lempaala
 
 import evaka.core.OphEnv
 import evaka.core.ScheduledJobsEnv
+import evaka.core.dataremoval.DataRetentionOverrides
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.MealTypeMapper
@@ -96,6 +97,8 @@ class LempaalaConfig {
     @Bean
     fun webServiceMessageSender(trevakaProperties: TrevakaProperties): WebServiceMessageSender =
         frendsWebServiceMessageSender(trevakaProperties.vtjKyselyApiKey)
+
+    @Bean fun dataRetentionOverrides(): DataRetentionOverrides = DataRetentionOverrides.NONE
 
     @Bean
     fun actionRuleMapping(): ActionRuleMapping =
