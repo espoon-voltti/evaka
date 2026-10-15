@@ -2455,6 +2455,7 @@ export const sv: typeof fi = {
       startDate: 'Grundad',
       endDate: 'Sista verksamhetsdag',
       caretakers: 'Personal',
+      caretakersNotEditableInfo: '(kan endast redigeras av huvudanvändare)',
       childrenLabel: 'Barn',
       childrenValue: {
         single: 'barn',
