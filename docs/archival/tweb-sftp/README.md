@@ -70,7 +70,7 @@ Yhteyden yksityiskohdat (`SftpClient.kt`):
 
 ## 4. Metatietomuoto ja skeema
 
-- Skeemat ovat repossa: `service/src/main/schema/profium-collection-sahke2.xsd` (nimiavaruus `http://www.profium.com/reception/2022/03`, juurielementti `collections`) ja `service/src/main/schema/sahke2.xsd` (nimiavaruus `http://www.profium.com/sahke2`). Niistä generoidaan JAXB-luokat Gradle-tehtävällä `xjcGenerate` (`service/build.gradle.kts`, `registerXjcTask("xjcGenerate", "src/main/schema")`).
+- Skeemat ovat repossa: [`profium-collection-sahke2.xsd`](../../../service/src/main/schema/profium-collection-sahke2.xsd) (nimiavaruus `http://www.profium.com/reception/2022/03`, juurielementti `collections`) ja [`sahke2.xsd`](../../../service/src/main/schema/sahke2.xsd) (nimiavaruus `http://www.profium.com/sahke2`). Niistä generoidaan JAXB-luokat Gradle-tehtävällä `xjcGenerate` (`service/build.gradle.kts`, `registerXjcTask("xjcGenerate", "src/main/schema")`).
 - JAXB tuottaa muotoillun XML:n: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`, oletusnimiavaruus reception/2022/03 ja sähke2-elementit etuliitteellä `ns2:`.
 - **Validointi:** kaikki 20 tuotettua metatietotiedostoa validoituvat skeemaa vasten (`xmllint --noout --schema service/src/main/schema/profium-collection-sahke2.xsd *.xml` → "validates").
 - XSD vaatii `created`-elementin (minOccurs=1). Koodi asettaa sen vain, kun lähdearvo ei ole null (`sentDate`, `approvedAt`, `publishedAt`). Arkistoitavissa tiloissa nämä on käytännössä aina asetettu, mutta muuten XML ei olisi skeeman mukainen.

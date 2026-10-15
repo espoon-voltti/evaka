@@ -209,7 +209,7 @@ Prosessi (`case_process`) luodaan asiakirjaa luotaessa vain, jos pohjalla on teh
 
 ### XSD:t
 
-Särmän XSD:t (metatietomalli `yleinen-1.0.xsd` ja sen sisällyttämät `include-extended.xsd` ja `include-policies.xsd`) ovat toimittajan omaisuutta, eikä niitä ole repossa. Skeemat saa Espoolta tai arkistojärjestelmän toimittajalta. eVaka kirjoittaa XML:n `XMLStreamWriter`illä (`espoo/archival/RecordMetadataXml.kt`). Odotettu XML-muoto on myös tiedostossa `service/src/test/resources/archival/expected-metadata.xml`.
+Särmän XSD:t (metatietomalli `yleinen-1.0.xsd` ja sen sisällyttämät `include-extended.xsd` ja `include-policies.xsd`) saa Espoolta tai arkistojärjestelmän toimittajalta. eVaka kirjoittaa XML:n `XMLStreamWriter`illä (`espoo/archival/RecordMetadataXml.kt`). Odotettu XML-muoto on myös tiedostossa `service/src/test/resources/archival/expected-metadata.xml`.
 
 Kaikkien esimerkkien metatiedot validoituivat `yleinen-1.0.xsd`-skeemaa vasten, kun esimerkit tuotettiin.
 
