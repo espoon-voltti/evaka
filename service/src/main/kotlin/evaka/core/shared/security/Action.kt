@@ -43,6 +43,7 @@ import evaka.core.shared.IncomeId
 import evaka.core.shared.IncomeStatementId
 import evaka.core.shared.InvoiceCorrectionId
 import evaka.core.shared.InvoiceId
+import evaka.core.shared.McpAuthorizationId
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.OtherAssistanceMeasureId
@@ -334,6 +335,10 @@ sealed interface Action {
         UPDATE_SYSTEM_NOTIFICATION(HasGlobalRole(ADMIN)),
         SEND_JAMIX_ORDERS(HasGlobalRole(ADMIN)),
         PLACEMENT_TOOL(HasGlobalRole(ADMIN)),
+        // MCP server for AI-assisted test data generation (non-production only)
+        MCP_PAGE(HasGlobalRole(ADMIN)),
+        MANAGE_MCP_AUTHORIZATIONS(HasGlobalRole(ADMIN)),
+        MANAGE_MCP_TEST_DATA(HasGlobalRole(ADMIN)),
         OUT_OF_OFFICE_PAGE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.MESSAGING).inAnyUnit(),
@@ -1608,6 +1613,14 @@ sealed interface Action {
     ) : ScopedAction<InvoiceCorrectionId> {
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         UPDATE_NOTE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF));
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class McpAuthorization(
+        override vararg val defaultRules: ScopedActionRule<in McpAuthorizationId>
+    ) : ScopedAction<McpAuthorizationId> {
+        REVOKE(IsEmployee.ownerOfMcpAuthorization());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

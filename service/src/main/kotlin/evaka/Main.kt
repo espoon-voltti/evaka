@@ -42,7 +42,7 @@ fun main(args: Array<String>) {
     val profiles =
         when (System.getenv("VOLTTI_ENV")) {
             "dev",
-            "test" -> arrayOf(municipalityProfile, "enable_dev_api")
+            "test" -> arrayOf(municipalityProfile, "enable_dev_api", "enable_mcp")
 
             else -> arrayOf(municipalityProfile)
         }

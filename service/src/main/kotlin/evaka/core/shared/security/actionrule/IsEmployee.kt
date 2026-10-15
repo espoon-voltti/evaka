@@ -11,6 +11,7 @@ import evaka.core.shared.DatabaseTable
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.Id
+import evaka.core.shared.McpAuthorizationId
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.PairingId
@@ -171,6 +172,18 @@ SELECT EXISTS (
                 """
 SELECT id
 FROM mobile_device
+WHERE employee_id = ${bind(user.id)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun ownerOfMcpAuthorization() =
+        rule<McpAuthorizationId> { user, _ ->
+            sql(
+                """
+SELECT id
+FROM mcp_authorization
 WHERE employee_id = ${bind(user.id)}
             """
                     .trimIndent()

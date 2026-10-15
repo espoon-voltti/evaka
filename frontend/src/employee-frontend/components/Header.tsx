@@ -42,6 +42,7 @@ import { I18nContext, useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { hasGlobalAction } from '../utils/roles'
 
+import { useMcpTranslation } from './mcp/translations'
 import { MessageContext } from './messages/MessageContext'
 import { ReportNotificationContext } from './reports/ReportNotificationContext'
 
@@ -346,7 +347,8 @@ function HeaderContainer({
 export default React.memo(function Header() {
   const { i18n } = useTranslation()
   const { lang, selectLang } = useContext(I18nContext)
-  const { user, loggedIn } = useContext(UserContext)
+  const { user, loggedIn, featureConfig } = useContext(UserContext)
+  const mcpTranslations = useMcpTranslation()
   const { accounts, unreadCountsByAccount } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
@@ -577,6 +579,16 @@ export default React.memo(function Header() {
                   {i18n.titles.unitFeatures}
                 </Link>
               )}
+              {featureConfig?.mcpServerEnabled &&
+                hasGlobalAction(user, 'MCP_PAGE') && (
+                  <Link
+                    to="/mcp"
+                    onClick={closeUserPopup}
+                    data-qa="user-popup-mcp"
+                  >
+                    {mcpTranslations.title}
+                  </Link>
+                )}
               {hasGlobalAction(user, 'PLACEMENT_TOOL') && (
                 <Link
                   to="/placement-tool"
