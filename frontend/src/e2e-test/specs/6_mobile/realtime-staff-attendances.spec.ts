@@ -981,6 +981,32 @@ test.describe('Realtime staff attendance edit page', () => {
     ])
   })
 
+  test('Staff member cannot save an added attendance that departs at its arrival time', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    const arrivalTime = '05:59'
+    const departureTime = '12:45'
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      type: 'TRAINING',
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.parse(departureTime))
+    }).save()
+
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+
+    const editPage = new StaffAttendanceEditPage(page)
+    // The added row starts at the previous row's departure time
+    await editPage.addLink.click()
+    await editPage.fillDeparted(1, departureTime)
+    await expect(editPage.saveButton).toBeDisabled()
+
+    await editPage.fillDeparted(1, '12:46')
+    await expect(editPage.saveButton).toBeEnabled()
+  })
+
   test('Staff member can edit existing attendance', async () => {
     const date = LocalDate.of(2022, 5, 5)
     const arrivalTime = '05:59'

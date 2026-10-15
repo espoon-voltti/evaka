@@ -108,11 +108,18 @@ const staffAttendanceForm = mapped(
       if (!typesWithoutGroup.has(output.type) && output.groupId === null) {
         return { groupId: 'required' }
       }
+      const arrived = HelsinkiDateTime.fromLocal(
+        output.arrivedDate,
+        output.arrivedTime
+      )
       const departed = getDeparted(
         output.arrivedDate,
         output.arrivedTime,
         output.departedTime
       )
+      if (departed && !departed.isAfter(arrived)) {
+        return { departedTime: 'timeFormat' }
+      }
       if (departed && departed.isAfter(HelsinkiDateTime.now())) {
         return { departedTime: 'future' }
       }

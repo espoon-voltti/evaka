@@ -177,6 +177,23 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
+    fun `Departure must be after arrival`() {
+        val exception =
+            assertThrows<BadRequest> {
+                upsertDailyStaffAttendances(
+                    daycare.id,
+                    group1.id,
+                    now.minusHours(1),
+                    now.minusHours(1),
+                )
+            }
+        assertEquals("Departure time must be after arrival time", exception.message)
+        assertThrows<BadRequest> {
+            upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(1), now.minusHours(2))
+        }
+    }
+
+    @Test
     fun `Attendances without group can be deleted`() {
         realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
             dbInstance(),

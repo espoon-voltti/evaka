@@ -1608,6 +1608,40 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
+    fun `set attendances with departure equal to arrival throws bad request`() {
+        val employeeId = addEmployee()
+        val body =
+            MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                employeeId = employeeId,
+                pinCode = "1122",
+                date = now.toLocalDate(),
+                rows =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = null,
+                            groupId = group.id,
+                            arrived = now.minusMinutes(1),
+                            departed = now.minusMinutes(1),
+                            type = StaffAttendanceType.TRAINING,
+                            hasStaffOccupancyEffect = false,
+                        )
+                    ),
+            )
+
+        val exception =
+            assertThrows<BadRequest> {
+                mobileRealtimeStaffAttendanceController.setAttendances(
+                    dbInstance(),
+                    mobileUser,
+                    MockEvakaClock(now),
+                    daycare.id,
+                    body,
+                )
+            }
+        assertEquals("Departure time must be after arrival time", exception.message)
+    }
+
+    @Test
     fun `set attendances with unknown attendance id throws bad request`() {
         val employeeId = addEmployee()
         val body =
