@@ -23,8 +23,10 @@ private val logger = KotlinLogging.logger {}
 class DataRetentionService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     featureConfig: FeatureConfig,
+    overrides: DataRetentionOverrides,
 ) {
-    private val schema = buildDataRetentionSchema(featureConfig.valueDecisionCapacityFactorEnabled)
+    private val schema =
+        buildDataRetentionSchema(featureConfig.valueDecisionCapacityFactorEnabled, overrides)
 
     init {
         asyncJobRunner.registerHandler(::deleteExpiredPersonData)
@@ -42,6 +44,7 @@ class DataRetentionService(
             schema,
             msg.personId,
             dryRun = msg.dryRun,
+            optimized = msg.optimized ?: true,
         )
     }
 }
@@ -53,19 +56,21 @@ fun runDataRetention(
     schema: SchemaDefinition,
     personId: PersonId,
     dryRun: Boolean,
+    optimized: Boolean,
 ) {
     val started = TimeSource.Monotonic.markNow()
+    val today = clock.today()
     val deletionResult =
         dbc.transaction { tx ->
-            val graph = tx.loadPersonGraph(schema, personId)
+            val graph = tx.loadPersonGraph(schema, personId, today, optimized)
             if (graph == null) {
                 logger.warn { "Data retention for person $personId: the person no longer exists" }
                 return@transaction null
             }
-            val plan = graph.evaluate(clock.today())
+            val plan = graph.evaluate(today)
             if (dryRun) {
                 logger.info {
-                    "Dry run of data retention for person $personId: would ${plan.describe()}, evaluated in ${started.elapsedNow().inWholeMilliseconds} ms"
+                    "Dry run of data retention for person $personId: would ${plan.describe()}, evaluated in ${started.elapsedNow().inWholeMilliseconds} ms (${if (optimized) "optimized" else "not optimized"})"
                 }
                 null
             } else {
@@ -75,7 +80,7 @@ fun runDataRetention(
         } ?: return
 
     logger.info {
-        "Data retention for person $personId: deleted ${describeRowCounts(deletionResult.deletedRowCountsByTable)}, cleared ${describeRowCounts(deletionResult.clearedRowCountsByTable)}, froze ${describeFreezes(deletionResult.childrenFrozenForKoski, deletionResult.childrenFrozenForVarda)}, in ${started.elapsedNow().inWholeMilliseconds} ms"
+        "Data retention for person $personId: deleted ${describeRowCounts(deletionResult.deletedRowCountsByTable)}, cleared ${describeRowCounts(deletionResult.clearedRowCountsByTable)}, froze ${describeFreezes(deletionResult.childrenFrozenForKoski, deletionResult.childrenFrozenForVarda)}, in ${started.elapsedNow().inWholeMilliseconds} ms (${if (optimized) "optimized" else "not optimized"})"
     }
 
     // Audit logs

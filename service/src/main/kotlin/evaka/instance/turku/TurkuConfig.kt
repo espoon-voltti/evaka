@@ -7,6 +7,7 @@ package evaka.instance.turku
 import evaka.core.ScheduledJobsEnv
 import evaka.core.VtjXroadEnv
 import evaka.core.application.ApplicationStatus
+import evaka.core.dataremoval.DataRetentionOverrides
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.invoicing.domain.PaymentIntegrationClient
@@ -137,6 +138,8 @@ class TurkuConfig {
     @Bean
     @Profile("local")
     fun devDataInitializer(jdbi: Jdbi): DevDataInitializer = DevDataInitializer(jdbi)
+
+    @Bean fun dataRetentionOverrides(): DataRetentionOverrides = DataRetentionOverrides.NONE
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = TurkuActionRuleMapping()
 

@@ -150,10 +150,36 @@ class HandledTable(
      */
     val auditIdType: KClass<out DatabaseTable>? = null,
     val expirationRule: ExpirationRule,
+    /**
+     * A node expires only once this is met too: no finance decision that can still be generated
+     * needs its rows
+     */
+    val financeFreeze: ExpirationRule? = null,
+    /**
+     * A node expires only once it is safe from the point of view of each of these external data
+     * syncs. If data has already been sent to the integration, it must not be removed before the
+     * child has reached [SAFE_DATA_REMOVAL_AGE] and the sync can be frozen permanently.
+     */
+    val safeForIntegrations: Set<Integration> = emptySet(),
     val asyncJobsPlannedOnDelete: AsyncJobsOnDelete? = null,
     /** Rows outside the schema definition that only the rows of this table reference */
     val orphansToDelete: List<OutsideGraphReference> = emptyList(),
 ) : Table {
+    val mayHoldChildData: Boolean
+        get() = handledBy == Handler.CHILD || name == PERSON_TABLE
+
+    /** Of the expiration rule and the finance freeze */
+    fun usedDateSources(): Set<DateSource> =
+        expirationRule.usedDateSources() + financeFreeze?.usedDateSources().orEmpty()
+
+    /** Of the expiration rule and the finance freeze */
+    fun usedCustomDateSources(): Set<DateSource.Custom> =
+        usedDateSources().filterIsInstance<DateSource.Custom>().toSet()
+
+    /** Of the expiration rule and the finance freeze */
+    fun usedNotWhileRules(): Set<ExpirationRule.NotWhile> =
+        expirationRule.usedNotWhileRules() + financeFreeze?.usedNotWhileRules().orEmpty()
+
     override fun toString(): String = name
 }
 
@@ -186,10 +212,20 @@ class SchemaDefinition(tables: List<Table>) {
     /** `person` first, then every handled table after the one its primary reference points to */
     val rootFirstOrder: List<HandledTable>
 
+    /**
+     * Loaded before the other tables, so that it can be decided from them which tables are known to
+     * stay
+     */
+    val preloadedTables: Set<HandledTable>
+
     private val primaryReferenceByReferencingTable: Map<String, Reference.Primary>
     /** Note: Key is the referenced table, while the value holds the referencing table */
     private val optionalReferencesByReferencedTable: Map<String, List<DeclaredOptionalReference>>
     private val dateColumnTypesByTable: Map<String, Map<String, DateColumnType>>
+    /**
+     * Note: Key is the table whose dates are read, while the value holds the tables reading them
+     */
+    private val tablesReadingDatesByTable: Map<String, List<HandledTable>>
 
     init {
         val duplicates = tables.groupBy { it.name }.filterValues { it.size > 1 }.keys
@@ -297,6 +333,7 @@ class SchemaDefinition(tables: List<Table>) {
         }
 
         val dateColumnTypesAccumulator = mutableMapOf<String, MutableMap<String, DateColumnType>>()
+        val tablesReadingDatesAccumulator = mutableMapOf<String, MutableSet<HandledTable>>()
         fun recordDateColumn(
             tableUsingDateSource: HandledTable,
             source: DateSource,
@@ -313,7 +350,7 @@ class SchemaDefinition(tables: List<Table>) {
             }
         }
         for (table in handledTables) {
-            for (source in table.expirationRule.usedDateSources()) {
+            for (source in table.usedDateSources()) {
                 when (source) {
                     is DateSource.OwnColumn ->
                         recordDateColumn(
@@ -338,6 +375,8 @@ class SchemaDefinition(tables: List<Table>) {
                             columnToRead = source.column,
                             columnType = source.columnType,
                         )
+                        tablesReadingDatesAccumulator.getOrPut(other.name) { mutableSetOf() } +=
+                            table
                     }
                     is DateSource.Custom ->
                         require(table.identifiedByCols.size == 1) {
@@ -345,14 +384,23 @@ class SchemaDefinition(tables: List<Table>) {
                         }
                 }
             }
-            require(
-                table.expirationRule.usedNotWhileRules().isEmpty() ||
-                    table.identifiedByCols.size == 1
-            ) {
+            require(table.usedNotWhileRules().isEmpty() || table.identifiedByCols.size == 1) {
                 "$table: a not while rule needs rows identified by a single column"
             }
         }
         dateColumnTypesByTable = dateColumnTypesAccumulator
+        tablesReadingDatesByTable = tablesReadingDatesAccumulator.mapValues { it.value.toList() }
+
+        preloadedTables =
+            handledTables
+                .filter { table ->
+                    table == person ||
+                        table == child ||
+                        (parentOf(table) in setOf(person, child) &&
+                            table.name in tablesReadingDatesByTable &&
+                            !table.independentRows)
+                }
+                .toSet()
 
         optionalReferencesByReferencedTable =
             tables
@@ -384,6 +432,9 @@ class SchemaDefinition(tables: List<Table>) {
      */
     fun dateColumnsToRead(table: HandledTable): Map<String, DateColumnType> =
         dateColumnTypesByTable[table.name].orEmpty()
+
+    fun tablesReadingDatesOf(table: HandledTable): List<HandledTable> =
+        tablesReadingDatesByTable[table.name].orEmpty()
 
     /** The primary reference leads to the table's handler, except from `child` to `person` */
     private fun primaryReferenceOf(table: HandledTable): Reference.Primary {

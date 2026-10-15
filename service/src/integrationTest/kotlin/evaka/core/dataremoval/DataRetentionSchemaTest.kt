@@ -5,6 +5,7 @@
 package evaka.core.dataremoval
 
 import evaka.core.PureJdbiTest
+import evaka.instance.dataRetentionOverridesByMunicipality
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.jdbi.v3.core.mapper.Nested
@@ -59,9 +60,23 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var uniqueKeys: List<UniqueKey>
     private lateinit var checkConstraints: List<CheckConstraint>
 
-    private val schema = buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
+    private val schema =
+        buildDataRetentionSchema(
+            valueDecisionCapacityFactorEnabled = false,
+            overrides = DataRetentionOverrides.NONE,
+        )
     private val declaredTables = schema.tablesByName.values
     private val handledTables = schema.handledTables
+
+    /** The rules differ by municipality, so the checks of the rules cover each of them */
+    private val handledTablesOfEveryMunicipality =
+        dataRetentionOverridesByMunicipality.values
+            .flatMap { overrides ->
+                listOf(false, true).flatMap {
+                    buildDataRetentionSchema(it, overrides).handledTables
+                }
+            }
+            .distinctBy { listOf(it.name, it.expirationRule, it.financeFreeze) }
 
     /**
      * The rows of these tables are deleted by this algorithm, so every foreign key into them
@@ -370,8 +385,8 @@ GROUP BY c.oid, t.relname
 
     @Test
     fun `every column a date source reads exists with the declared type`() {
-        val invalid = handledTables.flatMap { table ->
-            table.expirationRule.usedDateSources().mapNotNull { source ->
+        val invalid = handledTablesOfEveryMunicipality.flatMap { table ->
+            table.usedDateSources().mapNotNull { source ->
                 val read = columnRead(table, source) ?: return@mapNotNull null
                 val column = columnOf(read.ref) ?: return@mapNotNull "${read.ref} does not exist"
                 val expected = expectedTypes.getValue(read.columnType)
@@ -389,8 +404,8 @@ GROUP BY c.oid, t.relname
      */
     @Test
     fun `a column read as a finite date range end is not null and has a check constraint that forbids an open end`() {
-        val invalid = handledTables.flatMap { table ->
-            table.expirationRule.usedDateSources().mapNotNull { source ->
+        val invalid = handledTablesOfEveryMunicipality.flatMap { table ->
+            table.usedDateSources().mapNotNull { source ->
                 val read = columnRead(table, source) ?: return@mapNotNull null
                 if (read.columnType != DateColumnType.FINITE_DATE_RANGE_END) return@mapNotNull null
                 val closedEnd = checkConstraints.any {
@@ -437,13 +452,13 @@ GROUP BY c.oid, t.relname
     }
 
     @Test
-    fun `a rule whose date source may give no date has a fallback`() {
-        val errors = handledTables.mapNotNull { table ->
-            runCatching {
-                table.expirationRule.validate(table.name) { mayHaveNoDate(table, it) }
+    fun `an expiration rule or finance freeze whose date source may give no date has a fallback`() {
+        val errors = handledTablesOfEveryMunicipality.flatMap { table ->
+            listOfNotNull(table.expirationRule, table.financeFreeze).mapNotNull { rule ->
+                runCatching { rule.validate(table.name) { mayHaveNoDate(table, it) } }
+                    .exceptionOrNull()
+                    ?.message
             }
-                .exceptionOrNull()
-                ?.message
         }
         assertEquals(emptyList(), errors)
     }
@@ -451,11 +466,11 @@ GROUP BY c.oid, t.relname
     @Test
     fun `every custom date source and not while rule runs against the database`() {
         db.read { tx ->
-            for (table in handledTables) {
-                for (source in table.expirationRule.usedCustomDateSources()) {
+            for (table in handledTablesOfEveryMunicipality) {
+                for (source in table.usedCustomDateSources()) {
                     assertEquals(emptyMap(), source.query(tx, emptyList()))
                 }
-                for (rule in table.expirationRule.usedNotWhileRules()) {
+                for (rule in table.usedNotWhileRules()) {
                     assertEquals(emptySet(), rule.idsWhereConditionHolds(tx, emptyList()))
                 }
             }

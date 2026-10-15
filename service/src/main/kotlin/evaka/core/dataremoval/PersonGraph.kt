@@ -11,7 +11,6 @@ import evaka.core.dataremoval.ExpirationRule.AnyOf
 import evaka.core.dataremoval.ExpirationRule.Coalesce
 import evaka.core.dataremoval.ExpirationRule.Never
 import evaka.core.dataremoval.ExpirationRule.NotWhile
-import evaka.core.dataremoval.ExpirationRule.SafeForIntegrations
 import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.shared.ChildId
 import evaka.core.shared.DatabaseTable
@@ -91,7 +90,7 @@ data class ForeignNode(
             table.blockingReferences.first { it.referenceColumn == referenceColumn }.referencedTable
 }
 
-data class ChildIntegrationFacts(
+data class IntegrationFacts(
     val dateOfBirth: LocalDate,
     val sentToKoski: Boolean,
     val sentToVarda: Boolean,
@@ -118,7 +117,12 @@ class PersonGraph(
     val ownNodes: List<OwnNode>,
     val foreignNodes: List<ForeignNode>,
     /** For the target and every child the own rows reference */
-    val integrationFactsByChild: Map<ChildId, ChildIntegrationFacts>,
+    val integrationFactsByPerson: Map<PersonId, IntegrationFacts>,
+    /**
+     * The loader decided from the preloaded tables that these tables stay. Their rules are not
+     * evaluated, and the loader did not run the queries the rules need.
+     */
+    val tablesKnownToStay: Set<String>,
 ) {
     private val ownNodesById: Map<OwnNodeId, OwnNode> = ownNodes.associateBy { it.id }
 
@@ -129,14 +133,14 @@ class PersonGraph(
     private val ownNodeIdByRow: Map<SingleIdRowRef, OwnNodeId>
 
     /** The edges: from an own node to the own nodes holding the rows its rows reference */
-    internal val edgesByOwnNode: Map<OwnNodeId, List<OwnNodeId>>
+    val edgesByOwnNode: Map<OwnNodeId, List<OwnNodeId>>
 
     /**
      * From an own node to the own nodes whose table declares deletedWithParent and whose primary
      * references point to its rows. These are only the direct links. Blocking reaches the rest of a
      * deletion bundle transitively.
      */
-    internal val deletedWithParentNodeIdsByParent: Map<OwnNodeId, List<OwnNodeId>>
+    val deletedWithParentNodeIdsByParent: Map<OwnNodeId, List<OwnNodeId>>
 
     init {
         require(ownNodesById.size == ownNodes.size) { "Duplicate own nodes" }
@@ -388,9 +392,13 @@ private fun PersonGraph.leafFirstOrder(): List<OwnNode> {
 }
 
 private fun PersonGraph.isExpired(node: OwnNode, today: LocalDate): Boolean {
+    if (node.table.name in tablesKnownToStay) return false
     // A missing child row counts as expired, so that it blocks nothing on its own
     if (node.table == schema.child && node.rows.isEmpty()) return true
-    return requireResult(node.table.expirationRule, node, today)
+    val financeFreeze = node.table.financeFreeze
+    return requireResult(node.table.expirationRule, node, today) &&
+        (financeFreeze == null || requireResult(financeFreeze, node, today)) &&
+        isSafeForIntegrations(node.table.safeForIntegrations, node, today)
 }
 
 private fun PersonGraph.requireResult(
@@ -415,11 +423,7 @@ private fun PersonGraph.evaluateRule(
         is AnyOf -> rule.rules.any { requireResult(it, node, today) }
         is Coalesce -> rule.rules.firstNotNullOfOrNull { evaluateRule(it, node, today) }
         is After -> dateOf(rule.dateSource, node)?.let { it.plus(rule.period) < today }
-        is NotWhile -> node.rows.all { it.mayExpireUnder(rule, node) }
-        is SafeForIntegrations ->
-            evaluateRule(rule.rule, node, today)?.let { expired ->
-                expired && isSafeForIntegrations(rule.integrations, node, today)
-            }
+        is NotWhile -> node.mayExpireUnder(rule)
     }
 
 private fun PersonGraph.isSafeForIntegrations(
@@ -427,6 +431,7 @@ private fun PersonGraph.isSafeForIntegrations(
     node: OwnNode,
     today: LocalDate,
 ): Boolean {
+    if (integrations.isEmpty()) return true
     val children = childrenConcernedBy(node)
     return integrations.all { integration ->
         children.all { integrationFacts(it, node).safeToDeleteFor(integration, today) }
@@ -435,17 +440,15 @@ private fun PersonGraph.isSafeForIntegrations(
 
 /** Returns all the children that would be affected by removing the node */
 private fun PersonGraph.childrenConcernedBy(node: OwnNode): Set<ChildId> = buildSet {
-    if (node.table.handledBy == Handler.CHILD || node.table == schema.person) {
-        add(targetPersonId)
-    }
+    if (node.table.mayHoldChildData) add(targetPersonId)
     addAll(node.referencedChildIds())
     for (other in deletedWithParentNodeIdsByParent[node.id].orEmpty()) {
         addAll(childrenConcernedBy(ownNode(other)))
     }
 }
 
-private fun PersonGraph.integrationFacts(childId: ChildId, node: OwnNode): ChildIntegrationFacts =
-    checkNotNull(integrationFactsByChild[childId]) {
+private fun PersonGraph.integrationFacts(childId: ChildId, node: OwnNode): IntegrationFacts =
+    checkNotNull(integrationFactsByPerson[childId]) {
         "$node: the loader did not read the integration facts of child $childId"
     }
 
@@ -455,14 +458,23 @@ private fun PersonGraph.integrationFacts(childId: ChildId, node: OwnNode): Child
  */
 private fun PersonGraph.dateOf(source: DateSource, node: OwnNode): LocalDate? =
     when (source) {
-        is DateSource.OwnColumn -> node.rows.map { it.date(source.column, node) }.latestOrNone()
-        is DateSource.GraphTableColumn ->
-            ownNodes
-                .filter { it.table.name == source.table }
-                .flatMap { other -> other.rows.map { it.date(source.column, other) } }
-                .latestOrNone()
-        is DateSource.Custom -> node.rows.map { it.customDate(source, node) }.latestOrNone()
+        is DateSource.OwnColumn -> node.latestDateOf(source)
+        is DateSource.GraphTableColumn -> ownNodes.latestDateOf(source)
+        is DateSource.Custom -> node.latestDateOf(source)
     }
+
+fun List<OwnNode>.latestDateOf(source: DateSource.GraphTableColumn): LocalDate? =
+    this.filter { it.table.name == source.table }
+        .flatMap { node -> node.rows.map { it.date(source.column, node) } }
+        .latestOrNone()
+
+fun OwnNode.latestDateOf(source: DateSource.OwnColumn): LocalDate? =
+    rows.map { it.date(source.column, this) }.latestOrNone()
+
+fun OwnNode.latestDateOf(source: DateSource.Custom): LocalDate? =
+    rows.map { it.customDate(source, this) }.latestOrNone()
+
+fun OwnNode.mayExpireUnder(rule: NotWhile): Boolean = rows.all { it.mayExpireUnder(rule, this) }
 
 private fun List<LocalDate?>.latestOrNone(): LocalDate? =
     if (isEmpty() || any { it == null }) null else filterNotNull().max()

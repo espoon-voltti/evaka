@@ -11,6 +11,7 @@ import evaka.core.bi.BiExportClient
 import evaka.core.bi.BiExportConfig
 import evaka.core.bi.BiExportJob
 import evaka.core.bi.BiTable
+import evaka.core.dataremoval.DataRetentionOverrides
 import evaka.core.decision.DecisionType
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
@@ -182,6 +183,8 @@ class TampereConfig {
     @Bean
     fun webServiceMessageSender(trevakaProperties: TrevakaProperties): WebServiceMessageSender =
         frendsWebServiceMessageSender(trevakaProperties.vtjKyselyApiKey)
+
+    @Bean fun dataRetentionOverrides(): DataRetentionOverrides = DataRetentionOverrides.NONE
 
     @Bean
     fun actionRuleMapping(): ActionRuleMapping =
