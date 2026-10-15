@@ -5,9 +5,7 @@
 package evaka.core.vtjclient.service.persondetails
 
 import evaka.core.identity.Ssn
-import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.EvakaUserId
-import evaka.core.shared.PersonId
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
@@ -44,17 +42,15 @@ class SoapVtjClientTest {
 
     @Test
     fun `basic query should return the person with a successful query`() {
-        val expectedResult = validPerson
-        val query = queryAboutSelf(vtjPerson = expectedResult)
         val expectedVtjQuery = query.mapToVtjQuery(PERUSSANOMA3)
         val expectedVtjResponse = query.asMinimalVtjResponse()
 
         whenever(vtjService.query(expectedVtjQuery)).thenReturn(expectedVtjResponse)
-        whenever(henkiloMapper.mapToVtjPerson(expectedVtjResponse)).thenReturn(expectedResult)
+        whenever(henkiloMapper.mapToVtjPerson(expectedVtjResponse)).thenReturn(validPerson)
 
         val result = service.fetchPerson(query)
-        assertThat(result.socialSecurityNumber).isEqualTo(expectedResult.socialSecurityNumber)
-        assertThat(result.address).isEqualTo(expectedResult.address)
+        assertThat(result.socialSecurityNumber).isEqualTo(validPerson.socialSecurityNumber)
+        assertThat(result.address).isEqualTo(validPerson.address)
     }
 
     @Test
@@ -66,7 +62,6 @@ class SoapVtjClientTest {
                 firstNames = "Lapsi Lapsonen",
                 lastName = "Testaaja",
             )
-        val query = queryAboutSelf(vtjPerson = validPerson)
         val expectedVtjQuery = query.mapToVtjQuery(HUOLTAJA_HUOLLETTAVA)
         val expectedVtjResponse = query.asMinimalVtjResponse()
 
@@ -82,44 +77,10 @@ class SoapVtjClientTest {
         val _ = verify(vtjService, times(1)).query(any())
     }
 
-    private fun queryAboutSelf(vtjPerson: VtjPerson = validPerson) =
-        vtjPerson.toPersonDTO().let {
-            DetailsQuery(
-                requestingUser = EvakaUserId(it.id.raw),
-                ssn = it.ssn!!,
-            )
-        }
-
     private fun DetailsQuery.asMinimalVtjResponse(): Henkilo = minimalVtjResponse("$requestingUser")
 
     private fun minimalVtjResponse(ssn: String) =
         Henkilo().also { it.henkilotunnus = Henkilo.Henkilotunnus().also { ht -> ht.value = ssn } }
-
-    private fun VtjPerson.toPersonDTO() =
-        PersonDTO(
-            id = PersonId(randomUUID()),
-            duplicateOf = null,
-            ssn = Ssn.parse(socialSecurityNumber),
-            ssnAddingDisabled = false,
-            firstName = firstNames,
-            lastName = lastName,
-            preferredName = "",
-            language = nativeLanguage?.code ?: "fi",
-            email = "example@example.org",
-            phone = "+573601234567",
-            backupPhone = "+573601234569",
-            dateOfBirth = LocalDate.now().minusYears(15),
-            restrictedDetailsEnabled = false,
-            restrictedDetailsEndDate = null,
-            streetAddress = "",
-            postalCode = "",
-            postOffice = "",
-            residenceCode = "",
-            municipalityOfResidence =
-                municipalityOfResidenceSe.takeIf {
-                    it?.isNotEmpty() == true && nativeLanguage?.code == "sv"
-                } ?: municipalityOfResidence ?: "",
-        )
 
     private val validPerson =
         VtjPerson(
@@ -137,5 +98,11 @@ class SoapVtjClientTest {
                 ),
             restrictedDetails = RestrictedDetails(enabled = false),
             nationalities = listOf(Nationality(countryCode = "246", countryName = "Suomi")),
+        )
+
+    private val query =
+        DetailsQuery(
+            requestingUser = EvakaUserId(randomUUID()),
+            ssn = Ssn.parse(validPerson.socialSecurityNumber)!!,
         )
 }

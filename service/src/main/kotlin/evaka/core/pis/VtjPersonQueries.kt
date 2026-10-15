@@ -60,8 +60,8 @@ VALUES (
     ${bind(person.lastName)},
     ${bind(getDobFromSsn(ssn.value))},
     ${bind(person.dateOfDeath)},
-    ${bind(person.languageCode())},
-    ${bind(person.nationalityCodes())},
+    ${bind(person.nativeLanguage?.code ?: "")},
+    ${bind(person.nationalities.map { it.countryCode })},
     ${bind(person.streetAddressByLanguage())},
     ${bind(person.address?.postalCode ?: "")},
     ${bind(person.postOfficeByLanguage())},
@@ -123,8 +123,8 @@ UPDATE person SET
     last_name = ${bind(person.lastName)},
     date_of_birth = ${bind(getDobFromSsn(ssn.value))},
     date_of_death = ${bind(person.dateOfDeath)},
-    language = ${bind(person.languageCode())},
-    nationalities = ${bind(person.nationalityCodes())},
+    language = ${bind(person.nativeLanguage?.code ?: "")},
+    nationalities = ${bind(person.nationalities.map { it.countryCode })},
     street_address = ${bind(person.streetAddressByLanguage())},
     postal_code = ${bind(person.address?.postalCode ?: "")},
     post_office = ${bind(person.postOfficeByLanguage())},
@@ -199,10 +199,6 @@ private fun logChangedFields(old: PersonDTO, new: PersonDTO) {
         logger.info { "Updated person ${old.id} from VTJ, changed fields: $changedFields" }
     }
 }
-
-private fun VtjPerson.languageCode(): String = nativeLanguage?.code ?: ""
-
-private fun VtjPerson.nationalityCodes(): List<String> = nationalities.map { it.countryCode }
 
 private fun VtjPerson.prefersSwedish(): Boolean = nativeLanguage?.code == "sv"
 

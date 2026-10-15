@@ -11,6 +11,8 @@ import evaka.core.PureJdbiTest
 import evaka.core.daycare.getChild
 import evaka.core.identity.Ssn
 import evaka.core.pis.service.blockGuardian
+import evaka.core.pis.service.getChildGuardians
+import evaka.core.pis.service.getGuardianChildIds
 import evaka.core.shared.PersonId
 import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
@@ -288,7 +290,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { it.applyGuardians(child.id, setOf(kept.id, added.id, blocked.id), now) }
 
-        assertEquals(setOf(kept.id, added.id), guardiansOf(child.id))
+        assertEquals(setOf(kept.id, added.id), db.read { it.getChildGuardians(child.id) }.toSet())
         assertNotNull(db.read { it.getChild(child.id) })
         assertEquals(now, db.read { it.getPersonById(child.id) }!!.vtjGuardiansQueried)
     }
@@ -316,7 +318,10 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.applyDependants(guardian.id, setOf(kept.id, added.id, blocked.id), now)
         }
 
-        assertEquals(setOf(kept.id, added.id), dependantsOf(guardian.id))
+        assertEquals(
+            setOf(kept.id, added.id),
+            db.read { it.getGuardianChildIds(guardian.id) }.toSet(),
+        )
         assertNotNull(db.read { it.getChild(added.id) })
         assertEquals(now, db.read { it.getPersonById(guardian.id) }!!.vtjDependantsQueried)
     }
@@ -337,20 +342,8 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         }
 
-        assertEquals(emptySet(), dependantsOf(guardian.id))
+        assertEquals(emptySet(), db.read { it.getGuardianChildIds(guardian.id) }.toSet())
         assertNull(db.read { it.getPersonById(guardian.id) }!!.vtjDependantsQueried)
-    }
-
-    private fun guardiansOf(childId: PersonId): Set<PersonId> = db.read {
-        it.createQuery { sql("SELECT guardian_id FROM guardian WHERE child_id = ${bind(childId)}") }
-            .toSet()
-    }
-
-    private fun dependantsOf(guardianId: PersonId): Set<PersonId> = db.read {
-        it.createQuery {
-                sql("SELECT child_id FROM guardian WHERE guardian_id = ${bind(guardianId)}")
-            }
-            .toSet()
     }
 
     private fun countMessageAccounts(personId: PersonId): Int = db.read {

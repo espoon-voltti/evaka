@@ -54,7 +54,7 @@ class PersonService(private val vtjClient: VtjClient) {
         val person = tx.getPersonById(id) ?: return null
         if (person.ssn == null) return person
         val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, person.ssn))
-        val _ = applyFromVtj(tx, now, vtjPerson)
+        val _ = tx.applyPerson(vtjPerson, now)
         return tx.getPersonById(id)
     }
 
@@ -122,8 +122,8 @@ class PersonService(private val vtjClient: VtjClient) {
                     VtjClient.DetailsQuery(user.evakaUserId, guardian.ssn)
                 )
             val children = fetchRelativesInFull(user, snapshot.relatives)
-            val guardianId = applyFromVtj(tx, now, snapshot.person)
-            val childIds = children.map { applyFromVtj(tx, now, it) }.toSet()
+            val guardianId = tx.applyPerson(snapshot.person, now).id
+            val childIds = children.map { tx.applyPerson(it, now).id }.toSet()
             tx.applyDependants(guardianId, childIds, now)
         }
 
@@ -146,8 +146,8 @@ class PersonService(private val vtjClient: VtjClient) {
             val snapshot =
                 vtjClient.fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, child.ssn))
             val guardians = fetchRelativesInFull(user, snapshot.relatives)
-            val childId = applyFromVtj(tx, now, snapshot.person)
-            val guardianIds = guardians.map { applyFromVtj(tx, now, it) }.toSet()
+            val childId = tx.applyPerson(snapshot.person, now).id
+            val guardianIds = guardians.map { tx.applyPerson(it, now).id }.toSet()
             tx.applyGuardians(childId, guardianIds, now)
         }
 
@@ -184,7 +184,7 @@ class PersonService(private val vtjClient: VtjClient) {
             val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
             if (readonly) return toPreviewPersonDTO(vtjPerson)
 
-            val _ = applyFromVtj(tx, now, vtjPerson)
+            val _ = tx.applyPerson(vtjPerson, now)
             tx.getPersonBySSN(ssn.value).also {
                 audit?.add(listOfNotNull(it?.id))?.addMeta("created", person == null)
             }
@@ -242,12 +242,6 @@ class PersonService(private val vtjClient: VtjClient) {
 
         tx.updatePersonSsnAddingDisabled(personId, disabled)
     }
-
-    private fun applyFromVtj(
-        tx: Database.Transaction,
-        now: HelsinkiDateTime,
-        person: VtjPerson,
-    ): PersonId = tx.applyPerson(person, now).id
 
     private fun fetchRelativesInFull(
         user: AuthenticatedUser,
