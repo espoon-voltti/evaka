@@ -164,14 +164,61 @@ jobs:
           build-contexts:
             customizations=frontend/src/lib-customizations/espoo
 
+      - name: Docker cleanup
+        if: always()
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+
+    outputs:
+      image: ${{ steps.build-single.outputs.image }}
+      image_name: ${{ steps.build-single.outputs.image_name }}
+      builder_image: ${{ steps.builder.outputs.image }}
+      builder_image_name: ${{ steps.builder.outputs.image_name }}
+
+  frontend-multi:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    needs:
+      - cache-bust
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Cache fortawesome
+        id: fortawesome
+        uses: actions/cache@v6
+        with:
+          path: frontend/node_modules
+          key: fortawesome-${{ hashFiles('frontend/bin/unpack-pro-icons.sh') }}
+
+      - name: Configure AWS credentials
+        if: ${{ steps.fortawesome.outputs.cache-hit != 'true' }}
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+
+      - name: Install fortawesome
+        if: ${{ steps.fortawesome.outputs.cache-hit != 'true' }}
+        run: |
+          aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-light-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
+          aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-regular-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
+          aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-solid-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
+          (cd frontend && ./bin/unpack-pro-icons.sh)
+
+      - name: Setup Docker building
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS: false
+
       - name: Build frontend multi image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build-multi
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/frontend
-          cache_from: ${{ steps.builder.outputs.image_cache }}
           path: ./frontend
           target: runtime-multi
           push: ${{ inputs.push || 'true' }}
@@ -186,12 +233,8 @@ jobs:
         uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
     outputs:
-      image: ${{ steps.build-single.outputs.image }}
-      image_name: ${{ steps.build-single.outputs.image_name }}
-      multi_image: ${{ steps.build-multi.outputs.image }}
-      multi_image_name: ${{ steps.build-multi.outputs.image_name }}
-      builder_image: ${{ steps.builder.outputs.image }}
-      builder_image_name: ${{ steps.builder.outputs.image_name }}
+      image: ${{ steps.build-multi.outputs.image }}
+      image_name: ${{ steps.build-multi.outputs.image_name }}
 
   frontend-test:
     needs:
@@ -603,7 +646,6 @@ jobs:
         env:
           TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
           BUILD: "false"
-          FRONTEND_IMAGE: "ghcr.io/espoon-voltti/evaka/frontend"
           SHARD: "${{ matrix.shard }}"
           SHARD_TOTAL: "6"
         run: |
@@ -643,7 +685,7 @@ jobs:
   ecr-push:
     if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
     needs:
-      - frontend
+      - frontend-multi
       - service
       - api-gateway
     runs-on: ubuntu-latest

@@ -8,14 +8,14 @@ version: '3.5'
 
 services:
   evaka-proxy:
-    image: ${FRONTEND_IMAGE:-ghcr.io/espoon-voltti/evaka/frontend-common}:${TAG:-master}
+    image: ${FRONTEND_IMAGE:-ghcr.io/espoon-voltti/evaka/frontend-single}:${TAG:-master}
     build:
       context: ../frontend/
       additional_contexts: # requires docker compose 2.17.0 or newer
         customizations: ../frontend/src/lib-customizations/espoo
       cache_from:
-        - ghcr.io/espoon-voltti/evaka/frontend-common:cache-${CACHE_TAG:-master}
-        - ghcr.io/espoon-voltti/evaka/frontend-common:cache-master
+        - ghcr.io/espoon-voltti/evaka/frontend-single:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/frontend-single:cache-master
     read_only: true
     tmpfs: # In ECS these are disk-backed via Dockerfile VOLUME (ext4 on ephemeral NVMe)
       - /nginx:uid=101,gid=101,size=64m
