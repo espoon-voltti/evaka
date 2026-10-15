@@ -1484,18 +1484,9 @@ sealed interface Action {
                 )
                 .inUnitOfGroup(),
         ),
-        CREATE_CARETAKERS(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup(),
-        ),
-        UPDATE_CARETAKERS(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup(),
-        ),
-        DELETE_CARETAKERS(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup(),
-        ),
+        CREATE_CARETAKERS(HasGlobalRole(ADMIN)),
+        UPDATE_CARETAKERS(HasGlobalRole(ADMIN)),
+        DELETE_CARETAKERS(HasGlobalRole(ADMIN)),
         CREATE_NOTE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(),
