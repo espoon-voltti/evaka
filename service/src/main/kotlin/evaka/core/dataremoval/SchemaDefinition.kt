@@ -129,7 +129,7 @@ sealed interface Table {
  * A table whose rows a child's or an adult's run evaluates and deletes, as opposed to
  * [ExternalTable].
  */
-class HandledTable(
+data class HandledTable(
     override val name: String,
     val handledBy: Handler,
     override val references: List<Reference>,

@@ -43,8 +43,14 @@ private val oneYearAfterLastPlacement = After(oneYear, lastPlacementEnd)
 private val fiveYearsAfterLastPlacement = After(fiveYears, lastPlacementEnd)
 private val tenYearsAfterLastPlacement = After(tenYears, lastPlacementEnd)
 
-/** The tables whose rows the algorithm deletes or waits for, and their expiration rules */
-fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): SchemaDefinition {
+/**
+ * The tables whose rows the algorithm deletes or waits for, and their expiration rules, with the
+ * municipality's overrides applied
+ */
+fun buildDataRetentionSchema(
+    valueDecisionCapacityFactorEnabled: Boolean,
+    overrides: DataRetentionOverrides,
+): SchemaDefinition {
     val tables =
         listOf(
             HandledTable(
@@ -863,7 +869,7 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                     ),
             ),
         )
-    val schema = SchemaDefinition(tables)
+    val schema = SchemaDefinition(overrides.applyTo(tables))
     requireSafetyConditions(schema, valueDecisionCapacityFactorEnabled)
     return schema
 }
@@ -872,6 +878,15 @@ private fun requireSafetyConditions(
     schema: SchemaDefinition,
     valueDecisionCapacityFactorEnabled: Boolean,
 ) {
+    for (name in setOf("koski_study_right", "koski_upload_error", "varda_state")) {
+        val table =
+            requireNotNull(schema.tablesByName[name] as? HandledTable) {
+                "$name holds the sync state of an integration, but it is not declared as a handled table"
+            }
+        require(table.deletedWithParent && schema.parentOf(table) == schema.child) {
+            "$table holds the sync state of an integration, so it must be deleted with its parent ${schema.child}"
+        }
+    }
     for (table in schema.handledTables) {
         // The sync state of each integration is deleted with the child row
         val readingIntegrations = buildSet {

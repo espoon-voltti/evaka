@@ -11,6 +11,7 @@ import evaka.core.ArchiveEnv
 import evaka.core.BucketEnv
 import evaka.core.EvakaEnv
 import evaka.core.TestInvoiceProductProvider
+import evaka.core.dataremoval.DataRetentionOverrides
 import evaka.core.document.archival.ArchivalClient
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.EvakaEmailMessageProvider
@@ -271,6 +272,8 @@ class SharedIntegrationTestConfig {
         EspooIncomeCoefficientMultiplierProvider()
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = TestActionRuleMapping()
+
+    @Bean fun dataRetentionOverrides(): DataRetentionOverrides = DataRetentionOverrides.NONE
 
     @Bean
     fun titaniaEmployeeIdConverter(): TitaniaEmployeeIdConverter =

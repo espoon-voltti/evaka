@@ -554,7 +554,10 @@ class SchemaDefinitionTest {
     }
 
     private val declaredSchema =
-        buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
+        buildDataRetentionSchema(
+            valueDecisionCapacityFactorEnabled = false,
+            overrides = DataRetentionOverrides.NONE,
+        )
 
     @Test
     fun `the declared schema definition is valid and loads every table after the one its primary reference points to`() {
@@ -565,6 +568,61 @@ class SchemaDefinitionTest {
             assert(order.indexOf(declaredSchema.handled(parent)) < order.indexOf(table)) {
                 "$parent must be loaded before $table"
             }
+        }
+    }
+
+    private fun withOverrides(vararg overrides: Pair<String, TableOverride>) =
+        buildDataRetentionSchema(
+            valueDecisionCapacityFactorEnabled = false,
+            DataRetentionOverrides(mapOf(*overrides)),
+        )
+
+    @Test
+    fun `an override replaces the expiration rule and deletedWithParent of the table it names, and keeps its safety conditions`() {
+        val feeDecisionRule = After(oneYear, OwnColumn("created_at", TIMESTAMP_WITH_TIME_ZONE))
+        val backupCareRule = After(oneYear, OwnColumn("end_date"))
+        val schema =
+            withOverrides(
+                "fee_decision" to TableOverride(feeDecisionRule, deletedWithParent = false),
+                "backup_care" to TableOverride(backupCareRule, deletedWithParent = false),
+            )
+        val feeDecision = schema.handled("fee_decision")
+        assertEquals(feeDecisionRule, feeDecision.expirationRule)
+        assertEquals(
+            declaredSchema.handled("fee_decision").financeFreeze,
+            feeDecision.financeFreeze,
+        )
+        assertEquals(setOf(Integration.VARDA), feeDecision.safeForIntegrations)
+        assertEquals(backupCareRule, schema.handled("backup_care").expirationRule)
+        assertEquals(false, schema.handled("backup_care").deletedWithParent)
+    }
+
+    @Test
+    fun `an override names a handled table`() {
+        invalid("not declared as handled tables: [no_such_table]") {
+            withOverrides("no_such_table" to TableOverride(Never, deletedWithParent = false))
+        }
+        invalid("not declared as handled tables: [message_thread]") {
+            withOverrides("message_thread" to TableOverride(Never, deletedWithParent = false))
+        }
+    }
+
+    @Test
+    fun `an overridden table is validated like a declared one`() {
+        invalid("Always is the only rule") {
+            withOverrides("child_images" to TableOverride(Always, deletedWithParent = false))
+        }
+        invalid("fee_decision_child, so it must wait for the finance freeze") {
+            withOverrides("fee_decision_child" to TableOverride(Never, deletedWithParent = false))
+        }
+        invalid("guardian, so it must wait for the finance thread period") {
+            withOverrides("guardian" to TableOverride(Never, deletedWithParent = false))
+        }
+        invalid("only one of them has independent rows") {
+            withOverrides("child_document" to TableOverride(Never, deletedWithParent = true))
+        }
+        invalid("varda_state holds the sync state of an integration") {
+            withOverrides("varda_state" to TableOverride(Never, deletedWithParent = false))
         }
     }
 }

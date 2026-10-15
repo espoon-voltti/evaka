@@ -11,6 +11,7 @@ import evaka.core.bi.BiExportClient
 import evaka.core.bi.BiExportConfig
 import evaka.core.bi.BiExportJob
 import evaka.core.bi.BiTable
+import evaka.core.dataremoval.DataRetentionOverrides
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.holidayperiod.QuestionnaireType
@@ -151,6 +152,8 @@ class OuluConfig {
                     "The sender has deleted this message. No action is needed on your part.",
             deletedMessagePlaceholderTitle = "Viesti on poistettu / Message was deleted",
         )
+
+    @Bean fun dataRetentionOverrides(): DataRetentionOverrides = DataRetentionOverrides.NONE
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = OuluActionRuleMapping()
 

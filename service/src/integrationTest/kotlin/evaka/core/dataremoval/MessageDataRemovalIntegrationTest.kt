@@ -554,7 +554,10 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
         )
 
     private val retentionSchema =
-        buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
+        buildDataRetentionSchema(
+            valueDecisionCapacityFactorEnabled = false,
+            overrides = DataRetentionOverrides.NONE,
+        )
 
     private fun runRetention(personId: PersonId) =
         runDataRetention(
