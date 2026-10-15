@@ -211,12 +211,12 @@ FOR UPDATE OF mt
 }
 
 /**
- * A finance thread concerns every child connected to its citizens. It expires once the last
- * placement of those children has ended before [placementExpireDate], if they have any, and it has
- * had no messages since [expiresBefore].
+ * A finance thread concerns every child connected to its citizens, which [connectedChildren]
+ * selects for the citizen `person`. It expires once the last placement of those children has ended
+ * before [placementExpireDate], if they have any, and it has had no messages since [expiresBefore].
  */
 fun Database.Transaction.deleteExpiredFinanceThreads(
-    financeConnectionsQuery: QuerySql,
+    connectedChildren: QuerySql,
     placementExpireDate: LocalDate,
     expiresBefore: HelsinkiDateTime,
     limit: Int,
@@ -224,9 +224,7 @@ fun Database.Transaction.deleteExpiredFinanceThreads(
     val threadIds = createQuery {
         sql(
             """
-WITH finance_connection AS (
-    ${subquery(financeConnectionsQuery)}
-), finance_thread AS (
+WITH finance_thread AS (
     SELECT DISTINCT m.thread_id
     FROM message_account acc
     JOIN message m ON m.sender_id = acc.id
@@ -240,8 +238,9 @@ LEFT JOIN LATERAL (
     FROM message m
     JOIN message_recipients mr ON mr.message_id = m.id
     JOIN message_account acc ON acc.id = mr.recipient_id AND acc.type = 'CITIZEN'
-    JOIN finance_connection fc ON fc.person_id = acc.person_id
-    JOIN placement pl ON pl.child_id = fc.child_id
+    JOIN person ON person.id = acc.person_id
+    JOIN LATERAL (${subquery(connectedChildren)}) connected ON true
+    JOIN placement pl ON pl.child_id = connected.child_id
     WHERE m.thread_id = mt.id
 ) children ON true
 WHERE

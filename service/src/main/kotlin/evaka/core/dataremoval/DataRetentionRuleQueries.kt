@@ -168,20 +168,32 @@ WHERE fc.id = ANY(${bind(ids)})
             .toSet<UUID>()
     }
 
+/** Expects the surrounding query to name a row of the partnership `partnership` */
+private val fridgePartnerRelevantChildren = QuerySql {
+    sql(
+        """
+SELECT fc.child_id
+FROM fridge_partner fp
+JOIN fridge_child fc
+  ON fc.head_of_child = fp.person_id
+  AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp.start_date, fp.end_date, '[]')
+WHERE fp.partnership_id = partnership.partnership_id
+"""
+    )
+}
+
 /** The end of the last placement among the children of either partner during the partnership */
 val fridgePartnerRelevantPlacementEnd =
     DateSource.Custom(mayReturnNoDate = true) { tx, ids ->
         tx.createQuery {
                 sql(
                     """
-SELECT fp.partnership_id AS id, max(p.end_date) AS date
-FROM fridge_partner fp
-JOIN fridge_child fc
-  ON fc.head_of_child = fp.person_id
-  AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp.start_date, fp.end_date, '[]')
-JOIN placement p ON p.child_id = fc.child_id
-WHERE fp.partnership_id = ANY(${bind(ids)})
-GROUP BY fp.partnership_id
+SELECT partnership.partnership_id AS id, max(p.end_date) AS date
+FROM fridge_partner partnership
+JOIN LATERAL (${subquery(fridgePartnerRelevantChildren)}) relevant ON true
+JOIN placement p ON p.child_id = relevant.child_id
+WHERE partnership.partnership_id = ANY(${bind(ids)})
+GROUP BY partnership.partnership_id
 """
                 )
             }
@@ -193,18 +205,51 @@ val notWhileFridgePartnerRelevantApplicationPending =
         tx.createQuery {
                 sql(
                     """
-SELECT DISTINCT fp.partnership_id
-FROM fridge_partner fp
-JOIN fridge_child fc
-  ON fc.head_of_child = fp.person_id
-  AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp.start_date, fp.end_date, '[]')
-JOIN application a ON a.child_id = fc.child_id AND a.status = ANY(${bind(ApplicationStatus.pending)})
-WHERE fp.partnership_id = ANY(${bind(ids)})
+SELECT DISTINCT partnership.partnership_id
+FROM fridge_partner partnership
+JOIN LATERAL (${subquery(fridgePartnerRelevantChildren)}) relevant ON true
+JOIN application a ON a.child_id = relevant.child_id AND a.status = ANY(${bind(ApplicationStatus.pending)})
+WHERE partnership.partnership_id = ANY(${bind(ids)})
 """
                 )
             }
             .toSet<UUID>()
     }
+
+/**
+ * The children connected to a person through finance. For parentships and partnerships, these are
+ * the children whose placements their rules wait for. The finance thread removal waits for the
+ * placements of these children, so each of these tables must wait for them as long. Expects the
+ * surrounding query to name the person `person`.
+ */
+val financeConnectedChildren = QuerySql {
+    sql(
+        """
+SELECT g.child_id FROM guardian g WHERE g.guardian_id = person.id
+
+UNION ALL
+
+SELECT foster.child_id FROM foster_parent foster WHERE foster.parent_id = person.id
+
+UNION ALL
+
+SELECT relevant.child_id
+FROM fridge_child fc
+JOIN LATERAL (${subquery(fridgeChildRelevantChildren)}) relevant ON true
+WHERE fc.head_of_child = person.id
+
+UNION ALL
+
+SELECT relevant.child_id
+FROM fridge_partner partnership
+JOIN LATERAL (${subquery(fridgePartnerRelevantChildren)}) relevant ON true
+WHERE partnership.person_id = person.id
+"""
+    )
+}
+
+/** The tables [financeConnectedChildren] reads. Keep in sync by hand. */
+val FINANCE_CONNECTION_TABLES = setOf("guardian", "foster_parent", "fridge_child", "fridge_partner")
 
 val notWhileApplicationPending =
     NotWhile("the application is pending") { tx, ids ->

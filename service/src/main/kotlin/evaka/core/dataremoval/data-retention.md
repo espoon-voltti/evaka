@@ -282,12 +282,11 @@ A thread that records children expires by their placements, so the placements mu
 
 The message removal deletes a thread about an application only after the application is gone, together with the application notes that copy the thread's messages. The thread does not hold the application: `message_thread.application_id` is an optional reference, which is cleared when the application is deleted. The notes are deleted with their parent application.
 
-A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to a child as the child's guardian or foster parent, or through a parentship or a partnership. These rows are not held for the threads, since they normally expire only after the placements ended even longer ago:
+A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to the children they are a guardian or a foster parent of, and to the children whose placements the rules of their parentships and partnerships wait for (section 6.4). The message removal finds the latter with the same queries as those rules.
 
-- `guardian` and `foster_parent` are deleted with their parent `child`, so a guardian or a foster parent stays connected until the child is deleted, after the placements of the child ended ten years ago.
-- A parentship or a partnership expires once the placements of the children it affects ended longer ago than the finance freeze, five years and a margin of one month.
+These rows are not held for the threads. Instead, each of them waits until the five years of the threads have passed the same placements. The period is written into the rules of `fridge_child` and `fridge_partner`, and into the rule of `placement` for `guardian` and `foster_parent`, which are deleted with their parent `child` and so with the placements. A test checks this against a list of the tables that connect a recipient to the children, kept by hand next to the query that finds them. Deleting such a row therefore does not make a thread expire earlier.
 
-Deleting such a row therefore does not make a thread expire earlier. The exception is a parentship or a partnership that itself ended longer ago than the finance freeze. It expires even if the child is still placed, and the finance thread of that former head of the family or partner then expires by its messages alone. This is in line with the finance freeze, since no decisions are generated for the time of that parentship or partnership anymore.
+The exception is a parentship or a partnership that itself ended longer ago than the finance freeze. It expires even if the children are still placed, and the finance thread of that former head of the family or partner then no longer waits for them. This is in line with the finance freeze, since no decisions are generated for the time of that parentship or partnership anymore.
 
 Every person gets a citizen message account when the person is created. `message_account` is handled by adult and deleted with its parent `person`, so the account is deleted together with the person row.
 
@@ -295,7 +294,7 @@ A message the citizen sent holds the account. `message` and `message_content` ar
 
 Messages the citizen only received do not hold the account. When the account is deleted, the database also deletes the rows that connect it to the messages and threads, and its folders and drafts (section 5.3). The threads themselves stay for as long as the message removal keeps them for the other participants.
 
-Deleting these rows does not make a finance thread expire earlier. A finance thread finds its children through the connections of its recipients listed above, and a person row is deleted only after the person's own connections are gone. By then, the deleted rows no longer lead the thread to any child.
+Deleting these rows does not make a finance thread expire earlier. A finance thread finds its children through the connections of its recipients described above, and a person row is deleted only after the person's own connections are gone. By then, the deleted rows no longer lead the thread to any child.
 
 ## 6. Special cases
 

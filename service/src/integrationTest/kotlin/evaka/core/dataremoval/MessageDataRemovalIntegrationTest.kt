@@ -1218,6 +1218,57 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
     }
 
     @Test
+    fun `deleteExpiredFinanceThreads keeps a thread while a foster child of its citizen is in care`() {
+        // Only the foster parenthood connects the citizen to the child
+        val fosterParent = DevPerson()
+        db.transaction { tx ->
+            tx.insert(fosterParent, DevPersonType.ADULT)
+            tx.insert(
+                DevFosterParent(
+                    childId = child.id,
+                    parentId = fosterParent.id,
+                    validDuring = ongoingPlacementPeriod.asDateRange(),
+                    modifiedAt = now,
+                    modifiedBy = admin.evakaUserId,
+                )
+            )
+        }
+        insertGroupPlacement(child.id, ongoingPlacementPeriod)
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo, recipient = fosterParent.id)
+
+        deleteExpiredFinanceThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads keeps a thread while a child in the family its citizen heads is in care`() {
+        // Only the parentship connects the citizen to the child
+        val headOfFamily = DevPerson()
+        val childInFamily = DevPerson()
+        db.transaction { tx ->
+            tx.insert(headOfFamily, DevPersonType.ADULT)
+            tx.insert(childInFamily, DevPersonType.CHILD)
+            tx.insert(
+                DevFridgeChild(
+                    childId = childInFamily.id,
+                    headOfChild = headOfFamily.id,
+                    startDate = ongoingPlacementPeriod.start,
+                    endDate = ongoingPlacementPeriod.end,
+                )
+            )
+        }
+        insertGroupPlacement(childInFamily.id, ongoingPlacementPeriod)
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo, recipient = headOfFamily.id)
+
+        deleteExpiredFinanceThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
     fun `deleteExpiredFinanceThreads keeps a thread while a child of the partner of its citizen is in care`() {
         // The citizen has no placed child of their own, so only the family of the partner keeps
         // the thread
@@ -1250,6 +1301,42 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
 
         assertEquals(1, rowCount("message_thread"))
         assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads doesn't wait for a child in care who was in the family of the partner of its citizen only before the partnership`() {
+        // No finance decision of the citizen concerns the child, and neither does the rule of the
+        // partnership wait for the child
+        val partner = DevPerson()
+        val partnersFormerChild = DevPerson()
+        val partnershipStart = today.minusYears(2)
+        db.transaction { tx ->
+            tx.insert(partner, DevPersonType.ADULT)
+            tx.insert(partnersFormerChild, DevPersonType.CHILD)
+            tx.insert(
+                DevFridgeChild(
+                    childId = partnersFormerChild.id,
+                    headOfChild = partner.id,
+                    startDate = ongoingPlacementPeriod.start,
+                    endDate = partnershipStart.minusDays(1),
+                )
+            )
+            tx.insert(
+                DevFridgePartnership(
+                    first = partner.id,
+                    second = guardian.id,
+                    startDate = partnershipStart,
+                    createdAt = now,
+                )
+            )
+        }
+        insertGroupPlacement(partnersFormerChild.id, ongoingPlacementPeriod)
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo)
+
+        deleteExpiredFinanceThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
     }
 
     @Test
