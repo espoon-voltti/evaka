@@ -15,6 +15,7 @@ import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.insertAttachment
 import evaka.core.messaging.MessageController
+import evaka.core.messaging.MessageControllerCitizen
 import evaka.core.messaging.MessageRecipient
 import evaka.core.messaging.MessageService
 import evaka.core.messaging.MessageType
@@ -42,6 +43,7 @@ import evaka.core.shared.PlacementId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
 import evaka.core.shared.dev.DevCareArea
@@ -83,6 +85,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Autowired private lateinit var dataRemovalService: DataRemovalService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var messageController: MessageController
+    @Autowired private lateinit var messageControllerCitizen: MessageControllerCitizen
     @Autowired private lateinit var messageService: MessageService
     @Autowired private lateinit var placementController: PlacementController
 
@@ -271,6 +274,17 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             sender.account,
             threadId,
             ReplyToMessageBody(content = "reply", recipientAccountIds = recipients),
+        )
+        runSendingJobs()
+    }
+
+    private fun replyAsGuardian(threadId: MessageThreadId, sentAt: HelsinkiDateTime) {
+        messageControllerCitizen.replyToThread(
+            dbInstance(),
+            AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG),
+            MockEvakaClock(sentAt),
+            threadId,
+            ReplyToMessageBody(content = "reply", recipientAccountIds = setOf(staffSender.account)),
         )
         runSendingJobs()
     }
@@ -935,6 +949,57 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
         runRetention(child.id)
 
         assertEquals(false, personExists(child.id))
+    }
+
+    @Test
+    fun `runDataRetention deletes a citizen's message account with the person, and the threads of the messages they received stay`() {
+        val recipient = insertAdultWithoutChildren()
+        setCreatedLongAgo(recipient)
+        sendFinanceMessage(recipient = recipient)
+        val recipientAccount = db.read { it.getCitizenMessageAccount(recipient) }
+        assertEquals(
+            1,
+            rowCount("message_thread_participant WHERE participant_id = '${recipientAccount.raw}'"),
+        )
+
+        runRetention(recipient)
+
+        assertEquals(false, personExists(recipient))
+        assertEquals(1, rowCount("message_thread"))
+        // The recipient's rows in the thread go with the account
+        assertEquals(
+            0,
+            rowCount("message_recipients WHERE recipient_id = '${recipientAccount.raw}'"),
+        )
+        assertEquals(
+            0,
+            rowCount("message_thread_participant WHERE participant_id = '${recipientAccount.raw}'"),
+        )
+    }
+
+    @Test
+    fun `runDataRetention keeps a citizen's message account while a message they sent exists, until deleteExpiredRegularThreads deletes its thread`() {
+        val leftCareOverTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
+        insertGroupPlacement(child.id, leftCareOverTenYearsAgo)
+        setCreatedLongAgo(child.id, guardian.id)
+        val sentAt = HelsinkiDateTime.of(leftCareOverTenYearsAgo.start.plusDays(1), LocalTime.NOON)
+        val threadId = sendMessage(sentAt = sentAt, type = MessageType.MESSAGE).threadIds.single()
+        replyAsGuardian(threadId, sentAt.plusDays(1))
+
+        runRetention(child.id)
+        runRetention(guardian.id)
+
+        // The reply holds the account, while the thread and the guardianship hold the child
+        val held = heldBy(guardian.id)
+        assertContains(held, "message.sender_id")
+        assertContains(held, "message_content.author_id")
+        assertEquals(true, personExists(guardian.id))
+
+        deleteExpiredRegularThreads()
+        runRetention(child.id)
+        runRetention(guardian.id)
+
+        assertEquals(false, personExists(guardian.id))
     }
 
     @Test
