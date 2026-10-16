@@ -22,6 +22,7 @@ import evaka.core.pis.service.PersonPatch
 import evaka.core.pis.service.PersonSensitiveDetails
 import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.PersonWithChildrenDTO
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.pis.service.createAddressPagePdf
 import evaka.core.pis.service.getBlockedGuardians
@@ -60,6 +61,7 @@ class PersonController(
     private val mergeService: MergeService,
     private val accessControl: AccessControl,
     private val fridgeFamilyService: FridgeFamilyService,
+    private val vtjSyncService: VtjSyncService,
     private val pdfGenerator: PdfGenerator,
     private val evakaEnv: EvakaEnv,
 ) {
@@ -561,7 +563,7 @@ class PersonController(
                         personId,
                     )
                 }
-                fridgeFamilyService.updateGuardianOrChildFromVtj(dbc, user, clock, personId)
+                fridgeFamilyService.refreshFamily(dbc, user, clock, personId)
             }
             .also { Audit.PersonVtjFamilyUpdate.log(targetId = AuditId(personId)) }
     }
@@ -589,22 +591,17 @@ class PersonController(
                     tx.blockGuardian(childId, body.guardianId)
                 } else {
                     tx.unblockGuardian(childId, body.guardianId)
-                    val _ =
-                        personService.getGuardians(
-                            tx,
-                            user,
-                            clock.now(),
-                            childId,
-                            forceRefresh = true,
-                        )
                 }
             }
+            Audit.PersonUpdateEvakaRights.log(
+                targetId = AuditId(childId),
+                objectId = AuditId(body.guardianId),
+                meta = mapOf("denied" to body.denied),
+            )
+            if (!body.denied) {
+                vtjSyncService.refreshPerson(dbc, user, clock, childId)
+            }
         }
-        Audit.PersonUpdateEvakaRights.log(
-            targetId = AuditId(childId),
-            objectId = AuditId(body.guardianId),
-            meta = mapOf("denied" to body.denied),
-        )
     }
 
     @GetMapping("/{guardianId}/address-page/download", produces = [MediaType.APPLICATION_PDF_VALUE])

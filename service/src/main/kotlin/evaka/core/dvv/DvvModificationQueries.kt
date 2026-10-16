@@ -69,6 +69,17 @@ WHERE social_security_number = ANY (${bind(ssns)})
         .toMap { columnPair("social_security_number", "id") }
 }
 
+fun Database.Read.getSsnsOfPersons(ids: Collection<PersonId>): List<String> = createQuery {
+    sql(
+        """
+SELECT social_security_number
+FROM person
+WHERE id = ANY (${bind(ids)}) AND social_security_number IS NOT NULL
+"""
+    )
+}
+    .toList()
+
 data class DvvModificationToken(
     val token: String,
     val nextToken: String,

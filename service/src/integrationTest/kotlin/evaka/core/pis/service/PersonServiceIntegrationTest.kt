@@ -6,14 +6,19 @@ package evaka.core.pis.service
 
 import evaka.core.PureJdbiTest
 import evaka.core.identity.Ssn
+import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
@@ -24,6 +29,7 @@ import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -31,6 +37,8 @@ import org.junit.jupiter.api.assertThrows
 class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
+    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private lateinit var vtjSyncService: VtjSyncService
     private lateinit var personService: PersonService
 
     val user = AuthenticatedUser.SystemInternalUser
@@ -86,20 +94,26 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(testPersonDependantChild, DevPersonType.CHILD)
         }
         MockVtjSoapTransport.resetQueryCounts()
-        personService = PersonService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()))
+        val vtjClient = SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper())
+        asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
+        vtjSyncService = VtjSyncService(vtjClient, asyncJobRunner)
+        personService = PersonService(vtjClient, vtjSyncService)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        asyncJobRunner.close()
     }
 
     @Test
-    fun `getUpToDatePersonFromVtj fetches person vtj info only once`() {
+    fun `refreshPerson fetches the basic details of a leaf adult only once`() {
         MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(testPersonWithoutVtjChildren)
-        db.transaction {
-            personService.getUpToDatePersonFromVtj(
-                it,
-                user,
-                HelsinkiDateTime.now(),
-                testPersonWithoutVtjChildren.id,
-            )
-        }
+        vtjSyncService.refreshPerson(
+            db,
+            user,
+            MockEvakaClock(now),
+            testPersonWithoutVtjChildren.id,
+        )
         assertEquals(
             1,
             MockVtjSoapTransport.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren),
@@ -148,6 +162,47 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `addSsn applies the death effects when VTJ reports a date of death`() {
+        val dateOfDeath = LocalDate.of(2026, 2, 1)
+        val person = DevPerson(ssn = null)
+        val child = DevPerson(ssn = null, dateOfBirth = LocalDate.of(2020, 1, 1))
+        val vtjRecord = DevPerson(ssn = "070644-937X", dateOfDeath = dateOfDeath)
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevParentship(
+                    childId = child.id,
+                    headOfChildId = person.id,
+                    startDate = LocalDate.of(2020, 1, 1),
+                    endDate = LocalDate.of(2037, 12, 31),
+                )
+            )
+        }
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(vtjRecord)
+
+        db.transaction {
+            personService.addSsn(it, user, now, person.id, Ssn.parse(vtjRecord.ssn!!)!!)
+        }
+
+        db.read { tx ->
+            assertEquals(
+                listOf(dateOfDeath),
+                tx.getParentships(headOfChildId = person.id, childId = null).map { it.endDate },
+            )
+            assertEquals(
+                2,
+                tx.createQuery {
+                        sql(
+                            "SELECT count(*) FROM async_job WHERE type = 'GenerateFinanceDecisions'"
+                        )
+                    }
+                    .exactlyOne<Int>(),
+            )
+        }
+    }
+
+    @Test
     fun `addSsn fails when VTJ returns a different SSN than the requested one`() {
         val person = DevPerson(ssn = null)
         db.transaction { it.insert(person, DevPersonType.ADULT) }
@@ -169,7 +224,10 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertThrows<BadRequest> {
             db.transaction {
-                PersonService(vtjClientReturningAnotherSsn)
+                PersonService(
+                        vtjClientReturningAnotherSsn,
+                        VtjSyncService(vtjClientReturningAnotherSsn, asyncJobRunner),
+                    )
                     .addSsn(it, user, now, person.id, requestedSsn)
             }
         }

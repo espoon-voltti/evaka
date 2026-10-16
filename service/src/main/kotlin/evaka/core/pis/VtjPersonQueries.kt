@@ -18,6 +18,7 @@ import evaka.core.pis.service.replaceGuardianChildren
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.dto.VtjPerson
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -179,6 +180,78 @@ fun Database.Transaction.applyDependants(
         "Created or replaced guardian $guardianId children as $allowed (added ${changes.added}, removed ${changes.removed})"
     }
 }
+
+fun Database.Transaction.clearDependantsSynced(personId: PersonId) = execute {
+    sql("UPDATE person SET vtj_dependants_queried = NULL WHERE id = ${bind(personId)}")
+}
+
+/**
+ * A person who should have synced dependants: a citizen user, or a head of family or a partner in a
+ * current fridge family.
+ */
+private fun dependantSyncPerson(today: LocalDate) = Predicate {
+    where(
+        """
+EXISTS (SELECT FROM citizen_user cu WHERE cu.id = $it.id)
+OR EXISTS (
+    SELECT FROM fridge_child fc
+    WHERE fc.head_of_child = $it.id AND NOT fc.conflict
+      AND ${bind(today)} BETWEEN fc.start_date AND fc.end_date
+)
+OR EXISTS (
+    SELECT FROM fridge_partner fp
+    WHERE fp.person_id = $it.id AND NOT fp.conflict
+      AND ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity')
+)
+"""
+    )
+}
+
+/**
+ * A minor with an SSN who has a placement that has not ended, or an application that is not in a
+ * final state.
+ */
+private fun guardianSyncChild(today: LocalDate) = Predicate {
+    where(
+        """
+$it.social_security_number IS NOT NULL
+AND $it.date_of_birth + interval '18 years' > ${bind(today)}
+AND (
+    EXISTS (SELECT FROM placement pl WHERE pl.child_id = $it.id AND pl.end_date >= ${bind(today)})
+    OR EXISTS (
+        SELECT FROM application a
+        WHERE a.child_id = $it.id
+          AND a.status NOT IN ('ACTIVE', 'REJECTED', 'CANCELLED', 'TERMINATED', 'DEPRECATED')
+    )
+)
+"""
+    )
+}
+
+fun Database.Read.isDependantSyncPerson(personId: PersonId, today: LocalDate): Boolean =
+    createQuery {
+        sql(
+            """
+SELECT EXISTS (
+    SELECT FROM person p
+    WHERE p.id = ${bind(personId)} AND ${predicate(dependantSyncPerson(today).forTable("p"))}
+)
+"""
+        )
+    }
+    .exactlyOne()
+
+fun Database.Read.isGuardianSyncChild(childId: ChildId, today: LocalDate): Boolean = createQuery {
+    sql(
+        """
+SELECT EXISTS (
+    SELECT FROM person p
+    WHERE p.id = ${bind(childId)} AND ${predicate(guardianSyncChild(today).forTable("p"))}
+)
+"""
+    )
+}
+    .exactlyOne()
 
 private fun Database.Transaction.initChildIfNotExists(childId: ChildId, now: HelsinkiDateTime) {
     if (getChild(childId) == null) {
