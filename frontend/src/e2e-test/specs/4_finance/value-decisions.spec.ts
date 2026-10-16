@@ -171,6 +171,29 @@ test.describe('Value decisions', () => {
     await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(1)
   })
 
+  test('Unit filter is kept when returning to value decisions from another tab', async () => {
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
+    await valueDecisionsPage.searchButton.click()
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(2)
+
+    await valueDecisionsPage.unitFilter.fillAndSelectFirst(testDaycare.name)
+    await valueDecisionsPage.searchButton.click()
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(1)
+
+    // remounts the filters, which re-runs the unit validity check against the unit list
+    const financePage = new FinancePage(page)
+    await financePage.selectFeeDecisionsTab()
+    await expect(page.findByDataQa('fee-decisions-page')).toBeVisible()
+    valueDecisionsPage = await financePage.selectValueDecisionsTab()
+
+    await expect(valueDecisionsPage.unitFilter.find('input')).toHaveValue(
+      testDaycare.name
+    )
+    await valueDecisionsPage.searchButton.click()
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(1)
+  })
+
   test('Navigate to the decision details page', async () => {
     valueDecisionsPage =
       await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)

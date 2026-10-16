@@ -65,20 +65,15 @@ export default React.memo(function VoucherValueDecisionFilters() {
     [searchFilters.financeDecisionHandlerId] // oxlint-disable-line react-hooks/exhaustive-deps
   )
 
-  // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {
     if (
-      units
-        .map(
-          (xs) =>
-            !!searchFilters.unit &&
-            xs.map(({ id }) => id).includes(searchFilters.unit)
-        )
-        .getOrElse(false)
+      searchFilters.unit &&
+      units.isSuccess &&
+      !units.value.map(({ id }) => id).includes(searchFilters.unit)
     ) {
       setSearchFilters((filters) => ({ ...filters, unit: undefined }))
     }
-  }, [units]) // oxlint-disable-line react-hooks/exhaustive-deps
+  }, [searchFilters, setSearchFilters, units])
 
   const toggleArea = useCallback(
     (code: string) => () => {
