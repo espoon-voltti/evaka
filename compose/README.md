@@ -140,7 +140,7 @@ To run tests inside `docker compose` locally.
 
 To update Playwright, modify the version in `frontend/package.json` and generate `frontend/yarn.lock`. The updated version will be automatically used in E2E tests.
 
-The E2E resources will be installed on every run and it always uses what is specified in `yarn.lock`. The dependencies will be cached in the new E2E image when changes are merged into the master-branch and CI is completed.
+The E2E image contains the dependencies and browsers of the `frontend/yarn.lock` it was built from. A run reuses them when the checked-out `frontend/yarn.lock` is identical, and otherwise installs what `yarn.lock` specifies. The E2E image is rebuilt nightly from the master-branch, so a dependency change is installed on every run until the next rebuild.
 
 #### Updating E2E Image
 

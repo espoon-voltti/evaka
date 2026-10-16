@@ -69,7 +69,10 @@ import software.amazon.awssdk.http.SdkHttpConfigurationOption
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
+import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException
+import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
+import software.amazon.awssdk.services.s3.model.S3Exception
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.utils.AttributeMap
 import tools.jackson.databind.json.JsonMapper
@@ -80,52 +83,91 @@ class TestDataSource(pool: HikariDataSource) : DataSource by pool
 private val globalLock = object {}
 private var testDataSource: TestDataSource? = null
 
+/**
+ * Id of the Gradle test worker when the integrationTest task runs more than one fork, so that every
+ * fork can use its own database and trevaka export bucket. Null in a single-fork run.
+ */
+val parallelTestWorkerId: Int? =
+    System.getProperty("evaka.integration_test.forks")
+        ?.toInt()
+        ?.takeIf { it > 1 }
+        ?.let { requireNotNull(System.getProperty("org.gradle.test.worker")).toInt() }
+
 private val dbPort = System.getenv("EVAKA_DATABASE_PORT")?.toIntOrNull() ?: 5432
-private val dbUrl = "jdbc:postgresql://localhost:$dbPort/evaka_it"
+private val dbName = "evaka_it" + (parallelTestWorkerId?.let { "_$it" } ?: "")
+private val dbUrl = "jdbc:postgresql://localhost:$dbPort/$dbName"
+
+private fun superuserDataSource(database: String) =
+    PGSimpleDataSource().apply {
+        setUrl("jdbc:postgresql://localhost:$dbPort/$database")
+        user = "evaka_it"
+        password = "evaka_it"
+    }
+
+private fun migrateDatabase() {
+    Flyway.configure()
+        .apply {
+            pluginRegister
+                .getExact(PostgreSQLConfigurationExtension::class.java)
+                .isTransactionalLock = false
+        }
+        .validateMigrationNaming(true)
+        .dataSource(
+            PGSimpleDataSource().apply {
+                setUrl(dbUrl)
+                user = "evaka_migration_local"
+                password = "flyway"
+            }
+        )
+        .placeholders(
+            mapOf(
+                "application_user" to "evaka_application_local",
+                "migration_user" to "evaka_migration_local",
+            )
+        )
+        .load()
+        .run { migrate() }
+}
+
+private fun createTestDataSource(): TestDataSource {
+    if (parallelTestWorkerId != null) {
+        // Mirrors compose/db/reset-it-db.sh, which recreates the database of a single-fork run
+        Database(Jdbi.create(superuserDataSource("postgres")), noopTracer()).connect { db ->
+            db.executeOutsideTransaction { sql("DROP DATABASE IF EXISTS \"$dbName\" WITH (FORCE)") }
+            db.executeOutsideTransaction { sql("CREATE DATABASE \"$dbName\" OWNER evaka_it") }
+            db.executeOutsideTransaction {
+                sql(
+                    "GRANT ALL PRIVILEGES ON DATABASE \"$dbName\" TO evaka_migration_role_local WITH GRANT OPTION"
+                )
+            }
+        }
+        Database(Jdbi.create(superuserDataSource(dbName)), noopTracer()).connect { db ->
+            db.executeOutsideTransaction {
+                sql("GRANT ALL ON SCHEMA public TO evaka_migration_role_local")
+            }
+        }
+    }
+    migrateDatabase()
+    val pool =
+        HikariDataSource(
+            HikariConfig().apply {
+                jdbcUrl = dbUrl
+                username = "evaka_it"
+                password = "evaka_it"
+            }
+        )
+    Database(Jdbi.create(pool), noopTracer()).connect { db ->
+        db.transaction { tx ->
+            tx.runSqlScript("dev-data/reset-database.sql")
+            tx.resetDatabase()
+        }
+    }
+    return TestDataSource(pool)
+}
 
 fun getTestDataSource(municipality: String? = null): TestDataSource =
     synchronized(globalLock) {
-        testDataSource
-            ?: TestDataSource(
-                    HikariDataSource(
-                            HikariConfig().apply {
-                                jdbcUrl = dbUrl
-                                username = "evaka_it"
-                                password = "evaka_it"
-                            }
-                        )
-                        .also {
-                            Flyway.configure()
-                                .apply {
-                                    pluginRegister
-                                        .getExact(PostgreSQLConfigurationExtension::class.java)
-                                        .isTransactionalLock = false
-                                }
-                                .validateMigrationNaming(true)
-                                .dataSource(
-                                    PGSimpleDataSource().apply {
-                                        setUrl(dbUrl)
-                                        user = "evaka_migration_local"
-                                        password = "flyway"
-                                    }
-                                )
-                                .placeholders(
-                                    mapOf(
-                                        "application_user" to "evaka_application_local",
-                                        "migration_user" to "evaka_migration_local",
-                                    )
-                                )
-                                .load()
-                                .run { migrate() }
-                            Database(Jdbi.create(it), noopTracer()).connect { db ->
-                                db.transaction { tx ->
-                                    tx.runSqlScript("dev-data/reset-database.sql")
-                                    tx.resetDatabase()
-                                }
-                            }
-                        }
-                )
-                .also { testDataSource = it }
+        testDataSource ?: createTestDataSource().also { testDataSource = it }
     }
 
 @TestConfiguration
@@ -161,7 +203,12 @@ class SharedIntegrationTestConfig {
         val existingBuckets = client.listBuckets().buckets().map { it.name()!! }
         for (bucket in env.allBuckets().filterNot { existingBuckets.contains(it) }) {
             val request = CreateBucketRequest.builder().bucket(bucket).build()
-            client.createBucket(request)
+            try {
+                client.createBucket(request)
+            } catch (e: S3Exception) {
+                if (e !is BucketAlreadyOwnedByYouException && e !is BucketAlreadyExistsException)
+                    throw e
+            }
         }
         return client
     }
