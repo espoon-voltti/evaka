@@ -55,6 +55,7 @@ import evaka.core.varda.freezeVardaSync
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
+import java.time.Period
 import java.util.UUID
 import org.springframework.stereotype.Service
 
@@ -65,6 +66,12 @@ private val logger = KotlinLogging.logger {}
  * hold the data until returning to early childhood education or preschool is no longer realistic.
  */
 const val SAFE_DATA_REMOVAL_AGE: Long = 10
+
+/**
+ * A finance thread is kept for this long after the placements of the children connected to its
+ * recipients ended
+ */
+val FINANCE_THREAD_PLACEMENT_PERIOD: Period = Period.ofYears(5)
 
 private fun childPastSafeDataRemovalAge(today: LocalDate) = Predicate {
     where(
@@ -212,7 +219,7 @@ class DataRemovalService(
 
         deleteExpiredChildImages(dbc, now, expireDate = today.minusMonths(1), limit)
 
-        val financePlacementExpireDate = today.minusYears(5)
+        val financePlacementExpireDate = today.minus(FINANCE_THREAD_PLACEMENT_PERIOD)
         val financeExpiresBefore = now.minusYears(5)
         val citizenUserExpireDate = today.minusYears(1)
 
@@ -508,7 +515,7 @@ class DataRemovalService(
         val deletedCount =
             deleteMessageThreads(dbc, now, auditMeta = auditMeta) { tx ->
                 tx.deleteExpiredFinanceThreads(
-                    financeConnectionsQuery(),
+                    financeConnectedChildren,
                     placementExpireDate,
                     expiresBefore,
                     limit,

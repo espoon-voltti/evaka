@@ -114,6 +114,7 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 expirationRule =
                     AllOf(
                             After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("end_date")),
+                            After(FINANCE_THREAD_PLACEMENT_PERIOD, OwnColumn("end_date")),
                             After(tenYears, OwnColumn("end_date")),
                         )
                         .safeFor(KOSKI, VARDA),
@@ -632,7 +633,7 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 // Parentship expires once no finance decision it affects
                 // can be regenerated: its own period or the placements of the children it affects
                 // ended longer ago than the finance freeze, and none of them has a pending
-                // application.
+                // application. The finance threads of the head wait for the same placements.
                 auditIdType = DatabaseTable.Parentship::class,
                 expirationRule =
                     AnyOf(
@@ -640,6 +641,13 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         AllOf(
                             Coalesce(
                                 After(FINANCE_FREEZE_WITH_MARGIN, fridgeChildRelevantPlacementEnd),
+                                Always,
+                            ),
+                            Coalesce(
+                                After(
+                                    FINANCE_THREAD_PLACEMENT_PERIOD,
+                                    fridgeChildRelevantPlacementEnd,
+                                ),
                                 Always,
                             ),
                             notWhileFridgeChildRelevantApplicationPending,
@@ -663,7 +671,7 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                 // Partnership expires once no finance decision it affects
                 // can be regenerated: its own period or the placements of the children it affects
                 // ended longer ago than the finance freeze, and none of them has a pending
-                // application.
+                // application. The finance threads of the partners wait for the same placements.
                 auditIdType = DatabaseTable.Partnership::class,
                 expirationRule =
                     AnyOf(
@@ -672,6 +680,13 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                             Coalesce(
                                 After(
                                     FINANCE_FREEZE_WITH_MARGIN,
+                                    fridgePartnerRelevantPlacementEnd,
+                                ),
+                                Always,
+                            ),
+                            Coalesce(
+                                After(
+                                    FINANCE_THREAD_PLACEMENT_PERIOD,
                                     fridgePartnerRelevantPlacementEnd,
                                 ),
                                 Always,
@@ -823,15 +838,33 @@ fun buildDataRetentionSchema(valueDecisionCapacityFactorEnabled: Boolean): Schem
                         invoiceCorrectionChildPlacementOrPeriodEnd,
                     ),
             ),
-            ExternalTable(
+            HandledTable(
                 name = "message_account",
-                references = listOf(secondaryReference("person_id", referencedTable = "person")),
+                handledBy = ADULT,
+                references = listOf(primaryReference("person_id", referencedTable = "person")),
+                auditIdType = DatabaseTable.MessageAccount::class,
+                expirationRule = Always,
+                deletedWithParent = true,
+            ),
+            // The messages a citizen sent hold their account until the message removal deletes
+            // the threads
+            ExternalTable(
+                name = "message",
+                references =
+                    listOf(secondaryReference("sender_id", referencedTable = "message_account")),
+            ),
+            ExternalTable(
+                name = "message_content",
+                references =
+                    listOf(secondaryReference("author_id", referencedTable = "message_account")),
             ),
             ExternalTable(
                 name = "message_thread",
                 references =
                     listOf(optionalReference("application_id", referencedTable = "application")),
             ),
+            // The message removal expires a thread by the placements of the children it records,
+            // so the thread holds the child row and the placements deleted with it
             ExternalTable(
                 name = "message_thread_children",
                 references = listOf(secondaryReference("child_id", referencedTable = "child")),
