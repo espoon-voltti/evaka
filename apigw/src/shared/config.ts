@@ -87,6 +87,16 @@ const envVariables = {
    * 0 means no limit
    */
   CITIZEN_WEAK_LOGIN_RATE_LIMIT: 20,
+  /**
+   * Rate limit for citizen weak logins per client IP address (attempts per hour).
+   *
+   * IPv6 addresses are limited per /64 prefix. 0 means no limit
+   */
+  CITIZEN_WEAK_LOGIN_IP_RATE_LIMIT: 100,
+  /**
+   * If false, exceeding CITIZEN_WEAK_LOGIN_IP_RATE_LIMIT is only logged
+   */
+  CITIZEN_WEAK_LOGIN_IP_RATE_LIMIT_ENFORCE: false,
 
   // ----- Redis configuration -----
   /**
@@ -361,6 +371,7 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
         EMPLOYEE_COOKIE_SECRET: 'A very hush hush employee cookie secret.',
         USE_SECURE_COOKIES: false,
         CITIZEN_WEAK_LOGIN_RATE_LIMIT: 0,
+        CITIZEN_WEAK_LOGIN_IP_RATE_LIMIT: 0,
 
         REDIS_HOST: '127.0.0.1',
         REDIS_PORT: 6379,
@@ -391,7 +402,11 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
 }
 
 export interface Config {
-  citizen: SessionConfig & { weakLoginRateLimit: number }
+  citizen: SessionConfig & {
+    weakLoginRateLimit: number
+    weakLoginIpRateLimit: number
+    weakLoginIpRateLimitEnforce: boolean
+  }
   employee: SessionConfig
   ad:
     | { type: 'mock' | 'disabled' }
@@ -622,6 +637,14 @@ export function configFromEnv(): Config {
       weakLoginRateLimit: required(
         'CITIZEN_WEAK_LOGIN_RATE_LIMIT',
         parseInteger
+      ),
+      weakLoginIpRateLimit: required(
+        'CITIZEN_WEAK_LOGIN_IP_RATE_LIMIT',
+        parseInteger
+      ),
+      weakLoginIpRateLimitEnforce: required(
+        'CITIZEN_WEAK_LOGIN_IP_RATE_LIMIT_ENFORCE',
+        parseBoolean
       )
     },
     employee: {

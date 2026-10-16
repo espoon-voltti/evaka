@@ -12,11 +12,11 @@ export async function consumeRateLimit(
   key: string,
   limit: number,
   windowSeconds: number
-): Promise<boolean> {
+): Promise<{ allowed: boolean; count: number }> {
   const [, count] = await redis
     .multi()
     .set(key, '0', { EX: windowSeconds, NX: true })
     .incr(key)
     .exec()
-  return Number(count) <= limit
+  return { allowed: Number(count) <= limit, count: Number(count) }
 }
