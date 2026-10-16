@@ -19,7 +19,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-internal class VtjClientIT : AbstractTampereIntegrationTest() {
+internal class VtjClientIntegrationTest : AbstractTampereIntegrationTest() {
 
     @Autowired lateinit var vtjClient: VtjClient
 
