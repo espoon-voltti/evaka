@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<collections xmlns="http://www.profium.com/reception/2022/03" xmlns:ns2="http://www.profium.com/sahke2">
+    <initiator>
+        <source_system>eVaka</source_system>
+        <initiator_id>00000000-0000-0000-0000-000000000000</initiator_id>
+        <initiator_name>eVaka</initiator_name>
+    </initiator>
+    <collection>
+        <type>record</type>
+        <folder>04.01.00.23</folder>
+        <metadata>
+            <ns2:title>Pedagoginen selvitys 2026-2027;Valmis;Lumi Esimerkki;110222A974T</ns2:title>
+            <ns2:calculationBaseDate>2026-08-01</ns2:calculationBaseDate>
+            <ns2:created>2026-10-15</ns2:created>
+            <ns2:agent>
+                <ns2:agentRole>Laatija</ns2:agentRole>
+                <ns2:agentName>Esimies Essi</ns2:agentName>
+            </ns2:agent>
+        </metadata>
+        <content>
+            <file name="7d15fbe2-c896-11f1-a98a-7353000d6590.pdf" originalId="7d15fbe2-c896-11f1-a98a-7353000d6590"/>
+        </content>
+    </collection>
+</collections>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<collections xmlns="http://www.profium.com/reception/2022/03" xmlns:ns2="http://www.profium.com/sahke2">
+    <initiator>
+        <source_system>eVaka</source_system>
+        <initiator_id>9cca4214-c895-11f1-ba5f-db03d04ebed8</initiator_id>
+        <initiator_name>Pääkäyttäjä Päivi</initiator_name>
+    </initiator>
+    <collection>
+        <type>record</type>
+        <folder>04.01.00.20</folder>
+        <metadata>
+            <ns2:title>Varhaiskasvatussuunnitelma 2026-2027;Valmis;Lumi Esimerkki;110222A974T</ns2:title>
+            <ns2:calculationBaseDate>2026-08-01</ns2:calculationBaseDate>
+            <ns2:created>2026-10-15</ns2:created>
+            <ns2:agent>
+                <ns2:agentRole>Laatija</ns2:agentRole>
+                <ns2:agentName>Esimies Essi</ns2:agentName>
+            </ns2:agent>
+            <ns2:agent>
+                <ns2:agentRole>Laatija</ns2:agentRole>
+                <ns2:agentName>Esimies Eemeli</ns2:agentName>
+            </ns2:agent>
+        </metadata>
+        <content>
+            <file name="4d5befba-c896-11f1-a98a-97c45d910581.pdf" originalId="4d5befba-c896-11f1-a98a-97c45d910581"/>
+        </content>
+    </collection>
+</collections>

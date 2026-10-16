@@ -1,0 +1,75 @@
+POST /archive-core/PUT HTTP/1.1
+Content-Type: multipart/form-data; boundary=6a163164-7922-4594-894e-1c2ba75b5049
+Content-Length: 22754
+Host: <sarma-host>
+Connection: Keep-Alive
+Accept-Encoding: gzip
+User-Agent: okhttp/5.5.0
+
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="protocol_version"
+
+1.0
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="operation_id"
+
+PUT
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="response_format"
+
+URL-ENCODED
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="user_id"
+
+<käyttäjätunnus>
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="user_role"
+
+xa-api-integration
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="nr_of_instances"
+
+1
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_md_model_id"
+
+standard
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_md_model_version"
+
+1.0
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_md_master_id"
+
+yleinen
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_md_master_version"
+
+1.0
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_class_id"
+
+12.06.01.SL1.RT35
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_virtual_archive_id"
+
+YLEINEN
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_record_payload_location"
+
+SELF_CONTAINED
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_md_instance"
+Content-Type: application/xml; charset=utf-8
+
+<?xml version='1.0' encoding='UTF-8'?><ns0:RecordMetadataInstance xmlns:ns0="http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0" xmlns:at0="http://www.avaintec.com/2004/records-schedule-fi/1.0"><ns0:StandardMetadata><ns0:metadataMasterVersion><ns0:masterName>yleinen</ns0:masterName><ns0:versionNumber>1.0</ns0:versionNumber></ns0:metadataMasterVersion><ns0:virtualArchiveId>YLEINEN</ns0:virtualArchiveId><ns0:recordIdentifiers><ns0:CaseIdentifier>1/12.06.01.SL1.RT35/2026</ns0:CaseIdentifier><ns0:RecordIdentifier>287b2562-c896-11f1-aede-f30e1876a843</ns0:RecordIdentifier></ns0:recordIdentifiers><ns0:documentDescription><ns0:title>Pedagoginen arvio</ns0:title><ns0:documentType>Arvio</ns0:documentType><ns0:documentTypeSpecifier>Pedagoginen arvio</ns0:documentTypeSpecifier><ns0:registerName>Varhaiskasvatuksen asiakastietorekisteri</ns0:registerName><ns0:firstName>Lumi</ns0:firstName><ns0:lastName>Esimerkki</ns0:lastName><ns0:socialSecurityNumber>140222A963C</ns0:socialSecurityNumber><ns0:birthDate>2022-02-14</ns0:birthDate><ns0:personalData>containsSensitivePersonalInformation</ns0:personalData><ns0:personalDataCollectionReason>Rekisterinpitäjän lakisääteisten velvoitteiden noudattaminen</ns0:personalDataCollectionReason><ns0:language>fi</ns0:language><ns0:dataManagement>Palvelujen tiedonhallinta</ns0:dataManagement><ns0:dataSource>Varhaiskasvatuksen tietovaranto</ns0:dataSource><ns0:Agents><ns0:Agent><ns0:Role>Henkilökunta</ns0:Role><ns0:Name>Pääkäyttäjä Päivi</ns0:Name><ns0:CorporateName>Espoon kaupungin esiopetus ja varhaiskasvatus</ns0:CorporateName></ns0:Agent></ns0:Agents></ns0:documentDescription><ns0:format><ns0:recordType>digital</ns0:recordType><ns0:mimeType>application/pdf</ns0:mimeType><ns0:fileFormat>not applicable</ns0:fileFormat><ns0:fileName>child_document_287b2562-c896-11f1-aede-f30e1876a843_v1.pdf</ns0:fileName></ns0:format><ns0:creation><ns0:originatingSystem>Varhaiskasvatuksen toiminnanohjausjärjestelmä</ns0:originatingSystem><ns0:created>2026-10-15</ns0:created></ns0:creation><ns0:policies><ns0:retentionPolicy><at0:PolicyConfiguration><at0:PolicyName>RetentionPolicy</at0:PolicyName><at0:Rules><at0:Rule><at0:TimeSpan>28</at0:TimeSpan><at0:TriggerEvent>YearsFromCustomerBirthDate</at0:TriggerEvent><at0:Action><at0:ActionType>AddTimeSpanToTarget</at0:ActionType><at0:ActionAnnotation>Perusopetuslaki (628/1998) 16 a §</at0:ActionAnnotation></at0:Action></at0:Rule></at0:Rules></at0:PolicyConfiguration></ns0:retentionPolicy><ns0:disclosurePolicy><at0:PolicyConfiguration><at0:PolicyName>DisclosurePolicy</at0:PolicyName><at0:InitialTargetState>confidential</at0:InitialTargetState><at0:Rules><at0:Rule><at0:TimeSpan>100</at0:TimeSpan><at0:TriggerEvent>YearsFromRecordCreation</at0:TriggerEvent><at0:Action><at0:ActionType>SetTargetStateToArgument</at0:ActionType><at0:ActionArguments><at0:ActionArgument>public</at0:ActionArgument></at0:ActionArguments><at0:ActionAnnotation>Varhaiskasvatuslaki 40 § 3 mom.</at0:ActionAnnotation></at0:Action></at0:Rule></at0:Rules></at0:PolicyConfiguration></ns0:disclosurePolicy><ns0:informationSecurityPolicy><at0:PolicyConfiguration><at0:PolicyName>InformationSecurityPolicy</at0:PolicyName><at0:InitialTargetState>notSecurityClassified</at0:InitialTargetState><at0:Rules><at0:Rule><at0:TimeSpan>0</at0:TimeSpan><at0:TriggerEvent>InPerpetuity</at0:TriggerEvent><at0:Action><at0:ActionType>SetTargetStateToArgument</at0:ActionType><at0:ActionArguments><at0:ActionArgument>notSecurityClassified</at0:ActionArgument></at0:ActionArguments></at0:Action></at0:Rule></at0:Rules></at0:PolicyConfiguration></ns0:informationSecurityPolicy><ns0:protectionPolicy><at0:PolicyConfiguration><at0:PolicyName>ProtectionPolicy</at0:PolicyName><at0:InitialTargetState>3</at0:InitialTargetState><at0:Rules><at0:Rule><at0:TimeSpan>0</at0:TimeSpan><at0:TriggerEvent>InPerpetuity</at0:TriggerEvent><at0:Action><at0:ActionType>SetTargetStateToArgument</at0:ActionType><at0:ActionArguments><at0:ActionArgument>3</at0:ActionArgument></at0:ActionArguments></at0:Action></at0:Rule></at0:Rules></at0:PolicyConfiguration></ns0:protectionPolicy></ns0:policies><ns0:CaseFile><ns0:Case_Created>2026-10-15</ns0:Case_Created><ns0:Case_Finished>2026-10-15</ns0:Case_Finished></ns0:CaseFile></ns0:StandardMetadata></ns0:RecordMetadataInstance>
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_record_payload_content_size"
+
+16400
+--6a163164-7922-4594-894e-1c2ba75b5049
+Content-Disposition: form-data; name="instance_1_record_payload_data"; filename="child-documents/child_document_287b2562-c896-11f1-aede-f30e1876a843_v1.pdf"
+Content-Type: application/pdf
+
+<PDF-tiedoston binäärisisältö, 16400 tavua; ks. asiakirja.pdf>
+--6a163164-7922-4594-894e-1c2ba75b5049--

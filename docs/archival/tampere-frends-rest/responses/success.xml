@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<success>
+    <records>
+        <record>
+            <otherId>006daaf8-c892-11f1-9a6b-4faf34caf05c</otherId>
+            <archiveid>ARK-2026-000123</archiveid>
+        </record>
+    </records>
+    <files>
+        <entry>
+            <originalId>006daaf8-c892-11f1-9a6b-4faf34caf05c</originalId>
+            <name>Varhaiskasvatuspäätös.pdf</name>
+            <archiveid>ARK-2026-000123-1</archiveid>
+        </entry>
+    </files>
+</success>

@@ -1,0 +1,42 @@
+POST https://<frends-osoite>/<polku>/records/add HTTP/1.1
+Accept: */*
+X-API-version: 1.0
+X-API-transactionid: 92d284f62f21777c
+Authorization: Basic <base64(käyttäjätunnus:salasana)>
+Content-Type: multipart/form-data; boundary=36476fb5-d75d-411a-beaf-54cdd913649c
+Content-Length: <koko>
+Connection: Keep-Alive
+Accept-Encoding: gzip
+User-Agent: okhttp/5.5.0
+
+--36476fb5-d75d-411a-beaf-54cdd913649c
+Content-Disposition: form-data; name="xml"
+Content-Type: application/xml; charset=utf-8
+
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns3:collections xmlns:ns2="http://www.profium.com/sahke2" xmlns:ns3="http://www.profium.com/reception/2022/03">
+    <ns3:initiator>
+        <ns3:source_system>eVaka</ns3:source_system>
+        <ns3:initiator_id>61dde4e8-c891-11f1-9a6b-4f7fa268d887</ns3:initiator_id>
+        <ns3:initiator_name>Pääkäyttäjä Päivi</ns3:initiator_name>
+    </ns3:initiator>
+    <ns3:collection>
+        <ns3:type>record</ns3:type>
+        <ns3:folder>12.06.01.17</ns3:folder>
+        <ns3:metadata>
+            <ns2:title>Esiopetuspäätös, Hyväksytty, Aino Mallikas, 20.06.2020</ns2:title>
+            <ns2:calculationBaseDate>2026-10-15</ns2:calculationBaseDate>
+            <ns2:created>2026-10-15</ns2:created>
+        </ns3:metadata>
+        <ns3:content>
+            <ns3:file name="Esiopetuspäätös.pdf" originalId="20df5dd6-c892-11f1-8d00-ab5ac5e8d142"/>
+        </ns3:content>
+    </ns3:collection>
+</ns3:collections>
+
+--36476fb5-d75d-411a-beaf-54cdd913649c
+Content-Disposition: form-data; name="content"; filename="20df5dd6-c892-11f1-8d00-ab5ac5e8d142"
+Content-Type: application/pdf
+
+<PDF-tiedoston binäärisisältö, ks. asiakirja.pdf>
+--36476fb5-d75d-411a-beaf-54cdd913649c--

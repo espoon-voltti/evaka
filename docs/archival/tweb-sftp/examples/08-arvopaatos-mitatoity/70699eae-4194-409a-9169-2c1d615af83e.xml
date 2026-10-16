@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<collections xmlns="http://www.profium.com/reception/2022/03" xmlns:ns2="http://www.profium.com/sahke2">
+    <initiator>
+        <source_system>eVaka</source_system>
+        <initiator_id>9cca4214-c895-11f1-ba5f-db03d04ebed8</initiator_id>
+        <initiator_name>Pääkäyttäjä Päivi</initiator_name>
+    </initiator>
+    <collection>
+        <type>record</type>
+        <folder>04.01.02.59</folder>
+        <metadata>
+            <ns2:title>Arvopäätös;Mitätöity;Sanna Esimerkki;210489-952E</ns2:title>
+            <ns2:calculationBaseDate>2027-08-01</ns2:calculationBaseDate>
+            <ns2:created>2026-10-15</ns2:created>
+            <ns2:agent>
+                <ns2:agentRole>Päättäjä</ns2:agentRole>
+                <ns2:agentName>Laskuttaja Lasse</ns2:agentName>
+            </ns2:agent>
+        </metadata>
+        <content>
+            <file name="70699eae-4194-409a-9169-2c1d615af83e.pdf" originalId="70699eae-4194-409a-9169-2c1d615af83e"/>
+        </content>
+    </collection>
+</collections>
