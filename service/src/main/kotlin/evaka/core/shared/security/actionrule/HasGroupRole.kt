@@ -17,6 +17,7 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.PredicateSql
 import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.toFiniteDateRange
 import evaka.core.shared.security.AccessControlDecision
 import evaka.core.shared.security.PilotFeature
 import evaka.core.shared.utils.emptyEnumSet
@@ -260,6 +261,7 @@ WHERE daycare_acl.employee_id = ${bind(user.id)}
   AND dgp.start_date <= CASE WHEN child_document.type = 'CITIZEN_BASIC' THEN ${bind(futureAccessDate)} ELSE ${bind(today)} END
   AND dgp.end_date >= ${bind(today)}
   AND ${predicate(childDocumentFilters)}
+  ${if (deletable) "AND NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = child_document.template_id AND dt.validity << ${bind(today.toFiniteDateRange())})" else ""}
             """
                     .trimIndent()
             )

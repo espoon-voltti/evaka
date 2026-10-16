@@ -635,7 +635,7 @@ WHERE employee_id = ${bind(user.id)}
         canGoToPrevStatus: Boolean = false,
         cfg: ChildAclConfig = ChildAclConfig(backupCare = false),
     ) =
-        ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
+        ruleViaChildAcl<ChildDocumentId>(cfg) { _, now ->
             sql(
                 """
 SELECT child_document.id AS id, child_id
@@ -643,6 +643,7 @@ FROM child_document
 WHERE TRUE
 ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])" else ""}
 ${if (deletable) "AND status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)" else ""}
+${if (deletable) "AND NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = child_document.template_id AND dt.validity << ${bind(now.toLocalDate().toFiniteDateRange())})" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
 ${if (canGoToPrevStatus) "AND ((type = 'OTHER_DECISION') OR (type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb)) AND status <> 'COMPLETED'" else ""}
             """

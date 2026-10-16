@@ -966,11 +966,44 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `unpublished draft can be deleted after template validity has ended`() {
+    fun `unpublished draft can be deleted by admin after template validity has ended`() {
         val documentId = createDocument(templateId = templateIdHojks)
         val dayAfter = MockEvakaClock(clock.now().plusDays(1))
 
         deleteDraftDocument(documentId, clockOverride = dayAfter)
+
+        assertEquals(0, getDocuments(child.id).size)
+    }
+
+    @Test
+    fun `unit supervisor can delete draft only while template is valid`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        assertThrows<Forbidden> {
+            deleteDraftDocument(documentId, user = unitSupervisorUser, clockOverride = dayAfter)
+        }
+        deleteDraftDocument(documentId, user = unitSupervisorUser)
+
+        assertEquals(0, getDocuments(child.id).size)
+    }
+
+    @Test
+    fun `group staff can delete draft only while template is valid`() {
+        val groupId = createPlacementWithGroup()
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
+        val documentId = createDocument(templateId = templateIdHojks)
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        assertThrows<Forbidden> {
+            deleteDraftDocument(documentId, user = staffUser, clockOverride = dayAfter)
+        }
+        deleteDraftDocument(documentId, user = staffUser)
 
         assertEquals(0, getDocuments(child.id).size)
     }
