@@ -35,7 +35,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../service"
 export LC_ALL=C
 
 # Longest-processing-time-first: heaviest files first, each to the lightest chunk
-find src/integrationTest/kotlin/evaka/ -type f \( -iname '*Test.kt' -o -iname '*Tests.kt' -o -iname '*CI.kt' \) \
+find src/integrationTest/kotlin/evaka/ -type f \( -iname '*Test.kt' -o -iname '*Tests.kt' \) \
     | while read -r file; do
         weight=$(grep -c '@Test' "$file" || true)
         printf '%s\t%s\n' "$(( weight > 0 ? weight : 1 ))" "$file"

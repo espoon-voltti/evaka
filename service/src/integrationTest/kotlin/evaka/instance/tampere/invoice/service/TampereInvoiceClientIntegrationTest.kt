@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
 import org.springframework.ws.soap.client.SoapFaultClientException
 
-internal class TampereInvoiceClientIT : AbstractTampereIntegrationTest() {
+internal class TampereInvoiceClientIntegrationTest : AbstractTampereIntegrationTest() {
     @Autowired private lateinit var client: InvoiceIntegrationClient
 
     private val mockNow = HelsinkiDateTime.of(LocalDate.of(2021, 2, 1), LocalTime.of(12, 34))
