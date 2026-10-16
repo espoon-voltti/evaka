@@ -509,4 +509,46 @@ test.describe('Citizen child documents editor page', () => {
     )
     await expect(toast2).toHaveText('Lomake lähetetty')
   })
+
+  test('document of an ended template cannot be filled', async ({ evaka }) => {
+    const template = await Fixture.documentTemplate({
+      ...documentTemplate,
+      validity: new DateRange(
+        mockedNow.toLocalDate().subDays(30),
+        mockedNow.toLocalDate().subDays(1)
+      )
+    }).save()
+    const documentContent: DocumentContent = {
+      answers: []
+    }
+    const document = await Fixture.childDocument({
+      templateId: template.id,
+      childId: child.id,
+      status: 'CITIZEN_DRAFT',
+      content: documentContent
+    })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: documentContent
+      })
+      .save()
+
+    await enduserLogin(
+      evaka,
+      testAdult,
+      `/child-documents/${document.id}?readOnly=false`
+    )
+    const childDocumentPage = new ChildDocumentPage(evaka)
+    await expect(childDocumentPage.status).toHaveText(
+      'Täytettävänä huoltajalla'
+    )
+    await expect(childDocumentPage.templateValidityEndedInfo).toBeVisible()
+    await expect(childDocumentPage.editButton).toBeHidden()
+    await expect(childDocumentPage.previewButton).toBeHidden()
+    await expect(
+      childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
+    ).toBeHidden()
+  })
 })
