@@ -131,6 +131,8 @@ jobs:
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/frontend-builder
+          # docker-build-registry writes the registry cache of master builds to the :edge tag
+          cache_from: ghcr.io/espoon-voltti/evaka/frontend-builder:edge
           path: ./frontend
           target: builder-single
           push: ${{ inputs.push || 'true' }}
@@ -219,6 +221,7 @@ jobs:
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/frontend
+          cache_from: ghcr.io/espoon-voltti/evaka/frontend:edge
           path: ./frontend
           target: runtime-multi
           push: ${{ inputs.push || 'true' }}
@@ -294,6 +297,7 @@ jobs:
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/api-gateway-test
+          cache_from: ghcr.io/espoon-voltti/evaka/api-gateway-test:edge
           path: ./apigw
           push: false
           load: true
@@ -310,6 +314,7 @@ jobs:
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/api-gateway
+          cache_from: ghcr.io/espoon-voltti/evaka/api-gateway:edge
           path: ./apigw
           push: ${{ inputs.push || 'true' }}
           build-args: |
@@ -351,6 +356,7 @@ jobs:
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/dummy-idp
+          cache_from: ghcr.io/espoon-voltti/evaka/dummy-idp:edge
           path: ./dummy-idp
           push: ${{ inputs.push || 'true' }}
           build-args: |
@@ -442,6 +448,7 @@ jobs:
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/service
+          cache_from: ghcr.io/espoon-voltti/evaka/service:edge
           path: .
           dockerfile: service/Dockerfile
           push: ${{ inputs.push || 'true' }}
@@ -547,6 +554,7 @@ jobs:
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/service-builder
+          cache_from: ghcr.io/espoon-voltti/evaka/service-builder:edge
           target: builder
           path: .
           dockerfile: service/Dockerfile
@@ -589,6 +597,7 @@ jobs:
         with:
           registry: ghcr.io/espoon-voltti
           name: evaka/service-test
+          cache_from: ghcr.io/espoon-voltti/evaka/service-test:edge
           path: .
           dockerfile: service/test.Dockerfile
           push: false
