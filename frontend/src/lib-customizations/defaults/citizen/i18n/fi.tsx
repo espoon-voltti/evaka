@@ -3076,6 +3076,8 @@ export default {
       success: 'Lomake lähetetty',
       sentInfo:
         'Jos haluat muuttaa annettuja vastauksia, pyydä henkilökunnalta uusi lomake.',
+      templateValidityEnded:
+        'Lomakkeen täyttöaika on päättynyt, eikä sitä voi enää lähettää. Pyydä tarvittaessa henkilökunnalta uusi lomake.',
       decisionNumber: 'Päätösnumero',
       sendingConfirmationTitle: 'Haluatko varmasti lähettää dokumentin?',
       sendingConfirmationText:

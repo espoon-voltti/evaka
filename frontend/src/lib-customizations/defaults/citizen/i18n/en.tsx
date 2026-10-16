@@ -2831,6 +2831,8 @@ const en: Translations = {
       success: 'Document sent',
       sentInfo:
         'If you want to change the answers you have given, please ask the staff for a new document.',
+      templateValidityEnded:
+        'The time for filling in this form has ended and it can no longer be sent. If needed, please ask the staff for a new form.',
       // decision cannot be in English
       decisionNumber: 'Decision number',
       sendingConfirmationTitle: 'Are you sure you want to send the document?',
