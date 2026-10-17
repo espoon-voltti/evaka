@@ -40,7 +40,7 @@ dependencies {
         api(libs.mockito.core)
         api(libs.mockito.junit.jupiter)
         api("org.mockito.kotlin:mockito-kotlin:6.4.0")
-        api("org.postgresql:postgresql:42.7.13")
+        api("org.postgresql:postgresql:42.7.14")
         api("org.checkerframework:checker-qual:4.3.0")
         api("org.skyscreamer:jsonassert:1.5.3")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
@@ -60,7 +60,7 @@ dependencies {
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.27")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.26")
         api("com.fasterxml.jackson.core:jackson-databind:2.22.3")
-        api("org.postgresql:postgresql:42.7.13")
+        api("org.postgresql:postgresql:42.7.14")
     }
 
     api(platform("tools.jackson:jackson-bom:3.2.3"))
