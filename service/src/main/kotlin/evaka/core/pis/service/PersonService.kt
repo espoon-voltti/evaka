@@ -111,8 +111,8 @@ class PersonService(
                 snapshot.dependants.map {
                     vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
                 }
-            val guardianId = vtjSyncService.applyFromVtj(tx, now, snapshot.person)
-            val childIds = children.map { vtjSyncService.applyFromVtj(tx, now, it) }.toSet()
+            val guardianId = vtjSyncService.applyFromVtj(tx, now, snapshot.person).id
+            val childIds = children.map { vtjSyncService.applyFromVtj(tx, now, it).id }.toSet()
             tx.applyDependants(guardianId, childIds, now)
         }
 
@@ -138,8 +138,8 @@ class PersonService(
                 snapshot.guardians.map {
                     vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
                 }
-            val childId = vtjSyncService.applyFromVtj(tx, now, snapshot.person)
-            val guardianIds = guardians.map { vtjSyncService.applyFromVtj(tx, now, it) }.toSet()
+            val childId = vtjSyncService.applyFromVtj(tx, now, snapshot.person).id
+            val guardianIds = guardians.map { vtjSyncService.applyFromVtj(tx, now, it).id }.toSet()
             tx.applyGuardians(childId, guardianIds, now)
         }
 
