@@ -28,6 +28,7 @@ import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.user.CitizenPasskey
 import evaka.core.user.DeviceClass
 import evaka.core.user.getCitizenPasskeys
+import evaka.core.user.updateLastStrongLogin
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.nio.charset.StandardCharsets
 import java.time.Duration
@@ -58,7 +59,11 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            // A passkey is registered after a strong login, which writes the citizen_user row
+            tx.updateLastStrongLogin(clock.now(), person.id)
+        }
         MockVtjClient.addPersons(person)
     }
 
@@ -88,8 +93,6 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `a passkey-only citizen without weak credentials can log in`() {
-        assertNull(getCitizenUserRow())
-
         val authenticator = SoftwareAuthenticator()
         registerPasskey(authenticator)
 
