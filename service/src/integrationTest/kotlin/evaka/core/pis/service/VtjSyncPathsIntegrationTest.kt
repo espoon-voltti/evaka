@@ -20,6 +20,7 @@ import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.application.persistence.daycare.OtherPerson
 import evaka.core.dvv.DvvModificationsService
 import evaka.core.dvv.DvvModificationsServiceClient
 import evaka.core.dvv.storeDvvModificationToken
@@ -31,6 +32,7 @@ import evaka.core.pis.getPersonBySSN
 import evaka.core.placement.PlacementController
 import evaka.core.placement.PlacementCreateRequestBody
 import evaka.core.placement.PlacementType
+import evaka.core.shared.ApplicationId
 import evaka.core.shared.PersonId
 import evaka.core.shared.PreschoolTermId
 import evaka.core.shared.async.AsyncJob
@@ -627,7 +629,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `family init queries the guardians of a child whose guardians are not synced`() {
+    fun `family init reads the guardians of the child from the DB and syncs the dependants of the head of family`() {
         db.transaction { tx ->
             tx.insert(a, DevPersonType.ADULT)
             tx.insert(x, DevPersonType.CHILD)
@@ -637,22 +639,35 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             tx.insertApplication(ApplicationStatus.WAITING_PLACEMENT)
         }
 
-        familyInitializerService.handleInitializeFamilyFromApplication(
-            db,
-            clock,
-            AsyncJob.InitializeFamilyFromApplication(
-                applicationId,
-                AuthenticatedUser.SystemInternalUser,
-            ),
-        )
+        runFamilyInit(applicationId)
+
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a)
+        assertPersons(a, x)
+        assertGuardians(a to x)
+        assertFridgeChildren(a to x)
+    }
+
+    @Test
+    fun `family init creates the partner as a leaf, then syncs the dependants of the head and the partner`() {
+        db.transaction { tx ->
+            tx.insert(a, DevPersonType.ADULT)
+            tx.insert(x, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = a.id, childId = x.id))
+        }
+        val applicationId = db.transaction { tx ->
+            tx.insertApplication(ApplicationStatus.WAITING_PLACEMENT, otherPartner = b)
+        }
+
+        runFamilyInit(applicationId)
 
         MockVtjSoapTransport.assertRequests(
-            HUOLLETTAVA_HUOLTAJAT to x,
-            PERUSSANOMA3 to a,
             PERUSSANOMA3 to b,
+            HUOLTAJA_HUOLLETTAVA to a,
+            HUOLTAJA_HUOLLETTAVA to b,
+            PERUSSANOMA3 to z,
         )
-        assertPersons(a, b, x)
-        assertGuardians(a to x, b to x)
+        assertPersons(a, b, x, z)
+        assertGuardians(a to x, b to x, b to z)
         assertFridgeChildren(a to x)
     }
 
@@ -786,6 +801,17 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         )
     }
 
+    private fun runFamilyInit(applicationId: ApplicationId) {
+        familyInitializerService.handleInitializeFamilyFromApplication(
+            db,
+            clock,
+            AsyncJob.InitializeFamilyFromApplication(
+                applicationId,
+                AuthenticatedUser.SystemInternalUser,
+            ),
+        )
+    }
+
     private fun runPlacementTool(child: DevPerson) {
         placementToolService.createPlacementToolApplicationsFromSsn(
             db,
@@ -827,7 +853,10 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         asyncJobRunner.runPendingJobsSync(clock)
     }
 
-    private fun Database.Transaction.insertApplication(status: ApplicationStatus) =
+    private fun Database.Transaction.insertApplication(
+        status: ApplicationStatus,
+        otherPartner: DevPerson? = null,
+    ) =
         insertTestApplication(
             type = ApplicationType.DAYCARE,
             sentDate = null,
@@ -854,6 +883,11 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                             phoneNumber = "0501234567",
                             email = "aino@example.com",
                             address = Address(a.streetAddress, a.postalCode, a.postOffice),
+                        ),
+                    hasOtherAdults = otherPartner != null,
+                    otherAdults =
+                        listOfNotNull(
+                            otherPartner?.let { OtherPerson(it.firstName, it.lastName, it.ssn!!) }
                         ),
                     apply = Apply(preferredUnits = listOf(daycare.id)),
                     preferredStartDate = clock.today().plusMonths(4),
