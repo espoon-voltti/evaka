@@ -168,7 +168,6 @@ dependencies {
     implementation("org.thymeleaf:thymeleaf")
     implementation("org.thymeleaf.extras:thymeleaf-extras-java8time")
     implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
-    implementation("org.xhtmlrenderer:flying-saucer-core")
     implementation("org.xhtmlrenderer:flying-saucer-pdf")
 
     // Miscellaneous
