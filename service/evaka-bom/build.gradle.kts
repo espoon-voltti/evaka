@@ -59,7 +59,6 @@ dependencies {
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.27")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.27")
         api("com.fasterxml.jackson.core:jackson-databind:2.22.3")
-        api("org.postgresql:postgresql:42.7.14")
     }
 
     api(platform("tools.jackson:jackson-bom:3.2.3"))
