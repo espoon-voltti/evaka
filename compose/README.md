@@ -169,8 +169,8 @@ git push --force origin tag test-playwright
 5. Check CI for results.
 6. Remove the tag when finished.
 ```sh
-git tag --delete playwright-test
-git push --delete origin playwright-test
+git tag --delete test-playwright
+git push --delete origin test-playwright
 ```
 
 ## Database dump

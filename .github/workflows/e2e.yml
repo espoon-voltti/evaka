@@ -5,8 +5,10 @@
 name: Build E2E resources
 on:
   push:
-    banches:
+    branches:
       - master
+    tags:
+      - test-playwright
     paths:
       - "compose/e2e/**"
       - "compose/db/**"
@@ -22,8 +24,7 @@ permissions:
   contents: read
   packages: write
 
-# NOTE: Even this is triggered on path change on branch, the generated images will not be used in same build.yml e2e-job.
-#       If this is triggered on path change on master, the generated images will be used only in build.yml e2e-job, if this finishes first.
+# NOTE: If this is triggered on path change on master, the generated images will be used only in build.yml e2e-job, if this finishes first.
 #       We do no want to wait this in build.yml, so re-run build.yml in these cases.
 
 jobs:
