@@ -17,10 +17,13 @@ import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.reasoning.getApplicationDecisionReasoningStats
 import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
 import evaka.core.decision.updateDecisionDrafts
+import evaka.core.identity.Ssn
 import evaka.core.pis.controllers.CreatePersonBody
+import evaka.core.pis.createPerson
 import evaka.core.pis.getPersonById
 import evaka.core.pis.service.PersonJSON
 import evaka.core.pis.service.PersonService
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanDetails
 import evaka.core.placement.PlacementPlanDraft
@@ -117,6 +120,7 @@ enum class VoucherApplicationFilter {
 class ApplicationControllerV2(
     private val accessControl: AccessControl,
     private val personService: PersonService,
+    private val vtjSyncService: VtjSyncService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
     private val evakaEnv: EvakaEnv,
@@ -136,22 +140,53 @@ class ApplicationControllerV2(
                 .observeDate(body.sentDate)
         val (guardianId, applicationId) =
             db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
                         Action.Global.CREATE_PAPER_APPLICATION,
                     )
-
-                    savePaperApplication(
-                        tx,
-                        user,
+                }
+                val existingGuardianId =
+                    body.guardianId
+                        ?: body.guardianSsn
+                            ?.takeIf { it.isNotEmpty() }
+                            ?.let { Ssn.parse(it) ?: throw BadRequest("Invalid guardian SSN") }
+                            ?.let {
+                                vtjSyncService
+                                    .getOrCreatePerson(dbc, user.evakaUserId, clock, it)
+                                    .person
+                                    .id
+                            }
+                if (existingGuardianId != null) {
+                    // The application form lists the guardian's dependants as other children.
+                    // The guardian need not be a head of family yet, so the dependant-sync rule
+                    // is not checked.
+                    vtjSyncService.syncDependantsForFamilySetup(
+                        dbc,
+                        user.evakaUserId,
                         clock,
-                        body,
-                        personService,
-                        applicationStateService,
+                        existingGuardianId,
                     )
+                }
+                vtjSyncService.ensureGuardiansSynced(dbc, user.evakaUserId, clock, body.childId)
+                dbc.transaction { tx ->
+                    val guardianId =
+                        existingGuardianId
+                            ?: body.guardianToBeCreated?.let { createPerson(tx, it) }
+                            ?: throw BadRequest(
+                                "Could not find guardian info from paper application request for ${body.childId}"
+                            )
+                    guardianId to
+                        savePaperApplication(
+                            tx,
+                            user,
+                            clock,
+                            body,
+                            guardianId,
+                            applicationStateService,
+                        )
                 }
             }
         audit.add(guardianId).add(applicationId)

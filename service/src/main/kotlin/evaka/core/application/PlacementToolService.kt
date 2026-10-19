@@ -18,7 +18,6 @@ import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.service.FridgeFamilyService
-import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.getBlockedGuardians
 import evaka.core.pis.service.getChildGuardiansAndFosterParents
@@ -54,7 +53,6 @@ enum class PlacementToolCsvField(val fieldName: String) {
 class PlacementToolService(
     private val featureConfig: FeatureConfig,
     private val applicationStateService: ApplicationStateService,
-    private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val fridgeFamilyService: FridgeFamilyService,
     private val vtjSyncService: VtjSyncService,
@@ -178,10 +176,7 @@ WHERE application.type = 'PRESCHOOL'
             existingChild?.let { child -> db.read { it.getDependantGuardians(child.id) } }
                 ?: emptyList()
         val childId =
-            db.transaction { tx ->
-                    personService.getOrCreatePerson(tx, msg.user, clock.now(), ssn, audit = null)
-                }
-                ?.id ?: throw PermanentAsyncJobFailure("Child not found in VTJ")
+            vtjSyncService.getOrCreatePerson(db, msg.user.evakaUserId, clock, ssn).person.id
         vtjSyncService.ensureGuardiansSynced(db, msg.user.evakaUserId, clock, childId)
         if (existingChild?.vtjGuardiansQueried == null) {
             (oldGuardians + db.read { it.getDependantGuardians(childId) })
@@ -248,7 +243,7 @@ WHERE application.type = 'PRESCHOOL'
                             ?.headOfChildId
                 } ?: guardianIds.first()
 
-            val (_, applicationId) =
+            val applicationId =
                 savePaperApplication(
                     tx,
                     user,
@@ -263,7 +258,7 @@ WHERE application.type = 'PRESCHOOL'
                         hideFromGuardian = desiredStatus > ApplicationStatus.SENT,
                         transferApplication = false,
                     ),
-                    personService,
+                    guardianId,
                     applicationStateService,
                 )
 
