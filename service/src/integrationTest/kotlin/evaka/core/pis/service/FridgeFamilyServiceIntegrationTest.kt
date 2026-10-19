@@ -11,8 +11,6 @@ import evaka.core.pis.createPartnership
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
-import evaka.core.shared.async.AsyncJob
-import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevEmployee
@@ -33,6 +31,7 @@ import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 
 class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -318,7 +317,6 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     @Autowired lateinit var parentshipService: ParentshipService
-    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Test
     fun testVtjRequestCounts() {
@@ -326,7 +324,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         MockVtjSoapTransport.resetQueryCounts()
 
         val vtjSyncService =
-            VtjSyncService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()), asyncJobRunner)
+            VtjSyncService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()), mock())
         val service =
             FridgeFamilyService(
                 PersonService(

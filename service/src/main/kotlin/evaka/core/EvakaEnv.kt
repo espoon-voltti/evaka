@@ -756,6 +756,16 @@ data class DataRemovalEnv(
     }
 }
 
+data class VtjSyncEnv(
+    /** Maximum number of persons that the nightly sync job plans a VTJ sync for. */
+    val limit: Int
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            VtjSyncEnv(limit = env.lookup("evaka.vtj_sync.limit") ?: 200)
+    }
+}
+
 data class ArchiveEnv(
     /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core/ */
     val url: URI,
