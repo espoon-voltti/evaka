@@ -12,6 +12,7 @@ import evaka.core.application.ApplicationControllerCitizen
 import evaka.core.application.ApplicationControllerV2
 import evaka.core.application.ApplicationStatus
 import evaka.core.application.ApplicationType
+import evaka.core.application.CreateApplicationBody
 import evaka.core.application.PaperApplicationCreateRequest
 import evaka.core.application.PlacementToolService
 import evaka.core.application.persistence.daycare.Address
@@ -27,6 +28,9 @@ import evaka.core.pis.SystemController
 import evaka.core.pis.controllers.GetOrCreatePersonBySsnRequest
 import evaka.core.pis.controllers.PersonController
 import evaka.core.pis.getPersonBySSN
+import evaka.core.placement.PlacementController
+import evaka.core.placement.PlacementCreateRequestBody
+import evaka.core.placement.PlacementType
 import evaka.core.shared.PersonId
 import evaka.core.shared.PreschoolTermId
 import evaka.core.shared.async.AsyncJob
@@ -84,6 +88,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @Autowired private lateinit var personController: PersonController
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
     @Autowired private lateinit var applicationControllerV2: ApplicationControllerV2
+    @Autowired private lateinit var placementController: PlacementController
     @Autowired private lateinit var placementToolService: PlacementToolService
     @Autowired private lateinit var familyInitializerService: FamilyInitializerService
     @Autowired private lateinit var passwordService: PasswordService
@@ -575,6 +580,53 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `citizen application creation syncs the guardians of a child whose guardians are not synced`() {
+        db.transaction { tx ->
+            tx.insertCitizen(a)
+            tx.insert(x, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = a.id, childId = x.id))
+            tx.setVtjDependantsQueried(a)
+        }
+
+        applicationControllerCitizen.createApplication(
+            dbInstance(),
+            a.user(CitizenAuthLevel.STRONG),
+            clock,
+            CreateApplicationBody(childId = x.id, type = ApplicationType.DAYCARE),
+        )
+
+        MockVtjSoapTransport.assertRequests(HUOLLETTAVA_HUOLTAJAT to x, PERUSSANOMA3 to b)
+        assertPersons(a, b, x)
+        assertGuardians(a to x, b to x)
+        assertFridgeChildren()
+    }
+
+    @Test
+    fun `placement creation syncs the guardians of a child whose guardians are not synced`() {
+        db.transaction { tx -> tx.insert(x, DevPersonType.CHILD) }
+
+        createPlacement(x)
+
+        MockVtjSoapTransport.assertRequests(
+            HUOLLETTAVA_HUOLTAJAT to x,
+            PERUSSANOMA3 to a,
+            PERUSSANOMA3 to b,
+        )
+        assertPersons(a, b, x)
+        assertGuardians(a to x, b to x)
+        assertFridgeChildren()
+    }
+
+    @Test
+    fun `placement creation makes no request for a child whose guardians are synced`() {
+        insertFamilyOfA()
+
+        createPlacement(x)
+
+        MockVtjSoapTransport.assertRequests()
+    }
+
+    @Test
     fun `family init queries the guardians of a child whose guardians are not synced`() {
         db.transaction { tx ->
             tx.insert(a, DevPersonType.ADULT)
@@ -717,6 +769,22 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             hideFromGuardian = false,
             transferApplication = false,
         )
+
+    private fun createPlacement(child: DevPerson) {
+        placementController.createPlacement(
+            dbInstance(),
+            admin.user,
+            clock,
+            PlacementCreateRequestBody(
+                type = PlacementType.DAYCARE,
+                childId = child.id,
+                unitId = daycare.id,
+                startDate = clock.today(),
+                endDate = clock.today().plusMonths(6),
+                placeGuarantee = false,
+            ),
+        )
+    }
 
     private fun runPlacementTool(child: DevPerson) {
         placementToolService.createPlacementToolApplicationsFromSsn(
