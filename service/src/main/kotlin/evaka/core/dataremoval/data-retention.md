@@ -144,7 +144,7 @@ Koski and Varda read a fixed set of tables. The rule of every table an integrati
 
 An own node is deleted by the primary key of its rows, which the loader (section 4.1) reads together with the date columns the rules need.
 
-The primary key is `id` unless the table declares otherwise. This can be a overridden with a different column or multiple columns in the case of a composite primary key. If the table has no primary key, any set of columns can be used that uniquely identify the row. However, a reference can only lead to a table whose primary key is just one column, so tables with multiple identifying columns must be leaves.
+The primary key is `id` unless the table declares otherwise. This can be a overridden with a different column or multiple columns in the case of a composite primary key. If the table has no primary key, any set of columns can be used that uniquely identify the row. However, a reference can only point to a table whose primary key is just one column, so tables with multiple identifying columns must be leaves.
 
 A table may also define following kinds of additional side effects to do together with the deletion.
 
@@ -257,7 +257,7 @@ A table that the graph only references, and that references nothing in it, is ou
 
 - Case processes and their history rows are left as orphans. At least the ones from the current year must stay, so that the sequence numbers are not reused.
 - A `child_document_decision` is deleted with its child document.
-- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 8.4).
+- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 9.4).
 - A `calendar_event` is left as an orphan.
 
 ### 5.3 Tables excluded by exception
@@ -268,7 +268,7 @@ A leaf table whose rows should simply be deleted with the rows they reference ca
 
 ### 5.4 The evaka_user row
 
-`evaka_user` reaches `person` through `citizen_id`, but it is excluded too. The database sets the column null when the person row is deleted, and the row lives on as the author of what the citizen created. Whether its name should then be anonymised is open (section 8.3). References to `evaka_user`, such as `created_by` columns, are therefore not declared.
+`evaka_user` reaches `person` through `citizen_id`, but it is excluded too. The database sets the column null when the person row is deleted, and the row lives on as the author of what the citizen created. Whether its name should then be anonymised is open (section 9.3). References to `evaka_user`, such as `created_by` columns, are therefore not declared.
 
 ### 5.5 Data in the child table
 
@@ -304,9 +304,9 @@ The voucher value decision generator reads the assistance coefficients from `ass
 
 The schema definition is validated when it is constructed:
 
-- `person` and `child` have their fixed shape, every table declares a primary key, no column carries two references, no reference is a self-reference, and every reference leads to a declared table whose primary key is one column.
+- `person` and `child` have their fixed shape, every table declares a primary key, no column carries two references, no reference is a self-reference, and every reference points to a declared table whose primary key is one column.
 - References form no cycle, and every table reaches the root through them.
-- Every handled table other than `person` declares exactly one primary reference, and its role is the table's handler. `child` is the exception, since its primary reference leads to `person`. An external table has no handler and declares no primary reference.
+- Every handled table other than `person` declares exactly one primary reference, and its role is the table's handler. `child` is the exception, since its primary reference points to `person`. An external table has no handler and declares no primary reference.
 - A table that declares `deletedWithParent` has `independentRows` exactly when its parent has.
 - A date source that reads another table reads `person` or a table with the same handler, and a column is read the same way everywhere. A query source and a not while rule need a primary key of one column.
 - An orphan to delete points outside the schema definition from a column that is not a declared reference.
@@ -327,26 +327,85 @@ Integration tests then compare the schema definition against the database schema
 - A rule whose source may have no date is wrapped directly in a coalesce rule whose fallback always returns a verdict. A column source may have no date when the column is nullable or a date range, and one that reads another table also when that table can be without rows while the table has some, judged by following the not-null primary references, `child` never counting as always present. A query source declares it.
 - Every query source and not while rule runs against the database, and the columns the async jobs read exist and are text.
 
-## 8. Things to figure out
+## 8. Performance optimization: skipping tables
 
-### 8.1 Duplicate persons
+Most rules are primarily based on when the child's last placement ended. If we load the placements first and see that there is a recent, ongoing or future placement, then we can already say for sure that many of the tables can't have any rows deleted. Therefore, loading their rows and evaluating their other rules would be unnecessary.
+
+Below we define an improvement to the basic algorithm that works around this issue to save resources.
+
+### 8.1 Preloaded tables
+
+The loader first reads a small set of tables:
+
+- `person` and `child`
+- `placement`, or more generally every table that is used by a date source of another table, whose primary reference points to `person` or `child`, and that does not declare `independentRows`
+
+It also reads the integration facts of the target (section 4.1), since the safe for integrations rules need them.
+
+### 8.2 Tables known to stay
+
+Whether an expiration rule might be met is first decided from the preloaded tables alone. A rule that reads only preloaded data is evaluated as usual. A rule that reads other data might be met, and it might also return no verdict.
+
+When combining rules:
+- `AllOf` might be met only if each of its rules might be met.
+- `AnyOf` might be met if any of its rules might be met.
+- `Coalesce` might be met if any rule it reaches might be met. It reaches the next rule only if the previous one returns no verdict. For example, if the first rule is a placement rule and in the preloaded data there is a placement, then we already know whether the rule is met or not, so the rest of the rules do not matter. If the person has no placements in the preloaded data, then the next rule is evaluated for whether it might be met or not.
+
+A safe for integrations rule might be met only if the rule it wraps might be met and the integration check might pass. The check fails when the table is handled as a child, or is `person`, and the target is not yet safe to delete for the integration.
+
+The tables whose rule cannot be met are *known to stay*. A preloaded table is known to stay if it has rows and its node cannot be met. A `child` node without its row counts as expired (section 6.1), so then `child` is not known to stay by its own rule.
+
+Two more rules add tables that are known to stay. They are applied again until no more tables are added.
+
+1. A table that stays also keeps the tables that are deleted with it, and in turn the tables deleted with those. If it has no rows, those tables have no rows either, so this is safe regardless. The `child` node is the exception, since it can be without its row. Then it is known to stay only through the rows that reference it, and those rows keep its whole bundle anyway.
+2. If a preloaded table has rows and is known to stay, then the tables on its primary path, `person` and possibly `child`, are also known to stay.
+
+### 8.3 Which tables are skipped
+
+A table is skipped when all of the following hold:
+
+1. The table is known to stay.
+2. The table is not one of the preloaded tables.
+3. Every table that uses it as a date source is also known to stay.
+4. Every blocking reference of the table points to a table also known to stay.
+5. Every table whose primary reference points to it is also skipped.
+
+The reason for the fourth point is that otherwise the table's rows could be what blocks the referenced rows, so it must be checked whether they exist.
+
+The reason for the fifth point is that otherwise the table's rows are needed to find the own rows of those tables. This also means that skipping always applies to whole subtrees of the primary references. Other references into a skipped table do not matter. A row that references it through a secondary reference could only block its rows, which stay anyway. An optional reference is only cleared when the rows it points to are deleted.
+
+### 8.4 Changes to the algorithm
+
+Skipping mainly changes the first step of section 4.1, loading the person's graph. It is split into three parts:
+
+1. The preloaded tables are loaded first. Their nodes are the same as before. The integration facts of the target will also be read already at this point.
+2. The skipped tables are decided, as described in sections 8.2 and 8.3.
+3. The other tables are loaded as before, except the skipped ones. A skipped table gets no node, and its rows are not read. No other table needs the ids of its rows, since the tables whose primary reference points to it are skipped too. For a table that is known to stay but not skipped, its rows are read as before. Only the extra queries for its query sources and not while rules are left out. Foreign rows are not read through a secondary reference that points to a table known to stay. They could only block rows that stay anyway. Finally, the integration facts of the other children that the own rows reference are read.
+
+The rest of the algorithm stays the same, with one exception. In the first pass (section 4.2), a node of a table known to stay is marked not expired without evaluating its rule.
+
+An integration test runs the algorithm with and without skipping and checks that the plans are the same.
+
+## 9. Things to figure out
+
+### 9.1 Duplicate persons
 
 `person.duplicate_of` references another person. It is a deprecated workaround feature and `NULL` in most cases, but some municipalities may have old data in it. A `person` row cannot be deleted while a duplicate row references it, and we may also need to combine their data when evaluating the expiration rules. Until that is decided, the algorithm refuses to process a person whose row is a duplicate of another, or that has duplicates: the job aborts before loading anything.
 
-### 8.2 Which rows are to be archived
+### 9.2 Which rows are to be archived
 
 The not while rule for archival needs to know which rows must be archived before deletion. For `child_document` the schema says it: the template has an `archive_externally` flag and a trigger refuses to delete an unarchived document. For `decision`, `fee_decision` and `voucher_value_decision` there is only the `archived_at` column, and the knowledge of which rows get archived lives in the municipality-specific archival job, together with the fact that archival is enabled per municipality. If the rule treated every row as "to be archived", the nodes would never expire in a municipality without an archive, and rows that are never archived would be blocked forever.
 
-### 8.3 Anonymising orphan evaka_user rows
+### 9.3 Anonymising orphan evaka_user rows
 
 Whether the `name` column of an orphaned `evaka_user` row should be anonymised, for example to "Poistettu kuntalainen", is an open question.
 
-### 8.4 Voucher value report snapshots
+### 9.4 Voucher value report snapshots
 
 The frozen monthly service voucher report is one `voucher_value_report_snapshot` row per month and its `voucher_value_report_decision` rows, each naming a voucher value decision. The algorithm waits for those rows before it deletes the decision but must not delete them (section 5.2), and nothing deletes them today. A job must delete each snapshot a set time after the month it covers, no longer than the ten years of the decisions themselves, or the decisions wait for the report. For the report rows to be deleted with their snapshot, `voucher_value_report_decision.voucher_value_report_snapshot_id` must become `ON DELETE CASCADE`; `decision_id` stays as it is, so that the rows keep holding the decision.
 
-## 9. Existing issues to fix
+## 10. Existing issues to fix
 
-### 9.1 Foreign keys to person that mean a child
+### 10.1 Foreign keys to person that mean a child
 
 Some foreign keys that name a person in the role of a child target `person` instead of `child` (section 1.1), such as `fee_decision_child.child_id` and `varda_state.child_id`. Migrating them to `child` and creating the rows where missing would let us remove some exceptions.

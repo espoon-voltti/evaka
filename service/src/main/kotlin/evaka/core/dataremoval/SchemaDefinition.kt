@@ -154,6 +154,9 @@ class HandledTable(
     /** Rows outside the schema definition that only the rows of this table reference */
     val orphansToDelete: List<OutsideGraphReference> = emptyList(),
 ) : Table {
+    val mayHoldChildData: Boolean
+        get() = handledBy == Handler.CHILD || name == PERSON_TABLE
+
     override fun toString(): String = name
 }
 
@@ -186,10 +189,20 @@ class SchemaDefinition(tables: List<Table>) {
     /** `person` first, then every handled table after the one its primary reference points to */
     val rootFirstOrder: List<HandledTable>
 
+    /**
+     * Loaded before the other tables, so that it can be decided from them which tables are known to
+     * stay
+     */
+    val preloadedTables: Set<HandledTable>
+
     private val primaryReferenceByReferencingTable: Map<String, Reference.Primary>
     /** Note: Key is the referenced table, while the value holds the referencing table */
     private val optionalReferencesByReferencedTable: Map<String, List<DeclaredOptionalReference>>
     private val dateColumnTypesByTable: Map<String, Map<String, DateColumnType>>
+    /**
+     * Note: Key is the table whose dates are read, while the value holds the tables reading them
+     */
+    private val tablesReadingDatesByTable: Map<String, List<HandledTable>>
 
     init {
         val duplicates = tables.groupBy { it.name }.filterValues { it.size > 1 }.keys
@@ -297,6 +310,7 @@ class SchemaDefinition(tables: List<Table>) {
         }
 
         val dateColumnTypesAccumulator = mutableMapOf<String, MutableMap<String, DateColumnType>>()
+        val tablesReadingDatesAccumulator = mutableMapOf<String, MutableSet<HandledTable>>()
         fun recordDateColumn(
             tableUsingDateSource: HandledTable,
             source: DateSource,
@@ -338,6 +352,8 @@ class SchemaDefinition(tables: List<Table>) {
                             columnToRead = source.column,
                             columnType = source.columnType,
                         )
+                        tablesReadingDatesAccumulator.getOrPut(other.name) { mutableSetOf() } +=
+                            table
                     }
                     is DateSource.Custom ->
                         require(table.identifiedByCols.size == 1) {
@@ -353,6 +369,18 @@ class SchemaDefinition(tables: List<Table>) {
             }
         }
         dateColumnTypesByTable = dateColumnTypesAccumulator
+        tablesReadingDatesByTable = tablesReadingDatesAccumulator.mapValues { it.value.toList() }
+
+        preloadedTables =
+            handledTables
+                .filter { table ->
+                    table == person ||
+                        table == child ||
+                        (parentOf(table) in setOf(person, child) &&
+                            table.name in tablesReadingDatesByTable &&
+                            !table.independentRows)
+                }
+                .toSet()
 
         optionalReferencesByReferencedTable =
             tables
@@ -384,6 +412,9 @@ class SchemaDefinition(tables: List<Table>) {
      */
     fun dateColumnsToRead(table: HandledTable): Map<String, DateColumnType> =
         dateColumnTypesByTable[table.name].orEmpty()
+
+    fun tablesReadingDatesOf(table: HandledTable): List<HandledTable> =
+        tablesReadingDatesByTable[table.name].orEmpty()
 
     /** The primary reference leads to the table's handler, except from `child` to `person` */
     private fun primaryReferenceOf(table: HandledTable): Reference.Primary {

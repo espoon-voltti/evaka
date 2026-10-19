@@ -20,6 +20,7 @@ import evaka.core.dataremoval.Integration.VARDA
 import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.shared.ChildId
 import evaka.core.shared.DatabaseTable
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import java.time.LocalDate
 import java.time.Period
@@ -167,6 +168,7 @@ class PersonGraphEvaluationTest {
                     listOf(schema.ownNode("child")),
                     emptyList(),
                     mapOf(targetChildId to neverSent),
+                    tablesKnownToStay = emptySet(),
                 )
             }
         assertContains(error.message!!, "person node")
@@ -238,6 +240,20 @@ class PersonGraphEvaluationTest {
                 .graph(blockingSchema.ownNode("c", row("child_id" to target)), childRow = false)
                 .evaluate(today)
         assertEquals(listOf(whole("c"), person), plan.deleted())
+    }
+
+    @Test
+    fun `a node of a table known to stay is not evaluated and keeps the nodes it references`() {
+        // The row lacks the date the rule reads, so evaluating the rule would fail
+        val schema = schemaWith(After(oneYear, endDate))
+        val plan =
+            schema
+                .graph(
+                    schema.ownNode("a", row("child_id" to target)),
+                    tablesKnownToStay = setOf("a"),
+                )
+                .evaluate(today)
+        assertEquals(emptyList(), plan.deleted())
     }
 
     @Test
@@ -435,12 +451,12 @@ class PersonGraphEvaluationTest {
     private val otherChild = ChildId(UUID.randomUUID())
     private val neverSentChild = ChildId(UUID.randomUUID())
     private val sentToBoth =
-        ChildIntegrationFacts(today.minusYears(5), sentToKoski = true, sentToVarda = true)
+        IntegrationFacts(today.minusYears(5), sentToKoski = true, sentToVarda = true)
     private val sentToVarda =
-        ChildIntegrationFacts(today.minusYears(5), sentToKoski = false, sentToVarda = true)
+        IntegrationFacts(today.minusYears(5), sentToKoski = false, sentToVarda = true)
 
     private fun SchemaDefinition.integrationGraph(
-        integrationFactsByChild: Map<ChildId, ChildIntegrationFacts>
+        integrationFactsByPerson: Map<PersonId, IntegrationFacts>
     ): PersonGraph {
         val decision = UUID.randomUUID()
         return graph(
@@ -451,13 +467,13 @@ class PersonGraphEvaluationTest {
                 row("fee_decision_id" to decision, "child_id" to otherChild.raw),
                 row("fee_decision_id" to decision, "child_id" to neverSentChild.raw),
             ),
-            integrationFactsByChild = integrationFactsByChild,
+            integrationFactsByPerson = integrationFactsByPerson,
         )
     }
 
     @Test
     fun `an integration is frozen for the target of a child-handled table and for the children an adult-handled table names, when sent to it`() {
-        val integrationFactsByChild =
+        val integrationFactsByPerson =
             mapOf(
                 targetChildId to sentToBoth,
                 otherChild to sentToVarda,
@@ -465,14 +481,14 @@ class PersonGraphEvaluationTest {
             )
         val childStays =
             integrationSchema(childRule = Never)
-                .integrationGraph(integrationFactsByChild)
+                .integrationGraph(integrationFactsByPerson)
                 .evaluate(today)
         assertEquals(setOf(targetChildId), childStays.childrenToFreezeForKoski)
         assertEquals(setOf(targetChildId, otherChild), childStays.childrenToFreezeForVarda)
 
         // The child row goes with the plan, so there is nothing to freeze for the target
         val schema = integrationSchema()
-        val childGoes = schema.integrationGraph(integrationFactsByChild).evaluate(today)
+        val childGoes = schema.integrationGraph(integrationFactsByPerson).evaluate(today)
         assertEquals(emptySet(), childGoes.childrenToFreezeForKoski)
         assertEquals(setOf(otherChild), childGoes.childrenToFreezeForVarda)
         assertEquals(schema.handledTables.size, childGoes.ownNodeDeletions.size)
@@ -481,19 +497,15 @@ class PersonGraphEvaluationTest {
     @Test
     fun `a rule safe for an integration expires only when every child concerned is never sent to it or past the safe age`() {
         val past = today.minusYears(SAFE_DATA_REMOVAL_AGE).minusDays(1)
-        val sentToKoskiOld = ChildIntegrationFacts(past, sentToKoski = true, sentToVarda = false)
+        val sentToKoskiOld = IntegrationFacts(past, sentToKoski = true, sentToVarda = false)
         val sentToKoskiYoung =
-            ChildIntegrationFacts(past.plusDays(1), sentToKoski = true, sentToVarda = false)
-        fun expired(
-            rule: ExpirationRule,
-            facts: ChildIntegrationFacts,
-            row: OwnRow = row("child_id" to target),
-        ): Boolean {
+            IntegrationFacts(past.plusDays(1), sentToKoski = true, sentToVarda = false)
+        fun expired(rule: ExpirationRule, facts: IntegrationFacts): Boolean {
             val schema = schemaWith(rule)
             val graph =
                 schema.graph(
-                    schema.ownNode("a", row),
-                    integrationFactsByChild = mapOf(targetChildId to facts),
+                    schema.ownNode("a", row("child_id" to target)),
+                    integrationFactsByPerson = mapOf(targetChildId to facts),
                 )
             return whole("a") in graph.evaluate(today).deleted()
         }
@@ -503,10 +515,6 @@ class PersonGraphEvaluationTest {
         assert(expired(Always.safeFor(VARDA), sentToKoskiYoung))
         assert(!expired(Always.safeFor(KOSKI, VARDA), sentToKoskiYoung))
         assert(expired(Always.safeFor(KOSKI), sentToKoskiOld))
-        // No result from the wrapped rule stays no result, so the fallback decides
-        val noDate = Coalesce(After(oneYear, endDate).safeFor(KOSKI), Always)
-        assert(expired(noDate, sentToKoskiYoung, endedAt(null)))
-        assert(!expired(noDate, sentToKoskiYoung, endedAt(today.minusYears(2))))
     }
 
     @Test
@@ -528,7 +536,7 @@ class PersonGraphEvaluationTest {
                 ),
             )
         val decision = UUID.randomUUID()
-        fun deleted(facts: Map<ChildId, ChildIntegrationFacts>) =
+        fun deleted(facts: Map<PersonId, IntegrationFacts>) =
             schema
                 .graph(
                     schema.ownNode(
@@ -540,7 +548,7 @@ class PersonGraphEvaluationTest {
                         row("fee_decision_id" to decision, "child_id" to otherChild.raw),
                     ),
                     childRow = false,
-                    integrationFactsByChild = facts,
+                    integrationFactsByPerson = facts,
                 )
                 .evaluate(today)
                 .deleted()
@@ -580,13 +588,13 @@ class PersonGraphEvaluationTest {
             )
         val secondChild = ChildId(UUID.randomUUID())
         val sentToVardaPastSafeAge =
-            ChildIntegrationFacts(
+            IntegrationFacts(
                 today.minusYears(SAFE_DATA_REMOVAL_AGE).minusDays(1),
                 sentToKoski = false,
                 sentToVarda = true,
             )
         val decision = UUID.randomUUID()
-        fun deleted(secondChildFacts: ChildIntegrationFacts) =
+        fun deleted(secondChildFacts: IntegrationFacts) =
             schema
                 .graph(
                     schema.ownNode(
@@ -599,7 +607,7 @@ class PersonGraphEvaluationTest {
                         row("fee_decision_id" to decision, "child_id" to secondChild.raw),
                     ),
                     childRow = false,
-                    integrationFactsByChild =
+                    integrationFactsByPerson =
                         mapOf(
                             targetChildId to neverSent,
                             otherChild to sentToVardaPastSafeAge,

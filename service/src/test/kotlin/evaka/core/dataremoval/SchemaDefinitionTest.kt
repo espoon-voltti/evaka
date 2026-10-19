@@ -457,6 +457,28 @@ class SchemaDefinitionTest {
     }
 
     @Test
+    fun `person, child and the tables under them whose dates a rule reads are preloaded, unless their rows are independent`() {
+        val schema =
+            withRule(
+                AllOf(
+                    After(oneYear, GraphTableColumn("b", "end_date")),
+                    After(oneYear, GraphTableColumn("c", "end_date")),
+                    After(oneYear, GraphTableColumn("e", "end_date")),
+                ),
+                table("b", CHILD, "child_id" to "child"),
+                table("c", CHILD, "b_id" to "b"),
+                table("d", CHILD, "child_id" to "child"),
+                table("e", CHILD, "child_id" to "child", independentRows = true),
+            )
+        assertEquals(setOf("person", "child", "b"), schema.preloadedTables.map { it.name }.toSet())
+        assertEquals(listOf(schema.handled("a")), schema.tablesReadingDatesOf(schema.handled("c")))
+        assertEquals(
+            setOf("person", "child", "placement"),
+            declaredSchema.preloadedTables.map { it.name }.toSet(),
+        )
+    }
+
+    @Test
     fun `a custom date source and a not while rule need rows identified by a single column`() {
         invalid("a custom date source needs rows identified by a single column") {
             schema(
