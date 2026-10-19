@@ -118,9 +118,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
     implementation("org.springframework.ws:spring-ws-security") { exclude("org.opensaml") }
-    implementation("org.springframework.ws:spring-ws-support") {
-        exclude("org.eclipse.angus", "angus-mail")
-    }
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // Database-related dependencies
