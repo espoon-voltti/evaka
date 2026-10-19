@@ -200,10 +200,6 @@ dependencies {
     testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.4.3")
 
     integrationTestImplementation("com.upokecenter:cbor")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") { exclude("org.opensaml") }
 
     implementation(project(":vtjclient"))
 
