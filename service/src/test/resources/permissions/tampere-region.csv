@@ -398,9 +398,9 @@ Ryhmä;"Poissaolon poisto";DELETE_ABSENCES;x;;;x;;;;x;x;x;x
 Ryhmä;"Henkilöstön läsnäolojen luku";READ_STAFF_ATTENDANCES;x;;x;x;;;;x;x;x;x
 Ryhmä;"Henkilöstön läsnäolojen muokkaus";UPDATE_STAFF_ATTENDANCES;x;;;;;;;x;x;;
 Ryhmä;"Henkilökunnan tarpeen luku";READ_CARETAKERS;x;;x;x;;x;;x;x;x;x
-Ryhmä;"Henkilökunnan tarpeen luonti";CREATE_CARETAKERS;x;;;;;;;x;;;x
-Ryhmä;"Henkilökunnan tarpeen muokkaus";UPDATE_CARETAKERS;x;;;;;;;x;;;x
-Ryhmä;"Henkilökunnan tarpeen poisto";DELETE_CARETAKERS;x;;;;;;;x;;;x
+Ryhmä;"Henkilökunnan tarpeen luonti";CREATE_CARETAKERS;x;;;;;;;;;;
+Ryhmä;"Henkilökunnan tarpeen muokkaus";UPDATE_CARETAKERS;x;;;;;;;;;;
+Ryhmä;"Henkilökunnan tarpeen poisto";DELETE_CARETAKERS;x;;;;;;;;;;
 Ryhmä;"Muistiinpanon luonti";CREATE_NOTE;x;;;;;;;x;x;x;
 Ryhmä;"Muistiinpanojen luku";READ_NOTES;x;;;;;;;x;x;x;x
 Ryhmä;"Lähteväksi merkitseminen";MARK_DEPARTURE;;;;;;;;;;;
