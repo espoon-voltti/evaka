@@ -280,6 +280,43 @@ test.describe('Citizen weak credentials', () => {
     })
   })
 
+  test('a case-only email change keeps the email verified', async ({
+    evaka
+  }) => {
+    const verifiedEmail = 'matti.meikalainen@hotmail.com'
+    const newEmail = 'Matti.Meikalainen@hotmail.com'
+    const citizen = await Fixture.person({
+      email: verifiedEmail,
+      verifiedEmail,
+      phone: '0401234567'
+    }).saveAdult({
+      updateMockVtjWithDependants: [],
+      updateWeakCredentials: {
+        username: verifiedEmail,
+        password: 'aifiefaeC3io?dee'
+      }
+    })
+
+    const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
+    const section = personalDetailsPage.contactDetailsSection
+    await section.editContactDetails(
+      { phone: '0401234567', backupPhone: '', email: newEmail },
+      true
+    )
+
+    await section.checkContactDetails({
+      phone: '0401234567',
+      backupPhone: '',
+      email: newEmail
+    })
+    await expect(section.verifiedEmailStatus).toBeVisible()
+    await personalDetailsPage.assertTasks([])
+    await expect(section.verificationCodeField).toBeHidden()
+    await expect(personalDetailsPage.loginDetailsSection.username).toHaveText(
+      verifiedEmail
+    )
+  })
+
   test('a new password must be valid and acceptable', async ({ evaka }) => {
     const email = 'test@example.com'
     const validPassword = 'aifiefaeC3io?dee'

@@ -380,7 +380,7 @@ class PersonalDataControllerCitizen(
         user: AuthenticatedUser.Citizen,
     ) {
         val emails = tx.getPersonEmails(user.id)
-        if (emails.email != null && emails.email != emails.verifiedEmail) {
+        if (emails.email != null && emails.email.lowercase() != emails.verifiedEmail?.lowercase()) {
             val verification =
                 tx.upsertEmailVerification(
                     clock.now(),

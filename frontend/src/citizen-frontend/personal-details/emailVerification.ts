@@ -9,7 +9,12 @@ import type { User } from '../auth/state'
 export function isEmailVerified(
   status: EmailVerificationStatusResponse
 ): boolean {
-  return !!status.email && status.email === status.verifiedEmail
+  // Must compare the same way as sendEmailVerificationCode in
+  // PersonalDataControllerCitizen.kt, which sends a code only for an unverified email
+  return (
+    !!status.email &&
+    status.email.toLowerCase() === status.verifiedEmail?.toLowerCase()
+  )
 }
 
 export interface EmailVerificationProblem {
@@ -18,17 +23,16 @@ export interface EmailVerificationProblem {
 }
 
 export function getEmailVerificationProblem(
-  user: User,
+  user: Pick<User, 'weakLoginUsername'>,
   status: EmailVerificationStatusResponse
 ): EmailVerificationProblem | undefined {
   const email = status.email
   if (!email) return undefined
-  if (user.weakLoginUsername) {
-    return user.weakLoginUsername !== email.toLowerCase()
-      ? { type: 'mismatch', email }
-      : undefined
+  if (
+    user.weakLoginUsername &&
+    user.weakLoginUsername !== email.toLowerCase()
+  ) {
+    return { type: 'mismatch', email }
   }
-  return email !== status.verifiedEmail
-    ? { type: 'unverified', email }
-    : undefined
+  return isEmailVerified(status) ? undefined : { type: 'unverified', email }
 }

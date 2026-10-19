@@ -447,7 +447,15 @@ describe('toPersonalDetailsTaskInput', () => {
         },
         'unverified'
       ],
-      [verifiedEmail, 'verified']
+      [verifiedEmail, 'verified'],
+      [
+        {
+          email: 'Citizen@Example.com',
+          verifiedEmail: 'citizen@example.com',
+          latestVerification: null
+        },
+        'verified'
+      ]
     ]
   )('maps email status %o to %s', (emailVerification, expected) => {
     expect(
