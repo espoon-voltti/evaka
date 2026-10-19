@@ -9,8 +9,10 @@ import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
 import evaka.core.VtjXroadEnv
 import evaka.core.application.ApplicationControllerCitizen
+import evaka.core.application.ApplicationControllerV2
 import evaka.core.application.ApplicationStatus
 import evaka.core.application.ApplicationType
+import evaka.core.application.PaperApplicationCreateRequest
 import evaka.core.application.PlacementToolService
 import evaka.core.application.persistence.daycare.Address
 import evaka.core.application.persistence.daycare.Adult
@@ -22,8 +24,10 @@ import evaka.core.dvv.DvvModificationsServiceClient
 import evaka.core.dvv.storeDvvModificationToken
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.SystemController
+import evaka.core.pis.controllers.GetOrCreatePersonBySsnRequest
 import evaka.core.pis.controllers.PersonController
 import evaka.core.pis.getPersonBySSN
+import evaka.core.shared.PersonId
 import evaka.core.shared.PreschoolTermId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -79,6 +83,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @Autowired private lateinit var systemController: SystemController
     @Autowired private lateinit var personController: PersonController
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
+    @Autowired private lateinit var applicationControllerV2: ApplicationControllerV2
     @Autowired private lateinit var placementToolService: PlacementToolService
     @Autowired private lateinit var familyInitializerService: FamilyInitializerService
     @Autowired private lateinit var passwordService: PasswordService
@@ -519,6 +524,57 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `employee create by SSN creates a new person as a leaf`() {
+        personController.getOrCreatePersonBySsn(
+            dbInstance(),
+            admin.user,
+            clock,
+            GetOrCreatePersonBySsnRequest(a.ssn!!),
+        )
+
+        MockVtjSoapTransport.assertRequests(PERUSSANOMA3 to a)
+        assertPersons(a)
+        assertGuardians()
+        assertFridgeChildren()
+    }
+
+    @Test
+    fun `paper application syncs the dependants of a guardian given by SSN and the guardians of the child`() {
+        db.transaction { tx -> tx.insert(x, DevPersonType.CHILD) }
+
+        applicationControllerV2.createPaperApplication(
+            dbInstance(),
+            admin.user,
+            clock,
+            paperApplication(guardianSsn = a.ssn),
+        )
+
+        MockVtjSoapTransport.assertRequests(
+            PERUSSANOMA3 to a,
+            HUOLTAJA_HUOLLETTAVA to a,
+            HUOLLETTAVA_HUOLTAJAT to x,
+            PERUSSANOMA3 to b,
+        )
+        assertPersons(a, b, x)
+        assertGuardians(a to x, b to x)
+        assertFridgeChildren()
+    }
+
+    @Test
+    fun `paper application makes no request for a guardian and a child whose relations are synced`() {
+        insertFamilyOfA()
+
+        applicationControllerV2.createPaperApplication(
+            dbInstance(),
+            admin.user,
+            clock,
+            paperApplication(guardianId = a.id),
+        )
+
+        MockVtjSoapTransport.assertRequests()
+    }
+
+    @Test
     fun `family init queries the guardians of a child whose guardians are not synced`() {
         db.transaction { tx ->
             tx.insert(a, DevPersonType.ADULT)
@@ -649,6 +705,18 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             }
             .exactlyOne()
     }
+
+    private fun paperApplication(guardianId: PersonId? = null, guardianSsn: String? = null) =
+        PaperApplicationCreateRequest(
+            childId = x.id,
+            guardianId = guardianId,
+            guardianToBeCreated = null,
+            guardianSsn = guardianSsn,
+            type = ApplicationType.DAYCARE,
+            sentDate = clock.today(),
+            hideFromGuardian = false,
+            transferApplication = false,
+        )
 
     private fun runPlacementTool(child: DevPerson) {
         placementToolService.createPlacementToolApplicationsFromSsn(

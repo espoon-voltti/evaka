@@ -479,23 +479,30 @@ class PersonController(
 
         val audit = AuditContext().addMeta("readonly", body.readonly)
         return db.connect { dbc ->
-                dbc.transaction {
+                dbc.read {
                     accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
                         Action.Global.CREATE_PERSON_FROM_VTJ,
                     )
-
-                    personService.getOrCreatePerson(
-                        it,
-                        user,
-                        clock.now(),
-                        ssn,
-                        body.readonly,
-                        audit,
-                    )
-                } ?: throw NotFound()
+                }
+                if (body.readonly) {
+                    dbc.transaction {
+                        personService.getOrCreatePerson(
+                            it,
+                            user,
+                            clock.now(),
+                            ssn,
+                            readonly = true,
+                            audit,
+                        )
+                    } ?: throw NotFound()
+                } else {
+                    val result = vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, ssn)
+                    audit.add(result.person.id).addMeta("created", result.created)
+                    result.person
+                }
             }
             .let { PersonJSON.from(it) }
             .also { audit.log(Audit.PersonGetOrCreateBySsn, clock) }
