@@ -27,7 +27,6 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
-import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.Rectangle
@@ -196,32 +195,6 @@ class PersonService(
             tx.updateNonSsnPersonDetails(id, data)
         }
 
-        return tx.getPersonById(id)!!
-    }
-
-    fun addSsn(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
-        id: PersonId,
-        ssn: Ssn,
-    ): PersonDTO {
-        val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
-
-        if (person.ssn != null) {
-            throw BadRequest("User already has ssn")
-        }
-        if (tx.getPersonBySSN(ssn.value) != null) {
-            throw Conflict("User with same ssn already exists")
-        }
-
-        val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-        if (vtjPerson.socialSecurityNumber != ssn.value) {
-            throw BadRequest("VTJ returned a different SSN than the one being added")
-        }
-
-        tx.updatePersonSsnAddingDisabled(id, false)
-        vtjSyncService.applySsnFromVtj(tx, now, id, vtjPerson)
         return tx.getPersonById(id)!!
     }
 
