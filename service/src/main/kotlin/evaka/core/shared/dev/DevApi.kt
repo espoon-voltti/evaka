@@ -2185,6 +2185,8 @@ data class DevPerson(
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
     val updatedFromVtj: HelsinkiDateTime? = null,
+    val vtjGuardiansQueried: HelsinkiDateTime? = null,
+    val vtjDependantsQueried: HelsinkiDateTime? = null,
     val ophPersonOid: String? = null,
     val duplicateOf: PersonId? = null,
     val disabledEmailTypes: Set<NotificationCategory> = emptySet(),
@@ -2216,6 +2218,8 @@ data class DevPerson(
             invoicingPostalCode = this.invoicingPostalCode,
             invoicingPostOffice = this.invoicingPostOffice,
             ophPersonOid = this.ophPersonOid,
+            vtjGuardiansQueried = this.vtjGuardiansQueried,
+            vtjDependantsQueried = this.vtjDependantsQueried,
         )
 
     fun evakaUserId() = EvakaUserId(id.raw)

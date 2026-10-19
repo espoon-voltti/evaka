@@ -401,8 +401,23 @@ export class Fixture {
       ssnAddingDisabled: null,
       ophPersonOid: null,
       updatedFromVtj: null,
+      vtjGuardiansQueried: null,
+      vtjDependantsQueried: null,
       ...initial
     }
+
+    // A VTJ sync of a person who is not in the dummy-idp VTJ mock fails, so such a person is
+    // saved with its relations marked as synced
+    const withRelationsSynced = (): DevPerson =>
+      value.ssn === null
+        ? value
+        : {
+            ...value,
+            vtjGuardiansQueried:
+              value.vtjGuardiansQueried ?? HelsinkiDateTime.now(),
+            vtjDependantsQueried:
+              value.vtjDependantsQueried ?? HelsinkiDateTime.now()
+          }
 
     const updateMockVtj = async (
       dependants: DevPerson[]
@@ -454,7 +469,13 @@ export class Fixture {
           updateWeakCredentials?: { username: string; password: string }
         } = {}
       ) {
-        await createPerson({ body: value, type: 'ADULT' })
+        await createPerson({
+          body:
+            opts.updateMockVtjWithDependants !== undefined
+              ? value
+              : withRelationsSynced(),
+          type: 'ADULT'
+        })
         if (opts.updateMockVtjWithDependants !== undefined) {
           await updateMockVtj(opts.updateMockVtjWithDependants)
         }
@@ -468,7 +489,10 @@ export class Fixture {
       },
 
       async saveChild(opts: { updateMockVtj?: boolean } = {}) {
-        await createPerson({ body: value, type: 'CHILD' })
+        await createPerson({
+          body: opts.updateMockVtj ? value : withRelationsSynced(),
+          type: 'CHILD'
+        })
         if (opts.updateMockVtj) {
           await updateMockVtj([])
         }
