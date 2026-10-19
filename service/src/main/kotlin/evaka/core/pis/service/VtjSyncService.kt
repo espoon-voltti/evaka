@@ -17,6 +17,7 @@ import evaka.core.pis.getPersonIdsBySsns
 import evaka.core.pis.isDependantSyncPerson
 import evaka.core.pis.isMinor
 import evaka.core.pis.setSsnFromVtj
+import evaka.core.pis.updatePersonSsnAddingDisabled
 import evaka.core.shared.ChildId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
@@ -24,8 +25,10 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.NotFound
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -125,20 +128,39 @@ class VtjSyncService(
         syncDependants(dbc, requestingUserId, clock, person.ssn)
     }
 
+    fun addSsn(
+        dbc: Database.Connection,
+        requestingUserId: EvakaUserId,
+        clock: EvakaClock,
+        personId: PersonId,
+        ssn: Ssn,
+    ): PersonDTO {
+        dbc.read { tx ->
+            val person = tx.getPersonById(personId) ?: throw NotFound("Person $personId not found")
+            if (person.ssn != null) throw BadRequest("User already has ssn")
+            if (tx.getPersonBySSN(ssn.value) != null) {
+                throw Conflict("User with same ssn already exists")
+            }
+        }
+        val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
+        if (vtjPerson.socialSecurityNumber != ssn.value) {
+            throw BadRequest("VTJ returned a different SSN than the one being added")
+        }
+        val person = dbc.transaction { tx ->
+            val now = clock.now()
+            tx.updatePersonSsnAddingDisabled(personId, false)
+            applyDeathEffectsOf(tx, now, tx.setSsnFromVtj(personId, vtjPerson, now))
+        }
+        ensureGuardiansSynced(dbc, requestingUserId, clock, personId)
+        ensureDependantsSynced(dbc, requestingUserId, clock, personId)
+        return person
+    }
+
     fun applyFromVtj(
         tx: Database.Transaction,
         now: HelsinkiDateTime,
         person: VtjPerson,
     ): PersonDTO = applyDeathEffectsOf(tx, now, tx.applyPerson(person, now))
-
-    fun applySsnFromVtj(
-        tx: Database.Transaction,
-        now: HelsinkiDateTime,
-        personId: PersonId,
-        person: VtjPerson,
-    ) {
-        val _ = applyDeathEffectsOf(tx, now, tx.setSsnFromVtj(personId, person, now))
-    }
 
     private fun applyDeathEffectsOf(
         tx: Database.Transaction,

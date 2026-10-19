@@ -19,6 +19,7 @@ import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.Predicate
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.dto.VtjPerson
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -121,9 +122,10 @@ fun Database.Transaction.setSsnFromVtj(
 ): ApplyResult {
     val ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN")
     val old = getPersonById(personId) ?: error("Person $personId not found")
-    val new = createQuery {
-        sql(
-            """
+    val new =
+        createQuery {
+                sql(
+                    """
 UPDATE person SET
     social_security_number = ${bind(ssn)},
     first_name = ${bind(person.firstNames)},
@@ -140,12 +142,12 @@ UPDATE person SET
     restricted_details_enabled = ${bind(person.restrictedDetails?.enabled ?: false)},
     restricted_details_end_date = ${bind(person.restrictedDetails?.endDate)},
     updated_from_vtj = ${bind(now)}
-WHERE id = ${bind(personId)}
+WHERE id = ${bind(personId)} AND social_security_number IS NULL
 RETURNING *
 """
-        )
-    }
-        .exactlyOne(toPersonDTO)
+                )
+            }
+            .exactlyOneOrNull(toPersonDTO) ?: throw Conflict("Person $personId already has an SSN")
 
     logChangedFields(old, new)
     return ApplyResult(

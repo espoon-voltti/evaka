@@ -429,9 +429,7 @@ class PersonController(
 
                 val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid social security number")
 
-                PersonJSON.from(
-                    dbc.transaction { personService.addSsn(it, user, clock.now(), personId, ssn) }
-                )
+                PersonJSON.from(vtjSyncService.addSsn(dbc, user.evakaUserId, clock, personId, ssn))
             }
             .also { Audit.PersonUpdate.log(targetId = AuditId(personId)) }
     }
