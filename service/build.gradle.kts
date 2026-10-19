@@ -20,7 +20,6 @@ plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.flyway)
 
-    alias(libs.plugins.versions)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.ktlint.gradle)
 
@@ -118,10 +117,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
-    implementation("org.springframework.ws:spring-ws-security") { exclude("org.opensaml") }
-    implementation("org.springframework.ws:spring-ws-support") {
-        exclude("org.eclipse.angus", "angus-mail")
-    }
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // Database-related dependencies
@@ -144,7 +139,6 @@ dependencies {
 
     // Apache HttpClient
     implementation("org.apache.httpcomponents:httpclient")
-    implementation("org.apache.httpcomponents.core5:httpcore5")
     implementation("org.apache.httpcomponents.client5:httpclient5")
 
     // SFTP
@@ -170,16 +164,15 @@ dependencies {
     implementation("org.thymeleaf:thymeleaf")
     implementation("org.thymeleaf.extras:thymeleaf-extras-java8time")
     implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
-    implementation("org.xhtmlrenderer:flying-saucer-core")
     implementation("org.xhtmlrenderer:flying-saucer-pdf")
 
     // Miscellaneous
     implementation("com.github.kagkarlsson:db-scheduler")
     implementation("com.auth0:java-jwt")
+    implementation("com.google.guava:guava")
     // Exports micrometer metrics as JMX MBeans for Datadog jmxfetch (see dd-jmxfetch/conf.yaml)
     implementation("io.micrometer:micrometer-registry-jmx")
     implementation("io.opentelemetry:opentelemetry-api")
-    implementation("org.apache.commons:commons-text")
     implementation("org.glassfish.jaxb:jaxb-runtime")
     implementation("org.bouncycastle:bcprov-jdk18on")
     implementation("org.apache.tika:tika-core")
@@ -207,10 +200,6 @@ dependencies {
     testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.4.3")
 
     integrationTestImplementation("com.upokecenter:cbor")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
-    integrationTestImplementation("org.apache.cxf:cxf-rt-ws-security") { exclude("org.opensaml") }
 
     implementation(project(":vtjclient"))
 

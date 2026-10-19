@@ -56,11 +56,9 @@ dependencies {
         api("org.apache.httpcomponents.core5:httpcore5:5.4.4")
         api("org.apache.httpcomponents.core5:httpcore5-h2:5.4.4")
         api("org.apache.logging.log4j:log4j-api:2.26.1")
-        api("org.apache.neethi:neethi:3.2.4")
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.27")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.27")
         api("com.fasterxml.jackson.core:jackson-databind:2.22.3")
-        api("org.postgresql:postgresql:42.7.14")
     }
 
     api(platform("tools.jackson:jackson-bom:3.2.3"))

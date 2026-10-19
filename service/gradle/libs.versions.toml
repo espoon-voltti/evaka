@@ -14,7 +14,6 @@ ktlint-gradle = "14.2.0"
 ktlint-kotlin = "2.4.10"
 mockito = "5.24.0"
 spring-boot = "4.1.1"
-versions = "0.64.0"
 
 [libraries]
 dd-java-agent = { module = "com.datadoghq:dd-java-agent", version.ref = "dd-java-agent" }
@@ -23,7 +22,6 @@ flyingsaucer-pdf = { module = "org.xhtmlrenderer:flying-saucer-pdf", version.ref
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-ktlint = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
 ktlint-cli-ruleset-core = { module = "com.pinterest.ktlint:ktlint-cli-ruleset-core", version.ref = "ktlint" }
 ktlint-kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "ktlint-kotlin" }
 ktlint-rule-engine-core = { module = "com.pinterest.ktlint:ktlint-rule-engine-core", version.ref = "ktlint" }
@@ -40,4 +38,3 @@ kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotl
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 ktlint-gradle = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
-versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }

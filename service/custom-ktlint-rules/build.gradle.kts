@@ -15,7 +15,6 @@ dependencies {
 
     // Kotlin + core
     implementation(kotlin("stdlib"))
-    implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
 
