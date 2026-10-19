@@ -11,9 +11,12 @@ import evaka.core.pis.applyDependants
 import evaka.core.pis.applyGuardians
 import evaka.core.pis.applyPerson
 import evaka.core.pis.clearDependantsSynced
+import evaka.core.pis.clearStaleDependantsSynced
+import evaka.core.pis.countPersonsToSync
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.getPersonIdsBySsns
+import evaka.core.pis.getPersonsToSync
 import evaka.core.pis.isDependantSyncPerson
 import evaka.core.pis.isMinor
 import evaka.core.pis.setSsnFromVtj
@@ -23,6 +26,9 @@ import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.async.AsyncJobType
+import evaka.core.shared.async.removeUnclaimedJobs
+import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Conflict
@@ -31,6 +37,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.service.persondetails.VtjClient
+import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -41,6 +48,10 @@ class VtjSyncService(
     private val vtjClient: VtjClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
+    init {
+        asyncJobRunner.registerHandler(::syncMissingVtjRelationsOfPerson)
+    }
+
     /** A new person is created as a leaf: no relations are synced. */
     fun getOrCreatePerson(
         dbc: Database.Connection,
@@ -155,6 +166,50 @@ class VtjSyncService(
         ensureDependantsSynced(dbc, requestingUserId, clock, personId)
         return person
     }
+
+    /**
+     * Plans a VTJ sync for at most [limit] persons who changed so that they need one, for example a
+     * new citizen user, a new head of family or partner, or a child who entered services. Also
+     * clears the dependants marker of each person who no longer needs synced dependants.
+     */
+    fun planMissingSyncs(dbc: Database.Connection, clock: EvakaClock, limit: Int) {
+        val now = clock.now()
+        dbc.transaction { tx ->
+            val cleared =
+                tx.clearStaleDependantsSynced(
+                    olderThan = now.minusDays(1),
+                    today = now.toLocalDate(),
+                )
+            tx.removeUnclaimedJobs(
+                setOf(AsyncJobType(AsyncJob.SyncMissingVtjRelationsOfPerson::class))
+            )
+            val counts = tx.countPersonsToSync(now)
+            val ids = tx.getPersonsToSync(now, limit)
+            asyncJobRunner.plan(
+                tx,
+                ids.map { AsyncJob.SyncMissingVtjRelationsOfPerson(it) },
+                retryCount = 3,
+                runAt = now,
+            )
+            logger.info(
+                mapOf(
+                    "planned" to ids.size,
+                    "newlyDependantSync" to counts.newlyDependantSync,
+                    "guardianSyncChildren" to counts.guardianSyncChildren,
+                    "dependantSyncBacklog" to counts.dependantSyncBacklog,
+                    "clearedDependantsMarkers" to cleared,
+                )
+            ) {
+                "Planned VTJ syncs for ${ids.size} persons (newly dependant-sync persons ${counts.newlyDependantSync}, guardian-sync children ${counts.guardianSyncChildren}, dependant-sync backlog ${counts.dependantSyncBacklog}), cleared $cleared stale dependants markers"
+            }
+        }
+    }
+
+    private fun syncMissingVtjRelationsOfPerson(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SyncMissingVtjRelationsOfPerson,
+    ) = refreshPerson(db, AuthenticatedUser.SystemInternalUser.evakaUserId, clock, msg.personId)
 
     fun applyFromVtj(
         tx: Database.Transaction,
