@@ -170,6 +170,7 @@ dependencies {
     // Miscellaneous
     implementation("com.github.kagkarlsson:db-scheduler")
     implementation("com.auth0:java-jwt")
+    implementation("com.google.guava:guava")
     // Exports micrometer metrics as JMX MBeans for Datadog jmxfetch (see dd-jmxfetch/conf.yaml)
     implementation("io.micrometer:micrometer-registry-jmx")
     implementation("io.opentelemetry:opentelemetry-api")
