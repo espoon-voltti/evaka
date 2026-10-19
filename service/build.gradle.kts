@@ -117,7 +117,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
-    implementation("org.springframework.ws:spring-ws-security") { exclude("org.opensaml") }
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // Database-related dependencies
