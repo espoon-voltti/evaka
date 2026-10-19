@@ -53,7 +53,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-internal class InvoiceConfigurationIT : AbstractTampereIntegrationTest() {
+internal class InvoiceConfigurationIntegrationTest : AbstractTampereIntegrationTest() {
 
     @Autowired private lateinit var generator: InvoiceGenerator
 

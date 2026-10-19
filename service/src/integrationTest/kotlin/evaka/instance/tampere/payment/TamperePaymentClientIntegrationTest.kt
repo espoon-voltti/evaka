@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
 import org.springframework.ws.soap.client.SoapFaultClientException
 
-class TamperePaymentClientIT : AbstractTampereIntegrationTest() {
+class TamperePaymentClientIntegrationTest : AbstractTampereIntegrationTest() {
 
     @Autowired private lateinit var client: PaymentIntegrationClient
 

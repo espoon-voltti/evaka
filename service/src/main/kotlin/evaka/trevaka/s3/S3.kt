@@ -16,6 +16,9 @@ import evaka.instance.ylojarvi.YlojarviProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException
+import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException
+import software.amazon.awssdk.services.s3.model.S3Exception
 
 @Component
 @Profile("local", "integration-test")
@@ -48,5 +51,13 @@ fun createBucketsIfNeeded(client: S3Client, allBuckets: List<String>) {
     val existingBuckets = client.listBuckets().buckets().map { it.name() }
     allBuckets
         .filterNot { bucket -> existingBuckets.contains(bucket) }
-        .forEach { bucket -> client.createBucket { it.bucket(bucket) } }
+        .forEach { bucket ->
+            // Parallel test forks may create the same bucket concurrently
+            try {
+                client.createBucket { it.bucket(bucket) }
+            } catch (e: S3Exception) {
+                if (e !is BucketAlreadyOwnedByYouException && e !is BucketAlreadyExistsException)
+                    throw e
+            }
+        }
 }
