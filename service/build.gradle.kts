@@ -143,7 +143,6 @@ dependencies {
 
     // Apache HttpClient
     implementation("org.apache.httpcomponents:httpclient")
-    implementation("org.apache.httpcomponents.core5:httpcore5")
     implementation("org.apache.httpcomponents.client5:httpclient5")
 
     // SFTP
