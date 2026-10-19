@@ -178,7 +178,6 @@ dependencies {
     // Exports micrometer metrics as JMX MBeans for Datadog jmxfetch (see dd-jmxfetch/conf.yaml)
     implementation("io.micrometer:micrometer-registry-jmx")
     implementation("io.opentelemetry:opentelemetry-api")
-    implementation("org.apache.commons:commons-text")
     implementation("org.glassfish.jaxb:jaxb-runtime")
     implementation("org.bouncycastle:bcprov-jdk18on")
     implementation("org.apache.tika:tika-core")
