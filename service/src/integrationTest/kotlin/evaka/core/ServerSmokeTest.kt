@@ -37,6 +37,23 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
     }
 
     @Test
+    fun `requests from browsers configured with many languages are accepted`() {
+        val acceptLanguage =
+            "fi-FI,fi;q=0.9,sv-FI;q=0.8,sv;q=0.7,en-US;q=0.6,en-GB;q=0.5,en;q=0.4," +
+                "de-DE;q=0.3,de;q=0.2,et-EE;q=0.1,et;q=0.1,ru;q=0.1"
+        val response =
+            http
+                .newCall(
+                    Request.Builder()
+                        .url("http://localhost:$httpPort/health")
+                        .header("Accept-Language", acceptLanguage)
+                        .build()
+                )
+                .execute()
+        assertEquals(200, response.code)
+    }
+
+    @Test
     fun `a valid JWT token and user header are required in API requests`() {
         val response =
             http
