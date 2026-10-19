@@ -85,11 +85,6 @@ WHERE id = ${bind(id)}
 }
     .exactlyOneOrNull()
 
-fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUserIdentity? = createQuery {
-    sql("SELECT id FROM person WHERE social_security_number = ${bind(ssn)}")
-}
-    .exactlyOneOrNull<CitizenUserIdentity>()
-
 fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
     return createQuery {
             sql(

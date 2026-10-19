@@ -28,7 +28,12 @@ import kotlin.reflect.full.memberProperties
 private val logger = KotlinLogging.logger {}
 
 /** [newDateOfDeath] is set only when the stored date of death changed from NULL to a date. */
-data class ApplyResult(val id: PersonId, val created: Boolean, val newDateOfDeath: LocalDate?)
+data class ApplyResult(
+    val id: PersonId,
+    val person: PersonDTO,
+    val created: Boolean,
+    val newDateOfDeath: LocalDate?,
+)
 
 /** Creates or updates the person row that has the SSN of [person]. */
 fun Database.Transaction.applyPerson(person: VtjPerson, now: HelsinkiDateTime): ApplyResult {
@@ -99,6 +104,7 @@ RETURNING *, old.id IS NULL AS inserted
     if (old != null) logChangedFields(old, new)
     return ApplyResult(
         id = new.id,
+        person = new,
         created = created,
         newDateOfDeath = newDateOfDeath(old, new),
     )
@@ -142,7 +148,12 @@ RETURNING *
         .exactlyOne(toPersonDTO)
 
     logChangedFields(old, new)
-    return ApplyResult(id = new.id, created = false, newDateOfDeath = newDateOfDeath(old, new))
+    return ApplyResult(
+        id = new.id,
+        person = new,
+        created = false,
+        newDateOfDeath = newDateOfDeath(old, new),
+    )
 }
 
 /** Replaces the guardians of a child, skipping blocked guardians, and marks them synced. */

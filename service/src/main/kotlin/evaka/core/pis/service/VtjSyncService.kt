@@ -12,6 +12,7 @@ import evaka.core.pis.applyGuardians
 import evaka.core.pis.applyPerson
 import evaka.core.pis.clearDependantsSynced
 import evaka.core.pis.getPersonById
+import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.getPersonIdsBySsns
 import evaka.core.pis.isDependantSyncPerson
 import evaka.core.pis.isMinor
@@ -22,6 +23,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.dto.VtjPerson
@@ -36,6 +38,19 @@ class VtjSyncService(
     private val vtjClient: VtjClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
+    /** A new person is created as a leaf: no relations are synced. */
+    fun getOrCreatePerson(
+        dbc: Database.Connection,
+        requestingUserId: EvakaUserId,
+        clock: EvakaClock,
+        ssn: Ssn,
+    ): GetOrCreateResult {
+        val existing = dbc.read { it.getPersonBySSN(ssn.value) }
+        if (existing != null) return GetOrCreateResult(existing, created = false)
+        val person = syncBasic(dbc, requestingUserId, clock, ssn, clearDependantsSynced = false)
+        return GetOrCreateResult(person, created = true)
+    }
+
     fun ensureDependantsSynced(
         dbc: Database.Connection,
         requestingUserId: EvakaUserId,
@@ -88,12 +103,8 @@ class VtjSyncService(
         if (minor) syncGuardians(dbc, requestingUserId, clock, person.ssn)
         if (dependantSync) syncDependants(dbc, requestingUserId, clock, person.ssn)
         if (!minor && !dependantSync) {
-            val vtjPerson =
-                vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, person.ssn))
-            dbc.transaction { tx ->
-                val id = applyFromVtj(tx, clock.now(), vtjPerson)
-                tx.clearDependantsSynced(id)
-            }
+            val _ =
+                syncBasic(dbc, requestingUserId, clock, person.ssn, clearDependantsSynced = true)
         }
     }
 
@@ -114,8 +125,11 @@ class VtjSyncService(
         syncDependants(dbc, requestingUserId, clock, person.ssn)
     }
 
-    fun applyFromVtj(tx: Database.Transaction, now: HelsinkiDateTime, person: VtjPerson): PersonId =
-        applyDeathEffectsOf(tx, now, tx.applyPerson(person, now))
+    fun applyFromVtj(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime,
+        person: VtjPerson,
+    ): PersonDTO = applyDeathEffectsOf(tx, now, tx.applyPerson(person, now))
 
     fun applySsnFromVtj(
         tx: Database.Transaction,
@@ -130,11 +144,29 @@ class VtjSyncService(
         tx: Database.Transaction,
         now: HelsinkiDateTime,
         result: ApplyResult,
-    ): PersonId {
+    ): PersonDTO {
         if (result.newDateOfDeath != null) {
             tx.applyDeathEffects(asyncJobRunner, now, result.id, result.newDateOfDeath)
         }
-        return result.id
+        return result.person
+    }
+
+    private fun syncBasic(
+        dbc: Database.Connection,
+        requestingUserId: EvakaUserId,
+        clock: EvakaClock,
+        ssn: Ssn,
+        clearDependantsSynced: Boolean,
+    ): PersonDTO {
+        val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
+        if (vtjPerson.socialSecurityNumber != ssn.value) {
+            throw BadRequest("VTJ returned a different SSN than the requested one")
+        }
+        return dbc.transaction { tx ->
+            val person = applyFromVtj(tx, clock.now(), vtjPerson)
+            if (clearDependantsSynced) tx.clearDependantsSynced(person.id)
+            person
+        }
     }
 
     private fun syncGuardians(
@@ -148,9 +180,9 @@ class VtjSyncService(
             fetchMissingPersons(dbc, requestingUserId, snapshot.guardians.map { it.ssn })
         dbc.transaction { tx ->
             val now = clock.now()
-            val childId = applyFromVtj(tx, now, snapshot.person)
-            val newGuardianIds = newGuardians.map { applyFromVtj(tx, now, it) }
-            tx.applyGuardians(childId, (existingGuardianIds + newGuardianIds).toSet(), now)
+            val child = applyFromVtj(tx, now, snapshot.person)
+            val newGuardianIds = newGuardians.map { applyFromVtj(tx, now, it).id }
+            tx.applyGuardians(child.id, (existingGuardianIds + newGuardianIds).toSet(), now)
         }
     }
 
@@ -165,9 +197,9 @@ class VtjSyncService(
             fetchMissingPersons(dbc, requestingUserId, snapshot.dependants.map { it.ssn })
         dbc.transaction { tx ->
             val now = clock.now()
-            val guardianId = applyFromVtj(tx, now, snapshot.person)
-            val newDependantIds = newDependants.map { applyFromVtj(tx, now, it) }
-            tx.applyDependants(guardianId, (existingDependantIds + newDependantIds).toSet(), now)
+            val guardian = applyFromVtj(tx, now, snapshot.person)
+            val newDependantIds = newDependants.map { applyFromVtj(tx, now, it).id }
+            tx.applyDependants(guardian.id, (existingDependantIds + newDependantIds).toSet(), now)
         }
     }
 
@@ -187,3 +219,5 @@ class VtjSyncService(
         return existingIds to newPersons
     }
 }
+
+data class GetOrCreateResult(val person: PersonDTO, val created: Boolean)

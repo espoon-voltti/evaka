@@ -5,6 +5,7 @@
 package evaka.core.pis.service
 
 import evaka.core.PureJdbiTest
+import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
@@ -14,12 +15,15 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.user.updateLastStrongLogin
+import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
+import evaka.core.vtjclient.service.persondetails.VtjClient
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
 import java.time.LocalDate
 import java.time.LocalTime
@@ -30,6 +34,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.mock
 
 /** Fixture family: X is a child of A and B. */
 class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
@@ -55,6 +60,16 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         addToVtj(a, dependants = listOf(x))
         addToVtj(b, dependants = listOf(x))
         addToVtj(x, guardians = listOf(a, b))
+    }
+
+    @Test
+    fun `getOrCreatePerson fails when VTJ returns a different SSN than the requested one`() {
+        assertThrows<BadRequest> {
+            VtjSyncService(vtjClientReturningAnotherSsn, mock())
+                .getOrCreatePerson(db, user.evakaUserId, clock, a.ssn())
+        }
+
+        assertPersons()
     }
 
     @Test
@@ -94,6 +109,23 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             postalCode = "02100",
             postOffice = "Espoo",
         )
+
+    private fun DevPerson.ssn() = Ssn.parse(ssn!!)!!
+
+    private val vtjClientReturningAnotherSsn =
+        object : VtjClient {
+            override fun fetchPerson(query: VtjClient.DetailsQuery) =
+                VtjPerson(
+                    firstNames = "Johannes",
+                    lastName = "Karhula",
+                    socialSecurityNumber = "010199-8137",
+                    restrictedDetails = null,
+                )
+
+            override fun fetchWithGuardians(query: VtjClient.DetailsQuery) = error("unused")
+
+            override fun fetchWithDependants(query: VtjClient.DetailsQuery) = error("unused")
+        }
 
     private fun addToVtj(
         person: DevPerson,
