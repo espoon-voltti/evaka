@@ -20,7 +20,6 @@ plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.flyway)
 
-    alias(libs.plugins.versions)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.ktlint.gradle)
 

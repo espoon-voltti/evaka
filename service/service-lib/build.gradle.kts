@@ -7,7 +7,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen")
     id("org.jetbrains.kotlin.plugin.spring")
 
-    id("com.github.ben-manes.versions")
     id("org.jlleitschuh.gradle.ktlint")
 }
 

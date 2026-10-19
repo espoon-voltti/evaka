@@ -14,7 +14,6 @@ ktlint-gradle = "14.2.0"
 ktlint-kotlin = "2.4.10"
 mockito = "5.24.0"
 spring-boot = "4.1.1"
-versions = "0.64.0"
 
 [libraries]
 dd-java-agent = { module = "com.datadoghq:dd-java-agent", version.ref = "dd-java-agent" }
@@ -40,4 +39,3 @@ kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotl
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 ktlint-gradle = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
-versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
