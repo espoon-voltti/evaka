@@ -1058,8 +1058,7 @@ test.describe('Sending and receiving messages', () => {
       const editor = await citizenMessagesPage.createNewMessage()
       const initialExpiry = await citizenMessagesPage.getSessionExpiry()
 
-      const slowTypedText =
-        'Olen aika hidas kirjoittamaan näitä viestejä, mutta yritän parhaani: Lapseni ovat sitä ja tätä...'
+      const slowTypedText = 'Kirjoitan hitaasti'
       const msDelayPerCharToTypeSlowly = 1200 / slowTypedText.length
       const authStatusRequests: string[] = []
       citizenPage.page.on('request', (request) => {
