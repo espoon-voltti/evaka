@@ -13,7 +13,6 @@ import {
 } from '@playwright/test'
 
 import { initScript, type EvakaBrowserContextOptions } from './browser'
-import config from './config'
 import { setTestMode } from './generated/api-clients'
 import { Element, ElementCollection, Page } from './utils/page'
 
@@ -51,7 +50,7 @@ export const test = base.extend<EvakaFixtures, EvakaWorkerFixtures>({
   },
 
   page: async ({ page }, use) => {
-    page.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
+    page.setDefaultTimeout(5_000)
     await use(page)
   },
 
@@ -91,7 +90,7 @@ export const test = base.extend<EvakaFixtures, EvakaWorkerFixtures>({
       const context = await browser.newContext(browserOptions)
       contexts.push(context)
       const pwPage = await context.newPage()
-      pwPage.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
+      pwPage.setDefaultTimeout(5_000)
       await context.addInitScript({ content: initScript(mergedEvakaOptions) })
       return new Page(pwPage)
     }
