@@ -102,7 +102,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     private val now = HelsinkiDateTime.of(today, LocalTime.of(2, 0))
     private val longAgo = HelsinkiDateTime.of(LocalDate.of(2011, 1, 1), LocalTime.NOON)
     private val decisionArchivedAt = HelsinkiDateTime.of(LocalDate.of(2013, 1, 1), LocalTime.NOON)
-    private val schema =
+    private val defaultSchema =
         buildDataRetentionSchema(
             valueDecisionCapacityFactorEnabled = false,
             overrides = DataRetentionOverrides.NONE,
@@ -133,7 +133,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
 
     /** Without the optimization, so that the graph holds everything the person has */
     private fun load(id: PersonId) = db.transaction {
-        checkNotNull(it.loadPersonGraph(schema, id, today, optimized = false))
+        checkNotNull(it.loadPersonGraph(defaultSchema, id, today, optimized = false))
     }
 
     /** Asserts that the optimization does not change the plan */
@@ -149,12 +149,12 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         return optimizedPlan
     }
 
-    private fun plan(id: PersonId, schema: SchemaDefinition = this.schema) = db.transaction {
+    private fun plan(id: PersonId, schema: SchemaDefinition = defaultSchema) = db.transaction {
         it.optimizedPlan(id, schema)
     }
 
     private fun execute(id: PersonId) = db.transaction { tx ->
-        tx.executeDeletionPlan(tx.optimizedPlan(id, schema), now)
+        tx.executeDeletionPlan(tx.optimizedPlan(id, defaultSchema), now)
     }
 
     private data class ComparablePlan(
@@ -614,7 +614,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { it.insertFamily(lastPlacementEnd = today.minusDays(1)) }
 
         val graph = db.transaction {
-            checkNotNull(it.loadPersonGraph(schema, child.id, today, optimized = true))
+            checkNotNull(it.loadPersonGraph(defaultSchema, child.id, today, optimized = true))
         }
         assertEquals(
             mapOf(
@@ -1157,7 +1157,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     /** The rows of the decision tables that the plans of the child and of the guardian delete */
-    private fun deletedDecisions(schema: SchemaDefinition = this.schema): Map<String, Int?> {
+    private fun deletedDecisions(schema: SchemaDefinition = defaultSchema): Map<String, Int?> {
         val childPlan = plan(child.id, schema).rowCountsByTable()
         val guardianPlan = plan(guardian.id, schema).rowCountsByTable()
         return mapOf(

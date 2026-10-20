@@ -60,13 +60,13 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var uniqueKeys: List<UniqueKey>
     private lateinit var checkConstraints: List<CheckConstraint>
 
-    private val schema =
+    private val defaultSchema =
         buildDataRetentionSchema(
             valueDecisionCapacityFactorEnabled = false,
             overrides = DataRetentionOverrides.NONE,
         )
-    private val declaredTables = schema.tablesByName.values
-    private val handledTables = schema.handledTables
+    private val declaredTables = defaultSchema.tablesByName.values
+    private val handledTables = defaultSchema.handledTables
 
     /** The rules differ by municipality, so the checks of the rules cover each of them */
     private val handledTablesOfEveryMunicipality =
@@ -269,7 +269,7 @@ GROUP BY c.oid, t.relname
                     if (reference.referencedTable == CHILD_TABLE) childTargets
                     else setOf(reference.referencedTable)
                 val idColumn =
-                    schema.tablesByName
+                    defaultSchema.tablesByName
                         .getValue(reference.referencedTable)
                         .identifiedByCols
                         .single()
@@ -447,11 +447,11 @@ GROUP BY c.oid, t.relname
     private fun isRequiredAncestor(table: HandledTable, ancestor: String): Boolean {
         var current = table
         while (true) {
-            val reference = schema.primaryReference(current) ?: return false
+            val reference = defaultSchema.primaryReference(current) ?: return false
             if (columnOf(ColumnRef(current.name, reference.referenceColumn))?.nullable != false)
                 return false
             if (reference.referencedTable == ancestor) return ancestor != CHILD_TABLE
-            current = schema.tablesByName.getValue(reference.referencedTable) as HandledTable
+            current = defaultSchema.tablesByName.getValue(reference.referencedTable) as HandledTable
         }
     }
 
