@@ -46,15 +46,15 @@ const prod: FeatureFlags = {
   showCitizenApplicationPreschoolTerms: true,
   decisionChildDocumentTypes: true,
   placementDesktop: true,
-  citizenChildDocumentTypes: true
+  citizenChildDocumentTypes: true,
+  citizenPwa: true
 }
 
 const features: Features = {
   default: {
     ...prod,
     environmentLabel: 'Test',
-    sharedApplicationEditor: true,
-    citizenPwa: true
+    sharedApplicationEditor: true
   },
   prod
 }
