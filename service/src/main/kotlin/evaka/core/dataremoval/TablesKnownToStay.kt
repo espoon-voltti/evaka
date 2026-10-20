@@ -109,7 +109,7 @@ private class PreloadedData(
                     mightReturnNoVerdict = false,
                 )
             is Coalesce -> coalesced(rule.rules.map { possibleResults(it, node) })
-            is After -> possibleResults(rule, node)
+            is After -> possibleResultsOfAfter(rule, node)
             is NotWhile ->
                 PossibleResults(
                     mightBeMet = node?.mayExpireUnder(rule) ?: true,
@@ -129,7 +129,7 @@ private class PreloadedData(
         return PossibleResults(mightBeMet, mightReturnNoVerdict = true)
     }
 
-    private fun possibleResults(rule: After, node: OwnNode?): PossibleResults {
+    private fun possibleResultsOfAfter(rule: After, node: OwnNode?): PossibleResults {
         val date =
             when (val source = rule.dateSource) {
                 is DateSource.GraphTableColumn ->

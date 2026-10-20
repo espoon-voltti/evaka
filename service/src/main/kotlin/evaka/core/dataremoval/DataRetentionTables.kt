@@ -916,15 +916,16 @@ private fun requireSafetyConditions(
             "$table: Always is the only rule, so the table must be deleted with its parent or wait for the finance freeze"
         }
     }
-    fun HandledTable.waitsForFinanceFreeze(): Boolean =
+    fun HandledTable.waitsForFinanceFreezeDirectlyOrThroughParent(): Boolean =
         financeFreeze?.waitsForFinanceFreeze() == true ||
-            (deletedWithParent && schema.parentOf(this)?.waitsForFinanceFreeze() == true)
+            (deletedWithParent &&
+                schema.parentOf(this)?.waitsForFinanceFreezeDirectlyOrThroughParent() == true)
     for (name in financeInputTables(valueDecisionCapacityFactorEnabled)) {
         val table =
             requireNotNull(schema.tablesByName[name] as? HandledTable) {
                 "The finance generators read $name, which is not declared as a handled table"
             }
-        require(table.waitsForFinanceFreeze()) {
+        require(table.waitsForFinanceFreezeDirectlyOrThroughParent()) {
             "The finance generators read $table, so it must wait for the finance freeze, directly or through the parent it is deleted with"
         }
     }

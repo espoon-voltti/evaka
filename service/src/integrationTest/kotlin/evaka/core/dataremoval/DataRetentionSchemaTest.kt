@@ -72,8 +72,9 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val handledTablesOfEveryMunicipality =
         dataRetentionOverridesByMunicipality.values
             .flatMap { overrides ->
-                listOf(false, true).flatMap {
-                    buildDataRetentionSchema(it, overrides).handledTables
+                listOf(false, true).flatMap { valueDecisionCapacityFactorEnabled ->
+                    buildDataRetentionSchema(valueDecisionCapacityFactorEnabled, overrides)
+                        .handledTables
                 }
             }
             .distinctBy { listOf(it.name, it.expirationRule, it.financeFreeze) }
