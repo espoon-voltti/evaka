@@ -326,6 +326,7 @@ export const UnitFilter = React.memo(function UnitFilter({
         clearable
         fullWidth
         getItemLabel={(item) => item.name}
+        data-qa="unit-filter"
       />
     </>
   )

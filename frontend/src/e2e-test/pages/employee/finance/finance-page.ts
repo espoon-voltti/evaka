@@ -19,6 +19,7 @@ import {
   AsyncButton,
   Checkable,
   Checkbox,
+  Combobox,
   MultiSelect,
   Radio,
   Select,
@@ -181,6 +182,7 @@ export class ValueDecisionsPage {
   #openDecisionHandlerSelectModalButton: AsyncButton
   #firstValueDecisionRow: Element
   searchButton: Element
+  unitFilter: Combobox
 
   constructor(private readonly page: Page) {
     this.#fromDateInput = new DatePicker(
@@ -205,6 +207,7 @@ export class ValueDecisionsPage {
       .findAll('[data-qa="table-value-decision-row"]')
       .first()
     this.searchButton = page.findByDataQa('search-button')
+    this.unitFilter = new Combobox(page.findByDataQa('unit-filter'))
     this.valueDecisionRows = page.findAllByDataQa('table-value-decision-row')
   }
 
