@@ -22,13 +22,27 @@ export type NewEvakaPage = (
 ) => Promise<Page>
 
 type EvakaFixtures = {
-  testMode: void
   evakaOptions: EvakaBrowserContextOptions
   evaka: Page
   newEvakaPage: NewEvakaPage
 }
 
-export const test = base.extend<EvakaFixtures>({
+type EvakaWorkerFixtures = {
+  testMode: void
+}
+
+export const test = base.extend<EvakaFixtures, EvakaWorkerFixtures>({
+  testMode: [
+    // Playwright requires the first parameter to be a destructuring pattern
+    // oxlint-disable-next-line no-empty-pattern
+    async ({}, use) => {
+      await setTestMode({ enabled: true })
+      await use()
+      await setTestMode({ enabled: false })
+    },
+    { scope: 'worker', auto: true }
+  ],
+
   evakaOptions: [{}, { option: true }],
 
   context: async ({ context, evakaOptions }, use) => {
@@ -88,14 +102,6 @@ export const test = base.extend<EvakaFixtures>({
       await context.close()
     }
   }
-})
-
-test.beforeAll(async () => {
-  await setTestMode({ enabled: true })
-})
-
-test.afterAll(async () => {
-  await setTestMode({ enabled: false })
 })
 
 function unwrapElement(value: unknown): unknown {
