@@ -264,7 +264,7 @@ A table that the graph only references, and that references nothing in it, is ou
 
 `attachment` and `sfi_message` reference several tables of the graph through separate columns, of which only one is set per row, and `sfi_message_event` follows `sfi_message`. Supporting them would need a way to split a table's rows by the column that is set, for only two cases, so they are excluded by exception. Their foreign keys are refused in the validation of chapter 7, and the database takes care of their rows instead. Every foreign key from `attachment` into the graph is `ON DELETE SET NULL`, and a separate job deletes attachments that no longer belong to anything. The foreign keys of `sfi_message` and `sfi_message_event` are `ON DELETE CASCADE`, so that a message is deleted with what it was sent for or with the guardian it was sent to.
 
-A leaf table whose rows should simply be deleted with the rows they reference can be excluded the same way with `ON DELETE CASCADE`, as long as the rows need no rule and no deletion instruction of their own. `invoiced_fee_decision`, `calendar_event_attendee` and a citizen's login rows such as `citizen_user` and `citizen_passkey_registration` are excluded like this.
+A leaf table whose rows should simply be deleted with the rows they reference can be excluded the same way with `ON DELETE CASCADE`, as long as the rows need no rule and no deletion instruction of their own. `invoiced_fee_decision`, `calendar_event_attendee` and a citizen's login rows such as `citizen_user` and `citizen_passkey_registration` are excluded like this. So are the rows that connect a citizen's message account to the messages it received and the threads it takes part in, `message_recipients` and `message_thread_participant`, and the account's folders and drafts in `message_thread_folder` and `message_draft` (section 5.6).
 
 ### 5.4 The evaka_user row
 
@@ -273,6 +273,28 @@ A leaf table whose rows should simply be deleted with the rows they reference ca
 ### 5.5 Data in the child table
 
 The `child` row is deleted at the very end, but some information in it, such as diet, may need to be deleted earlier. That information can be cleared by a separate job.
+
+### 5.6 Messages
+
+Messages are deleted by the message removal, which is part of the nightly data removal job, not by this algorithm. A thread is shared by its participants and may record several children, so the rules of the message removal span several people. The message tables are therefore external. Their references into the graph hold the rows that the messages still need, until the message removal has deleted the messages.
+
+A thread that records children expires by their placements, so the placements must stay as long as the thread. The rows of `message_thread_children` hold the `child` row, and with it the placements that are deleted with it. Every rule of the message removal is eventually met while the child row still exists, so a thread never holds a child for good. Once the message removal has deleted the thread, the child's next run can delete the child. The selection of the persons to run must therefore give such a child another run after the message removal.
+
+The message removal deletes a thread about an application only after the application is gone, together with the application notes that copy the thread's messages. The thread does not hold the application: `message_thread.application_id` is an optional reference, which is cleared when the application is deleted. The notes are deleted with their parent application.
+
+A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to the children they are a guardian or a foster parent of, and to the children whose placements the rules of their parentships and partnerships wait for (section 6.4). The message removal finds the latter with the same queries as those rules.
+
+These rows are not held for the threads. Instead, each of them waits until the five years of the threads have passed the same placements. The period is written into the rules of `fridge_child` and `fridge_partner`, and into the rule of `placement` for `guardian` and `foster_parent`, which are deleted with their parent `child` and so with the placements. A test checks this against a list of the tables that connect a recipient to the children, kept by hand next to the query that finds them. Deleting such a row therefore does not make a thread expire earlier.
+
+The exception is a parentship or a partnership that itself ended longer ago than the finance freeze. It expires even if the children are still placed, and the finance thread of that former head of the family or partner then no longer waits for them. This is in line with the finance freeze, since no decisions are generated for the time of that parentship or partnership anymore.
+
+Every person gets a citizen message account when the person is created. `message_account` is handled by adult and deleted with its parent `person`, so the account is deleted together with the person row.
+
+A message the citizen sent holds the account. `message` and `message_content` are external tables whose `sender_id` and `author_id` reference the account, so the account and the person row stay until the message removal has deleted the thread.
+
+Messages the citizen only received do not hold the account. When the account is deleted, the database also deletes the rows that connect it to the messages and threads, and its folders and drafts (section 5.3). The threads themselves stay for as long as the message removal keeps them for the other participants.
+
+Deleting these rows does not make a finance thread expire earlier. A finance thread finds its children through the connections of its recipients described above, and a person row is deleted only after the person's own connections are gone. By then, the deleted rows no longer lead the thread to any child.
 
 ## 6. Special cases
 

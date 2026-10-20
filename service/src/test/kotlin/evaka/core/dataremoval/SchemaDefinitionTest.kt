@@ -614,6 +614,52 @@ class SchemaDefinitionTest {
         }
     }
 
+    /**
+     * The finance thread removal finds the children of a thread through these tables and waits for
+     * their placements, read the same way as in the rules here. A connection deleted earlier would
+     * let the thread expire before them. The exception is a parentship or a partnership that itself
+     * ended longer ago than the finance freeze, which the freeze test above covers.
+     */
+    @Test
+    fun `every declared finance connection waits for the finance thread period after the placements of its children, directly or through a table it is deleted with`() {
+        val placementEndByTable =
+            mapOf(
+                "placement" to OwnColumn("end_date"),
+                "fridge_child" to fridgeChildRelevantPlacementEnd,
+                "fridge_partner" to fridgePartnerRelevantPlacementEnd,
+            )
+        fun HandledTable.waitsForFinanceThreads(): Boolean {
+            val placementEnd = placementEndByTable[name] ?: return false
+            fun ExpirationRule.waits(): Boolean =
+                when (this) {
+                    is After ->
+                        period == FINANCE_THREAD_PLACEMENT_PERIOD && dateSource == placementEnd
+                    is AllOf -> rules.any { it.waits() }
+                    is AnyOf ->
+                        rules.all {
+                            it.waits() || it.usedDateSources() == setOf(OwnColumn("end_date"))
+                        }
+                    // Falls back only when there are no placements to wait for
+                    is Coalesce -> rules.first().waits()
+                    is SafeForIntegrations -> rule.waits()
+                    else -> false
+                }
+            return expirationRule.waits()
+        }
+        fun HandledTable.bundleRoot(): HandledTable =
+            generateSequence(this) {
+                    if (it.deletedWithParent) declaredSchema.parentOf(it) else null
+                }
+                .last()
+        val invalid = FINANCE_CONNECTION_TABLES.filterNot { name ->
+            val root = declaredSchema.handled(name).bundleRoot()
+            declaredSchema.handledTables.any {
+                it.bundleRoot() == root && it.waitsForFinanceThreads()
+            }
+        }
+        assertEquals(emptyList(), invalid)
+    }
+
     /** Always on its own would delete the rows the first time a run reaches them */
     @Test
     fun `every declared table whose rule is Always, wrapped or not, is deleted with its parent`() {

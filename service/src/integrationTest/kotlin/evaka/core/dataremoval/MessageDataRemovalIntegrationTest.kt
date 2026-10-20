@@ -15,6 +15,7 @@ import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.insertAttachment
 import evaka.core.messaging.MessageController
+import evaka.core.messaging.MessageControllerCitizen
 import evaka.core.messaging.MessageRecipient
 import evaka.core.messaging.MessageService
 import evaka.core.messaging.MessageType
@@ -42,6 +43,7 @@ import evaka.core.shared.PlacementId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
 import evaka.core.shared.dev.DevCareArea
@@ -63,6 +65,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.security.PilotFeature
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -82,6 +85,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Autowired private lateinit var dataRemovalService: DataRemovalService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var messageController: MessageController
+    @Autowired private lateinit var messageControllerCitizen: MessageControllerCitizen
     @Autowired private lateinit var messageService: MessageService
     @Autowired private lateinit var placementController: PlacementController
 
@@ -270,6 +274,17 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             sender.account,
             threadId,
             ReplyToMessageBody(content = "reply", recipientAccountIds = recipients),
+        )
+        runSendingJobs()
+    }
+
+    private fun replyAsGuardian(threadId: MessageThreadId, sentAt: HelsinkiDateTime) {
+        messageControllerCitizen.replyToThread(
+            dbInstance(),
+            AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG),
+            MockEvakaClock(sentAt),
+            threadId,
+            ReplyToMessageBody(content = "reply", recipientAccountIds = setOf(staffSender.account)),
         )
         runSendingJobs()
     }
@@ -537,6 +552,38 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
             expiresBefore = draftExpiresBefore,
             limit = limit,
         )
+
+    private val retentionSchema =
+        buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
+
+    private fun runRetention(personId: PersonId) =
+        runDataRetention(
+            db,
+            clock,
+            asyncJobRunner,
+            retentionSchema,
+            personId,
+            dryRun = false,
+            optimized = true,
+        )
+
+    // A person row waits a year after its creation, which the column default sets
+    private fun setCreatedLongAgo(vararg ids: PersonId) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                "UPDATE person SET created = ${bind(now.minusYears(20))} WHERE id = ANY(${bind(ids.toList())})"
+            )
+        }
+    }
+
+    private fun heldBy(personId: PersonId): Set<String> = db.transaction { tx ->
+        checkNotNull(tx.loadPersonGraph(retentionSchema, personId, today, optimized = false))
+            .foreignNodes
+            .map { "${it.table.name}.${it.referenceColumn}" }
+            .toSet()
+    }
+
+    private fun personExists(id: PersonId) = rowCount("person WHERE id = '${id.raw}'") == 1
 
     @Test
     fun `deleteExpiredBulletinThreads deletes a bulletin thread with its messages, recipients, participants, children and content five years after its children left care`() {
@@ -891,6 +938,79 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
     }
 
     @Test
+    fun `runDataRetention keeps a child that a thread records until deleteExpiredRegularThreads deletes the thread`() {
+        val leftCareOverTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
+        insertGroupPlacement(child.id, leftCareOverTenYearsAgo)
+        setCreatedLongAgo(child.id)
+        // Staff can message the child's guardian only while the child is placed
+        sendMessage(
+            sentAt = HelsinkiDateTime.of(leftCareOverTenYearsAgo.start.plusDays(1), LocalTime.NOON),
+            type = MessageType.MESSAGE,
+        )
+
+        runRetention(child.id)
+
+        assertContains(heldBy(child.id), "message_thread_children.child_id")
+        assertEquals(true, personExists(child.id))
+
+        deleteExpiredRegularThreads()
+        runRetention(child.id)
+
+        assertEquals(false, personExists(child.id))
+    }
+
+    @Test
+    fun `runDataRetention deletes a citizen's message account with the person, and the threads of the messages they received stay`() {
+        val recipient = insertAdultWithoutChildren()
+        setCreatedLongAgo(recipient)
+        sendFinanceMessage(recipient = recipient)
+        val recipientAccount = db.read { it.getCitizenMessageAccount(recipient) }
+        assertEquals(
+            1,
+            rowCount("message_thread_participant WHERE participant_id = '${recipientAccount.raw}'"),
+        )
+
+        runRetention(recipient)
+
+        assertEquals(false, personExists(recipient))
+        assertEquals(1, rowCount("message_thread"))
+        // The recipient's rows in the thread go with the account
+        assertEquals(
+            0,
+            rowCount("message_recipients WHERE recipient_id = '${recipientAccount.raw}'"),
+        )
+        assertEquals(
+            0,
+            rowCount("message_thread_participant WHERE participant_id = '${recipientAccount.raw}'"),
+        )
+    }
+
+    @Test
+    fun `runDataRetention keeps a citizen's message account while a message they sent exists, until deleteExpiredRegularThreads deletes its thread`() {
+        val leftCareOverTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
+        insertGroupPlacement(child.id, leftCareOverTenYearsAgo)
+        setCreatedLongAgo(child.id, guardian.id)
+        val sentAt = HelsinkiDateTime.of(leftCareOverTenYearsAgo.start.plusDays(1), LocalTime.NOON)
+        val threadId = sendMessage(sentAt = sentAt, type = MessageType.MESSAGE).threadIds.single()
+        replyAsGuardian(threadId, sentAt.plusDays(1))
+
+        runRetention(child.id)
+        runRetention(guardian.id)
+
+        // The reply holds the account, while the thread and the guardianship hold the child
+        val held = heldBy(guardian.id)
+        assertContains(held, "message.sender_id")
+        assertContains(held, "message_content.author_id")
+        assertEquals(true, personExists(guardian.id))
+
+        deleteExpiredRegularThreads()
+        runRetention(child.id)
+        runRetention(guardian.id)
+
+        assertEquals(false, personExists(guardian.id))
+    }
+
+    @Test
     fun `deleteExpiredRegularThreads deletes a thread whose children have no placements once it has had no messages for ten years`() {
         sendCitizenMessage(sentAt = sendTimeOverTenYearsAgo, children = setOf(child.id))
         val withinAgeLimit =
@@ -1098,6 +1218,57 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
     }
 
     @Test
+    fun `deleteExpiredFinanceThreads keeps a thread while a foster child of its citizen is in care`() {
+        // Only the foster parenthood connects the citizen to the child
+        val fosterParent = DevPerson()
+        db.transaction { tx ->
+            tx.insert(fosterParent, DevPersonType.ADULT)
+            tx.insert(
+                DevFosterParent(
+                    childId = child.id,
+                    parentId = fosterParent.id,
+                    validDuring = ongoingPlacementPeriod.asDateRange(),
+                    modifiedAt = now,
+                    modifiedBy = admin.evakaUserId,
+                )
+            )
+        }
+        insertGroupPlacement(child.id, ongoingPlacementPeriod)
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo, recipient = fosterParent.id)
+
+        deleteExpiredFinanceThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads keeps a thread while a child in the family its citizen heads is in care`() {
+        // Only the parentship connects the citizen to the child
+        val headOfFamily = DevPerson()
+        val childInFamily = DevPerson()
+        db.transaction { tx ->
+            tx.insert(headOfFamily, DevPersonType.ADULT)
+            tx.insert(childInFamily, DevPersonType.CHILD)
+            tx.insert(
+                DevFridgeChild(
+                    childId = childInFamily.id,
+                    headOfChild = headOfFamily.id,
+                    startDate = ongoingPlacementPeriod.start,
+                    endDate = ongoingPlacementPeriod.end,
+                )
+            )
+        }
+        insertGroupPlacement(childInFamily.id, ongoingPlacementPeriod)
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo, recipient = headOfFamily.id)
+
+        deleteExpiredFinanceThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
     fun `deleteExpiredFinanceThreads keeps a thread while a child of the partner of its citizen is in care`() {
         // The citizen has no placed child of their own, so only the family of the partner keeps
         // the thread
@@ -1130,6 +1301,42 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
 
         assertEquals(1, rowCount("message_thread"))
         assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceThreads doesn't wait for a child in care who was in the family of the partner of its citizen only before the partnership`() {
+        // No finance decision of the citizen concerns the child, and neither does the rule of the
+        // partnership wait for the child
+        val partner = DevPerson()
+        val partnersFormerChild = DevPerson()
+        val partnershipStart = today.minusYears(2)
+        db.transaction { tx ->
+            tx.insert(partner, DevPersonType.ADULT)
+            tx.insert(partnersFormerChild, DevPersonType.CHILD)
+            tx.insert(
+                DevFridgeChild(
+                    childId = partnersFormerChild.id,
+                    headOfChild = partner.id,
+                    startDate = ongoingPlacementPeriod.start,
+                    endDate = partnershipStart.minusDays(1),
+                )
+            )
+            tx.insert(
+                DevFridgePartnership(
+                    first = partner.id,
+                    second = guardian.id,
+                    startDate = partnershipStart,
+                    createdAt = now,
+                )
+            )
+        }
+        insertGroupPlacement(partnersFormerChild.id, ongoingPlacementPeriod)
+        sendFinanceMessage(sentAt = sendTimeOverFiveYearsAgo)
+
+        deleteExpiredFinanceThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
     }
 
     @Test
