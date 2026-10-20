@@ -1081,10 +1081,8 @@ test.describe('Sending and receiving messages', () => {
     })
 
     test('Citizen stays on the page and keeps typed text when the session has expired', async () => {
-      citizenPage = await newPage({
-        mockedTime: mockedDateAt10,
-        keepSessionAliveThrottleTime: 300
-      })
+      citizenPage = await newPage({ mockedTime: mockedDateAt10 })
+      await citizenPage.page.clock.install()
       await enduserLoginWeak(citizenPage, credentials)
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(
@@ -1095,11 +1093,14 @@ test.describe('Sending and receiving messages', () => {
       await editor.title.fill('Asiaa lapsista')
       await editor.content.fill('Tämä teksti ei saa kadota')
 
+      // The user is idle for the keepalive throttle time, so the next key
+      // press sends a keepalive request at once
+      await citizenPage.page.clock.fastForward('02:00')
+
       // Dropping the session cookie makes the next keepalive request report
       // an expired session, like an idle timeout on the server would
       await citizenPage.page.context().clearCookies()
       await editor.content.locator.press('End')
-      await editor.content.locator.pressSequentially(' istunnon jälkeen')
 
       const modal = citizenPage.findByDataQa('session-expired-modal')
       await expect(modal).toBeVisible()
@@ -1108,9 +1109,7 @@ test.describe('Sending and receiving messages', () => {
       await modal.findTextExact('Peruuta').click()
       await expect(modal).toBeHidden()
       expect(citizenPage.url).toContain('/messages')
-      await expect(editor.content).toHaveValue(
-        'Tämä teksti ei saa kadota istunnon jälkeen'
-      )
+      await expect(editor.content).toHaveValue('Tämä teksti ei saa kadota')
     })
   })
 
