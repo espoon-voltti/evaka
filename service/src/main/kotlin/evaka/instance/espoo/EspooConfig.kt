@@ -9,7 +9,10 @@ import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.Sensitive
+import evaka.core.SftpEnv
 import evaka.core.VtjXroadEnv
+import evaka.core.bi.BiExportConfig
+import evaka.core.bi.BiExportJob
 import evaka.core.document.archival.ArchivalClient
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.EvakaEmailMessageProvider
@@ -45,6 +48,7 @@ import evaka.core.shared.db.DevDataInitializer
 import evaka.core.shared.message.EvakaMessageProvider
 import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.security.actionrule.ActionRuleMapping
+import evaka.core.shared.sftp.SftpClient
 import evaka.core.shared.template.EvakaTemplateProvider
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
@@ -54,6 +58,7 @@ import evaka.instance.espoo.archival.SärmäHttpClient
 import evaka.instance.espoo.archival.SärmäMockClient
 import evaka.instance.espoo.bi.EspooBiHttpClient
 import evaka.instance.espoo.bi.EspooBiJob
+import evaka.instance.espoo.bi.EspooBiSftpExportClient
 import evaka.instance.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import io.opentelemetry.api.trace.Tracer
 import java.net.URI
@@ -200,6 +205,25 @@ class EspooConfig {
             false -> null
         }
 
+    @Bean @Lazy fun espooBiSftpEnv(env: Environment) = EspooBiSftpEnv.fromEnvironment(env)
+
+    @Bean
+    fun espooBiSftpJob(env: EspooEnv, biSftpEnv: ObjectProvider<EspooBiSftpEnv>): BiExportJob? =
+        when (env.biSftpIntegrationEnabled) {
+            true ->
+                biSftpEnv.getObject().let {
+                    BiExportJob(
+                        EspooBiSftpExportClient(SftpClient(it.sftp, it.prefix)),
+                        BiExportConfig(
+                            includePII = false,
+                            includeLegacyColumns = false,
+                            windowDays = it.windowDays,
+                        ),
+                    )
+                }
+            false -> null
+        }
+
     @Bean
     fun linkityEnv(espooEnv: EspooEnv, env: Environment): LinkityEnv? =
         when (espooEnv.linkityEnabled) {
@@ -293,6 +317,7 @@ class EspooConfig {
         jsonMapper: JsonMapper,
         childDocumentArchivalEnv: ChildDocumentArchivalEnv,
         espooBiJob: EspooBiJob?,
+        espooBiSftpJob: BiExportJob?,
         evakaEnv: EvakaEnv,
     ): EspooScheduledJobs =
         EspooScheduledJobs(
@@ -302,6 +327,7 @@ class EspooConfig {
             linkityEnv,
             jsonMapper,
             espooBiJob,
+            espooBiSftpJob,
             evakaEnv,
         )
 
@@ -344,6 +370,7 @@ data class EspooEnv(
     val invoiceIntegrationEnabled: Boolean,
     val patuIntegrationEnabled: Boolean,
     val biIntegrationEnabled: Boolean,
+    val biSftpIntegrationEnabled: Boolean,
     val linkityEnabled: Boolean,
 ) {
     companion object {
@@ -356,6 +383,7 @@ data class EspooEnv(
                     ) ?: true,
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
                 biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false,
+                biSftpIntegrationEnabled = env.lookup("espoo.integration.bi_sftp.enabled") ?: false,
                 linkityEnabled = env.lookup("espoo.integration.linkity.enabled") ?: false,
             )
     }
@@ -396,6 +424,25 @@ data class EspooBiEnv(val url: String, val username: String, val password: Sensi
                 url = env.lookup("espoo.integration.bi.url"),
                 username = env.lookup("espoo.integration.bi.username"),
                 password = Sensitive(env.lookup("espoo.integration.bi.password")),
+            )
+    }
+}
+
+data class EspooBiSftpEnv(val sftp: SftpEnv, val prefix: String, val windowDays: Int) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            EspooBiSftpEnv(
+                sftp =
+                    SftpEnv(
+                        host = env.lookup("espoo.integration.bi_sftp.host"),
+                        port = 22,
+                        hostKeys = env.lookup("espoo.integration.bi_sftp.host_keys"),
+                        username = env.lookup("espoo.integration.bi_sftp.username"),
+                        password = Sensitive(env.lookup("espoo.integration.bi_sftp.password")),
+                        privateKey = null,
+                    ),
+                prefix = env.lookup("espoo.integration.bi_sftp.prefix"),
+                windowDays = env.lookup("espoo.integration.bi_sftp.window_days"),
             )
     }
 }

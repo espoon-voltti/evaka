@@ -5,11 +5,13 @@
 package evaka.core.shared.sftp
 
 import com.jcraft.jsch.JSchException
+import com.jcraft.jsch.SftpException
 import evaka.core.Sensitive
 import evaka.core.SftpEnv
 import java.net.ServerSocket
 import java.net.SocketTimeoutException
 import java.time.Duration
+import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -119,5 +121,25 @@ class SftpClientTest {
         }
         assertEquals("first", client.getAsString("upload/a.txt", Charsets.UTF_8))
         assertEquals("second", client.getAsString("upload/b.txt", Charsets.UTF_8))
+    }
+
+    @Test
+    fun `createDirectoryIfMissing creates a missing directory and accepts an existing one`() {
+        val client = SftpClient(env.copy(password = Sensitive(password), privateKey = null))
+        val dirname = "upload/${UUID.randomUUID()}"
+        client.session { session ->
+            session.createDirectoryIfMissing(dirname)
+            session.createDirectoryIfMissing(dirname)
+            session.put("hello".byteInputStream(Charsets.UTF_8), "$dirname/test.txt")
+        }
+        assertEquals("hello", client.getAsString("$dirname/test.txt", Charsets.UTF_8))
+    }
+
+    @Test
+    fun `createDirectoryIfMissing fails when a file has the same name`() {
+        val client = SftpClient(env.copy(password = Sensitive(password), privateKey = null))
+        val filename = "upload/${UUID.randomUUID()}"
+        "hello".byteInputStream(Charsets.UTF_8).use { client.put(it, filename) }
+        assertThrows<SftpException> { client.session { it.createDirectoryIfMissing(filename) } }
     }
 }
