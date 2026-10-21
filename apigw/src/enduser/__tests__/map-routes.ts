@@ -77,8 +77,8 @@ describe('Digitransit map API proxy', () => {
     const scope = nock(digitransitUrl)
       .get('/geocoding/v1/autocomplete')
       .query({ text: 'foo' })
-      .reply(function () {
-        upstreamHeaders = this.req.headers
+      .reply((request: Request) => {
+        upstreamHeaders = Object.fromEntries(request.headers)
         return [200, { features: [] }]
       })
 
