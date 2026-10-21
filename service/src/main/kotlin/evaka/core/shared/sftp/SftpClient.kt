@@ -8,6 +8,7 @@ import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.HostKey
 import com.jcraft.jsch.HostKeyRepository
 import com.jcraft.jsch.JSch
+import com.jcraft.jsch.SftpException
 import com.jcraft.jsch.UserInfo
 import evaka.core.SftpEnv
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -97,6 +98,8 @@ interface SftpSession {
     fun put(filename: String, write: (OutputStream) -> Unit)
 
     fun getAsString(filename: String, encoding: Charset): String
+
+    fun createDirectoryIfMissing(dirname: String)
 }
 
 private class ChannelSftpSession(
@@ -120,6 +123,19 @@ private class ChannelSftpSession(
         val target = resolve(filename)
         logger.info { "Downloading $target from ${sftpEnv.host}:${sftpEnv.port}" }
         return channel.get(target).bufferedReader(encoding).use(BufferedReader::readText)
+    }
+
+    override fun createDirectoryIfMissing(dirname: String) {
+        val target = resolve(dirname)
+        try {
+            channel.mkdir(target)
+        } catch (e: SftpException) {
+            // mkdir fails also when the directory exists, for example when another service
+            // instance created it at the same moment
+            if (runCatching { channel.stat(target).isDir }.getOrDefault(false)) return
+            throw e
+        }
+        logger.info { "Created directory $target on ${sftpEnv.host}:${sftpEnv.port}" }
     }
 
     private fun resolve(filename: String): String =

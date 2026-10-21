@@ -6,6 +6,7 @@ package evaka.instance.espoo
 
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
+import evaka.core.bi.BiExportJob
 import evaka.core.linkity.LinkityHttpClient
 import evaka.core.linkity.generateDateRangesForStaffAttendancePlanRequests
 import evaka.core.linkity.sendStaffAttendancesToLinkity
@@ -21,6 +22,7 @@ import evaka.core.shared.job.JobSchedule
 import evaka.core.shared.job.ScheduledJobDefinition
 import evaka.core.shared.job.ScheduledJobSettings
 import evaka.instance.espoo.bi.EspooBiJob
+import evaka.instance.espoo.bi.EspooBiSftpTable
 import evaka.instance.espoo.bi.EspooBiTable
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalTime
@@ -36,6 +38,10 @@ enum class EspooScheduledJob(
     ),
     PlanBiJobs(
         EspooScheduledJobs::planBiJobs,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+    ),
+    PlanSftpBiJobs(
+        EspooScheduledJobs::planSftpBiJobs,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     PlanStaffAttendancePlanJobs(
@@ -55,6 +61,7 @@ class EspooScheduledJobs(
     private val linkityEnv: LinkityEnv?,
     private val jsonMapper: JsonMapper,
     private val espooBiJob: EspooBiJob?,
+    private val espooBiSftpJob: BiExportJob?,
     private val evakaEnv: EvakaEnv,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -81,6 +88,24 @@ class EspooScheduledJobs(
             espooAsyncJobRunner.plan(
                 tx,
                 tables.asSequence().map(EspooAsyncJob::SendBiTable),
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+        }
+    }
+
+    fun planSftpBiJobs(db: Database.Connection, clock: EvakaClock) {
+        if (espooBiSftpJob == null) {
+            logger.info { "BI SFTP export not configured, skipping" }
+            return
+        }
+        val tables = EspooBiSftpTable.entries
+        logger.info { "Planning BI SFTP export jobs for ${tables.size} tables" }
+        db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(EspooAsyncJob.SendSftpBiTable::class)))
+            espooAsyncJobRunner.plan(
+                tx,
+                tables.asSequence().map(EspooAsyncJob::SendSftpBiTable),
                 runAt = clock.now(),
                 retryCount = 1,
             )
