@@ -19,13 +19,8 @@ describe('MCP proxy', () => {
 
   async function proxiedHeaders(clientHeaders: Headers): Promise<Headers> {
     let forwarded: Headers = {}
-    tester.nockScope.post('/mcp').reply(function () {
-      forwarded = Object.fromEntries(
-        Object.entries(this.req.headers).map(([key, value]) => [
-          key.toLowerCase(),
-          value
-        ])
-      )
+    tester.nockScope.post('/mcp').reply((request: Request) => {
+      forwarded = Object.fromEntries(request.headers)
       return [200, { jsonrpc: '2.0', id: 1, result: {} }]
     })
     const res = await tester.client.post(
