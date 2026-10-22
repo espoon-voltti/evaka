@@ -28,6 +28,7 @@ import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.whenever
@@ -264,6 +265,37 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         assertEquals(person.id, identity.id)
 
         assertThrows<Forbidden> { citizenWeakLogin(username = email, password = password) }
+    }
+
+    @Test
+    fun `a case-only email change sends no verification code`() {
+        val password = Sensitive("test123123")
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+        }
+        MockVtjClient.addPersons(person)
+
+        val newEmail = "Verified@Example.com"
+        controller.updatePersonalData(
+            dbInstance(),
+            user,
+            clock,
+            PersonalDataUpdate(email = newEmail),
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(
+            PersonalDataControllerCitizen.EmailVerificationStatusResponse(
+                email = newEmail,
+                verifiedEmail = email,
+                latestVerification = null,
+            ),
+            getEmailVerificationStatus(),
+        )
+        assertNull(MockEmailClient.getEmail(newEmail))
+        val identity = citizenWeakLogin(username = email, password = password)
+        assertEquals(person.id, identity.id)
     }
 
     @Test
