@@ -183,7 +183,9 @@ const actionsBlockedAfterTemplateValidity = new Set<Action.ChildDocument>([
   'PUBLISH',
   'NEXT_STATUS',
   'PREV_STATUS',
-  'PROPOSE_DECISION'
+  'PROPOSE_DECISION',
+  'ACCEPT_DECISION',
+  'REJECT_DECISION'
 ])
 
 const ChildDocumentReadViewInner = React.memo(
@@ -416,18 +418,19 @@ const ChildDocumentReadViewInner = React.memo(
           )}
         <Container>
           <ContentArea $opaque>
-            {templateValidityEnded &&
-              document.status !== 'COMPLETED' &&
-              document.status !== 'DECISION_PROPOSAL' && (
-                <InfoBox
-                  message={
-                    i18n.childInformation.childDocuments.editor
-                      .templateValidityEnded
-                  }
-                  data-qa="template-validity-ended-info"
-                  wide
-                />
-              )}
+            {templateValidityEnded && document.status !== 'COMPLETED' && (
+              <InfoBox
+                message={
+                  document.status === 'DECISION_PROPOSAL'
+                    ? i18n.childInformation.childDocuments.editor
+                        .templateValidityEndedDecisionProposal
+                    : i18n.childInformation.childDocuments.editor
+                        .templateValidityEnded
+                }
+                data-qa="template-validity-ended-info"
+                wide
+              />
+            )}
             <DocumentBasics document={document} />
             <OptionalLabelledValue
               label={

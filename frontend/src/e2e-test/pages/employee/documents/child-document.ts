@@ -28,6 +28,7 @@ export class ChildDocumentPage {
   archiveButton: AsyncButton
   archiveTooltip: Element
   acceptDecisionButton: Element
+  rejectDecisionButton: Element
   sendingConfirmationModal: Modal
   confirmOtherDecisionsButton: Element
   documentSection: Element
@@ -48,6 +49,7 @@ export class ChildDocumentPage {
     this.archiveButton = new AsyncButton(page.findByDataQa('archive-button'))
     this.archiveTooltip = page.findByDataQa('archive-tooltip')
     this.acceptDecisionButton = page.findByDataQa('accept-decision-button')
+    this.rejectDecisionButton = page.findByDataQa('reject-decision-button')
     this.sendingConfirmationModal = new Modal(page.findByDataQa('modal'))
     this.confirmOtherDecisionsButton = page.findByDataQa(
       'confirm-other-decisions-button'

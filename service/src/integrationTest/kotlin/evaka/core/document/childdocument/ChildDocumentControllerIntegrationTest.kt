@@ -1021,20 +1021,32 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `pending decision proposal can be accepted after template validity has ended`() {
+    fun `pending decision proposal cannot be decided after template validity has ended`() {
         createPlacement()
         val documentId = createDecisionDocument()
         proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
         val dayAfter = MockEvakaClock(clock.now().plusDays(1))
 
-        acceptChildDocumentDecision(
-            documentId,
-            DateRange(dayAfter.today(), dayAfter.today().plusDays(5)),
-            user = unitSupervisorUser,
-            clockOverride = dayAfter,
-        )
+        assertTemplateValidityEnded {
+            acceptChildDocumentDecision(
+                documentId,
+                DateRange(dayAfter.today(), dayAfter.today().plusDays(5)),
+                user = unitSupervisorUser,
+                clockOverride = dayAfter,
+            )
+        }
+        assertTemplateValidityEnded {
+            rejectChildDocumentDecision(
+                documentId,
+                user = unitSupervisorUser,
+                clockOverride = dayAfter,
+            )
+        }
 
-        assertEquals(ChildDocumentDecisionStatus.ACCEPTED, getDocument(documentId).decision?.status)
+        val document = getDocument(documentId)
+        assertEquals(DocumentStatus.DECISION_PROPOSAL, document.status)
+        assertNull(document.decision)
+        assertNull(document.publishedAt)
     }
 
     @Test

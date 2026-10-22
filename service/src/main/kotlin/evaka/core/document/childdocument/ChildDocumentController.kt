@@ -874,6 +874,7 @@ class ChildDocumentController(
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
                         throw BadRequest("Document is not in decision proposal status")
+                    assertTemplateValidityNotEnded(document, clock.today())
 
                     val placementDaycareId =
                         tx.getPlacementsForChildDuring(
@@ -978,6 +979,7 @@ class ChildDocumentController(
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
                         throw BadRequest("Document is not in decision proposal status")
+                    assertTemplateValidityNotEnded(document, clock.today())
 
                     val decisionId =
                         tx.insertChildDocumentDecision(

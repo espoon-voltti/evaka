@@ -320,7 +320,7 @@ test.describe('Employee - Child documents', () => {
     await expect(childDocument.editButton).toBeVisible()
   })
 
-  test('Pending decision proposal of an ended template has no read-only info', async ({
+  test('Pending decision proposal of an ended template cannot be decided', async ({
     newEvakaPage
   }) => {
     const template = await Fixture.documentTemplate({
@@ -346,8 +346,11 @@ test.describe('Employee - Child documents', () => {
     const childDocument = new ChildDocumentPage(page)
 
     await expect(childDocument.status).toHaveText('Päätösesitys')
-    await expect(childDocument.acceptDecisionButton).toBeVisible()
-    await expect(childDocument.templateValidityEndedInfo).toBeHidden()
+    await expect(childDocument.templateValidityEndedInfo).toContainText(
+      'päätösesityksestä'
+    )
+    await expect(childDocument.acceptDecisionButton).toBeHidden()
+    await expect(childDocument.rejectDecisionButton).toBeHidden()
   })
 
   test('Completed document of an ended template has no read-only info', async ({
