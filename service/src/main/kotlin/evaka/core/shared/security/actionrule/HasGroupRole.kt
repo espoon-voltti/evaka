@@ -7,6 +7,7 @@ package evaka.core.shared.security.actionrule
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.document.childdocument.childDocumentTemplateValidityNotEnded
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
@@ -17,7 +18,6 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.PredicateSql
 import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.toFiniteDateRange
 import evaka.core.shared.security.AccessControlDecision
 import evaka.core.shared.security.PilotFeature
 import evaka.core.shared.utils.emptyEnumSet
@@ -261,7 +261,7 @@ WHERE daycare_acl.employee_id = ${bind(user.id)}
   AND dgp.start_date <= CASE WHEN child_document.type = 'CITIZEN_BASIC' THEN ${bind(futureAccessDate)} ELSE ${bind(today)} END
   AND dgp.end_date >= ${bind(today)}
   AND ${predicate(childDocumentFilters)}
-  ${if (deletable) "AND NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = child_document.template_id AND dt.validity << ${bind(today.toFiniteDateRange())})" else ""}
+  ${if (deletable) "AND ${predicate(childDocumentTemplateValidityNotEnded(today).forTable("child_document"))}" else ""}
             """
                     .trimIndent()
             )

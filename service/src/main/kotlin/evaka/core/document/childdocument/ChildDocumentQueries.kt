@@ -26,6 +26,7 @@ import evaka.core.shared.db.PredicateSql
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
+import evaka.core.shared.domain.toFiniteDateRange
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
@@ -791,6 +792,13 @@ fun Database.Transaction.setChildDocumentDecisionValidity(
         )
     }
         .updateExactlyOne()
+}
+
+/** Documents can't be modified after their template's validity has ended */
+fun childDocumentTemplateValidityNotEnded(today: LocalDate) = Predicate {
+    where(
+        "NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = $it.template_id AND dt.validity << ${bind(today.toFiniteDateRange())})"
+    )
 }
 
 fun Database.Read.getChildDocumentsEligibleForArchival(

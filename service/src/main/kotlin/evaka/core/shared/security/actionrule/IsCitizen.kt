@@ -5,6 +5,7 @@
 package evaka.core.shared.security.actionrule
 
 import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.document.childdocument.childDocumentTemplateValidityNotEnded
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AttachmentId
@@ -29,7 +30,6 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.toFiniteDateRange
 import evaka.core.shared.security.AccessControlDecision
 
 private typealias FilterByCitizen =
@@ -354,7 +354,7 @@ FROM child_document cd
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = cd.child_id)
     AND EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = cd.id)
     ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
-    ${if (editable) "AND NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = cd.template_id AND dt.validity << ${bind(now.toLocalDate().toFiniteDateRange())})" else ""}
+    ${if (editable) "AND ${predicate(childDocumentTemplateValidityNotEnded(now.toLocalDate()).forTable("cd"))}" else ""}
             """
                     .trimIndent()
             )
@@ -369,7 +369,7 @@ FROM child_document cd
 WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = cd.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
     AND EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = cd.id)
     ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
-    ${if (editable) "AND NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = cd.template_id AND dt.validity << ${bind(now.toLocalDate().toFiniteDateRange())})" else ""}
+    ${if (editable) "AND ${predicate(childDocumentTemplateValidityNotEnded(now.toLocalDate()).forTable("cd"))}" else ""}
             """
                     .trimIndent()
             )

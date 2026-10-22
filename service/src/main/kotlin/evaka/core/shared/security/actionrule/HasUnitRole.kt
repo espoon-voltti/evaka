@@ -7,6 +7,7 @@ package evaka.core.shared.security.actionrule
 import evaka.core.application.ApplicationType
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.document.childdocument.childDocumentTemplateValidityNotEnded
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AssistanceActionId
@@ -643,7 +644,7 @@ FROM child_document
 WHERE TRUE
 ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])" else ""}
 ${if (deletable) "AND status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)" else ""}
-${if (deletable) "AND NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = child_document.template_id AND dt.validity << ${bind(now.toLocalDate().toFiniteDateRange())})" else ""}
+${if (deletable) "AND ${predicate(childDocumentTemplateValidityNotEnded(now.toLocalDate()).forTable("child_document"))}" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
 ${if (canGoToPrevStatus) "AND ((type = 'OTHER_DECISION') OR (type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb)) AND status <> 'COMPLETED'" else ""}
             """
