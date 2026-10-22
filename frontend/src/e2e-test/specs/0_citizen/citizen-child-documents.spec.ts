@@ -551,4 +551,57 @@ test.describe('Citizen child documents editor page', () => {
       childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     ).toBeHidden()
   })
+  test('sending fails with an explanation when the template ends while the page is open', async ({
+    evaka
+  }) => {
+    const template = await Fixture.documentTemplate({
+      ...documentTemplate,
+      validity: new DateRange(
+        mockedNow.toLocalDate().subDays(30),
+        mockedNow.toLocalDate()
+      )
+    }).save()
+    const documentContent: DocumentContent = {
+      answers: []
+    }
+    const document = await Fixture.childDocument({
+      templateId: template.id,
+      childId: child.id,
+      status: 'CITIZEN_DRAFT',
+      content: documentContent
+    })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: documentContent
+      })
+      .save()
+
+    await enduserLogin(
+      evaka,
+      testAdult,
+      `/child-documents/${document.id}?readOnly=false`
+    )
+    const childDocumentPage = new ChildDocumentPage(evaka)
+    await childDocumentPage
+      .getTextQuestion('Testi', 'Kysymys 1')
+      .fill('Jonkin sortin vastaus 1')
+    await childDocumentPage
+      .getTextQuestion('Testi', 'Kysymys 2')
+      .fill('Jonkin sortin vastaus 2')
+    await childDocumentPage.previewButton.click()
+
+    await childDocumentPage.sendButton.click()
+
+    await evaka.page.evaluate((nextDay) => {
+      ;(window as unknown as { evaka: { mockedTime: Date } }).evaka.mockedTime =
+        new Date(nextDay)
+    }, mockedNow.addHours(24).formatIso())
+
+    await childDocumentPage.sendingConfirmationModal.submit()
+    await expect(childDocumentPage.sendingConfirmationModal).toContainText(
+      'Lomakkeen täyttöaika on päättynyt'
+    )
+  })
 })

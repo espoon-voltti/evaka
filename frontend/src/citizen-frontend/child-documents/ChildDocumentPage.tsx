@@ -6,6 +6,7 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import { useLocation, useSearchParams } from 'wouter'
 
+import type DateRange from 'lib-common/date-range'
 import { useBoolean, useForm } from 'lib-common/form/hooks'
 import type { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
@@ -161,6 +162,9 @@ export default React.memo(function ChildDocumentPage() {
   )
 })
 
+const isTemplateValidityEnded = (validity: DateRange) =>
+  validity.end !== null && validity.end.isBefore(LocalDate.todayInHelsinkiTz())
+
 const ChildDocumentView = React.memo(function ChildDocumentView({
   document
 }: {
@@ -183,9 +187,9 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
 
   const [searchParams] = useSearchParams()
 
-  const templateValidityEnded =
-    document.template.validity.end !== null &&
-    document.template.validity.end.isBefore(LocalDate.todayInHelsinkiTz())
+  const templateValidityEnded = isTemplateValidityEnded(
+    document.template.validity
+  )
   const fillable = document.status === 'CITIZEN_DRAFT' && !templateValidityEnded
 
   const initialReadOnly = !fillable || searchParams.get('readOnly') !== 'false'
@@ -299,6 +303,11 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
                       i18n.children.childDocuments.sendingConfirmationText
                     }
                     onSuccess={onSuccess}
+                    onFailure={() =>
+                      isTemplateValidityEnded(document.template.validity)
+                        ? i18n.children.childDocuments.templateValidityEnded
+                        : ''
+                    }
                     buttonText={i18n.children.childDocuments.send}
                     primary
                     disabled={!bind.isValid()}
