@@ -29,6 +29,21 @@
   postUpdateOptions: ['yarnDedupeHighest', 'npmDedupe'],
 
   labels: ['dependencies'],
+
+  customManagers: [
+    {
+      // Updates S3_DOWNLOADER_SHA256 along with the version. The two ARG lines
+      // must stay adjacent, or Renovate stops updating them without a warning.
+      customType: 'regex',
+      managerFilePatterns: ['/(^|/)Dockerfile$/'],
+      matchStrings: [
+        'ARG S3_DOWNLOADER_VERSION=(?<currentValue>\\S+)\\s+ARG S3_DOWNLOADER_SHA256="(?<currentDigest>[a-f0-9]{64})"',
+      ],
+      depNameTemplate: 'espoon-voltti/s3-downloader',
+      datasourceTemplate: 'github-release-attachments',
+    },
+  ],
+
   packageRules: [
     {
       matchFileNames: ['apigw/**'],
