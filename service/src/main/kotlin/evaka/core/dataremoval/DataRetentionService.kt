@@ -13,6 +13,7 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
 import java.util.UUID
 import kotlin.time.TimeSource
 import org.springframework.stereotype.Service
@@ -37,6 +38,14 @@ class DataRetentionService(
         clock: EvakaClock,
         msg: AsyncJob.DeleteExpiredPersonData,
     ) {
+        if (msg.skipIfStartedAfter != null && clock.now() > msg.skipIfStartedAfter) {
+            logger.info {
+                "Data retention for person ${msg.personId} skipped: the time allocation of the night ended at ${msg.skipIfStartedAfter}"
+            }
+            return
+        }
+        // Recorded in its own transaction so that a failed run counts as an attempt too
+        dbc.transaction { it.setDataRetentionLastAttemptedAt(msg.personId, clock.now()) }
         runDataRetention(
             dbc,
             clock,
@@ -46,6 +55,37 @@ class DataRetentionService(
             dryRun = msg.dryRun,
             optimized = msg.optimized ?: true,
         )
+    }
+}
+
+fun planDataRetentionRuns(
+    db: Database.Connection,
+    clock: EvakaClock,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    personCount: Int,
+    maxDuration: Duration,
+) {
+    val now = clock.now()
+    val skipIfStartedAfter = now + maxDuration
+    val personIds = db.transaction { tx ->
+        val personIds = tx.getPersonsWithOldestDataRetentionAttempt(personCount)
+        asyncJobRunner.plan(
+            tx,
+            personIds.map { personId ->
+                AsyncJob.DeleteExpiredPersonData(
+                    personId,
+                    dryRun = true,
+                    optimized = true,
+                    skipIfStartedAfter = skipIfStartedAfter,
+                )
+            },
+            retryCount = 3,
+            runAt = now,
+        )
+        personIds
+    }
+    logger.info {
+        "Planned data retention dry runs for ${personIds.size} persons, skipped if started after $skipIfStartedAfter"
     }
 }
 

@@ -617,3 +617,4 @@ V618__invoice_correction_finite_period.sql
 V619__decision_decided_by.sql
 V620__ssn_not_empty.sql
 V621__mcp_server.sql
+V622__person_data_retention_last_attempted_at.sql
