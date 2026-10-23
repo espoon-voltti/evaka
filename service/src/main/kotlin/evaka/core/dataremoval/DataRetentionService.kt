@@ -23,8 +23,10 @@ private val logger = KotlinLogging.logger {}
 class DataRetentionService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     featureConfig: FeatureConfig,
+    overrides: DataRetentionOverrides,
 ) {
-    private val schema = buildDataRetentionSchema(featureConfig.valueDecisionCapacityFactorEnabled)
+    private val schema =
+        buildDataRetentionSchema(featureConfig.valueDecisionCapacityFactorEnabled, overrides)
 
     init {
         asyncJobRunner.registerHandler(::deleteExpiredPersonData)

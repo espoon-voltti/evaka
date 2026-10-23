@@ -7,6 +7,10 @@ package evaka.core.dataremoval
 import evaka.core.PureJdbiTest
 import evaka.core.application.ApplicationStatus
 import evaka.core.application.ApplicationType
+import evaka.core.application.persistence.club.Adult as ClubAdult
+import evaka.core.application.persistence.club.Apply as ClubApply
+import evaka.core.application.persistence.club.Child as ClubChild
+import evaka.core.application.persistence.club.ClubFormV0
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child as ApplicationFormChild
@@ -28,6 +32,7 @@ import evaka.core.incomestatement.IncomeStatementStatus
 import evaka.core.insertServiceNeedOptions
 import evaka.core.invoicing.domain.FeeAlterationType
 import evaka.core.invoicing.domain.FeeDecisionStatus
+import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.service.ProductKey
 import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.placement.PlacementSource
@@ -81,6 +86,7 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.snDefaultDaycare
+import evaka.instance.espoo.espooDataRetentionOverrides
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
@@ -95,7 +101,12 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     private val today = LocalDate.of(2026, 9, 12)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(2, 0))
     private val longAgo = HelsinkiDateTime.of(LocalDate.of(2011, 1, 1), LocalTime.NOON)
-    private val schema = buildDataRetentionSchema(valueDecisionCapacityFactorEnabled = false)
+    private val decisionArchivedAt = HelsinkiDateTime.of(LocalDate.of(2013, 1, 1), LocalTime.NOON)
+    private val defaultSchema =
+        buildDataRetentionSchema(
+            valueDecisionCapacityFactorEnabled = false,
+            overrides = DataRetentionOverrides.NONE,
+        )
 
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
@@ -122,11 +133,14 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
 
     /** Without the optimization, so that the graph holds everything the person has */
     private fun load(id: PersonId) = db.transaction {
-        checkNotNull(it.loadPersonGraph(schema, id, today, optimized = false))
+        checkNotNull(it.loadPersonGraph(defaultSchema, id, today, optimized = false))
     }
 
     /** Asserts that the optimization does not change the plan */
-    private fun Database.Transaction.optimizedPlan(id: PersonId): DeletionPlan {
+    private fun Database.Transaction.optimizedPlan(
+        id: PersonId,
+        schema: SchemaDefinition,
+    ): DeletionPlan {
         val unoptimizedPlan =
             checkNotNull(loadPersonGraph(schema, id, today, optimized = false)).evaluate(today)
         val optimizedPlan =
@@ -135,10 +149,12 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         return optimizedPlan
     }
 
-    private fun plan(id: PersonId) = db.transaction { it.optimizedPlan(id) }
+    private fun plan(id: PersonId, schema: SchemaDefinition = defaultSchema) = db.transaction {
+        it.optimizedPlan(id, schema)
+    }
 
     private fun execute(id: PersonId) = db.transaction { tx ->
-        tx.executeDeletionPlan(tx.optimizedPlan(id), now)
+        tx.executeDeletionPlan(tx.optimizedPlan(id, defaultSchema), now)
     }
 
     private data class ComparablePlan(
@@ -598,7 +614,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { it.insertFamily(lastPlacementEnd = today.minusDays(1)) }
 
         val graph = db.transaction {
-            checkNotNull(it.loadPersonGraph(schema, child.id, today, optimized = true))
+            checkNotNull(it.loadPersonGraph(defaultSchema, child.id, today, optimized = true))
         }
         assertEquals(
             mapOf(
@@ -980,7 +996,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `a pending application is kept with its decision however old, and expires once rejected`() {
+    fun `a pending application is kept with its decision however old, and expires once rejected and archived`() {
         val applicationId = db.transaction { tx ->
             tx.insert(
                 DevPlacement(
@@ -998,7 +1014,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE decision SET status = 'REJECTED' WHERE application_id = ${bind(applicationId)}"
+                    "UPDATE decision SET status = 'REJECTED', archived_at = ${bind(now)} WHERE application_id = ${bind(applicationId)}"
                 )
             }
             tx.execute {
@@ -1085,6 +1101,131 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         val deleted = execute(child.id).deletedRowCountsByTable
         assertEquals(1, deleted["application"])
         assertEquals(1, deleted["decision"])
+    }
+
+    @Test
+    fun `an accepted or rejected decision keeps its application until it has been archived, unless it is a club decision`() {
+        val applicationId = db.transaction { tx ->
+            tx.insertApplicationTree(
+                ApplicationStatus.REJECTED,
+                DecisionStatus.REJECTED,
+                decisionArchived = false,
+            )
+        }
+        db.transaction { tx ->
+            val clubApplicationId =
+                tx.insertTestApplication(
+                    type = ApplicationType.CLUB,
+                    sentDate = LocalDate.of(2012, 4, 1),
+                    status = ApplicationStatus.REJECTED,
+                    confidential = false,
+                    guardianId = guardian.id,
+                    childId = child.id,
+                    document =
+                        ClubFormV0(
+                            child = ClubChild(dateOfBirth = null),
+                            guardian = ClubAdult(),
+                            apply = ClubApply(preferredUnits = listOf(daycare.id)),
+                        ),
+                    modifiedAt = longAgo,
+                )
+            tx.insertTestDecision(
+                TestDecision(
+                    createdBy = employee.evakaUserId,
+                    sentDate = LocalDate.of(2012, 6, 1),
+                    unitId = daycare.id,
+                    applicationId = clubApplicationId,
+                    type = DecisionType.CLUB,
+                    startDate = LocalDate.of(2012, 8, 1),
+                    endDate = LocalDate.of(2013, 5, 31),
+                    status = DecisionStatus.REJECTED,
+                )
+            )
+        }
+
+        assertEquals(null, plan(child.id).rowCountsByTable()["application"])
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE decision SET archived_at = ${bind(now)} WHERE application_id = ${bind(applicationId)}"
+                )
+            }
+        }
+
+        assertEquals(2, plan(child.id).rowCountsByTable()["application"])
+    }
+
+    /** The rows of the decision tables that the plans of the child and of the guardian delete */
+    private fun deletedDecisions(schema: SchemaDefinition = defaultSchema): Map<String, Int?> {
+        val childPlan = plan(child.id, schema).rowCountsByTable()
+        val guardianPlan = plan(guardian.id, schema).rowCountsByTable()
+        return mapOf(
+            "decision" to childPlan["decision"],
+            "voucher_value_decision" to childPlan["voucher_value_decision"],
+            "fee_decision" to guardianPlan["fee_decision"],
+        )
+    }
+
+    private fun setFinanceDecisionStatuses(
+        feeDecisionStatus: FeeDecisionStatus,
+        voucherValueDecisionStatus: VoucherValueDecisionStatus,
+    ) = db.transaction { tx ->
+        tx.execute { sql("UPDATE fee_decision SET status = ${bind(feeDecisionStatus)}") }
+        tx.execute {
+            sql("UPDATE voucher_value_decision SET status = ${bind(voucherValueDecisionStatus)}")
+        }
+    }
+
+    @Test
+    fun `a sent or annulled fee or voucher value decision waits until it has been archived`() {
+        db.transaction { it.insertFamily() }
+        val allDeleted = mapOf("decision" to 1, "voucher_value_decision" to 1, "fee_decision" to 1)
+        val financeDecisionsKept =
+            mapOf("decision" to 1, "voucher_value_decision" to null, "fee_decision" to null)
+        assertEquals(allDeleted, deletedDecisions())
+
+        setFinanceDecisionStatuses(FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT)
+        assertEquals(financeDecisionsKept, deletedDecisions())
+
+        setFinanceDecisionStatuses(FeeDecisionStatus.ANNULLED, VoucherValueDecisionStatus.ANNULLED)
+        assertEquals(financeDecisionsKept, deletedDecisions())
+
+        setFinanceDecisionStatuses(
+            FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+            VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+        )
+        assertEquals(allDeleted, deletedDecisions())
+
+        setFinanceDecisionStatuses(FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT)
+        db.transaction { tx ->
+            tx.execute { sql("UPDATE fee_decision SET archived_at = ${bind(now)}") }
+            tx.execute { sql("UPDATE voucher_value_decision SET archived_at = ${bind(now)}") }
+        }
+        assertEquals(allDeleted, deletedDecisions())
+    }
+
+    @Test
+    fun `with the overrides of Espoo, which archives only child documents, the decisions do not wait for archival`() {
+        db.transaction { tx ->
+            tx.insertFamily()
+            tx.execute { sql("UPDATE decision SET archived_at = NULL") }
+        }
+        setFinanceDecisionStatuses(FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT)
+        val espooSchema =
+            buildDataRetentionSchema(
+                valueDecisionCapacityFactorEnabled = false,
+                overrides = espooDataRetentionOverrides,
+            )
+
+        assertEquals(
+            mapOf("decision" to null, "voucher_value_decision" to null, "fee_decision" to null),
+            deletedDecisions(),
+        )
+        assertEquals(
+            mapOf("decision" to 1, "voucher_value_decision" to 1, "fee_decision" to 1),
+            deletedDecisions(espooSchema),
+        )
     }
 
     @Test
@@ -1717,11 +1858,13 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
 
     /**
      * An application made by the guardian in 2012 with the other guardian on it, with a note, a
-     * placement plan, a placement draft and a decision with PDFs for both guardians
+     * placement plan, a placement draft and a decision with PDFs for both guardians, which has been
+     * archived unless it is pending
      */
     private fun Database.Transaction.insertApplicationTree(
         status: ApplicationStatus = ApplicationStatus.ACTIVE,
         decisionStatus: DecisionStatus = DecisionStatus.ACCEPTED,
+        decisionArchived: Boolean = decisionStatus != DecisionStatus.PENDING,
     ): ApplicationId {
         val applicationId =
             insertTestApplication(
@@ -1775,7 +1918,7 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
             )
         execute {
             sql(
-                "UPDATE decision SET other_guardian_document_key = 'decision-other-guardian.pdf' WHERE id = ${bind(decisionId)}"
+                "UPDATE decision SET other_guardian_document_key = 'decision-other-guardian.pdf', archived_at = ${bind(decisionArchivedAt.takeIf { decisionArchived })} WHERE id = ${bind(decisionId)}"
             )
         }
         return applicationId

@@ -129,7 +129,7 @@ sealed interface Table {
  * A table whose rows a child's or an adult's run evaluates and deletes, as opposed to
  * [ExternalTable].
  */
-class HandledTable(
+data class HandledTable(
     override val name: String,
     val handledBy: Handler,
     override val references: List<Reference>,
@@ -150,12 +150,33 @@ class HandledTable(
      */
     val auditIdType: KClass<out DatabaseTable>? = null,
     val expirationRule: ExpirationRule,
+    /**
+     * A node expires only once this is met too: no finance decision that can still be generated
+     * needs its rows. The tables the finance thread removal reads also wait here for the placements
+     * that the threads wait for.
+     */
+    val financeFreeze: ExpirationRule? = null,
+    /**
+     * A node expires only once it is safe from the point of view of each of these external data
+     * syncs. If data has already been sent to the integration, it must not be removed before the
+     * child has reached [SAFE_DATA_REMOVAL_AGE] and the sync can be frozen permanently.
+     */
+    val safeForIntegrations: Set<Integration> = emptySet(),
     val asyncJobsPlannedOnDelete: AsyncJobsOnDelete? = null,
     /** Rows outside the schema definition that only the rows of this table reference */
     val orphansToDelete: List<OutsideGraphReference> = emptyList(),
 ) : Table {
     val mayHoldChildData: Boolean
         get() = handledBy == Handler.CHILD || name == PERSON_TABLE
+
+    fun usedDateSources(): Set<DateSource> =
+        expirationRule.usedDateSources() + financeFreeze?.usedDateSources().orEmpty()
+
+    fun usedCustomDateSources(): Set<DateSource.Custom> =
+        usedDateSources().filterIsInstance<DateSource.Custom>().toSet()
+
+    fun usedNotWhileRules(): Set<ExpirationRule.NotWhile> =
+        expirationRule.usedNotWhileRules() + financeFreeze?.usedNotWhileRules().orEmpty()
 
     override fun toString(): String = name
 }
@@ -327,7 +348,7 @@ class SchemaDefinition(tables: List<Table>) {
             }
         }
         for (table in handledTables) {
-            for (source in table.expirationRule.usedDateSources()) {
+            for (source in table.usedDateSources()) {
                 when (source) {
                     is DateSource.OwnColumn ->
                         recordDateColumn(
@@ -361,10 +382,7 @@ class SchemaDefinition(tables: List<Table>) {
                         }
                 }
             }
-            require(
-                table.expirationRule.usedNotWhileRules().isEmpty() ||
-                    table.identifiedByCols.size == 1
-            ) {
+            require(table.usedNotWhileRules().isEmpty() || table.identifiedByCols.size == 1) {
                 "$table: a not while rule needs rows identified by a single column"
             }
         }

@@ -40,7 +40,7 @@ A *node* holds rows of one table. There are two kinds of nodes. An *own node* ho
 
 A graph edge goes from a node to every node that holds a row that one of its rows references through a blocking reference. A node that holds no rows will not be part of the graph.
 
-The rules of each table are then evaluated over the graph. An own node whose expiration rule is met is *expired*. For a node to be deletable, every node that has a blocking reference to it must also be expired and deletable. The same holds for every node that must be deleted together with it (section 1.4). Nodes that are expired but cannot be deleted are considered *blocked* by another node. At the end, all the deletable nodes are deleted, leaves first. Chapter 4 describes the evaluation in detail.
+The rules of each table are then evaluated over the graph. An own node whose expiration rule is met and whose safety conditions hold is *expired*. For a node to be deletable, every node that has a blocking reference to it must also be expired and deletable. The same holds for every node that must be deleted together with it (section 1.4). Nodes that are expired but cannot be deleted are considered *blocked* by another node. At the end, all the deletable nodes are deleted, leaves first. Chapter 4 describes the evaluation in detail.
 
 ### 1.3 Handlers and reference kinds
 
@@ -100,15 +100,23 @@ An optional reference is declared with `optionalReference`. It does not keep the
 
 Placement, for example, stores which application created it in `placement.source_application_id`. This is meta-level data, which should not block the application from being deleted earlier. A check constraint forbids `source = 'APPLICATION'` without the id, so the reference also lists `source` in `alsoNull` property. All of those columns are then set to null in one statement and in the same transaction where the application is deleted.
 
+### 1.7 Overrides by municipality
+
+The schema definition is shared by all municipalities, but their needs differ, for example in what they archive (section 2.3). A municipality can therefore override the expiration rule and `deletedWithParent` of any handled table. An override names the table and gives both values. Everything else stays as declared, including the safety conditions (chapter 2). The tables that hold the sync state of Koski and Varda must still be deleted with `child` (section 2.4).
+
+Each municipality provides its overrides as a bean, which is empty if it has none.
+
 ## 2. Expiration rules
 
 Every handled table defines an *expiration rule*, which decides in the run of the target person whether the table's own nodes have expired. An external table has no rule, since its rows are never evaluated here.
+
+Some tables also declare *safety conditions*: the integrations that read the table (section 2.4) and the finance freeze (section 6.4). They are kept apart from the rule, so that overriding the rule (section 1.7) cannot remove them. A node expires only when its rule is met and its safety conditions hold.
 
 The following are examples of different kinds of expiration rules. They can be combined with rules such as all of, any of and coalesce.
 
 ### 2.1 Always and never
 
-The simplest rules return a constant. Under `Always` the nodes are expired from the start and are deleted as soon as nothing blocks them, which suits a table such as `fee_decision_child` whose rows are deleted with the `fee_decision` row they reference. A table that does not declare `deletedWithParent` must not have `Always` as its only rule. Under `Never` a node never expires, which is mostly useful as a building block when rules are combined.
+The simplest rules return a constant. Under `Always` the nodes are expired from the start and are deleted as soon as nothing blocks them, which suits a table such as `fee_decision_child` whose rows are deleted with the `fee_decision` row they reference. A table that does not declare `deletedWithParent` must not have `Always` as its only rule, unless it waits for the finance freeze. Under `Never` a node never expires, which is mostly useful as a building block when rules are combined.
 
 ### 2.2 Reference date from a date source
 
@@ -132,13 +140,19 @@ Null never reaches all of or any of: validation checks that such a rule is wrapp
 
 Under a not while rule a node is not expired while a condition holds for any of its rows. The condition is a query that takes the primary keys of the rows and returns those for which it holds.
 
-Child documents, placement decisions, fee decisions and voucher value decisions can be archived to an external system. A row that is still to be archived keeps its node.
+Child documents, placement decisions, fee decisions and voucher value decisions can be archived to an external system. Which rows are archived varies by municipality, and many do not archive yet. By default, these rows keep their node until they have been archived:
+
+- a placement decision that has been accepted or rejected, unless it is a club decision
+- a fee or voucher value decision that has been sent or annulled
+- a child document that is not a draft, if its template is archived externally
+
+A row deleted before it was archived cannot be archived anymore, so keeping it is the safe default. A municipality that archives fewer rows overrides the rules of those tables (section 1.7). Espoo, for example, archives only child documents.
 
 An application that is still open keeps its node too. The parentships and partnerships of a family are also kept while one of the children they affect has a pending application.
 
 ### 2.4 Safe for integrations
 
-Koski and Varda read a fixed set of tables. The rule of every table an integration reads is wrapped in a rule that names the integration, and so is the rule of `child`, since the state of each sync is deleted with it. The node then expires only if the wrapped rule is met and every child the node concerns is *safe* for each named integration. More details in section 3.3.
+Koski and Varda read a fixed set of tables. Every table an integration reads names that integration as a safety condition, and so does `child`, since the state of each sync is deleted with it. That state is in `koski_study_right`, `koski_upload_error` and `varda_state`, which must be deleted with `child`. A node then expires only if every child the node concerns is *safe* for each named integration. More details in section 3.3.
 
 ## 3. Deletion instructions
 
@@ -160,11 +174,11 @@ When the orphan must be deleted, the referencing table names the reference among
 
 ### 3.3 External integrations
 
-Koski and Varda read a fixed set of tables. Deleting rows from any of them must permanently freeze that integration for the child, so that the deletion is not sent to the external system. The safe for integrations rule (section 2.4) guarantees that this only ever happens for a child past the safe data removal age. The freeze is recorded only for a child who has been sent to the integration: a child never sent has nothing there to protect, and the freeze would keep the child out of the sync for good. Each freeze is a timestamp column on the `child` row, written in the same transaction as the deletions. A plan that deletes the `child` row itself records no freeze for that child, since the row itself is deleted.
+Koski and Varda read a fixed set of tables. Deleting rows from any of them must permanently freeze that integration for the child, so that the deletion is not sent to the external system. The safety condition of section 2.4 guarantees that this only ever happens for a child past the safe data removal age. The freeze is recorded only for a child who has been sent to the integration: a child never sent has nothing there to protect, and the freeze would keep the child out of the sync for good. Each freeze is a timestamp column on the `child` row, written in the same transaction as the deletions. A plan that deletes the `child` row itself records no freeze for that child, since the row itself is deleted.
 
 The rows are not always deleted in the child's own run. When an adult's run deletes a fee decision, for example, the freeze must be recorded for every child on that decision.
 
-The tables that hold the state of each sync, `koski_study_right`, `koski_upload_error` and `varda_state`, are deleted with their parent `child`, so that all of them are deleted together. The rule of `child` is safe for both integrations, so the state of a child who was sent stays until the safe data removal age, even when the rows the integrations read were deleted by hand. The `child` row may still be recreated without the freeze timestamps, for example if a guardian logs in before the child turns 18. Since the integration state rows were deleted too, the sync still would not restart and cause destructive operations unless a placement is created for the child. Creating new placements for such a child is not realistic, but as an additional safeguard both integrations refuse to start syncing a child past that age who has no previous integration state rows. First sync happening at that age is clearly an error.
+The tables that hold the state of each sync, `koski_study_right`, `koski_upload_error` and `varda_state`, are deleted with their parent `child`, so that all of them are deleted together. `child` names both integrations, so the state of a child who was sent stays until the safe data removal age, even when the rows the integrations read were deleted by hand. The `child` row may still be recreated without the freeze timestamps, for example if a guardian logs in before the child turns 18. Since the integration state rows were deleted too, the sync still would not restart and cause destructive operations unless a placement is created for the child. Creating new placements for such a child is not realistic, but as an additional safeguard both integrations refuse to start syncing a child past that age who has no previous integration state rows. First sync happening at that age is clearly an error.
 
 ## 4. Running the algorithm
 
@@ -186,7 +200,7 @@ It then runs the query sources and not while rules of the table for the rows. Th
 
 Foreign rows are found next. The loader goes through every secondary reference whose target table has an own node. The rows that hold the id of one of those rows in the reference column, apart from the own rows, form a foreign node.
 
-Finally, for the target and every child the own rows reference, the loader reads the date of birth and whether the child has been sent to Koski and to Varda, which the safe for integrations rules and the freezes need.
+Finally, for the target and every child the own rows reference, the loader reads the date of birth and whether the child has been sent to Koski and to Varda, which the integration conditions and the freezes need.
 
 **Step 2: drop the empty nodes.** Nodes with no rows are dropped from the graph: they have nothing to delete and reference nothing, so they take no part in the evaluation. The `child` node is however kept even when the child row is missing, so that blocking passes through it to `person`, and the tables that must be deleted with it still form one bundle (section 6.1). With no rows it counts as expired, so it blocks nothing on its own.
 
@@ -202,7 +216,7 @@ Finally, for the target and every child the own rows reference, the loader reads
 
 ### 4.2 First pass: expiration
 
-An own node is *expired* when its expiration rule (chapter 2) is met. Only the node's own rule matters here, together with the data the rule reads, such as the child's placements. A foreign node never expires.
+An own node is *expired* when its expiration rule (chapter 2) is met and its safety conditions hold. Only the node's own rule matters here, together with the data the rule reads, such as the child's placements. A foreign node never expires.
 
 Nodes with no rows were dropped before this pass, so a foreign node exists only while its rows do.
 
@@ -212,7 +226,7 @@ An expired node still cannot be deleted if a node that references it is not expi
 
 ```
 for each loaded node n:
-    n is expired if it is not a foreign node and its expiration rule is met
+    n is expired if it is not a foreign node, its expiration rule is met and its safety conditions hold
 
 for each node n that is NOT expired after the first pass: block(n)
 
@@ -225,7 +239,7 @@ block(n):
 
 Every node goes through `block` at most once, either from the outer loop or when it loses its mark, so the work is linear in the size of the graph. This is the mark phase of a [mark-and-sweep garbage collector](https://en.wikipedia.org/wiki/Tracing_garbage_collection#Naive_mark-and-sweep), with the non-expired nodes as its roots: what they reach stays, and the rest is swept.
 
-The nodes that are still expired at the end are deleted leaf-first, in an order that follows the edges. They form the largest set in which every node's own rule is met, every node referencing a node in the set is in the set too (no foreign key violations on deletion), and every deletion bundle is either entirely in the set or entirely outside it.
+The nodes that are still expired at the end are deleted leaf-first, in an order that follows the edges. They form the largest set in which every node's own rule is met and its safety conditions hold, every node referencing a node in the set is in the set too (no foreign key violations on deletion), and every deletion bundle is either entirely in the set or entirely outside it.
 
 ### 4.4 Executing the plan
 
@@ -257,7 +271,7 @@ A table that the graph only references, and that references nothing in it, is ou
 
 - Case processes and their history rows are left as orphans. At least the ones from the current year must stay, so that the sequence numbers are not reused.
 - A `child_document_decision` is deleted with its child document.
-- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 9.4).
+- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 9.3).
 - A `calendar_event` is left as an orphan.
 
 ### 5.3 Tables excluded by exception
@@ -268,7 +282,7 @@ A leaf table whose rows should simply be deleted with the rows they reference ca
 
 ### 5.4 The evaka_user row
 
-`evaka_user` reaches `person` through `citizen_id`, but it is excluded too. The database sets the column null when the person row is deleted, and the row lives on as the author of what the citizen created. Whether its name should then be anonymised is open (section 9.3). References to `evaka_user`, such as `created_by` columns, are therefore not declared.
+`evaka_user` reaches `person` through `citizen_id`, but it is excluded too. The database sets the column null when the person row is deleted, and the row lives on as the author of what the citizen created. Whether its name should then be anonymised is open (section 9.2). References to `evaka_user`, such as `created_by` columns, are therefore not declared.
 
 ### 5.5 Data in the child table
 
@@ -282,9 +296,9 @@ A thread that records children expires by their placements, so the placements mu
 
 The message removal deletes a thread about an application only after the application is gone, together with the application notes that copy the thread's messages. The thread does not hold the application: `message_thread.application_id` is an optional reference, which is cleared when the application is deleted. The notes are deleted with their parent application.
 
-A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to the children they are a guardian or a foster parent of, and to the children whose placements the rules of their parentships and partnerships wait for (section 6.4). The message removal finds the latter with the same queries as those rules.
+A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to the children they are a guardian or a foster parent of, and to the children whose placements the finance freeze conditions of their parentships and partnerships wait for (section 6.4). The message removal finds the latter with the same queries as those conditions.
 
-These rows are not held for the threads. Instead, each of them waits until the five years of the threads have passed the same placements. The period is written into the rules of `fridge_child` and `fridge_partner`, and into the rule of `placement` for `guardian` and `foster_parent`, which are deleted with their parent `child` and so with the placements. A test checks this against a list of the tables that connect a recipient to the children, kept by hand next to the query that finds them. Deleting such a row therefore does not make a thread expire earlier.
+These rows are not held for the threads. Instead, each of them waits until the five years of the threads have passed the same placements. The period is written into the finance freeze conditions of `fridge_child` and `fridge_partner`, and into that of `placement` for `guardian` and `foster_parent`, which are deleted with their parent `child` and so with the placements. Overrides cannot remove it, since it is part of a safety condition (chapter 2). The construction checks this against a list of the tables that connect a recipient to the children, kept by hand next to the query that finds them. Deleting such a row therefore does not make a thread expire earlier.
 
 The exception is a parentship or a partnership that itself ended longer ago than the finance freeze. It expires even if the children are still placed, and the finance thread of that former head of the family or partner then no longer waits for them. This is in line with the finance freeze, since no decisions are generated for the time of that parentship or partnership anymore.
 
@@ -316,15 +330,17 @@ A replacement invoice references the invoice it replaced through `invoice.replac
 
 Finance decisions are generated from the family and income data, the parentships, partnerships and incomes, placements and service needs, etc. The *finance freeze* limits how far back in time they are generated. They are never generated for days more than five years before today, not even retroactively. The freeze date moves forward every day.
 
-A row expires only when no decision that can still be generated needs it. For most tables, the rules require the row's period to have ended longer ago than the freeze, in addition to possible other expiration rules. The rules add a margin of one month to the freeze, so that data is deleted only after the generator no longer reads it. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
+A row expires only when no decision that can still be generated needs it. For most tables, the row's period must have ended longer ago than the freeze. A margin of one month is added to the freeze, so that data is deleted only after the generator no longer reads it. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
 
-The freeze is written into the rule of every table the generators read, even where a longer period such as ten years already outlasts it, so that shortening that period later cannot break it. A test checks this against a list of those tables, kept by hand next to the freeze period. A table that is deleted with its parent may rely on the rule of the parent.
+Every table the generators read declares the freeze as a safety condition (chapter 2), so that overriding its rule cannot break it. This holds even where a longer period such as ten years already outlasts the freeze. The condition is written like an expiration rule and validated the same way, since its dates and fallbacks vary by table. The list of those tables is kept by hand next to the freeze period. A table that is deleted with its parent may rely on the condition of the parent.
+
+The condition of `placement`, `fridge_child` and `fridge_partner` also waits for the placements that the finance threads wait for (section 5.6).
 
 The voucher value decision generator reads the assistance coefficients from `assistance_factor` when the municipality uses capacity factors, and from `assistance_need_voucher_coefficient` otherwise. The schema definition is therefore built for that setting, and only the table the generator reads waits for the freeze.
 
 ## 7. Validation
 
-The schema definition is validated when it is constructed:
+The schema definition is validated when it is constructed, with the overrides of the municipality applied:
 
 - `person` and `child` have their fixed shape, every table declares a primary key, no column carries two references, no reference is a self-reference, and every reference points to a declared table whose primary key is one column.
 - References form no cycle, and every table reaches the root through them.
@@ -332,11 +348,12 @@ The schema definition is validated when it is constructed:
 - A table that declares `deletedWithParent` has `independentRows` exactly when its parent has.
 - A date source that reads another table reads `person` or a table with the same handler, and a column is read the same way everywhere. A query source and a not while rule need a primary key of one column.
 - An orphan to delete points outside the schema definition from a column that is not a declared reference.
-
-Unit tests check the declared schema definition:
-
-- Every table an integration reads, and `child`, has the safe for integrations rule directly, and no other table names an integration.
-- Every table whose rule is `Always` is deleted with its parent.
+- Every override names a handled table.
+- Every table an integration reads, and `child`, names that integration, and no other table names one.
+- The tables that hold the sync state of an integration are deleted with `child`.
+- Every table the finance generators read waits for the finance freeze, or is deleted with a parent that does.
+- Every table that connects a recipient of a finance thread to children waits for the thread period after their placements, or is deleted together with a table that does.
+- Every table whose rule is `Always` is deleted with its parent or waits for the finance freeze.
 
 Integration tests then compare the schema definition against the database schema:
 
@@ -348,6 +365,8 @@ Integration tests then compare the schema definition against the database schema
 - Every column a date source reads exists with the declared type. A column read as a finite date range is not null and has a check constraint that forbids an open end.
 - A rule whose source may have no date is wrapped directly in a coalesce rule whose fallback always returns a verdict. A column source may have no date when the column is nullable or a date range, and one that reads another table also when that table can be without rows while the table has some, judged by following the not-null primary references, `child` never counting as always present. A query source declares it.
 - Every query source and not while rule runs against the database, and the columns the async jobs read exist and are text.
+
+The tests build the schema definition of every municipality in this repository, so that an invalid override fails the build. A municipality outside the repository gets the construction errors when the service starts, and the other errors when its runs fail.
 
 ## 8. Performance optimization: skipping tables
 
@@ -362,7 +381,7 @@ The loader first reads a small set of tables:
 - `person` and `child`
 - `placement`, or more generally every table that is used by a date source of another table, whose primary reference points to `person` or `child`, and that does not declare `independentRows`
 
-It also reads the integration facts of the target (section 4.1), since the safe for integrations rules need them.
+It also reads the integration facts of the target (section 4.1), since the integration conditions need them.
 
 ### 8.2 Tables known to stay
 
@@ -373,9 +392,9 @@ When combining rules:
 - `AnyOf` might be met if any of its rules might be met.
 - `Coalesce` might be met if any rule it reaches might be met. It reaches the next rule only if the previous one returns no verdict. For example, if the first rule is a placement rule and in the preloaded data there is a placement, then we already know whether the rule is met or not, so the rest of the rules do not matter. If the person has no placements in the preloaded data, then the next rule is evaluated for whether it might be met or not.
 
-A safe for integrations rule might be met only if the rule it wraps might be met and the integration check might pass. The check fails when the table is handled as a child, or is `person`, and the target is not yet safe to delete for the integration.
+The finance freeze condition is decided the same way. The integration condition fails when the table is handled as a child, or is `person`, and the target is not yet safe to delete for the integration.
 
-The tables whose rule cannot be met are *known to stay*. A preloaded table is known to stay if it has rows and its node cannot be met. A `child` node without its row counts as expired (section 6.1), so then `child` is not known to stay by its own rule.
+The tables whose rule or safety conditions cannot be met are *known to stay*. A preloaded table is known to stay if it has rows and its node cannot be met. A `child` node without its row counts as expired (section 6.1), so then `child` is not known to stay by its own rule.
 
 Two more rules add tables that are known to stay. They are applied again until no more tables are added.
 
@@ -404,7 +423,7 @@ Skipping mainly changes the first step of section 4.1, loading the person's grap
 2. The skipped tables are decided, as described in sections 8.2 and 8.3.
 3. The other tables are loaded as before, except the skipped ones. A skipped table gets no node, and its rows are not read. No other table needs the ids of its rows, since the tables whose primary reference points to it are skipped too. For a table that is known to stay but not skipped, its rows are read as before. Only the extra queries for its query sources and not while rules are left out. Foreign rows are not read through a secondary reference that points to a table known to stay. They could only block rows that stay anyway. Finally, the integration facts of the other children that the own rows reference are read.
 
-The rest of the algorithm stays the same, with one exception. In the first pass (section 4.2), a node of a table known to stay is marked not expired without evaluating its rule.
+The rest of the algorithm stays the same, with one exception. In the first pass (section 4.2), a node of a table known to stay is marked not expired without evaluating its rule or safety conditions.
 
 An integration test runs the algorithm with and without skipping and checks that the plans are the same.
 
@@ -414,15 +433,11 @@ An integration test runs the algorithm with and without skipping and checks that
 
 `person.duplicate_of` references another person. It is a deprecated workaround feature and `NULL` in most cases, but some municipalities may have old data in it. A `person` row cannot be deleted while a duplicate row references it, and we may also need to combine their data when evaluating the expiration rules. Until that is decided, the algorithm refuses to process a person whose row is a duplicate of another, or that has duplicates: the job aborts before loading anything.
 
-### 9.2 Which rows are to be archived
-
-The not while rule for archival needs to know which rows must be archived before deletion. For `child_document` the schema says it: the template has an `archive_externally` flag and a trigger refuses to delete an unarchived document. For `decision`, `fee_decision` and `voucher_value_decision` there is only the `archived_at` column, and the knowledge of which rows get archived lives in the municipality-specific archival job, together with the fact that archival is enabled per municipality. If the rule treated every row as "to be archived", the nodes would never expire in a municipality without an archive, and rows that are never archived would be blocked forever.
-
-### 9.3 Anonymising orphan evaka_user rows
+### 9.2 Anonymising orphan evaka_user rows
 
 Whether the `name` column of an orphaned `evaka_user` row should be anonymised, for example to "Poistettu kuntalainen", is an open question.
 
-### 9.4 Voucher value report snapshots
+### 9.3 Voucher value report snapshots
 
 The frozen monthly service voucher report is one `voucher_value_report_snapshot` row per month and its `voucher_value_report_decision` rows, each naming a voucher value decision. The algorithm waits for those rows before it deletes the decision but must not delete them (section 5.2), and nothing deletes them today. A job must delete each snapshot a set time after the month it covers, no longer than the ten years of the decisions themselves, or the decisions wait for the report. For the report rows to be deleted with their snapshot, `voucher_value_report_decision.voucher_value_report_snapshot_id` must become `ON DELETE CASCADE`; `decision_id` stays as it is, so that the rows keep holding the decision.
 

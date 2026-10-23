@@ -13,6 +13,7 @@ import evaka.core.SftpEnv
 import evaka.core.VtjXroadEnv
 import evaka.core.bi.BiExportConfig
 import evaka.core.bi.BiExportJob
+import evaka.core.dataremoval.DataRetentionOverrides
 import evaka.core.document.archival.ArchivalClient
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.EvakaEmailMessageProvider
@@ -304,6 +305,8 @@ class EspooConfig {
             it.addContextValves(defaultAccessLoggingValve(env))
             it.setDisableMBeanRegistry(false)
         }
+
+    @Bean fun dataRetentionOverrides(): DataRetentionOverrides = espooDataRetentionOverrides
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = EspooActionRuleMapping()
 
