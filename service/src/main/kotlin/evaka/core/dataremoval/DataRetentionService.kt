@@ -10,6 +10,8 @@ import evaka.core.shared.FeatureConfig
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.async.AsyncJobType
+import evaka.core.shared.async.removeUnclaimedJobs
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -39,8 +41,12 @@ class DataRetentionService(
         msg: AsyncJob.DeleteExpiredPersonData,
     ) {
         if (msg.skipIfStartedAfter != null && clock.now() > msg.skipIfStartedAfter) {
+            // The rest of the night's jobs share the deadline, so they would be skipped too
+            dbc.transaction {
+                it.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.DeleteExpiredPersonData::class)))
+            }
             logger.info {
-                "Data retention for person ${msg.personId} skipped: the time allocation of the night ended at ${msg.skipIfStartedAfter}"
+                "Data retention for person ${msg.personId} skipped and the remaining jobs of the night removed: the time allocation of the night ended at ${msg.skipIfStartedAfter}"
             }
             return
         }
