@@ -17,7 +17,8 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.dto.VtjPersonWithRelatives
+import evaka.core.vtjclient.dto.VtjPersonAndDependants
+import evaka.core.vtjclient.dto.VtjPersonAndGuardians
 import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
@@ -122,10 +123,10 @@ private class StubRelativeVtjClient(private vararg val persons: DevPerson) : Vtj
         persons.single { it.ssn == query.ssn.value }.toFullVtjPerson()
 
     override fun fetchWithDependants(query: VtjClient.DetailsQuery) =
-        VtjPersonWithRelatives(fetchPerson(query), relativesOf(query))
+        VtjPersonAndDependants(fetchPerson(query), relativesOf(query))
 
     override fun fetchWithGuardians(query: VtjClient.DetailsQuery) =
-        VtjPersonWithRelatives(fetchPerson(query), relativesOf(query))
+        VtjPersonAndGuardians(fetchPerson(query), relativesOf(query))
 
     private fun relativesOf(query: VtjClient.DetailsQuery) =
         persons.filter { it.ssn != query.ssn.value }.map { it.toRelativeStub() }

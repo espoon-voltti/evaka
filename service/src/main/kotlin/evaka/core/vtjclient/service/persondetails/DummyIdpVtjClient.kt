@@ -15,7 +15,8 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.dto.VtjPersonWithRelatives
+import evaka.core.vtjclient.dto.VtjPersonAndDependants
+import evaka.core.vtjclient.dto.VtjPersonAndGuardians
 import evaka.core.vtjclient.dto.VtjRelative
 import java.net.URI
 import java.time.LocalDate
@@ -70,17 +71,17 @@ class DummyIdpVtjClient(baseUrl: String, jsonMapper: JsonMapper) : VtjClient {
 
     override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson = fetch(query).toVtjPerson()
 
-    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPersonWithRelatives =
+    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPersonAndDependants =
         fetch(query).let { person ->
-            VtjPersonWithRelatives(
+            VtjPersonAndDependants(
                 person.toVtjPerson(),
                 person.dependants.map { it.toVtjRelative() },
             )
         }
 
-    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPersonWithRelatives =
+    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPersonAndGuardians =
         fetch(query).let { person ->
-            VtjPersonWithRelatives(
+            VtjPersonAndGuardians(
                 person.toVtjPerson(),
                 person.guardians.map { it.toVtjRelative() },
             )
