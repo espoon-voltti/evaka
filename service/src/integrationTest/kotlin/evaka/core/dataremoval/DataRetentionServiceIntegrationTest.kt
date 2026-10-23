@@ -160,18 +160,20 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
     }
 
     @Test
-    fun `a run that would start after the time allocation of the night is skipped`() {
+    fun `the runs that would start after the time allocation of the night are skipped`() {
         planDataRetentionRuns(
             db,
             clock,
             asyncJobRunner,
-            personCount = 1,
+            personCount = 2,
             maxDuration = Duration.ofHours(1),
         )
         val afterTheAllocation = MockEvakaClock(clock.now().plusHours(1).plusSeconds(1))
+        // The first skipped run removes the other
         assertEquals(1, asyncJobRunner.runPendingJobsSync(afterTheAllocation))
 
         assertNull(lastAttemptedAt(longGone.id))
+        assertNull(lastAttemptedAt(recent.id))
     }
 
     @Test
