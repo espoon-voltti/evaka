@@ -14,4 +14,6 @@ data class VtjRelative(
     val lastName: String,
 )
 
-data class VtjPersonWithRelatives(val person: VtjPerson, val relatives: List<VtjRelative>)
+data class VtjPersonAndGuardians(val person: VtjPerson, val guardians: List<VtjRelative>)
+
+data class VtjPersonAndDependants(val person: VtjPerson, val dependants: List<VtjRelative>)

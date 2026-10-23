@@ -36,7 +36,6 @@ import evaka.core.shared.domain.Rectangle
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
 import java.util.UUID
@@ -121,7 +120,10 @@ class PersonService(private val vtjClient: VtjClient) {
                 vtjClient.fetchWithDependants(
                     VtjClient.DetailsQuery(user.evakaUserId, guardian.ssn)
                 )
-            val children = fetchRelativesInFull(user, snapshot.relatives)
+            val children =
+                snapshot.dependants.map {
+                    vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
+                }
             val guardianId = tx.applyPerson(snapshot.person, now).id
             val childIds = children.map { tx.applyPerson(it, now).id }.toSet()
             tx.applyDependants(guardianId, childIds, now)
@@ -145,7 +147,10 @@ class PersonService(private val vtjClient: VtjClient) {
         if (forceRefresh || child.vtjGuardiansQueried == null) {
             val snapshot =
                 vtjClient.fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, child.ssn))
-            val guardians = fetchRelativesInFull(user, snapshot.relatives)
+            val guardians =
+                snapshot.guardians.map {
+                    vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
+                }
             val childId = tx.applyPerson(snapshot.person, now).id
             val guardianIds = guardians.map { tx.applyPerson(it, now).id }.toSet()
             tx.applyGuardians(childId, guardianIds, now)
@@ -241,13 +246,6 @@ class PersonService(private val vtjClient: VtjClient) {
         }
 
         tx.updatePersonSsnAddingDisabled(personId, disabled)
-    }
-
-    private fun fetchRelativesInFull(
-        user: AuthenticatedUser,
-        relatives: List<VtjRelative>,
-    ): List<VtjPerson> = relatives.map {
-        vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
     }
 
     private fun toPreviewPersonDTO(person: VtjPerson): PersonDTO =

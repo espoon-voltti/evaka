@@ -72,7 +72,7 @@ class SoapVtjClientTest {
         val result = service.fetchWithDependants(query)
         assertThat(result.person.socialSecurityNumber).isEqualTo(validPerson.socialSecurityNumber)
         assertThat(result.person.firstNames).isEqualTo(validPerson.firstNames)
-        assertThat(result.relatives).containsExactly(expectedChild)
+        assertThat(result.dependants).containsExactly(expectedChild)
 
         val _ = verify(vtjService, times(1)).query(any())
     }
