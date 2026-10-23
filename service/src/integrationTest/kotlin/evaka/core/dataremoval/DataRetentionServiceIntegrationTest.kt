@@ -17,11 +17,14 @@ import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -83,6 +86,13 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
             .toSet<String>()
     }
 
+    private fun lastAttemptedAt(id: PersonId): HelsinkiDateTime? = db.read { tx ->
+        tx.createQuery {
+                sql("SELECT data_retention_last_attempted_at FROM person WHERE id = ${bind(id)}")
+            }
+            .exactlyOne<HelsinkiDateTime?>()
+    }
+
     private fun realRun(id: PersonId) =
         runDataRetention(
             db,
@@ -123,5 +133,60 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
         )
         assertEquals(setOf("person", "child", "placement", "child_images"), remaining(longGone.id))
         assertEquals(0, asyncJobRunner.runPendingJobsSync(clock))
+    }
+
+    @Test
+    fun `the nightly runs are dry runs for the persons whose last attempt is the oldest`() {
+        val attemptedLongAgo = DevPerson()
+        db.transaction { tx ->
+            tx.insert(attemptedLongAgo, DevPersonType.ADULT)
+            tx.setDataRetentionLastAttemptedAt(attemptedLongAgo.id, clock.now().minusDays(20))
+            tx.setDataRetentionLastAttemptedAt(recent.id, clock.now().minusDays(10))
+        }
+
+        planDataRetentionRuns(
+            db,
+            clock,
+            asyncJobRunner,
+            personCount = 2,
+            maxDuration = Duration.ofHours(1),
+        )
+        assertEquals(2, asyncJobRunner.runPendingJobsSync(clock))
+
+        assertEquals(clock.now(), lastAttemptedAt(longGone.id))
+        assertEquals(clock.now(), lastAttemptedAt(attemptedLongAgo.id))
+        assertEquals(clock.now().minusDays(10), lastAttemptedAt(recent.id))
+        assertEquals(setOf("person", "child", "placement", "child_images"), remaining(longGone.id))
+    }
+
+    @Test
+    fun `a run that would start after the time allocation of the night is skipped`() {
+        planDataRetentionRuns(
+            db,
+            clock,
+            asyncJobRunner,
+            personCount = 1,
+            maxDuration = Duration.ofHours(1),
+        )
+        val afterTheAllocation = MockEvakaClock(clock.now().plusHours(1).plusSeconds(1))
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(afterTheAllocation))
+
+        assertNull(lastAttemptedAt(longGone.id))
+    }
+
+    @Test
+    fun `a failed run still records the attempt`() {
+        val duplicate = DevPerson(duplicateOf = recent.id)
+        db.transaction { tx -> tx.insert(duplicate, DevPersonType.ADULT) }
+
+        assertFailsWith<IllegalStateException> {
+            dataRetentionService.deleteExpiredPersonData(
+                db,
+                clock,
+                AsyncJob.DeleteExpiredPersonData(duplicate.id, dryRun = true),
+            )
+        }
+
+        assertEquals(clock.now(), lastAttemptedAt(duplicate.id))
     }
 }

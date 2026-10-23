@@ -756,6 +756,19 @@ data class DataRemovalEnv(
     }
 }
 
+data class DataRetentionEnv(val personsPerNight: Int, val maxDurationPerNight: Duration) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            DataRetentionEnv(
+                personsPerNight = env.lookup("evaka.data_retention.persons_per_night") ?: 0,
+                maxDurationPerNight =
+                    Duration.ofMinutes(
+                        env.lookup("evaka.data_retention.max_minutes_per_night") ?: 60
+                    ),
+            )
+    }
+}
+
 data class ArchiveEnv(
     /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core/ */
     val url: URI,
