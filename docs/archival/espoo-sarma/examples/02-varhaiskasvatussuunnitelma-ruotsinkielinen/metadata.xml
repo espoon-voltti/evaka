@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:RecordMetadataInstance xmlns:ns0="http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0" xmlns:at0="http://www.avaintec.com/2004/records-schedule-fi/1.0">
+  <ns0:StandardMetadata>
+    <ns0:metadataMasterVersion>
+      <ns0:masterName>yleinen</ns0:masterName>
+      <ns0:versionNumber>1.0</ns0:versionNumber>
+    </ns0:metadataMasterVersion>
+    <ns0:virtualArchiveId>YLEINEN</ns0:virtualArchiveId>
+    <ns0:recordIdentifiers>
+      <ns0:CaseIdentifier>2/12.06.01.SL1.RT34/2026</ns0:CaseIdentifier>
+      <ns0:RecordIdentifier>49627c58-c896-11f1-aede-43023e0c7bc4</ns0:RecordIdentifier>
+    </ns0:recordIdentifiers>
+    <ns0:documentDescription>
+      <ns0:title>Plan för småbarnspedagogik 2026–2027</ns0:title>
+      <ns0:documentType>Suunnitelma</ns0:documentType>
+      <ns0:documentTypeSpecifier>Varhaiskasvatussuunnitelma</ns0:documentTypeSpecifier>
+      <ns0:registerName>Varhaiskasvatuksen asiakastietorekisteri</ns0:registerName>
+      <ns0:firstName>Elsa</ns0:firstName>
+      <ns0:lastName>Esimerkki</ns0:lastName>
+      <ns0:socialSecurityNumber>031022A985E</ns0:socialSecurityNumber>
+      <ns0:birthDate>2022-10-03</ns0:birthDate>
+      <ns0:personalData>containsSensitivePersonalInformation</ns0:personalData>
+      <ns0:personalDataCollectionReason>Rekisterinpitäjän lakisääteisten velvoitteiden noudattaminen</ns0:personalDataCollectionReason>
+      <ns0:language>sv</ns0:language>
+      <ns0:dataManagement>Palvelujen tiedonhallinta</ns0:dataManagement>
+      <ns0:dataSource>Varhaiskasvatuksen tietovaranto</ns0:dataSource>
+      <ns0:Agents>
+        <ns0:Agent>
+          <ns0:Role>Henkilökunta</ns0:Role>
+          <ns0:Name>Pääkäyttäjä Päivi</ns0:Name>
+          <ns0:CorporateName>Espoon kaupungin esiopetus ja varhaiskasvatus</ns0:CorporateName>
+        </ns0:Agent>
+      </ns0:Agents>
+    </ns0:documentDescription>
+    <ns0:format>
+      <ns0:recordType>digital</ns0:recordType>
+      <ns0:mimeType>application/pdf</ns0:mimeType>
+      <ns0:fileFormat>not applicable</ns0:fileFormat>
+      <ns0:fileName>child_document_49627c58-c896-11f1-aede-43023e0c7bc4_v1.pdf</ns0:fileName>
+    </ns0:format>
+    <ns0:creation>
+      <ns0:originatingSystem>Varhaiskasvatuksen toiminnanohjausjärjestelmä</ns0:originatingSystem>
+      <ns0:created>2026-10-15</ns0:created>
+    </ns0:creation>
+    <ns0:policies>
+      <ns0:retentionPolicy>
+        <at0:PolicyConfiguration>
+          <at0:PolicyName>RetentionPolicy</at0:PolicyName>
+          <at0:Rules>
+            <at0:Rule>
+              <at0:TimeSpan>0</at0:TimeSpan>
+              <at0:TriggerEvent>InPerpetuity</at0:TriggerEvent>
+              <at0:Action>
+                <at0:ActionType>AddTimeSpanToTarget</at0:ActionType>
+                <at0:ActionAnnotation>KA/13089/07.01.01.03.01/2018</at0:ActionAnnotation>
+              </at0:Action>
+            </at0:Rule>
+          </at0:Rules>
+        </at0:PolicyConfiguration>
+      </ns0:retentionPolicy>
+      <ns0:disclosurePolicy>
+        <at0:PolicyConfiguration>
+          <at0:PolicyName>DisclosurePolicy</at0:PolicyName>
+          <at0:InitialTargetState>confidential</at0:InitialTargetState>
+          <at0:Rules>
+            <at0:Rule>
+              <at0:TimeSpan>100</at0:TimeSpan>
+              <at0:TriggerEvent>YearsFromRecordCreation</at0:TriggerEvent>
+              <at0:Action>
+                <at0:ActionType>SetTargetStateToArgument</at0:ActionType>
+                <at0:ActionArguments>
+                  <at0:ActionArgument>public</at0:ActionArgument>
+                </at0:ActionArguments>
+                <at0:ActionAnnotation>Varhaiskasvatuslaki 40 § 3 mom.</at0:ActionAnnotation>
+              </at0:Action>
+            </at0:Rule>
+          </at0:Rules>
+        </at0:PolicyConfiguration>
+      </ns0:disclosurePolicy>
+      <ns0:informationSecurityPolicy>
+        <at0:PolicyConfiguration>
+          <at0:PolicyName>InformationSecurityPolicy</at0:PolicyName>
+          <at0:InitialTargetState>notSecurityClassified</at0:InitialTargetState>
+          <at0:Rules>
+            <at0:Rule>
+              <at0:TimeSpan>0</at0:TimeSpan>
+              <at0:TriggerEvent>InPerpetuity</at0:TriggerEvent>
+              <at0:Action>
+                <at0:ActionType>SetTargetStateToArgument</at0:ActionType>
+                <at0:ActionArguments>
+                  <at0:ActionArgument>notSecurityClassified</at0:ActionArgument>
+                </at0:ActionArguments>
+              </at0:Action>
+            </at0:Rule>
+          </at0:Rules>
+        </at0:PolicyConfiguration>
+      </ns0:informationSecurityPolicy>
+      <ns0:protectionPolicy>
+        <at0:PolicyConfiguration>
+          <at0:PolicyName>ProtectionPolicy</at0:PolicyName>
+          <at0:InitialTargetState>3</at0:InitialTargetState>
+          <at0:Rules>
+            <at0:Rule>
+              <at0:TimeSpan>0</at0:TimeSpan>
+              <at0:TriggerEvent>InPerpetuity</at0:TriggerEvent>
+              <at0:Action>
+                <at0:ActionType>SetTargetStateToArgument</at0:ActionType>
+                <at0:ActionArguments>
+                  <at0:ActionArgument>3</at0:ActionArgument>
+                </at0:ActionArguments>
+              </at0:Action>
+            </at0:Rule>
+          </at0:Rules>
+        </at0:PolicyConfiguration>
+      </ns0:protectionPolicy>
+    </ns0:policies>
+    <ns0:CaseFile>
+      <ns0:Case_Created>2026-10-15</ns0:Case_Created>
+      <ns0:Case_Finished>2026-10-15</ns0:Case_Finished>
+    </ns0:CaseFile>
+  </ns0:StandardMetadata>
+</ns0:RecordMetadataInstance>
