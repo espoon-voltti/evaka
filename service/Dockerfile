@@ -91,8 +91,8 @@ RUN apt-get update \
 
 WORKDIR /evaka/service
 
-ARG S3_DOWNLOADER_VERSION=v1.5.2
-ARG S3_DOWNLOADER_SHA256="70a40524bf901d999eb7f85aaebfed25132767a1475cb76147f5c7f01ef5c66d"
+ARG S3_DOWNLOADER_VERSION=v1.5.3
+ARG S3_DOWNLOADER_SHA256="b3f631aaa0321c9f3b52cc2e0b7772d6bb926608c5451e644efd111b77ccb212"
 
 RUN curl -sSL https://github.com/espoon-voltti/s3-downloader/releases/download/${S3_DOWNLOADER_VERSION}/s3downloader-linux-amd64 -o /usr/local/bin/s3download \
  && echo "${S3_DOWNLOADER_SHA256}  /usr/local/bin/s3download" | sha256sum -c - \
