@@ -415,3 +415,27 @@ private fun QuerySql.Builder.idPredicate(columns: List<String>, ids: List<RowIde
         )
     """
 }
+
+fun Database.Read.getPersonsWithOldestDataRetentionAttempt(count: Int): List<PersonId> =
+    createQuery {
+        sql(
+            """
+SELECT id
+FROM person
+ORDER BY data_retention_last_attempted_at NULLS FIRST, created, id
+LIMIT ${bind(count)}
+"""
+        )
+    }
+    .toList<PersonId>()
+
+fun Database.Transaction.setDataRetentionLastAttemptedAt(
+    personId: PersonId,
+    now: HelsinkiDateTime,
+) {
+    execute {
+        sql(
+            "UPDATE person SET data_retention_last_attempted_at = ${bind(now)} WHERE id = ${bind(personId)}"
+        )
+    }
+}
