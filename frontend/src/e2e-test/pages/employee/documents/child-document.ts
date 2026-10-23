@@ -20,11 +20,15 @@ export class ChildDocumentPage {
   savingIndicator: Element
   previewButton: Element
   editButton: Element
+  publishButton: Element
+  nextStatusButton: Element
+  templateValidityEndedInfo: Element
   returnButton: Element
   sendButton: Element
   archiveButton: AsyncButton
   archiveTooltip: Element
   acceptDecisionButton: Element
+  rejectDecisionButton: Element
   sendingConfirmationModal: Modal
   confirmOtherDecisionsButton: Element
   documentSection: Element
@@ -35,11 +39,17 @@ export class ChildDocumentPage {
     this.savingIndicator = page.findByDataQa('saving-spinner')
     this.previewButton = page.findByDataQa('preview-button')
     this.editButton = page.findByDataQa('edit-button')
+    this.publishButton = page.findByDataQa('publish-button')
+    this.nextStatusButton = page.findByDataQa('next-status-button')
+    this.templateValidityEndedInfo = page.findByDataQa(
+      'template-validity-ended-info'
+    )
     this.returnButton = page.findByDataQa('return-button')
     this.sendButton = new AsyncButton(page.findByDataQa('send-button'))
     this.archiveButton = new AsyncButton(page.findByDataQa('archive-button'))
     this.archiveTooltip = page.findByDataQa('archive-tooltip')
     this.acceptDecisionButton = page.findByDataQa('accept-decision-button')
+    this.rejectDecisionButton = page.findByDataQa('reject-decision-button')
     this.sendingConfirmationModal = new Modal(page.findByDataQa('modal'))
     this.confirmOtherDecisionsButton = page.findByDataQa(
       'confirm-other-decisions-button'

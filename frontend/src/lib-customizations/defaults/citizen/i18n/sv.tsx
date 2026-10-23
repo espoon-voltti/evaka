@@ -3092,6 +3092,8 @@ const sv: Translations = {
       success: 'Dokumentet har skickats',
       sentInfo:
         'Om du vill ändra dina svar, be personalen om ett nytt dokument.',
+      templateValidityEnded:
+        'Tiden för att fylla i blanketten har gått ut och den kan inte längre skickas. Be vid behov personalen om en ny blankett.',
       decisionNumber: 'Beslutsnummer',
       sendingConfirmationTitle: 'Är du säker på att du vill skicka dokumentet?',
       sendingConfirmationText:

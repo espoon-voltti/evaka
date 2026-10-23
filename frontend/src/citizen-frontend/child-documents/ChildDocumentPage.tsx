@@ -6,9 +6,11 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import { useLocation, useSearchParams } from 'wouter'
 
+import type DateRange from 'lib-common/date-range'
 import { useBoolean, useForm } from 'lib-common/form/hooks'
 import type { ChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { NotificationsContext } from 'lib-components/Notifications'
@@ -160,6 +162,9 @@ export default React.memo(function ChildDocumentPage() {
   )
 })
 
+const isTemplateValidityEnded = (validity: DateRange) =>
+  validity.end !== null && validity.end.isBefore(LocalDate.todayInHelsinkiTz())
+
 const ChildDocumentView = React.memo(function ChildDocumentView({
   document
 }: {
@@ -182,7 +187,12 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
 
   const [searchParams] = useSearchParams()
 
-  const initialReadOnly = searchParams.get('readOnly') !== 'false'
+  const templateValidityEnded = isTemplateValidityEnded(
+    document.template.validity
+  )
+  const fillable = document.status === 'CITIZEN_DRAFT' && !templateValidityEnded
+
+  const initialReadOnly = !fillable || searchParams.get('readOnly') !== 'false'
   const [readOnly, { on: readOnlyOn, off: readOnlyOff }] =
     useBoolean(initialReadOnly)
 
@@ -250,6 +260,12 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
             document.status === 'COMPLETED' && (
               <InfoBox message={i18n.children.childDocuments.sentInfo} />
             )}
+          {document.status === 'CITIZEN_DRAFT' && templateValidityEnded && (
+            <InfoBox
+              message={i18n.children.childDocuments.templateValidityEnded}
+              data-qa="template-validity-ended-info"
+            />
+          )}
         </ContentArea>
       </Container>
       <Gap $size="m" />
@@ -260,7 +276,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
           $gap={defaultMargins.m}
         >
           <ReturnButton label={i18n.common.return} data-qa="return-button" />
-          {document.status === 'CITIZEN_DRAFT' && (
+          {fillable && (
             <>
               {readOnly && (
                 <Button
@@ -287,6 +303,11 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
                       i18n.children.childDocuments.sendingConfirmationText
                     }
                     onSuccess={onSuccess}
+                    onFailure={() =>
+                      isTemplateValidityEnded(document.template.validity)
+                        ? i18n.children.childDocuments.templateValidityEnded
+                        : ''
+                    }
                     buttonText={i18n.children.childDocuments.send}
                     primary
                     disabled={!bind.isValid()}

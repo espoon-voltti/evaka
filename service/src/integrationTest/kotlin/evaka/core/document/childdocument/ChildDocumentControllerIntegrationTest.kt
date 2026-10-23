@@ -928,6 +928,159 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
+    fun `document is read-only after template validity has ended`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+        val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
+
+        val lastValidDay = clock
+        updateDocumentContent(documentId, content, now = lastValidDay)
+
+        val dayAfter = MockEvakaClock(lastValidDay.now().plusDays(1))
+        assertTemplateValidityEnded { updateDocumentContent(documentId, content, now = dayAfter) }
+        assertTemplateValidityEnded { takeDocumentWriteLock(documentId, clockOverride = dayAfter) }
+        assertTemplateValidityEnded { publishDocument(documentId, clockOverride = dayAfter) }
+        assertTemplateValidityEnded { nextState(documentId, DocumentStatus.PREPARED, dayAfter) }
+
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNull(getDocument(documentId).publishedAt)
+    }
+
+    @Test
+    fun `pedagogical assessment is read-only after template validity has ended`() {
+        val documentId = createDocument(templateId = templateIdPed)
+        val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        assertTemplateValidityEnded { updateDocumentContent(documentId, content, now = dayAfter) }
+        assertTemplateValidityEnded { nextState(documentId, DocumentStatus.COMPLETED, dayAfter) }
+    }
+
+    @Test
+    fun `document status cannot be reverted after template validity has ended`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+        nextState(documentId, DocumentStatus.PREPARED)
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        assertTemplateValidityEnded { prevState(documentId, DocumentStatus.DRAFT, dayAfter) }
+        assertEquals(DocumentStatus.PREPARED, getDocument(documentId).status)
+    }
+
+    @Test
+    fun `unpublished draft can be deleted by admin after template validity has ended`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        deleteDraftDocument(documentId, clockOverride = dayAfter)
+
+        assertEquals(0, getDocuments(child.id).size)
+    }
+
+    @Test
+    fun `unit supervisor can delete draft only while template is valid`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        assertThrows<Forbidden> {
+            deleteDraftDocument(documentId, user = unitSupervisorUser, clockOverride = dayAfter)
+        }
+        deleteDraftDocument(documentId, user = unitSupervisorUser)
+
+        assertEquals(0, getDocuments(child.id).size)
+    }
+
+    @Test
+    fun `group staff can delete draft only while template is valid`() {
+        val groupId = createPlacementWithGroup()
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
+        val documentId = createDocument(templateId = templateIdHojks)
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        assertThrows<Forbidden> {
+            deleteDraftDocument(documentId, user = staffUser, clockOverride = dayAfter)
+        }
+        deleteDraftDocument(documentId, user = staffUser)
+
+        assertEquals(0, getDocuments(child.id).size)
+    }
+
+    @Test
+    fun `decision cannot be proposed after template validity has ended`() {
+        createPlacement()
+        val documentId = createDecisionDocument()
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        assertTemplateValidityEnded {
+            proposeChildDocumentDecision(documentId, unitSupervisorUser.id, dayAfter)
+        }
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+    }
+
+    @Test
+    fun `pending decision proposal cannot be decided after template validity has ended`() {
+        createPlacement()
+        val documentId = createDecisionDocument()
+        proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        assertTemplateValidityEnded {
+            acceptChildDocumentDecision(
+                documentId,
+                DateRange(dayAfter.today(), dayAfter.today().plusDays(5)),
+                user = unitSupervisorUser,
+                clockOverride = dayAfter,
+            )
+        }
+        assertTemplateValidityEnded {
+            rejectChildDocumentDecision(
+                documentId,
+                user = unitSupervisorUser,
+                clockOverride = dayAfter,
+            )
+        }
+
+        val document = getDocument(documentId)
+        assertEquals(DocumentStatus.DECISION_PROPOSAL, document.status)
+        assertNull(document.decision)
+        assertNull(document.publishedAt)
+    }
+
+    @Test
+    fun `accepted decision can be annulled and its validity changed after template validity has ended`() {
+        createPlacement()
+        val documentId = createDecisionDocument()
+        proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
+        acceptChildDocumentDecision(
+            documentId,
+            DateRange(clock.today(), clock.today().plusDays(5)),
+            user = unitSupervisorUser,
+        )
+        val dayAfter = MockEvakaClock(clock.now().plusDays(1))
+
+        controller.updateChildDocumentDecisionValidity(
+            dbInstance(),
+            employeeUser.user,
+            dayAfter,
+            documentId,
+            ChildDocumentController.UpdateChildDocumentDecisionValidityRequest(
+                DateRange(clock.today(), clock.today().plusDays(3))
+            ),
+        )
+        annulChildDocumentDecision(
+            documentId,
+            user = unitSupervisorUser,
+            clockOverride = dayAfter,
+            reason = "Perustelut mitätöinnille",
+        )
+
+        assertEquals(ChildDocumentDecisionStatus.ANNULLED, getDocument(documentId).decision?.status)
+    }
+
+    @Test
     fun `updating content fails when answering nonexistent question`() {
         val documentId = createDocument()
         val content =
@@ -1484,6 +1637,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             id,
             ChildDocumentController.StatusChangeRequest(status),
         )
+
+    private fun assertTemplateValidityEnded(executable: () -> Unit) {
+        val error = assertThrows<BadRequest> { executable() }
+        assertEquals("template-validity-ended", error.errorCode)
+    }
 
     private fun prevState(
         id: ChildDocumentId,

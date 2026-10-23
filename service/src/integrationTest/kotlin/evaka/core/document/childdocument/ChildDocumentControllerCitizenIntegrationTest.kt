@@ -26,6 +26,7 @@ import evaka.core.shared.dev.DevChildDocumentPublishedVersion
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDocumentTemplate
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevFosterParent
 import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -346,6 +347,68 @@ class ChildDocumentControllerCitizenIntegrationTest :
     }
 
     @Test
+    fun `guardian cannot submit document after template validity has ended`() {
+        val documentId = insertCitizenDraft(templateValidity = endedTemplateValidity)
+
+        assertThrows<Forbidden> {
+            updateDocument(
+                documentId,
+                ChildDocumentControllerCitizen.UpdateChildDocumentRequest(
+                    status = DocumentStatus.COMPLETED,
+                    content = documentContent,
+                ),
+            )
+        }
+        assertEquals(DocumentStatus.CITIZEN_DRAFT, getDocument(documentId).status)
+    }
+
+    @Test
+    fun `document is not unanswered after template validity has ended but is still listed`() {
+        val documentId = insertCitizenDraft(templateValidity = endedTemplateValidity)
+
+        assertEquals(emptyList(), getUnansweredChildDocuments())
+        assertEquals(listOf(documentId), getDocumentsByChild(child.id).map { it.id })
+    }
+
+    @Test
+    fun `foster parent cannot fill document after template validity has ended`() {
+        val fosterParent = DevPerson()
+        db.transaction { tx ->
+            tx.insert(fosterParent, DevPersonType.ADULT)
+            tx.insert(
+                DevFosterParent(
+                    childId = child.id,
+                    parentId = fosterParent.id,
+                    validDuring = DateRange(clock.today(), null),
+                    modifiedAt = clock.now(),
+                    modifiedBy = employeeUser.evakaUserId,
+                )
+            )
+        }
+        val fosterParentUser = AuthenticatedUser.Citizen(fosterParent.id, CitizenAuthLevel.STRONG)
+        val validDocumentId =
+            insertCitizenDraft(templateValidity = DateRange(clock.today(), clock.today()))
+        val endedDocumentId = insertCitizenDraft(templateValidity = endedTemplateValidity)
+
+        assertEquals(
+            listOf(validDocumentId),
+            getUnansweredChildDocuments(user = fosterParentUser).map { it.id },
+        )
+        assertThrows<Forbidden> {
+            controller.updateChildDocument(
+                dbInstance(),
+                fosterParentUser,
+                clock,
+                endedDocumentId,
+                ChildDocumentControllerCitizen.UpdateChildDocumentRequest(
+                    status = DocumentStatus.COMPLETED,
+                    content = documentContent,
+                ),
+            )
+        }
+    }
+
+    @Test
     fun `published HOJKS document is not counted as unread`() {
         db.transaction { tx ->
             val hojksTemplate =
@@ -653,6 +716,44 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 ),
             )
     }
+
+    private val endedTemplateValidity =
+        DateRange(clock.today().minusDays(10), clock.today().minusDays(1))
+
+    private fun insertCitizenDraft(templateValidity: DateRange): ChildDocumentId =
+        db.transaction { tx ->
+            val template =
+                DevDocumentTemplate(
+                    type = ChildDocumentType.CITIZEN_BASIC,
+                    name = "Medialupa",
+                    validity = templateValidity,
+                    content = templateContent,
+                )
+            tx.insert(template)
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    childId = child.id,
+                    templateId = template.id,
+                    content = documentContent,
+                    modifiedAt = clock.now(),
+                    modifiedBy = employeeUser.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = employeeUser.id,
+                    answeredAt = null,
+                    answeredBy = null,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = employeeUser.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
+                )
+            )
+        }
 
     private fun getUnreadCount(user: AuthenticatedUser.Citizen = citizen) =
         controller.getUnreadDocumentsCount(dbInstance(), user, clock)
