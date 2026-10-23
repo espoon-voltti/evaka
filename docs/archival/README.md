@@ -4,52 +4,54 @@ SPDX-FileCopyrightText: 2017-2026 City of Espoo
 SPDX-License-Identifier: LGPL-2.1-or-later
 -->
 
-# Arkistointi-integraatiot: tekniset kuvaukset ja esimerkit
+# Archival integrations: technical descriptions and examples
 
-Tässä hakemistossa kuvataan eVakan nykyiset arkistointiliitännät: mitä eVaka lähettää, missä muodossa ja milloin. Kuvaukset ja esimerkit on tarkoitettu kunnille, integraatioalustan toimittajille ja arkistojärjestelmien toimittajille, kun ne suunnittelevat uutta liitäntää tai arvioivat, voiko olemassa olevaa käyttää sellaisenaan.
+This directory describes eVaka's current archival integrations: what eVaka sends, in which format and when. The descriptions and examples are intended for municipalities, integration platform providers and archive system providers planning a new integration or evaluating whether an existing one can be used as is.
 
-Yleiskuvaus arkistoinnista ja asianhallinnan metatiedoista on eVakan wikissä: [Arkistointi](https://github.com/espoon-voltti/evaka/wiki/Arkistointi) ja [Asianhallintaprosessit ja metatiedot](https://github.com/espoon-voltti/evaka/wiki/Asianhallintaprosessit-ja-metatiedot).
+An overview of archiving and case management metadata is available in the eVaka wiki (in Finnish): [Archiving](https://github.com/espoon-voltti/evaka/wiki/Arkistointi) and [Case management processes and metadata](https://github.com/espoon-voltti/evaka/wiki/Asianhallintaprosessit-ja-metatiedot).
 
-## Toteutukset
+## Implementations
 
-| Kunta | Kuvaus | Siirtotapa | Asiakirjat | Kuittaus vastaanotosta |
+| Municipality | Description | Transfer method | Documents | Receipt acknowledgement |
 |---|---|---|---|---|
-| Espoo | [espoo-sarma](espoo-sarma/) | HTTP POST (multipart) Särmän X-Archive-rajapintaan | lapsen asiakirjat | kyllä, `status_code` ja arkiston tunniste vastauksessa |
-| Tampere | [tampere-frends-rest](tampere-frends-rest/) | REST (multipart) Frends-integraatioalustan kautta | päätökset, maksu- ja arvopäätökset, lapsen asiakirjat | kyllä, arkistotunnus vastauksessa |
-| Nokia, Pirkkala, Kangasala | [tweb-sftp](tweb-sftp/) | SFTP (PDF ja metatieto-XML erillisinä tiedostoina) | päätökset, maksu- ja arvopäätökset, lapsen asiakirjat | ei, vain tieto onnistuneesta tiedostokirjoituksesta |
+| Espoo | [espoo-sarma](espoo-sarma/) | HTTP POST (multipart) to Särmä's X-Archive API | child documents | yes, `status_code` and an archive ID in the response |
+| Tampere | [tampere-frends-rest](tampere-frends-rest/) | REST (multipart) through the Frends integration platform | placement decisions, fee and voucher value decisions, child documents | yes, an archive ID in the response |
+| Nokia, Pirkkala, Kangasala | [tweb-sftp](tweb-sftp/) | SFTP (PDF and metadata XML as separate files) | placement decisions, fee and voucher value decisions, child documents | no, only confirmation that the files were written successfully |
 
-Muissa kunnissa arkistointiliitäntää ei ole käytössä (`ArchivalIntegrationClient.FailingClient`).
+Other municipalities do not have an archival integration enabled (`ArchivalIntegrationClient.FailingClient`).
 
-Esimerkit on tuotettu ajamalla eVakaa paikallisesti kunnan asetuksilla ja ohjaamalla liitäntä paikalliseen vastaanottimeen, joka tallensi pyynnöt sellaisenaan. Asiakirjat käsiteltiin tavallisten työntekijätoimintojen kautta. Henkilöt ovat kuvitteellisia, ja henkilötunnukset ovat keksittyjä. Esimerkkejä ei päivitetä automaattisesti, joten ne kuvaavat tilannetta kirjoitushetkellä (lokakuu 2026). Ajantasainen totuus on lähdekoodissa, johon kunkin kuvauksen lopussa viitataan.
+The examples were produced by running eVaka locally with each municipality's configuration and pointing the integration to a local receiver that captured requests as sent. Documents were processed through normal employee operations. The people are fictional, and the personal identity codes are made up. The examples are not updated automatically and reflect the situation at the time of writing (October 2026). The source code, referenced at the end of each description, is the authoritative source for current behaviour.
 
-`request.http`-tiedostoissa rivinvaihdot ovat LF-muodossa. Varsinaisissa HTTP-pyynnöissä otsakkeiden ja multipart-osien rivinvaihdot ovat CRLF.
+Example directory and file names, captured payloads and literal metadata values retain their original language to match the data sent by eVaka.
 
-## Yhteinen malli
+The `request.http` files use LF line endings. Actual HTTP requests use CRLF line endings in headers and multipart sections.
 
-Kaikki liitännät toteuttavat saman rajapinnan, `ArchivalIntegrationClient` (`service/src/main/kotlin/evaka/core/document/archival/`). Jokaiselle asiakirjaryhmälle on oma metodinsa:
+## Shared model
 
-| Metodi | Asiakirjat | Metatietojen lähde |
+All integrations implement the same interface, `ArchivalIntegrationClient` (`service/src/main/kotlin/evaka/core/document/archival/`). Each document group has its own method:
+
+| Method | Documents | Metadata source |
 |---|---|---|
-| `uploadDecisionToArchive` | varhaiskasvatus-, esiopetus- ja kerhopäätökset | hakemuksen asianhallintaprosessi (`case_process`) ja kunnan konfiguraatio |
-| `uploadFeeDecisionToArchive` | maksupäätökset | maksupäätöksen asianhallintaprosessi ja kunnan konfiguraatio |
-| `uploadVoucherValueDecisionToArchive` | arvopäätökset | arvopäätöksen asianhallintaprosessi ja kunnan konfiguraatio |
-| `uploadChildDocumentToArchive` | lomakepohjista tehdyt lapsen asiakirjat | asiakirjapohjan arkistointitiedot (tehtäväluokka, säilytysaika, salassapito) ja asianhallintaprosessi |
+| `uploadDecisionToArchive` | daycare, preschool and club decisions | the application's case management process (`case_process`) and municipality configuration |
+| `uploadFeeDecisionToArchive` | fee decisions | the fee decision's case management process and municipality configuration |
+| `uploadVoucherValueDecisionToArchive` | voucher value decisions | the voucher value decision's case management process and municipality configuration |
+| `uploadChildDocumentToArchive` | child documents created from templates | the document template's archival settings (process definition number, retention period, confidentiality) and case management process |
 
-eVaka antaa liitännälle asiakirjan tiedot, PDF:n, asiakirjaan liittyvän henkilön, asianhallintaprosessin käsittelyhistorioineen sekä viennin käynnistäjän. Liitäntä muodostaa niistä arkistojärjestelmän vaatiman metatietoviestin ja lähettää sen. Kun metodi palaa ilman virhettä, eVaka merkitsee asiakirjan arkistoiduksi (`archived_at`). Jos metodi heittää virheen, asiakirja jää arkistoimattomaksi.
+eVaka provides the integration with the document details, PDF, person associated with the document, case management process with its history, and export initiator. The integration uses these to construct the metadata message required by the archive system and sends it. When the method returns without an error, eVaka marks the document as archived (`archived_at`). If the method throws an error, the document remains unarchived.
 
-Viennin voi käynnistää kahdella tavalla:
+An export can be triggered in two ways:
 
-- **Käsin**: työntekijä painaa asiakirjan kohdalla "Arkistoi".
-- **Ajastetusti**: kunnan ajastettu ajo valitsee ehdot täyttävät asiakirjat ja luo niistä taustatyöt. Valintaehdot ja viiveet ovat kuntakohtaisia.
+- **Manually**: an employee clicks the document's archive button ("Arkistoi" in Finnish).
+- **On a schedule**: the municipality's scheduled job selects eligible documents and creates background jobs for them. Selection criteria and delays vary by municipality.
 
-Taustatyöt ajetaan omassa `archival`-altaassaan. Sen rinnakkaisuutta ja tahtia säädetään asetuksilla `evaka.archival_pool_concurrency` (oletus 4) ja `evaka.archival_pool_throttle_interval_seconds` (oletus 0).
+Background jobs run in a dedicated `archival` pool. Its concurrency and rate are controlled by `evaka.archival_pool_concurrency` (default 4) and `evaka.archival_pool_throttle_interval_seconds` (default 0).
 
-## Uuden liitännän suunnittelu
+## Designing a new integration
 
-Liitäntä on helpointa toteuttaa, kun arkistojärjestelmä tai integraatioalusta
+An integration is easiest to implement when the archive system or integration platform
 
-- ottaa vastaan yhden asiakirjan kerrallaan synkronisessa kutsussa (esim. REST), jossa ovat mukana metatiedot ja PDF
-- palauttaa kutsun vastauksessa koneluettavan tiedon siitä, onnistuiko vastaanotto (esim. arkistotunnus tai virhekoodi), jotta eVaka voi merkitä asiakirjan arkistoiduksi ja aineisto voidaan myöhemmin poistaa eVakasta ilman käsityötä (myös esimerkiksi arkiston validaatiossa hylätty asiakirja pitää näkyä virheenä)
-- tarjoaa testiympäristön, johon voi lähettää aineistoa sekä kehittäjän koneelta että eVakan testiympäristöstä, ja jossa vastaanotetut asiakirjat ja niiden metatiedot voi tarkastaa käyttöliittymän tai rajapinnan kautta.
+- accepts one document at a time in a synchronous call (e.g. REST), including both metadata and the PDF
+- returns a machine-readable indication of whether receipt succeeded (e.g. an archive ID or error code), so eVaka can mark the document as archived and the material can later be removed from eVaka without manual work (a document rejected by the archive's validation must also be reported as an error)
+- provides a test environment that accepts material from both a developer's machine and eVaka's test environment, and allows received documents and their metadata to be inspected through a UI or API.
 
-Jos arkistojärjestelmä hyväksyy jo olemassa olevan viestimuodon (esimerkiksi Tampereen Profium-muotoisen viestin Frendsin kautta), uusi kunta voi käyttää valmista liitäntää pelkillä asetuksilla ja kuntakohtaisilla tehtäväluokilla.
+If the archive system already accepts an existing message format (for example, Tampere's Profium message format through Frends), a new municipality can use the existing integration with configuration changes and municipality-specific process definition numbers.

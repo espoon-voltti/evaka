@@ -4,113 +4,115 @@ SPDX-FileCopyrightText: 2017-2026 City of Espoo
 SPDX-License-Identifier: LGPL-2.1-or-later
 -->
 
-# Tampere: arkistointi Frendsin kautta (REST)
+# Tampere: archiving through Frends (REST)
 
-Tampere vie asiakirjat arkistoon Frends-integraatioalustan kautta. eVaka lähettää yhden asiakirjan kerrallaan HTTP-pyyntönä, ja vastauksessa palautuu arkistotunnus. Metatiedot noudattavat Profiumin SÄHKE2-pohjaista vastaanottoskeemaa.
+Tampere exports documents to the archive through the Frends integration platform. eVaka sends one document per HTTP request and receives an archive ID in the response. The metadata follows Profium's SÄHKE2-based reception schema.
 
-Esimerkit on tuotettu ajamalla eVakaa paikallisesti Tampereen asetuksilla. Asiakirjat käsiteltiin tavallisten työntekijätoimintojen kautta, ja eVakan lähettämät pyynnöt tallennettiin sellaisenaan. Henkilöt ovat kuvitteellisia, ja henkilötunnukset ovat keksittyjä. Esimerkit kuvaavat tilannetta lokakuussa 2026, eikä niitä päivitetä automaattisesti koodin muuttuessa.
+The examples were produced by running eVaka locally with Tampere's configuration. Documents were processed through normal employee operations, and the requests sent by eVaka were captured as sent. The people are fictional, and the personal identity codes are made up. The examples reflect the situation in October 2026 and are not updated automatically when the code changes.
 
-## Rajapinta
+## API
 
 | | |
 |---|---|
-| Menetelmä ja polku | `POST {baseUrl}/records/add` |
-| Sisältötyyppi | `multipart/form-data` |
-| Osa `xml` | Metatiedot, `application/xml; charset=utf-8`. Skeema [`profium-collection-sahke2.xsd`](../../../service/src/main/schema/profium-collection-sahke2.xsd), joka viittaa tiedostoon [`sahke2.xsd`](../../../service/src/main/schema/sahke2.xsd) |
-| Osa `content` | Asiakirja (PDF). Osan `filename` on sama kuin metatietojen `file/@originalId` |
-| Otsakkeet | `X-API-version: 1.0`, `X-API-transactionid: <eVakan jäljitystunnus>`, `Accept: */*` |
-| Tunnistautuminen | HTTP Basic -tunnistautuminen Frendsiin (`TAMPERE_FRENDS_USERNAME`, `TAMPERE_FRENDS_PASSWORD`). Integraatioalusta lisää arkistojärjestelmälle menevän `X-API-key`-otsakkeen itse |
-| Osoite | `TAMPERE_ARCHIVAL_BASEURL` |
-| Aikakatkaisut | Yhteys, luku ja kirjoitus 1 min |
+| Method and path | `POST {baseUrl}/records/add` |
+| Content type | `multipart/form-data` |
+| Part `xml` | Metadata, `application/xml; charset=utf-8`. Schema: [`profium-collection-sahke2.xsd`](../../../service/src/main/schema/profium-collection-sahke2.xsd), which references [`sahke2.xsd`](../../../service/src/main/schema/sahke2.xsd) |
+| Part `content` | Document (PDF). The part's `filename` matches the metadata's `file/@originalId` |
+| Headers | `X-API-version: 1.0`, `X-API-transactionid: <eVaka trace ID>`, `Accept: */*` |
+| Authentication | HTTP Basic authentication to Frends (`TAMPERE_FRENDS_USERNAME`, `TAMPERE_FRENDS_PASSWORD`). The integration platform adds the `X-API-key` header sent to the archive system |
+| Address | `TAMPERE_ARCHIVAL_BASEURL` |
+| Timeouts | Connection, read and write: 1 min each |
 
-Jokaisessa pyynnössä on yksi asiakirja: yksi `collection` ja yksi tiedosto.
+Each request contains one document: one `collection` and one file.
 
-### Vastaus
+### Response
 
-eVaka tulkitsee vastauksen näin (rakenne: [`frends-response.xsd`](frends-response.xsd)):
+eVaka interprets the response as follows (structure: [`frends-response.xsd`](frends-response.xsd)):
 
-- **HTTP 2xx ja `<success>`**: eVaka kirjaa onnistumisen ja vastauksen arkistotunnuksen (`records/record/archiveid`) lokiin ja merkitsee asiakirjan arkistoiduksi. Arkistotunnusta ei tallenneta kantaan.
-- **HTTP 2xx, mutta runko ei ole `<success>`**: eVaka kirjaa virheen lokiin, mutta merkitsee asiakirjan silti arkistoiduksi.
-- **HTTP 4xx/5xx**: eVaka kirjaa virheen (`<errors>`-rungon sisältö tai raakavastaus), eikä asiakirjaa merkitä arkistoiduksi. Ajastetussa viennissä työtä ei yritetä uudelleen, vaan asiakirja tulee uudelleen ehdolle seuraavalla ajokerralla.
+- **HTTP 2xx and `<success>`**: eVaka logs success and the archive ID from the response (`records/record/archiveid`) and marks the document as archived. The archive ID is not stored in the database.
+- **HTTP 2xx, but the body is not `<success>`**: eVaka logs an error but still marks the document as archived.
+- **HTTP 4xx/5xx**: eVaka logs an error (the contents of the `<errors>` body or the raw response), and the document is not marked as archived. For scheduled exports, the job is not retried, but the document becomes eligible again on the next run.
 
-Esimerkit: [`responses/success.xml`](responses/success.xml) ja [`responses/error.xml`](responses/error.xml). Virhe-esimerkin `error_code`- ja `error_summary`-arvot ovat havainnollistavia, eivät toimittajan todellisia koodeja. `frends-response.xsd` on johdettu eVakan lukukoodista (`TampereArchivalSchema.kt`), joten se ei ole toimittajan virallinen skeema.
+Examples: [`responses/success.xml`](responses/success.xml) and [`responses/error.xml`](responses/error.xml). The `error_code` and `error_summary` values in the error example are illustrative, not actual vendor codes. `frends-response.xsd` is derived from eVaka's response parsing code (`TampereArchivalSchema.kt`); it is not the vendor's official schema.
 
-## Metatiedot
+## Metadata
 
-| Kenttä | Sisältö |
+| Field | Contents |
 |---|---|
-| `initiator/source_system` | Aina `eVaka` |
-| `initiator/initiator_id`, `initiator_name` | Viennin käynnistäjä. Ajastetussa viennissä järjestelmäkäyttäjä, käsin käynnistetyssä viennissä työntekijä (muodossa Sukunimi Etunimi) |
-| `collection/type` | Aina `record` |
-| `collection/folder` | Tehtäväluokka (arkistonmuodostussuunnitelman tunnus) asianhallintaprosessista (`case_process.process_definition_number`) |
-| `metadata/title` | `<Asiakirjan nimi>, <Tila>, <Etunimi Sukunimi>, <syntymäaika pp.kk.vvvv>`. Henkilö on lapsi, paitsi maksu- ja arvopäätöksissä päämies |
-| `metadata/calculationBaseDate`, `created` | Päätöksissä lähetyspäivä, maksu- ja arvopäätöksissä hyväksymispäivä, lapsen asiakirjoissa julkaisupäivä |
-| `metadata/agent` | Toimijat roolilla `Laatija` tai `Päättäjä`, ks. taulukko alla |
-| `content/file/@name` | `<Asiakirjan nimi>.pdf` |
-| `content/file/@originalId` | Asiakirjan eVaka-tunniste (UUID) |
+| `initiator/source_system` | Always `eVaka` |
+| `initiator/initiator_id`, `initiator_name` | Export initiator. The system user for scheduled exports; the employee for manual exports (name in Lastname Firstname order) |
+| `collection/type` | Always `record` |
+| `collection/folder` | Process definition number (records management plan identifier) from the case management process (`case_process.process_definition_number`) |
+| `metadata/title` | `<Document name>, <Status>, <Firstname Lastname>, <date of birth dd.mm.yyyy>`. The person is the child, except for fee and voucher value decisions, where it is the head of family |
+| `metadata/calculationBaseDate`, `created` | Date sent for placement decisions, approval date for fee and voucher value decisions, publication date for child documents |
+| `metadata/agent` | Agents with the role `Laatija` (author) or `Päättäjä` (decision-maker), see the table below |
+| `content/file/@name` | `<Document name>.pdf` |
+| `content/file/@originalId` | The document's eVaka ID (UUID) |
 
-Henkilötunnusta ei lähetetä metatiedoissa. Se näkyy vain PDF:ssä.
+The personal identity code is not sent in the metadata. It appears only in the PDF.
 
-## Asiakirjatyypit
+## Document types
 
-| Esimerkki | Asiakirja | Tehtäväluokka | Tilat otsikossa | Toimijat |
+The status and agent role values below are the literal Finnish values sent in the metadata: `Hyväksytty` = accepted, `Hylätty` = rejected, `Lähetetty` = sent, `Mitätöity` = annulled and `Valmis` = completed.
+
+| Example | Document | Process definition number | Statuses in title | Agents |
 |---|---|---|---|---|
-| [01](examples/01-varhaiskasvatuspaatos-hyvaksytty), [02](examples/02-varhaiskasvatuspaatos-hylatty) | Varhaiskasvatuspäätös (myös osa-aikainen) | 12.06.01.17 | Hyväksytty, Hylätty | – |
-| [03](examples/03-esiopetuspaatos-hyvaksytty) | Esiopetuspäätös | 12.06.01.17 | Hyväksytty, Hylätty | – |
-| [04](examples/04-taydentavan-varhaiskasvatuksen-paatos-hyvaksytty) | Täydentävän varhaiskasvatuksen päätös | 12.06.01.17 | Hyväksytty, Hylätty | – |
-| [05](examples/05-maksupaatos-lahetetty), [06](examples/06-maksupaatos-mitatoity) | Maksupäätös | 12.06.01.23 | Lähetetty, Mitätöity | Päättäjä = päätöksen käsittelijä |
-| [07](examples/07-arvopaatos-lahetetty), [08](examples/08-arvopaatos-mitatoity) | Arvopäätös (palveluseteli) | 12.06.01.23 | Lähetetty, Mitätöity | Päättäjä = päätöksen käsittelijä |
-| [09](examples/09-varhaiskasvatussuunnitelma-valmis) | Varhaiskasvatussuunnitelma | asiakirjapohjan mukaan* | Valmis | Laatija |
-| [10](examples/10-esiopetuksen-oppimissuunnitelma-valmis) | Esiopetuksen oppimissuunnitelma | asiakirjapohjan mukaan* | Valmis | Laatija |
-| [11](examples/11-pedagoginen-arvio-valmis) | Pedagoginen arvio | asiakirjapohjan mukaan* | Valmis | Laatija |
-| [12](examples/12-paatosasiakirja-tuki-hyvaksytty), [13](examples/13-paatosasiakirja-tuki-hylatty) | Päätösasiakirja (esim. päätös tuesta) | asiakirjapohjan mukaan* | Hyväksytty, Hylätty, Mitätöity | Laatija, Päättäjä |
+| [01](examples/01-varhaiskasvatuspaatos-hyvaksytty), [02](examples/02-varhaiskasvatuspaatos-hylatty) | Daycare decision (including part-time daycare) | 12.06.01.17 | Hyväksytty, Hylätty | – |
+| [03](examples/03-esiopetuspaatos-hyvaksytty) | Preschool decision | 12.06.01.17 | Hyväksytty, Hylätty | – |
+| [04](examples/04-taydentavan-varhaiskasvatuksen-paatos-hyvaksytty) | Supplementary daycare decision (daycare supplementing preschool) | 12.06.01.17 | Hyväksytty, Hylätty | – |
+| [05](examples/05-maksupaatos-lahetetty), [06](examples/06-maksupaatos-mitatoity) | Fee decision | 12.06.01.23 | Lähetetty, Mitätöity | Päättäjä = decision handler |
+| [07](examples/07-arvopaatos-lahetetty), [08](examples/08-arvopaatos-mitatoity) | Voucher value decision | 12.06.01.23 | Lähetetty, Mitätöity | Päättäjä = decision handler |
+| [09](examples/09-varhaiskasvatussuunnitelma-valmis) | Early childhood education and care plan | from the document template* | Valmis | Laatija |
+| [10](examples/10-esiopetuksen-oppimissuunnitelma-valmis) | Preschool learning plan | from the document template* | Valmis | Laatija |
+| [11](examples/11-pedagoginen-arvio-valmis) | Pedagogical assessment | from the document template* | Valmis | Laatija |
+| [12](examples/12-paatosasiakirja-tuki-hyvaksytty), [13](examples/13-paatosasiakirja-tuki-hylatty) | Decision document (e.g. a support decision) | from the document template* | Hyväksytty, Hylätty, Mitätöity | Laatija, Päättäjä |
 
-Päätösten sekä maksu- ja arvopäätösten tehtäväluokat tulevat Tampereen konfiguraatiosta (`TampereConfig.archiveMetadataConfigs`). Paikkapäätös saa hakemuksensa tehtäväluokan.
+The process definition numbers for placement, fee and voucher value decisions come from Tampere's configuration (`TampereConfig.archiveMetadataConfigs`). A placement decision uses its application's process definition number.
 
-\* Lapsen asiakirjojen tehtäväluokka, säilytysaika ja asiakirjan nimi tulevat kunnan pääkäyttäjän ylläpitämästä asiakirjapohjasta. Esimerkeissä käytetyt pohjat (12.06.01.11 suunnitelmille ja 12.06.01.26 päätöksille) ovat havainnollistavia. Vain pohjat, joissa on valittu "arkistoidaan ulkoisesti", viedään. Lapsen asiakirjojen toimijat muodostetaan käsittelyhistoriasta: jokainen asiakirjaa käsitellyt työntekijä on `Laatija`, ja päätöksen tehnyt on `Päättäjä`.
+\* For child documents, the process definition number, retention period and document name come from the document template maintained by the municipality's administrator. The templates used in the examples (12.06.01.11 for plans and 12.06.01.26 for decisions) are illustrative. Only templates with external archiving enabled are exported. Child document agents are derived from the process history: each employee who handled the document is a `Laatija`, and the employee who made the decision is a `Päättäjä`.
 
-Esimerkeistä puuttuu kolme tapausta:
+Three cases are missing from the examples:
 
-- **Kerhopäätös** ja **esiopetuksen kerhon päätös**: rakenne on sama kuin päätöksissä 01–04 (otsikot "Kerhopäätös" ja "Esiopetuksen kerhon päätös"). Kerhopäätökset eivät kuulu ajastettuun vientiin, mutta ne voi viedä käsin.
-- **Mitätöity päätösasiakirja**: rakenne on sama kuin esimerkissä 12, otsikon tila on "Mitätöity".
-- **Valmistava opetus**: valmistavan opetuksen päätöksiä ei tueta.
+- **Club decision** and **preschool club decision**: the structure is the same as in decisions 01–04 (titles "Kerhopäätös" and "Esiopetuksen kerhon päätös"). Club decisions are not included in scheduled exports but can be exported manually.
+- **Annulled decision document**: the structure is the same as in example 12, with "Mitätöity" as the status in the title.
+- **Preparatory education**: preparatory education decisions are not supported.
 
-## Milloin asiakirjat viedään
+## When documents are exported
 
-Ajastettu vienti valitsee päivittäin enintään päivärajan verran asiakirjoja. Kiintiö jaetaan asiakirjaryhmien kesken niiden määrien suhteessa. Oletusviiveet (asetukset `tampere.archival.schedule.*`):
+The scheduled export selects up to the daily document limit each day. The quota is distributed among document groups in proportion to their counts. Default delays (settings `tampere.archival.schedule.*`):
 
-| Asiakirja | Ehdolle |
+| Document | Eligible after |
 |---|---|
-| Varhaiskasvatus- ja esiopetuspäätökset (hyväksytty/hylätty, ei kerho) | 180 pv päätöksen ratkaisusta |
-| Maksu- ja arvopäätökset (lähetetty/mitätöity) | 180 pv hyväksymisestä |
-| Suunnitelmat ja muut lapsen asiakirjat (valmis) | 180 pv asiakirjapohjan voimassaolon päättymisestä |
-| Lapsen päätösasiakirjat | 30 pv siitä, kun lapsen viimeinen sijoitus on päättynyt |
+| Daycare and preschool decisions (accepted/rejected, excluding club decisions) | 180 days after the decision was resolved |
+| Fee and voucher value decisions (sent/annulled) | 180 days after approval |
+| Plans and other child documents (completed) | 180 days after the document template's validity ends |
+| Child decision documents | 30 days after the child's last placement ends |
 
-Ajastettu ajo (`archiveEligibleDocuments`) on oletuksena pois päältä, ja käyttöön otettuna se ajetaan päivittäin klo 20. Myös päivärajan oletus on 0, jolloin ajo ei valitse yhtään asiakirjaa. Lisäksi työntekijä voi käynnistää viennin käsin yksittäisen asiakirjan kohdalta.
+The scheduled job (`archiveEligibleDocuments`) is disabled by default. When enabled, it runs daily at 20:00. The daily limit also defaults to 0, in which case the job selects no documents. An employee can also trigger an export manually for an individual document.
 
-Kun asiakirja on merkitty arkistoiduksi, sitä ei viedä uudelleen ajastetusti. Jos jo arkistoitu maksu- tai arvopäätös mitätöidään myöhemmin, arkistoon jää tila "Lähetetty". Päätöspäivää verrataan aikaleimaan, joten asiakirja tulee ehdolle vasta viiveen jälkeisenä päivänä.
+Once a document has been marked as archived, it is not exported again by the scheduled job. If an archived fee or voucher value decision is later annulled, the archive retains the status "Lähetetty" (sent). Comparing a date against a timestamp means a document becomes eligible only on the day after the delay has elapsed.
 
-## Esimerkkien rakenne
+## Example structure
 
 ```
-examples/<nn-tyyppi>/
-  metadata.xml    multipart-osa "xml" sellaisenaan
-  asiakirja.pdf   multipart-osa "content"
-  request.http    koko HTTP-pyyntö (tunnistautumistiedot on korvattu placeholdereilla, PDF korvattu viittauksella)
-responses/        esimerkkivastaukset
+examples/<nn-type>/
+  metadata.xml    the "xml" multipart part as sent
+  asiakirja.pdf   the "content" multipart part
+  request.http    the full HTTP request (credentials replaced with placeholders, PDF replaced with a reference)
+responses/        example responses
 frends-response.xsd
 ```
 
-Metatiedot voi validoida komennolla:
+Validate the metadata with:
 
 ```sh
 xmllint --noout --schema service/src/main/schema/profium-collection-sahke2.xsd docs/archival/tampere-frends-rest/examples/*/metadata.xml
 ```
 
-## Lähdekoodi
+## Source code
 
-- Viestin muodostus: `service/src/main/kotlin/evaka/instance/tampere/archival/` (`TampereArchivalClient.kt` ja asiakirjatyypeittäiset `TampereArchival*.kt`)
-- Otsikoiden tilat: `service/src/main/kotlin/evaka/trevaka/archival/DocumentStatus.kt`
-- Ajastus ja viiveet: `service/src/main/kotlin/evaka/trevaka/archival/TrevakaArchivalScheduling.kt`
-- Asetukset: `service/src/main/kotlin/evaka/instance/tampere/TampereConfig.kt` ja `TampereProperties.kt`
-- Integraatiotestit: `service/src/integrationTest/kotlin/evaka/instance/tampere/archival/TampereArchivalClientTest.kt`
+- Message construction: `service/src/main/kotlin/evaka/instance/tampere/archival/` (`TampereArchivalClient.kt` and the document-type-specific `TampereArchival*.kt` files)
+- Status values in titles: `service/src/main/kotlin/evaka/trevaka/archival/DocumentStatus.kt`
+- Scheduling and delays: `service/src/main/kotlin/evaka/trevaka/archival/TrevakaArchivalScheduling.kt`
+- Settings: `service/src/main/kotlin/evaka/instance/tampere/TampereConfig.kt` and `TampereProperties.kt`
+- Integration tests: `service/src/integrationTest/kotlin/evaka/instance/tampere/archival/TampereArchivalClientTest.kt`

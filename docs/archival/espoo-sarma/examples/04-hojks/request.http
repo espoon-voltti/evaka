@@ -21,7 +21,7 @@ URL-ENCODED
 --ab29e6f4-5f0e-4a13-9094-3ff10739e68f
 Content-Disposition: form-data; name="user_id"
 
-<käyttäjätunnus>
+<username>
 --ab29e6f4-5f0e-4a13-9094-3ff10739e68f
 Content-Disposition: form-data; name="user_role"
 
@@ -71,5 +71,5 @@ Content-Disposition: form-data; name="instance_1_record_payload_content_size"
 Content-Disposition: form-data; name="instance_1_record_payload_data"; filename="child-documents/child_document_2817e434-c896-11f1-aede-ffaeac7cacd5_v1.pdf"
 Content-Type: application/pdf
 
-<PDF-tiedoston binäärisisältö, 17108 tavua; ks. asiakirja.pdf>
+<PDF binary content, 17108 bytes; see asiakirja.pdf>
 --ab29e6f4-5f0e-4a13-9094-3ff10739e68f--

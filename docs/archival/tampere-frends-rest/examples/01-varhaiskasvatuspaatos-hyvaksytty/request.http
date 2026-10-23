@@ -1,10 +1,10 @@
-POST https://<frends-osoite>/<polku>/records/add HTTP/1.1
+POST https://<frends-host>/<path>/records/add HTTP/1.1
 Accept: */*
 X-API-version: 1.0
 X-API-transactionid: 8987b260cb445f6e
-Authorization: Basic <base64(käyttäjätunnus:salasana)>
+Authorization: Basic <base64(username:password)>
 Content-Type: multipart/form-data; boundary=b2d53f95-d96d-41a5-ae7e-72a0f4c98fbe
-Content-Length: <koko>
+Content-Length: <size>
 Connection: Keep-Alive
 Accept-Encoding: gzip
 User-Agent: okhttp/5.5.0
@@ -38,5 +38,5 @@ Content-Type: application/xml; charset=utf-8
 Content-Disposition: form-data; name="content"; filename="006daaf8-c892-11f1-9a6b-4faf34caf05c"
 Content-Type: application/pdf
 
-<PDF-tiedoston binäärisisältö, ks. asiakirja.pdf>
+<PDF binary content, see asiakirja.pdf>
 --b2d53f95-d96d-41a5-ae7e-72a0f4c98fbe--

@@ -4,366 +4,367 @@ SPDX-FileCopyrightText: 2017-2026 City of Espoo
 SPDX-License-Identifier: LGPL-2.1-or-later
 -->
 
-# Espoo: arkistointi Särmään
+# Espoo: archiving to Särmä
 
-Tässä kuvataan, miten eVaka siirtää asiakirjoja Espoon Särmä-arkistoon (Avaintecin X-Archive-rajapinta). Toiminnallinen kuvaus on wikissä: [Särmä-arkisto-integraatio](https://github.com/espoon-voltti/evaka/wiki/S%C3%A4rm%C3%A4-arkisto-integraatio).
+This document describes how eVaka transfers documents to Espoo's Särmä archive (Avaintec's X-Archive API). The functional description is available in the wiki (in Finnish): [Särmä archive integration](https://github.com/espoon-voltti/evaka/wiki/S%C3%A4rm%C3%A4-arkisto-integraatio).
 
-Kuvaus perustuu koodiin (lokakuu 2026) ja paikalliseen ajoon, jossa liitäntä ohjattiin vastaanottimeen, joka tallensi pyynnöt sellaisenaan. Hakemistossa `examples/` ovat tallennetut pyynnöt. Henkilöt, henkilötunnukset ja tehtäväluokat (`12.06.01.SL1.RT34` jne.) on keksitty. Työntekijä "Pääkäyttäjä Päivi" on eVakan paikallisen kehitysdatan kuvitteellinen käyttäjä. Esimerkkejä ei päivitetä automaattisesti koodin muuttuessa.
+The description is based on the code (October 2026) and a local run in which the integration was pointed to a receiver that captured requests as sent. The captured requests are in `examples/`. The people, personal identity codes and process definition numbers (`12.06.01.SL1.RT34`, etc.) are made up. The employee "Pääkäyttäjä Päivi" is a fictional user from eVaka's local development data. The examples are not updated automatically when the code changes.
 
-Koodiviittaukset ovat polkuja repon juuresta.
-Lyhenteet:
+Code references are paths relative to the repository root.
+Abbreviations:
 
 - `espoo/` = `service/src/main/kotlin/evaka/instance/espoo/`
 - `core/` = `service/src/main/kotlin/evaka/core/`
 
-## 1. Mitä Espoon liitäntä vie
+## 1. What the Espoo integration exports
 
-**Vain lapsen asiakirjoja (`child_document`).** Espoon `ArchivalIntegrationClient`-toteutus
-on `SärmäChildDocumentClient` (`espoo/archival/SärmäChildDocumentClient.kt`):
+**Only child documents (`child_document`).** Espoo's `ArchivalIntegrationClient` implementation
+is `SärmäChildDocumentClient` (`espoo/archival/SärmäChildDocumentClient.kt`):
 
-- `uploadChildDocumentToArchive` on toteutettu (rivi 59).
-- `uploadDecisionToArchive`, `uploadFeeDecisionToArchive` ja
-  `uploadVoucherValueDecisionToArchive` ovat muotoa `TODO("Not yet implemented")` (rivit 38, 47, 56).
-  Jos varhaiskasvatus-, maksu- tai arvopäätöksen arkistointi käynnistetään Espoossa
-  (`POST /employee/decisions/{id}/archive` tms.), async-job kaatuu `NotImplementedError`iin
-  eikä Särmään lähde pyyntöä. Käyttöliittymässä Espoolla on päällä vain
+- `uploadChildDocumentToArchive` is implemented (line 59).
+- `uploadDecisionToArchive`, `uploadFeeDecisionToArchive` and
+  `uploadVoucherValueDecisionToArchive` contain `TODO("Not yet implemented")` (lines 38, 47, 56).
+  If archiving a daycare, fee or voucher value decision is triggered in Espoo
+  (`POST /employee/decisions/{id}/archive`, etc.), the async job fails with `NotImplementedError`
+  and no request is sent to Särmä. Espoo's UI only enables
   `archiveIntegration: { childDocuments: true }` (`frontend/src/lib-customizations/espoo/featureFlags.tsx:44`),
-  joten päätösten arkistointipainikkeita ei näytetä.
+  so the archive buttons for decisions are not shown.
 
-Lapsen asiakirja lähtee arkistoon vain, jos sen asiakirjapohjassa on
-`archive_externally = true`. Pohjassa on oltava myös `process_definition_number`
-(tehtäväluokka). Muuten `SärmäChildDocumentClient` heittää `IllegalStateException`in
-ennen HTTP-kutsua (rivit 68–72).
+A child document is sent to the archive only if its document template has
+`archive_externally = true`. The template must also have a `process_definition_number`.
+Otherwise, `SärmäChildDocumentClient` throws an `IllegalStateException`
+before making the HTTP call (lines 68–72).
 
-### Asiakirjatyypit ja niiden metatiedot
+### Document types and their metadata
 
-Metatiedot muodostetaan tiedostossa `espoo/archival/DocumentMetadataUtils.kt`:
-`createDocumentDescription` (rivi 133 alkaen) ja `createRetentionPolicy` (rivi 69).
+Metadata is constructed in `espoo/archival/DocumentMetadataUtils.kt`:
+`createDocumentDescription` (from line 133) and `createRetentionPolicy` (line 69).
+The `documentType` and `documentTypeSpecifier` columns contain the literal Finnish metadata values.
 
-| `ChildDocumentType` | `documentType` | `documentTypeSpecifier` | Säilytysaika (`retentionPolicy`) | Esimerkki |
+| `ChildDocumentType` | `documentType` | `documentTypeSpecifier` | Retention period (`retentionPolicy`) | Example |
 |---|---|---|---|---|
-| `VASU`, `MIGRATED_VASU` | Suunnitelma | Varhaiskasvatussuunnitelma | pysyvä (`InPerpetuity`, KA/13089/07.01.01.03.01/2018) | 01, 02, 12 |
-| `LEOPS`, `MIGRATED_LEOPS` | Suunnitelma | Lapsen esiopetuksen oppimissuunnitelma LEOPS | pysyvä | 03, 13 |
-| `HOJKS` | Suunnitelma | Henkilökohtaisen opetuksen järjestämistä koskeva suunnitelma HOJKS | pysyvä | 04 |
-| `PEDAGOGICAL_ASSESSMENT` | Arvio | Pedagoginen arvio | 28 v syntymästä (`YearsFromCustomerBirthDate`, Perusopetuslaki 16 a §) | 05, 14 |
-| `PEDAGOGICAL_REPORT` | Selvitys | Pedagoginen selvitys | 28 v syntymästä | 06 |
-| `OTHER` | (puuttuu) | (puuttuu) | pysyvä | 07 |
-| `CITIZEN_BASIC` | (puuttuu) | (puuttuu) | pysyvä | 08 |
-| `OTHER_DECISION` | (puuttuu) | (puuttuu) | pysyvä | 09, 10, 11 |
-| `MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION`, `MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION` | (puuttuu) | (puuttuu) | pysyvä | – |
+| `VASU`, `MIGRATED_VASU` | Suunnitelma | Varhaiskasvatussuunnitelma | permanent (`InPerpetuity`, KA/13089/07.01.01.03.01/2018) | 01, 02, 12 |
+| `LEOPS`, `MIGRATED_LEOPS` | Suunnitelma | Lapsen esiopetuksen oppimissuunnitelma LEOPS | permanent | 03, 13 |
+| `HOJKS` | Suunnitelma | Henkilökohtaisen opetuksen järjestämistä koskeva suunnitelma HOJKS | permanent | 04 |
+| `PEDAGOGICAL_ASSESSMENT` | Arvio | Pedagoginen arvio | 28 years from birth (`YearsFromCustomerBirthDate`, Basic Education Act, section 16a) | 05, 14 |
+| `PEDAGOGICAL_REPORT` | Selvitys | Pedagoginen selvitys | 28 years from birth | 06 |
+| `OTHER` | (omitted) | (omitted) | permanent | 07 |
+| `CITIZEN_BASIC` | (omitted) | (omitted) | permanent | 08 |
+| `OTHER_DECISION` | (omitted) | (omitted) | permanent | 09, 10, 11 |
+| `MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION`, `MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION` | (omitted) | (omitted) | permanent | – |
 
-Jos tyypille ei ole arvoa, elementit `documentType` ja `documentTypeSpecifier`
-jätetään pois (`mainTextElement` ohittaa null-arvot, `espoo/archival/RecordMetadataXml.kt`).
+If a type has no value, the `documentType` and `documentTypeSpecifier` elements
+are omitted (`mainTextElement` skips null values, `espoo/archival/RecordMetadataXml.kt`).
 
-Metatiedoissa ei ole asiakirjan tilaa (valmis/luonnos) eikä päätöksen lopputulosta
-(hyväksytty/hylätty/mitätöity). Esimerkkien 09–11 metatiedot eroavat vain
-tunnisteiden osalta. Lopputulos näkyy vain PDF:n sisällössä.
+The metadata does not include the document status (completed/draft) or decision outcome
+(accepted/rejected/annulled). The metadata in examples 09–11 differs only in
+identifiers. The outcome is visible only in the PDF content.
 
-## 2. Rajapinta
+## 2. API
 
-### Endpoint ja metodi
+### Endpoint and method
 
-- `POST {evaka.integration.sarma.url}PUT`. URL rakennetaan kutsulla
+- `POST {evaka.integration.sarma.url}PUT`. The URL is constructed with
   `archiveEnv.url.resolve("PUT")` (`espoo/archival/SärmäHttpClient.kt:63`).
-  Asetuksen on siis päätyttävä kauttaviivaan, esimerkiksi `https://<host>/archive-core/`,
-  jolloin kutsu menee osoitteeseen `https://<host>/archive-core/PUT`
-  (`core/EvakaEnv.kt:758`, kommentti).
-- Jokainen asiakirja lähetetään omana pyyntönään (`nr_of_instances=1`).
+  The configured URL must therefore end with a slash, for example `https://<host>/archive-core/`,
+  resulting in a request to `https://<host>/archive-core/PUT`
+  (comment in `core/EvakaEnv.kt:758`).
+- Each document is sent in a separate request (`nr_of_instances=1`).
 
-### Sisältötyyppi ja multipart-osat
+### Content type and multipart parts
 
 `Content-Type: multipart/form-data; boundary=<uuid>` (OkHttp `MultipartBody.FORM`,
-`SärmäHttpClient.kt:36–61`). Osat lähetetään tässä järjestyksessä:
+`SärmäHttpClient.kt:36–61`). Parts are sent in this order:
 
-| Osa | Arvo | Lähde |
+| Part | Value | Source |
 |---|---|---|
-| `protocol_version` | `1.0` | vakio |
-| `operation_id` | `PUT` | vakio |
-| `response_format` | `URL-ENCODED` | vakio |
-| `user_id` | integraatiokäyttäjä | `evaka.integration.sarma.user_id` |
-| `user_role` | esim. `xa-api-integration` | `evaka.integration.sarma.user_role` |
-| `nr_of_instances` | `1` | vakio |
-| `instance_1_md_model_id` | `standard` | vakio |
-| `instance_1_md_model_version` | `1.0` | vakio |
-| `instance_1_md_master_id` | esim. `yleinen` | `evaka.integration.sarma.master_id` |
-| `instance_1_md_master_version` | `1.0` | vakio |
-| `instance_1_class_id` | pohjan tehtäväluokka | `document_template.process_definition_number` |
-| `instance_1_virtual_archive_id` | esim. `YLEINEN` | `evaka.integration.sarma.virtual_archive_id` |
-| `instance_1_record_payload_location` | `SELF_CONTAINED` | vakio |
-| `instance_1_md_instance` | metatieto-XML, `Content-Type: application/xml; charset=utf-8`, ei tiedostonimeä | `marshalMetadata(...)` |
-| `instance_1_record_payload_content_size` | PDF:n koko tavuina | PDF |
-| `instance_1_record_payload_data` | PDF, `Content-Type: application/pdf`, `filename="child-documents/child_document_<id>_v<n>.pdf"` | S3, julkaistu versio |
+| `protocol_version` | `1.0` | constant |
+| `operation_id` | `PUT` | constant |
+| `response_format` | `URL-ENCODED` | constant |
+| `user_id` | integration user | `evaka.integration.sarma.user_id` |
+| `user_role` | e.g. `xa-api-integration` | `evaka.integration.sarma.user_role` |
+| `nr_of_instances` | `1` | constant |
+| `instance_1_md_model_id` | `standard` | constant |
+| `instance_1_md_model_version` | `1.0` | constant |
+| `instance_1_md_master_id` | e.g. `yleinen` | `evaka.integration.sarma.master_id` |
+| `instance_1_md_master_version` | `1.0` | constant |
+| `instance_1_class_id` | the template's process definition number | `document_template.process_definition_number` |
+| `instance_1_virtual_archive_id` | e.g. `YLEINEN` | `evaka.integration.sarma.virtual_archive_id` |
+| `instance_1_record_payload_location` | `SELF_CONTAINED` | constant |
+| `instance_1_md_instance` | metadata XML, `Content-Type: application/xml; charset=utf-8`, no filename | `marshalMetadata(...)` |
+| `instance_1_record_payload_content_size` | PDF size in bytes | PDF |
+| `instance_1_record_payload_data` | PDF, `Content-Type: application/pdf`, `filename="child-documents/child_document_<id>_v<n>.pdf"` | S3, published version |
 
-Huomioita:
+Notes:
 
-- Multipart-osan `filename` on S3-avain hakemistoineen. Metatiedon `format/fileName`
-  on pelkkä tiedostonimi (`Paths.get(...).fileName`, `SärmäChildDocumentClient.kt:79`).
-- Metatieto-XML lähetetään yhdellä rivillä ilman sisennyksiä. Esimerkkien
-  `metadata.xml` on muotoiltu luettavaksi (`xmllint --format`), ja `request.http`
-  sisältää XML:n täsmälleen sellaisena kuin se lähetettiin.
-- XML-määrittelyssä on yksinkertaiset lainausmerkit (`<?xml version='1.0' encoding='UTF-8'?>`).
-  Ne tulevat `XMLStreamWriter`istä.
-- Lähetettävä PDF on asiakirjan **viimeisin julkaistu versio**
+- The multipart part's `filename` is the S3 key, including the directory. The metadata's `format/fileName`
+  contains only the filename (`Paths.get(...).fileName`, `SärmäChildDocumentClient.kt:79`).
+- The metadata XML is sent on a single line without indentation. The examples'
+  `metadata.xml` files are formatted for readability (`xmllint --format`), while `request.http`
+  contains the XML exactly as sent.
+- The XML declaration uses single quotes (`<?xml version='1.0' encoding='UTF-8'?>`).
+  These come from `XMLStreamWriter`.
+- The PDF sent is the document's **latest published version**
   (`getChildDocumentPublishedVersion`, `core/document/archival/ArchivalService.kt:196`).
-  Huoltajan täydentämässä asiakirjassa (esimerkki 08) se on `_v2.pdf`.
+  For the document completed by a guardian (example 08), this is `_v2.pdf`.
 
-### Otsakkeet ja tunnistautuminen
+### Headers and authentication
 
-Pyynnössä on vain OkHttp:n oletusotsakkeet: `Content-Type`, `Content-Length`, `Host`,
-`Connection: Keep-Alive`, `Accept-Encoding: gzip` ja `User-Agent: okhttp/<versio>`.
-**HTTP-tason tunnistautumista ei ole** (ei `Authorization`-otsaketta, ei
-asiakasvarmennetta koodissa). Käyttäjä ja rooli välitetään lomakekentissä
-`user_id` ja `user_role`. Pääsynhallinta perustuu siis verkkotason rajaukseen
-(infra-asetukset eivät ole tässä repossa).
+The request contains only OkHttp's default headers: `Content-Type`, `Content-Length`, `Host`,
+`Connection: Keep-Alive`, `Accept-Encoding: gzip` and `User-Agent: okhttp/<version>`.
+**There is no HTTP-level authentication** (no `Authorization` header and no
+client certificate in the code). The user and role are passed in the form fields
+`user_id` and `user_role`. Access control therefore relies on network-level restrictions
+(the infrastructure configuration is not in this repository).
 
-### Aikakatkaisut
+### Timeouts
 
-OkHttp: `connectTimeout`, `readTimeout` ja `writeTimeout` ovat kukin 1 minuutti
-(`SärmäHttpClient.kt:19–21`). Kokonaisaikakatkaisua (`callTimeout`) ei ole asetettu.
+OkHttp's `connectTimeout`, `readTimeout` and `writeTimeout` are each 1 minute
+(`SärmäHttpClient.kt:19–21`). No overall timeout (`callTimeout`) is configured.
 
-### Vastauksen tulkinta
+### Response handling
 
 `SärmäChildDocumentClient.kt:97–131`:
 
-1. HTTP-statuskoodi ja runko kirjataan lokiin (info).
-2. Runko jäsennetään `application/x-www-form-urlencoded`-muotoisena
-   (`URLEncodedUtils.parse`). Siitä luetaan `status_code` (kokonaisluku) ja `instance_ids`.
-3. Jos `instance_ids` puuttuu, kirjataan virhe lokiin, mutta tämä ei yksinään estä onnistumista.
-4. **Onnistuminen** vaatii, että HTTP-status on `200` **ja** rungon `status_code` on `200`.
-   - Onnistuessa `ArchivalService` asettaa `child_document.archived_at = now()`
-     (`ArchivalService.kt:221`). Särmän palauttamaa `instance_ids`-arvoa ei tallenneta
-     kantaan, se näkyy vain lokissa.
-   - Jokin muu yhdistelmä aiheuttaa `RuntimeException("Failed to archive document <id>")`.
-     Myös `HTTP 200` + `status_code=400` (esimerkki 14), HTML-runko tai tyhjä runko
-     tulkitaan virheeksi. Asiakirjaa ei merkitä arkistoiduksi.
-   - Verkkovirhe tai aikakatkaisu (`IOException`) johtaa samaan lopputulokseen.
-5. Kaikki arkistointijobit suunnitellaan asetuksella `retryCount = 1`, eli ne yritetään
-   **kerran ilman uusintaa**. Tämä koskee sekä manuaalista arkistointia
-   (`ChildDocumentController.kt:696`) että ajastettua poimintaa
-   (`ChildDocumentArchivalScheduling.kt:50`). Epäonnistunut job jää `async_job`-tauluun
-   arvolla `retry_count = 0` eikä enää aja.
-   Testissä havaittu: `ArchiveChildDocument|retry_count 0|initial_retry_count 1|completed_at null`.
+1. The HTTP status code and body are logged at info level.
+2. The body is parsed as `application/x-www-form-urlencoded`
+   (`URLEncodedUtils.parse`). The fields `status_code` (integer) and `instance_ids` are read.
+3. If `instance_ids` is missing, an error is logged, but this alone does not prevent success.
+4. **Success** requires both HTTP status `200` **and** `status_code=200` in the body.
+   - On success, `ArchivalService` sets `child_document.archived_at = now()`
+     (`ArchivalService.kt:221`). The `instance_ids` value returned by Särmä is not stored
+     in the database; it appears only in the log.
+   - Any other combination causes `RuntimeException("Failed to archive document <id>")`.
+     `HTTP 200` + `status_code=400` (example 14), an HTML body or an empty body
+     is also treated as an error. The document is not marked as archived.
+   - A network error or timeout (`IOException`) has the same outcome.
+5. All archival jobs are scheduled with `retryCount = 1`, meaning
+   **one attempt without retries**. This applies to both manual archiving
+   (`ChildDocumentController.kt:696`) and scheduled selection
+   (`ChildDocumentArchivalScheduling.kt:50`). A failed job remains in the `async_job` table
+   with `retry_count = 0` and is not run again.
+   Observed during testing: `ArchiveChildDocument|retry_count 0|initial_retry_count 1|completed_at null`.
 
-Onnistuneen vastauksen muoto on otettu `SärmäMockClient`ista
-(`espoo/archival/SärmäMockClient.kt`), koska oikean Särmän vastauksia ei ole repossa:
+The successful response format is taken from `SärmäMockClient`
+(`espoo/archival/SärmäMockClient.kt`), as actual Särmä responses are not available in the repository:
 
 ```
 status_message=Success.&transaction_id=2872934&protocol_version=1.0&status_code=200&instance_ids=354319&
 ```
 
-Esimerkkien `response.http`-tiedostot ovat paikallisen vastaanottimen vastauksia, eivät
-oikean Särmän. Virhevastauksen sisältö (`status_code=400`, `status_message=...`) on keksitty
-eVakan tulkintalogiikan esittelyä varten.
+The examples' `response.http` files contain responses from the local receiver, not
+from the actual Särmä system. The error response contents (`status_code=400`, `status_message=...`) are made up
+to illustrate eVaka's response handling logic.
 
-## 3. Metatieto-XML
+## 3. Metadata XML
 
-Juurielementti on `RecordMetadataInstance`. Nimiavaruudet tulevat asetuksista:
-`ns0` = `evaka.integration.sarma.metadata_main_namespace` ja
+The root element is `RecordMetadataInstance`. Namespaces come from the settings:
+`ns0` = `evaka.integration.sarma.metadata_main_namespace` and
 `at0` = `evaka.integration.sarma.metadata_policy_namespace`.
-Esimerkeissä käytettiin arvoja `http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0`
-ja `http://www.avaintec.com/2004/records-schedule-fi/1.0`. Ne vastaavat XSD:iden
-`targetNamespace`-arvoja. XML-kirjoitin on `espoo/archival/RecordMetadataXml.kt` ja
-tietomalli `espoo/archival/model/RecordMetadata.kt`.
+The examples use `http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0`
+and `http://www.avaintec.com/2004/records-schedule-fi/1.0`. These match the XSDs'
+`targetNamespace` values. The XML writer is `espoo/archival/RecordMetadataXml.kt` and
+the data model is `espoo/archival/model/RecordMetadata.kt`.
 
-| Elementti | Arvo / lähde |
+| Element | Value / source |
 |---|---|
-| `metadataMasterVersion/masterName` | `master_id` (sama kuin multipart-kentässä) |
+| `metadataMasterVersion/masterName` | `master_id` (same as the multipart field) |
 | `metadataMasterVersion/versionNumber` | `1.0` |
 | `virtualArchiveId` | `virtual_archive_id` |
-| `recordIdentifiers/CaseIdentifier` | `case_process.case_identifier` = `<juokseva nro>/<tehtäväluokka>/<vuosi>` (generoitu sarake, `docs/db/schema.sql`). Puuttuu, jos asiakirjalla ei ole prosessia. |
+| `recordIdentifiers/CaseIdentifier` | `case_process.case_identifier` = `<sequence number>/<process definition number>/<year>` (generated column, `docs/db/schema.sql`). Omitted if the document has no case process. |
 | `recordIdentifiers/RecordIdentifier` | `child_document.id` (UUID) |
-| `documentDescription/title` | asiakirjapohjan nimi (`document_template.name`) |
-| `documentType`, `documentTypeSpecifier` | asiakirjatyypin mukaan, ks. taulukko yllä |
-| `registerName` | vakio "Varhaiskasvatuksen asiakastietorekisteri" |
-| `firstName`, `lastName` | lapsen nimi |
-| `socialSecurityNumber` | lapsen hetu (puuttuu, jos lapsella ei ole hetua) |
-| `birthDate` | lapsen syntymäaika |
-| `personalData` | vakio `containsSensitivePersonalInformation` |
-| `personalDataCollectionReason` | vakio "Rekisterinpitäjän lakisääteisten velvoitteiden noudattaminen" |
-| `language` | pohjan kieli ISO 639-1 -muodossa (`fi`/`sv`/`en`) |
-| `dataManagement` | vakio "Palvelujen tiedonhallinta" |
-| `dataSource` | vakio "Varhaiskasvatuksen tietovaranto" |
-| `Agents/Agent` | Yksi agentti jokaista eri käyttäjää kohden, joka on kirjannut asiakirjan prosessihistoriaan (`case_process_history.entered_by`). `Role` on aina "Henkilökunta" ja `CorporateName` on `archiveMetadataOrganization` = "Espoon kaupungin esiopetus ja varhaiskasvatus" (`espoo/EspooConfig.kt:233`). Päätösasiakirjoissa mukana on myös järjestelmäkäyttäjä "eVaka", joka kirjaa COMPLETED-tilan Suomi.fi-lähetyksen yhteydessä. Huoltajan täydentämässä asiakirjassa mukana on huoltaja. |
+| `documentDescription/title` | document template name (`document_template.name`) |
+| `documentType`, `documentTypeSpecifier` | based on document type, see the table above |
+| `registerName` | constant "Varhaiskasvatuksen asiakastietorekisteri" |
+| `firstName`, `lastName` | child's name |
+| `socialSecurityNumber` | child's personal identity code (omitted if the child has none) |
+| `birthDate` | child's date of birth |
+| `personalData` | constant `containsSensitivePersonalInformation` |
+| `personalDataCollectionReason` | constant "Rekisterinpitäjän lakisääteisten velvoitteiden noudattaminen" |
+| `language` | template language in ISO 639-1 format (`fi`/`sv`/`en`) |
+| `dataManagement` | constant "Palvelujen tiedonhallinta" |
+| `dataSource` | constant "Varhaiskasvatuksen tietovaranto" |
+| `Agents/Agent` | One agent for each distinct user who has recorded an entry in the document's process history (`case_process_history.entered_by`). `Role` is always "Henkilökunta" (staff) and `CorporateName` is `archiveMetadataOrganization` = "Espoon kaupungin esiopetus ja varhaiskasvatus" (`espoo/EspooConfig.kt:233`). Decision documents also include the system user "eVaka", which records the COMPLETED state when the Suomi.fi message is sent. A document completed by a guardian also includes the guardian. |
 | `format/recordType` | `digital` |
 | `format/mimeType` | `application/pdf` |
 | `format/fileFormat` | `not applicable` |
-| `format/fileName` | PDF:n tiedostonimi ilman polkua |
-| `creation/originatingSystem` | vakio "Varhaiskasvatuksen toiminnanohjausjärjestelmä" |
-| `creation/created` | **Asian päättymispäivä** (sama arvo kuin `Case_Finished`), ei luontipäivä (`DocumentMetadataUtils.kt:287`). Ks. kohta 7. |
-| `policies/retentionPolicy` | ks. asiakirjatyyppitaulukko |
-| `policies/disclosurePolicy` | Salassa pidettävä pohja: `InitialTargetState=confidential`, `TimeSpan` = pohjan salassapitoaika (oletus 100), `ActionAnnotation` = pohjan salassapitoperuste. Julkinen pohja: `public`, `TimeSpan=0`, `ActionAnnotation` "JulkL 24 § 1 mom. 32 k" (oletusarvo). `TriggerEvent=YearsFromRecordCreation`, kohdetila `public`. (`DocumentMetadataUtils.kt:26`) |
-| `policies/informationSecurityPolicy` | vakio `notSecurityClassified` |
-| `policies/protectionPolicy` | vakio `3` |
-| `CaseFile/Case_Created` | Prosessihistorian INITIAL-rivin päivä, tai jos sitä ei ole, asiakirjan luontipäivä. |
-| `CaseFile/Case_Finished` | Prosessihistorian COMPLETED-rivin päivä. Jos sitä ei ole, pohjan voimassaolon loppupäivä. Jos sitäkään ei ole, `Case_Created`-päivää seuraava 31.7. (`DocumentMetadataUtils.kt:227`) |
+| `format/fileName` | PDF filename without the path |
+| `creation/originatingSystem` | constant "Varhaiskasvatuksen toiminnanohjausjärjestelmä" |
+| `creation/created` | **Case completion date** (same value as `Case_Finished`), not the creation date (`DocumentMetadataUtils.kt:287`). See section 7. |
+| `policies/retentionPolicy` | see the document type table |
+| `policies/disclosurePolicy` | Confidential template: `InitialTargetState=confidential`, `TimeSpan` = the template's confidentiality period (default 100), `ActionAnnotation` = the template's legal basis for confidentiality. Public template: `public`, `TimeSpan=0`, `ActionAnnotation` "JulkL 24 § 1 mom. 32 k" (default value). `TriggerEvent=YearsFromRecordCreation`, target state `public`. (`DocumentMetadataUtils.kt:26`) |
+| `policies/informationSecurityPolicy` | constant `notSecurityClassified` |
+| `policies/protectionPolicy` | constant `3` |
+| `CaseFile/Case_Created` | Date of the INITIAL entry in the process history, or the document's creation date if no such entry exists. |
+| `CaseFile/Case_Finished` | Date of the COMPLETED entry in the process history. If absent, the template's validity end date. If that is also absent, the next 31 July after `Case_Created`. (`DocumentMetadataUtils.kt:227`) |
 
-Prosessihistorian tilat (`core/caseprocess/CaseProcess.kt:230`, `updateDocumentCaseProcessHistory`):
+Process history states (`core/caseprocess/CaseProcess.kt:230`, `updateDocumentCaseProcessHistory`):
 
-- Tavallinen asiakirja saa COMPLETED-rivin, kun se merkitään valmiiksi.
-- Päätösasiakirja saa COMPLETED-rivin vasta, kun Suomi.fi-viesti on lähetetty
+- A regular document receives a COMPLETED entry when it is marked as completed.
+- A decision document receives a COMPLETED entry only after the Suomi.fi message has been sent
   (`core/document/childdocument/ChildDocumentService.kt:133`).
 
-Prosessi (`case_process`) luodaan asiakirjaa luotaessa vain, jos pohjalla on tehtäväluokka
-(`createChildDocument`, `ChildDocumentController.kt:131`). Koska Särmä-siirto vaatii tehtäväluokan, käytännössä
-`CaseIdentifier` on aina mukana.
+The case process (`case_process`) is created along with the document only if the template has a process definition number
+(`createChildDocument`, `ChildDocumentController.kt:131`). Since transfers to Särmä require a process definition number,
+`CaseIdentifier` is effectively always included.
 
-### XSD:t
+### XSDs
 
-Särmän XSD:t (metatietomalli `yleinen-1.0.xsd` ja sen sisällyttämät `include-extended.xsd` ja `include-policies.xsd`) saa Espoolta tai arkistojärjestelmän toimittajalta. eVaka kirjoittaa XML:n `XMLStreamWriter`illä (`espoo/archival/RecordMetadataXml.kt`). Odotettu XML-muoto on myös tiedostossa `service/src/test/resources/archival/expected-metadata.xml`.
+The Särmä XSDs (metadata model `yleinen-1.0.xsd` and its included files `include-extended.xsd` and `include-policies.xsd`) are available from Espoo or the archive system provider. eVaka writes the XML using `XMLStreamWriter` (`espoo/archival/RecordMetadataXml.kt`). The expected XML format is also shown in `service/src/test/resources/archival/expected-metadata.xml`.
 
-Kaikkien esimerkkien metatiedot validoituivat `yleinen-1.0.xsd`-skeemaa vasten, kun esimerkit tuotettiin.
+All example metadata files validated against `yleinen-1.0.xsd` when the examples were produced.
 
-## 4. Mistä arkistointi käynnistyy
+## 4. How archiving is triggered
 
-Molemmat reitit suunnittelevat async-jobin `AsyncJob.ArchiveChildDocument`, jonka käsittelee
+Both paths schedule an `AsyncJob.ArchiveChildDocument` async job, handled by
 `ArchivalService.uploadChildDocumentToArchive` (`core/document/archival/ArchivalService.kt:183`).
-Jobit ajetaan `archival`-poolissa: oletuksena rinnakkaisuus 4 ja ei kuristusta
+Jobs run in the `archival` pool: by default, concurrency is 4 with no throttling
 (`evaka.archival_pool_concurrency`, `evaka.archival_pool_throttle_interval_seconds`,
 `core/EvakaEnv.kt:786`).
 
-### a) Manuaalinen: `POST /employee/child-documents/{documentId}/archive`
+### a) Manual: `POST /employee/child-documents/{documentId}/archive`
 
-`core/document/childdocument/ChildDocumentController.kt:656`. Ehdot:
+`core/document/childdocument/ChildDocumentController.kt:656`. Requirements:
 
-- `evaka.integration.sarma.enabled` (tai `evaka.integration.archival.enabled`) on päällä
+- `evaka.integration.sarma.enabled` (or `evaka.integration.archival.enabled`) is enabled
   (`core/EvakaEnv.kt:84`).
-- Käyttäjällä on oikeus `Action.ChildDocument.ARCHIVE`.
-- Pohjalla on `archive_externally = true`.
-- Asiakirjan tila on `COMPLETED`.
+- The user has the `Action.ChildDocument.ARCHIVE` permission.
+- The template has `archive_externally = true`.
+- The document status is `COMPLETED`.
 
-Jobi ajetaan heti (`runAt = now`, `retryCount = 1`). Esimerkit 01–11 ja 14 on tuotettu tällä reitillä.
+The job runs immediately (`runAt = now`, `retryCount = 1`). Examples 01–11 and 14 were produced through this path.
 
-### b) Ajastettu poiminta: `ArchiveEligibleChildDocuments`
+### b) Scheduled selection: `ArchiveEligibleChildDocuments`
 
-- Määritelty coressa (`core/shared/job/ScheduledJobs.kt:317`), oletuksena
-  **pois päältä**, aikataulu `nightly`. Se kytketään päälle asetuksella
-  `evaka.job.archive_eligible_child_documents.enabled=true`, ja aikataulua voi muuttaa
-  asetuksella `...cron`. Espoolla ei ole omaa ajastusta: `EspooScheduledJobs` ei sisällä
-  arkistointia. Tässä repossa ei ole Espoon tuotantoasetuksia, joten se, onko ajastus
-  päällä tuotannossa, ei selviä täältä.
-- Ajastetut tehtävät käynnistyvät vain Spring-profiilissa `production`
-  (`core/shared/config/ScheduledJobConfig.kt:32`). Paikallisesti poiminta käynnistettiin
-  lisäämällä `async_job`-tauluun rivi `RunScheduledJob {"job": "ArchiveEligibleChildDocuments"}`.
-- Poiminta (`core/document/archival/ChildDocumentArchivalScheduling.kt`,
-  kysely `getChildDocumentsEligibleForArchival`, `core/document/childdocument/ChildDocumentQueries.kt:796`)
-  valitsee lapsen asiakirjat, joille pätee:
+- Defined in core (`core/shared/job/ScheduledJobs.kt:317`), **disabled** by default,
+  with the `nightly` schedule. It is enabled with
+  `evaka.job.archive_eligible_child_documents.enabled=true`, and its schedule can be changed
+  with `...cron`. Espoo has no separate schedule: `EspooScheduledJobs` does not include
+  archiving. Espoo's production configuration is not in this repository, so it does not
+  show whether scheduling is enabled in production.
+- Scheduled jobs start only under the Spring profile `production`
+  (`core/shared/config/ScheduledJobConfig.kt:32`). Locally, selection was triggered
+  by adding a `RunScheduledJob {"job": "ArchiveEligibleChildDocuments"}` row to the `async_job` table.
+- Selection (`core/document/archival/ChildDocumentArchivalScheduling.kt`,
+  query `getChildDocumentsEligibleForArchival`, `core/document/childdocument/ChildDocumentQueries.kt:796`)
+  includes child documents that satisfy:
   - `document_template.archive_externally = true`,
   - `child_document.archived_at IS NULL`,
-  - `upper(document_template.validity) <= tänään - viive`. Viive on
-    `evaka.child_document_archival_delay_days`, oletus 30 (`core/EvakaEnv.kt:737`).
-  - Järjestys `created_at`. Valinnaisena katkaisuna `evaka.child_document_archival_limit`
-    (oletus 0 = ei rajaa).
-- Huomioita poimintaehdoista:
-  - **Toistaiseksi voimassa olevan pohjan** (voimassaolon loppu `NULL`) asiakirjat eivät
-    koskaan täytä ehtoa, koska `upper(...)` on NULL. Ne voi arkistoida vain manuaalisesti.
-  - **Asiakirjan tilaa ei tarkisteta.** Ks. kohta 7.
-- Jobit suunnitellaan ilman käyttäjää (`user = null`), jolloin `ArchivalService` käyttää
-  järjestelmäkäyttäjää. Käyttäjä ei kuitenkaan näy Särmä-pyynnössä.
+  - `upper(document_template.validity) <= today - delay`. The delay is
+    `evaka.child_document_archival_delay_days`, default 30 (`core/EvakaEnv.kt:737`).
+  - Ordered by `created_at`, with an optional limit of `evaka.child_document_archival_limit`
+    (default 0 = unlimited).
+- Notes on selection criteria:
+  - Documents from **templates with no validity end date** (`NULL`)
+    never qualify because `upper(...)` is NULL. They can only be archived manually.
+  - **The document status is not checked.** See section 7.
+- Jobs are scheduled without a user (`user = null`), so `ArchivalService` uses
+  the system user. However, this user is not included in the Särmä request as the export initiator.
 
-Esimerkit 12 ja 13 on tuotettu tällä reitillä.
+Examples 12 and 13 were produced through this path.
 
-## 5. Esimerkit (`examples/`)
+## 5. Examples (`examples/`)
 
-Jokaisessa hakemistossa on:
+Each directory contains:
 
-- `request.http`: koko HTTP-pyyntö. Tunnistautumistiedot on korvattu placeholdereilla
-  (`Host` = `<sarma-host>`, `user_id` = `<käyttäjätunnus>`), ja PDF:n binäärisisältö on korvattu viittauksella.
-  `Content-Length` on alkuperäinen.
-- `metadata.xml`: `instance_1_md_instance` muotoiltuna.
-- `response.http`: paikallisen vastaanottimen vastaus.
-- `asiakirja.pdf`: lähetetty PDF (`instance_1_record_payload_data`).
+- `request.http`: the full HTTP request. Credentials have been replaced with placeholders
+  (`Host` = `<sarma-host>`, `user_id` = `<username>`), and the PDF binary content has been replaced with a reference.
+  `Content-Length` is the original value.
+- `metadata.xml`: formatted `instance_1_md_instance`.
+- `response.http`: the local receiver's response.
+- `asiakirja.pdf`: the PDF sent (`instance_1_record_payload_data`).
 
-| Hakemisto | Tyyppi | Reitti | Mitä havainnollistaa |
+| Directory | Type | Trigger | What it illustrates |
 |---|---|---|---|
-| `01-varhaiskasvatussuunnitelma` | VASU, valmis | manuaalinen | perustapaus, salassa pidettävä, pysyvä säilytys |
-| `02-varhaiskasvatussuunnitelma-ruotsinkielinen` | VASU (sv), valmis | manuaalinen | `language=sv`. Pohjan kieli rajaa sen ruotsinkielisiin yksiköihin. |
-| `03-esiopetuksen-oppimissuunnitelma` | LEOPS, valmis | manuaalinen | pohjan voimassaolon loppu asetettu. COMPLETED-rivi määrää silti `Case_Finished`-arvon. |
-| `04-hojks` | HOJKS, valmis | manuaalinen | |
-| `05-pedagoginen-arvio` | PEDAGOGICAL_ASSESSMENT | manuaalinen | säilytys 28 v syntymästä |
-| `06-pedagoginen-selvitys` | PEDAGOGICAL_REPORT | manuaalinen | säilytys 28 v syntymästä |
-| `07-muu-asiakirja-julkinen` | OTHER, julkinen pohja | manuaalinen | ei `documentType`-elementtejä, `disclosurePolicy` = `public` |
-| `08-huoltajan-taydentama-asiakirja` | CITIZEN_BASIC | manuaalinen | huoltaja täydensi, PDF on versio 2, huoltaja mukana `Agents`-listassa |
-| `09-paatosasiakirja-hyvaksytty` | OTHER_DECISION, hyväksytty | manuaalinen | järjestelmäkäyttäjä "eVaka" mukana `Agents`-listassa |
-| `10-paatosasiakirja-hylatty` | OTHER_DECISION, hylätty | manuaalinen | metatiedot samat kuin hyväksytyssä |
-| `11-paatosasiakirja-mitatoity` | OTHER_DECISION, hyväksytty ja mitätöity | manuaalinen | metatiedot samat, mitätöinti ei näy metatiedoissa |
-| `12-ajastettu-poiminta-valmis` | VASU, valmis, pohjan voimassaolo päättynyt yli 30 pv sitten | ajastettu | ajastetun reitin pyyntö on samanmuotoinen |
-| `13-ajastettu-poiminta-luonnos` | LEOPS, **luonnos** (julkaistu versio), pohja päättynyt | ajastettu | luonnos lähtee arkistoon. `Case_Finished` = `created` = pohjan loppupäivä (2026-07-31), joka on ennen `Case_Created`-päivää (2026-10-15). Ks. kohta 7. |
-| `14-virhevastaus` | PEDAGOGICAL_ASSESSMENT | manuaalinen | vastaus `HTTP 200` + `status_code=400`: asiakirjaa ei merkitty arkistoiduksi, jobia ei yritetty uudelleen |
+| `01-varhaiskasvatussuunnitelma` | VASU, completed | manual | basic case, confidential, permanent retention |
+| `02-varhaiskasvatussuunnitelma-ruotsinkielinen` | VASU (sv), completed | manual | `language=sv`. The template language restricts it to Swedish-speaking units. |
+| `03-esiopetuksen-oppimissuunnitelma` | LEOPS, completed | manual | template validity end date set. The COMPLETED entry still determines `Case_Finished`. |
+| `04-hojks` | HOJKS, completed | manual | |
+| `05-pedagoginen-arvio` | PEDAGOGICAL_ASSESSMENT | manual | retention for 28 years from birth |
+| `06-pedagoginen-selvitys` | PEDAGOGICAL_REPORT | manual | retention for 28 years from birth |
+| `07-muu-asiakirja-julkinen` | OTHER, public template | manual | no `documentType` elements, `disclosurePolicy` = `public` |
+| `08-huoltajan-taydentama-asiakirja` | CITIZEN_BASIC | manual | completed by a guardian, PDF is version 2, guardian included in `Agents` |
+| `09-paatosasiakirja-hyvaksytty` | OTHER_DECISION, accepted | manual | system user "eVaka" included in `Agents` |
+| `10-paatosasiakirja-hylatty` | OTHER_DECISION, rejected | manual | same metadata as for an accepted decision |
+| `11-paatosasiakirja-mitatoity` | OTHER_DECISION, accepted and annulled | manual | same metadata; annulment is not reflected in the metadata |
+| `12-ajastettu-poiminta-valmis` | VASU, completed, template expired more than 30 days ago | scheduled | requests from the scheduled path use the same format |
+| `13-ajastettu-poiminta-luonnos` | LEOPS, **draft** (published version), expired template | scheduled | a draft is sent to the archive. `Case_Finished` = `created` = template end date (2026-07-31), which precedes `Case_Created` (2026-10-15). See section 7. |
+| `14-virhevastaus` | PEDAGOGICAL_ASSESSMENT | manual | response `HTTP 200` + `status_code=400`: the document was not marked as archived and the job was not retried |
 
-## 6. Mitä esimerkeistä puuttuu ja miksi
+## 6. Missing examples and why they are missing
 
-- **Varhaiskasvatus-, esiopetus- ja muut hakemuspäätökset sekä maksu- ja arvopäätökset:**
-  Espoon liitäntä ei tue niitä (`TODO`, ks. kohta 1).
-- **`MIGRATED_VASU`, `MIGRATED_LEOPS` ja `MIGRATED_*_ASSISTANCE_NEED_DECISION`:**
-  Nämä syntyvät vain tietojen migraatiossa, eikä niitä voi luoda tavallisen käyttöliittymä-
-  tai API-polun kautta. Metatiedot ovat samat kuin vastaavilla tyypeillä (VASU/LEOPS)
-  tai päätösasiakirjoilla (ei `documentType`-elementtejä).
-- **Asiakirja ilman tehtäväluokkaa tai ilman julkaistua versiota:** HTTP-pyyntöä ei
-  lähde lainkaan.
-  - Ilman tehtäväluokkaa tulee `IllegalStateException` (`SärmäChildDocumentClient.kt:68–72`).
-  - Ilman julkaistua versiota tulee `NotFound` (`ArchivalService.kt:199`). Tämä todettiin
-    ajastetussa poiminnassa julkaisemattomalla luonnoksella.
-- **Oikean Särmän vastaukset:** Niitä ei ollut käytettävissä. Vastausten muoto perustuu
-  `SärmäMockClient`iin ja integraatiotestiin
+- **Daycare, preschool and other application decisions, and fee and voucher value decisions:**
+  the Espoo integration does not support them (`TODO`, see section 1).
+- **`MIGRATED_VASU`, `MIGRATED_LEOPS` and `MIGRATED_*_ASSISTANCE_NEED_DECISION`:**
+  these are created only by data migration and cannot be created through normal UI
+  or API operations. Their metadata matches the corresponding types (VASU/LEOPS)
+  or decision documents (no `documentType` elements).
+- **Document without a process definition number or a published version:** no HTTP request
+  is sent.
+  - A missing process definition number causes `IllegalStateException` (`SärmäChildDocumentClient.kt:68–72`).
+  - A missing published version causes `NotFound` (`ArchivalService.kt:199`). This was observed
+    with an unpublished draft during scheduled selection.
+- **Actual Särmä responses:** these were not available. The response format is based on
+  `SärmäMockClient` and the integration test
   (`service/src/integrationTest/kotlin/evaka/core/document/archival/ArchivalServiceIntegrationTest.kt`).
 
-## 7. Huomioita nykytoteutuksesta
+## 7. Notes on the current implementation
 
-1. **Ajastettu poiminta lähettää luonnoksia, ja sama asiakirja voi lähteä joka yö uudelleen.**
-   `getChildDocumentsEligibleForArchival` ei suodata tilaa, toisin kuin manuaalinen reitti,
-   joka vaatii `COMPLETED`.
-   - Jos luonnoksella on julkaistu versio, PDF ja metatiedot lähetetään Särmään, ja Särmä
-     vastaa onnistuneesti (esimerkki 13).
-   - Tämän jälkeen `markDocumentAsArchived` kaatuu kannan rajoitteeseen
+1. **Scheduled selection sends drafts, and the same document may be sent again every night.**
+   `getChildDocumentsEligibleForArchival` does not filter by status, unlike the manual path,
+   which requires `COMPLETED`.
+   - If a draft has a published version, the PDF and metadata are sent to Särmä, and Särmä
+     responds successfully (example 13).
+   - After this, `markDocumentAsArchived` fails on the database constraint
      `archived_documents_must_be_completed` (`CHECK (archived_at IS NULL OR status = 'COMPLETED')`,
      `docs/db/schema.sql`).
-   - `archived_at` jää tyhjäksi, joten asiakirja poimitaan uudelleen joka ajossa, ja Särmään
-     syntyy kaksoiskappaleita.
-   - Julkaisematon luonnos kaatuu joka ajossa `NotFound`-virheeseen.
-   - Havaittiin paikallisessa ajossa lokiriveillä "violates check constraint
-     archived_documents_must_be_completed" ja "No published version found".
-2. **Toistaiseksi voimassa olevien pohjien asiakirjoja ei poimita koskaan ajastetusti**
-   (`upper(validity)` on NULL).
-3. **`creation/created` on asian päättymispäivä eikä luontipäivä**
-   (`creation.copy(created = caseFinishDate)`, `DocumentMetadataUtils.kt:287`). Jos asiakirjalla
-   ei ole COMPLETED-riviä, `Case_Finished` (ja `created`) voi olla ennen `Case_Created`-päivää
-   (esimerkki 13). Muutos voi olla tarkoituksellinen, jos Särmä laskee säilytyksen
-   `created`-kentästä, mutta sitä ei ole kommentoitu.
-4. **Huoltaja merkitään `Agents`-listaan roolilla "Henkilökunta"** (esimerkki 08):
-   `createAgents` antaa kaikille prosessihistorian kirjaajille saman roolin.
-5. **Päätöksen lopputulos ja mitätöinti eivät näy metatiedoissa** (esimerkit 09–11).
-6. **Särmän `instance_ids`-arvoa ei tallenneta eVakaan.** Se on vain lokissa, joten
-   arkistokappaleen yhdistäminen eVakan asiakirjaan onnistuu vain `RecordIdentifier`-
-   kentällä (= `child_document.id`).
+   - `archived_at` remains empty, so the document is selected on every run, creating
+     duplicates in Särmä.
+   - An unpublished draft fails with `NotFound` on every run.
+   - Observed in the local run with the log messages "violates check constraint
+     archived_documents_must_be_completed" and "No published version found".
+2. **Documents from templates with no validity end date are never selected by the scheduled job**
+   (`upper(validity)` is NULL).
+3. **`creation/created` is the case completion date, not its creation date**
+   (`creation.copy(created = caseFinishDate)`, `DocumentMetadataUtils.kt:287`). If the document
+   has no COMPLETED entry, `Case_Finished` (and `created`) may precede `Case_Created`
+   (example 13). This may be intentional if Särmä calculates retention from
+   `created`, but there is no comment explaining it.
+4. **A guardian is included in `Agents` with the role "Henkilökunta" (staff)** (example 08):
+   `createAgents` assigns the same role to everyone who has recorded a process history entry.
+5. **The decision outcome and annulment are not reflected in the metadata** (examples 09–11).
+6. **Särmä's `instance_ids` value is not stored in eVaka.** It appears only in the log, so
+   an archived copy can only be matched to an eVaka document using `RecordIdentifier`
+   (= `child_document.id`).
 
-## 8. Asetukset
+## 8. Settings
 
-| Asetus (Spring) | Ympäristömuuttuja | Merkitys |
+| Setting (Spring) | Environment variable | Meaning |
 |---|---|---|
-| `evaka.integration.sarma.enabled` | `EVAKA_INTEGRATION_SARMA_ENABLED` | Kytkee arkistoinnin päälle (`EvakaEnv.archivalEnabled`, vaihtoehtona `evaka.integration.archival.enabled`). |
-| `evaka.integration.sarma.use_mock_client` | `..._USE_MOCK_CLIENT` | `true` = `SärmäMockClient`, oletus `false`. Paikallisessa profiilissa `true`. |
-| `evaka.integration.sarma.url` | `..._URL` | Perus-URL, joka päättyy `/`-merkkiin. |
-| `evaka.integration.sarma.user_id` / `user_role` | `..._USER_ID` / `..._USER_ROLE` | Lomakekentät `user_id` / `user_role`. |
-| `evaka.integration.sarma.master_id` / `virtual_archive_id` | `..._MASTER_ID` / `..._VIRTUAL_ARCHIVE_ID` | Metatietomalli ja virtuaaliarkisto. |
-| `evaka.integration.sarma.metadata_main_namespace` / `metadata_policy_namespace` | `..._METADATA_MAIN_NAMESPACE` / `..._METADATA_POLICY_NAMESPACE` | XML-nimiavaruudet. |
-| `evaka.job.archive_eligible_child_documents.enabled` / `.cron` | `EVAKA_JOB_ARCHIVE_ELIGIBLE_CHILD_DOCUMENTS_ENABLED` / `_CRON` | Ajastettu poiminta. |
-| `evaka.child_document_archival_delay_days` / `_limit` | | Poiminnan viive (30) ja enimmäismäärä (0 = ei rajaa). |
-| `evaka.archival_pool_concurrency` / `_throttle_interval_seconds` | | Async-poolin rinnakkaisuus (4) ja kuristus (0 s). |
+| `evaka.integration.sarma.enabled` | `EVAKA_INTEGRATION_SARMA_ENABLED` | Enables archiving (`EvakaEnv.archivalEnabled`, alternative to `evaka.integration.archival.enabled`). |
+| `evaka.integration.sarma.use_mock_client` | `..._USE_MOCK_CLIENT` | `true` = `SärmäMockClient`, default `false`. Set to `true` in the local profile. |
+| `evaka.integration.sarma.url` | `..._URL` | Base URL ending with `/`. |
+| `evaka.integration.sarma.user_id` / `user_role` | `..._USER_ID` / `..._USER_ROLE` | Form fields `user_id` / `user_role`. |
+| `evaka.integration.sarma.master_id` / `virtual_archive_id` | `..._MASTER_ID` / `..._VIRTUAL_ARCHIVE_ID` | Metadata model and virtual archive. |
+| `evaka.integration.sarma.metadata_main_namespace` / `metadata_policy_namespace` | `..._METADATA_MAIN_NAMESPACE` / `..._METADATA_POLICY_NAMESPACE` | XML namespaces. |
+| `evaka.job.archive_eligible_child_documents.enabled` / `.cron` | `EVAKA_JOB_ARCHIVE_ELIGIBLE_CHILD_DOCUMENTS_ENABLED` / `_CRON` | Scheduled selection. |
+| `evaka.child_document_archival_delay_days` / `_limit` | | Selection delay (30) and maximum count (0 = unlimited). |
+| `evaka.archival_pool_concurrency` / `_throttle_interval_seconds` | | Async pool concurrency (4) and throttling (0 s). |
 
-Beanit: `EspooConfig.särmäClient` (`espoo/EspooConfig.kt:323`) valitsee mock- tai
-HTTP-asiakkaan, ja `archivalIntegrationClient` (rivi 331) valitsee `SärmäChildDocumentClient`in.
-Jos arkistointi ei ole päällä, käytössä on `FailingClient`.
+Beans: `EspooConfig.särmäClient` (`espoo/EspooConfig.kt:323`) selects the mock or
+HTTP client, and `archivalIntegrationClient` (line 331) selects `SärmäChildDocumentClient`.
+If archiving is disabled, `FailingClient` is used.
 
-## 9. Miten esimerkit tuotettiin
+## 9. How the examples were produced
 
-- Paikallinen eVaka (Espoo-kustomoinnit, profiili `local`).
-- Ympäristömuuttujat: `EVAKA_INTEGRATION_SARMA_USE_MOCK_CLIENT=false` ja
-  `EVAKA_INTEGRATION_SARMA_URL=http://127.0.0.1:<portti>/archive-core/`.
-- Vastaanotin tallensi pyynnöt ja palautti `SärmäMockClient`in mukaisen vastauksen.
-- Henkilöt, sijoitukset ja asiakirjapohjat luotiin dev-API:lla. Asiakirjat kulkivat
-  oikeiden työntekijä- ja huoltajarajapintojen kautta (luonti, sisältö, tilasiirrot,
-  päätösehdotus, hyväksyntä/hylkäys/mitätöinti, huoltajan täydennys).
-- Arkistointi käynnistettiin `POST /employee/child-documents/{id}/archive`
-  -kutsulla tai ajastetun poiminnan async-jobilla.
-- Ajastettua poimintaa varten pohjien voimassaolo siirrettiin SQL:llä menneisyyteen
+- Local eVaka (Espoo customizations, `local` profile).
+- Environment variables: `EVAKA_INTEGRATION_SARMA_USE_MOCK_CLIENT=false` and
+  `EVAKA_INTEGRATION_SARMA_URL=http://127.0.0.1:<port>/archive-core/`.
+- The receiver captured requests and returned a response matching `SärmäMockClient`.
+- People, placements and document templates were created through the dev API. Documents went through
+  the actual employee and guardian APIs (creation, content, state transitions,
+  decision proposal, acceptance/rejection/annulment, completion by a guardian).
+- Archiving was triggered with `POST /employee/child-documents/{id}/archive`
+  or the async job for scheduled selection.
+- For scheduled selection, template validity periods were moved into the past using SQL
   (2025-08-01–2026-07-31).
