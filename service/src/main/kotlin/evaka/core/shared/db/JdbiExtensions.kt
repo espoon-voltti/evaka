@@ -337,9 +337,7 @@ val yearMonthColumnMapper = ColumnMapper { r, columnNumber, _ ->
 }
 
 val ssnColumnMapper =
-    ColumnMapper<Ssn> { rs, columnNumber, _ ->
-        rs.getString(columnNumber)?.let { Ssn.parse(it) ?: error("Invalid SSN in the database") }
-    }
+    ColumnMapper<Ssn> { rs, columnNumber, _ -> rs.getString(columnNumber)?.let { Ssn.from(it) } }
 
 val productKeyColumnMapper = ColumnMapper { rs, columnNumber, _ ->
     ProductKey(rs.getString(columnNumber))
