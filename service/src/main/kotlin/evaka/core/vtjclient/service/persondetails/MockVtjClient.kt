@@ -13,7 +13,8 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.dto.VtjPersonWithRelatives
+import evaka.core.vtjclient.dto.VtjPersonAndDependants
+import evaka.core.vtjclient.dto.VtjPersonAndGuardians
 import evaka.core.vtjclient.dto.VtjRelative
 import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap
@@ -180,11 +181,11 @@ class MockVtjClient : VtjClient {
         }
     }
 
-    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPersonWithRelatives =
-        VtjPersonWithRelatives(fetchPerson(query), getDependants(query.ssn.value))
+    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPersonAndDependants =
+        VtjPersonAndDependants(fetchPerson(query), getDependants(query.ssn.value))
 
-    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPersonWithRelatives =
-        VtjPersonWithRelatives(fetchPerson(query), getGuardians(query.ssn.value))
+    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPersonAndGuardians =
+        VtjPersonAndGuardians(fetchPerson(query), getGuardians(query.ssn.value))
 
     override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson {
         val ssn = query.ssn.value

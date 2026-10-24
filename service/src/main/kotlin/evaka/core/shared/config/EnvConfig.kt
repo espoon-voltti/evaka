@@ -23,6 +23,7 @@ import evaka.core.ScheduledJobsEnv
 import evaka.core.SfiEnv
 import evaka.core.VardaEnv
 import evaka.core.VtjEnv
+import evaka.core.VtjSyncEnv
 import evaka.core.VtjXroadEnv
 import evaka.core.WebPushEnv
 import evaka.core.shared.job.ScheduledJob
@@ -124,4 +125,6 @@ class EnvConfig {
         ChildDocumentArchivalEnv.fromEnvironment(env)
 
     @Bean fun dataRemovalEnv(env: Environment): DataRemovalEnv = DataRemovalEnv.fromEnvironment(env)
+
+    @Bean fun vtjSyncEnv(env: Environment): VtjSyncEnv = VtjSyncEnv.fromEnvironment(env)
 }

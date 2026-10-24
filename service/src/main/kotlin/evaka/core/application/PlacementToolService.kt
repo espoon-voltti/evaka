@@ -13,11 +13,12 @@ import evaka.core.daycare.getPreschoolTerm
 import evaka.core.daycare.getPreschoolTerms
 import evaka.core.identity.Ssn
 import evaka.core.identity.isValidSSN
+import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.service.FridgeFamilyService
-import evaka.core.pis.service.PersonService
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.getBlockedGuardians
 import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.serviceneed.getServiceNeedOptions
@@ -52,9 +53,9 @@ enum class PlacementToolCsvField(val fieldName: String) {
 class PlacementToolService(
     private val featureConfig: FeatureConfig,
     private val applicationStateService: ApplicationStateService,
-    private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val fridgeFamilyService: FridgeFamilyService,
+    private val vtjSyncService: VtjSyncService,
     private val evakaEnv: EvakaEnv,
 ) {
     init {
@@ -167,10 +168,30 @@ WHERE application.type = 'PRESCHOOL'
         clock: EvakaClock,
         msg: AsyncJob.PlacementToolFromSSN,
     ) {
-        val child = db.read { tx -> tx.getPersonBySSN(msg.ssn) }
+        val ssn =
+            Ssn.parse(msg.ssn)
+                ?: throw PermanentAsyncJobFailure("Invalid SSN in placement tool job")
+        val existingChild = db.read { tx -> tx.getPersonBySSN(ssn.value) }
+        val oldGuardians =
+            existingChild?.let { child -> db.read { it.getDependantGuardians(child.id) } }
+                ?: emptyList()
         val childId =
-            if (child?.vtjGuardiansQueried == null) initFromVtj(db, msg.user, clock, msg.ssn)
-            else child.id
+            vtjSyncService.getOrCreatePerson(db, msg.user.evakaUserId, clock, ssn).person.id
+        vtjSyncService.ensureGuardiansSynced(db, msg.user.evakaUserId, clock, childId)
+        if (existingChild?.vtjGuardiansQueried == null) {
+            (oldGuardians + db.read { it.getDependantGuardians(childId) })
+                .map { it.id }
+                .toSet()
+                .forEach { guardianId ->
+                    vtjSyncService.syncDependantsForFamilySetup(
+                        db,
+                        msg.user.evakaUserId,
+                        clock,
+                        guardianId,
+                    )
+                    fridgeFamilyService.addChildrenToFridgeFamily(db, clock, guardianId)
+                }
+        }
         db.transaction { tx ->
             asyncJobRunner.plan(
                 tx,
@@ -186,26 +207,6 @@ WHERE application.type = 'PRESCHOOL'
                 retryCount = 1,
             )
         }
-    }
-
-    private fun initFromVtj(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        ssn: String,
-    ): PersonId {
-        val child = db.transaction { tx ->
-            personService.getOrCreatePerson(
-                tx,
-                user,
-                clock.now(),
-                Ssn.parse(ssn)
-                    ?: throw PermanentAsyncJobFailure("Invalid SSN in placement tool job"),
-                audit = null,
-            )
-        }
-        fridgeFamilyService.updateChildAndFamilyFromVtj(db, user, clock, child!!.id)
-        return child.id
     }
 
     fun createApplication(
@@ -242,7 +243,7 @@ WHERE application.type = 'PRESCHOOL'
                             ?.headOfChildId
                 } ?: guardianIds.first()
 
-            val (_, applicationId) =
+            val applicationId =
                 savePaperApplication(
                     tx,
                     user,
@@ -257,7 +258,7 @@ WHERE application.type = 'PRESCHOOL'
                         hideFromGuardian = desiredStatus > ApplicationStatus.SENT,
                         transferApplication = false,
                     ),
-                    personService,
+                    guardianId,
                     applicationStateService,
                 )
 

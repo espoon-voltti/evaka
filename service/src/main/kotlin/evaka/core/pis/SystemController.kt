@@ -15,6 +15,7 @@ import evaka.core.identity.ExternalId
 import evaka.core.identity.Ssn
 import evaka.core.pairing.*
 import evaka.core.pis.service.PersonService
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.MobileDeviceId
@@ -45,6 +46,7 @@ private val logger = KotlinLogging.logger {}
 @RestController
 class SystemController(
     private val personService: PersonService,
+    private val vtjSyncService: VtjSyncService,
     private val accessControl: AccessControl,
     private val accessControlCitizen: AccessControlCitizen,
     private val env: EvakaEnv,
@@ -61,28 +63,18 @@ class SystemController(
         clock: EvakaClock,
         @RequestBody request: CitizenLoginRequest,
     ): CitizenUserIdentity {
+        val ssn = Ssn.parse(request.socialSecurityNumber) ?: throw BadRequest("Invalid SSN")
         return db.connect { dbc ->
+                val personId =
+                    vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, ssn).person.id
                 dbc.transaction { tx ->
-                    val citizen =
-                        tx.getCitizenUserBySsn(request.socialSecurityNumber)
-                            ?: personService
-                                .getOrCreatePerson(
-                                    tx,
-                                    user,
-                                    clock.now(),
-                                    Ssn.parse(request.socialSecurityNumber)
-                                        ?: throw BadRequest("Invalid SSN"),
-                                    audit = null,
-                                )
-                                ?.let { CitizenUserIdentity(it.id) }
-                            ?: error("No person found with ssn")
                     val now = clock.now()
-                    tx.updateLastStrongLogin(now, citizen.id)
-                    tx.updateCitizenOnLogin(now, citizen.id)
-                    tx.upsertCitizenUser(citizen.id)
-                    val _ = personService.getPersonWithChildren(tx, user, now, citizen.id)
-                    citizen
+                    tx.updateLastStrongLogin(now, personId)
+                    tx.updateCitizenOnLogin(now, personId)
+                    tx.upsertCitizenUser(personId)
                 }
+                vtjSyncService.ensureDependantsSynced(dbc, user.evakaUserId, clock, personId)
+                CitizenUserIdentity(personId)
             }
             .also { Audit.CitizenLogin.log(objectId = AuditId(it.id)) }
     }

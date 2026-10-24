@@ -8,6 +8,7 @@ import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.absence.getAbsencesOfChildByRange
 import evaka.core.backupcare.getBackupCaresForChild
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.reservations.DailyReservationRequest
 import evaka.core.reservations.createReservationsAndAbsences
 import evaka.core.reservations.getReservationsForChildInRange
@@ -71,6 +72,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Autowired lateinit var placementController: PlacementController
 
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var vtjSyncService: VtjSyncService
 
     // AccessControl that denies Action.Child.READ_SERVICE_NEEDS but otherwise behaves normally
     private val denyServiceNeedsAccessControl =
@@ -185,6 +187,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             PlacementController(
                 accessControl = denyServiceNeedsAccessControl,
                 asyncJobRunner = asyncJobRunner,
+                vtjSyncService = vtjSyncService,
                 featureConfig = featureConfig,
             )
         val response =

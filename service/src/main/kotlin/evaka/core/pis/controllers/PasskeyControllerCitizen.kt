@@ -31,7 +31,6 @@ import evaka.core.user.getCitizenPasskeyCredentialIds
 import evaka.core.user.getCitizenPasskeys
 import evaka.core.user.insertCitizenPasskey
 import evaka.core.user.updateCitizenPasskeyName
-import evaka.core.user.upsertCitizenUserForPasskey
 import evaka.core.user.upsertPasskeyRegistration
 import java.time.Duration
 import org.springframework.http.HttpHeaders
@@ -162,7 +161,6 @@ class PasskeyControllerCitizen(
                             optionsJson = optionsJson,
                             credentialJson = body.credential,
                         )
-                    tx.upsertCitizenUserForPasskey(user.id)
                     val passkey =
                         tx.insertCitizenPasskey(
                             user.id,

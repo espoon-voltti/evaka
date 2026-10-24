@@ -5,24 +5,19 @@
 package evaka.core.dvv
 
 import evaka.core.identity.Ssn
-import evaka.core.pis.Modifier
-import evaka.core.pis.ModifySource
 import evaka.core.pis.addSSNToPerson
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPartnersForPerson
+import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.updateParentshipDuration
-import evaka.core.pis.updatePartnershipDuration
+import evaka.core.pis.getPersonIdsBySsns
+import evaka.core.pis.lockPersonBySSN
 import evaka.core.pis.updatePersonFromVtj
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
-import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.time.LocalDate
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -71,11 +66,19 @@ class DvvModificationsService(
         page: DvvModificationsResponse,
         ssnCount: Int,
     ) {
-        logModifications(db, page.muutokset)
+        val personIds = db.read { tx ->
+            tx.getPersonIdsBySsns(
+                    page.muutokset.mapNotNull { Ssn.parse(it.henkilotunnus) }.distinct()
+                )
+                .found
+                .mapKeys { it.key.value }
+        }
+        logModifications(personIds, page.muutokset)
 
-        val ssnsToUpdateFromVtj: MutableSet<String> = mutableSetOf()
+        val personsToUpdateFromVtj: MutableSet<PersonId> = mutableSetOf()
 
         page.muutokset.forEach { personModifications ->
+            val personId = personIds[personModifications.henkilotunnus]
             personModifications.tietoryhmat.forEach { infoGroup ->
                 try {
                     when (infoGroup) {
@@ -96,18 +99,9 @@ class DvvModificationsService(
                             handleSsnDvvInfoGroup(db, personModifications.henkilotunnus, infoGroup)
                         }
 
-                        is CaretakerLimitedDvvInfoGroup -> {
-                            if (infoGroup.huoltaja.henkilotunnus != null) {
-                                ssnsToUpdateFromVtj.add(infoGroup.huoltaja.henkilotunnus)
-                            } else {
-                                logger.info {
-                                    "Dvv modification ignored for caretaker: ssn is null"
-                                }
-                            }
-                        }
-
+                        is CaretakerLimitedDvvInfoGroup,
                         is DefaultDvvInfoGroup -> {
-                            ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            personId?.let { personsToUpdateFromVtj.add(it) }
                         }
 
                         else -> {
@@ -116,7 +110,7 @@ class DvvModificationsService(
                                     personModifications.tietoryhmat.joinToString(", ") { it.tietoryhma }
                                 })"
                             }
-                            ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            personId?.let { personsToUpdateFromVtj.add(it) }
                         }
                     }
                 } catch (e: Throwable) {
@@ -133,15 +127,15 @@ class DvvModificationsService(
             }
         }
 
-        val personIds = db.read { it.getPersonIdsBySsns(ssnsToUpdateFromVtj.toList()) }.values
-        logger.info {
-            "Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ, of which existing persons are: $personIds"
-        }
+        logger.info { "Dvv modifications: updating persons from VTJ: $personsToUpdateFromVtj" }
 
         db.transaction { tx ->
+            // Read the SSNs after the loop: an SSN correction on this page may have changed them,
+            // and the job finds the person by SSN
             asyncJobRunner.plan(
                 tx,
-                payloads = ssnsToUpdateFromVtj.map { AsyncJob.UpdateFromVtj(it) },
+                payloads =
+                    tx.getSsnsOfPersons(personsToUpdateFromVtj).map { AsyncJob.UpdateFromVtj(it) },
                 runAt = now,
             )
             if (token != page.viimeisinKirjausavain) {
@@ -155,10 +149,10 @@ class DvvModificationsService(
         }
     }
 
-    private fun logModifications(db: Database.Connection, modifications: List<DvvModification>) {
-        val personIds = db.read { tx ->
-            tx.getPersonIdsBySsns(modifications.map { it.henkilotunnus }.distinct())
-        }
+    private fun logModifications(
+        personIds: Map<String, PersonId>,
+        modifications: List<DvvModification>,
+    ) {
         modifications.forEach { modification ->
             val person = personIds[modification.henkilotunnus]?.toString() ?: "not in eVaka"
             logger.info {
@@ -214,80 +208,14 @@ class DvvModificationsService(
         if (deathDvvInfoGroup.kuollut != true || deathDvvInfoGroup.kuolinpv == null) return
 
         db.transaction { tx ->
-            tx.getPersonBySSN(ssn)?.let { person ->
+            tx.lockPersonBySSN(ssn)?.let { person ->
                 val dateOfDeath = deathDvvInfoGroup.kuolinpv.asLocalDate()
                 logger.info { "Dvv modification for ${person.id}: marking dead since $dateOfDeath" }
                 tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath), now)
-
-                endFamilyRelations(tx, person.id, dateOfDeath, now)
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            person.id,
-                            DateRange(dateOfDeath, null),
-                        )
-                    ),
-                    runAt = now,
-                )
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            person.id,
-                            DateRange(dateOfDeath, null),
-                        )
-                    ),
-                    runAt = now,
-                )
+                if (person.dateOfDeath == null) {
+                    tx.applyDeathEffects(asyncJobRunner, now, person.id, dateOfDeath)
+                }
             }
-        }
-    }
-
-    private fun endFamilyRelations(
-        tx: Database.Transaction,
-        personId: PersonId,
-        dateOfDeath: LocalDate,
-        now: HelsinkiDateTime,
-    ) {
-        tx.getPartnersForPerson(
-                personId,
-                includeConflicts = true,
-                period = DateRange(dateOfDeath, dateOfDeath),
-            )
-            .forEach {
-                tx.updatePartnershipDuration(
-                    it.partnershipId,
-                    it.startDate,
-                    dateOfDeath,
-                    ModifySource.DVV,
-                    now,
-                    null,
-                )
-            }
-
-        val parentships =
-            tx.getParentships(
-                headOfChildId = personId,
-                childId = null,
-                includeConflicts = true,
-                period = DateRange(dateOfDeath, dateOfDeath),
-            ) +
-                tx.getParentships(
-                    headOfChildId = null,
-                    childId = personId,
-                    includeConflicts = true,
-                    period = DateRange(dateOfDeath, dateOfDeath),
-                )
-
-        parentships.forEach {
-            tx.updateParentshipDuration(
-                id = it.id,
-                startDate = it.startDate,
-                endDate = dateOfDeath,
-                now = now,
-                modifier = Modifier.DVV,
-            )
         }
     }
 

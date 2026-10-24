@@ -22,6 +22,7 @@ import evaka.core.pis.service.PersonPatch
 import evaka.core.pis.service.PersonSensitiveDetails
 import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.PersonWithChildrenDTO
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.pis.service.createAddressPagePdf
 import evaka.core.pis.service.getBlockedGuardians
@@ -60,6 +61,7 @@ class PersonController(
     private val mergeService: MergeService,
     private val accessControl: AccessControl,
     private val fridgeFamilyService: FridgeFamilyService,
+    private val vtjSyncService: VtjSyncService,
     private val pdfGenerator: PdfGenerator,
     private val evakaEnv: EvakaEnv,
 ) {
@@ -427,9 +429,7 @@ class PersonController(
 
                 val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid social security number")
 
-                PersonJSON.from(
-                    dbc.transaction { personService.addSsn(it, user, clock.now(), personId, ssn) }
-                )
+                PersonJSON.from(vtjSyncService.addSsn(dbc, user.evakaUserId, clock, personId, ssn))
             }
             .also { Audit.PersonUpdate.log(targetId = AuditId(personId)) }
     }
@@ -479,23 +479,30 @@ class PersonController(
 
         val audit = AuditContext().addMeta("readonly", body.readonly)
         return db.connect { dbc ->
-                dbc.transaction {
+                dbc.read {
                     accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
                         Action.Global.CREATE_PERSON_FROM_VTJ,
                     )
-
-                    personService.getOrCreatePerson(
-                        it,
-                        user,
-                        clock.now(),
-                        ssn,
-                        body.readonly,
-                        audit,
-                    )
-                } ?: throw NotFound()
+                }
+                if (body.readonly) {
+                    dbc.transaction {
+                        personService.getOrCreatePerson(
+                            it,
+                            user,
+                            clock.now(),
+                            ssn,
+                            readonly = true,
+                            audit,
+                        )
+                    } ?: throw NotFound()
+                } else {
+                    val result = vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, ssn)
+                    audit.add(result.person.id).addMeta("created", result.created)
+                    result.person
+                }
             }
             .let { PersonJSON.from(it) }
             .also { audit.log(Audit.PersonGetOrCreateBySsn, clock) }
@@ -561,7 +568,7 @@ class PersonController(
                         personId,
                     )
                 }
-                fridgeFamilyService.updateGuardianOrChildFromVtj(dbc, user, clock, personId)
+                fridgeFamilyService.refreshFamily(dbc, user.evakaUserId, clock, personId)
             }
             .also { Audit.PersonVtjFamilyUpdate.log(targetId = AuditId(personId)) }
     }
@@ -589,22 +596,17 @@ class PersonController(
                     tx.blockGuardian(childId, body.guardianId)
                 } else {
                     tx.unblockGuardian(childId, body.guardianId)
-                    val _ =
-                        personService.getGuardians(
-                            tx,
-                            user,
-                            clock.now(),
-                            childId,
-                            forceRefresh = true,
-                        )
                 }
             }
+            Audit.PersonUpdateEvakaRights.log(
+                targetId = AuditId(childId),
+                objectId = AuditId(body.guardianId),
+                meta = mapOf("denied" to body.denied),
+            )
+            if (!body.denied) {
+                vtjSyncService.refreshPerson(dbc, user.evakaUserId, clock, childId)
+            }
         }
-        Audit.PersonUpdateEvakaRights.log(
-            targetId = AuditId(childId),
-            objectId = AuditId(body.guardianId),
-            meta = mapOf("denied" to body.denied),
-        )
     }
 
     @GetMapping("/{guardianId}/address-page/download", produces = [MediaType.APPLICATION_PDF_VALUE])

@@ -18,6 +18,7 @@ import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
@@ -120,6 +121,17 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("Någonvägen 66", person.streetAddress)
         assertEquals("Helsingfors", person.postOffice)
         assertEquals("Helsingfors", person.municipalityOfResidence)
+    }
+
+    @Test
+    fun `setSsnFromVtj does not replace the SSN of a person who already has one`() {
+        // Another request may have added an SSN after the caller checked that there was none
+        val person = DevPerson(ssn = "070644-937X")
+        db.transaction { it.insert(person, DevPersonType.ADULT) }
+
+        assertThrows<Conflict> { db.transaction { it.setSsnFromVtj(person.id, vtjPerson, now) } }
+
+        assertEquals("070644-937X", db.read { it.getPersonById(person.id) }!!.ssn?.value)
     }
 
     @Test

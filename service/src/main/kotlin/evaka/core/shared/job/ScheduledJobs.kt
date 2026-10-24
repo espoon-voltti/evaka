@@ -10,6 +10,7 @@ import evaka.core.AuditId
 import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
+import evaka.core.VtjSyncEnv
 import evaka.core.application.PendingDecisionNotificationService
 import evaka.core.application.cancelOutdatedSentTransferApplications
 import evaka.core.application.removeOldDrafts
@@ -40,6 +41,7 @@ import evaka.core.pis.cleanUpInactivePeople
 import evaka.core.pis.deactivateInactiveEmployees
 import evaka.core.pis.deleteExpiredEmailVerifications
 import evaka.core.pis.deleteNeverLoggedInSsnEmployees
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.reports.freezeVoucherValueReportRows
 import evaka.core.reservations.MissingHolidayReservationsReminders
 import evaka.core.reservations.MissingReservationsReminders
@@ -81,6 +83,10 @@ enum class ScheduledJob(
     ),
     DvvUpdate(
         ScheduledJobs::dvvUpdate,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+    ),
+    SyncMissingVtjRelations(
+        ScheduledJobs::syncMissingVtjRelations,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     EndAssistanceFactorsWhichBelongToPastPlacements(
@@ -361,6 +367,8 @@ class ScheduledJobs(
     private val tracer: Tracer,
     private val childDocumentArchivalEnv: ChildDocumentArchivalEnv,
     private val dataRemovalService: DataRemovalService,
+    private val vtjSyncService: VtjSyncService,
+    private val vtjSyncEnv: VtjSyncEnv,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -458,6 +466,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun dvvUpdate(db: Database.Connection, clock: EvakaClock) {
         dvvModificationsBatchRefreshService.scheduleBatch(db, clock)
+    }
+
+    fun syncMissingVtjRelations(db: Database.Connection, clock: EvakaClock) {
+        vtjSyncService.planMissingSyncs(db, clock, vtjSyncEnv.limit)
     }
 
     fun koskiUpdate(db: Database.Connection, clock: EvakaClock) {

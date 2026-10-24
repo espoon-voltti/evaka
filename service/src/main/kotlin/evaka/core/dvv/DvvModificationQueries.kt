@@ -56,18 +56,16 @@ fun Database.Transaction.deleteDvvModificationToken(token: String) {
         .execute()
 }
 
-fun Database.Read.getPersonIdsBySsns(ssns: List<String>): Map<String, PersonId> {
-    return createQuery {
-        sql(
-            """
-SELECT social_security_number, id
+fun Database.Read.getSsnsOfPersons(ids: Collection<PersonId>): List<String> = createQuery {
+    sql(
+        """
+SELECT social_security_number
 FROM person
-WHERE social_security_number = ANY (${bind(ssns)})
+WHERE id = ANY (${bind(ids)}) AND social_security_number IS NOT NULL
 """
-        )
-    }
-        .toMap { columnPair("social_security_number", "id") }
+    )
 }
+    .toList()
 
 data class DvvModificationToken(
     val token: String,

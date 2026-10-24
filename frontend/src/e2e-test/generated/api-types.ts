@@ -899,6 +899,8 @@ export interface DevPerson {
   streetAddress: string
   updatedFromVtj: HelsinkiDateTime | null
   verifiedEmail: string | null
+  vtjDependantsQueried: HelsinkiDateTime | null
+  vtjGuardiansQueried: HelsinkiDateTime | null
 }
 
 /**
@@ -1668,7 +1670,9 @@ export function deserializeJsonDevPerson(json: JsonOf<DevPerson>): DevPerson {
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
     restrictedDetailsEndDate: (json.restrictedDetailsEndDate != null) ? LocalDate.parseIso(json.restrictedDetailsEndDate) : null,
-    updatedFromVtj: (json.updatedFromVtj != null) ? HelsinkiDateTime.parseIso(json.updatedFromVtj) : null
+    updatedFromVtj: (json.updatedFromVtj != null) ? HelsinkiDateTime.parseIso(json.updatedFromVtj) : null,
+    vtjDependantsQueried: (json.vtjDependantsQueried != null) ? HelsinkiDateTime.parseIso(json.vtjDependantsQueried) : null,
+    vtjGuardiansQueried: (json.vtjGuardiansQueried != null) ? HelsinkiDateTime.parseIso(json.vtjGuardiansQueried) : null
   }
 }
 

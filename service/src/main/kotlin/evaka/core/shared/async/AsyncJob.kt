@@ -294,6 +294,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    /** Unlike [UpdateFromVtj], this does not add children to fridge families. */
+    data class SyncMissingVtjRelationsOfPerson(val personId: PersonId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendMissingReservationsReminder(val guardian: PersonId, val range: FiniteDateRange) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -597,6 +602,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SyncNekkuCustomers::class,
                     SyncNekkuProducts::class,
                     SyncNekkuSpecialDiets::class,
+                    SyncMissingVtjRelationsOfPerson::class,
                     CleanNekkuOrdersReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,

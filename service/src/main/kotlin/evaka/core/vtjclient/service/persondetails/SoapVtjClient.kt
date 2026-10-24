@@ -6,7 +6,8 @@ package evaka.core.vtjclient.service.persondetails
 
 import evaka.core.shared.domain.NotFound
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.dto.VtjPersonWithRelatives
+import evaka.core.vtjclient.dto.VtjPersonAndDependants
+import evaka.core.vtjclient.dto.VtjPersonAndGuardians
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.VtjClient.DetailsQuery
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
@@ -21,19 +22,19 @@ class SoapVtjClient(
     private val vtjSoapTransport: VtjSoapTransport,
     private val henkiloMapper: VtjHenkiloMapper,
 ) : VtjClient {
-    override fun fetchWithDependants(query: DetailsQuery): VtjPersonWithRelatives {
+    override fun fetchWithDependants(query: DetailsQuery): VtjPersonAndDependants {
         val henkilo = doVtjQuery(query, HUOLTAJA_HUOLLETTAVA)
-        return VtjPersonWithRelatives(
+        return VtjPersonAndDependants(
             person = henkiloMapper.mapToVtjPerson(henkilo),
-            relatives = henkiloMapper.mapDependants(henkilo),
+            dependants = henkiloMapper.mapDependants(henkilo),
         )
     }
 
-    override fun fetchWithGuardians(query: DetailsQuery): VtjPersonWithRelatives {
+    override fun fetchWithGuardians(query: DetailsQuery): VtjPersonAndGuardians {
         val henkilo = doVtjQuery(query, HUOLLETTAVA_HUOLTAJAT)
-        return VtjPersonWithRelatives(
+        return VtjPersonAndGuardians(
             person = henkiloMapper.mapToVtjPerson(henkilo),
-            relatives = henkiloMapper.mapGuardians(henkilo),
+            guardians = henkiloMapper.mapGuardians(henkilo),
         )
     }
 

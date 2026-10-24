@@ -30,7 +30,7 @@ class MockDataServiceTest {
     fun `check that second child is less than three years old (2)`() {
         val kaarinaAnttola = mockDetailsService.fetchWithDependants(mapToQuery("270372-905L"))
 
-        val children = kaarinaAnttola.relatives
+        val children = kaarinaAnttola.dependants
         val childTwo = children[1]
         val year = childTwo.ssn.value.substring(4, 6).toInt()
         val difference = 18 - year
@@ -42,7 +42,7 @@ class MockDataServiceTest {
     fun `check that second child is less than three years old (1)`() {
         val parent = mockDetailsService.fetchWithDependants(mapToQuery("060195-966B"))
 
-        val children = parent.relatives
+        val children = parent.dependants
         val childTwo = children[1]
         val year = childTwo.ssn.value.substring(4, 6).toInt()
         val difference = 18 - year
@@ -54,7 +54,7 @@ class MockDataServiceTest {
     fun `check that second child is less than three years old (0)`() {
         val parent = mockDetailsService.fetchWithDependants(mapToQuery("081181-9984"))
 
-        val children = parent.relatives
+        val children = parent.dependants
         val childTwo = children[1]
         val year = childTwo.ssn.value.substring(4, 6).toInt()
         val difference = 18 - year
@@ -71,7 +71,7 @@ class MockDataServiceTest {
         assertThat(parent.person).hasFieldOrPropertyWithValue("restrictedDetails.enabled", false)
         assertThat(parent.person.address!!.streetAddress).isEqualTo(expectedAddress)
 
-        val children = fetchInFull(parent.relatives)
+        val children = fetchInFull(parent.dependants)
         assertThat(children).size().isEqualTo(2)
         assertThat(children)
             .allMatch(
@@ -92,7 +92,7 @@ class MockDataServiceTest {
         assertThat(parent.person).hasFieldOrPropertyWithValue("restrictedDetails.enabled", true)
         assertThat(parent.person.address!!.streetAddress).isBlank
 
-        val children = fetchInFull(parent.relatives)
+        val children = fetchInFull(parent.dependants)
         assertThat(children).size().isEqualTo(2)
         assertThat(children)
             .allMatch({ it.restrictedDetails!!.enabled }, "restricted details should be enabled")
@@ -111,7 +111,7 @@ class MockDataServiceTest {
         assertThat(parent.person).hasFieldOrPropertyWithValue("restrictedDetails.enabled", false)
         assertThat(parent.person.address!!.streetAddress).isEqualTo(expectedGuardianAddress)
 
-        val children = fetchInFull(parent.relatives)
+        val children = fetchInFull(parent.dependants)
         assertThat(children).size().isEqualTo(2)
         assertThat(children)
             .allMatch({ it.restrictedDetails!!.enabled }, "restricted details should be enabled")
@@ -129,7 +129,7 @@ class MockDataServiceTest {
         assertThat(parent.person).hasFieldOrPropertyWithValue("restrictedDetails.enabled", true)
         assertThat(parent.person.address!!.streetAddress).isBlank
 
-        val children = fetchInFull(parent.relatives)
+        val children = fetchInFull(parent.dependants)
         assertThat(children).size().isEqualTo(2)
         assertThat(children)
             .allMatch({ !it.restrictedDetails!!.enabled }, "restricted details should not enabled")
@@ -142,7 +142,7 @@ class MockDataServiceTest {
     fun `mr Karhula has 3 children`() {
         val parent = mockDetailsService.fetchWithDependants(mapToQuery("070644-937X"))
 
-        assertEquals(3, parent.relatives.size)
+        assertEquals(3, parent.dependants.size)
     }
 
     @Test

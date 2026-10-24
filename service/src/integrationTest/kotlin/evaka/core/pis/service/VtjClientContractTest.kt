@@ -62,7 +62,7 @@ abstract class VtjClientContract {
 
         assertEquals(guardian.ssn, result.person.socialSecurityNumber)
         assertEquals(guardian.streetAddress, result.person.address?.streetAddress)
-        assertEquals(listOf(child.toStub()), result.relatives)
+        assertEquals(listOf(child.toStub()), result.dependants)
     }
 
     @Test
@@ -71,7 +71,7 @@ abstract class VtjClientContract {
 
         assertEquals(child.ssn, result.person.socialSecurityNumber)
         assertEquals(child.streetAddress, result.person.address?.streetAddress)
-        assertEquals(listOf(guardian.toStub()), result.relatives)
+        assertEquals(listOf(guardian.toStub()), result.guardians)
     }
 
     private fun DevPerson.toStub() =
