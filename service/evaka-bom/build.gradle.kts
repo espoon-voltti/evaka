@@ -61,7 +61,7 @@ dependencies {
         api("com.fasterxml.jackson.core:jackson-databind:2.22.4")
     }
 
-    api(platform("tools.jackson:jackson-bom:3.2.3"))
+    api(platform("tools.jackson:jackson-bom:3.2.4"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.5.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.67.0"))
     api(platform("io.netty:netty-bom:4.2.19.Final"))
