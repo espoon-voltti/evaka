@@ -2105,7 +2105,7 @@ __metadata:
     lodash: "npm:4.18.1"
     make-error-cause: "npm:2.3.0"
     nocache: "npm:4.0.0"
-    nock: "npm:15.0.2"
+    nock: "npm:15.0.3"
     node-forge: "npm:1.4.0"
     oxfmt: "npm:0.73.0"
     oxlint: "npm:1.88.0"
@@ -3205,12 +3205,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nock@npm:15.0.2":
-  version: 15.0.2
-  resolution: "nock@npm:15.0.2"
+"nock@npm:15.0.3":
+  version: 15.0.3
+  resolution: "nock@npm:15.0.3"
   dependencies:
     "@mswjs/interceptors": "npm:^0.44.0"
-  checksum: 10/5d30a50eb7cf3e8b87ee37eff2cf1cdf2b9a30d48626e6d32911501abb3863c8e2fa1e301d01a0ce678c378acf916a6fc1ded291944817686ab2880aba63fcb7
+  checksum: 10/1d62201f41b008e9a9bfae354a2ef4dd2d40d57b765e8c0b6c352bed2014a4a7e564eeed029dd41ef7abc4cf184b2384f80a29ef01dfc436d3091540b93999fc
   languageName: node
   linkType: hard
 
