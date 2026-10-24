@@ -25,7 +25,7 @@
     "concurrently": "10.0.6",
     "nodemon": "3.1.14",
     "oxfmt": "0.74.0",
-    "oxlint": "1.88.0",
+    "oxlint": "1.89.0",
     "oxlint-tsgolint": "7.0.2004",
     "prettier": "3.9.10",
     "tsx": "4.23.15",
