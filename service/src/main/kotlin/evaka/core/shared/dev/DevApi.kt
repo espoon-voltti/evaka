@@ -656,13 +656,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createIncomeNotification(db: Database, @RequestBody body: IncomeNotification) {
         db.connect { dbc ->
             dbc.transaction {
-                val id = it.createIncomeNotification(body.receiverId, body.notificationType)
-                it.createUpdate {
-                        sql(
-                            "UPDATE income_notification SET created = ${bind(body.created)} WHERE id = ${bind(id)}"
-                        )
-                    }
-                    .execute()
+                it.createIncomeNotification(body.receiverId, body.notificationType, body.created)
             }
         }
     }
@@ -1491,6 +1485,7 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
         messageNotification,
         pedagogicalDocumentNotification,
         outdatedIncomeNotification,
+        incompleteIncomeReminder,
         calendarEventNotification,
         financeDecisionNotification,
         discussionTimeReservation,
@@ -1560,6 +1555,13 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
                 EmailMessageFilter.outdatedIncomeNotification -> {
                     emailMessageProvider.incomeNotification(
                         IncomeNotificationType.INITIAL_EMAIL,
+                        Language.fi,
+                    )
+                }
+
+                EmailMessageFilter.incompleteIncomeReminder -> {
+                    emailMessageProvider.incomeNotification(
+                        IncomeNotificationType.INCOMPLETE_INCOME_REMINDER,
                         Language.fi,
                     )
                 }

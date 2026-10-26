@@ -354,6 +354,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendIncompleteIncomeReminder(val guardianId: PersonId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class DeleteAttachment(val attachmentId: AttachmentId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -630,6 +634,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendDiscussionSurveyReservationCancellationEmail::class,
                     SendDiscussionSurveyReservationEmail::class,
                     SendEmailChangedEmail::class,
+                    SendIncompleteIncomeReminder::class,
                     SendMessageDeletionNotificationEmail::class,
                     SendMessageDeletionSenderEmail::class,
                     SendMessageNotificationEmail::class,

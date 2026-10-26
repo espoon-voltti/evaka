@@ -1815,7 +1815,9 @@ export const sv: typeof fi = {
         INITIAL_EMAIL: 'Första påminnelsen',
         REMINDER_EMAIL: 'Andra påminnelsen',
         EXPIRED_EMAIL: 'Inkomster avslutade',
-        NEW_CUSTOMER: 'Startande klient'
+        NEW_CUSTOMER: 'Startande klient',
+        INCOMPLETE_INCOME_REMINDER:
+          'Årlig påminnelse om saknade inkomstuppgifter'
       },
       noCustodians: 'Inga barn som står under vårdnad'
     },

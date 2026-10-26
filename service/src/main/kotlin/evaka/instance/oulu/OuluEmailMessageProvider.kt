@@ -657,7 +657,57 @@ ${MessageDeletionEmailContent.detailsBlock(data)}
             IncomeNotificationType.REMINDER_EMAIL -> outdatedIncomeNotificationReminder()
             IncomeNotificationType.EXPIRED_EMAIL -> outdatedIncomeNotificationExpired()
             IncomeNotificationType.NEW_CUSTOMER -> newCustomerIncomeNotification()
+            IncomeNotificationType.INCOMPLETE_INCOME_REMINDER -> incompleteIncomeReminder()
         }
+
+    fun incompleteIncomeReminder(): EmailContent =
+        EmailContent(
+            subject = "Tulotietonne puuttuvat / Your income information is missing",
+            text =
+                """
+                Hyvä asiakkaamme
+
+                Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotietonne puuttuvat. Tämän vuoksi asiakasmaksunne määräytyy korkeimman maksun mukaisesti.
+
+                Pyydämme toimittamaan tuloselvityksen eVakassa.
+
+                Lisätietoja saatte tarvittaessa: varhaiskasvatusmaksut@ouka.fi
+
+                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
+
+                -----
+
+                Dear client
+
+                The income information used for determining your early childhood education fee or the out-of-pocket cost of a service voucher is missing. Therefore, your client fee is determined based on the highest fee.
+
+                We ask you to submit your income statement through eVaka.
+
+                Inquiries: varhaiskasvatusmaksut@ouka.fi
+
+                This is an automatic message from the eVaka system. Do not reply to this message.
+                """
+                    .trimIndent(),
+            html =
+                """
+                <p>Hyvä asiakkaamme</p>
+                <p>Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotietonne puuttuvat. Tämän vuoksi asiakasmaksunne määräytyy korkeimman maksun mukaisesti.</p>
+                <p>Pyydämme toimittamaan tuloselvityksen eVakassa.</p>
+                <p>Lisätietoja saatte tarvittaessa: varhaiskasvatusmaksut@ouka.fi</p>
+                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+                $securityFi
+                $unsubscribeFi
+                <hr>
+                <p>Dear client</p>
+                <p>The income information used for determining your early childhood education fee or the out-of-pocket cost of a service voucher is missing. Therefore, your client fee is determined based on the highest fee.</p>
+                <p>We ask you to submit your income statement through eVaka.</p>
+                <p>Inquiries: varhaiskasvatusmaksut@ouka.fi</p>
+                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+                $securityEn
+                $unsubscribeEn
+                """
+                    .trimIndent(),
+        )
 
     fun outdatedIncomeNotificationInitial(): EmailContent =
         EmailContent(

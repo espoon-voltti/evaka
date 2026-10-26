@@ -45,6 +45,8 @@ class VesilahtiEmailMessageProvider : IEmailMessageProvider {
     private val subjectForNewDocument: String = "Uusi dokumentti eVakassa / New document in eVaka"
     private val subjectForRequestToReviewIncomeInfo: String =
         "Tulotietojen tarkastuskehotus / Request to review income information"
+    private val subjectForIncompleteIncomeReminder: String =
+        "Tulotietonne puuttuvat / Your income information is missing"
 
     override fun pendingDecisionNotification(language: Language) =
         EmailContent.fromHtml(
@@ -300,7 +302,46 @@ $unsubscribeEn
             IncomeNotificationType.REMINDER_EMAIL -> outdatedIncomeNotificationReminder()
             IncomeNotificationType.EXPIRED_EMAIL -> outdatedIncomeNotificationExpired()
             IncomeNotificationType.NEW_CUSTOMER -> newCustomerIncomeNotification()
+            IncomeNotificationType.INCOMPLETE_INCOME_REMINDER -> incompleteIncomeReminder()
         }
+
+    private fun incompleteIncomeReminder() =
+        EmailContent.fromHtml(
+            subject = subjectForIncompleteIncomeReminder,
+            html =
+                """
+            <p>Hyvä asiakkaamme</p>
+            
+            <p>Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotietonne puuttuvat. Tämän vuoksi asiakasmaksunne määräytyy korkeimman maksuluokan mukaan.</p>
+            
+            <p>Pyydämme toimittamaan tuloselvityksen eVakassa. eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.</p>
+            
+            <p>Uusi maksupäätös astuu voimaan sen kuukauden alusta, kun tulotiedot on toimitettu asiakasmaksuihin.</p>
+            
+            <p>Lisätietoja saatte tarvittaessa Vesilahden kunnan verkkosivuilta.</p>
+            
+            <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+            
+            $unsubscribeFi
+            
+            <hr>
+            
+            <p>Dear client</p>
+            
+            <p>The income information used for determining your early childhood education fee or the out-of-pocket cost of a service voucher is missing. Therefore, your client fee is determined based on the highest fee category.</p>
+            
+            <p>We ask you to submit your income statement through eVaka. Through eVaka, you can also give your consent to the highest fee or the use of the Incomes Register.</p>
+            
+            <p>The new payment decision takes effect at the beginning of the month when the income information has been submitted to customer services.</p>
+            
+            <p>If necessary, you can get more information from the website of the municipality of Vesilahti.</p>
+            
+            <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+            
+            $unsubscribeEn
+        """
+                    .trimIndent(),
+        )
 
     private fun outdatedIncomeNotificationInitial() =
         EmailContent.fromHtml(

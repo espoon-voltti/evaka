@@ -287,6 +287,8 @@ const sv: Translations = {
       `Svara på frånvaroenkäten före ${deadline.format()}.`,
     incomeExpirationCta: (expirationDate: string) =>
       `Kom ihåg att uppdatera dina inkomstuppgifter senast den ${expirationDate}`,
+    incompleteIncomeCta:
+      'Dina inkomstuppgifter saknas, så din avgift bestäms enligt den högsta avgiften. Uppdatera dina inkomstuppgifter.',
     unansweredChildDocumentCta: (child: {
       firstName: string
       lastName: string

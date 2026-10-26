@@ -312,6 +312,24 @@ class EvakaPushNotificationMessageProvider : PushNotificationMessageProvider {
                                     ?: "Submit your income information.",
                             )
                     }
+                IncomeNotificationType.INCOMPLETE_INCOME_REMINDER ->
+                    when (language) {
+                        UiLanguage.FI ->
+                            listOf(
+                                "Tulotietosi puuttuvat, joten maksusi määräytyy korkeimman maksuluokan mukaan.",
+                                "Toimita tuloselvitys eVakassa.",
+                            )
+                        UiLanguage.SV ->
+                            listOf(
+                                "Dina inkomstuppgifter saknas, så din avgift bestäms enligt den högsta avgiftsklassen.",
+                                "Lämna en inkomstutredning i eVaka.",
+                            )
+                        UiLanguage.EN ->
+                            listOf(
+                                "Your income information is missing, so your fee is set by the highest fee class.",
+                                "Submit an income statement in eVaka.",
+                            )
+                    }
             }
         return PushNotificationContent(
             title =
@@ -339,6 +357,12 @@ class EvakaPushNotificationMessageProvider : PushNotificationMessageProvider {
                             UiLanguage.FI -> "Toimita tulotiedot"
                             UiLanguage.SV -> "Lämna inkomstuppgifter"
                             UiLanguage.EN -> "Submit income information"
+                        }
+                    IncomeNotificationType.INCOMPLETE_INCOME_REMINDER ->
+                        when (language) {
+                            UiLanguage.FI -> "Tulotietosi puuttuvat"
+                            UiLanguage.SV -> "Dina inkomstuppgifter saknas"
+                            UiLanguage.EN -> "Your income information is missing"
                         }
                 },
             body = sentences.filterNotNull().joinToString(" "),
