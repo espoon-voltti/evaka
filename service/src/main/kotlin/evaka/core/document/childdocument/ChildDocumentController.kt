@@ -42,6 +42,7 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import java.time.LocalDate
 import org.jdbi.v3.core.JdbiException
 import org.postgresql.util.PSQLState
 import org.springframework.http.ResponseEntity
@@ -365,6 +366,8 @@ class ChildDocumentController(
                     if (!document.status.employeeEditable)
                         throw BadRequest("Cannot update contents of document in this status")
 
+                    assertTemplateValidityNotEnded(document, clock.today())
+
                     validateContentAgainstTemplate(body, document.template.content)
 
                     tx.getCurrentWriteLock(documentId, clock.now())?.also { lock ->
@@ -410,7 +413,11 @@ class ChildDocumentController(
                         Action.ChildDocument.UPDATE,
                         documentId,
                     )
-                    tx.getChildDocumentChildId(documentId)?.let { audit.add(it) }
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
+                    assertTemplateValidityNotEnded(document, clock.today())
                     val success = tx.tryTakeWriteLock(documentId, clock.now(), user.evakaUserId)
                     val currentLock =
                         tx.getCurrentWriteLock(documentId, clock.now())
@@ -449,6 +456,7 @@ class ChildDocumentController(
                     audit.add(document.child.id)
                     if (!document.template.type.manuallyPublishable)
                         throw BadRequest("Document type is not publishable")
+                    assertTemplateValidityNotEnded(document, clock.today())
 
                     childDocumentService.publishAndScheduleNotifications(
                         tx,
@@ -510,6 +518,7 @@ class ChildDocumentController(
     ) {
         val document = tx.getChildDocument(documentId) ?: throw NotFound()
         audit.add(document.child.id)
+        assertTemplateValidityNotEnded(document, clock.today())
         val statusTransition =
             validateStatusTransition(
                 document = document,
@@ -579,11 +588,7 @@ class ChildDocumentController(
                             ?: throw NotFound("Document $documentId not found")
                     audit.add(document.child.id)
 
-                    if (document.template.validity.end?.isBefore(clock.today()) == true) {
-                        throw BadRequest(
-                            "Cannot change status of document as template validity period has ended"
-                        )
-                    }
+                    assertTemplateValidityNotEnded(document, clock.today())
 
                     val statusTransition =
                         validateStatusTransition(
@@ -807,6 +812,7 @@ class ChildDocumentController(
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DRAFT)
                         throw BadRequest("Document is not in correct status")
+                    assertTemplateValidityNotEnded(document, clock.today())
 
                     val validDecisionMakers = tx.getChildDocumentDecisionMakers(documentId)
                     if (validDecisionMakers.none { it.id == body.decisionMaker }) {
@@ -868,6 +874,7 @@ class ChildDocumentController(
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
                         throw BadRequest("Document is not in decision proposal status")
+                    assertTemplateValidityNotEnded(document, clock.today())
 
                     val placementDaycareId =
                         tx.getPlacementsForChildDuring(
@@ -972,6 +979,7 @@ class ChildDocumentController(
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
                         throw BadRequest("Document is not in decision proposal status")
+                    assertTemplateValidityNotEnded(document, clock.today())
 
                     val decisionId =
                         tx.insertChildDocumentDecision(
@@ -1156,6 +1164,15 @@ fun validateContentAgainstTemplate(
         }
     if (!valid) {
         throw BadRequest("Answered questions and template do not match")
+    }
+}
+
+fun assertTemplateValidityNotEnded(document: ChildDocumentDetails, today: LocalDate) {
+    if (document.template.validity.end?.isBefore(today) == true) {
+        throw BadRequest(
+            "Document cannot be modified as template validity period has ended",
+            errorCode = "template-validity-ended",
+        )
     }
 }
 

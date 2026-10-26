@@ -1050,6 +1050,10 @@ export const fi = {
         archiveDisabledNotExternallyArchived:
           'Asiakirjaa ei ole määritetty siirrettäväksi ulkoiseen arkistoon',
         archiveDisabledNotCompleted: 'Asiakirja ei ole valmis-tilassa',
+        templateValidityEnded:
+          'Asiakirjapohjan voimassaolo on päättynyt, joten asiakirjaa ei voi enää muokata, julkaista eikä siirtää toiseen tilaan.',
+        templateValidityEndedDecisionProposal:
+          'Asiakirjapohjan voimassaolo on päättynyt, joten päätösesityksestä ei voi enää tehdä päätöstä.',
         goToNextStatus: {
           DRAFT: 'Julkaise luonnos-tilassa',
           PREPARED: 'Julkaise laadittu-tilassa',

@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type DateRange from 'lib-common/date-range'
 import type {
   ChildDocumentDecisionStatus,
   DocumentStatus,
   ChildDocumentType
 } from 'lib-common/generated/api-types/document'
+import type LocalDate from 'lib-common/local-date'
 import { getDocumentCategory } from 'lib-components/document-templates/documents'
 
 const statusesByType: Record<ChildDocumentType, DocumentStatus[]> = {
@@ -98,3 +100,8 @@ export const isChildDocumentAnnullable = (
   getDocumentCategory(type) === 'decision' &&
   status === 'COMPLETED' &&
   decisionStatus === 'ACCEPTED'
+
+export const isTemplateValidityEnded = (
+  validity: DateRange,
+  today: LocalDate
+) => validity.end !== null && validity.end.isBefore(today)

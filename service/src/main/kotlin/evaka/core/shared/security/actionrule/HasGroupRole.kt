@@ -7,6 +7,7 @@ package evaka.core.shared.security.actionrule
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.document.childdocument.childDocumentTemplateValidityNotEnded
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
@@ -260,6 +261,7 @@ WHERE daycare_acl.employee_id = ${bind(user.id)}
   AND dgp.start_date <= CASE WHEN child_document.type = 'CITIZEN_BASIC' THEN ${bind(futureAccessDate)} ELSE ${bind(today)} END
   AND dgp.end_date >= ${bind(today)}
   AND ${predicate(childDocumentFilters)}
+  ${if (deletable) "AND ${predicate(childDocumentTemplateValidityNotEnded(today).forTable("child_document"))}" else ""}
             """
                     .trimIndent()
             )

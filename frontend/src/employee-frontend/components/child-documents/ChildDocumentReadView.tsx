@@ -31,6 +31,7 @@ import {
   useBoolean
 } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
+import type { Action } from 'lib-common/generated/action'
 import type {
   AcceptedChildDecisions,
   ChildDocumentDetails,
@@ -122,7 +123,8 @@ import {
   isChildDocumentAnnullable,
   isChildDocumentDecidable,
   isChildDocumentEditable,
-  isChildDocumentPublishable
+  isChildDocumentPublishable,
+  isTemplateValidityEnded
 } from './statuses'
 
 const formatEmployeeName = (employee: Employee) =>
@@ -176,6 +178,16 @@ const endingDecisionIds = mapped(
       .map<ChildDocumentDecisionId>((decision) => decision.id)
 )
 
+const actionsBlockedAfterTemplateValidity = new Set<Action.ChildDocument>([
+  'UPDATE',
+  'PUBLISH',
+  'NEXT_STATUS',
+  'PREV_STATUS',
+  'PROPOSE_DECISION',
+  'ACCEPT_DECISION',
+  'REJECT_DECISION'
+])
+
 const ChildDocumentReadViewInner = React.memo(
   function ChildDocumentReadViewInner({
     documentAndPermissions,
@@ -190,7 +202,7 @@ const ChildDocumentReadViewInner = React.memo(
     decisionMakerOptions: Employee[]
     acceptedDecisions: AcceptedChildDecisions[]
   }) {
-    const { data: document, permittedActions } = documentAndPermissions
+    const { data: document } = documentAndPermissions
     const { i18n } = useTranslation()
     const [, navigate] = useLocation()
     useTitle(document.template.name, { hideDefault: true })
@@ -216,6 +228,15 @@ const ChildDocumentReadViewInner = React.memo(
       () => getPrevDocumentStatus(document.template.type, document.status),
       [document.template.type, document.status]
     )
+    const templateValidityEnded = isTemplateValidityEnded(
+      document.template.validity,
+      LocalDate.todayInHelsinkiTz()
+    )
+    const permittedActions = templateValidityEnded
+      ? documentAndPermissions.permittedActions.filter(
+          (action) => !actionsBlockedAfterTemplateValidity.has(action)
+        )
+      : documentAndPermissions.permittedActions
     const isEditable = useMemo(
       () => isChildDocumentEditable(document.status),
       [document.status]
@@ -397,6 +418,19 @@ const ChildDocumentReadViewInner = React.memo(
           )}
         <Container>
           <ContentArea $opaque>
+            {templateValidityEnded && document.status !== 'COMPLETED' && (
+              <InfoBox
+                message={
+                  document.status === 'DECISION_PROPOSAL'
+                    ? i18n.childInformation.childDocuments.editor
+                        .templateValidityEndedDecisionProposal
+                    : i18n.childInformation.childDocuments.editor
+                        .templateValidityEnded
+                }
+                data-qa="template-validity-ended-info"
+                wide
+              />
+            )}
             <DocumentBasics document={document} />
             <OptionalLabelledValue
               label={
