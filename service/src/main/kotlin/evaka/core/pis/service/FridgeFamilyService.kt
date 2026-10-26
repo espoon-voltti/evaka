@@ -44,10 +44,8 @@ class FridgeFamilyService(
                 childGuardianIds.forEach {
                     vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, it)
                 }
-                childGuardianIds +
-                    listOf(personId).filter {
-                        db.read { tx -> tx.isDependantSyncPerson(it, today) }
-                    }
+                val isDependantSync = db.read { tx -> tx.isDependantSyncPerson(personId, today) }
+                childGuardianIds + if (isDependantSync) listOf(personId) else emptyList()
             } else {
                 vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, personId)
                 listOf(personId)
