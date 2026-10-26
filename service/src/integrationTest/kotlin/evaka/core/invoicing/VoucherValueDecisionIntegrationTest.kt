@@ -183,7 +183,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             listOf(adult1, adult2, adult3, adult4, adult5, adult7).forEach {
                 tx.insert(it, DevPersonType.ADULT)
             }
-            listOf(child1, child2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            // The guardians are marked synced, so creating a placement makes no VTJ request
+            listOf(child1, child2).forEach {
+                tx.insert(it.copy(vtjGuardiansQueried = now), DevPersonType.CHILD)
+            }
             tx.insert(feeThresholds)
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOptionVoucherValues()
@@ -809,6 +812,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 dateOfBirth = child1.dateOfBirth,
                 ssn = "010617A125W",
                 restrictedDetailsEnabled = true,
+                vtjGuardiansQueried = now,
                 streetAddress = "Kamreerintie 2",
                 postalCode = "02770",
                 postOffice = "Espoo",
@@ -858,6 +862,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 dateOfBirth = child1.dateOfBirth,
                 ssn = "010617A125W",
                 restrictedDetailsEnabled = true,
+                vtjGuardiansQueried = now,
                 streetAddress = "Kamreerintie 2",
                 postalCode = "02770",
                 postOffice = "Espoo",

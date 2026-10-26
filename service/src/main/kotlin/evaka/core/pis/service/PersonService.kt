@@ -12,12 +12,10 @@ import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.applyDependants
 import evaka.core.pis.applyGuardians
-import evaka.core.pis.applyPerson
 import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.setSsnFromVtj
 import evaka.core.pis.splitFirstNames
 import evaka.core.pis.updateNonSsnPersonDetails
 import evaka.core.pis.updatePersonNonVtjDetails
@@ -29,35 +27,22 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
-import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.Rectangle
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
 import java.util.UUID
 import org.springframework.stereotype.Service
 
 @Service
-class PersonService(private val vtjClient: VtjClient) {
-    // Does a request to VTJ if the person has a SSN and updates person data
-    fun getUpToDatePersonFromVtj(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
-        id: PersonId,
-    ): PersonDTO? {
-        val person = tx.getPersonById(id) ?: return null
-        if (person.ssn == null) return person
-        val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, person.ssn))
-        val _ = tx.applyPerson(vtjPerson, now)
-        return tx.getPersonById(id)
-    }
-
+class PersonService(
+    private val vtjClient: VtjClient,
+    private val vtjSyncService: VtjSyncService,
+) {
     fun personsLiveInTheSameAddress(
         db: Database.Read,
         person1Id: PersonId,
@@ -121,9 +106,12 @@ class PersonService(private val vtjClient: VtjClient) {
                 vtjClient.fetchWithDependants(
                     VtjClient.DetailsQuery(user.evakaUserId, guardian.ssn)
                 )
-            val children = fetchRelativesInFull(user, snapshot.relatives)
-            val guardianId = tx.applyPerson(snapshot.person, now).id
-            val childIds = children.map { tx.applyPerson(it, now).id }.toSet()
+            val children =
+                snapshot.dependants.map {
+                    vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
+                }
+            val guardianId = vtjSyncService.applyFromVtj(tx, now, snapshot.person).id
+            val childIds = children.map { vtjSyncService.applyFromVtj(tx, now, it).id }.toSet()
             tx.applyDependants(guardianId, childIds, now)
         }
 
@@ -145,9 +133,12 @@ class PersonService(private val vtjClient: VtjClient) {
         if (forceRefresh || child.vtjGuardiansQueried == null) {
             val snapshot =
                 vtjClient.fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, child.ssn))
-            val guardians = fetchRelativesInFull(user, snapshot.relatives)
-            val childId = tx.applyPerson(snapshot.person, now).id
-            val guardianIds = guardians.map { tx.applyPerson(it, now).id }.toSet()
+            val guardians =
+                snapshot.guardians.map {
+                    vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
+                }
+            val childId = vtjSyncService.applyFromVtj(tx, now, snapshot.person).id
+            val guardianIds = guardians.map { vtjSyncService.applyFromVtj(tx, now, it).id }.toSet()
             tx.applyGuardians(childId, guardianIds, now)
         }
 
@@ -184,7 +175,7 @@ class PersonService(private val vtjClient: VtjClient) {
             val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
             if (readonly) return toPreviewPersonDTO(vtjPerson)
 
-            val _ = tx.applyPerson(vtjPerson, now)
+            val _ = vtjSyncService.applyFromVtj(tx, now, vtjPerson)
             tx.getPersonBySSN(ssn.value).also {
                 audit?.add(listOfNotNull(it?.id))?.addMeta("created", person == null)
             }
@@ -207,32 +198,6 @@ class PersonService(private val vtjClient: VtjClient) {
         return tx.getPersonById(id)!!
     }
 
-    fun addSsn(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
-        id: PersonId,
-        ssn: Ssn,
-    ): PersonDTO {
-        val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
-
-        if (person.ssn != null) {
-            throw BadRequest("User already has ssn")
-        }
-        if (tx.getPersonBySSN(ssn.value) != null) {
-            throw Conflict("User with same ssn already exists")
-        }
-
-        val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-        if (vtjPerson.socialSecurityNumber != ssn.value) {
-            throw BadRequest("VTJ returned a different SSN than the one being added")
-        }
-
-        tx.updatePersonSsnAddingDisabled(id, false)
-        val _ = tx.setSsnFromVtj(id, vtjPerson, now)
-        return tx.getPersonById(id)!!
-    }
-
     fun disableSsn(tx: Database.Transaction, personId: PersonId, disabled: Boolean) {
         val person = tx.getPersonById(personId) ?: throw NotFound("Person $personId not found")
 
@@ -241,13 +206,6 @@ class PersonService(private val vtjClient: VtjClient) {
         }
 
         tx.updatePersonSsnAddingDisabled(personId, disabled)
-    }
-
-    private fun fetchRelativesInFull(
-        user: AuthenticatedUser,
-        relatives: List<VtjRelative>,
-    ): List<VtjPerson> = relatives.map {
-        vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
     }
 
     private fun toPreviewPersonDTO(person: VtjPerson): PersonDTO =

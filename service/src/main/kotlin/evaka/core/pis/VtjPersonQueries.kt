@@ -18,6 +18,8 @@ import evaka.core.pis.service.replaceGuardianChildren
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.dto.VtjPerson
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -27,7 +29,12 @@ import kotlin.reflect.full.memberProperties
 private val logger = KotlinLogging.logger {}
 
 /** [newDateOfDeath] is set only when the stored date of death changed from NULL to a date. */
-data class ApplyResult(val id: PersonId, val created: Boolean, val newDateOfDeath: LocalDate?)
+data class ApplyResult(
+    val id: PersonId,
+    val person: PersonDTO,
+    val created: Boolean,
+    val newDateOfDeath: LocalDate?,
+)
 
 /** Creates or updates the person row that has the SSN of [person]. */
 fun Database.Transaction.applyPerson(person: VtjPerson, now: HelsinkiDateTime): ApplyResult {
@@ -98,6 +105,7 @@ RETURNING *, old.id IS NULL AS inserted
     if (old != null) logChangedFields(old, new)
     return ApplyResult(
         id = new.id,
+        person = new,
         created = created,
         newDateOfDeath = newDateOfDeath(old, new),
     )
@@ -114,9 +122,10 @@ fun Database.Transaction.setSsnFromVtj(
 ): ApplyResult {
     val ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN")
     val old = getPersonById(personId) ?: error("Person $personId not found")
-    val new = createQuery {
-        sql(
-            """
+    val new =
+        createQuery {
+                sql(
+                    """
 UPDATE person SET
     social_security_number = ${bind(ssn)},
     first_name = ${bind(person.firstNames)},
@@ -133,15 +142,20 @@ UPDATE person SET
     restricted_details_enabled = ${bind(person.restrictedDetails?.enabled ?: false)},
     restricted_details_end_date = ${bind(person.restrictedDetails?.endDate)},
     updated_from_vtj = ${bind(now)}
-WHERE id = ${bind(personId)}
+WHERE id = ${bind(personId)} AND social_security_number IS NULL
 RETURNING *
 """
-        )
-    }
-        .exactlyOne(toPersonDTO)
+                )
+            }
+            .exactlyOneOrNull(toPersonDTO) ?: throw Conflict("Person $personId already has an SSN")
 
     logChangedFields(old, new)
-    return ApplyResult(id = new.id, created = false, newDateOfDeath = newDateOfDeath(old, new))
+    return ApplyResult(
+        id = new.id,
+        person = new,
+        created = false,
+        newDateOfDeath = newDateOfDeath(old, new),
+    )
 }
 
 /** Replaces the guardians of a child, skipping blocked guardians, and marks them synced. */
@@ -178,6 +192,180 @@ fun Database.Transaction.applyDependants(
     logger.info {
         "Created or replaced guardian $guardianId children as $allowed (added ${changes.added}, removed ${changes.removed})"
     }
+}
+
+fun Database.Transaction.clearDependantsSynced(personId: PersonId) = execute {
+    sql("UPDATE person SET vtj_dependants_queried = NULL WHERE id = ${bind(personId)}")
+}
+
+/**
+ * A person who should have synced dependants: a citizen user, or a head of family or a partner in a
+ * current fridge family (conflicts are included). With [since], only a person whose citizen user
+ * row or current fridge row is new or changed since [since].
+ */
+private fun dependantSyncPerson(today: LocalDate, since: HelsinkiDateTime? = null): Predicate {
+    val citizenUserSince =
+        if (since == null) Predicate.alwaysTrue()
+        else Predicate { where("$it.created_at >= ${bind(since)}") }
+    val fridgeRowSince =
+        if (since == null) Predicate.alwaysTrue()
+        else
+            Predicate {
+                where(
+                    "($it.updated >= ${bind(since)} OR $it.start_date >= ${bind(since.toLocalDate())})"
+                )
+            }
+    return Predicate {
+        where(
+            """
+EXISTS (
+    SELECT FROM citizen_user cu
+    WHERE cu.id = $it.id AND ${predicate(citizenUserSince.forTable("cu"))}
+)
+OR EXISTS (
+    SELECT FROM fridge_child fc
+    WHERE
+        fc.head_of_child = $it.id AND
+        ${bind(today)} BETWEEN fc.start_date AND fc.end_date AND
+        ${predicate(fridgeRowSince.forTable("fc"))}
+)
+OR EXISTS (
+    SELECT FROM fridge_partner fp
+    WHERE
+        fp.person_id = $it.id AND
+        ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity') AND
+        ${predicate(fridgeRowSince.forTable("fp"))}
+)
+"""
+        )
+    }
+}
+
+/**
+ * A minor with an SSN who has a placement that has not ended, or an application that is not in a
+ * final state.
+ */
+private fun guardianSyncChild(today: LocalDate) = Predicate {
+    where(
+        """
+$it.social_security_number IS NOT NULL
+AND $it.date_of_birth + interval '18 years' > ${bind(today)}
+AND (
+    EXISTS (SELECT FROM placement pl WHERE pl.child_id = $it.id AND pl.end_date >= ${bind(today)})
+    OR EXISTS (
+        SELECT FROM application a
+        WHERE a.child_id = $it.id
+          AND a.status NOT IN ('ACTIVE', 'REJECTED', 'CANCELLED', 'TERMINATED', 'DEPRECATED')
+    )
+)
+"""
+    )
+}
+
+fun Database.Read.isDependantSyncPerson(personId: PersonId, today: LocalDate): Boolean =
+    createQuery {
+        sql(
+            """
+SELECT EXISTS (
+    SELECT FROM person p
+    WHERE p.id = ${bind(personId)} AND ${predicate(dependantSyncPerson(today).forTable("p"))}
+)
+"""
+        )
+    }
+    .exactlyOne()
+
+/** Clears the marker of a person who is no longer a dependant-sync person. */
+fun Database.Transaction.clearStaleDependantsSynced(
+    olderThan: HelsinkiDateTime,
+    today: LocalDate,
+): Int = createUpdate {
+    sql(
+        """
+UPDATE person p SET vtj_dependants_queried = NULL
+WHERE p.vtj_dependants_queried < ${bind(olderThan)}
+  AND NOT (${predicate(dependantSyncPerson(today).forTable("p"))})
+"""
+    )
+}
+    .executeAndReturnCount()
+
+/**
+ * The nightly sync job syncs a person who became a dependant-sync person within this many days. An
+ * older one is left to the normal triggers.
+ */
+private const val NEWLY_DEPENDANT_SYNC_DAYS = 7L
+
+private fun dependantsNotSynced(today: LocalDate, since: HelsinkiDateTime?) = Predicate {
+    where("$it.social_security_number IS NOT NULL AND $it.vtj_dependants_queried IS NULL")
+}
+    .and(dependantSyncPerson(today, since))
+
+private fun guardiansNotSynced(today: LocalDate) = Predicate {
+    where("$it.vtj_guardians_queried IS NULL")
+}
+    .and(guardianSyncChild(today))
+
+/**
+ * Newly dependant-sync persons whose dependants are not synced, then guardian-sync children whose
+ * guardians are not synced.
+ */
+fun Database.Read.getPersonsToSync(now: HelsinkiDateTime, limit: Int): List<PersonId> {
+    val today = now.toLocalDate()
+    val since = now.minusDays(NEWLY_DEPENDANT_SYNC_DAYS)
+    return createQuery {
+        sql(
+            """
+SELECT id
+FROM (
+    SELECT p.id, 1 AS priority FROM person p
+    WHERE ${predicate(dependantsNotSynced(today, since).forTable("p"))}
+    UNION ALL
+    SELECT p.id, 2 AS priority FROM person p
+    WHERE ${predicate(guardiansNotSynced(today).forTable("p"))}
+) persons_to_sync
+GROUP BY id
+ORDER BY min(priority), id
+LIMIT ${bind(limit)}
+"""
+        )
+    }
+        .toList()
+}
+
+/**
+ * [dependantSyncBacklog] counts the dependant-sync persons whose dependants are not synced, with no
+ * time limit.
+ */
+data class PersonsToSyncCount(
+    val newlyDependantSync: Int,
+    val guardianSyncChildren: Int,
+    val dependantSyncBacklog: Int,
+)
+
+fun Database.Read.countPersonsToSync(now: HelsinkiDateTime): PersonsToSyncCount {
+    val today = now.toLocalDate()
+    val since = now.minusDays(NEWLY_DEPENDANT_SYNC_DAYS)
+    return createQuery {
+        sql(
+            """
+SELECT
+    (
+        SELECT count(*) FROM person p
+        WHERE ${predicate(dependantsNotSynced(today, since).forTable("p"))}
+    ) AS newly_dependant_sync,
+    (
+        SELECT count(*) FROM person p
+        WHERE ${predicate(guardiansNotSynced(today).forTable("p"))}
+    ) AS guardian_sync_children,
+    (
+        SELECT count(*) FROM person p
+        WHERE ${predicate(dependantsNotSynced(today, since = null).forTable("p"))}
+    ) AS dependant_sync_backlog
+"""
+        )
+    }
+        .exactlyOne()
 }
 
 private fun Database.Transaction.initChildIfNotExists(childId: ChildId, now: HelsinkiDateTime) {

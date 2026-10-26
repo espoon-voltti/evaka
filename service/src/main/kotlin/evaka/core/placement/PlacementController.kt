@@ -12,6 +12,7 @@ import evaka.core.daycare.controllers.Child
 import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
 import evaka.core.daycare.getDaycares
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.FeatureConfig
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController
 class PlacementController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val vtjSyncService: VtjSyncService,
     featureConfig: FeatureConfig,
 ) {
     private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
@@ -150,7 +152,7 @@ class PlacementController(
         val audit = AuditContext().add(body.childId).add(body.unitId).observeDate(body.startDate)
 
         db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -158,6 +160,9 @@ class PlacementController(
                         Action.Unit.CREATE_PLACEMENT,
                         body.unitId,
                     )
+                }
+                vtjSyncService.ensureGuardiansSynced(dbc, user.evakaUserId, clock, body.childId)
+                dbc.transaction { tx ->
                     tx.requirePlacementWithinPreschoolTerm(
                         body.type,
                         FiniteDateRange(body.startDate, body.endDate),

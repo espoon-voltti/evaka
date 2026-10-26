@@ -23,6 +23,7 @@ import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonNameDetailsById
 import evaka.core.pis.isDuplicate
 import evaka.core.pis.service.PersonService
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DecisionId
@@ -60,6 +61,7 @@ class ApplicationControllerCitizen(
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
     private val personService: PersonService,
+    private val vtjSyncService: VtjSyncService,
     private val feeDecisionService: FeeDecisionService,
     private val voucherValueDecisionService: VoucherValueDecisionService,
 ) {
@@ -245,7 +247,7 @@ class ApplicationControllerCitizen(
     ): ApplicationId {
         val audit = AuditContext().add(body.childId).addMeta("applicationType", body.type)
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -253,6 +255,9 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Child.CREATE_APPLICATION,
                         body.childId,
                     )
+                }
+                vtjSyncService.ensureGuardiansSynced(dbc, user.evakaUserId, clock, body.childId)
+                dbc.transaction { tx ->
                     if (
                         body.type != ApplicationType.CLUB &&
                             tx.duplicateApplicationExists(

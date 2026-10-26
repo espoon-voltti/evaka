@@ -17,6 +17,8 @@ import evaka.core.document.Section
 import evaka.core.document.childdocument.AnsweredQuestion
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.identity.Ssn
+import evaka.core.identity.getDobFromSsn
 import evaka.core.incomestatement.IncomeStatementBody
 import evaka.core.messaging.MessageType
 import evaka.core.messaging.getCitizenMessageAccount
@@ -25,11 +27,15 @@ import evaka.core.messaging.insertMessageContent
 import evaka.core.messaging.insertRecipients
 import evaka.core.messaging.insertThread
 import evaka.core.messaging.upsertEmployeeMessageAccount
+import evaka.core.pis.service.MockVtjSoapTransport
+import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.pis.service.deleteGuardianRelationship
 import evaka.core.pis.service.insertGuardian
 import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevCareArea
@@ -50,9 +56,16 @@ import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.dev.insertTestPartnership
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.user.updateLastStrongLogin
+import evaka.core.vtjclient.mapper.VtjHenkiloMapper
+import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -64,6 +77,14 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     private val adult2 = DevPerson()
     private val child1 = DevPerson()
     private val child2 = DevPerson()
+
+    private val vtjClock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2026, 3, 2), LocalTime.of(12, 0)))
+    private val vtjA = vtjPerson("150385-9013")
+    private val vtjB = vtjPerson("200687-903A")
+    private val vtjC = vtjPerson("101090-905X")
+    private val vtjX = vtjPerson("050120A910J")
+    private val vtjZ = vtjPerson("080622A9123")
 
     @BeforeEach
     fun beforeEach() {
@@ -154,6 +175,28 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.execute {
                 sql(
                     "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(adult1.id)}"
+                )
+            }
+        }
+
+        assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `persons linked by guardian rows to a kept person are kept through any number of links`() {
+        // adult2 has logged in recently. child1 is a child of adult2 and adult1, and child2 is
+        // another child of adult1.
+        db.transaction { tx ->
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(adult2, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.RAW_ROW)
+            tx.insert(child2, DevPersonType.RAW_ROW)
+            tx.insertGuardian(adult2.id, child1.id)
+            tx.insertGuardian(adult1.id, child1.id)
+            tx.insertGuardian(adult1.id, child2.id)
+            tx.execute {
+                sql(
+                    "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(adult2.id)}"
                 )
             }
         }
@@ -477,6 +520,88 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         }
 
         assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `a family synced from VTJ is cleaned up only where no sync would create the persons again`() {
+        // Y was a child of A, but VTJ no longer lists Y as a dependant of A
+        val vtjY = vtjPerson("011025A9028")
+        db.transaction { tx ->
+            tx.insert(vtjA, DevPersonType.RAW_ROW)
+            tx.insert(vtjY, DevPersonType.CHILD)
+            tx.insertGuardian(vtjA.id, vtjY.id)
+        }
+        val laterClock = MockEvakaClock(vtjClock.now().plusYears(1))
+        withVtjSync { vtjSync, _ ->
+            strongLogin(vtjSync, vtjA, vtjClock)
+            // B logs in a year later than A, so the cleanup keeps B because of the login. It keeps
+            // A only through the shared child X.
+            strongLogin(vtjSync, vtjB, laterClock)
+
+            assertCleanedUpPeople(laterClock.today().plusDays(1), setOf(vtjY.id))
+
+            val user = AuthenticatedUser.SystemInternalUser
+            db.read { tx -> tx.createQuery { sql("SELECT id FROM person") }.toList<PersonId>() }
+                .forEach { vtjSync.refreshPerson(db, user.evakaUserId, laterClock, it) }
+
+            assertTrue(setOf(vtjA.ssn, vtjB.ssn, vtjX.ssn).all { it in personSsns() })
+            assertFalse(vtjY.ssn in personSsns())
+        }
+    }
+
+    private fun vtjPerson(ssn: String) = DevPerson(ssn = ssn, dateOfBirth = getDobFromSsn(ssn))
+
+    /**
+     * Fixture family: A is a citizen. X is a child of A and B. B is also a guardian of Z, whose
+     * other guardian is C.
+     */
+    private fun withVtjSync(f: (VtjSyncService, AsyncJobRunner<AsyncJob>) -> Unit) {
+        MockVtjSoapTransport.resetQueryCounts()
+        addToVtj(vtjA, dependants = listOf(vtjX))
+        addToVtj(vtjB, dependants = listOf(vtjX, vtjZ))
+        addToVtj(vtjC, dependants = listOf(vtjZ))
+        addToVtj(vtjX, guardians = listOf(vtjA, vtjB))
+        addToVtj(vtjZ, guardians = listOf(vtjB, vtjC))
+        AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer).use { runner ->
+            f(
+                VtjSyncService(SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper()), runner),
+                runner,
+            )
+        }
+    }
+
+    private fun addToVtj(
+        person: DevPerson,
+        dependants: List<DevPerson> = emptyList(),
+        guardians: List<DevPerson> = emptyList(),
+    ) {
+        MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(person)
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(person, dependants)
+        MockVtjSoapTransport.addHUOLLETTAVAHUOLTAJATRequestExpectation(person, guardians)
+    }
+
+    /** Does what SystemController.citizenLogin does, without the controller */
+    private fun strongLogin(
+        vtjSync: VtjSyncService,
+        person: DevPerson,
+        clock: MockEvakaClock = vtjClock,
+    ): PersonId {
+        val user = AuthenticatedUser.SystemInternalUser
+        val id =
+            vtjSync
+                .getOrCreatePerson(db, user.evakaUserId, clock, Ssn.parse(person.ssn!!)!!)
+                .person
+                .id
+        db.transaction { tx ->
+            tx.updateLastStrongLogin(clock.now(), id)
+            tx.updateCitizenOnLogin(clock.now(), id)
+        }
+        vtjSync.ensureDependantsSynced(db, user.evakaUserId, clock, id)
+        return id
+    }
+
+    private fun personSsns(): Set<String?> = db.read { tx ->
+        tx.createQuery { sql("SELECT social_security_number FROM person") }.toSet<String?>()
     }
 
     private fun assertCleanedUpPeople(queryDate: LocalDate, cleanedUpPeople: Set<PersonId>) {

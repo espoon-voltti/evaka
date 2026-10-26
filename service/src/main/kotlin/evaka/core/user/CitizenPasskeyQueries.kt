@@ -72,10 +72,6 @@ fun Database.Read.countCitizenPasskeys(person: PersonId): Int = createQuery {
 }
     .exactlyOne()
 
-fun Database.Transaction.upsertCitizenUserForPasskey(person: PersonId) = execute {
-    sql("INSERT INTO citizen_user (id) VALUES (${bind(person)}) ON CONFLICT (id) DO NOTHING")
-}
-
 fun Database.Transaction.insertCitizenPasskey(
     person: PersonId,
     passkey: NewPasskey,

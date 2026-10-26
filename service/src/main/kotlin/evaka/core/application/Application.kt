@@ -5,10 +5,7 @@
 package evaka.core.application
 
 import evaka.core.ConstList
-import evaka.core.identity.Ssn
-import evaka.core.pis.createPerson
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonService
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanRejectReason
 import evaka.core.placement.PlacementType
@@ -284,33 +281,12 @@ fun savePaperApplication(
     user: AuthenticatedUser,
     clock: EvakaClock,
     body: PaperApplicationCreateRequest,
-    personService: PersonService,
+    guardianId: PersonId,
     applicationStateService: ApplicationStateService,
-): Pair<PersonId, ApplicationId> {
+): ApplicationId {
     val child =
         tx.getPersonById(body.childId)
             ?: throw BadRequest("Could not find the child with id ${body.childId}")
-
-    val guardianId =
-        body.guardianId
-            ?: if (!body.guardianSsn.isNullOrEmpty()) {
-                personService
-                    .getOrCreatePerson(
-                        tx,
-                        user,
-                        clock.now(),
-                        Ssn.parse(body.guardianSsn) ?: throw BadRequest("Invalid guardian SSN"),
-                        audit = null,
-                    )
-                    ?.id
-                    ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
-            } else if (body.guardianToBeCreated != null) {
-                createPerson(tx, body.guardianToBeCreated)
-            } else {
-                throw BadRequest(
-                    "Could not find guardian info from paper application request for ${body.childId}"
-                )
-            }
 
     val guardian =
         tx.getPersonById(guardianId)
@@ -320,18 +296,16 @@ fun savePaperApplication(
     // row for them yet
     tx.upsertCitizenUser(guardianId)
 
-    val applicationId =
-        applicationStateService.createApplication(
-            tx = tx,
-            user = user,
-            now = clock.now(),
-            type = body.type,
-            guardian = guardian,
-            child = child,
-            origin = ApplicationOrigin.PAPER,
-            hideFromGuardian = body.hideFromGuardian,
-            sentDate = body.sentDate,
-            allowOtherGuardianAccess = true,
-        )
-    return Pair(guardianId, applicationId)
+    return applicationStateService.createApplication(
+        tx = tx,
+        user = user,
+        now = clock.now(),
+        type = body.type,
+        guardian = guardian,
+        child = child,
+        origin = ApplicationOrigin.PAPER,
+        hideFromGuardian = body.hideFromGuardian,
+        sentDate = body.sentDate,
+        allowOtherGuardianAccess = true,
+    )
 }

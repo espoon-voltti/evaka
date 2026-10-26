@@ -7,6 +7,7 @@ package evaka.core.pis.service
 import evaka.core.shared.dev.DevPerson
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.test.assertEquals
 
@@ -84,6 +85,10 @@ class MockVtjSoapTransport : VtjSoapTransport {
                 }
         }
 
+        fun removeRequestExpectation(person: DevPerson, type: VtjSoapTransport.RequestType) {
+            queryRequestResponse.remove(Pair(person.ssn!!, type))
+        }
+
         fun getPERUSSANOMA3RequestCount(person: DevPerson): Int {
             return queryCounts[Pair(person.ssn!!, VtjSoapTransport.RequestType.PERUSSANOMA3)] ?: 0
         }
@@ -131,7 +136,10 @@ class MockVtjSoapTransport : VtjSoapTransport {
                     VTJHenkiloVastaussanoma.Henkilo.Turvakielto().also { t ->
                         if (person.restrictedDetailsEnabled) t.turvakieltoTieto = "1"
                     }
-                it.kuolintiedot = VTJHenkiloVastaussanoma.Henkilo.Kuolintiedot()
+                it.kuolintiedot =
+                    VTJHenkiloVastaussanoma.Henkilo.Kuolintiedot().also { k ->
+                        k.kuolinpvm = person.dateOfDeath?.format(DateTimeFormatter.BASIC_ISO_DATE)
+                    }
             }
     }
 

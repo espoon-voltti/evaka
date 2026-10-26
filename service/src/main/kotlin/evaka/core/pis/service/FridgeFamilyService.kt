@@ -7,16 +7,18 @@ package evaka.core.pis.service
 import evaka.core.pis.Creator
 import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getFosterParents
+import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
+import evaka.core.pis.isDependantSyncPerson
+import evaka.core.pis.isMinor
 import evaka.core.pis.personIsHeadOfFamily
 import evaka.core.shared.ChildId
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
-import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import java.time.Period
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -24,152 +26,119 @@ private val logger = KotlinLogging.logger {}
 @Service
 class FridgeFamilyService(
     private val personService: PersonService,
+    private val vtjSyncService: VtjSyncService,
     private val parentshipService: ParentshipService,
 ) {
-    fun doVTJRefresh(db: Database.Connection, clock: EvakaClock, personId: PersonId) {
-        updateGuardianAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, clock, personId)
-    }
-
-    fun updateGuardianOrChildFromVtj(
+    fun refreshFamily(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        requestingUserId: EvakaUserId,
         clock: EvakaClock,
         personId: PersonId,
     ) {
-        val person = db.read { tx -> tx.getPersonById(personId) } ?: return
-        val age = Period.between(person.dateOfBirth, clock.today()).years
-        if (age >= 18) {
-            updateGuardianAndFamilyFromVtj(db, user, clock, personId)
-        } else {
-            updateChildAndFamilyFromVtj(db, user, clock, personId)
-        }
-    }
-
-    fun updateChildAndFamilyFromVtj(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        personId: PersonId,
-    ) {
-        val currentGuardians =
-            db.read { tx -> tx.getDependantGuardians(personId) }.map { it.id }.toSet()
-        val updatedGuardians =
-            db.transaction { tx ->
-                    personService.getGuardians(tx, user, clock.now(), personId, forceRefresh = true)
+        val today = clock.today()
+        val person = db.read { it.getPersonById(personId) } ?: return
+        val guardianIds =
+            if (isMinor(person.dateOfBirth, today)) {
+                vtjSyncService.refreshPerson(db, requestingUserId, clock, personId)
+                val childGuardianIds = db.read { it.getDependantGuardians(personId) }.map { it.id }
+                childGuardianIds.forEach {
+                    vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, it)
                 }
-                .map { it.id }
-                .toSet()
-        (currentGuardians + updatedGuardians).forEach { guardianId ->
-            updateGuardianAndFamilyFromVtj(db, user, clock, guardianId)
-        }
-    }
-
-    private fun updateGuardianAndFamilyFromVtj(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        personId: PersonId,
-    ) {
-        val now = clock.now()
-        val today = now.toLocalDate()
-
-        logger.info { "Refreshing $personId from VTJ" }
-        val targetPerson = db.transaction {
-            personService.getPersonWithChildren(
-                it,
-                user = user,
-                now = now,
-                id = personId,
-                forceRefresh = true,
-            )
-        }
-        if (targetPerson != null) {
-            logger.info { "Person to refresh has ${targetPerson.children.size} children" }
-
-            val partner =
-                db.read { getPartnerId(it, clock, personId) }
-                    ?.also { logger.info { "Person has fridge partner $it" } }
-                    ?.let { partnerId ->
-                        db.transaction {
-                            personService.getPersonWithChildren(
-                                it,
-                                user = user,
-                                now = now,
-                                id = partnerId,
-                                forceRefresh = true,
-                            )
-                        }
-                    }
-                    ?.takeIf {
-                        personService.personsLiveInTheSameAddress(
-                            it.toPersonDTO(),
-                            targetPerson.toPersonDTO(),
-                        )
-                    }
-
-            val head =
-                if (partner != null && db.read { it.personIsHeadOfFamily(partner.id, today) })
-                    partner
-                else targetPerson
-
-            if (partner != null) {
-                logger.info {
-                    "Partner lives in the same address and has ${partner.children.size} children"
-                }
-                if (head == partner) {
-                    logger.info {
-                        "Partner has a fridge family, so adding the new children to that family"
-                    }
-                }
+                val isDependantSync = db.read { tx -> tx.isDependantSyncPerson(personId, today) }
+                childGuardianIds + if (isDependantSync) listOf(personId) else emptyList()
+            } else {
+                vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, personId)
+                listOf(personId)
             }
+        guardianIds
+            .mapNotNull { id -> db.read { getPartnerId(it, clock, id) } }
+            .filter { it !in guardianIds }
+            .distinct()
+            .forEach { vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, it) }
+        guardianIds.forEach { addChildrenToFridgeFamily(db, clock, it) }
+    }
 
-            val children = targetPerson.children + (partner?.children ?: emptyList())
-
-            val newChildrenInSameAddressWithoutFosterParent = db.read { tx ->
-                val currentFridgeChildren = getCurrentFridgeChildren(tx, clock, head.id)
-                children
-                    .asSequence()
-                    .distinct()
-                    .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
-                    .filter { child -> child.dateOfBirth.isAfter(today.minusYears(18)) }
-                    .filter {
-                        personService.personsLiveInTheSameAddress(
-                            it.toPersonDTO(),
-                            head.toPersonDTO(),
-                        )
-                    }
-                    .filter { !currentFridgeChildren.contains(it.id) }
-                    .filter { child ->
-                        tx.getFosterParents(child.id).none { it.validDuring.includes(today) }
-                    }
-                    .toList()
+    fun addChildrenToFridgeFamilies(
+        db: Database.Connection,
+        clock: EvakaClock,
+        personId: PersonId,
+    ) {
+        val today = clock.today()
+        val person = db.read { it.getPersonById(personId) } ?: return
+        val guardianIds =
+            if (isMinor(person.dateOfBirth, today)) {
+                db.read { it.getDependantGuardians(personId) }.map { it.id }
+            } else {
+                emptyList()
             }
+        (listOf(personId) + guardianIds)
+            .filter { id -> db.read { it.isDependantSyncPerson(id, today) } }
+            .forEach { addChildrenToFridgeFamily(db, clock, it) }
+    }
 
-            newChildrenInSameAddressWithoutFosterParent.forEach { child ->
-                try {
-                    val startDate =
-                        if (
-                            childShouldBeAddedToFamilyStartingFromBirthday(today, child.dateOfBirth)
-                        ) {
-                            child.dateOfBirth
-                        } else {
-                            today
-                        }
-                    db.transaction { tx ->
-                        parentshipService.createParentship(
-                            tx,
-                            clock,
-                            childId = child.id,
-                            headOfChildId = head.id,
-                            startDate = startDate,
-                            endDate = child.dateOfBirth.plusYears(18).minusDays(1),
-                            Creator.DVV,
-                        )
-                    }
-                    logger.info { "Child ${child.id} added to head of child ${head.id}" }
-                } catch (e: Exception) {
-                    logger.warn(e) { "Problem while adding a child to fridge family:" }
+    fun addChildrenToFridgeFamily(
+        db: Database.Connection,
+        clock: EvakaClock,
+        guardianId: PersonId,
+    ) {
+        val today = clock.today()
+        val guardian = db.read { it.getPersonById(guardianId) } ?: return
+        if (guardian.dateOfDeath != null) return
+
+        val partnerAtSameAddress =
+            db.read { getPartnerId(it, clock, guardianId) }
+                ?.also { logger.info { "Person $guardianId has fridge partner $it" } }
+                ?.let { partnerId -> db.read { it.getPersonById(partnerId) } }
+                ?.takeIf { personService.personsLiveInTheSameAddress(it, guardian) }
+
+        val head =
+            partnerAtSameAddress?.takeIf { partner ->
+                db.read { it.personIsHeadOfFamily(partner.id, today) }
+            } ?: guardian
+        if (partnerAtSameAddress != null) {
+            logger.info {
+                "Partner ${partnerAtSameAddress.id} lives at the same address, head is ${head.id}"
+            }
+        }
+
+        val childrenToAdd = db.read { tx ->
+            val currentFridgeChildren = getCurrentFridgeChildren(tx, clock, head.id)
+            listOfNotNull(guardian, partnerAtSameAddress)
+                .flatMap { tx.getGuardianDependants(it.id) }
+                .asSequence()
+                .distinctBy { it.id }
+                .filter { child -> child.ssn != null }
+                .filter { child -> isMinor(child.dateOfBirth, today) }
+                .filter { personService.personsLiveInTheSameAddress(it, head) }
+                .filter { !currentFridgeChildren.contains(it.id) }
+                .filter { child ->
+                    tx.getFosterParents(child.id).none { it.validDuring.includes(today) }
                 }
+                .toList()
+        }
+
+        childrenToAdd.forEach { child ->
+            try {
+                val startDate =
+                    if (childShouldBeAddedToFamilyStartingFromBirthday(today, child.dateOfBirth)) {
+                        child.dateOfBirth
+                    } else {
+                        today
+                    }
+                db.transaction { tx ->
+                    parentshipService.createParentship(
+                        tx,
+                        clock,
+                        childId = child.id,
+                        headOfChildId = head.id,
+                        startDate = startDate,
+                        endDate = child.dateOfBirth.plusYears(18).minusDays(1),
+                        Creator.DVV,
+                    )
+                }
+                logger.info { "Child ${child.id} added to head of child ${head.id}" }
+            } catch (e: Exception) {
+                logger.warn(e) { "Problem while adding a child to fridge family:" }
             }
         }
     }

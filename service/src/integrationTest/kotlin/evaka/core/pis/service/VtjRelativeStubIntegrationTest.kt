@@ -17,7 +17,8 @@ import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.dto.VtjPersonWithRelatives
+import evaka.core.vtjclient.dto.VtjPersonAndDependants
+import evaka.core.vtjclient.dto.VtjPersonAndGuardians
 import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
@@ -26,6 +27,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 
 /**
  * A [VtjClient] returns relatives as stubs (SSN, date of birth and names), so a refresh must not
@@ -67,7 +69,8 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
         )
 
-    private val personService = PersonService(StubRelativeVtjClient(guardian, child))
+    private val vtjClient = StubRelativeVtjClient(guardian, child)
+    private val personService = PersonService(vtjClient, VtjSyncService(vtjClient, mock()))
 
     @BeforeEach
     fun insertFamily() {
@@ -122,10 +125,10 @@ private class StubRelativeVtjClient(private vararg val persons: DevPerson) : Vtj
         persons.single { it.ssn == query.ssn.value }.toFullVtjPerson()
 
     override fun fetchWithDependants(query: VtjClient.DetailsQuery) =
-        VtjPersonWithRelatives(fetchPerson(query), relativesOf(query))
+        VtjPersonAndDependants(fetchPerson(query), relativesOf(query))
 
     override fun fetchWithGuardians(query: VtjClient.DetailsQuery) =
-        VtjPersonWithRelatives(fetchPerson(query), relativesOf(query))
+        VtjPersonAndGuardians(fetchPerson(query), relativesOf(query))
 
     private fun relativesOf(query: VtjClient.DetailsQuery) =
         persons.filter { it.ssn != query.ssn.value }.map { it.toRelativeStub() }

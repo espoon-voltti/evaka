@@ -21,7 +21,7 @@ fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<P
         tx.createUpdate {
                 sql(
                     """
-WITH people_with_no_archive_data AS (
+WITH RECURSIVE people_with_no_archive_data AS (
     SELECT id FROM person
     WHERE (last_login IS NULL OR last_login::date < ${bind(twoMonthsAgo)})
     -- a long EXCEPT chain of reasons to *keep* the person
@@ -68,17 +68,9 @@ WITH people_with_no_archive_data AS (
         EXISTS (SELECT FROM message WHERE message.sender_id = message_account.id)
         OR EXISTS (SELECT FROM message_content WHERE message_content.author_id = message_account.id)
     )
-)
-DELETE FROM person p
-WHERE p.id IN (
+),
+people_to_delete AS (
     SELECT id FROM people_with_no_archive_data
-    EXCEPT
-    -- guardianship
-    SELECT DISTINCT guardian_id FROM guardian
-    WHERE NOT child_id IN (SELECT id FROM people_with_no_archive_data)
-    EXCEPT
-    -- guardianship
-    SELECT DISTINCT child_id FROM guardian WHERE NOT guardian_id IN (SELECT id FROM people_with_no_archive_data)
     EXCEPT
     -- blocked guardianship
     SELECT DISTINCT guardian_id FROM guardian_blocklist
@@ -127,7 +119,25 @@ WHERE p.id IN (
     SELECT DISTINCT parent_id FROM foster_parent WHERE NOT child_id IN (SELECT id FROM people_with_no_archive_data)
     EXCEPT
     SELECT DISTINCT child_id FROM foster_parent WHERE NOT parent_id IN (SELECT id FROM people_with_no_archive_data)
+),
+guardian_link AS (
+    SELECT guardian_id AS id, child_id AS other_id FROM guardian
+    UNION ALL
+    SELECT child_id AS id, guardian_id AS other_id FROM guardian
+),
+-- A person linked by guardian rows, through any number of persons, to a person who is kept. A VTJ
+-- sync follows guardian relations, so the next sync would only create such a person again.
+kept_through_guardians AS (
+    SELECT l.id FROM guardian_link l
+    WHERE l.id IN (SELECT id FROM people_to_delete)
+      AND l.other_id NOT IN (SELECT id FROM people_to_delete)
+    UNION
+    SELECT l.id FROM guardian_link l
+    JOIN kept_through_guardians k ON k.id = l.other_id
+    WHERE l.id IN (SELECT id FROM people_to_delete)
 )
+DELETE FROM person p
+WHERE p.id IN (SELECT id FROM people_to_delete EXCEPT SELECT id FROM kept_through_guardians)
 RETURNING id
 """
                 )
