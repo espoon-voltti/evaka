@@ -68,11 +68,11 @@ class VtjSyncPredicatesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `the head of a conflict fridge child row is not a dependant-sync person`() {
+    fun `the head of a conflict fridge child row is a dependant-sync person`() {
         insertParentship(today.minusYears(1), today.plusYears(1))
         db.transaction { it.execute { sql("UPDATE fridge_child SET conflict = true") } }
 
-        assertFalse(isDependantSyncPerson())
+        assertTrue(isDependantSyncPerson())
     }
 
     @Test
@@ -97,10 +97,10 @@ class VtjSyncPredicatesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `a partner in a conflict partnership is not a dependant-sync person`() {
+    fun `a partner in a conflict partnership is a dependant-sync person`() {
         insertPartnership(today.minusYears(1), null, conflict = true)
 
-        assertFalse(isDependantSyncPerson())
+        assertTrue(isDependantSyncPerson())
     }
 
     private fun isDependantSyncPerson() = db.read { it.isDependantSyncPerson(adult.id, today) }

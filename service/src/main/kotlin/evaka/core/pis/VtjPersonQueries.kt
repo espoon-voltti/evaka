@@ -200,8 +200,8 @@ fun Database.Transaction.clearDependantsSynced(personId: PersonId) = execute {
 
 /**
  * A person who should have synced dependants: a citizen user, or a head of family or a partner in a
- * current fridge family. With [since], only a person whose citizen user row or current fridge row
- * is new or changed since [since].
+ * current fridge family (conflicts are included). With [since], only a person whose citizen user
+ * row or current fridge row is new or changed since [since].
  */
 private fun dependantSyncPerson(today: LocalDate, since: HelsinkiDateTime? = null): Predicate {
     val citizenUserSince =
@@ -224,15 +224,17 @@ EXISTS (
 )
 OR EXISTS (
     SELECT FROM fridge_child fc
-    WHERE fc.head_of_child = $it.id AND NOT fc.conflict
-      AND ${bind(today)} BETWEEN fc.start_date AND fc.end_date
-      AND ${predicate(fridgeRowSince.forTable("fc"))}
+    WHERE
+        fc.head_of_child = $it.id AND
+        ${bind(today)} BETWEEN fc.start_date AND fc.end_date AND
+        ${predicate(fridgeRowSince.forTable("fc"))}
 )
 OR EXISTS (
     SELECT FROM fridge_partner fp
-    WHERE fp.person_id = $it.id AND NOT fp.conflict
-      AND ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity')
-      AND ${predicate(fridgeRowSince.forTable("fp"))}
+    WHERE
+        fp.person_id = $it.id AND
+        ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity') AND
+        ${predicate(fridgeRowSince.forTable("fp"))}
 )
 """
         )
