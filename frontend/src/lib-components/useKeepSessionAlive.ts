@@ -5,15 +5,14 @@
 import throttle from 'lodash/throttle'
 import { useState, useEffect, useMemo } from 'react'
 
+const throttleTime = 2 * 60 * 1000
+
 export function useKeepSessionAlive(
   sessionKeepAlive: () => Promise<boolean>,
   enabled: boolean
 ) {
   const [sessionExpirationDetected, setSessionExpirationDetected] =
     useState(false)
-  // Default to 2 minutes and allow overriding this in automated tests
-  const throttleTime =
-    window.evaka?.keepSessionAliveThrottleTime ?? 2 * 60 * 1000
 
   const throttledKeepAlive = useMemo(
     () =>
@@ -34,7 +33,7 @@ export function useKeepSessionAlive(
           trailing: true
         }
       ),
-    [sessionKeepAlive, throttleTime]
+    [sessionKeepAlive]
   )
 
   useEffect(() => {

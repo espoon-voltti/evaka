@@ -194,12 +194,6 @@ export default class CitizenMessagesPage {
     )
   }
 
-  async getSessionExpiry() {
-    const cookies = await this.page.page.context().cookies()
-    const sessionCookie = cookies.find((c) => c.name === 'evaka.eugw.session')
-    return sessionCookie?.expires ?? 0
-  }
-
   async deleteFirstThread() {
     await this.#threadListItem.findByDataQa('delete-thread-btn').click()
   }

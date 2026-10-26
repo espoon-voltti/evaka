@@ -67,7 +67,6 @@ export const test = base.extend<EvakaFixtures, EvakaWorkerFixtures>({
     ): Promise<Page> => {
       const {
         mockedTime,
-        keepSessionAliveThrottleTime,
         citizenCustomizations,
         employeeCustomizations,
         employeeMobileCustomizations,
@@ -77,9 +76,6 @@ export const test = base.extend<EvakaFixtures, EvakaWorkerFixtures>({
       const mergedEvakaOptions = {
         ...evakaOptions,
         ...(mockedTime !== undefined && { mockedTime }),
-        ...(keepSessionAliveThrottleTime !== undefined && {
-          keepSessionAliveThrottleTime
-        }),
         ...(citizenCustomizations !== undefined && { citizenCustomizations }),
         ...(employeeCustomizations !== undefined && { employeeCustomizations }),
         ...(employeeMobileCustomizations !== undefined && {

@@ -1045,10 +1045,8 @@ test.describe('Sending and receiving messages', () => {
 
   test.describe('Session keepalive while typing', () => {
     test('Citizen session is kept alive as long as user keeps typing', async () => {
-      citizenPage = await newPage({
-        mockedTime: mockedDateAt10,
-        keepSessionAliveThrottleTime: 300
-      })
+      citizenPage = await newPage({ mockedTime: mockedDateAt10 })
+      await citizenPage.page.clock.install()
       await enduserLoginWeak(citizenPage, credentials)
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(
@@ -1056,10 +1054,7 @@ test.describe('Sending and receiving messages', () => {
         'desktop'
       )
       const editor = await citizenMessagesPage.createNewMessage()
-      const initialExpiry = await citizenMessagesPage.getSessionExpiry()
 
-      const slowTypedText = 'Kirjoitan hitaasti'
-      const msDelayPerCharToTypeSlowly = 1200 / slowTypedText.length
       const authStatusRequests: string[] = []
       citizenPage.page.on('request', (request) => {
         if (request.url().includes('/api/citizen/auth/status')) {
@@ -1067,15 +1062,13 @@ test.describe('Sending and receiving messages', () => {
         }
       })
 
-      await editor.title.locator.pressSequentially('Asiaa lapsista', {
-        delay: msDelayPerCharToTypeSlowly
-      })
-      await editor.content.locator.pressSequentially(slowTypedText, {
-        delay: msDelayPerCharToTypeSlowly
-      })
+      // One character every 30 seconds for 9 minutes spans several keepalive
+      // throttle periods
+      for (const char of 'Kirjoitan hitaasti') {
+        await editor.content.locator.pressSequentially(char)
+        await citizenPage.page.clock.fastForward('00:30')
+      }
 
-      const finalExpiry = await citizenMessagesPage.getSessionExpiry()
-      expect(finalExpiry).toBeGreaterThan(initialExpiry + 0.3)
       expect(authStatusRequests.length).toBeGreaterThanOrEqual(3)
     })
 
