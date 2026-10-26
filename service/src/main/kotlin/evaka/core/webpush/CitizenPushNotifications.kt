@@ -305,6 +305,7 @@ class CitizenPushNotifications(
                             else delivery.path,
                     body = delivery.content.body?.let { truncate(it, MAX_BODY_LENGTH) },
                     tag = delivery.tag,
+                    appBadge = 1,
                 )
             )
         try {
