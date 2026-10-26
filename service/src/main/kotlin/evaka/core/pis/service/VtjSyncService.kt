@@ -5,7 +5,6 @@
 package evaka.core.pis.service
 
 import evaka.core.identity.Ssn
-import evaka.core.pis.ApplyResult
 import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.applyDependants
 import evaka.core.pis.applyGuardians
@@ -160,7 +159,11 @@ class VtjSyncService(
         val person = dbc.transaction { tx ->
             val now = clock.now()
             tx.updatePersonSsnAddingDisabled(personId, false)
-            applyDeathEffectsOf(tx, now, tx.setSsnFromVtj(personId, vtjPerson, now))
+            val result = tx.setSsnFromVtj(personId, vtjPerson, now)
+            if (result.newDateOfDeath != null) {
+                tx.applyDeathEffects(asyncJobRunner, now, result.id, result.newDateOfDeath)
+            }
+            result.person
         }
         ensureGuardiansSynced(dbc, requestingUserId, clock, personId)
         ensureDependantsSynced(dbc, requestingUserId, clock, personId)
@@ -215,13 +218,8 @@ class VtjSyncService(
         tx: Database.Transaction,
         now: HelsinkiDateTime,
         person: VtjPerson,
-    ): PersonDTO = applyDeathEffectsOf(tx, now, tx.applyPerson(person, now))
-
-    private fun applyDeathEffectsOf(
-        tx: Database.Transaction,
-        now: HelsinkiDateTime,
-        result: ApplyResult,
     ): PersonDTO {
+        val result = tx.applyPerson(person, now)
         if (result.newDateOfDeath != null) {
             tx.applyDeathEffects(asyncJobRunner, now, result.id, result.newDateOfDeath)
         }
