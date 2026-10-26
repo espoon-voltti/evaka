@@ -8,6 +8,7 @@ import evaka.core.Audit
 import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.ChildDocumentArchivalEnv
+import evaka.core.DataRetentionEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.VtjSyncEnv
@@ -23,6 +24,7 @@ import evaka.core.calendarevent.CalendarEventNotificationService
 import evaka.core.caseprocess.migrateProcessMetadata
 import evaka.core.dailyservicetimes.deleteOldDailyServiceTimeNotifications
 import evaka.core.dataremoval.DataRemovalService
+import evaka.core.dataremoval.planDataRetentionRuns
 import evaka.core.daycare.controllers.removeDaycareAclForRole
 import evaka.core.document.archival.planChildDocumentArchival
 import evaka.core.document.childdocument.ChildDocumentService
@@ -328,6 +330,10 @@ enum class ScheduledJob(
         ScheduledJobs::planDataRemoval,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
+    PlanDataRetention(
+        ScheduledJobs::planDataRetention,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(2, 0))),
+    ),
     DeleteExpiredEmailVerifications(
         ScheduledJobs::deleteExpiredEmailVerifications,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
@@ -369,6 +375,7 @@ class ScheduledJobs(
     private val dataRemovalService: DataRemovalService,
     private val vtjSyncService: VtjSyncService,
     private val vtjSyncEnv: VtjSyncEnv,
+    private val dataRetentionEnv: DataRetentionEnv,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -771,4 +778,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun planDataRemoval(db: Database.Connection, clock: EvakaClock) =
         dataRemovalService.planDataRemoval(db, clock)
+
+    fun planDataRetention(db: Database.Connection, clock: EvakaClock) =
+        planDataRetentionRuns(
+            db,
+            clock,
+            asyncJobRunner,
+            personCount = dataRetentionEnv.personsPerNight,
+            maxDuration = dataRetentionEnv.maxDurationPerNight,
+        )
 }

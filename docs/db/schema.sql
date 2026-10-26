@@ -1223,6 +1223,7 @@ CREATE TABLE public.person (
     municipality_of_residence text DEFAULT ''::text NOT NULL,
     verified_email text,
     disabled_push_types public.notification_category[] DEFAULT '{}'::public.notification_category[] NOT NULL,
+    data_retention_last_attempted_at timestamp with time zone,
     CONSTRAINT person_disabled_ssn_no_ssn CHECK (((NOT ssn_adding_disabled) OR (social_security_number IS NULL))),
     CONSTRAINT person_ssn_not_empty CHECK ((social_security_number <> ''::text)),
     CONSTRAINT ssn_require_vtj_update CHECK (((social_security_number IS NULL) OR (updated_from_vtj IS NOT NULL)))

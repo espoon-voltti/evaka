@@ -10,6 +10,7 @@ import evaka.core.BucketEnv
 import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.CitizenCalendarEnv
 import evaka.core.DataRemovalEnv
+import evaka.core.DataRetentionEnv
 import evaka.core.DatabaseEnv
 import evaka.core.DvvModificationsEnv
 import evaka.core.EmailEnv
@@ -127,4 +128,7 @@ class EnvConfig {
     @Bean fun dataRemovalEnv(env: Environment): DataRemovalEnv = DataRemovalEnv.fromEnvironment(env)
 
     @Bean fun vtjSyncEnv(env: Environment): VtjSyncEnv = VtjSyncEnv.fromEnvironment(env)
+
+    @Bean
+    fun dataRetentionEnv(env: Environment): DataRetentionEnv = DataRetentionEnv.fromEnvironment(env)
 }

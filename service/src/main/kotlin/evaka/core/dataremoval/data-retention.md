@@ -182,7 +182,18 @@ The tables that hold the state of each sync, `koski_study_right`, `koski_upload_
 
 ## 4. Running the algorithm
 
-Each person is processed by an async job of its own, carrying only the person id and whether the run is a dry run. During early testing the jobs are queued by hand; later a nightly scheduled job queues them. How to pick candidate persons and cycle through them is left for later.
+Each person is processed by an async job of its own. The job carries the person id and whether the run is a dry run. It can also carry a time after which it is skipped.
+
+A scheduled job plans these jobs every night at 02:00. The time is fixed so that the runs end well before the morning load.
+
+The `person` column `data_retention_last_attempted_at` records when a job last started a run for the person. The scheduled job picks the persons whose last attempt is the oldest. Persons who were never attempted come first, and among them the earliest created ones. For now every planned run is a dry run.
+
+Two environment variables control the planning:
+
+- `EVAKA_DATA_RETENTION_PERSONS_PER_NIGHT` is the number of persons planned each night. The default is 0, which plans nothing.
+- `EVAKA_DATA_RETENTION_MAX_MINUTES_PER_NIGHT` is the time allocation of the night. The default is 60 minutes. A job that starts after the allocation has run out is skipped. Its person keeps the old timestamp, so the person is among the first ones the next night.
+
+The timestamp is recorded in a transaction of its own before the run starts. A failed run therefore counts as an attempt too. A person whose run keeps failing does not stay at the front of the queue.
 
 ### 4.1 Processing one person
 
@@ -247,7 +258,7 @@ The nodes are deleted in leaf-first order, each by the primary keys of its rows 
 
 ### 4.5 Failures
 
-The async job runner can be set to a small number of retries, which helps with transient errors and deadlocks.
+The nightly jobs get a few retries. They help with transient errors and deadlocks, if the time allocation of the night allows it. A person whose run still fails is picked again when the others have had their turn.
 
 If the schema definition is incomplete, an unknown foreign key could cause a constraint violation when deleting rows it references. The transaction then safely rolls back. However, many columns have `ON DELETE CASCADE` or `SET NULL`, and in those cases there is no error: rows could be silently deleted or orphaned. This is why the schema definition is validated against the database schema (chapter 7).
 
