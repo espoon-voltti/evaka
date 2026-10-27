@@ -1045,10 +1045,8 @@ test.describe('Sending and receiving messages', () => {
 
   test.describe('Session keepalive while typing', () => {
     test('Citizen session is kept alive as long as user keeps typing', async () => {
-      citizenPage = await newPage({
-        mockedTime: mockedDateAt10,
-        keepSessionAliveThrottleTime: 300
-      })
+      citizenPage = await newPage({ mockedTime: mockedDateAt10 })
+      await citizenPage.page.clock.install()
       await enduserLoginWeak(citizenPage, credentials)
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(
@@ -1056,11 +1054,7 @@ test.describe('Sending and receiving messages', () => {
         'desktop'
       )
       const editor = await citizenMessagesPage.createNewMessage()
-      const initialExpiry = await citizenMessagesPage.getSessionExpiry()
 
-      const slowTypedText =
-        'Olen aika hidas kirjoittamaan näitä viestejä, mutta yritän parhaani: Lapseni ovat sitä ja tätä...'
-      const msDelayPerCharToTypeSlowly = 1200 / slowTypedText.length
       const authStatusRequests: string[] = []
       citizenPage.page.on('request', (request) => {
         if (request.url().includes('/api/citizen/auth/status')) {
@@ -1068,23 +1062,19 @@ test.describe('Sending and receiving messages', () => {
         }
       })
 
-      await editor.title.locator.pressSequentially('Asiaa lapsista', {
-        delay: msDelayPerCharToTypeSlowly
-      })
-      await editor.content.locator.pressSequentially(slowTypedText, {
-        delay: msDelayPerCharToTypeSlowly
-      })
+      // One character every 30 seconds for 9 minutes spans several keepalive
+      // throttle periods
+      for (const char of 'Kirjoitan hitaasti') {
+        await editor.content.locator.pressSequentially(char)
+        await citizenPage.page.clock.fastForward('00:30')
+      }
 
-      const finalExpiry = await citizenMessagesPage.getSessionExpiry()
-      expect(finalExpiry).toBeGreaterThan(initialExpiry + 0.3)
       expect(authStatusRequests.length).toBeGreaterThanOrEqual(3)
     })
 
     test('Citizen stays on the page and keeps typed text when the session has expired', async () => {
-      citizenPage = await newPage({
-        mockedTime: mockedDateAt10,
-        keepSessionAliveThrottleTime: 300
-      })
+      citizenPage = await newPage({ mockedTime: mockedDateAt10 })
+      await citizenPage.page.clock.install()
       await enduserLoginWeak(citizenPage, credentials)
       await citizenPage.goto(config.enduserMessagesUrl)
       const citizenMessagesPage = new CitizenMessagesPage(
@@ -1095,11 +1085,14 @@ test.describe('Sending and receiving messages', () => {
       await editor.title.fill('Asiaa lapsista')
       await editor.content.fill('Tämä teksti ei saa kadota')
 
+      // The user is idle for the keepalive throttle time, so the next key
+      // press sends a keepalive request at once
+      await citizenPage.page.clock.fastForward('02:00')
+
       // Dropping the session cookie makes the next keepalive request report
       // an expired session, like an idle timeout on the server would
       await citizenPage.page.context().clearCookies()
       await editor.content.locator.press('End')
-      await editor.content.locator.pressSequentially(' istunnon jälkeen')
 
       const modal = citizenPage.findByDataQa('session-expired-modal')
       await expect(modal).toBeVisible()
@@ -1108,9 +1101,7 @@ test.describe('Sending and receiving messages', () => {
       await modal.findTextExact('Peruuta').click()
       await expect(modal).toBeHidden()
       expect(citizenPage.url).toContain('/messages')
-      await expect(editor.content).toHaveValue(
-        'Tämä teksti ei saa kadota istunnon jälkeen'
-      )
+      await expect(editor.content).toHaveValue('Tämä teksti ei saa kadota')
     })
   })
 

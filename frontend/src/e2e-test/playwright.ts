@@ -13,7 +13,6 @@ import {
 } from '@playwright/test'
 
 import { initScript, type EvakaBrowserContextOptions } from './browser'
-import config from './config'
 import { setTestMode } from './generated/api-clients'
 import { Element, ElementCollection, Page } from './utils/page'
 
@@ -22,13 +21,27 @@ export type NewEvakaPage = (
 ) => Promise<Page>
 
 type EvakaFixtures = {
-  testMode: void
   evakaOptions: EvakaBrowserContextOptions
   evaka: Page
   newEvakaPage: NewEvakaPage
 }
 
-export const test = base.extend<EvakaFixtures>({
+type EvakaWorkerFixtures = {
+  testMode: void
+}
+
+export const test = base.extend<EvakaFixtures, EvakaWorkerFixtures>({
+  testMode: [
+    // Playwright requires the first parameter to be a destructuring pattern
+    // oxlint-disable-next-line no-empty-pattern
+    async ({}, use) => {
+      await setTestMode({ enabled: true })
+      await use()
+      await setTestMode({ enabled: false })
+    },
+    { scope: 'worker', auto: true }
+  ],
+
   evakaOptions: [{}, { option: true }],
 
   context: async ({ context, evakaOptions }, use) => {
@@ -37,7 +50,7 @@ export const test = base.extend<EvakaFixtures>({
   },
 
   page: async ({ page }, use) => {
-    page.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
+    page.setDefaultTimeout(5_000)
     await use(page)
   },
 
@@ -54,7 +67,6 @@ export const test = base.extend<EvakaFixtures>({
     ): Promise<Page> => {
       const {
         mockedTime,
-        keepSessionAliveThrottleTime,
         citizenCustomizations,
         employeeCustomizations,
         employeeMobileCustomizations,
@@ -64,9 +76,6 @@ export const test = base.extend<EvakaFixtures>({
       const mergedEvakaOptions = {
         ...evakaOptions,
         ...(mockedTime !== undefined && { mockedTime }),
-        ...(keepSessionAliveThrottleTime !== undefined && {
-          keepSessionAliveThrottleTime
-        }),
         ...(citizenCustomizations !== undefined && { citizenCustomizations }),
         ...(employeeCustomizations !== undefined && { employeeCustomizations }),
         ...(employeeMobileCustomizations !== undefined && {
@@ -77,7 +86,7 @@ export const test = base.extend<EvakaFixtures>({
       const context = await browser.newContext(browserOptions)
       contexts.push(context)
       const pwPage = await context.newPage()
-      pwPage.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
+      pwPage.setDefaultTimeout(5_000)
       await context.addInitScript({ content: initScript(mergedEvakaOptions) })
       return new Page(pwPage)
     }
@@ -88,14 +97,6 @@ export const test = base.extend<EvakaFixtures>({
       await context.close()
     }
   }
-})
-
-test.beforeAll(async () => {
-  await setTestMode({ enabled: true })
-})
-
-test.afterAll(async () => {
-  await setTestMode({ enabled: false })
 })
 
 function unwrapElement(value: unknown): unknown {

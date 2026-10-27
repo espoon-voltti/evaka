@@ -395,9 +395,9 @@ export class FileUpload extends Element {
     const fileCountBefore = await this.fileCount
     await this.#input.setInputFiles(path)
     await expect(
-      this.#uploadedFilesContainer.find(
-        `:nth-child(${fileCountBefore + 1}) [data-qa="file-download-button"]`
-      ).locator
+      this.#uploadedFiles
+        .nth(fileCountBefore)
+        .findByDataQa('file-download-button').locator
     ).toBeVisible()
   }
 
