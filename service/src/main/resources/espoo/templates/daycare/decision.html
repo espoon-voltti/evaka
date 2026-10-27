@@ -20,6 +20,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <th:block th:if="${reasoning != null}">
           <div th:replace="~{shared/decision-reasoning :: section(${reasoning})}"></div>
           <div>
+            <h2 th:text="#{decision.fee.title}"></h2>
+            <p th:text="#{decision.fee}"></p>
+          </div>
+          <div>
             <h2 th:text="#{decision.accepting.title}"></h2>
             <div th:utext="#{decision.accepting}"></div>
           </div>
