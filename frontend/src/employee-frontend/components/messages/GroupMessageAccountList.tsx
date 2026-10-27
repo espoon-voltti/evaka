@@ -35,15 +35,17 @@ const Content = styled.div<{ $visible: boolean }>`
 function CollapsibleRow({
   startCollapsed,
   children,
-  title
+  title,
+  'data-qa': dataQa
 }: {
   children: ReactNode
   startCollapsed: boolean
   title: string
+  'data-qa': string
 }) {
   const [expanded, setExpanded] = useState(!startCollapsed)
   return (
-    <AccountContainer>
+    <AccountContainer data-qa={dataQa}>
       <CollapseToggle onClick={() => setExpanded(!expanded)}>
         <div data-qa="group-message-account-name">{title}</div>
         <FontAwesomeIcon
@@ -93,6 +95,7 @@ export default function GroupMessageAccountList({
           key={acc.account.id}
           startCollapsed={startCollapsed(acc, i)}
           title={acc.daycareGroup.name}
+          data-qa={`group-account-${acc.daycareGroup.id}`}
         >
           {groupMessageBoxes.map((view) => (
             <MessageBox

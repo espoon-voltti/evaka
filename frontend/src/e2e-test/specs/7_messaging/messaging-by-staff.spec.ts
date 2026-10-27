@@ -1096,3 +1096,47 @@ test('Closed group accounts are sorted after open ones, both alphabetically by n
     'Delta'
   ])
 })
+
+test('Closed group accounts cannot send new messages', async ({
+  newEvakaPage
+}) => {
+  await resetServiceState()
+  await testCareArea.save()
+  await testDaycare.save()
+
+  await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Alpha'
+  }).save()
+  const closedGroup = await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Beta',
+    endDate: mockedDate.addDays(-1)
+  }).save()
+
+  const unitSupervisor = await Fixture.employee({
+    firstName: 'Essi',
+    lastName: 'Esimies'
+  })
+    .unitSupervisor(testDaycare.id)
+    .save()
+
+  await createMessageAccounts()
+
+  const unitSupervisorPage = await newEvakaPage({ mockedTime: mockedDateAt10 })
+  await employeeLogin(unitSupervisorPage, unitSupervisor)
+  await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+  const messagesPage = new MessagesPage(unitSupervisorPage)
+
+  const editor = await messagesPage.openMessageEditor()
+  await editor.senderSelection.click()
+  await editor.senderSelection
+    .findAllByDataQa('item')
+    .assertTextsEqualAnyOrder(['Esimies Essi', `${testDaycare.name} - Alpha`])
+  await editor.closeButton.click()
+
+  const closedGroupAccount = messagesPage.groupAccount(closedGroup.id)
+  await closedGroupAccount.name.click()
+  await closedGroupAccount.receivedBox.click()
+  await expect(messagesPage.newMessageButton).toBeDisabled()
+})

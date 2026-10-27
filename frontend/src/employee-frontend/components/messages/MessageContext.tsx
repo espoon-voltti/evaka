@@ -339,8 +339,13 @@ export const MessageContextProvider = React.memo(
     const accountAllowsNewMessage = useCallback(
       () =>
         selectedAccount?.account.type !== 'SERVICE_WORKER' &&
-        selectedAccount?.account.type !== 'FINANCE',
-      [selectedAccount]
+        selectedAccount?.account.type !== 'FINANCE' &&
+        !groupAccounts.some(
+          (acc) =>
+            acc.account.id === selectedAccount?.account.id &&
+            acc.daycareGroup.closed
+        ),
+      [selectedAccount, groupAccounts]
     )
 
     const [selectedDraft, setSelectedDraft] = useState(
