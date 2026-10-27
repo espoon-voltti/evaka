@@ -147,11 +147,15 @@ data class WebPushRequestHeaders(
 // Apple docs suggest JWT tokens should not be refreshed more than once per hour
 // https://developer.apple.com/documentation/usernotifications/sending_web_push_notifications_in_web_apps_safari_and_other_browsers#3994592
 //
-// -> valid duration for tokens must be 1-24 hours
-// We also stop using an old token slightly before its expiry time to avoid using an expired token
-// if there's a difference in clocks, or we take too long to send the request
-private val VAPID_JWT_NEW_VALID_DURATION = Duration.ofHours(12)
-private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
+// Apple refuses a token that has been used on the same HTTP connection for 80 minutes (403
+// ExpiredProviderToken), whatever its expiry time. The same token is accepted on a new connection.
+//
+// -> each token must be used for 1 hour - 1 hour 20 minutes
+private val VAPID_JWT_USE_DURATION = Duration.ofMinutes(70)
+
+// A token stays valid this long after we stop using it, so it hasn't expired when the push service
+// receives it, even if there's a difference in clocks or the request takes long
+private val VAPID_JWT_EXPIRY_MARGIN = Duration.ofHours(1)
 
 private const val MAX_ERROR_BODY_SIZE = 4096L
 
@@ -221,11 +225,12 @@ class WebPush(env: WebPushEnv) {
             newToken =
                 VapidJwt.create(
                     vapidKeyPair,
-                    expiresAt = clock.now().plus(VAPID_JWT_NEW_VALID_DURATION),
+                    expiresAt =
+                        clock.now().plus(VAPID_JWT_USE_DURATION).plus(VAPID_JWT_EXPIRY_MARGIN),
                     endpoint,
                 ),
             // Avoid using JWT tokens that expire very soon
-            minValidThreshold = clock.now().plus(VAPID_JWT_MIN_VALID_DURATION),
+            minValidThreshold = clock.now().plus(VAPID_JWT_EXPIRY_MARGIN),
         )
 
     fun send(vapidJwt: VapidJwt, notification: WebPushNotification) {

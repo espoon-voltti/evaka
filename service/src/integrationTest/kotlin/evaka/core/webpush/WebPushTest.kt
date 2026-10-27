@@ -50,6 +50,18 @@ class WebPushTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `getValidToken replaces the JWT token once it has been used for 70 minutes`() {
+        val uri = URI("http://example.com")
+        val initialToken = getValidToken(uri)
+
+        clock.tick(Duration.ofMinutes(70))
+        assertEquals(initialToken, getValidToken(uri))
+
+        clock.tick(Duration.ofMinutes(1))
+        assertNotEquals(initialToken, getValidToken(uri))
+    }
+
+    @Test
     fun `getValidToken returns the same token for different URIs within the same origin`() {
         assertEquals(
             getValidToken(URI("http://example.com/first")),
