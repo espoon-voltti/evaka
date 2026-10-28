@@ -4759,6 +4759,9 @@ export const fi = {
       financeFolders: 'Taloushallinnon kansiot',
       ownMessages: 'Omat viestit',
       groupsMessages: 'Ryhmien viestit',
+      showClosedGroups: 'Näytä vanhat ryhmät',
+      hideClosedGroups: 'Piilota vanhat ryhmät',
+      closedGroupName: (name: string) => `${name} (vanha)`,
       noAccountAccess:
         'Viestejä ei voi näyttää, koska sinua ei ole luvitettu ryhmään. Pyydä lupa esimieheltäsi.'
     },

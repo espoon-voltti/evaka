@@ -178,6 +178,10 @@ export default class MessagesPage {
     return this.#unitAccount.findAllByDataQa('group-message-account-name')
   }
 
+  get showClosedGroupsToggle(): Element {
+    return this.#unitAccount.findByDataQa('show-closed-groups-toggle')
+  }
+
   groupAccount(groupId: GroupId) {
     const account = this.#unitAccount.findByDataQa(`group-account-${groupId}`)
     return {

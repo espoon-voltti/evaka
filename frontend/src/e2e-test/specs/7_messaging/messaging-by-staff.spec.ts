@@ -1045,7 +1045,7 @@ test.describe('Additional filters', () => {
   })
 })
 
-test('Closed group accounts are sorted after open ones, both alphabetically by name', async ({
+test('Closed group accounts are behind a toggle after open ones, both alphabetically by name', async ({
   newEvakaPage
 }) => {
   await resetServiceState()
@@ -1088,12 +1088,14 @@ test('Closed group accounts are sorted after open ones, both alphabetically by n
   await employeeLogin(unitSupervisorPage, unitSupervisor)
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
   const messagesPage = new MessagesPage(unitSupervisorPage)
+  await expect(messagesPage.groupAccountNames).toHaveText(['Alpha', 'Beta'])
+  await messagesPage.showClosedGroupsToggle.click()
   await expect(messagesPage.groupAccountNames).toHaveText([
     'Alpha',
     'Beta',
-    'Aapeli',
-    'Charlie',
-    'Delta'
+    'Aapeli (vanha)',
+    'Charlie (vanha)',
+    'Delta (vanha)'
   ])
 })
 
@@ -1135,8 +1137,13 @@ test('Closed group accounts cannot send new messages', async ({
     .assertTextsEqualAnyOrder(['Esimies Essi', `${testDaycare.name} - Alpha`])
   await editor.closeButton.click()
 
+  await messagesPage.showClosedGroupsToggle.click()
   const closedGroupAccount = messagesPage.groupAccount(closedGroup.id)
   await closedGroupAccount.name.click()
   await closedGroupAccount.receivedBox.click()
   await expect(messagesPage.newMessageButton).toBeDisabled()
+
+  // The closed groups are shown without toggling when one of them is selected
+  await unitSupervisorPage.reload()
+  await expect(closedGroupAccount.receivedBox).toBeVisible()
 })
