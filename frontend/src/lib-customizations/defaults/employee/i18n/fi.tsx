@@ -911,26 +911,6 @@ export const fi = {
         }
       }
     },
-    assistanceNeed: {
-      title: 'Tuen tarve',
-      fields: {
-        dateRange: 'Tuen tarve ajalle',
-        capacityFactor: 'Lapsen tuen kerroin',
-        capacityFactorInfo:
-          'Kapasiteetti määräytyy yleensä lapsen iän ja palveluntarpeen mukaan. Mikäli lapsella on sellainen tuki, joka käyttää kapasiteettia enemmän, lisää tuen kerroin tähän kohtaan. Esim. erityisryhmässä tukea tarvitsevan lapsen kerroin on 2,33' as ReactNode,
-        bases: 'Perusteet'
-      },
-      create: 'Luo uusi tuen tarpeen ajanjakso',
-      removeConfirmation: 'Haluatko poistaa tuen tarpeen?',
-      errors: {
-        invalidCoefficient: 'Virheellinen kerroin.',
-        conflict: 'Tuen tarve menee päällekkäin toisen tuen tarpeen kanssa.',
-        hardConflict:
-          'Tuen tarve menee päällekkäin toisen tuen tarpeen alkupäivämäärän kanssa.',
-        autoCutWarning:
-          'Aiemmat päällekkäiset tuentarpeet katkaistaan automaattisesti.'
-      }
-    },
     assistanceAction: {
       title: 'Tukitoimet ja toimenpiteet',
       modified: 'Muokattu viimeksi',
