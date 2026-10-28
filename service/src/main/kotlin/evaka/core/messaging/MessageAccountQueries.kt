@@ -11,9 +11,14 @@ import evaka.core.shared.MessageContentId
 import evaka.core.shared.MessageDraftId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.QuerySql
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import evaka.core.shared.security.actionrule.forTable
 import java.time.LocalDate
+
+fun citizenMessageAccountIds(citizenId: PersonId) = QuerySql {
+    sql("SELECT id FROM message_account WHERE person_id = ${bind(citizenId)}")
+}
 
 fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
     return createQuery {

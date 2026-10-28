@@ -10,6 +10,7 @@ import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
 fun Database.Read.getPedagogicalDocumentAttachments(
@@ -83,3 +84,31 @@ fun Database.Read.getPedagogicalDocumentChild(
     }
         .exactlyOneOrNull<ChildId>()
 }
+
+fun Database.Read.countUnreadDocumentsByUser(
+    today: LocalDate,
+    userId: PersonId,
+): Map<ChildId, Int> = createQuery {
+    sql(
+        """
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
+    UNION
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
+), ready_documents AS (
+    SELECT pd.id, pd.child_id
+    FROM children c
+    JOIN pedagogical_document pd ON c.child_id = pd.child_id
+    JOIN attachment a ON a.pedagogical_document_id = pd.id
+)
+SELECT d.child_id, count(DISTINCT d.id) as unread_count
+FROM ready_documents d
+WHERE NOT EXISTS (
+    SELECT 1 FROM pedagogical_document_read pdr
+    WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = ${bind(userId)}
+)
+GROUP BY d.child_id
+"""
+    )
+}
+    .toMap { columnPair("child_id", "unread_count") }

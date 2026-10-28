@@ -133,6 +133,7 @@ RETURNING id
     .exactlyOneOrNull()
 
 data class CitizenPushTarget(
+    val personId: PersonId,
     val endpoint: WebPushEndpoint,
     val disabledCategories: Set<NotificationCategory>,
 )
@@ -142,7 +143,7 @@ fun Database.Read.getCitizenPushTarget(
 ): CitizenPushTarget? = createQuery {
     sql(
         """
-SELECT cps.endpoint, cps.auth_secret, cps.ecdh_key, p.disabled_push_types
+SELECT cps.person_id, cps.endpoint, cps.auth_secret, cps.ecdh_key, p.disabled_push_types
 FROM citizen_push_subscription cps
 JOIN person p ON p.id = cps.person_id
 WHERE cps.id = ${bind(subscription)}
@@ -151,6 +152,7 @@ WHERE cps.id = ${bind(subscription)}
 }
     .exactlyOneOrNull {
         CitizenPushTarget(
+            personId = column("person_id"),
             endpoint =
                 WebPushEndpoint(
                     uri = column("endpoint"),

@@ -14,7 +14,6 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
-import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -111,31 +110,3 @@ ON CONFLICT (pedagogical_document_id, person_id) DO NOTHING
     )
 }
     .execute()
-
-private fun Database.Read.countUnreadDocumentsByUser(
-    today: LocalDate,
-    userId: PersonId,
-): Map<ChildId, Int> = createQuery {
-    sql(
-        """
-WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
-    UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
-), ready_documents AS (
-    SELECT pd.id, pd.child_id
-    FROM children c
-    JOIN pedagogical_document pd ON c.child_id = pd.child_id
-    JOIN attachment a ON a.pedagogical_document_id = pd.id
-)
-SELECT d.child_id, count(*) as unread_count
-FROM ready_documents d
-WHERE NOT EXISTS (
-    SELECT 1 FROM pedagogical_document_read pdr
-    WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = ${bind(userId)}
-)
-GROUP BY d.child_id
-"""
-    )
-}
-    .toMap { columnPair("child_id", "unread_count") }

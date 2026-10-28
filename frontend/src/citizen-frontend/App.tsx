@@ -34,7 +34,7 @@ import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
 import { PushSuggestion } from './pwa/PushSuggestion'
-import { useClearAppBadgeOnVisibilityChange } from './pwa/appBadge'
+import { useAppBadge } from './pwa/appBadge'
 import { useStandaloneLayout } from './pwa/installed'
 import { useNotificationClickRouting } from './pwa/notificationRouting'
 import { queryClient, QueryClientProvider } from './query'
@@ -172,7 +172,7 @@ const Content = React.memo(function Content({
   useStandaloneLayout()
   const scrollAreaRef = useRegisterScrollContainer()
   useNotificationClickRouting()
-  useClearAppBadgeOnVisibilityChange()
+  useAppBadge()
   return (
     <AppShell>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
