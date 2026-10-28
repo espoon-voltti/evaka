@@ -7,6 +7,7 @@ package evaka.core.pis
 import evaka.core.identity.Ssn
 import evaka.core.pis.service.FridgeFamilyService
 import evaka.core.pis.service.VtjSyncService
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.PermanentAsyncJobFailure
@@ -28,6 +29,9 @@ class UpdateFromVtjAsyncJobProcessor(
         asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.UpdateFromVtj ->
             updateFromVtj(db, clock, msg)
         }
+        asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.SyncMissingVtjRelationsOfPerson ->
+            refreshPersonAndFamilies(db, clock, msg.personId)
+        }
     }
 
     fun updateFromVtj(
@@ -43,12 +47,20 @@ class UpdateFromVtjAsyncJobProcessor(
             logger.info { "Person of an UpdateFromVtj job is not in eVaka, nothing to refresh" }
             return
         }
+        refreshPersonAndFamilies(db, clock, person.id)
+    }
+
+    private fun refreshPersonAndFamilies(
+        db: Database.Connection,
+        clock: EvakaClock,
+        personId: PersonId,
+    ) {
         vtjSyncService.refreshPerson(
             db,
             AuthenticatedUser.SystemInternalUser.evakaUserId,
             clock,
-            person.id,
+            personId,
         )
-        fridgeFamilyService.addChildrenToFridgeFamilies(db, clock, person.id)
+        fridgeFamilyService.addChildrenToFridgeFamilies(db, clock, personId)
     }
 }

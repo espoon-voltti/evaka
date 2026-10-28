@@ -14,7 +14,9 @@ import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.ModifySource
 import evaka.core.pis.PersonsToSyncCount
+import evaka.core.pis.UpdateFromVtjAsyncJobProcessor
 import evaka.core.pis.countPersonsToSync
+import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.pis.updatePartnershipDuration
 import evaka.core.shared.PartnershipId
@@ -69,11 +71,17 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
     @BeforeEach
     fun beforeEach() {
         asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
-        vtjSyncService =
-            VtjSyncService(
-                SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper()),
-                asyncJobRunner,
-            )
+        val vtjClient = SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
+        vtjSyncService = VtjSyncService(vtjClient, asyncJobRunner)
+        UpdateFromVtjAsyncJobProcessor(
+            asyncJobRunner,
+            vtjSyncService,
+            FridgeFamilyService(
+                PersonService(vtjClient, vtjSyncService),
+                vtjSyncService,
+                ParentshipService(asyncJobRunner),
+            ),
+        )
         MockVtjSoapTransport.resetQueryCounts()
         db.transaction { tx ->
             tx.insert(area)
@@ -370,6 +378,34 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `a planned sync adds the synced dependants at the same address to the family of the person`() {
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(a, listOf(x))
+        db.transaction { it.insertCitizenUser(a, createdAt = clock.now()) }
+
+        planMissingSyncs()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(listOf(x.id), fridgeChildIds(a))
+    }
+
+    @Test
+    fun `a planned sync of a child adds the child to the family of a guardian at the same address`() {
+        MockVtjSoapTransport.addHUOLLETTAVAHUOLTAJATRequestExpectation(x, listOf(a))
+        db.transaction { tx ->
+            // A's dependants were synced before, so only the child gets a sync
+            tx.insertCitizenUser(a, createdAt = longAgo)
+            tx.setVtjDependantsQueried(a, longAgo)
+            tx.insertPlacement(x, endDate = today.plusMonths(6))
+        }
+
+        planMissingSyncs()
+        assertEquals(setOf(x.id), plannedSyncs())
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(listOf(x.id), fridgeChildIds(a))
+    }
+
+    @Test
     fun `a failing sync is tried a few times, leaves the flag empty, and is planned again the next night`() {
         MockVtjSoapTransport.removeRequestExpectation(x, HUOLLETTAVA_HUOLTAJAT)
         db.transaction { tx ->
@@ -402,7 +438,16 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertEquals(setOf(x.id), plannedSyncs())
     }
 
-    private fun person(ssn: String) = DevPerson(ssn = ssn, dateOfBirth = getDobFromSsn(ssn))
+    // Everyone lives at the same address, so a synced child can be added to the family of a
+    // guardian
+    private fun person(ssn: String) =
+        DevPerson(
+            ssn = ssn,
+            dateOfBirth = getDobFromSsn(ssn),
+            streetAddress = "Kotikatu 1",
+            postalCode = "02100",
+            postOffice = "Espoo",
+        )
 
     private fun planMissingSyncs() = vtjSyncService.planMissingSyncs(db, clock, limit = 100)
 
@@ -424,6 +469,9 @@ WHERE type = 'SyncMissingVtjRelationsOfPerson' AND completed_at IS NULL AND retr
     private fun plannedSyncs(): Set<PersonId> = plannedSyncList().toSet()
 
     private fun getPerson(person: DevPerson) = db.read { it.getPersonById(person.id)!! }
+
+    private fun fridgeChildIds(head: DevPerson) =
+        db.read { it.getParentships(headOfChildId = head.id, childId = null) }.map { it.childId }
 
     private fun Database.Transaction.insertCitizenUser(
         person: DevPerson,

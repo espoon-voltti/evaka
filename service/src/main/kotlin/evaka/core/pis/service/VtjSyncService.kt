@@ -27,7 +27,6 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType
 import evaka.core.shared.async.removeUnclaimedJobs
-import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Conflict
@@ -47,10 +46,6 @@ class VtjSyncService(
     private val vtjClient: VtjClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
-    init {
-        asyncJobRunner.registerHandler(::syncMissingVtjRelationsOfPerson)
-    }
-
     /** A new person is created as a leaf: no relations are synced. */
     fun getOrCreatePerson(
         dbc: Database.Connection,
@@ -207,12 +202,6 @@ class VtjSyncService(
             }
         }
     }
-
-    private fun syncMissingVtjRelationsOfPerson(
-        db: Database.Connection,
-        clock: EvakaClock,
-        msg: AsyncJob.SyncMissingVtjRelationsOfPerson,
-    ) = refreshPerson(db, AuthenticatedUser.SystemInternalUser.evakaUserId, clock, msg.personId)
 
     fun applyFromVtj(
         tx: Database.Transaction,
