@@ -27,6 +27,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -93,7 +94,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `person can be found by ssn`() {
         val created = db.transaction { createVtjPerson(it) }
         val persons = db.read {
-            it.searchPeople(adminUser, "010199-8137", "last_name", "ASC", false)
+            it.searchPeople(
+                adminUser,
+                "010199-8137",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
         }
         assertEquals(1, persons.size)
         assertEquals(created.id, persons[0].id)
@@ -103,7 +111,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `person can be found by case-insensitive ssn`() {
         val created = db.transaction { createVtjPerson(it, "230601A329J") }
         val persons = db.read {
-            it.searchPeople(adminUser, "230601a329J", "last_name", "ASC", false)
+            it.searchPeople(
+                adminUser,
+                "230601a329J",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
         }
         assertEquals(1, persons.size)
         assertEquals(created.id, persons[0].id)
@@ -112,14 +127,32 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found by first part of address`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "Jokutie", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "Jokutie",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
         assertEquals(persons[0].streetAddress, created.streetAddress)
     }
 
     @Test
     fun `person can be found by last name`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "O'Brien", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "O'Brien",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons[0].lastName, created.lastName)
     }
@@ -127,7 +160,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found by first name`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "Matti", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "Matti",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons[0].firstName, created.firstName)
     }
@@ -135,7 +177,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found by first name when it contains umlauts`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "Yrjö", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "Yrjö",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons[0].firstName, created.firstName)
     }
@@ -152,7 +203,43 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Matti",
                 "last_name",
                 "ASC",
-                true,
+                restricted = true,
+                includeAddresses = false,
+            )
+        }
+
+        assertEquals(0, persons.size)
+    }
+
+    @Test
+    fun `search without addresses finds a person by name but does not return the address`() {
+        val created = db.transaction { createVtjPerson(it) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "Matti",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = false,
+            )
+        }
+
+        assertEquals(listOf(created.id), persons.map { it.id })
+        assertNull(persons[0].streetAddress)
+    }
+
+    @Test
+    fun `search without addresses cannot find a person by address`() {
+        db.transaction { createVtjPerson(it) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "Jokutie",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = false,
             )
         }
 
@@ -163,7 +250,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `person with multiple first names can be found`() {
         val created = db.transaction { createVtjPerson(it) }
         val persons = db.read {
-            it.searchPeople(adminUser, "Matti Jari-Ville", "last_name", "ASC", false)
+            it.searchPeople(
+                adminUser,
+                "Matti Jari-Ville",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
         }
 
         assertEquals(persons[0].firstName, created.firstName)
@@ -173,7 +267,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `person can be found with the full address`() {
         val created = db.transaction { createVtjPerson(it) }
         val persons = db.read {
-            it.searchPeople(adminUser, "Jokutie 66", "last_name", "ASC", false)
+            it.searchPeople(
+                adminUser,
+                "Jokutie 66",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
         }
 
         assertEquals(persons[0].streetAddress, created.streetAddress)
@@ -182,7 +283,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found by partial last name`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "O'Br", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "O'Br",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons[0].lastName, created.lastName)
     }
@@ -190,7 +300,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found by partial first name`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "Matt", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "Matt",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons[0].firstName, created.firstName)
     }
@@ -198,7 +317,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found by partial address`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "Jokut", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "Jokut",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons[0].streetAddress, created.streetAddress)
     }
@@ -206,7 +334,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can not be found with just a substring match on first name`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "atti", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "atti",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons, emptyList())
     }
@@ -214,7 +351,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can not be found with just a substring match on last name`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "eikäläine", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "eikäläine",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons, emptyList())
     }
@@ -222,7 +368,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can not be found with just a substring match on address`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "okuti", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "okuti",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(persons, emptyList())
     }
@@ -231,7 +386,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `PostgreSQL text search operator characters are ignored in search terms`() {
         val created = db.transaction { createVtjPerson(it) }
         val persons = db.read {
-            it.searchPeople(adminUser, "'&Jokut!|&", "last_name", "ASC", false)
+            it.searchPeople(
+                adminUser,
+                "'&Jokut!|&",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
         }
 
         assertEquals(1, persons.size)
@@ -241,7 +403,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `angle brackets are ignored in search terms`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "<Jokut>", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "<Jokut>",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(1, persons.size)
         assertEquals(created.id, persons[0].id)
@@ -250,7 +421,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `single quote is ignored at the start of search terms`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "'O'Brien", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(
+                adminUser,
+                "'O'Brien",
+                "last_name",
+                "ASC",
+                restricted = false,
+                includeAddresses = true,
+            )
+        }
 
         assertEquals(1, persons.size)
         assertEquals(created.id, persons[0].id)

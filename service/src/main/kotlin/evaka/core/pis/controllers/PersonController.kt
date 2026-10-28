@@ -279,6 +279,13 @@ class PersonController(
                                     clock,
                                     Action.Global.SEARCH_PEOPLE_UNRESTRICTED,
                                 ),
+                            includeAddresses =
+                                accessControl.hasPermissionFor(
+                                    it,
+                                    user,
+                                    clock,
+                                    Action.Global.SEARCH_PEOPLE_BY_ADDRESS,
+                                ),
                         )
                         .also { results -> audit.add(results.map { it.id }) }
                 }

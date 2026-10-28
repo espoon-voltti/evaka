@@ -24,6 +24,7 @@ import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -181,6 +182,60 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
 
         assertEquals(person.id, response.first().id)
+    }
+
+    @Test
+    fun `Search by service worker matches and returns addresses`() {
+        val person = createPerson()
+
+        val response =
+            controller.searchPerson(
+                dbInstance(),
+                serviceWorker.user,
+                clock,
+                SearchPersonBody(
+                    searchTerm = person.streetAddress,
+                    orderBy = "first_name",
+                    sortDirection = "DESC",
+                ),
+            )
+
+        assertEquals(listOf(person.id), response.map { it.id })
+        assertEquals(person.streetAddress, response.first().streetAddress)
+    }
+
+    @Test
+    fun `Search by finance admin does not match or return addresses`() {
+        val financeAdmin = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+        db.transaction { tx -> tx.insert(financeAdmin) }
+        val person = createPerson()
+
+        val byName =
+            controller.searchPerson(
+                dbInstance(),
+                financeAdmin.user,
+                clock,
+                SearchPersonBody(
+                    searchTerm = person.lastName,
+                    orderBy = "first_name",
+                    sortDirection = "DESC",
+                ),
+            )
+        assertEquals(listOf(person.id), byName.map { it.id })
+        assertNull(byName.first().streetAddress)
+
+        val byAddress =
+            controller.searchPerson(
+                dbInstance(),
+                financeAdmin.user,
+                clock,
+                SearchPersonBody(
+                    searchTerm = person.streetAddress,
+                    orderBy = "first_name",
+                    sortDirection = "DESC",
+                ),
+            )
+        assertEquals(emptyList(), byAddress)
     }
 
     @Test
@@ -394,6 +449,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             dateOfBirth = getDobFromSsn("140881-172X"),
             firstName = "Matti",
             lastName = "Meikäläinen",
+            streetAddress = "Testikatu 5",
             email = "",
             language = "fi",
         )

@@ -130,6 +130,13 @@ class FeeDecisionController(
                             body.searchByStartDate,
                             body.financeDecisionHandlerId,
                             body.difference ?: emptySet(),
+                            matchAddresses =
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Global.SEARCH_PEOPLE_BY_ADDRESS,
+                                ),
                         )
                         .also { page ->
                             audit.addMeta("count", page.data.size)

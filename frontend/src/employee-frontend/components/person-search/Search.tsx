@@ -68,6 +68,8 @@ export default React.memo(function Search() {
 
   const canCreatePersonFromVtj = hasGlobalAction(user, 'CREATE_PERSON_FROM_VTJ')
   const canCreatePerson = hasGlobalAction(user, 'CREATE_PERSON')
+  const canSearchByAddress = hasGlobalAction(user, 'SEARCH_PEOPLE_BY_ADDRESS')
+  const columnCount = canSearchByAddress ? 3 : 2
 
   const [showAddPersonFromVTJModal, setShowAddPersonFromVTJModal] =
     useState(false)
@@ -80,7 +82,11 @@ export default React.memo(function Search() {
         <TopBar>
           <Wrapper tabIndex={-1}>
             <InputField
-              placeholder={i18n.personSearch.inputPlaceholder}
+              placeholder={
+                canSearchByAddress
+                  ? i18n.personSearch.inputPlaceholder
+                  : i18n.personSearch.inputPlaceholderWithoutAddress
+              }
               value={searchTerm}
               onChange={(value) => {
                 setSearchTerm(value)
@@ -134,14 +140,19 @@ export default React.memo(function Search() {
                 >
                   {i18n.personSearch.age}
                 </SortableTh>
-                <SortableTh
-                  sorted={
-                    sortColumn === 'street_address' ? sortDirection : undefined
-                  }
-                  onClick={sortToggle('street_address')}
-                >
-                  {i18n.personSearch.address}
-                </SortableTh>
+                {canSearchByAddress && (
+                  <SortableTh
+                    sorted={
+                      sortColumn === 'street_address'
+                        ? sortDirection
+                        : undefined
+                    }
+                    onClick={sortToggle('street_address')}
+                    data-qa="address-column"
+                  >
+                    {i18n.personSearch.address}
+                  </SortableTh>
+                )}
               </Tr>
             </Thead>
             <Tbody>
@@ -162,28 +173,32 @@ export default React.memo(function Search() {
                         </Link>
                       </Td>
                       <Td $align="left">{getAge(person.dateOfBirth)}</Td>
-                      <Td $align="left">{person.streetAddress}</Td>
+                      {canSearchByAddress && (
+                        <Td $align="left" data-qa="person-street-address">
+                          {person.streetAddress}
+                        </Td>
+                      )}
                     </Tr>
                   ))}
                   {customers.value.length > 99 && (
                     <Tr>
-                      <Td>{i18n.personSearch.maxResultsFound}</Td>
-                      <Td />
-                      <Td />
+                      <Td colSpan={columnCount}>
+                        {i18n.personSearch.maxResultsFound}
+                      </Td>
                     </Tr>
                   )}
                 </>
               )}
               {customers.isLoading && (
                 <Tr>
-                  <Td colSpan={3}>
+                  <Td colSpan={columnCount}>
                     <Loader />
                   </Td>
                 </Tr>
               )}
               {customers.isFailure && (
                 <Tr>
-                  <Td colSpan={3}>{i18n.common.loadingFailed}</Td>
+                  <Td colSpan={columnCount}>{i18n.common.loadingFailed}</Td>
                 </Tr>
               )}
             </Tbody>

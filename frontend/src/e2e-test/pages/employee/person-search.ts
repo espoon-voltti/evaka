@@ -11,6 +11,8 @@ import { Checkbox, TextInput } from '../../utils/page'
 export default class PersonSearchPage {
   searchInput: TextInput
   searchResults: ElementCollection
+  searchResultAddresses: ElementCollection
+  addressColumn: Element
   #createPersonButton: Element
   #addSsnButton: Element
   #noSsnText: Element
@@ -39,6 +41,8 @@ export default class PersonSearchPage {
     this.#page = page
     this.searchInput = new TextInput(page.findByDataQa('search-input'))
     this.searchResults = page.findAllByDataQa('person-row')
+    this.searchResultAddresses = page.findAllByDataQa('person-street-address')
+    this.addressColumn = page.findByDataQa('address-column')
     this.#createPersonButton = page.findByDataQa('create-person-button')
     this.#addSsnButton = page.findByDataQa('add-ssn-button')
     this.#noSsnText = page.findByDataQa('no-ssn')

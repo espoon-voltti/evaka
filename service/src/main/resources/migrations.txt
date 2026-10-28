@@ -618,3 +618,5 @@ V619__decision_decided_by.sql
 V620__ssn_not_empty.sql
 V621__mcp_server.sql
 V622__person_data_retention_last_attempted_at.sql
+V623__person_freetext_vec_no_address.sql
+V624__person_freetext_vec_no_address_index.sql

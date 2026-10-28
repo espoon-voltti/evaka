@@ -209,6 +209,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 difference = emptySet(),
                 distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED),
+                matchAddresses = true,
             )
         }
 
@@ -280,6 +281,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 difference = setOf(VoucherValueDecisionDifference.INCOME),
                 distinctiveParams = emptyList(),
+                matchAddresses = true,
             )
         }
 
@@ -365,6 +367,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 difference = emptySet(),
                 distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.UNCONFIRMED_HOURS),
+                matchAddresses = true,
             )
         }
 
@@ -419,6 +422,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 difference = emptySet(),
                 distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.EXTERNAL_CHILD),
+                matchAddresses = true,
             )
         }
 
@@ -492,6 +496,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 difference = emptySet(),
                 distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.RETROACTIVE),
+                matchAddresses = true,
             )
         }
 
@@ -561,6 +566,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
                     distinctiveParams = emptyList(),
+                    matchAddresses = true,
                 )
             }
         }
@@ -651,6 +657,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
                     distinctiveParams = emptyList(),
+                    matchAddresses = true,
                 )
             }
         }
@@ -736,6 +743,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
                     distinctiveParams = emptyList(),
+                    matchAddresses = true,
                 )
             }
         }
@@ -814,6 +822,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
                     distinctiveParams = emptyList(),
+                    matchAddresses = true,
                 )
             }
         }
@@ -876,6 +885,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
                     distinctiveParams = emptyList(),
+                    matchAddresses = true,
                 )
             }
         }
@@ -938,6 +948,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
                     distinctiveParams = emptyList(),
+                    matchAddresses = true,
                 )
             }
         }
@@ -1035,6 +1046,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         difference = emptySet(),
                         distinctiveParams =
                             listOf(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS),
+                        matchAddresses = true,
                     )
                     .data
                     .size,
@@ -1068,6 +1080,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         difference = emptySet(),
                         distinctiveParams =
                             listOf(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS),
+                        matchAddresses = true,
                     )
                     .data
                     .size,
@@ -1242,6 +1255,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     distinctiveParams =
                         listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                    matchAddresses = true,
                 )
 
             assertThat(result.data.map { it.child.id })
@@ -1318,6 +1332,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 distinctiveParams =
                     listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                matchAddresses = true,
             )
         }
 
@@ -1376,6 +1391,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 distinctiveParams =
                     listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                matchAddresses = true,
             )
         }
 
@@ -1435,6 +1451,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 distinctiveParams =
                     listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                matchAddresses = true,
             )
         }
 
@@ -1494,6 +1511,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 distinctiveParams =
                     listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                matchAddresses = true,
             )
         }
 
@@ -1553,6 +1571,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 distinctiveParams =
                     listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                matchAddresses = true,
             )
         }
 
@@ -1613,6 +1632,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 distinctiveParams =
                     listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                matchAddresses = true,
             )
         }
 
@@ -1675,6 +1695,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 financeDecisionHandlerId = null,
                 distinctiveParams =
                     listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                matchAddresses = true,
             )
         }
 
@@ -1749,6 +1770,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
                     distinctiveParams = emptyList(),
+                    matchAddresses = true,
                 )
                 .data
         }
