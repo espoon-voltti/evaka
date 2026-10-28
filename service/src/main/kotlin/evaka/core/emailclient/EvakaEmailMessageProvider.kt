@@ -440,6 +440,7 @@ $unsubscribeEn
             IncomeNotificationType.REMINDER_EMAIL -> outdatedIncomeNotificationReminder()
             IncomeNotificationType.EXPIRED_EMAIL -> outdatedIncomeNotificationExpired()
             IncomeNotificationType.NEW_CUSTOMER -> newCustomerIncomeNotification()
+            IncomeNotificationType.INCOMPLETE_INCOME_REMINDER -> incompleteIncomeReminder()
         }
     }
 
@@ -562,6 +563,42 @@ $unsubscribeSv
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
             """,
+        )
+    }
+
+    private fun incompleteIncomeReminder(): EmailContent {
+        return EmailContent.fromHtml(
+            subject =
+                "Tulotietonne puuttuvat / Dina inkomstuppgifter saknas / Your income information is missing",
+            html =
+                """
+<p>Hyvä asiakkaamme</p>
+<p>Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotietonne puuttuvat. Tämän vuoksi asiakasmaksunne määräytyy korkeimman maksuluokan mukaan.</p>
+<p>Pyydämme toimittamaan tuloselvityksen eVakassa. eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.</p>
+<p>Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.</p>
+<p>Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen Espoon kaupunki/ Kasvun ja oppimisen toimiala, talousyksikkö/ varhaiskasvatuksen asiakasmaksut PL 30 02070 Espoon kaupunki</p>
+<p>Tulotiedot: ${incomeLink(Language.fi)}</p>
+<p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
+<hr>
+<p>Bästa klient</p>
+<p>Dina inkomstuppgifter som ligger till grund för klientavgiften för småbarnspedagogik eller servicesedelns egenandel saknas. Därför bestäms din klientavgift enligt den högsta avgiften.</p>
+<p>Vi ber att du skickar en inkomstutredning via eVaka. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.</p>
+<p>En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.</p>
+<p>Du kan vid behov också skicka inkomstutredningen per post till adressen Esbo stad/sektorn för fostran och lärande, ekonomienheten/klientavgifter för småbarnspedagogik PB 30 02070 Esbo stad</p>
+<p>Inkomstuppgifterna: ${incomeLink(Language.sv)}</p>
+<p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
+<hr>
+<p>Dear client</p>
+<p>The income information used for determining your early childhood education fee or the out-of-pocket cost of a service voucher is missing. Therefore, your client fee is determined based on the highest fee category.</p>
+<p>We ask you to submit your income statement through eVaka. Through eVaka, you can also give your consent to the highest fee or the use of the Incomes Register.</p>
+<p>We will not retroactively reimburse you for fees charged in a situation where you have not provided your income information.</p>
+<p>If necessary, you can also send your income information by post to the following address: City of Espoo / Growth and Learning Sector, Financial Management / Early childhood education client fees, P.O. Box 30, 02070 City of Espoo.</p>
+<p>Income information: ${incomeLink(Language.en)}</p>
+<p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
+""",
         )
     }
 

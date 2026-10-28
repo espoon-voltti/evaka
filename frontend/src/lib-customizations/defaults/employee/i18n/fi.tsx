@@ -1786,7 +1786,8 @@ export const fi = {
         INITIAL_EMAIL: 'Ensimmäinen muistutus',
         REMINDER_EMAIL: 'Toinen muistutus',
         EXPIRED_EMAIL: 'Tulot päättyneet',
-        NEW_CUSTOMER: 'Aloittava asiakas'
+        NEW_CUSTOMER: 'Aloittava asiakas',
+        INCOMPLETE_INCOME_REMINDER: 'Vuosimuistutus puuttuvista tulotiedoista'
       },
       noCustodians: 'Ei huollettavia'
     },

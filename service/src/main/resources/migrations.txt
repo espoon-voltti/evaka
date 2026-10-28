@@ -618,3 +618,5 @@ V619__decision_decided_by.sql
 V620__ssn_not_empty.sql
 V621__mcp_server.sql
 V622__person_data_retention_last_attempted_at.sql
+V623__income_notification_type_incomplete_income_reminder.sql
+V624__income_cta_dismissal.sql

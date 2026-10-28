@@ -138,6 +138,13 @@ internal class EmailMessageProviderTest : AbstractTampereIntegrationTest() {
                     ),
                 ),
                 Arguments.of(
+                    "incomeNotification",
+                    emailMessageProvider.incomeNotification(
+                        IncomeNotificationType.INCOMPLETE_INCOME_REMINDER,
+                        Language.fi,
+                    ),
+                ),
+                Arguments.of(
                     "calendarEventNotification",
                     emailMessageProvider.calendarEventNotification(
                         Language.fi,
