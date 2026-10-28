@@ -482,6 +482,7 @@ export const fi = {
       ALL: 'Kaikki'
     },
     searchPlaceholder: 'Haku nimellä, hetulla tai osoitteella',
+    searchPlaceholderWithoutAddress: 'Haku nimellä tai hetulla',
     basis: 'Huomiot',
     distinctions: 'Tarkennettu haku',
     secondaryTooltip: 'Valitse ensin toimipaikka'
@@ -1442,6 +1443,7 @@ export const fi = {
     searchByName: 'Etsi henkilötunnuksella tai nimellä',
     notFound: 'Henkilöä ei löydy',
     inputPlaceholder: 'Etsi nimellä, osoitteella tai henkilötunnuksella',
+    inputPlaceholderWithoutAddress: 'Etsi nimellä tai henkilötunnuksella',
     age: 'Ikä',
     address: 'Osoite',
     maxResultsFound: 'Rajaa hakua nähdäksesi muut tulokset',
@@ -3171,6 +3173,8 @@ export const fi = {
     searchTerms: 'Hakuehdot',
     freeTextPlaceholder:
       'Haku nimellä, hetulla, osoitteella tai maksupäätöksen numerolla',
+    freeTextPlaceholderWithoutAddress:
+      'Haku nimellä, hetulla tai maksupäätöksen numerolla',
     area: 'Alue',
     unit: 'Toimipaikka',
     financeDecisionHandler: 'Talouspäätösten käsittelijä',

@@ -166,6 +166,7 @@ fun Database.Read.fetchApplicationSummaries(
     readWithAssistanceNeed: AccessControlFilter<ApplicationId>?,
     readWithoutAssistanceNeed: AccessControlFilter<ApplicationId>?,
     canReadServiceWorkerNotes: Boolean,
+    matchAddresses: Boolean,
 ): PagedApplicationSummaries {
     val page = params.page ?: 1
     val pageSize = 50
@@ -415,7 +416,7 @@ fun Database.Read.fetchApplicationSummaries(
                 }
             else null,
             if (searchTerms.isNotBlank())
-                personFreeTextSearchPredicate(listOf("child"), searchTerms)
+                personFreeTextSearchPredicate(listOf("child"), searchTerms, matchAddresses)
             else null,
             when (transferApplications) {
                 TransferApplicationFilter.TRANSFER_ONLY -> {

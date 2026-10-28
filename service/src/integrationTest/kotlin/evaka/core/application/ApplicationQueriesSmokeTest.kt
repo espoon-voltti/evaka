@@ -90,6 +90,7 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
                 readWithAssistanceNeed = AccessControlFilter.PermitAll,
                 readWithoutAssistanceNeed = AccessControlFilter.PermitAll,
                 canReadServiceWorkerNotes = true,
+                matchAddresses = true,
             )
         }
         val application = applications.data.single()

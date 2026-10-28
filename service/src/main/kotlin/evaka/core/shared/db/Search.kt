@@ -12,9 +12,14 @@ import evaka.core.shared.utils.stripNonAlphanumeric
 /**
  * Returns a predicate that does a free text search using the given text on the given table names.
  *
- * The tables *must have* the following columns: social_security_number, date_of_birth, freetext_vec
+ * The tables *must have* the following columns: social_security_number, date_of_birth,
+ * freetext_vec, freetext_vec_no_address
  */
-fun personFreeTextSearchPredicate(tables: Collection<String>, searchText: String): PredicateSql {
+fun personFreeTextSearchPredicate(
+    tables: Collection<String>,
+    searchText: String,
+    matchAddresses: Boolean,
+): PredicateSql {
     val ssnPredicates =
         findSsnParams(searchText).map { ssn ->
             Predicate { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
@@ -30,7 +35,8 @@ fun personFreeTextSearchPredicate(tables: Collection<String>, searchText: String
             .takeIf { it.isNotBlank() }
             ?.let(::freeTextParamsToTsQuery)
             ?.let { tsQuery ->
-                Predicate { where("$it.freetext_vec @@ to_tsquery('simple', ${bind(tsQuery)})") }
+                val column = freeTextColumn(matchAddresses)
+                Predicate { where("$it.$column @@ to_tsquery('simple', ${bind(tsQuery)})") }
             }
 
     val freeTextPredicateSql =
@@ -55,14 +61,22 @@ fun personFreeTextSearchPredicate(tables: Collection<String>, searchText: String
     return PredicateSql.all(freeTextPredicateSql, ssnPredicateSql, datePredicateSql)
 }
 
-fun freeTextSearchPredicate(tables: List<String>, searchText: String): PredicateSql {
+fun freeTextSearchPredicate(
+    tables: List<String>,
+    searchText: String,
+    matchAddresses: Boolean,
+): PredicateSql {
     val ssnParams = findSsnParams(searchText)
     val dateParams = findDateParams(searchText)
     val freeTextString = searchText.let(removeSsnParams).let(removeDateParams)
 
     val freeText =
         if (freeTextString.isNotBlank()) {
-            freeTextComputedColumnPredicate(tables, freeTextParamsToTsQuery(freeTextString))
+            freeTextComputedColumnPredicate(
+                tables,
+                column = freeTextColumn(matchAddresses),
+                query = freeTextParamsToTsQuery(freeTextString),
+            )
         } else {
             null
         }
@@ -114,10 +128,13 @@ fun disjointNumberPredicate(table: String, column: String, params: Collection<St
         params.map { param -> PredicateSql { where("$table.$column::text = ${bind(param)}") } }
     )
 
-private fun freeTextComputedColumnPredicate(tables: List<String>, query: String) =
+private fun freeTextColumn(matchAddresses: Boolean) =
+    if (matchAddresses) "freetext_vec" else "freetext_vec_no_address"
+
+private fun freeTextComputedColumnPredicate(tables: List<String>, column: String, query: String) =
     PredicateSql.any(
         tables.map { table ->
-            PredicateSql { where("$table.freetext_vec @@ to_tsquery('simple', ${bind(query)})") }
+            PredicateSql { where("$table.$column @@ to_tsquery('simple', ${bind(query)})") }
         }
     )
 

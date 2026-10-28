@@ -620,3 +620,5 @@ V621__mcp_server.sql
 V622__person_data_retention_last_attempted_at.sql
 V623__person_mailing_address.sql
 V624__copy_person_mailing_address.sql
+V625__person_freetext_vec_no_address.sql
+V626__person_freetext_vec_no_address_index.sql

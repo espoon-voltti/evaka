@@ -13,6 +13,8 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { UserContext } from '../../state/user'
+import { hasGlobalAction } from '../../utils/roles'
 import {
   AreaFilter,
   Filters,
@@ -40,6 +42,7 @@ export default React.memo(function InvoiceFilters({
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
 
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {
@@ -114,7 +117,11 @@ export default React.memo(function InvoiceFilters({
 
   return (
     <Filters
-      searchPlaceholder={i18n.filters.freeTextPlaceholder}
+      searchPlaceholder={
+        hasGlobalAction(user, 'SEARCH_PEOPLE_BY_ADDRESS')
+          ? i18n.filters.freeTextPlaceholder
+          : i18n.filters.freeTextPlaceholderWithoutAddress
+      }
       freeText={searchFilters.searchTerms}
       setFreeText={(s) =>
         setSearchFilters((prev) => ({ ...prev, searchTerms: s }))
