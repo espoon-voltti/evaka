@@ -490,7 +490,7 @@ SELECT
     child.first_name as child_first_name,
     child.last_name as child_last_name,
     child.social_security_number as child_ssn,
-    child.street_address as child_address,
+    child.street_address as child_street_address,
     child.postal_code as child_postal_code,
     child.post_office as child_post_office,
     child.restricted_details_enabled as child_restricted_details_enabled,
