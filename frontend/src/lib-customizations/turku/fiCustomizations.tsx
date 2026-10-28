@@ -635,8 +635,7 @@ const fi: DeepPartial<Translations> = {
         <P>
           Samassa taloudessa asuvien aikuisten ja lasten määrä vaikuttaa
           asiakasmaksuihin. Jos perheen tiedoissa on tapahtunut muutos, ole
-          yhteydessä asiakasmaksutiimiin, puh.{' '}
-          <a href="tel:+35822625609">02 2625609</a>.
+          yhteydessä päiväkodinjohtajaan.
         </P>
       )
     }

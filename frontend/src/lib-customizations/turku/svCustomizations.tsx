@@ -29,9 +29,8 @@ const sv: DeepPartial<Translations> = {
       description: (
         <P>
           Antalet vuxna och barn som bor i samma hushåll påverkar
-          klientavgifterna. Om uppgifterna om familjen har ändrats, kontakta
-          enheten för klientavgifter, tfn{' '}
-          <a href="tel:+35822625609">02 2625609</a>.
+          klientavgifterna. Vid ändringar i familjens uppgifter, kontakta
+          daghemsföreståndaren.
         </P>
       )
     }
