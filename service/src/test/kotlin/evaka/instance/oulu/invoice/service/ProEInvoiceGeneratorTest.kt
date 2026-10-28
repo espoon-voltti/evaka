@@ -38,6 +38,41 @@ internal class ProEInvoiceGeneratorTest {
     }
 
     @Test
+    fun `uses the invoicing address and the invoice recipient name of the head of family`() {
+        val invoice =
+            validInvoice()
+                .copy(
+                    headOfFamily =
+                        validPerson()
+                            .copy(
+                                invoiceRecipientName = "Laskunsaaja Liisa",
+                                invoicingStreetAddress = "Laskutuskatu 1",
+                                invoicingPostalCode = "90200",
+                                invoicingPostOffice = "OULU",
+                            )
+                )
+
+        val header = proEInvoiceGenerator.gatherInvoiceData(invoice).invoiceHeader
+
+        assertEquals("Laskunsaaja Liisa", header[InvoiceFieldName.CLIENT_NAME1])
+        assertEquals("Laskutuskatu 1", header[InvoiceFieldName.STREET_ADDRESS])
+        assertEquals("90200 OULU", header[InvoiceFieldName.POSTAL_ADDRESS])
+    }
+
+    @Test
+    fun `uses the address of the head of family when the invoicing address is incomplete`() {
+        val invoice =
+            validInvoice()
+                .copy(headOfFamily = validPerson().copy(invoicingStreetAddress = "Laskutuskatu 1"))
+
+        val header = proEInvoiceGenerator.gatherInvoiceData(invoice).invoiceHeader
+
+        assertEquals("Meikäläinen Matti", header[InvoiceFieldName.CLIENT_NAME1])
+        assertEquals("Meikäläisenkuja 6 B 7", header[InvoiceFieldName.STREET_ADDRESS])
+        assertEquals("90100 OULU", header[InvoiceFieldName.POSTAL_ADDRESS])
+    }
+
+    @Test
     fun `should format invoice rows according to data and formatting`() {
         val format =
             listOf(
