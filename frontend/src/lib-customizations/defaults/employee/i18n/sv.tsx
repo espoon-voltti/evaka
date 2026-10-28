@@ -915,25 +915,6 @@ export const sv: typeof fi = {
         }
       }
     },
-    assistanceNeed: {
-      title: 'Stödbehov',
-      fields: {
-        dateRange: 'Stödbehov för tiden',
-        capacityFactor: 'Barnets stödkoefficient',
-        capacityFactorInfo:
-          'Kapaciteten bestäms vanligtvis utifrån barnets ålder och servicebehov. Om barnet har ett sådant stöd som använder mer kapacitet, lägg till stödets koefficient här. T.ex. koefficienten för ett barn som behöver stöd i en specialgrupp är 2,33' as ReactNode,
-        bases: 'Grunder'
-      },
-      create: 'Skapa ny stödbehovsperiod',
-      removeConfirmation: 'Vill du radera stödbehovet?',
-      errors: {
-        invalidCoefficient: 'Felaktig koefficient.',
-        conflict: 'Stödbehov överlappar med ett annat stödbehov.',
-        hardConflict:
-          'Stödbehov överlappar med ett annat stödbehovs startdatum.',
-        autoCutWarning: 'Tidigare överlappande stödbehov avbryts automatiskt.'
-      }
-    },
     assistanceAction: {
       title: 'Stödåtgärder och verksamhet',
       modified: 'Senast ändrad',

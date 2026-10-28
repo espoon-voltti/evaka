@@ -20,8 +20,6 @@ import colors from 'lib-customizations/common'
 
 import components from '../../components/i18n/en'
 
-import fi from './fi'
-
 const yes = 'Yes'
 const no = 'No'
 
@@ -1786,60 +1784,6 @@ const en: Translations = {
         submitFailure: 'Error in submitting the response'
       },
       returnToPreviousPage: 'Return'
-    },
-    assistancePreschoolDecisions: {
-      // the actual decision cannot be in English
-      ...fi.decisions.assistancePreschoolDecisions,
-      title: 'Decision of support in pre-primary education',
-      statuses: {
-        DRAFT: 'Draft',
-        NEEDS_WORK: 'Needs work',
-        ACCEPTED: 'Accepted',
-        REJECTED: 'Rejected',
-        ANNULLED: 'Annulled'
-      },
-      annulmentReason: 'Reason for the annulment',
-      pageTitle: 'Decision of support in pre-primary education',
-      type: 'Special support status',
-      types: {
-        NEW: 'Special support begins',
-        CONTINUING: 'Special support continues',
-        TERMINATED: 'Special support ends'
-      }
-    },
-    assistanceDecisions: {
-      title: 'Decision of support in early childhood education',
-      assistanceLevel: 'Level of support',
-      validityPeriod: 'Valid',
-      unit: 'Unit',
-      decisionMade: 'Decision made',
-      level: {
-        ASSISTANCE_ENDS: 'Special/enhanced assistance ends',
-        ASSISTANCE_SERVICES_FOR_TIME:
-          'Assistance services during validity of decision',
-        ENHANCED_ASSISTANCE: 'Enhanced assistance',
-        SPECIAL_ASSISTANCE: 'Special assistance'
-      },
-      statusLabel: 'Status',
-      openDecision: 'Show decision',
-      // the actual decision cannot be in English
-      decision: {
-        ...fi.decisions.assistanceDecisions.decision,
-        statuses: {
-          DRAFT: 'Draft',
-          NEEDS_WORK: 'Needs work',
-          ACCEPTED: 'Accepted',
-          REJECTED: 'Rejected',
-          ANNULLED: 'Annulled'
-        },
-        assistanceLevel: {
-          assistanceEnds: 'Special/enhanced assistance ends',
-          assistanceServicesForTime:
-            'Assistance services during validity of decision',
-          enhancedAssistance: 'Enhanced assistance',
-          specialAssistance: 'Special assistance'
-        }
-      }
     }
   },
   applicationsList: {

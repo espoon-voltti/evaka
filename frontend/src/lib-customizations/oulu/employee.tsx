@@ -76,16 +76,6 @@ const customizations: EmployeeCustomizations = {
         linkHref: 'https://www.ouka.fi/oulu/paivahoito-ja-esiopetus'
       },
       childInformation: {
-        assistanceNeed: {
-          title: 'Lapsen tuki',
-          fields: {
-            dateRange: 'Tuen tarve ajalle',
-            capacityFactor: 'Lapsen paikkaluku',
-            capacityFactorInfo:
-              'Täytetään, kun lapsen paikkaluku/tuen kerroin on muu kuin 1. Yksityisen palvelusetelin korotus määräytyy tuen kertoimen mukaan. Täytetään, kun päätös tehty.',
-            bases: 'Perusteet'
-          }
-        },
         assistanceAction: {
           title: 'Tukitoimet',
           fields: {

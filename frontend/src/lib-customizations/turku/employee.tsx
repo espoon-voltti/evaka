@@ -171,14 +171,6 @@ const customizations: EmployeeCustomizations = {
             }
           }
         },
-        assistanceNeed: {
-          fields: {
-            capacityFactor: 'Lapsen paikkatarve',
-            capacityFactorInfo:
-              'Rakenteellinen tuki määräytyy yleensä lapsen iän ja palvelun tarpeen mukaan. Mikäli lapsella on sellainen tuen tarve, joka lisää rakenteellisen tuen tarvetta, lisätään tuen tarpeen kerroin tähän. Tuen tarpeen ja kertoimen lisää varhaiskasvatuksen erityisopettaja. Päiväkodinjohtaja lisää kertoimen integroidun ryhmän tai erityisryhmän osalta',
-            bases: 'Perusteet'
-          }
-        },
         assistanceAction: {
           title: 'Tukitoimet ja tukipalvelut',
           fields: {
@@ -349,13 +341,6 @@ const customizations: EmployeeCustomizations = {
               SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2:
                 'Särskilt stöd och förlängd läroplikt - mycket svår utvecklingsstörning (till Koski)'
             }
-          }
-        },
-        assistanceNeed: {
-          fields: {
-            capacityFactor: 'Barnets platsbehov',
-            capacityFactorInfo:
-              'Det strukturella stödet bestäms vanligtvis utifrån barnets ålder och servicebehov. Om barnet har ett sådant stödbehov som ökar behovet av strukturellt stöd, läggs koefficienten för stödbehovet till här. Stödbehovet och koefficienten läggs till av specialläraren inom småbarnspedagogik. Daghemsföreståndaren lägger till koefficienten för en integrerad grupp eller en specialgrupp'
           }
         },
         assistanceAction: {
