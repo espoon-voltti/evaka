@@ -4,6 +4,7 @@
 
 package evaka.instance.turku.invoice.service
 
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -42,6 +43,37 @@ class SapInvoiceGeneratorTest {
 
     fun assertEmptyElement(tag: String) {
         assertElement(tag, "")
+    }
+
+    @Test
+    fun `uses the invoicing address and the invoice recipient name of the head of family`() {
+        val invoice =
+            validInvoice()
+                .copy(
+                    headOfFamily =
+                        validPerson()
+                            .copy(
+                                invoiceRecipientName = "Laskunsaaja Liisa",
+                                invoicingStreetAddress = "Laskutuskatu 1",
+                                invoicingPostalCode = "20200",
+                                invoicingPostOffice = "TURKU",
+                            )
+                )
+
+        val xml = SapInvoiceGenerator().generateInvoice(listOf(invoice)).invoiceString
+
+        for (role in listOf("AG", "RE", "RG", "WE")) {
+            assertTrue(
+                Regex(
+                        "<PARVW>$role</PARVW>\\s*<PARTN>310382-956D</PARTN>\\s*" +
+                            "<NAME1>Laskunsaaja Liisa</NAME1>\\s*" +
+                            "<STRAS>Laskutuskatu 1</STRAS>\\s*" +
+                            "<ORT01>TURKU</ORT01>\\s*<PSTLZ>20200</PSTLZ>"
+                    )
+                    .containsMatchIn(xml),
+                role,
+            )
+        }
     }
 
     @Test

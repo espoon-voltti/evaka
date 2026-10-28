@@ -6,6 +6,7 @@ package evaka.instance.oulu.invoice.service
 
 import evaka.core.daycare.CareType
 import evaka.core.invoicing.domain.InvoiceDetailed
+import evaka.core.invoicing.domain.addressUsable
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.shared.PersonId
 import evaka.instance.oulu.invoice.config.Product
@@ -40,7 +41,9 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
         invoiceDataMap[InvoiceFieldName.HEADER_ROW_CODE] = "L"
         invoiceDataMap[InvoiceFieldName.CLIENT_GROUP] = "10"
         val clientName =
-            invoiceDetailed.headOfFamily.lastName + " " + invoiceDetailed.headOfFamily.firstName
+            invoiceDetailed.headOfFamily.invoiceRecipientName.ifBlank {
+                invoiceDetailed.headOfFamily.lastName + " " + invoiceDetailed.headOfFamily.firstName
+            }
         // CLIENT_NAME1 and CLIENT_NAME2 are 50 characters wide, but Intime only reads the first
         // 30(!)
         invoiceDataMap[InvoiceFieldName.CLIENT_NAME1] =
@@ -48,9 +51,27 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
         invoiceDataMap[InvoiceFieldName.CLIENT_NAME2] =
             if (clientName.length > 30) clientName.substring(30, Math.min(60, clientName.length))
             else ""
-        invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] = invoiceDetailed.headOfFamily.streetAddress
-        invoiceDataMap[InvoiceFieldName.POSTAL_ADDRESS] =
-            invoiceDetailed.headOfFamily.postalCode + " " + invoiceDetailed.headOfFamily.postOffice
+        if (
+            addressUsable(
+                invoiceDetailed.headOfFamily.invoicingStreetAddress,
+                invoiceDetailed.headOfFamily.invoicingPostalCode,
+                invoiceDetailed.headOfFamily.invoicingPostOffice,
+            )
+        ) {
+            invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] =
+                invoiceDetailed.headOfFamily.invoicingStreetAddress
+            invoiceDataMap[InvoiceFieldName.POSTAL_ADDRESS] =
+                invoiceDetailed.headOfFamily.invoicingPostalCode +
+                    " " +
+                    invoiceDetailed.headOfFamily.invoicingPostOffice
+        } else {
+            invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] =
+                invoiceDetailed.headOfFamily.streetAddress
+            invoiceDataMap[InvoiceFieldName.POSTAL_ADDRESS] =
+                invoiceDetailed.headOfFamily.postalCode +
+                    " " +
+                    invoiceDetailed.headOfFamily.postOffice
+        }
         invoiceDataMap[InvoiceFieldName.PHONE_NUMBER] = invoiceDetailed.headOfFamily.phone
         invoiceDataMap[InvoiceFieldName.FAX_NUMBER] = ""
         invoiceDataMap[InvoiceFieldName.CLIENT_CONTACT] = ""
