@@ -287,7 +287,7 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
 
             if (nameOfCodebtorY1.count() > 35) {
                 e1edka1_5.name1 = nameOfCodebtorY1.substring(0, 35)
-                if (headOfFamilyName.length > 70) {
+                if (nameOfCodebtorY1.length > 70) {
                     e1edka1_5.name2 = nameOfCodebtorY1.substring(35, 70)
                 } else {
                     e1edka1_5.name2 = nameOfCodebtorY1.substring(35, nameOfCodebtorY1.length)
