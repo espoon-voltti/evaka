@@ -113,9 +113,9 @@ const customizations: EmployeeCustomizations = {
                   lapsella on tehostetun tai erityisen tuen tarve, voidaan
                   hänelle määritellä tuen kerroin. Hallintopäätöksen lapsen
                   tuesta tekee palvelupäällikkö. Päätöksen palvelusetelin
-                  korotuksesta tekee varhaiskasvatusjohtaja. Molemmat päätökset
-                  tehdään varhaiskasvatuksen erityisopettajan esityksen
-                  perusteella. Kertoimen tallentaa varhaiskasvatuksen
+                  korotuksesta tekee varhaiskasvatuspäällikkö. Molemmat
+                  päätökset tehdään varhaiskasvatuksen erityisopettajan
+                  esityksen perusteella. Kertoimen tallentaa varhaiskasvatuksen
                   erityisopettaja.
                 </li>
               </ol>
