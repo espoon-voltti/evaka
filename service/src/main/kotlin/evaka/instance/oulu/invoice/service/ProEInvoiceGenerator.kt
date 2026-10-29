@@ -6,7 +6,6 @@ package evaka.instance.oulu.invoice.service
 
 import evaka.core.daycare.CareType
 import evaka.core.invoicing.domain.InvoiceDetailed
-import evaka.core.invoicing.domain.addressUsable
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.shared.PersonId
 import evaka.instance.oulu.invoice.config.Product
@@ -51,27 +50,10 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
         invoiceDataMap[InvoiceFieldName.CLIENT_NAME2] =
             if (clientName.length > 30) clientName.substring(30, Math.min(60, clientName.length))
             else ""
-        if (
-            addressUsable(
-                invoiceDetailed.headOfFamily.invoicingStreetAddress,
-                invoiceDetailed.headOfFamily.invoicingPostalCode,
-                invoiceDetailed.headOfFamily.invoicingPostOffice,
-            )
-        ) {
-            invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] =
-                invoiceDetailed.headOfFamily.invoicingStreetAddress
-            invoiceDataMap[InvoiceFieldName.POSTAL_ADDRESS] =
-                invoiceDetailed.headOfFamily.invoicingPostalCode +
-                    " " +
-                    invoiceDetailed.headOfFamily.invoicingPostOffice
-        } else {
-            invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] =
-                invoiceDetailed.headOfFamily.mailingStreetAddress
-            invoiceDataMap[InvoiceFieldName.POSTAL_ADDRESS] =
-                invoiceDetailed.headOfFamily.mailingPostalCode +
-                    " " +
-                    invoiceDetailed.headOfFamily.mailingPostOffice
-        }
+        val invoiceAddress = invoiceDetailed.headOfFamily.invoiceAddress()
+        invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] = invoiceAddress.streetAddress
+        invoiceDataMap[InvoiceFieldName.POSTAL_ADDRESS] =
+            invoiceAddress.postalCode + " " + invoiceAddress.postOffice
         invoiceDataMap[InvoiceFieldName.PHONE_NUMBER] = invoiceDetailed.headOfFamily.phone
         invoiceDataMap[InvoiceFieldName.FAX_NUMBER] = ""
         invoiceDataMap[InvoiceFieldName.CLIENT_CONTACT] = ""
