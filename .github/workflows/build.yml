@@ -26,7 +26,6 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  id-token: write
   contents: read
   packages: write
   actions: read
@@ -86,6 +85,11 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+      actions: read
     needs:
       - cache-bust
     steps:
@@ -179,6 +183,11 @@ jobs:
   frontend-multi:
     if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+      actions: read
     needs:
       - cache-bust
     steps:
@@ -880,6 +889,11 @@ jobs:
       - service-builder
       - api-gateway
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -945,6 +959,11 @@ jobs:
       - frontend
       - frontend-test
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+      actions: read
     steps:
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -987,6 +1006,11 @@ jobs:
   tag:
     if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+      actions: read
     needs:
       - ecr-push
       - service-test
