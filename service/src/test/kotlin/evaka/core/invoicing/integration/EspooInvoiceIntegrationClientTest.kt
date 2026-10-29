@@ -352,5 +352,8 @@ class EspooInvoiceIntegrationClientTest {
             invoicingPostOffice = invoicingPostOffice,
             restrictedDetailsEnabled = false,
             forceManualFeeDecisions = false,
+            mailingStreetAddress = streetAddress,
+            mailingPostalCode = postalCode,
+            mailingPostOffice = postOffice,
         )
 }

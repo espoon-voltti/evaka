@@ -69,7 +69,7 @@ class MockDataServiceTest {
         val expectedAddress = "Raivaajantie 13"
 
         assertThat(parent.person).hasFieldOrPropertyWithValue("restrictedDetails.enabled", false)
-        assertThat(parent.person.address!!.streetAddress).isEqualTo(expectedAddress)
+        assertThat(parent.person.residentialAddress!!.streetAddress).isEqualTo(expectedAddress)
 
         val children = fetchInFull(parent.dependants)
         assertThat(children).size().isEqualTo(2)
@@ -79,7 +79,7 @@ class MockDataServiceTest {
                 "restricted details should not be enabled",
             )
         assertThat(children)
-            .extracting("address.streetAddress")
+            .extracting("residentialAddress.streetAddress")
             .containsExactly(expectedAddress, expectedAddress)
     }
 
@@ -90,14 +90,14 @@ class MockDataServiceTest {
         val expectedEmptyAddress = ""
 
         assertThat(parent.person).hasFieldOrPropertyWithValue("restrictedDetails.enabled", true)
-        assertThat(parent.person.address!!.streetAddress).isBlank
+        assertThat(parent.person.residentialAddress!!.streetAddress).isBlank
 
         val children = fetchInFull(parent.dependants)
         assertThat(children).size().isEqualTo(2)
         assertThat(children)
             .allMatch({ it.restrictedDetails!!.enabled }, "restricted details should be enabled")
         assertThat(children)
-            .extracting("address.streetAddress")
+            .extracting("residentialAddress.streetAddress")
             .containsExactly(expectedEmptyAddress, expectedEmptyAddress)
     }
 
@@ -109,14 +109,15 @@ class MockDataServiceTest {
         val expectedEmptyAddress = ""
 
         assertThat(parent.person).hasFieldOrPropertyWithValue("restrictedDetails.enabled", false)
-        assertThat(parent.person.address!!.streetAddress).isEqualTo(expectedGuardianAddress)
+        assertThat(parent.person.residentialAddress!!.streetAddress)
+            .isEqualTo(expectedGuardianAddress)
 
         val children = fetchInFull(parent.dependants)
         assertThat(children).size().isEqualTo(2)
         assertThat(children)
             .allMatch({ it.restrictedDetails!!.enabled }, "restricted details should be enabled")
         assertThat(children)
-            .extracting("address.streetAddress")
+            .extracting("residentialAddress.streetAddress")
             .containsExactly(expectedEmptyAddress, expectedEmptyAddress)
     }
 
@@ -127,14 +128,14 @@ class MockDataServiceTest {
         val expectedChildAddress = "Raivaajantie 19"
 
         assertThat(parent.person).hasFieldOrPropertyWithValue("restrictedDetails.enabled", true)
-        assertThat(parent.person.address!!.streetAddress).isBlank
+        assertThat(parent.person.residentialAddress!!.streetAddress).isBlank
 
         val children = fetchInFull(parent.dependants)
         assertThat(children).size().isEqualTo(2)
         assertThat(children)
             .allMatch({ !it.restrictedDetails!!.enabled }, "restricted details should not enabled")
         assertThat(children)
-            .extracting("address.streetAddress")
+            .extracting("residentialAddress.streetAddress")
             .containsExactly(expectedChildAddress, expectedChildAddress)
     }
 

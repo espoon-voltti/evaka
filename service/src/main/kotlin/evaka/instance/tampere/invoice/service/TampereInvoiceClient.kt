@@ -217,7 +217,11 @@ internal fun toInvoicePerson(person: PersonDetailed): InvoicePerson {
                 person.invoicingPostOffice.trim(),
             )
         } else {
-            Triple(person.streetAddress.trim(), person.postalCode.trim(), person.postOffice.trim())
+            Triple(
+                person.mailingStreetAddress.trim(),
+                person.mailingPostalCode.trim(),
+                person.mailingPostOffice.trim(),
+            )
         }
     return InvoicePerson(
         ssn!!,

@@ -21,6 +21,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.VtjPerson
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
@@ -40,7 +41,7 @@ data class ApplyResult(
 fun Database.Transaction.applyPerson(person: VtjPerson, now: HelsinkiDateTime): ApplyResult {
     val ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN")
     val old = lockPersonBySSN(ssn.value)
-    val (new, created) =
+    val (id, created) =
         createQuery {
             sql(
                 """
@@ -69,9 +70,9 @@ VALUES (
     ${bind(person.dateOfDeath)},
     ${bind(person.nativeLanguage?.code ?: "")},
     ${bind(person.nationalities.map { it.countryCode })},
-    ${bind(person.streetAddressByLanguage())},
-    ${bind(person.address?.postalCode ?: "")},
-    ${bind(person.postOfficeByLanguage())},
+    ${bind(person.residentialAddress?.streetAddressByLanguage(person.prefersSwedish()) ?: "")},
+    ${bind(person.residentialAddress?.postalCode ?: "")},
+    ${bind(person.residentialAddress?.postOfficeByLanguage(person.prefersSwedish()) ?: "")},
     ${bind(person.residenceCode ?: "")},
     ${bind(person.municipalityOfResidenceByLanguage())},
     ${bind(person.restrictedDetails?.enabled ?: false)},
@@ -93,15 +94,16 @@ ON CONFLICT (social_security_number) DO UPDATE SET
     restricted_details_enabled = excluded.restricted_details_enabled,
     restricted_details_end_date = excluded.restricted_details_end_date,
     updated_from_vtj = excluded.updated_from_vtj
-RETURNING *, old.id IS NULL AS inserted
+RETURNING id, old.id IS NULL AS inserted
 """
             )
         }
-            .exactlyOne { toPersonDTO() to column<Boolean>("inserted") }
+            .exactlyOne { PersonId(column("id")) to column<Boolean>("inserted") }
 
     if (created) {
-        val _ = createPersonMessageAccount(new.id)
+        val _ = createPersonMessageAccount(id)
     }
+    val new = applyMailingAddress(id, person, now.toLocalDate())
     if (old != null) logChangedFields(old, new)
     return ApplyResult(
         id = new.id,
@@ -122,10 +124,10 @@ fun Database.Transaction.setSsnFromVtj(
 ): ApplyResult {
     val ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN")
     val old = getPersonById(personId) ?: error("Person $personId not found")
-    val new =
+    val _ =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 UPDATE person SET
     social_security_number = ${bind(ssn)},
     first_name = ${bind(person.firstNames)},
@@ -134,21 +136,22 @@ UPDATE person SET
     date_of_death = ${bind(person.dateOfDeath)},
     language = ${bind(person.nativeLanguage?.code ?: "")},
     nationalities = ${bind(person.nationalities.map { it.countryCode })},
-    street_address = ${bind(person.streetAddressByLanguage())},
-    postal_code = ${bind(person.address?.postalCode ?: "")},
-    post_office = ${bind(person.postOfficeByLanguage())},
+    street_address = ${bind(person.residentialAddress?.streetAddressByLanguage(person.prefersSwedish()) ?: "")},
+    postal_code = ${bind(person.residentialAddress?.postalCode ?: "")},
+    post_office = ${bind(person.residentialAddress?.postOfficeByLanguage(person.prefersSwedish()) ?: "")},
     residence_code = ${bind(person.residenceCode ?: "")},
     municipality_of_residence = ${bind(person.municipalityOfResidenceByLanguage())},
     restricted_details_enabled = ${bind(person.restrictedDetails?.enabled ?: false)},
     restricted_details_end_date = ${bind(person.restrictedDetails?.endDate)},
     updated_from_vtj = ${bind(now)}
 WHERE id = ${bind(personId)} AND social_security_number IS NULL
-RETURNING *
+RETURNING id
 """
-                )
-            }
-            .exactlyOneOrNull(toPersonDTO) ?: throw Conflict("Person $personId already has an SSN")
+            )
+        }
+            .exactlyOneOrNull<PersonId>() ?: throw Conflict("Person $personId already has an SSN")
 
+    val new = applyMailingAddress(personId, person, now.toLocalDate())
     logChangedFields(old, new)
     return ApplyResult(
         id = new.id,
@@ -388,17 +391,36 @@ private fun logChangedFields(old: PersonDTO, new: PersonDTO) {
     }
 }
 
+private fun Database.Transaction.applyMailingAddress(
+    personId: PersonId,
+    person: VtjPerson,
+    today: LocalDate,
+): PersonDTO {
+    replaceAddressPeriods(
+        personId,
+        person.mailingAddressPeriods
+            .filter { it.validDuring.end == null || it.validDuring.end >= today }
+            .map {
+                AddressPeriodRow(
+                    type = it.type,
+                    validDuring = it.validDuring,
+                    streetAddress = it.address.streetAddressByLanguage(person.prefersSwedish()),
+                    postalCode = it.address.postalCode ?: "",
+                    postOffice = it.address.postOfficeByLanguage(person.prefersSwedish()),
+                )
+            },
+    )
+    val _ = updateMailingAddresses(today, listOf(personId))
+    return getPersonById(personId) ?: error("Person $personId not found")
+}
+
 private fun VtjPerson.prefersSwedish(): Boolean = nativeLanguage?.code == "sv"
 
-private fun VtjPerson.streetAddressByLanguage(): String =
-    address?.streetAddressSe?.takeIf { prefersSwedish() && it.isNotEmpty() }
-        ?: address?.streetAddress
-        ?: ""
+private fun PersonAddress.streetAddressByLanguage(swedish: Boolean): String =
+    streetAddressSe?.takeIf { swedish && it.isNotEmpty() } ?: streetAddress ?: ""
 
-private fun VtjPerson.postOfficeByLanguage(): String =
-    address?.postOfficeSe?.takeIf { prefersSwedish() && it.isNotEmpty() }
-        ?: address?.postOffice
-        ?: ""
+private fun PersonAddress.postOfficeByLanguage(swedish: Boolean): String =
+    postOfficeSe?.takeIf { swedish && it.isNotEmpty() } ?: postOffice ?: ""
 
 private fun VtjPerson.municipalityOfResidenceByLanguage(): String =
     municipalityOfResidenceSe?.takeIf { prefersSwedish() && it.isNotEmpty() }

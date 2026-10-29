@@ -884,6 +884,9 @@ export interface DevPerson {
   invoicingStreetAddress: string
   language: string | null
   lastName: string
+  mailingPostOffice: string
+  mailingPostalCode: string
+  mailingStreetAddress: string
   municipalityOfResidence: string
   nationalities: string[]
   ophPersonOid: string | null

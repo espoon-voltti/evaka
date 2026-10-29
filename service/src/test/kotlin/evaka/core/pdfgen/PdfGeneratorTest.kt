@@ -63,6 +63,9 @@ private val guardian =
         "Kuusikallionrinne 26 A 4",
         "02270",
         "Espoo",
+        "Kuusikallionrinne 26 A 4",
+        "02270",
+        "Espoo",
         "",
         "",
     )

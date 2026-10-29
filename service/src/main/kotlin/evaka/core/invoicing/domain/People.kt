@@ -47,6 +47,9 @@ data class PersonDetailed(
     val invoicingPostOffice: String = "",
     val restrictedDetailsEnabled: Boolean,
     val forceManualFeeDecisions: Boolean = false,
+    val mailingStreetAddress: String = "",
+    val mailingPostalCode: String = "",
+    val mailingPostOffice: String = "",
 )
 
 fun addressUsable(streetAddress: String?, postalCode: String?, city: String?): Boolean =

@@ -139,6 +139,41 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     @Test
+    fun `a child is added to the family by the residential address when the mailing address differs`() {
+        val child =
+            DevPerson(
+                ssn = "101221A998R",
+                dateOfBirth = getDobFromSsn("101221A998R"),
+                firstName = "Lapsi3",
+                lastName = "Meikäläinen",
+                streetAddress = "Katu 1",
+                postalCode = "20100",
+                postOffice = "Espoo",
+                mailingStreetAddress = "Mökkitie 2",
+                mailingPostalCode = "10900",
+                mailingPostOffice = "Hanko",
+            )
+        db.transaction { it.insert(child, DevPersonType.RAW_ROW) }
+        MockVtjClient.addPersons(child)
+        MockVtjClient.addDependants(adult1, child.toPersonDTO())
+
+        fridgeFamilyService.refreshFamily(
+            db,
+            AuthenticatedUser.SystemInternalUser.evakaUserId,
+            mockToday,
+            adult1.id,
+        )
+
+        db.read {
+            assertEquals(
+                1,
+                it.getParentships(adult1.id, child.id, false, DateRange(mockToday.today(), null))
+                    .size,
+            )
+        }
+    }
+
+    @Test
     fun `New child is added to existing head of family`() {
         MockVtjClient.addDependants(adult1, child1)
         MockVtjClient.addDependants(adult2, child1)

@@ -41,6 +41,10 @@ export default React.memo(function PersonalDetailsSection({
   const [editMode, setEditMode] = useBoolean(false)
 
   const canEdit = user.authLevel === 'STRONG'
+  const showMailingAddress =
+    user.mailingStreetAddress !== user.streetAddress ||
+    user.mailingPostalCode !== user.postalCode ||
+    user.mailingPostOffice !== user.postOffice
   const navigateToLogin = useCallback(
     () => window.location.replace(getStrongLoginUri()),
     []
@@ -127,12 +131,26 @@ export default React.memo(function PersonalDetailsSection({
         </DataRowValue>
       </DataRow>
       <DataRow>
-        <DataRowLabel>{t.personalDetails.detailsSection.address}</DataRowLabel>
+        <DataRowLabel>
+          {showMailingAddress
+            ? t.personalDetails.detailsSection.residentialAddress
+            : t.personalDetails.detailsSection.address}
+        </DataRowLabel>
         <DataRowValue>
           {user.streetAddress &&
             `${user.streetAddress}, ${user.postalCode} ${user.postOffice}`}
         </DataRowValue>
       </DataRow>
+      {showMailingAddress && (
+        <DataRow>
+          <DataRowLabel>
+            {t.personalDetails.detailsSection.mailingAddress}
+          </DataRowLabel>
+          <DataRowValue data-qa="mailing-address">
+            {`${user.mailingStreetAddress}, ${user.mailingPostalCode} ${user.mailingPostOffice}`}
+          </DataRowValue>
+        </DataRow>
+      )}
     </div>
   )
 })

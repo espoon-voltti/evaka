@@ -30,9 +30,9 @@ data class InvoicePerson(val name: String, val address: InvoiceAddress) {
                 InvoiceAddress(invoicingStreetAddress, invoicingPostalCode, invoicingPostOffice)
             } else {
                 InvoiceAddress(
-                    person.streetAddress.trim(),
-                    person.postalCode.trim(),
-                    person.postOffice.trim(),
+                    person.mailingStreetAddress.trim(),
+                    person.mailingPostalCode.trim(),
+                    person.mailingPostOffice.trim(),
                 )
             }
         }

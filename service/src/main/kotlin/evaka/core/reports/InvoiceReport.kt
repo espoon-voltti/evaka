@@ -72,9 +72,9 @@ private fun Database.Read.getInvoiceReportWithRows(period: FiniteDateRange): Inv
 
 private fun withoutAddress(invoice: InvoiceDetailed): Boolean =
     !addressUsable(
-        invoice.headOfFamily.streetAddress,
-        invoice.headOfFamily.postalCode,
-        invoice.headOfFamily.postOffice,
+        invoice.headOfFamily.mailingStreetAddress,
+        invoice.headOfFamily.mailingPostalCode,
+        invoice.headOfFamily.mailingPostOffice,
     ) &&
         !addressUsable(
             invoice.headOfFamily.invoicingStreetAddress,

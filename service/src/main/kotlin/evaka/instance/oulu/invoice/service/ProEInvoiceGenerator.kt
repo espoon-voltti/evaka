@@ -66,11 +66,11 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
                     invoiceDetailed.headOfFamily.invoicingPostOffice
         } else {
             invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] =
-                invoiceDetailed.headOfFamily.streetAddress
+                invoiceDetailed.headOfFamily.mailingStreetAddress
             invoiceDataMap[InvoiceFieldName.POSTAL_ADDRESS] =
-                invoiceDetailed.headOfFamily.postalCode +
+                invoiceDetailed.headOfFamily.mailingPostalCode +
                     " " +
-                    invoiceDetailed.headOfFamily.postOffice
+                    invoiceDetailed.headOfFamily.mailingPostOffice
         }
         invoiceDataMap[InvoiceFieldName.PHONE_NUMBER] = invoiceDetailed.headOfFamily.phone
         invoiceDataMap[InvoiceFieldName.FAX_NUMBER] = ""
@@ -127,9 +127,9 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
             invoiceDataMap[InvoiceFieldName.CODEBTOR_IDENTIFIER] = codebtor.ssn ?: ""
             invoiceDataMap[InvoiceFieldName.CODEBTOR_NAME] =
                 codebtor.lastName + " " + codebtor.firstName
-            invoiceDataMap[InvoiceFieldName.CODEBTOR_STREET_ADDRESS] = codebtor.streetAddress
+            invoiceDataMap[InvoiceFieldName.CODEBTOR_STREET_ADDRESS] = codebtor.mailingStreetAddress
             invoiceDataMap[InvoiceFieldName.CODEBTOR_POSTAL_ADDRESS] =
-                codebtor.postalCode + " " + codebtor.postOffice
+                codebtor.mailingPostalCode + " " + codebtor.mailingPostOffice
             invoiceDataMap[InvoiceFieldName.CODEBTOR_PHONE_NUMBER] = codebtor.phone
         } else {
             invoiceDataMap[InvoiceFieldName.CODEBTOR_IDENTIFIER] = ""

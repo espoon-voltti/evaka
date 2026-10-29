@@ -337,6 +337,9 @@ fun validPerson() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Meikäläisenkuja 6 B 7",
+        mailingPostalCode = "33730",
+        mailingPostOffice = "TAMPERE",
     )
 
 fun personWithoutSSN() =
@@ -355,4 +358,7 @@ fun personWithoutSSN() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Meikäläisenkuja 6 B 7",
+        mailingPostalCode = "33730",
+        mailingPostOffice = "TAMPERE",
     )

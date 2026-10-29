@@ -323,9 +323,9 @@ internal fun handlePerson(person: PersonDetailed): PersonDetailed {
                     )
                 } else {
                     Triple(
-                        person.streetAddress.trim(),
-                        person.postalCode.trim(),
-                        person.postOffice.trim(),
+                        person.mailingStreetAddress.trim(),
+                        person.mailingPostalCode.trim(),
+                        person.mailingPostOffice.trim(),
                     )
                 }
         }

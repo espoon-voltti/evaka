@@ -922,6 +922,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             invoicingPostOffice = invoicingPostOffice,
             restrictedDetailsEnabled = restrictedDetailsEnabled,
             forceManualFeeDecisions = forceManualFeeDecisions,
+            mailingStreetAddress = mailingStreetAddress,
+            mailingPostalCode = mailingPostalCode,
+            mailingPostOffice = mailingPostOffice,
         )
 
     private fun toDetailed(
