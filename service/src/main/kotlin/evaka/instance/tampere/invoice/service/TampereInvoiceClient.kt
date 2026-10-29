@@ -209,20 +209,7 @@ internal fun toInvoicePerson(person: PersonDetailed): InvoicePerson {
             person.lastName.trim() to person.firstName.trim()
         }
     val restrictedDetailsEnabled = person.restrictedDetailsEnabled
-    val (streetName, postalCode, postOffice) =
-        if (hasInvoicingAddress(person)) {
-            Triple(
-                person.invoicingStreetAddress.trim(),
-                person.invoicingPostalCode.trim(),
-                person.invoicingPostOffice.trim(),
-            )
-        } else {
-            Triple(
-                person.mailingStreetAddress.trim(),
-                person.mailingPostalCode.trim(),
-                person.mailingPostOffice.trim(),
-            )
-        }
+    val (streetName, postalCode, postOffice) = person.invoiceAddress()
     return InvoicePerson(
         ssn!!,
         lastName,
@@ -233,11 +220,6 @@ internal fun toInvoicePerson(person: PersonDetailed): InvoicePerson {
         postOffice,
     )
 }
-
-internal fun hasInvoicingAddress(person: PersonDetailed): Boolean =
-    person.invoicingStreetAddress.isNotBlank() &&
-        person.invoicingPostalCode.isNotBlank() &&
-        person.invoicingPostOffice.isNotBlank()
 
 internal data class InvoicePerson(
     val ssn: String,

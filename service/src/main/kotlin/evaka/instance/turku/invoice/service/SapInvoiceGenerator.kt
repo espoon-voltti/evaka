@@ -9,7 +9,6 @@ package evaka.instance.turku.invoice.service
 
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.domain.InvoiceRowDetailed
-import evaka.core.invoicing.domain.addressUsable
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.instance.turku.invoice.config.Product
 import jakarta.xml.bind.JAXBContext
@@ -149,25 +148,7 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
                 invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
             }
         val (headOfFamilyStreetAddress, headOfFamilyPostalCode, headOfFamilyPostOffice) =
-            if (
-                addressUsable(
-                    invoice.headOfFamily.invoicingStreetAddress,
-                    invoice.headOfFamily.invoicingPostalCode,
-                    invoice.headOfFamily.invoicingPostOffice,
-                )
-            ) {
-                Triple(
-                    invoice.headOfFamily.invoicingStreetAddress,
-                    invoice.headOfFamily.invoicingPostalCode,
-                    invoice.headOfFamily.invoicingPostOffice,
-                )
-            } else {
-                Triple(
-                    invoice.headOfFamily.mailingStreetAddress,
-                    invoice.headOfFamily.mailingPostalCode,
-                    invoice.headOfFamily.mailingPostOffice,
-                )
-            }
+            invoice.headOfFamily.invoiceAddress()
 
         val e1edka1 = ORDERS05.IDOC.E1EDKA1()
         e1edka1.segment = "1"

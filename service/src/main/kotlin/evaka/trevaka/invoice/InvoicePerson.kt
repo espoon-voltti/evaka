@@ -4,6 +4,7 @@
 
 package evaka.trevaka.invoice
 
+import evaka.core.invoicing.domain.InvoiceAddress
 import evaka.core.invoicing.domain.PersonDetailed
 
 data class InvoicePerson(val name: String, val address: InvoiceAddress) {
@@ -14,29 +15,8 @@ data class InvoicePerson(val name: String, val address: InvoiceAddress) {
                     "${person.lastName.trim()} ${person.firstName.trim()}".trim()
                 }
             val address =
-                if (person.restrictedDetailsEnabled) restrictedAddress else address(person)
+                if (person.restrictedDetailsEnabled) restrictedAddress else person.invoiceAddress()
             return InvoicePerson(name, address)
-        }
-
-        private fun address(person: PersonDetailed): InvoiceAddress {
-            val invoicingStreetAddress = person.invoicingStreetAddress.trim()
-            val invoicingPostalCode = person.invoicingPostalCode.trim()
-            val invoicingPostOffice = person.invoicingPostOffice.trim()
-            return if (
-                invoicingStreetAddress.isNotEmpty() &&
-                    invoicingPostalCode.isNotEmpty() &&
-                    invoicingPostOffice.isNotEmpty()
-            ) {
-                InvoiceAddress(invoicingStreetAddress, invoicingPostalCode, invoicingPostOffice)
-            } else {
-                InvoiceAddress(
-                    person.mailingStreetAddress.trim(),
-                    person.mailingPostalCode.trim(),
-                    person.mailingPostOffice.trim(),
-                )
-            }
         }
     }
 }
-
-data class InvoiceAddress(val streetAddress: String, val postalCode: String, val postOffice: String)

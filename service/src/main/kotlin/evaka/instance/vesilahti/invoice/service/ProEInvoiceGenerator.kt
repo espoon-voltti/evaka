@@ -4,6 +4,7 @@
 
 package evaka.instance.vesilahti.invoice.service
 
+import evaka.core.invoicing.domain.InvoiceAddress
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
@@ -320,22 +321,10 @@ internal fun handlePerson(person: PersonDetailed): PersonDetailed {
         }
     val (streetAddress, postalCode, postOffice) =
         when (person.restrictedDetailsEnabled) {
-            true -> Triple(restrictedStreetAddress, restrictedPostCode, restrictedPostOffice)
+            true ->
+                InvoiceAddress(restrictedStreetAddress, restrictedPostCode, restrictedPostOffice)
 
-            false ->
-                if (hasInvoicingAddress(person)) {
-                    Triple(
-                        person.invoicingStreetAddress.trim(),
-                        person.invoicingPostalCode.trim(),
-                        person.invoicingPostOffice.trim(),
-                    )
-                } else {
-                    Triple(
-                        person.mailingStreetAddress.trim(),
-                        person.mailingPostalCode.trim(),
-                        person.mailingPostOffice.trim(),
-                    )
-                }
+            false -> person.invoiceAddress()
         }
     return person.copy(
         lastName = lastName,
@@ -345,8 +334,3 @@ internal fun handlePerson(person: PersonDetailed): PersonDetailed {
         postOffice = postOffice,
     )
 }
-
-internal fun hasInvoicingAddress(person: PersonDetailed): Boolean =
-    person.invoicingStreetAddress.isNotBlank() &&
-        person.invoicingPostalCode.isNotBlank() &&
-        person.invoicingPostOffice.isNotBlank()

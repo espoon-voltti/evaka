@@ -71,16 +71,9 @@ private fun Database.Read.getInvoiceReportWithRows(period: FiniteDateRange): Inv
 }
 
 private fun withoutAddress(invoice: InvoiceDetailed): Boolean =
-    !addressUsable(
-        invoice.headOfFamily.mailingStreetAddress,
-        invoice.headOfFamily.mailingPostalCode,
-        invoice.headOfFamily.mailingPostOffice,
-    ) &&
-        !addressUsable(
-            invoice.headOfFamily.invoicingStreetAddress,
-            invoice.headOfFamily.invoicingPostalCode,
-            invoice.headOfFamily.invoicingPostOffice,
-        )
+    invoice.headOfFamily.invoiceAddress().let {
+        !addressUsable(it.streetAddress, it.postalCode, it.postOffice)
+    }
 
 data class InvoiceReportRow(
     val areaCode: Int?,
