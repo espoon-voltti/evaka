@@ -29,8 +29,8 @@ const en: DeepPartial<Translations> = {
       description: (
         <P>
           The number of adults and children living in the same household affects
-          the client fees. If your family details have changed, please contact
-          the client fee unit, tel. <a href="tel:+35822625609">02 2625609</a>.
+          the client fees. If your family’s information has changed, please
+          contact the daycare centre director.
         </P>
       )
     }
