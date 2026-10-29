@@ -4773,6 +4773,9 @@ export const sv: typeof fi = {
       financeFolders: 'Ekonomiförvaltningens mappar',
       ownMessages: 'Egna meddelanden',
       groupsMessages: 'Gruppernas meddelanden',
+      showClosedGroups: 'Visa gamla grupper',
+      hideClosedGroups: 'Dölj gamla grupper',
+      closedGroupName: (name: string) => `${name} (gammal)`,
       noAccountAccess:
         'Du har inte rättigheter till gruppen. Begär rättigheter av din ledare.'
     },

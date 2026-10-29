@@ -29,7 +29,7 @@ import {
 } from './types-view'
 
 const Container = styled.div`
-  flex: 0 1 260px;
+  flex: 0 0 260px;
   display: flex;
   flex-direction: column;
   margin-right: ${defaultMargins.m};

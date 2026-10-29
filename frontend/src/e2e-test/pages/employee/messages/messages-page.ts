@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { MessageType } from 'lib-common/generated/api-types/messaging'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
 
 import { expect } from '../../../playwright'
 import type { Page, ElementCollection } from '../../../utils/page'
@@ -175,6 +176,18 @@ export default class MessagesPage {
 
   get groupAccountNames(): ElementCollection {
     return this.#unitAccount.findAllByDataQa('group-message-account-name')
+  }
+
+  get showClosedGroupsToggle(): Element {
+    return this.#unitAccount.findByDataQa('show-closed-groups-toggle')
+  }
+
+  groupAccount(groupId: GroupId) {
+    const account = this.#unitAccount.findByDataQa(`group-account-${groupId}`)
+    return {
+      name: account.findByDataQa('group-message-account-name'),
+      receivedBox: account.findByDataQa('message-box-row-received')
+    }
   }
 
   async close() {

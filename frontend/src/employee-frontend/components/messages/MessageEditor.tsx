@@ -504,10 +504,12 @@ export default React.memo(function MessageEditor({
 
   const senderOptions = useMemo(
     () =>
-      accounts.map(({ account: { id, name } }: AuthorizedMessageAccount) => ({
-        value: id,
-        label: name
-      })),
+      accounts
+        .filter(({ daycareGroup }) => !daycareGroup?.closed)
+        .map(({ account: { id, name } }: AuthorizedMessageAccount) => ({
+          value: id,
+          label: name
+        })),
     [accounts]
   )
 
