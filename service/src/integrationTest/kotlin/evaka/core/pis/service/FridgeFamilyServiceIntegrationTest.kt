@@ -28,6 +28,7 @@ import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
 import java.time.LocalDateTime
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -306,13 +307,14 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
 
         db.read {
-            assertEquals(
-                listOf(adult1.id),
+            val heads =
                 it.getParentships(null, child1.id, false, DateRange(mockToday.today(), null)).map {
                     parentship ->
                     parentship.headOfChildId
-                },
-            )
+                }
+            assertEquals(1, heads.size)
+            // Either guardian can become the head of the family
+            assertContains(setOf(adult1.id, adult2.id), heads.single())
         }
     }
 
