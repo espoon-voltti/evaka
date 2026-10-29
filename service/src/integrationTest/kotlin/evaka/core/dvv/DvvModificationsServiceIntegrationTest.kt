@@ -4,14 +4,17 @@
 
 package evaka.core.dvv
 
+import evaka.core.pis.AddressPeriodRow
 import evaka.core.pis.Creator
 import evaka.core.pis.createParentship
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPartnersForPerson
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
+import evaka.core.pis.replaceAddressPeriods
 import evaka.core.pis.service.getChildGuardians
 import evaka.core.pis.service.getGuardianChildIds
+import evaka.core.pis.updateMailingAddressesFromPeriods
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.dev.DevFridgePartnership
@@ -19,9 +22,11 @@ import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
+import evaka.core.vtjclient.dto.AddressPeriodType
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
@@ -191,7 +196,21 @@ class DvvModificationsServiceIntegrationTest :
 
     @Test
     fun `person restricted details started`() {
-        createTestPerson(testPerson.copy(ssn = "020180-999Y"))
+        val id = createTestPerson(testPerson.copy(ssn = "020180-999Y"))
+        db.transaction {
+            it.replaceAddressPeriods(
+                id,
+                listOf(
+                    AddressPeriodRow(
+                        AddressPeriodType.MAILING,
+                        DateRange(LocalDate.of(2019, 1, 1), null),
+                        "PL 10",
+                        "02231",
+                        "Espoo",
+                    )
+                ),
+            )
+        }
         MockVtjClient.addPersons(
             testPerson.copy(
                 ssn = "020180-999Y",
@@ -204,11 +223,16 @@ class DvvModificationsServiceIntegrationTest :
             )
         )
         updatePeopleFromDvv(listOf("020180-999Y"))
+        // The mailing address period must not come back on the next nightly update
+        db.transaction { it.updateMailingAddressesFromPeriods(LocalDate.of(2020, 1, 2)) }
         val modifiedPerson = db.read { it.getPersonBySSN("020180-999Y") }!!
         assertEquals(true, modifiedPerson.restrictedDetailsEnabled)
         assertEquals("", modifiedPerson.streetAddress)
         assertEquals("", modifiedPerson.postalCode)
         assertEquals("", modifiedPerson.postOffice)
+        assertEquals("", modifiedPerson.mailingStreetAddress)
+        assertEquals("", modifiedPerson.mailingPostalCode)
+        assertEquals("", modifiedPerson.mailingPostOffice)
         assertEquals("", modifiedPerson.municipalityOfResidence)
     }
 

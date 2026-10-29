@@ -50,7 +50,7 @@ class SoapVtjClientTest {
 
         val result = service.fetchPerson(query)
         assertThat(result.socialSecurityNumber).isEqualTo(validPerson.socialSecurityNumber)
-        assertThat(result.address).isEqualTo(validPerson.address)
+        assertThat(result.residentialAddress).isEqualTo(validPerson.residentialAddress)
     }
 
     @Test
@@ -88,7 +88,7 @@ class SoapVtjClientTest {
             lastName = "Testaaja",
             socialSecurityNumber = "010882-983Y",
             nativeLanguage = NativeLanguage(languageName = "suomi", code = "fi"),
-            address =
+            residentialAddress =
                 PersonAddress(
                     streetAddress = "Kaivomestarinkatu 15",
                     postOffice = "Espoo",

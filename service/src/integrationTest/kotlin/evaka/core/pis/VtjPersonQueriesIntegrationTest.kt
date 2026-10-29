@@ -49,7 +49,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             firstNames = "Matti Yrjö",
             lastName = "Meikäläinen",
             socialSecurityNumber = "010199-8137",
-            address =
+            residentialAddress =
                 PersonAddress("Jokutie 66", "00100", "Helsinki", "Någonvägen 66", "Helsingfors"),
             nativeLanguage = NativeLanguage(languageName = "suomi", code = "fi"),
             nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "246")),
@@ -159,7 +159,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.applyPerson(
                 vtjPerson.copy(
                     nativeLanguage = NativeLanguage(code = "sv"),
-                    address = PersonAddress("Jokutie 66", "00100", "Helsinki", "", ""),
+                    residentialAddress = PersonAddress("Jokutie 66", "00100", "Helsinki", "", ""),
                     municipalityOfResidenceSe = "",
                 ),
                 now,

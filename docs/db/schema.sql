@@ -42,6 +42,13 @@ CREATE TYPE public.absence_type AS ENUM (
     'UNAUTHORIZED_ABSENCE'
 );
 
+-- Name: address_period_type; Type: TYPE; Schema: public
+
+CREATE TYPE public.address_period_type AS ENUM (
+    'MAILING',
+    'TEMPORARY'
+);
+
 -- Name: application_origin_type; Type: TYPE; Schema: public
 
 CREATE TYPE public.application_origin_type AS ENUM (
@@ -1224,6 +1231,9 @@ CREATE TABLE public.person (
     verified_email text,
     disabled_push_types public.notification_category[] DEFAULT '{}'::public.notification_category[] NOT NULL,
     data_retention_last_attempted_at timestamp with time zone,
+    mailing_street_address text DEFAULT ''::text NOT NULL,
+    mailing_postal_code text DEFAULT ''::text NOT NULL,
+    mailing_post_office text DEFAULT ''::text NOT NULL,
     CONSTRAINT person_disabled_ssn_no_ssn CHECK (((NOT ssn_adding_disabled) OR (social_security_number IS NULL))),
     CONSTRAINT person_ssn_not_empty CHECK ((social_security_number <> ''::text)),
     CONSTRAINT ssn_require_vtj_update CHECK (((social_security_number IS NULL) OR (updated_from_vtj IS NOT NULL)))
@@ -3762,6 +3772,20 @@ UNION ALL
    FROM (public.employee_child_daycare_acl(CURRENT_DATE) acl(employee_id, child_id, daycare_id, role)
      JOIN public.fridge_child USING (child_id));
 
+-- Name: person_address_period; Type: TABLE; Schema: public
+
+CREATE TABLE public.person_address_period (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    person_id uuid NOT NULL,
+    type public.address_period_type NOT NULL,
+    valid_during daterange NOT NULL,
+    street_address text NOT NULL,
+    postal_code text NOT NULL,
+    post_office text NOT NULL,
+    CONSTRAINT "check$valid_during" CHECK ((NOT lower_inf(valid_during)))
+);
+
 -- Name: person_email_verification; Type: TABLE; Schema: public
 
 CREATE TABLE public.person_email_verification (
@@ -4885,6 +4909,11 @@ ALTER TABLE ONLY public.pedagogical_document_read
 
 ALTER TABLE ONLY public.holiday_period
     ADD CONSTRAINT "period$no_overlaps" EXCLUDE USING gist (period WITH &&);
+
+-- Name: person_address_period person_address_period_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.person_address_period
+    ADD CONSTRAINT person_address_period_pkey PRIMARY KEY (id);
 
 -- Name: person_email_verification person_email_verification_pkey; Type: CONSTRAINT; Schema: public
 
@@ -6262,6 +6291,10 @@ CREATE INDEX "idx$pedagogical_document_read_person" ON public.pedagogical_docume
 -- Name: idx$pedagogical_document_updated_by; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$pedagogical_document_updated_by" ON public.pedagogical_document USING btree (modified_by);
+
+-- Name: idx$person_address_period_person_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$person_address_period_person_id" ON public.person_address_period USING btree (person_id);
 
 -- Name: idx$person_duplicate_of; Type: INDEX; Schema: public
 
@@ -7852,6 +7885,11 @@ ALTER TABLE ONLY public.citizen_user
 -- Name: income_statement fk$person; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.income_statement
+    ADD CONSTRAINT "fk$person" FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
+
+-- Name: person_address_period fk$person; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.person_address_period
     ADD CONSTRAINT "fk$person" FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
 -- Name: person_email_verification fk$person; Type: FK CONSTRAINT; Schema: public

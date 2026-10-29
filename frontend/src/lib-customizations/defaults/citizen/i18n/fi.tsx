@@ -1890,6 +1890,8 @@ export default {
       preferredName: 'Kutsumanimi',
       contactInfo: 'Yhteystiedot',
       address: 'Osoite',
+      residentialAddress: 'Lähiosoite',
+      mailingAddress: 'Postiosoite',
       phone: 'Puhelinnumero',
       backupPhone: 'Varapuhelinnumero',
       backupPhonePlaceholder: 'Esim. työpuhelin',

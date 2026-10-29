@@ -51,6 +51,9 @@ class PdfGenerationTest {
                     postalCode = "02770",
                     postOffice = "Espoo",
                     restrictedDetailsEnabled = false,
+                    mailingStreetAddress = "Kamreerintie 2",
+                    mailingPostalCode = "02770",
+                    mailingPostOffice = "Espoo",
                 ),
             partner =
                 PersonDetailed(
@@ -62,6 +65,9 @@ class PdfGenerationTest {
                     postalCode = "02770",
                     postOffice = "Espoo",
                     restrictedDetailsEnabled = false,
+                    mailingStreetAddress = "Kamreerintie 2",
+                    mailingPostalCode = "02770",
+                    mailingPostOffice = "Espoo",
                 ),
             headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
             partnerIncome = testDecisionIncome.copy(total = 413195),

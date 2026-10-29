@@ -266,9 +266,8 @@ data class VoucherValueDecisionDetailed(
             }
 
             return this.headOfFamily.let {
-                listOf(it.ssn, it.streetAddress, it.postalCode, it.postOffice).any { item ->
-                    item.isNullOrBlank()
-                }
+                listOf(it.ssn, it.mailingStreetAddress, it.mailingPostalCode, it.mailingPostOffice)
+                    .any { item -> item.isNullOrBlank() }
             }
         }
 

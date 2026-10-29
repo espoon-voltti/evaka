@@ -296,6 +296,9 @@ fun validPerson() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Meikäläisenkuja 6 B 7",
+        mailingPostalCode = "90100",
+        mailingPostOffice = "OULU",
     )
 
 fun personWithoutSSN() =
@@ -314,6 +317,9 @@ fun personWithoutSSN() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Meikäläisenkuja 6 B 7",
+        mailingPostalCode = "90100",
+        mailingPostOffice = "OULU",
     )
 
 fun personWithRestrictedDetails() =
@@ -332,6 +338,9 @@ fun personWithRestrictedDetails() =
         "",
         null,
         restrictedDetailsEnabled = true,
+        mailingStreetAddress = "Todistajansuojeluohjelmankatu 9",
+        mailingPostalCode = "45600",
+        mailingPostOffice = "OULU",
     )
 
 fun personWithLongName() =
@@ -350,4 +359,7 @@ fun personWithLongName() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Aateliskulma 3",
+        mailingPostalCode = "90200",
+        mailingPostOffice = "OULU",
     )

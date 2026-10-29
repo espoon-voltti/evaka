@@ -60,6 +60,9 @@ fun invoiceDetailedQuery(where: Predicate) = QuerySql {
         head.street_address as head_street_address,
         head.postal_code as head_postal_code,
         head.post_office as head_post_office,
+        head.mailing_street_address as head_mailing_street_address,
+        head.mailing_postal_code as head_mailing_postal_code,
+        head.mailing_post_office as head_mailing_post_office,
         head.phone as head_phone,
         head.email as head_email,
         head.language as head_language,
@@ -77,6 +80,9 @@ fun invoiceDetailedQuery(where: Predicate) = QuerySql {
         codebtor.street_address as codebtor_street_address,
         codebtor.postal_code as codebtor_postal_code,
         codebtor.post_office as codebtor_post_office,
+        codebtor.mailing_street_address as codebtor_mailing_street_address,
+        codebtor.mailing_postal_code as codebtor_mailing_postal_code,
+        codebtor.mailing_post_office as codebtor_mailing_post_office,
         codebtor.phone as codebtor_phone,
         codebtor.email as codebtor_email,
         codebtor.language as codebtor_language,
@@ -94,6 +100,9 @@ fun invoiceDetailedQuery(where: Predicate) = QuerySql {
                     'streetAddress', child.street_address,
                     'postalCode', child.postal_code,
                     'postOffice', child.post_office,
+                    'mailingStreetAddress', child.mailing_street_address,
+                    'mailingPostalCode', child.mailing_postal_code,
+                    'mailingPostOffice', child.mailing_post_office,
                     'restrictedDetailsEnabled', child.restricted_details_enabled
                 ),
                 'amount', row.amount,
@@ -274,7 +283,7 @@ fun Database.Read.paginatedSearch(
             if (withMissingAddress)
                 PredicateSql {
                     where(
-                        "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
+                        "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.mailing_street_address, '')) IS NULL"
                     )
                 }
             else null,
@@ -320,6 +329,9 @@ SELECT
         'streetAddress', head.street_address,
         'postalCode', head.postal_code,
         'postOffice', head.post_office,
+        'mailingStreetAddress', head.mailing_street_address,
+        'mailingPostalCode', head.mailing_postal_code,
+        'mailingPostOffice', head.mailing_post_office,
         'restrictedDetailsEnabled', head.restricted_details_enabled
     ) as head_of_family,
     rows_summary.children,

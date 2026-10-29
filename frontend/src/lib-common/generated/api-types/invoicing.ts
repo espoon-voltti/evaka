@@ -861,6 +861,9 @@ export interface PersonDetailed {
   invoicingStreetAddress: string
   language: string | null
   lastName: string
+  mailingPostOffice: string
+  mailingPostalCode: string
+  mailingStreetAddress: string
   phone: string
   postOffice: string
   postalCode: string

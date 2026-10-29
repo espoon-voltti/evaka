@@ -1920,6 +1920,8 @@ const en: Translations = {
       preferredName: 'Preferred first name',
       contactInfo: 'Contact information',
       address: 'Address',
+      residentialAddress: 'Residential address',
+      mailingAddress: 'Mailing address',
       phone: 'Phone number',
       backupPhone: 'Additional phone number',
       backupPhonePlaceholder: 'Eg. work phone number',

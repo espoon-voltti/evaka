@@ -41,6 +41,9 @@ val personDTOColumns =
         "street_address",
         "postal_code",
         "post_office",
+        "mailing_street_address",
+        "mailing_postal_code",
+        "mailing_post_office",
         "residence_code",
         "municipality_of_residence",
         "updated_from_vtj",
@@ -66,6 +69,9 @@ data class CitizenUserDetails(
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,
+    val mailingStreetAddress: String,
+    val mailingPostalCode: String,
+    val mailingPostOffice: String,
     val phone: String,
     val backupPhone: String,
     val email: String?,
@@ -76,7 +82,7 @@ data class CitizenUserDetails(
 fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? = createQuery {
     sql(
         """
-SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, citizen_user.username AS weak_login_username, citizen_user.preferred_ui_language
+SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, mailing_street_address, mailing_postal_code, mailing_post_office, phone, backup_phone, email, citizen_user.username AS weak_login_username, citizen_user.preferred_ui_language
 FROM person
 LEFT JOIN citizen_user USING (id)
 WHERE id = ${bind(id)}
@@ -255,8 +261,8 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
     return createQuery {
         sql(
             """
-INSERT INTO person (first_name, last_name, date_of_birth, street_address, postal_code, post_office, phone, email)
-VALUES (${bind(person.firstName)}, ${bind(person.lastName)}, ${bind(person.dateOfBirth)}, ${bind(person.streetAddress)}, ${bind(person.postalCode)}, ${bind(person.postOffice)}, ${bind(person.phone)}, ${bind(person.email)})
+INSERT INTO person (first_name, last_name, date_of_birth, street_address, postal_code, post_office, mailing_street_address, mailing_postal_code, mailing_post_office, phone, email)
+VALUES (${bind(person.firstName)}, ${bind(person.lastName)}, ${bind(person.dateOfBirth)}, ${bind(person.streetAddress)}, ${bind(person.postalCode)}, ${bind(person.postOffice)}, ${bind(person.streetAddress)}, ${bind(person.postalCode)}, ${bind(person.postOffice)}, ${bind(person.phone)}, ${bind(person.email)})
 RETURNING id
 """
         )
@@ -277,6 +283,9 @@ INSERT INTO person (
     street_address,
     postal_code,
     post_office,
+    mailing_street_address,
+    mailing_postal_code,
+    mailing_post_office,
     nationalities,
     restricted_details_enabled,
     restricted_details_end_date,
@@ -304,6 +313,9 @@ SELECT
     street_address,
     postal_code,
     post_office,
+    mailing_street_address,
+    mailing_postal_code,
+    mailing_post_office,
     nationalities,
     restricted_details_enabled,
     restricted_details_end_date,
@@ -345,6 +357,9 @@ UPDATE person SET
     street_address = ${bind(p.streetAddress)},
     postal_code = ${bind(p.postalCode)},
     post_office = ${bind(p.postOffice)},
+    mailing_street_address = ${bind(p.mailingStreetAddress)},
+    mailing_postal_code = ${bind(p.mailingPostalCode)},
+    mailing_post_office = ${bind(p.mailingPostOffice)},
     residence_code = ${bind(p.residenceCode)},
     municipality_of_residence = ${bind(p.municipalityOfResidence)},
     restricted_details_enabled = ${bind(p.restrictedDetailsEnabled)},
@@ -414,6 +429,9 @@ UPDATE person SET
     street_address = coalesce(${bind(patch.streetAddress)}, street_address),
     postal_code = coalesce(${bind(patch.postalCode)}, postal_code),
     post_office = coalesce(${bind(patch.postOffice)}, post_office),
+    mailing_street_address = coalesce(${bind(patch.streetAddress)}, mailing_street_address),
+    mailing_postal_code = coalesce(${bind(patch.postalCode)}, mailing_postal_code),
+    mailing_post_office = coalesce(${bind(patch.postOffice)}, mailing_post_office),
     municipality_of_residence = coalesce(${bind(patch.municipalityOfResidence)}, municipality_of_residence),
     invoice_recipient_name = coalesce(${bind(patch.invoiceRecipientName)}, invoice_recipient_name),
     invoicing_street_address = coalesce(${bind(patch.invoicingStreetAddress)}, invoicing_street_address),
@@ -456,6 +474,9 @@ internal val toPersonDTO: Row.() -> PersonDTO = {
         streetAddress = column("street_address"),
         postalCode = column("postal_code"),
         postOffice = column("post_office"),
+        mailingStreetAddress = column("mailing_street_address"),
+        mailingPostalCode = column("mailing_postal_code"),
+        mailingPostOffice = column("mailing_post_office"),
         residenceCode = column("residence_code"),
         municipalityOfResidence = column("municipality_of_residence"),
         updatedFromVtj = column("updated_from_vtj"),
@@ -494,7 +515,7 @@ from pg_constraint const
     join pg_attribute attr on attr.attrelid = source.oid and attr.attnum = ANY(const.conkey)
 where const.contype = 'f' 
     and target.relname in ('person', 'child') 
-    and source.relname not in ('person', 'child', 'child_images', 'guardian', 'guardian_blocklist', 'message_account', 'citizen_user', 'citizen_passkey_registration', 'koski_upload_error')
+    and source.relname not in ('person', 'child', 'child_images', 'guardian', 'guardian_blocklist', 'message_account', 'citizen_user', 'citizen_passkey_registration', 'koski_upload_error', 'person_address_period')
     and source.relname not like 'old_%'
 order by source.relname, attr.attname
 """

@@ -163,9 +163,9 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
                 )
             } else {
                 Triple(
-                    invoice.headOfFamily.streetAddress,
-                    invoice.headOfFamily.postalCode,
-                    invoice.headOfFamily.postOffice,
+                    invoice.headOfFamily.mailingStreetAddress,
+                    invoice.headOfFamily.mailingPostalCode,
+                    invoice.headOfFamily.mailingPostOffice,
                 )
             }
 
@@ -296,15 +296,15 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
                 e1edka1_5.name1 = nameOfCodebtorY1
             }
 
-            val streetAddressCodebtorY1 = invoice.codebtor.streetAddress
+            val streetAddressCodebtorY1 = invoice.codebtor.mailingStreetAddress
             if (streetAddressCodebtorY1.count() > 35) {
                 e1edka1_5.stras = streetAddressCodebtorY1.substring(0, 35)
             } else {
                 e1edka1_5.stras = streetAddressCodebtorY1
             }
 
-            e1edka1_5.pstlz = invoice.codebtor.postalCode
-            e1edka1_5.orT01 = invoice.codebtor.postOffice
+            e1edka1_5.pstlz = invoice.codebtor.mailingPostalCode
+            e1edka1_5.orT01 = invoice.codebtor.mailingPostOffice
             e1edka1_5.land1 = "FI"
             e1edka1list.add(e1edka1_5)
         }
