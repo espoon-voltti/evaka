@@ -10,7 +10,9 @@ import { getCurrentSystemNotificationCitizen } from '../generated/api-clients/sy
 const q = new Queries()
 
 export const systemNotificationsQuery = q.query(
-  getCurrentSystemNotificationCitizen
+  getCurrentSystemNotificationCitizen,
+  // Prefetched on app start: do not fetch again when the login page mounts
+  { staleTime: 60_000 }
 )
 
 export const authWeakLoginMutation = q.mutation(authWeakLogin, [])
