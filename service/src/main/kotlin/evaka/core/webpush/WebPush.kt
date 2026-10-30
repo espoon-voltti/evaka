@@ -55,6 +55,8 @@ sealed interface WebPushMessage {
      */
     data class Declarative(
         val notification: DeclarativeNotification,
+        /** iOS 18 reads the badge from inside the notification, newer versions from here */
+        @get:JsonProperty("app_badge") val appBadge: Int = notification.appBadge,
 
         // 8030 is a required magic value
         @get:JsonProperty("web_push") val webPush: Int = 8030,
@@ -73,6 +75,7 @@ data class DeclarativeNotification(
     val body: String?,
     /** Older notifications with the same tag are replaced */
     val tag: String,
+    @get:JsonProperty("app_badge") val appBadge: Int,
 )
 
 class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)

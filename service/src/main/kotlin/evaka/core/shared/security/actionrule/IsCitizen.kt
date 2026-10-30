@@ -6,6 +6,7 @@ package evaka.core.shared.security.actionrule
 
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.document.childdocument.childDocumentTemplateValidityNotEnded
+import evaka.core.messaging.citizenMessageAccountIds
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AttachmentId
@@ -376,9 +377,7 @@ WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenI
         }
 
     fun hasMessageAccount() =
-        rule<MessageAccountId> { citizenId, _ ->
-            sql("SELECT id FROM message_account WHERE person_id = ${bind(citizenId)}")
-        }
+        rule<MessageAccountId> { citizenId, _ -> citizenMessageAccountIds(citizenId) }
 
     fun ownerOfApplication() =
         rule<ApplicationId> { citizenId, _ ->

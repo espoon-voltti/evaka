@@ -93,10 +93,20 @@ async function showDeclarativeNotification(/** @type{object} */ notification) {
   })
 }
 
+async function setAppBadge(/** @type{unknown} */ badge) {
+  if (typeof badge !== 'number' || !('setAppBadge' in navigator)) return
+  await navigator.setAppBadge(badge).catch(() => undefined)
+}
+
 serviceWorker.addEventListener('push', (event) => {
   const json = event.data?.json()
   if (json?.web_push === 8030) {
-    event.waitUntil(showDeclarativeNotification(json.notification))
+    event.waitUntil(
+      Promise.all([
+        showDeclarativeNotification(json.notification),
+        setAppBadge(json.app_badge)
+      ])
+    )
   }
 })
 

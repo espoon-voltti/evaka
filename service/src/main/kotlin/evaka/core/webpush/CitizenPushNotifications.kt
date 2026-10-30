@@ -281,13 +281,22 @@ class CitizenPushNotifications(
     ) {
         if (webPush == null) return
 
-        val (vapidJwt, endpoint) =
+        val (vapidJwt, endpoint, appBadge) =
             dbc.transaction { tx ->
                 tx.getCitizenPushTarget(subscription)
                     ?.takeIf {
                         delivery.category == null || delivery.category !in it.disabledCategories
                     }
-                    ?.let { Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it.endpoint) }
+                    ?.let { target ->
+                        // Counted before getValidToken, which locks a row shared by all sends
+                        val appBadge =
+                            pushAppBadge(tx.getCitizenAppBadgeCount(target.personId, clock.today()))
+                        Triple(
+                            webPush.getValidToken(tx, clock, target.endpoint.uri),
+                            target.endpoint,
+                            appBadge,
+                        )
+                    }
             } ?: return
         dbc.close()
 
@@ -305,6 +314,7 @@ class CitizenPushNotifications(
                             else delivery.path,
                     body = delivery.content.body?.let { truncate(it, MAX_BODY_LENGTH) },
                     tag = delivery.tag,
+                    appBadge = appBadge,
                 )
             )
         try {

@@ -78,7 +78,7 @@ fun Database.Read.getChildDocumentCitizenSummaries(
         .toList<ChildDocumentCitizenSummary>()
 
 fun Database.Read.getUnreadChildDocumentCounts(
-    user: AuthenticatedUser.Citizen,
+    citizenId: PersonId,
     childIds: Collection<ChildId>,
 ): Map<ChildId, Int> = createQuery {
     sql(
@@ -91,7 +91,7 @@ WHERE
     EXISTS (SELECT FROM child_document_published_version v WHERE v.child_document_id = cd.id)
     AND NOT EXISTS (
         SELECT FROM child_document_read cdr
-        WHERE cdr.person_id = ${bind(user.id)} AND cdr.document_id = cd.id
+        WHERE cdr.person_id = ${bind(citizenId)} AND cdr.document_id = cd.id
     )
 GROUP BY cd.child_id
 """
