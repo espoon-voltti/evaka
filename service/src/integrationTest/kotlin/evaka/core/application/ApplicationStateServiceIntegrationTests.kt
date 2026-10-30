@@ -87,7 +87,11 @@ import evaka.core.snPreschoolClub45
 import evaka.core.snPreschoolDaycare45
 import evaka.core.test.getDecisionRowById
 import evaka.core.toApplicationType
+import evaka.core.vtjclient.dto.AddressPeriodType
+import evaka.core.vtjclient.dto.MailingAddressPeriod
+import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtjclient.service.persondetails.MockVtjPerson
 import evaka.core.webpush.ApplicationDecision
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.getPlannedCitizenPushNotifications
@@ -1490,6 +1494,79 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 )
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
+        )
+    }
+
+    @Test
+    fun `sendDecisionsWithoutProposal - decision is sent to the mailing address of the guardian`() {
+        val guardian =
+            DevPerson(
+                ssn = "010180-947M",
+                streetAddress = "Kotikatu 1",
+                postalCode = "02100",
+                postOffice = "Espoo",
+            )
+        val child =
+            DevPerson(
+                ssn = "100516A9486",
+                dateOfBirth = LocalDate.of(2016, 5, 10),
+                streetAddress = "Kotikatu 1",
+                postalCode = "02100",
+                postOffice = "Espoo",
+            )
+        MockVtjClient.addPersons(
+            MockVtjPerson.from(guardian)
+                .copy(
+                    mailingAddressPeriods =
+                        listOf(
+                            MailingAddressPeriod(
+                                AddressPeriodType.MAILING,
+                                DateRange(today, null),
+                                PersonAddress("PL 10", "02101", "Espoo"),
+                            )
+                        )
+                ),
+            MockVtjPerson.from(child),
+        )
+        MockVtjClient.addDependants(guardian, child)
+        db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL,
+                guardian = guardian,
+                child = child,
+                applicationId = applicationId,
+                preferredStartDate = mainPeriod.start,
+            )
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                clock,
+                AuditContext(),
+                applicationId,
+                DaycarePlacementPlan(unitId = daycare.id, period = mainPeriod),
+            )
+        }
+
+        db.transaction { tx ->
+            service.sendDecisionsWithoutProposal(
+                tx,
+                serviceWorker,
+                clock,
+                AuditContext(),
+                applicationId,
+            )
+        }
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(
+            listOf(Triple("PL 10", "02101", "Espoo")),
+            MockSfiMessagesClient.getMessages().map {
+                Triple(it.streetAddress, it.postalCode, it.postOffice)
+            },
         )
     }
 

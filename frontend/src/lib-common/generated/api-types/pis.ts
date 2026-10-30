@@ -49,6 +49,9 @@ export interface CitizenUserDetails {
   firstName: string
   id: PersonId
   lastName: string
+  mailingPostOffice: string
+  mailingPostalCode: string
+  mailingStreetAddress: string
   phone: string
   postOffice: string
   postalCode: string
@@ -669,6 +672,9 @@ export interface PersonSensitiveDetails {
   invoicingPostalCode: string
   invoicingStreetAddress: string
   language: string | null
+  mailingPostOffice: string
+  mailingPostalCode: string
+  mailingStreetAddress: string
   municipalityOfResidence: string
   ophPersonOid: string | null
   phone: string

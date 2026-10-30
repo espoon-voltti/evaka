@@ -6,7 +6,9 @@ package evaka.core.vtjclient.mapper
 
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
-import evaka.core.shared.domain.europeHelsinki
+import evaka.core.shared.domain.DateRange
+import evaka.core.vtjclient.dto.AddressPeriodType
+import evaka.core.vtjclient.dto.MailingAddressPeriod
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
@@ -36,99 +38,100 @@ class VtjHenkiloMapper {
 // https://stackoverflow.com/questions/1650249/how-to-make-generated-classes-contain-javadoc-from-xml-schema-documentation
 // it might be possible to add documentation from schema into generated code
 
-fun rangeIncludesNow(from: String?, to: String?): Boolean {
-    val validFrom = parseLocalDateFromString(from)
-    val validTo = parseLocalDateFromString(to)
+private fun allBlank(vararg s: String?): Boolean = s.all { it.isNullOrBlank() }
 
-    return LocalDate.now(europeHelsinki).let {
-        validFrom != null && it >= validFrom && (validTo == null || it <= validTo)
-    }
+private fun parseValidity(from: String?, to: String?): DateRange? {
+    val start = parseLocalDateFromString(from) ?: return null
+    val end = parseLocalDateFromString(to)
+    return if (end == null || start <= end) DateRange(start, end) else null
 }
-
-fun notAllBlanks(vararg s: String?): Boolean = listOf(*s).any { !it.isNullOrBlank() }
 
 fun parseMailAddress(
     mailAddress: VTJHenkiloVastaussanoma.Henkilo.KotimainenPostiosoite
-): PersonAddress? =
+): MailingAddressPeriod? =
     with(mailAddress) {
-        val isValid =
-            rangeIncludesNow(postiosoiteAlkupvm, postiosoiteLoppupvm) &&
-                notAllBlanks(
-                    postiosoiteS,
-                    postinumero,
-                    postitoimipaikkaS,
-                    postiosoiteR,
-                    postitoimipaikkaR,
-                )
+        val validDuring = parseValidity(postiosoiteAlkupvm, postiosoiteLoppupvm) ?: return null
+        if (
+            allBlank(
+                postiosoiteS,
+                postinumero,
+                postitoimipaikkaS,
+                postiosoiteR,
+                postitoimipaikkaR,
+            )
+        )
+            return null
 
-        if (!isValid) return null
-
-        PersonAddress(postiosoiteS, postinumero, postitoimipaikkaS, postiosoiteR, postitoimipaikkaR)
+        MailingAddressPeriod(
+            AddressPeriodType.MAILING,
+            validDuring,
+            PersonAddress(
+                postiosoiteS,
+                postinumero,
+                postitoimipaikkaS,
+                postiosoiteR,
+                postitoimipaikkaR,
+            ),
+        )
     }
 
 fun parseTemporaryAddress(
     temporaryAddress: VTJHenkiloVastaussanoma.Henkilo.TilapainenKotimainenLahiosoite
-): PersonAddress? =
+): MailingAddressPeriod? =
     with(temporaryAddress) {
-        val isValid =
-            rangeIncludesNow(asuminenAlkupvm, asuminenLoppupvm) &&
-                notAllBlanks(
-                    lahiosoiteS,
-                    postinumero,
-                    postitoimipaikkaS,
-                    lahiosoiteR,
-                    postitoimipaikkaR,
-                )
-
-        if (!isValid) return null
-
-        PersonAddress(lahiosoiteS, postinumero, postitoimipaikkaS, lahiosoiteR, postitoimipaikkaR)
-    }
-
-fun parseRegularAddress(
-    regularAddress: VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite
-): PersonAddress? =
-    with(regularAddress) {
-        val isValid =
-            notAllBlanks(
+        val validDuring = parseValidity(asuminenAlkupvm, asuminenLoppupvm) ?: return null
+        if (
+            allBlank(
                 lahiosoiteS,
                 postinumero,
                 postitoimipaikkaS,
                 lahiosoiteR,
                 postitoimipaikkaR,
             )
+        )
+            return null
 
-        if (!isValid) return null
+        MailingAddressPeriod(
+            AddressPeriodType.TEMPORARY,
+            validDuring,
+            PersonAddress(
+                lahiosoiteS,
+                postinumero,
+                postitoimipaikkaS,
+                lahiosoiteR,
+                postitoimipaikkaR,
+            ),
+        )
+    }
+
+fun parseRegularAddress(
+    regularAddress: VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite
+): PersonAddress? =
+    with(regularAddress) {
+        if (
+            allBlank(
+                lahiosoiteS,
+                postinumero,
+                postitoimipaikkaS,
+                lahiosoiteR,
+                postitoimipaikkaR,
+            )
+        )
+            return null
 
         PersonAddress(lahiosoiteS, postinumero, postitoimipaikkaS, lahiosoiteR, postitoimipaikkaR)
     }
 
-fun parseAddress(
-    mailAddresses: List<Henkilo.KotimainenPostiosoite>,
-    temporaryAddresses: List<Henkilo.TilapainenKotimainenLahiosoite>,
-    regularAddress: Henkilo.VakinainenKotimainenLahiosoite,
-) =
-    listOfNotNull(
-            mailAddresses.firstNotNullOfOrNull { parseMailAddress(it) },
-            temporaryAddresses.firstNotNullOfOrNull { parseTemporaryAddress(it) },
-            parseRegularAddress(regularAddress),
-        )
-        .firstOrNull()
-
-fun Henkilo.mapToVtjPerson(): VtjPerson {
-    val address =
-        parseAddress(
-            kotimainenPostiosoite,
-            tilapainenKotimainenLahiosoite,
-            vakinainenKotimainenLahiosoite,
-        )
-
-    return VtjPerson(
+fun Henkilo.mapToVtjPerson(): VtjPerson =
+    VtjPerson(
         firstNames = nykyisetEtunimet.etunimet,
         lastName = nykyinenSukunimi.sukunimi,
         socialSecurityNumber = henkilotunnus.value,
         nationalities = mapNationalities(),
-        address = address,
+        residentialAddress = parseRegularAddress(vakinainenKotimainenLahiosoite),
+        mailingAddressPeriods =
+            kotimainenPostiosoite.mapNotNull { parseMailAddress(it) } +
+                tilapainenKotimainenLahiosoite.mapNotNull { parseTemporaryAddress(it) },
         residenceCode = vakinainenAsuinpaikka?.asuinpaikantunnus,
         nativeLanguage = mapNativeLanguage(),
         restrictedDetails = turvakielto.mapToRestrictedDetails(),
@@ -136,7 +139,6 @@ fun Henkilo.mapToVtjPerson(): VtjPerson {
         municipalityOfResidence = kotikunta?.kuntaS,
         municipalityOfResidenceSe = kotikunta?.kuntaR,
     )
-}
 
 fun Henkilo.Huollettava.mapToRelative() =
     toRelative(henkilotunnus, syntymaaika, nykyisetEtunimet.etunimet, nykyinenSukunimi.sukunimi)

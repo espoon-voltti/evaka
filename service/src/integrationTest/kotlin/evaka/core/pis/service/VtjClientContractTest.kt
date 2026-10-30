@@ -61,7 +61,7 @@ abstract class VtjClientContract {
         val result = createClientReturningTheFamily().fetchWithDependants(query(guardian))
 
         assertEquals(guardian.ssn, result.person.socialSecurityNumber)
-        assertEquals(guardian.streetAddress, result.person.address?.streetAddress)
+        assertEquals(guardian.streetAddress, result.person.residentialAddress?.streetAddress)
         assertEquals(listOf(child.toStub()), result.dependants)
     }
 
@@ -70,7 +70,7 @@ abstract class VtjClientContract {
         val result = createClientReturningTheFamily().fetchWithGuardians(query(child))
 
         assertEquals(child.ssn, result.person.socialSecurityNumber)
-        assertEquals(child.streetAddress, result.person.address?.streetAddress)
+        assertEquals(child.streetAddress, result.person.residentialAddress?.streetAddress)
         assertEquals(listOf(guardian.toStub()), result.guardians)
     }
 

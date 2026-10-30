@@ -30,4 +30,7 @@ fun PersonDTO.toPersonDetailed() =
         invoicingPostOffice = this.invoicingPostOffice,
         restrictedDetailsEnabled = this.restrictedDetailsEnabled,
         forceManualFeeDecisions = this.forceManualFeeDecisions,
+        mailingStreetAddress = this.streetAddress,
+        mailingPostalCode = this.postalCode,
+        mailingPostOffice = this.postOffice,
     )

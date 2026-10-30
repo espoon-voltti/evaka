@@ -10,6 +10,7 @@ import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.getPersonIdsBySsns
 import evaka.core.pis.lockPersonBySSN
+import evaka.core.pis.replaceAddressPeriods
 import evaka.core.pis.updatePersonFromVtj
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
@@ -244,12 +245,24 @@ class DvvModificationsService(
                         postOffice =
                             if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
                             else it.postOffice,
+                        mailingStreetAddress =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
+                            else it.mailingStreetAddress,
+                        mailingPostalCode =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
+                            else it.mailingPostalCode,
+                        mailingPostOffice =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
+                            else it.mailingPostOffice,
                         municipalityOfResidence =
                             if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
                             else it.municipalityOfResidence,
                     ),
                     now,
                 )
+                if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) {
+                    tx.replaceAddressPeriods(it.id, emptyList())
+                }
             }
         }
     }

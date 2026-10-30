@@ -40,7 +40,9 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
         invoiceDataMap[InvoiceFieldName.HEADER_ROW_CODE] = "L"
         invoiceDataMap[InvoiceFieldName.CLIENT_GROUP] = "10"
         val clientName =
-            invoiceDetailed.headOfFamily.lastName + " " + invoiceDetailed.headOfFamily.firstName
+            invoiceDetailed.headOfFamily.invoiceRecipientName.ifBlank {
+                invoiceDetailed.headOfFamily.lastName + " " + invoiceDetailed.headOfFamily.firstName
+            }
         // CLIENT_NAME1 and CLIENT_NAME2 are 50 characters wide, but Intime only reads the first
         // 30(!)
         invoiceDataMap[InvoiceFieldName.CLIENT_NAME1] =
@@ -48,9 +50,10 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
         invoiceDataMap[InvoiceFieldName.CLIENT_NAME2] =
             if (clientName.length > 30) clientName.substring(30, Math.min(60, clientName.length))
             else ""
-        invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] = invoiceDetailed.headOfFamily.streetAddress
+        val invoiceAddress = invoiceDetailed.headOfFamily.invoiceAddress()
+        invoiceDataMap[InvoiceFieldName.STREET_ADDRESS] = invoiceAddress.streetAddress
         invoiceDataMap[InvoiceFieldName.POSTAL_ADDRESS] =
-            invoiceDetailed.headOfFamily.postalCode + " " + invoiceDetailed.headOfFamily.postOffice
+            invoiceAddress.postalCode + " " + invoiceAddress.postOffice
         invoiceDataMap[InvoiceFieldName.PHONE_NUMBER] = invoiceDetailed.headOfFamily.phone
         invoiceDataMap[InvoiceFieldName.FAX_NUMBER] = ""
         invoiceDataMap[InvoiceFieldName.CLIENT_CONTACT] = ""
@@ -106,9 +109,9 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
             invoiceDataMap[InvoiceFieldName.CODEBTOR_IDENTIFIER] = codebtor.ssn ?: ""
             invoiceDataMap[InvoiceFieldName.CODEBTOR_NAME] =
                 codebtor.lastName + " " + codebtor.firstName
-            invoiceDataMap[InvoiceFieldName.CODEBTOR_STREET_ADDRESS] = codebtor.streetAddress
+            invoiceDataMap[InvoiceFieldName.CODEBTOR_STREET_ADDRESS] = codebtor.mailingStreetAddress
             invoiceDataMap[InvoiceFieldName.CODEBTOR_POSTAL_ADDRESS] =
-                codebtor.postalCode + " " + codebtor.postOffice
+                codebtor.mailingPostalCode + " " + codebtor.mailingPostOffice
             invoiceDataMap[InvoiceFieldName.CODEBTOR_PHONE_NUMBER] = codebtor.phone
         } else {
             invoiceDataMap[InvoiceFieldName.CODEBTOR_IDENTIFIER] = ""

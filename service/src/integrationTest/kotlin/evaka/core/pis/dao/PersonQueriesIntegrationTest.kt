@@ -272,7 +272,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             nativeLanguage = NativeLanguage(code = "fi"),
             nationalities =
                 listOf(Nationality(countryCode = "248"), Nationality(countryCode = "060")),
-            address = PersonAddress("Jokutie 66", "00000", "Jokula", null, null),
+            residentialAddress = PersonAddress("Jokutie 66", "00000", "Jokula", null, null),
             municipalityOfResidence = "Jokunta",
             restrictedDetails = RestrictedDetails(true, LocalDate.now().plusYears(1)),
         )

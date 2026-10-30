@@ -143,32 +143,37 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
         // E1EDKA1
         val e1edka1list: MutableList<ORDERS05.IDOC.E1EDKA1> = mutableListOf()
 
+        val headOfFamilyName =
+            invoice.headOfFamily.invoiceRecipientName.ifBlank {
+                invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
+            }
+        val (headOfFamilyStreetAddress, headOfFamilyPostalCode, headOfFamilyPostOffice) =
+            invoice.headOfFamily.invoiceAddress()
+
         val e1edka1 = ORDERS05.IDOC.E1EDKA1()
         e1edka1.segment = "1"
         e1edka1.parvw = "AG"
         e1edka1.partn = invoice.headOfFamily.ssn.toString()
 
-        val nameInInvoiceAG = invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
-        if (nameInInvoiceAG.count() > 35) {
-            e1edka1.name1 = nameInInvoiceAG.substring(0, 35)
-            if (nameInInvoiceAG.length > 70) {
-                e1edka1.name2 = nameInInvoiceAG.substring(35, 70)
+        if (headOfFamilyName.count() > 35) {
+            e1edka1.name1 = headOfFamilyName.substring(0, 35)
+            if (headOfFamilyName.length > 70) {
+                e1edka1.name2 = headOfFamilyName.substring(35, 70)
             } else {
-                e1edka1.name2 = nameInInvoiceAG.substring(35, nameInInvoiceAG.length)
+                e1edka1.name2 = headOfFamilyName.substring(35, headOfFamilyName.length)
             }
         } else {
-            e1edka1.name1 = nameInInvoiceAG
+            e1edka1.name1 = headOfFamilyName
         }
 
-        val streetAddressAG = invoice.headOfFamily.streetAddress
-        if (streetAddressAG.count() > 35) {
-            e1edka1.stras = streetAddressAG.substring(0, 35)
+        if (headOfFamilyStreetAddress.count() > 35) {
+            e1edka1.stras = headOfFamilyStreetAddress.substring(0, 35)
         } else {
-            e1edka1.stras = streetAddressAG
+            e1edka1.stras = headOfFamilyStreetAddress
         }
 
-        e1edka1.pstlz = invoice.headOfFamily.postalCode
-        e1edka1.orT01 = invoice.headOfFamily.postOffice
+        e1edka1.pstlz = headOfFamilyPostalCode
+        e1edka1.orT01 = headOfFamilyPostOffice
         e1edka1.land1 = "FI"
 
         e1edka1list.add(e1edka1)
@@ -177,27 +182,25 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
         e1edka1_2.segment = "1"
         e1edka1_2.parvw = "RE"
         e1edka1_2.partn = invoice.headOfFamily.ssn.toString()
-        val nameInInvoiceRE = invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
-        if (nameInInvoiceRE.count() > 35) {
-            e1edka1_2.name1 = nameInInvoiceRE.substring(0, 35)
-            if (nameInInvoiceRE.length > 70) {
-                e1edka1_2.name2 = nameInInvoiceRE.substring(35, 70)
+        if (headOfFamilyName.count() > 35) {
+            e1edka1_2.name1 = headOfFamilyName.substring(0, 35)
+            if (headOfFamilyName.length > 70) {
+                e1edka1_2.name2 = headOfFamilyName.substring(35, 70)
             } else {
-                e1edka1_2.name2 = nameInInvoiceRE.substring(35, nameInInvoiceRE.length)
+                e1edka1_2.name2 = headOfFamilyName.substring(35, headOfFamilyName.length)
             }
         } else {
-            e1edka1_2.name1 = nameInInvoiceRE
+            e1edka1_2.name1 = headOfFamilyName
         }
 
-        val streetAddressRE = invoice.headOfFamily.streetAddress
-        if (streetAddressRE.count() > 35) {
-            e1edka1_2.stras = streetAddressRE.substring(0, 35)
+        if (headOfFamilyStreetAddress.count() > 35) {
+            e1edka1_2.stras = headOfFamilyStreetAddress.substring(0, 35)
         } else {
-            e1edka1_2.stras = streetAddressRE
+            e1edka1_2.stras = headOfFamilyStreetAddress
         }
 
-        e1edka1_2.pstlz = invoice.headOfFamily.postalCode
-        e1edka1_2.orT01 = invoice.headOfFamily.postOffice
+        e1edka1_2.pstlz = headOfFamilyPostalCode
+        e1edka1_2.orT01 = headOfFamilyPostOffice
         e1edka1_2.land1 = "FI"
         e1edka1list.add(e1edka1_2)
 
@@ -206,27 +209,25 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
         e1edka1_3.parvw = "RG"
         e1edka1_3.partn = invoice.headOfFamily.ssn.toString()
 
-        val nameInInvoiceRG = invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
-        if (nameInInvoiceRG.count() > 35) {
-            e1edka1_3.name1 = nameInInvoiceRG.substring(0, 35)
-            if (nameInInvoiceRE.length > 70) {
-                e1edka1_3.name2 = nameInInvoiceRG.substring(35, 70)
+        if (headOfFamilyName.count() > 35) {
+            e1edka1_3.name1 = headOfFamilyName.substring(0, 35)
+            if (headOfFamilyName.length > 70) {
+                e1edka1_3.name2 = headOfFamilyName.substring(35, 70)
             } else {
-                e1edka1_3.name2 = nameInInvoiceRG.substring(35, nameInInvoiceRG.length)
+                e1edka1_3.name2 = headOfFamilyName.substring(35, headOfFamilyName.length)
             }
         } else {
-            e1edka1_3.name1 = nameInInvoiceRG
+            e1edka1_3.name1 = headOfFamilyName
         }
 
-        val streetAddressRG = invoice.headOfFamily.streetAddress
-        if (streetAddressRG.count() > 35) {
-            e1edka1_3.stras = streetAddressRG.substring(0, 35)
+        if (headOfFamilyStreetAddress.count() > 35) {
+            e1edka1_3.stras = headOfFamilyStreetAddress.substring(0, 35)
         } else {
-            e1edka1_3.stras = streetAddressRG
+            e1edka1_3.stras = headOfFamilyStreetAddress
         }
 
-        e1edka1_3.pstlz = invoice.headOfFamily.postalCode
-        e1edka1_3.orT01 = invoice.headOfFamily.postOffice
+        e1edka1_3.pstlz = headOfFamilyPostalCode
+        e1edka1_3.orT01 = headOfFamilyPostOffice
         e1edka1_3.land1 = "FI"
         e1edka1list.add(e1edka1_3)
 
@@ -235,27 +236,25 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
         e1edka1_4.parvw = "WE"
         e1edka1_4.partn = invoice.headOfFamily.ssn.toString()
 
-        val nameInInvoiceWE = invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
-        if (nameInInvoiceWE.count() > 35) {
-            e1edka1_4.name1 = nameInInvoiceWE.substring(0, 35)
-            if (nameInInvoiceRE.length > 70) {
-                e1edka1_4.name2 = nameInInvoiceWE.substring(35, 70)
+        if (headOfFamilyName.count() > 35) {
+            e1edka1_4.name1 = headOfFamilyName.substring(0, 35)
+            if (headOfFamilyName.length > 70) {
+                e1edka1_4.name2 = headOfFamilyName.substring(35, 70)
             } else {
-                e1edka1_4.name2 = nameInInvoiceWE.substring(35, nameInInvoiceWE.length)
+                e1edka1_4.name2 = headOfFamilyName.substring(35, headOfFamilyName.length)
             }
         } else {
-            e1edka1_4.name1 = nameInInvoiceWE
+            e1edka1_4.name1 = headOfFamilyName
         }
 
-        val streetAddressWE = invoice.headOfFamily.streetAddress
-        if (streetAddressWE.count() > 35) {
-            e1edka1_4.stras = streetAddressWE.substring(0, 35)
+        if (headOfFamilyStreetAddress.count() > 35) {
+            e1edka1_4.stras = headOfFamilyStreetAddress.substring(0, 35)
         } else {
-            e1edka1_4.stras = streetAddressWE
+            e1edka1_4.stras = headOfFamilyStreetAddress
         }
 
-        e1edka1_4.pstlz = invoice.headOfFamily.postalCode
-        e1edka1_4.orT01 = invoice.headOfFamily.postOffice
+        e1edka1_4.pstlz = headOfFamilyPostalCode
+        e1edka1_4.orT01 = headOfFamilyPostOffice
         e1edka1_4.land1 = "FI"
         e1edka1list.add(e1edka1_4)
 
@@ -269,7 +268,7 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
 
             if (nameOfCodebtorY1.count() > 35) {
                 e1edka1_5.name1 = nameOfCodebtorY1.substring(0, 35)
-                if (nameInInvoiceRE.length > 70) {
+                if (nameOfCodebtorY1.length > 70) {
                     e1edka1_5.name2 = nameOfCodebtorY1.substring(35, 70)
                 } else {
                     e1edka1_5.name2 = nameOfCodebtorY1.substring(35, nameOfCodebtorY1.length)
@@ -278,15 +277,15 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
                 e1edka1_5.name1 = nameOfCodebtorY1
             }
 
-            val streetAddressCodebtorY1 = invoice.codebtor.streetAddress
+            val streetAddressCodebtorY1 = invoice.codebtor.mailingStreetAddress
             if (streetAddressCodebtorY1.count() > 35) {
                 e1edka1_5.stras = streetAddressCodebtorY1.substring(0, 35)
             } else {
                 e1edka1_5.stras = streetAddressCodebtorY1
             }
 
-            e1edka1_5.pstlz = invoice.codebtor.postalCode
-            e1edka1_5.orT01 = invoice.codebtor.postOffice
+            e1edka1_5.pstlz = invoice.codebtor.mailingPostalCode
+            e1edka1_5.orT01 = invoice.codebtor.mailingPostOffice
             e1edka1_5.land1 = "FI"
             e1edka1list.add(e1edka1_5)
         }

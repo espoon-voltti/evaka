@@ -47,7 +47,28 @@ data class PersonDetailed(
     val invoicingPostOffice: String = "",
     val restrictedDetailsEnabled: Boolean,
     val forceManualFeeDecisions: Boolean = false,
-)
+    val mailingStreetAddress: String = "",
+    val mailingPostalCode: String = "",
+    val mailingPostOffice: String = "",
+) {
+    /** The invoicing address when all its parts are filled in, otherwise the mailing address. */
+    fun invoiceAddress(): InvoiceAddress =
+        if (addressUsable(invoicingStreetAddress, invoicingPostalCode, invoicingPostOffice)) {
+            InvoiceAddress(
+                invoicingStreetAddress.trim(),
+                invoicingPostalCode.trim(),
+                invoicingPostOffice.trim(),
+            )
+        } else {
+            InvoiceAddress(
+                mailingStreetAddress.trim(),
+                mailingPostalCode.trim(),
+                mailingPostOffice.trim(),
+            )
+        }
+}
+
+data class InvoiceAddress(val streetAddress: String, val postalCode: String, val postOffice: String)
 
 fun addressUsable(streetAddress: String?, postalCode: String?, city: String?): Boolean =
     listOf(streetAddress, postalCode, city).none { it.isNullOrBlank() }

@@ -8,6 +8,7 @@ import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.dev.DevPerson
+import evaka.core.vtjclient.dto.MailingAddressPeriod
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
@@ -29,7 +30,8 @@ data class MockVtjPerson(
     val lastName: String,
     val socialSecurityNumber: String,
     val restrictedDetails: RestrictedDetails?,
-    val address: PersonAddress? = null,
+    val residentialAddress: PersonAddress? = null,
+    val mailingAddressPeriods: List<MailingAddressPeriod> = emptyList(),
     val nativeLanguage: NativeLanguage? = null,
     val nationalities: List<Nationality> = emptyList(),
     val dateOfDeath: LocalDate? = null,
@@ -42,7 +44,8 @@ data class MockVtjPerson(
             lastName = lastName,
             socialSecurityNumber = socialSecurityNumber,
             restrictedDetails = restrictedDetails,
-            address = address,
+            residentialAddress = residentialAddress,
+            mailingAddressPeriods = mailingAddressPeriods,
             nativeLanguage = nativeLanguage,
             nationalities = nationalities,
             dateOfDeath = dateOfDeath,
@@ -71,7 +74,7 @@ data class MockVtjPerson(
                         enabled = person.restrictedDetailsEnabled,
                         endDate = person.restrictedDetailsEndDate,
                     ),
-                address =
+                residentialAddress =
                     if (person.streetAddress.isBlank()) {
                         null
                     } else {
@@ -96,7 +99,7 @@ data class MockVtjPerson(
                     checkNotNull(dto.ssn) { "Person ${dto.id} has no SSN" }.value,
                 restrictedDetails =
                     RestrictedDetails(dto.restrictedDetailsEnabled, dto.restrictedDetailsEndDate),
-                address =
+                residentialAddress =
                     PersonAddress(
                         streetAddress = dto.streetAddress,
                         postalCode = dto.postalCode,
