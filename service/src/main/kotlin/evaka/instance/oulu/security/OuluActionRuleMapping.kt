@@ -55,6 +55,12 @@ class OuluActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>)
             }
 
+            Action.Group.READ_STAFF_ATTENDANCES -> {
+                @Suppress("UNCHECKED_CAST")
+                action.defaultRules.asSequence() +
+                    sequenceOf(HasGlobalRole(UserRole.SERVICE_WORKER) as ScopedActionRule<in T>)
+            }
+
             Action.Person.ADD_SSN,
             Action.Person.UPDATE_FROM_VTJ -> {
                 @Suppress("UNCHECKED_CAST")
