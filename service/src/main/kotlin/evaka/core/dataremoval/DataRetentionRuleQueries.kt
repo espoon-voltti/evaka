@@ -16,7 +16,7 @@ import java.util.UUID
  * ended, or after the document's last status change
  */
 val childDocumentRetentionEnd =
-    DateSource.Custom(mayReturnNoDate = true) { tx, ids ->
+    DateSource.Custom("the retention end the template defines", mayReturnNoDate = true) { tx, ids ->
         tx.createQuery {
                 sql(
                     """
@@ -107,7 +107,7 @@ WHERE id = ANY(${bind(ids)}) AND status IN ('SENT', 'ANNULLED') AND archived_at 
  * counts as a year after the start. Any other sent statement expires a year after it was sent.
  */
 val incomeStatementRetentionEnd =
-    DateSource.Custom(mayReturnNoDate = false) { tx, ids ->
+    DateSource.Custom("the retention end of the statement", mayReturnNoDate = false) { tx, ids ->
         tx.createQuery {
                 sql(
                     """
@@ -184,7 +184,10 @@ WHERE fp.person_id = fc.head_of_child
  * partners on the days when the partnership, this parentship and the partner's parentship overlap
  */
 val fridgeChildRelevantPlacementEnd =
-    DateSource.Custom(mayReturnNoDate = true) { tx, ids ->
+    DateSource.Custom(
+        "the last placement end among the children the parentship affects",
+        mayReturnNoDate = true,
+    ) { tx, ids ->
         tx.createQuery {
                 sql(
                     """
@@ -232,7 +235,10 @@ WHERE fp.partnership_id = partnership.partnership_id
 
 /** The end of the last placement among the children of either partner during the partnership */
 val fridgePartnerRelevantPlacementEnd =
-    DateSource.Custom(mayReturnNoDate = true) { tx, ids ->
+    DateSource.Custom(
+        "the last placement end among the children the partnership affects",
+        mayReturnNoDate = true,
+    ) { tx, ids ->
         tx.createQuery {
                 sql(
                     """
@@ -318,7 +324,10 @@ WHERE id = ANY(${bind(ids)}) AND status = ANY(${bind(ApplicationStatus.pending)}
  * when none of them has placements
  */
 val feeDecisionChildrenPlacementOrValidityEnd =
-    DateSource.Custom(mayReturnNoDate = false) { tx, ids ->
+    DateSource.Custom(
+        "the last placement end among the decision's children, or the decision's end",
+        mayReturnNoDate = false,
+    ) { tx, ids ->
         tx.createQuery {
                 sql(
                     """
@@ -339,7 +348,10 @@ GROUP BY fd.id
  * period when none of them has placements
  */
 val invoiceChildrenPlacementOrPeriodEnd =
-    DateSource.Custom(mayReturnNoDate = false) { tx, ids ->
+    DateSource.Custom(
+        "the last placement end among the invoice's children, or the invoice period's end",
+        mayReturnNoDate = false,
+    ) { tx, ids ->
         tx.createQuery {
                 sql(
                     """
@@ -360,7 +372,10 @@ GROUP BY i.id
  * period when the child has no placements
  */
 val invoiceCorrectionChildPlacementOrPeriodEnd =
-    DateSource.Custom(mayReturnNoDate = false) { tx, ids ->
+    DateSource.Custom(
+        "the last placement end of the correction's child, or the correction period's end",
+        mayReturnNoDate = false,
+    ) { tx, ids ->
         tx.createQuery {
                 sql(
                     """
@@ -380,7 +395,10 @@ GROUP BY ic.id
  * family, the partner or a child
  */
 val incomePersonLastFinanceDecisionEnd =
-    DateSource.Custom(mayReturnNoDate = true) { tx, ids ->
+    DateSource.Custom(
+        "the end of the latest finance decision naming the income's person",
+        mayReturnNoDate = true,
+    ) { tx, ids ->
         tx.createQuery {
                 sql(
                     """

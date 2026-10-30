@@ -28,7 +28,7 @@ class DataRetentionService(
     featureConfig: FeatureConfig,
     overrides: DataRetentionOverrides,
 ) {
-    private val schema =
+    val schema =
         buildDataRetentionSchema(featureConfig.valueDecisionCapacityFactorEnabled, overrides)
 
     init {
