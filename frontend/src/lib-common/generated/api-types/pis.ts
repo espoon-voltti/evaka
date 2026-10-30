@@ -691,7 +691,7 @@ export interface PersonSummary {
   lastName: string
   restrictedDetailsEnabled: boolean
   socialSecurityNumber: string | null
-  streetAddress: string
+  streetAddress: string | null
 }
 
 /**

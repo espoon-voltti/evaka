@@ -489,6 +489,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                 searchByStartDate = searchByStartDate,
                 financeDecisionHandlerId = financeDecisionHandlerId,
                 difference = difference,
+                matchAddresses = true,
             )
             .let { result ->
                 assertEquals(1, result.pages)

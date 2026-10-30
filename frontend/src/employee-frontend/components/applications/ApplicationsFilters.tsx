@@ -36,6 +36,8 @@ import { unitsQuery } from '../../queries'
 import type { VoucherApplicationFilter } from '../../state/application-ui'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
+import { hasGlobalAction } from '../../utils/roles'
 import {
   Filters,
   ApplicationDistinctionsFilter,
@@ -55,6 +57,7 @@ import type { UnitFilterMenuItem } from '../common/Filters'
 
 export default React.memo(function ApplicationFilters() {
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
 
   const {
     availableAreas,
@@ -221,7 +224,11 @@ export default React.memo(function ApplicationFilters() {
 
   return (
     <Filters
-      searchPlaceholder={i18n.applications.searchPlaceholder}
+      searchPlaceholder={
+        hasGlobalAction(user, 'SEARCH_PEOPLE_BY_ADDRESS')
+          ? i18n.applications.searchPlaceholder
+          : i18n.applications.searchPlaceholderWithoutAddress
+      }
       freeText={searchFilters.searchTerms}
       setFreeText={(searchTerms) =>
         setSearchFilters({

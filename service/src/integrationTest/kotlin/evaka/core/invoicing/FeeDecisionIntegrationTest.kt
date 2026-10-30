@@ -1280,12 +1280,23 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     searchTerms = "${adult1.streetAddress} ${adult1.firstName.substring(0, 2)}",
-                )
+                ),
+                searchingUser = adminUser,
             )
 
         val expectedDecisions = testDecisions.filter { it.headOfFamilyId != adult3.id }
 
         assertEqualEnough(expectedDecisions.map(::toSummary), result.data)
+    }
+
+    @Test
+    fun `search does not match addresses for a user without address search permission`() {
+        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
+
+        val result =
+            searchDecisions(SearchFeeDecisionRequest(page = 0, searchTerms = adult1.streetAddress))
+
+        assertEqualEnough(listOf(), result.data)
     }
 
     @Test
@@ -3092,8 +3103,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
     }
 
-    private fun searchDecisions(body: SearchFeeDecisionRequest): PagedFeeDecisionSummaries {
-        return feeDecisionController.searchFeeDecisions(dbInstance(), user, RealEvakaClock(), body)
+    private fun searchDecisions(
+        body: SearchFeeDecisionRequest,
+        searchingUser: AuthenticatedUser.Employee = user,
+    ): PagedFeeDecisionSummaries {
+        return feeDecisionController.searchFeeDecisions(
+            dbInstance(),
+            searchingUser,
+            RealEvakaClock(),
+            body,
+        )
     }
 
     private fun getDecision(id: FeeDecisionId): FeeDecisionDetailed {

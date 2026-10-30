@@ -50,6 +50,7 @@
 ;"Hakemuksen luonti";CREATE_PAPER_APPLICATION;x;;;;;x;;;;;
 ;"Henkilöiden haku";SEARCH_PEOPLE;x;;x;x;x;x;;x;;x;x
 ;"Henkilöiden haku (rajoittamaton)";"SEARCH_PEOPLE_UNRESTRICTED";x;;x;x;x;x;;;;;
+;"Henkilöiden haku osoitteella";SEARCH_PEOPLE_BY_ADDRESS;x;;;;;x;;;;;
 ;"Henkilökohtaisen mobiililaitteen parituksen luonti";"CREATE_PERSONAL_MOBILE_DEVICE_PAIRING";x;;;;;;;x;;x;
 ;"Henkilökohtaisten mobiililaitteiden luku";"READ_PERSONAL_MOBILE_DEVICES";x;x;x;x;x;x;x;x;x;x;x
 ;"Henkilön luonti";CREATE_PERSON;x;;;x;;x;;;;;

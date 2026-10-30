@@ -246,6 +246,7 @@ fun Database.Read.paginatedSearch(
     searchTerms: String = "",
     periodStart: LocalDate? = null,
     periodEnd: LocalDate? = null,
+    matchAddresses: Boolean,
 ): PagedInvoiceSummaries {
     val sortColumn =
         when (sortBy) {
@@ -279,7 +280,7 @@ fun Database.Read.paginatedSearch(
                 }
             else null,
             if (searchTerms.isNotBlank())
-                personFreeTextSearchPredicate(listOf("head", "child"), searchTerms)
+                personFreeTextSearchPredicate(listOf("head", "child"), searchTerms, matchAddresses)
             else null,
             if (periodStart != null) PredicateSql { where("invoice_date  >= ${bind(periodStart)}") }
             else null,

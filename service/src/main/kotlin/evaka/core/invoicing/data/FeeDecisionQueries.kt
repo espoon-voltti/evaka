@@ -393,6 +393,7 @@ fun Database.Read.searchFeeDecisions(
     searchByStartDate: Boolean = false,
     financeDecisionHandlerId: EmployeeId?,
     difference: Set<FeeDecisionDifference>,
+    matchAddresses: Boolean,
 ): PagedFeeDecisionSummaries {
     val now = clock.now()
     val today = now.toLocalDate()
@@ -412,7 +413,11 @@ fun Database.Read.searchFeeDecisions(
     val searchTextWithoutNumbers = searchTerms.replace(decisionNumberRegex, "")
 
     val freeTextPredicate =
-        freeTextSearchPredicate(listOf("head", "partner", "child"), searchTextWithoutNumbers)
+        freeTextSearchPredicate(
+            listOf("head", "partner", "child"),
+            searchTextWithoutNumbers,
+            matchAddresses,
+        )
 
     val withNullHours = distinctiveParams.contains(DistinctiveParams.UNCONFIRMED_HOURS)
     val havingExternalChildren = distinctiveParams.contains(DistinctiveParams.EXTERNAL_CHILD)
