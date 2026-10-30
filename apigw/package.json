@@ -60,7 +60,7 @@
     "node-forge": "1.4.0",
     "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
-    "oxlint-tsgolint": "7.0.2004",
+    "oxlint-tsgolint": "7.0.2005",
     "tough-cookie": "6.0.2",
     "typescript": "7.0.2",
     "vitest": "4.1.12",
