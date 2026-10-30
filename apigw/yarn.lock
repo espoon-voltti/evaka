@@ -1713,14 +1713,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-type@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "content-type@npm:2.0.0"
-  checksum: 10/0bbb276b790ba7e86c479c7d69fae1861b2e908ff3ce2cb01975b516f93eede2216d242902ed6c5b15cd554014611ce9dfdcf51cd35b16569e45a979e50d0cef
-  languageName: node
-  linkType: hard
-
-"content-type@npm:^2.1.0":
+"content-type@npm:^2.0.0, content-type@npm:^2.1.0":
   version: 2.1.0
   resolution: "content-type@npm:2.1.0"
   checksum: 10/8aac907922538f430d8bfab1d8fe2fbdc1eb890a0fa7a619f712db4bfefe24be951ba464f972007df64840c775bf2db284ca8223547ac5317ad9ab2ee8e6501b
@@ -2108,7 +2101,7 @@ __metadata:
     lodash: "npm:4.18.1"
     make-error-cause: "npm:2.3.0"
     nocache: "npm:4.0.0"
-    nock: "npm:15.0.4"
+    nock: "npm:15.0.5"
     node-forge: "npm:1.4.0"
     oxfmt: "npm:0.74.0"
     oxlint: "npm:1.89.0"
@@ -3208,12 +3201,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nock@npm:15.0.4":
-  version: 15.0.4
-  resolution: "nock@npm:15.0.4"
+"nock@npm:15.0.5":
+  version: 15.0.5
+  resolution: "nock@npm:15.0.5"
   dependencies:
     "@mswjs/interceptors": "npm:^0.44.0"
-  checksum: 10/0366928ace582303a9e2370ed98b51a2169b1584724dce278d49aa77b31322c076a9abf288057bc9f051bec48860c73f88fba146af3dee35c901c23b0b021e5b
+  checksum: 10/dd3a64adc6424c3cd7521f0a5fcecc8ea1b3dd8f419e231e347e425500ccd6b0685790cd760314c87c3410415880ecbd4cf89d24b8c4432061101b2385d38b11
   languageName: node
   linkType: hard
 
@@ -3664,14 +3657,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picomatch@npm:^4.0.3, picomatch@npm:^4.0.4":
-  version: 4.0.4
-  resolution: "picomatch@npm:4.0.4"
-  checksum: 10/f6ef80a3590827ce20378ae110ac78209cc4f74d39236370f1780f957b7ee41c12acde0e4651b90f39983506fd2f5e449994716f516db2e9752924aff8de93ce
-  languageName: node
-  linkType: hard
-
-"picomatch@npm:^4.0.7":
+"picomatch@npm:^4.0.3, picomatch@npm:^4.0.4, picomatch@npm:^4.0.7":
   version: 4.0.7
   resolution: "picomatch@npm:4.0.7"
   checksum: 10/66e1df34bc39c72fa3756be4069f7887ea3e35e94bba1c3f6167763007698cb04b8a0a365161d186fda6e9571a2d3efb606b2966eb6a7dea6252911224dc2f48
