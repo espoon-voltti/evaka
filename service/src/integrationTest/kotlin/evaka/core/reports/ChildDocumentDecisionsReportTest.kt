@@ -15,6 +15,7 @@ import evaka.core.document.childdocument.ChildDocumentOrDecisionStatus
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevCareArea
@@ -231,6 +232,59 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
 
         assertEquals(4, getReport(decisionMaker.user, includeEnded = true).size)
         assertEquals(3, getReport(decisionMaker.user, includeEnded = false).size)
+    }
+
+    @Test
+    fun `migrated assistance need decisions are included`() {
+        val migratedDocumentIds =
+            listOf(
+                    ChildDocumentType.MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION,
+                    ChildDocumentType.MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION,
+                )
+                .map { type ->
+                    val migratedTemplate =
+                        template.copy(id = DocumentTemplateId(UUID.randomUUID()), type = type)
+                    val migratedDocument =
+                        child2Document.copy(
+                            id = ChildDocumentId(UUID.randomUUID()),
+                            childId = child1.id,
+                            templateId = migratedTemplate.id,
+                            status = DocumentStatus.COMPLETED,
+                            contentLockedBy = supervisor1.id,
+                            publishedVersions =
+                                listOf(
+                                    DevChildDocumentPublishedVersion(
+                                        versionNumber = 1,
+                                        createdAt = clock.now(),
+                                        createdBy = supervisor1.evakaUserId,
+                                        publishedContent = child2Document.content,
+                                    )
+                                ),
+                            decision =
+                                DevChildDocumentDecision(
+                                    createdBy = decisionMaker.id,
+                                    modifiedBy = decisionMaker.id,
+                                    status = ChildDocumentDecisionStatus.ACCEPTED,
+                                    validity = DateRange(clock.today().minusYears(1), null),
+                                    daycareId = daycare1.id,
+                                ),
+                        )
+                    db.transaction { tx ->
+                        tx.insert(migratedTemplate)
+                        tx.insert(migratedDocument)
+                    }
+                    migratedDocument.id
+                }
+
+        assertEquals(
+            migratedDocumentIds.toSet(),
+            getReport(
+                    supervisor1.user,
+                    statuses = setOf(ChildDocumentOrDecisionStatus.ACCEPTED),
+                )
+                .map { it.id }
+                .toSet(),
+        )
     }
 
     private fun getReport(
