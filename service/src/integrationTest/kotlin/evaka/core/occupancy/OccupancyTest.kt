@@ -14,6 +14,7 @@ import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.attendance.StaffAttendanceType
+import evaka.core.clubTerm2023
 import evaka.core.clubTerms
 import evaka.core.daycare.CareType
 import evaka.core.daycare.domain.ProviderType
@@ -866,8 +867,9 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    @Test
-    fun `preschool occupancy is zero during term break`() {
+    @ParameterizedTest
+    @EnumSource(value = OccupancyType::class, names = ["DRAFT", "PLANNED", "CONFIRMED"])
+    fun `preschool term break does not affect projected occupancy`(type: OccupancyType) {
         val child = DevPerson(dateOfBirth = today.minusYears(6).minusMonths(5))
         val placement =
             DevPlacement(
@@ -886,9 +888,86 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             getAndAssertOccupancyInUnit(
                 tx = tx,
                 unitId = daycareInArea1.id,
-                type = OccupancyType.CONFIRMED,
+                type = type,
                 date = preschoolTerm2023.termBreaks.ranges().first().start,
+                expectedSum = 0.5,
+            )
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = OccupancyType::class, names = ["DRAFT", "PLANNED", "CONFIRMED"])
+    fun `club term break does not affect projected occupancy`(type: OccupancyType) {
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1.id,
+                type = PlacementType.CLUB,
+                startDate = clubTerm2023.term.start,
+                endDate = clubTerm2023.term.end,
+            )
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(
+                tx = tx,
+                unitId = daycareInArea1.id,
+                type = type,
+                date = clubTerm2023.termBreaks.ranges().first().start,
+                expectedSum = 1.0,
+            )
+        }
+    }
+
+    @Test
+    fun `preschool and club children are excluded from realized occupancy during term breaks`() {
+        val lastDayBeforeTermBreak = LocalDate.of(2023, 10, 13)
+        val firstDayOfTermBreak = LocalDate.of(2023, 10, 16)
+        val preschoolChild = DevPerson(dateOfBirth = LocalDate.of(2017, 5, 1))
+        val clubChild = DevPerson(dateOfBirth = LocalDate.of(2019, 5, 1))
+        db.transaction { tx ->
+            tx.insert(preschoolChild, DevPersonType.CHILD)
+            tx.insert(clubChild, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = preschoolChild.id,
+                    unitId = daycareInArea1.id,
+                    type = PlacementType.PRESCHOOL,
+                    startDate = preschoolTerm2023.finnishPreschool.start,
+                    endDate = preschoolTerm2023.finnishPreschool.end,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = clubChild.id,
+                    unitId = daycareInArea1.id,
+                    type = PlacementType.CLUB,
+                    startDate = clubTerm2023.term.start,
+                    endDate = clubTerm2023.term.end,
+                )
+            )
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(
+                tx = tx,
+                unitId = daycareInArea1.id,
+                type = OccupancyType.REALIZED,
+                date = lastDayBeforeTermBreak,
+                expectedSum = 1.5,
+                today = firstDayOfTermBreak,
+            )
+            getAndAssertOccupancyInUnit(
+                tx = tx,
+                unitId = daycareInArea1.id,
+                type = OccupancyType.REALIZED,
+                date = firstDayOfTermBreak,
                 expectedSum = 0.0,
+                today = firstDayOfTermBreak,
             )
         }
     }
@@ -2146,6 +2225,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         type: OccupancyType,
         date: LocalDate,
         expectedSum: Double,
+        today: LocalDate = this.today,
     ) {
         assertOccupancySum(
             expectedSum = expectedSum,

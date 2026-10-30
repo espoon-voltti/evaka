@@ -855,25 +855,28 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
                                     childOperationalDates[it.childId]?.contains(date) == true
                             }
                             .filter {
-                                // filter out term breaks
-                                when (it.type) {
-                                    PlacementType.PRESCHOOL,
-                                    PlacementType.PREPARATORY -> {
-                                        preschoolTerms.none { term ->
-                                            term.scheduleType(date) == ScheduleType.TERM_BREAK
+                                // Projections ignore term breaks: the capacity they free for
+                                // a week or two can't realistically be filled, so the dip
+                                // would only confuse
+                                type != OccupancyType.REALIZED ||
+                                    when (it.type) {
+                                        PlacementType.PRESCHOOL,
+                                        PlacementType.PREPARATORY -> {
+                                            preschoolTerms.none { term ->
+                                                term.scheduleType(date) == ScheduleType.TERM_BREAK
+                                            }
+                                        }
+
+                                        PlacementType.CLUB -> {
+                                            clubTerms.none { term ->
+                                                term.scheduleType(date) == ScheduleType.TERM_BREAK
+                                            }
+                                        }
+
+                                        else -> {
+                                            true
                                         }
                                     }
-
-                                    PlacementType.CLUB -> {
-                                        clubTerms.none { term ->
-                                            term.scheduleType(date) == ScheduleType.TERM_BREAK
-                                        }
-                                    }
-
-                                    else -> {
-                                        true
-                                    }
-                                }
                             }
                             .filterNot {
                                 childWasAbsentWholeDay(
