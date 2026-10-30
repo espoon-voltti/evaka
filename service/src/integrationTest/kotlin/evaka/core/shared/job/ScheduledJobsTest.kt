@@ -27,6 +27,7 @@ import evaka.core.note.child.daily.getChildDailyNoteForChild
 import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
 import evaka.core.note.child.sticky.getChildStickyNotesForChild
+import evaka.core.pairing.listPersonalDevices
 import evaka.core.pis.service.getGuardianChildIds
 import evaka.core.pis.service.insertGuardian
 import evaka.core.placement.PlacementType
@@ -35,6 +36,8 @@ import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AttendanceReservationId
 import evaka.core.shared.ChildId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
@@ -48,6 +51,7 @@ import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.DevPersonalMobileDevice
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevReservation
 import evaka.core.shared.dev.DevServiceNeed
@@ -79,6 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var attachmentsController: AttachmentsController
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired private lateinit var applicationStateService: ApplicationStateService
 
@@ -707,6 +712,32 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             .assertMinDate(today.minusDays(1))
         auditLogCapture.assertNoEvents(Audit.UnitAclDeleteExpired)
+    }
+
+    @Test
+    fun `personal mobile device is deleted in async job after a scheduled staff role replaces supervisor role`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 5, 1), LocalTime.of(0, 5))
+        val today = now.toLocalDate()
+
+        val supervisor = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(supervisor, unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(DevPersonalMobileDevice(employeeId = supervisor.id))
+            tx.insertScheduledDaycareAclRow(
+                employeeId = supervisor.id,
+                daycareIds = listOf(daycare.id),
+                role = UserRole.STAFF,
+                startDate = today,
+                endDate = null,
+            )
+        }
+
+        scheduledJobs.syncAclRows(db, MockEvakaClock(now))
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusHours(1)))
+
+        db.read { tx ->
+            assertEquals(emptyList(), tx.listPersonalDevices(employeeId = supervisor.id))
+        }
     }
 
     private fun createExpiredDailyNote(now: Instant) {
