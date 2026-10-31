@@ -26,6 +26,7 @@ import evaka.core.dailyservicetimes.deleteOldDailyServiceTimeNotifications
 import evaka.core.dataremoval.DataRemovalService
 import evaka.core.dataremoval.planDataRetentionRuns
 import evaka.core.daycare.controllers.removeDaycareAclForRole
+import evaka.core.daycare.planPersonalMobileDeviceCleanup
 import evaka.core.document.archival.planChildDocumentArchival
 import evaka.core.document.childdocument.ChildDocumentService
 import evaka.core.document.childdocument.endExpiredChildDocumentDecisions
@@ -723,7 +724,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
                 activated
                     .map { it.employeeId }
                     .distinct()
-                    .forEach { tx.upsertEmployeeMessageAccount(it) }
+                    .forEach {
+                        tx.upsertEmployeeMessageAccount(it)
+                        planPersonalMobileDeviceCleanup(tx, asyncJobRunner, now, it)
+                    }
                 ended to activated
             }
 

@@ -10,6 +10,7 @@ import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
 import evaka.core.identity.ExternalId
 import evaka.core.messaging.upsertEmployeeMessageAccount
+import evaka.core.pairing.listPersonalDevices
 import evaka.core.pis.DaycareGroupRole
 import evaka.core.pis.DaycareRole
 import evaka.core.pis.Employee
@@ -20,6 +21,8 @@ import evaka.core.pis.controllers.EmployeeController
 import evaka.core.pis.createEmployee
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
@@ -27,6 +30,7 @@ import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevPersonalMobileDevice
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -49,6 +53,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Autowired lateinit var employeeController: EmployeeController
     @Autowired lateinit var scheduledJobs: ScheduledJobs
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val clock = MockEvakaClock(2025, 1, 1, 12, 0)
 
@@ -404,6 +409,66 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 "deletedAclCount" to 2,
                 "deletedScheduledCount" to 0,
             )
+    }
+
+    @Test
+    fun `personal mobile device is deleted in async job after supervisor role is changed to staff`() {
+        val careArea = DevCareArea()
+        val daycare = DevDaycare(areaId = careArea.id)
+        val supervisor = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare)
+            tx.insert(supervisor, unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(DevPersonalMobileDevice(employeeId = supervisor.id))
+        }
+
+        upsertEmployeeDaycareRoles(
+            supervisor.id,
+            listOf(daycare.id),
+            UserRole.STAFF,
+            startDate = clock.today(),
+            endDate = null,
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusHours(1)))
+
+        db.read { tx ->
+            assertEquals(emptyList(), tx.listPersonalDevices(employeeId = supervisor.id))
+        }
+    }
+
+    @Test
+    fun `personal mobile device is deleted in async job after all daycare roles are deleted`() {
+        val careArea = DevCareArea()
+        val daycare = DevDaycare(areaId = careArea.id)
+        val supervisor = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare)
+            tx.insert(supervisor, unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(DevPersonalMobileDevice(employeeId = supervisor.id))
+        }
+
+        deleteEmployeeDaycareRoles(id = supervisor.id, daycareId = null)
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusHours(1)))
+
+        db.read { tx ->
+            assertEquals(emptyList(), tx.listPersonalDevices(employeeId = supervisor.id))
+        }
+    }
+
+    @Test
+    fun `personal mobile device is deleted in async job after admin role is removed`() {
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { tx ->
+            tx.insert(admin)
+            tx.insert(DevPersonalMobileDevice(employeeId = admin.id))
+        }
+
+        updateEmployeeGlobalRoles(admin.id, emptyList())
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusHours(1)))
+
+        db.read { tx -> assertEquals(emptyList(), tx.listPersonalDevices(employeeId = admin.id)) }
     }
 
     @Test
