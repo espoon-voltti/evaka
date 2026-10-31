@@ -167,23 +167,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@node-saml/node-saml@npm:5.1.0":
-  version: 5.1.0
-  resolution: "@node-saml/node-saml@npm:5.1.0"
+"@node-saml/node-saml@npm:5.2.0":
+  version: 5.2.0
+  resolution: "@node-saml/node-saml@npm:5.2.0"
   dependencies:
-    "@types/debug": "npm:^4.1.12"
-    "@types/qs": "npm:^6.9.18"
+    "@types/qs": "npm:^6.15.1"
     "@types/xml-encryption": "npm:^1.2.4"
     "@types/xml2js": "npm:^0.4.14"
     "@xmldom/is-dom-node": "npm:^1.0.1"
-    "@xmldom/xmldom": "npm:^0.8.10"
-    debug: "npm:^4.4.0"
-    xml-crypto: "npm:^6.1.2"
+    "@xmldom/xmldom": "npm:^0.8.15"
+    xml-crypto: "npm:^6.4.0"
     xml-encryption: "npm:^3.1.0"
     xml2js: "npm:^0.6.2"
     xmlbuilder: "npm:^15.1.1"
-    xpath: "npm:^0.0.34"
-  checksum: 10/bbda150b30d7fd870cea133895237e15adbf3ae887c03fdca423a2f5787a87c3f66facf62c601d86ec8cc0b32ba8b1cfe99ca99ba9eaeb4182f5759b3596ef01
+    xpath: "npm:^0.0.35"
+  checksum: 10/7e53a15596f5580b52f51117a2c95112e2a872dc236a6842af4cc47fe9a203b243224d2609c97036cb4bb2e00cf3bbc3bbb80ea44f8bd1c9a395605b6fde322d
   languageName: node
   linkType: hard
 
@@ -936,7 +934,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/debug@npm:^4.1.12, @types/debug@npm:^4.1.13":
+"@types/debug@npm:^4.1.13":
   version: 4.1.13
   resolution: "@types/debug@npm:4.1.13"
   dependencies:
@@ -1058,10 +1056,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/qs@npm:*, @types/qs@npm:^6.9.18":
-  version: 6.14.0
-  resolution: "@types/qs@npm:6.14.0"
-  checksum: 10/1909205514d22b3cbc7c2314e2bd8056d5f05dfb21cf4377f0730ee5e338ea19957c41735d5e4806c746176563f50005bbab602d8358432e25d900bdf4970826
+"@types/qs@npm:*, @types/qs@npm:^6.15.1":
+  version: 6.15.1
+  resolution: "@types/qs@npm:6.15.1"
+  checksum: 10/fd04a36c683dbb1ec5819c01773905259955bfd84d7294af178ad609990a9b8d75d458629ca3bf97b151fe2934eb12ade7fdeb98f2e3ad40d138f0a7d195ac7c
   languageName: node
   linkType: hard
 
@@ -1345,7 +1343,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:^0.8.10, @xmldom/xmldom@npm:^0.8.15, @xmldom/xmldom@npm:^0.8.5":
+"@xmldom/xmldom@npm:^0.8.15, @xmldom/xmldom@npm:^0.8.5":
   version: 0.8.15
   resolution: "@xmldom/xmldom@npm:0.8.15"
   checksum: 10/521d8e5a9798a47dddb28237d112e47637d638e4f3d60ce1eefa1f397d2439af5a00f781c956b5affc251ef8a1bbc1f8325161d32f7b27c89aacf5ff84f14cf7
@@ -2070,7 +2068,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "evaka-api-gateways@workspace:."
   dependencies:
-    "@node-saml/node-saml": "npm:5.1.0"
+    "@node-saml/node-saml": "npm:5.2.0"
     "@types/cookie-parser": "npm:1.4.10"
     "@types/cookie-signature": "npm:1.1.2"
     "@types/express-http-proxy": "npm:1.6.7"
@@ -4848,7 +4846,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:6.4.0, xml-crypto@npm:^6.1.2":
+"xml-crypto@npm:6.4.0, xml-crypto@npm:^6.4.0":
   version: 6.4.0
   resolution: "xml-crypto@npm:6.4.0"
   dependencies:
@@ -4922,10 +4920,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xpath@npm:^0.0.34":
-  version: 0.0.34
-  resolution: "xpath@npm:0.0.34"
-  checksum: 10/77ce03c4494dab97b70fa443761c35a6bd484538a449714b981387a532a6eb22e245b29164f5d8a4a82f4f3cfd71d27ba71d09ed2b6fe933654585c6e46c0a25
+"xpath@npm:^0.0.35":
+  version: 0.0.35
+  resolution: "xpath@npm:0.0.35"
+  checksum: 10/950625f6ec6f2e882ec0cd96ddd173c129299cd3e675f371e94223494c6cfcb87e6e2ba57b0c6ce5a096962f3f33e8bbc23f46dbee7d92ade1c893832f65d6e4
   languageName: node
   linkType: hard
 
