@@ -57,7 +57,7 @@
     "@types/xml2js": "0.4.14",
     "concurrently": "10.0.6",
     "nock": "15.0.5",
-    "node-forge": "1.4.0",
+    "node-forge": "1.4.1",
     "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
     "oxlint-tsgolint": "7.0.2005",

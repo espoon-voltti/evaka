@@ -2102,7 +2102,7 @@ __metadata:
     make-error-cause: "npm:2.3.0"
     nocache: "npm:4.0.0"
     nock: "npm:15.0.5"
-    node-forge: "npm:1.4.0"
+    node-forge: "npm:1.4.1"
     oxfmt: "npm:0.74.0"
     oxlint: "npm:1.89.0"
     oxlint-tsgolint: "npm:7.0.2005"
@@ -3219,10 +3219,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:1.4.0":
-  version: 1.4.0
-  resolution: "node-forge@npm:1.4.0"
-  checksum: 10/d70fd769768e646eda73343d4d4105ccb6869315d975905a22117431c04ae5b6df6c488e34ed275b1a66b50195a09b84b5c8aeca3b8605c20605fcb8e9f109d9
+"node-forge@npm:1.4.1":
+  version: 1.4.1
+  resolution: "node-forge@npm:1.4.1"
+  checksum: 10/1fd7578cfc50c2900cbc9d5742ce273449e2ff5b57b00ec9ca4d3d931b397ffc646177749ec649cc87910fc93ceed084611f8d62b6fe727a2bfc5169f50f3f6d
   languageName: node
   linkType: hard
 
