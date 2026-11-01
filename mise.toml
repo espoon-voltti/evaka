@@ -5,7 +5,7 @@
 [tools]
 java = "zulu-25"
 lefthook = "2.2.2"
-node = "24.22.1"
+node = "24.22.2"
 "npm:pm2" = "7.0.4"
 uv = "0.13.5"
 "pipx:reuse" = "6.2.0"
