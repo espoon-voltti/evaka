@@ -27,8 +27,8 @@ import evaka.core.pdfgen.Page
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pdfgen.Template
 import evaka.core.pis.NotificationCategory
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentLocation

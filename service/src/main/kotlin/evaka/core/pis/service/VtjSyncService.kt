@@ -6,6 +6,7 @@ package evaka.core.pis.service
 
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.applyDependants
 import evaka.core.pis.applyGuardians

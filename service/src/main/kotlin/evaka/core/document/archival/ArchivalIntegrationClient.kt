@@ -10,7 +10,7 @@ import evaka.core.decision.Decision
 import evaka.core.document.childdocument.ChildDocumentDetails
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
-import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.PersonDTO
 import evaka.core.s3.Document
 import evaka.core.shared.ChildDocumentId
 import evaka.core.user.EvakaUser

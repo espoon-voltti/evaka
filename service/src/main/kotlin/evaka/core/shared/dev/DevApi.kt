@@ -132,8 +132,8 @@ import evaka.core.pairing.initPairing
 import evaka.core.pairing.respondPairingChallengeCreateDevice
 import evaka.core.pis.Employee
 import evaka.core.pis.NotificationCategory
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.getEmployees
-import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.placement.PlacementPlanService
 import evaka.core.placement.PlacementSource

@@ -5,6 +5,7 @@
 package evaka.core.pis.service
 
 import evaka.core.pis.*
+import evaka.core.pis.PersonJSON
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PartnershipId
 import evaka.core.shared.PersonId

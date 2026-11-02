@@ -10,7 +10,7 @@ import ch.qos.logback.core.Appender
 import evaka.core.Sensitive
 import evaka.core.VtjEnv
 import evaka.core.identity.Ssn
-import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.PersonDTO
 import evaka.core.shared.PersonId
 import evaka.core.vtjclient.config.SoapRequestAdapter
 import evaka.core.vtjclient.mapper.VTJResponseMapper

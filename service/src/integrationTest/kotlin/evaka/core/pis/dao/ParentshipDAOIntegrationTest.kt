@@ -7,11 +7,11 @@ package evaka.core.pis.dao
 import evaka.core.PureJdbiTest
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.Creator
+import evaka.core.pis.PersonJSON
 import evaka.core.pis.createParentship
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.service.PersonJSON
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert

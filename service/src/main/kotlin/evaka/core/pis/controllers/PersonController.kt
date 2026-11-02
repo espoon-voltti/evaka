@@ -10,25 +10,26 @@ import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.identity.Ssn
 import evaka.core.pdfgen.PdfGenerator
+import evaka.core.pis.PersonBasicInfo
+import evaka.core.pis.PersonJSON
+import evaka.core.pis.PersonPatch
+import evaka.core.pis.PersonSensitiveDetails
 import evaka.core.pis.PersonSummary
+import evaka.core.pis.createAddressPagePdf
 import evaka.core.pis.createPerson
+import evaka.core.pis.disableSsn
 import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
+import evaka.core.pis.hideNonPermittedPersonData
+import evaka.core.pis.patchUserDetails
 import evaka.core.pis.searchPeople
 import evaka.core.pis.service.FridgeFamilyService
 import evaka.core.pis.service.MergeService
-import evaka.core.pis.service.PersonBasicInfo
-import evaka.core.pis.service.PersonJSON
-import evaka.core.pis.service.PersonPatch
-import evaka.core.pis.service.PersonSensitiveDetails
-import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.VtjPersonPreview
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
-import evaka.core.pis.service.createAddressPagePdf
 import evaka.core.pis.service.getBlockedGuardians
-import evaka.core.pis.service.hideNonPermittedPersonData
 import evaka.core.pis.service.unblockGuardian
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
@@ -59,7 +60,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/employee/person")
 class PersonController(
-    private val personService: PersonService,
     private val mergeService: MergeService,
     private val accessControl: AccessControl,
     private val fridgeFamilyService: FridgeFamilyService,
@@ -380,9 +380,7 @@ class PersonController(
                         }
                 }
 
-                dbc.transaction {
-                        personService.patchUserDetails(it, personId, userEditablePersonData)
-                    }
+                dbc.transaction { it.patchUserDetails(personId, userEditablePersonData) }
                     .let { PersonJSON.from(it) }
             }
             .also { Audit.PersonUpdate.log(targetId = AuditId(personId)) }
@@ -473,7 +471,7 @@ class PersonController(
                     )
                 }
 
-                personService.disableSsn(it, personId, body.disabled)
+                it.disableSsn(personId, body.disabled)
             }
         }
         Audit.PersonUpdate.log(targetId = AuditId(personId))

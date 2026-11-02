@@ -14,7 +14,7 @@ import evaka.core.decision.DecisionUnit
 import evaka.core.decision.PdfReasoning
 import evaka.core.decision.generateDecisionPages
 import evaka.core.identity.Ssn
-import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.PersonDTO
 import evaka.core.setting.SettingType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId

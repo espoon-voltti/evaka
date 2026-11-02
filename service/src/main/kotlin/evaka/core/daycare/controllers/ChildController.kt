@@ -12,8 +12,8 @@ import evaka.core.daycare.getChild
 import evaka.core.daycare.updateChild
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.nekku.NekkuSpecialDietChoices
+import evaka.core.pis.PersonBasicInfo
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonBasicInfo
 import evaka.core.pis.service.getFosterParentsForChildren
 import evaka.core.pis.service.getGuardiansForChildren
 import evaka.core.pis.updatePreferredName

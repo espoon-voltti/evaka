@@ -23,7 +23,7 @@ import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonNameDetailsById
 import evaka.core.pis.isDuplicate
-import evaka.core.pis.service.PersonService
+import evaka.core.pis.personsLiveInTheSameAddress
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
@@ -61,7 +61,6 @@ class ApplicationControllerCitizen(
     private val featureConfig: FeatureConfig,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
-    private val personService: PersonService,
     private val vtjSyncService: VtjSyncService,
     private val feeDecisionService: FeeDecisionService,
     private val voucherValueDecisionService: VoucherValueDecisionService,
@@ -209,8 +208,7 @@ class ApplicationControllerCitizen(
                         hasOtherGuardian = otherGuardian != null,
                         otherGuardianLivesInSameAddress =
                             otherGuardian?.id?.let { otherGuardianId ->
-                                personService.personsLiveInTheSameAddress(
-                                    tx,
+                                tx.personsLiveInTheSameAddress(
                                     application.guardianId,
                                     otherGuardianId,
                                 )

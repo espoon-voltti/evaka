@@ -11,7 +11,6 @@ import evaka.core.daycare.getChild
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.messaging.createPersonMessageAccount
-import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.isGuardianBlocked
 import evaka.core.pis.service.replaceChildGuardians
 import evaka.core.pis.service.replaceGuardianChildren

@@ -7,11 +7,11 @@ package evaka.core.pis.controller
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.controllers.ChildController
 import evaka.core.identity.getDobFromSsn
+import evaka.core.pis.PersonDTO
+import evaka.core.pis.PersonPatch
 import evaka.core.pis.controllers.PersonController
 import evaka.core.pis.controllers.SearchPersonBody
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonDTO
-import evaka.core.pis.service.PersonPatch
 import evaka.core.pis.service.blockGuardian
 import evaka.core.shared.ChildId
 import evaka.core.shared.auth.UserRole

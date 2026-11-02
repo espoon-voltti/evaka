@@ -5,10 +5,10 @@
 package evaka.core.pis.dao
 
 import evaka.core.PureJdbiTest
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.applyPerson
 import evaka.core.pis.getPersonById
 import evaka.core.pis.searchPeople
-import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.updatePersonFromVtj
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.auth.AuthenticatedUser

@@ -554,7 +554,7 @@ export interface PasskeyRegistrationOptions {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonBasicInfo
+* Generated from evaka.core.pis.PersonBasicInfo
 */
 export interface PersonBasicInfo {
   dateOfBirth: LocalDate
@@ -569,7 +569,7 @@ export interface PersonBasicInfo {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonJSON
+* Generated from evaka.core.pis.PersonJSON
 */
 export interface PersonJSON {
   backupPhone: string
@@ -609,7 +609,7 @@ export interface PersonNameDetails {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonPatch
+* Generated from evaka.core.pis.PersonPatch
 */
 export interface PersonPatch {
   backupPhone: string | null
@@ -639,7 +639,7 @@ export interface PersonResponse {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonSensitiveDetails
+* Generated from evaka.core.pis.PersonSensitiveDetails
 */
 export interface PersonSensitiveDetails {
   backupPhone: string

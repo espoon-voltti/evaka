@@ -6,8 +6,6 @@ package evaka.core.pis
 
 import evaka.core.identity.Ssn
 import evaka.core.pis.controllers.CreatePersonBody
-import evaka.core.pis.service.PersonDTO
-import evaka.core.pis.service.PersonPatch
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser

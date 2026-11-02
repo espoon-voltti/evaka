@@ -12,6 +12,7 @@ import evaka.core.pis.getPersonById
 import evaka.core.pis.isDependantSyncPerson
 import evaka.core.pis.isMinor
 import evaka.core.pis.personIsHeadOfFamily
+import evaka.core.pis.personsLiveInTheSameAddress
 import evaka.core.shared.ChildId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
@@ -25,7 +26,6 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class FridgeFamilyService(
-    private val personService: PersonService,
     private val vtjSyncService: VtjSyncService,
     private val parentshipService: ParentshipService,
 ) {
@@ -89,7 +89,7 @@ class FridgeFamilyService(
             db.read { getPartnerId(it, clock, guardianId) }
                 ?.also { logger.info { "Person $guardianId has fridge partner $it" } }
                 ?.let { partnerId -> db.read { it.getPersonById(partnerId) } }
-                ?.takeIf { personService.personsLiveInTheSameAddress(it, guardian) }
+                ?.takeIf { personsLiveInTheSameAddress(it, guardian) }
 
         val head =
             partnerAtSameAddress?.takeIf { partner ->
@@ -109,7 +109,7 @@ class FridgeFamilyService(
                 .distinctBy { it.id }
                 .filter { child -> child.ssn != null }
                 .filter { child -> isMinor(child.dateOfBirth, today) }
-                .filter { personService.personsLiveInTheSameAddress(it, head) }
+                .filter { personsLiveInTheSameAddress(it, head) }
                 .filter { !currentFridgeChildren.contains(it.id) }
                 .filter { child ->
                     tx.getFosterParents(child.id).none { it.validDuring.includes(today) }

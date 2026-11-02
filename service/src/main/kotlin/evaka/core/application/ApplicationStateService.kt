@@ -57,12 +57,12 @@ import evaka.core.messaging.MessageService
 import evaka.core.messaging.MessageType
 import evaka.core.messaging.NewMessageStub
 import evaka.core.messaging.getServiceWorkerAccountId
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getEmployeeUser
 import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonDTO
-import evaka.core.pis.service.PersonService
+import evaka.core.pis.personsLiveInTheSameAddress
 import evaka.core.pis.updatePersonBasicContactInfo
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanExtent
@@ -115,7 +115,6 @@ class ApplicationStateService(
     private val accessControl: AccessControl,
     private val placementPlanService: PlacementPlanService,
     private val decisionService: DecisionService,
-    private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
     private val messageProvider: IMessageProvider,
@@ -270,7 +269,7 @@ class ApplicationStateService(
             } else {
                 vtjChildren
                     .filter { it.id != child.id }
-                    .filter { personService.personsLiveInTheSameAddress(guardian, it) }
+                    .filter { personsLiveInTheSameAddress(guardian, it) }
                     .map {
                         PersonBasics(
                             firstName = it.firstName,

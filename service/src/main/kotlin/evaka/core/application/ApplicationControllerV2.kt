@@ -18,11 +18,11 @@ import evaka.core.decision.reasoning.getApplicationDecisionReasoningStats
 import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
 import evaka.core.decision.updateDecisionDrafts
 import evaka.core.identity.Ssn
+import evaka.core.pis.PersonJSON
 import evaka.core.pis.controllers.CreatePersonBody
 import evaka.core.pis.createPerson
 import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonJSON
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanDetails

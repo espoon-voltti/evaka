@@ -6,6 +6,7 @@ package evaka.core.pis.service
 
 import evaka.core.FullApplicationTest
 import evaka.core.identity.getDobFromSsn
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.getPersonById
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson

@@ -6,7 +6,7 @@ package evaka.core.vtjclient.service.persondetails
 
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
-import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.PersonDTO
 import evaka.core.shared.dev.DevPerson
 import evaka.core.vtjclient.dto.MailingAddressPeriod
 import evaka.core.vtjclient.dto.Nationality

@@ -7,6 +7,7 @@ package evaka.core.pis.service
 import evaka.core.FullApplicationTest
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.Creator
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.createPartnership
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
@@ -364,7 +365,6 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             VtjSyncService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()), mock())
         val service =
             FridgeFamilyService(
-                PersonService(),
                 vtjSyncService,
                 parentshipService,
             )
