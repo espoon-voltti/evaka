@@ -77,7 +77,7 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
             asyncJobRunner,
             vtjSyncService,
             FridgeFamilyService(
-                PersonService(vtjClient, vtjSyncService),
+                PersonService(),
                 vtjSyncService,
                 ParentshipService(asyncJobRunner),
             ),

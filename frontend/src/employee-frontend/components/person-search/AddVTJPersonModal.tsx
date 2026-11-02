@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
 import { Loading } from 'lib-common/api'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { VtjPersonPreview } from 'lib-common/generated/api-types/pis'
 import { useMutationResult } from 'lib-common/query'
 import InputField from 'lib-components/atoms/form/InputField'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -20,7 +20,10 @@ import { faPlus } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { isSsnValid } from '../../utils/validation/validations'
 
-import { getOrCreatePersonBySsnMutation } from './queries'
+import {
+  getOrCreatePersonBySsnMutation,
+  previewVtjPersonMutation
+} from './queries'
 
 export default React.memo(function VTJModal({
   closeModal
@@ -31,8 +34,11 @@ export default React.memo(function VTJModal({
   const { mutateAsync: getOrCreatePersonBySsn } = useMutationResult(
     getOrCreatePersonBySsnMutation
   )
+  const { mutateAsync: previewVtjPerson } = useMutationResult(
+    previewVtjPersonMutation
+  )
   const [ssn, setSsn] = useState('')
-  const [person, setPerson] = useState<Result<PersonJSON>>()
+  const [person, setPerson] = useState<Result<VtjPersonPreview>>()
   const [requestInFlight, setRequestInFlight] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
@@ -40,11 +46,9 @@ export default React.memo(function VTJModal({
     if (isSsnValid(ssn)) {
       // oxlint-disable-next-line react/set-state-in-effect
       setPerson(Loading.of())
-      void getOrCreatePersonBySsn({ body: { ssn, readonly: true } }).then(
-        setPerson
-      )
+      void previewVtjPerson({ body: { ssn } }).then(setPerson)
     }
-  }, [ssn, getOrCreatePersonBySsn])
+  }, [ssn, previewVtjPerson])
 
   const updateSsn = (ssn: string) => {
     setSsn(ssn)
@@ -54,7 +58,7 @@ export default React.memo(function VTJModal({
   const onConfirm = () => {
     setRequestInFlight(true)
     setSaveError(false)
-    getOrCreatePersonBySsn({ body: { ssn, readonly: false } })
+    getOrCreatePersonBySsn({ body: { ssn } })
       .then((result) => {
         if (result.isSuccess) {
           closeModal()

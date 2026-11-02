@@ -604,6 +604,7 @@ enum class Audit(
     PersonIncomeUpdate,
     PersonRead,
     PersonSensitiveDetailsRead,
+    PersonVtjPreview,
     PisFamilyRead,
     PlacementCancel,
     PlacementChildPlacementPeriodsRead,

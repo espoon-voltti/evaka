@@ -279,9 +279,11 @@ function CreateApplicationModal({
               <VtjPersonSearch
                 data-qa="select-search-from-vtj-guardian"
                 ageAtLeast={10}
-                excludePeople={[child.id]}
+                excludeSsns={
+                  child.socialSecurityNumber ? [child.socialSecurityNumber] : []
+                }
                 onResult={(res) =>
-                  setNewVtjPersonSsn(res?.socialSecurityNumber || undefined)
+                  setNewVtjPersonSsn(res?.socialSecurityNumber)
                 }
                 onFocus={() => setPersonType('VTJ')}
               />

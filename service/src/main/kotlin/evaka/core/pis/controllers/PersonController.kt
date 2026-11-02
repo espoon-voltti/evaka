@@ -23,6 +23,7 @@ import evaka.core.pis.service.PersonJSON
 import evaka.core.pis.service.PersonPatch
 import evaka.core.pis.service.PersonSensitiveDetails
 import evaka.core.pis.service.PersonService
+import evaka.core.pis.service.VtjPersonPreview
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.pis.service.createAddressPagePdf
@@ -487,7 +488,7 @@ class PersonController(
     ): PersonJSON {
         val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid SSN")
 
-        val audit = AuditContext().addMeta("readonly", body.readonly)
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -497,25 +498,35 @@ class PersonController(
                         Action.Global.CREATE_PERSON_FROM_VTJ,
                     )
                 }
-                if (body.readonly) {
-                    dbc.transaction {
-                        personService.getOrCreatePerson(
-                            it,
-                            user,
-                            clock.now(),
-                            ssn,
-                            readonly = true,
-                            audit,
-                        )
-                    } ?: throw NotFound()
-                } else {
-                    val result = vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, ssn)
-                    audit.add(result.person.id).addMeta("created", result.created)
-                    result.person
-                }
+                val result = vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, ssn)
+                audit.add(result.person.id).addMeta("created", result.created)
+                result.person
             }
             .let { PersonJSON.from(it) }
             .also { audit.log(Audit.PersonGetOrCreateBySsn, clock) }
+    }
+
+    @PostMapping("/vtj-preview")
+    fun previewVtjPerson(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody body: VtjPersonPreviewRequest,
+    ): VtjPersonPreview {
+        val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid SSN")
+        db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.CREATE_PERSON_FROM_VTJ,
+                )
+            }
+        }
+        return vtjSyncService.previewPerson(user.evakaUserId, ssn).also {
+            AuditContext().log(Audit.PersonVtjPreview, clock)
+        }
     }
 
     @PostMapping("/merge")
@@ -681,4 +692,6 @@ data class CreatePersonBody(
     val email: String?,
 )
 
-data class GetOrCreatePersonBySsnRequest(val ssn: String, val readonly: Boolean = false)
+data class GetOrCreatePersonBySsnRequest(val ssn: String)
+
+data class VtjPersonPreviewRequest(val ssn: String)

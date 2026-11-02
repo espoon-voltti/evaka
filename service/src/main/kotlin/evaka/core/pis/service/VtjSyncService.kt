@@ -5,6 +5,7 @@
 package evaka.core.pis.service
 
 import evaka.core.identity.Ssn
+import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.applyDependants
 import evaka.core.pis.applyGuardians
@@ -37,6 +38,7 @@ import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.LocalDate
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -165,6 +167,18 @@ class VtjSyncService(
         return person
     }
 
+    fun previewPerson(requestingUserId: EvakaUserId, ssn: Ssn): VtjPersonPreview {
+        val person = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
+        return VtjPersonPreview(
+            socialSecurityNumber = person.socialSecurityNumber,
+            firstName = person.firstNames,
+            lastName = person.lastName,
+            dateOfBirth = getDobFromSsn(person.socialSecurityNumber),
+            streetAddress = person.residentialAddress?.streetAddress ?: "",
+            restrictedDetailsEnabled = person.restrictedDetails?.enabled ?: false,
+        )
+    }
+
     /**
      * Plans a VTJ sync for at most [limit] persons who changed so that they need one, for example a
      * new citizen user, a new head of family or partner, or a child who entered services. Also
@@ -285,3 +299,12 @@ class VtjSyncService(
 }
 
 data class GetOrCreateResult(val person: PersonDTO, val created: Boolean)
+
+data class VtjPersonPreview(
+    val socialSecurityNumber: String,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+    val streetAddress: String,
+    val restrictedDetailsEnabled: Boolean,
+)

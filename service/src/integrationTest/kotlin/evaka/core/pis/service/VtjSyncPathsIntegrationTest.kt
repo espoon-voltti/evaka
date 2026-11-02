@@ -28,6 +28,7 @@ import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.SystemController
 import evaka.core.pis.controllers.GetOrCreatePersonBySsnRequest
 import evaka.core.pis.controllers.PersonController
+import evaka.core.pis.controllers.VtjPersonPreviewRequest
 import evaka.core.pis.getPersonBySSN
 import evaka.core.placement.PlacementController
 import evaka.core.placement.PlacementCreateRequestBody
@@ -742,6 +743,21 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         MockVtjSoapTransport.assertRequests()
         assertEquals(listOf(x.id), dependants.map { it.id })
+    }
+
+    @Test
+    fun `VTJ preview reads the basic details and writes nothing`() {
+        val preview =
+            personController.previewVtjPerson(
+                dbInstance(),
+                admin.user,
+                clock,
+                VtjPersonPreviewRequest(a.ssn!!),
+            )
+
+        MockVtjSoapTransport.assertRequests(PERUSSANOMA3 to a)
+        assertEquals(a.ssn, preview.socialSecurityNumber)
+        assertPersons()
     }
 
     private fun person(ssn: String, firstName: String, streetAddress: String) =

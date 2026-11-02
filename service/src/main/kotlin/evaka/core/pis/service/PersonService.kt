@@ -4,14 +4,11 @@
 
 package evaka.core.pis.service
 
-import evaka.core.AuditContext
 import evaka.core.decision.DecisionSendAddress
 import evaka.core.identity.Ssn
-import evaka.core.identity.getDobFromSsn
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.getPersonById
-import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.splitFirstNames
 import evaka.core.pis.updateNonSsnPersonDetails
 import evaka.core.pis.updatePersonNonVtjDetails
@@ -19,23 +16,16 @@ import evaka.core.pis.updatePersonSsnAddingDisabled
 import evaka.core.s3.Document
 import evaka.core.shared.HtmlBuilder
 import evaka.core.shared.PersonId
-import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.Rectangle
-import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
-import java.util.UUID
 import org.springframework.stereotype.Service
 
 @Service
-class PersonService(
-    private val vtjClient: VtjClient,
-    private val vtjSyncService: VtjSyncService,
-) {
+class PersonService {
     fun personsLiveInTheSameAddress(
         db: Database.Read,
         person1Id: PersonId,
@@ -82,31 +72,6 @@ class PersonService(
             person1.postOffice == person2.postOffice
     }
 
-    // Does a request to VTJ if person is not found in database or person data has not been
-    // initialized from VTJ
-    fun getOrCreatePerson(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
-        ssn: Ssn,
-        readonly: Boolean = false,
-        audit: AuditContext?,
-    ): PersonDTO? {
-        val person = tx.getPersonBySSN(ssn.value)
-        audit?.add(listOfNotNull(person?.id))
-        return if (person?.updatedFromVtj == null) {
-            val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, ssn))
-            if (readonly) return toPreviewPersonDTO(vtjPerson)
-
-            val _ = vtjSyncService.applyFromVtj(tx, now, vtjPerson)
-            tx.getPersonBySSN(ssn.value).also {
-                audit?.add(listOfNotNull(it?.id))?.addMeta("created", person == null)
-            }
-        } else {
-            person
-        }
-    }
-
     @IgnorableReturnValue
     fun patchUserDetails(tx: Database.Transaction, id: PersonId, data: PersonPatch): PersonDTO {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
@@ -130,33 +95,6 @@ class PersonService(
 
         tx.updatePersonSsnAddingDisabled(personId, disabled)
     }
-
-    private fun toPreviewPersonDTO(person: VtjPerson): PersonDTO =
-        PersonDTO(
-            id = PersonId(UUID(0, 0)),
-            duplicateOf = null,
-            ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN"),
-            ssnAddingDisabled = false,
-            firstName = person.firstNames,
-            lastName = person.lastName,
-            preferredName = "",
-            email = null,
-            phone = "",
-            backupPhone = "",
-            language = person.nativeLanguage?.toString(),
-            dateOfBirth = getDobFromSsn(person.socialSecurityNumber),
-            dateOfDeath = person.dateOfDeath,
-            streetAddress = person.residentialAddress?.streetAddress ?: "",
-            postalCode = person.residentialAddress?.postalCode ?: "",
-            postOffice = person.residentialAddress?.postOffice ?: "",
-            mailingStreetAddress = person.residentialAddress?.streetAddress ?: "",
-            mailingPostalCode = person.residentialAddress?.postalCode ?: "",
-            mailingPostOffice = person.residentialAddress?.postOffice ?: "",
-            residenceCode = person.residenceCode ?: "",
-            municipalityOfResidence = person.municipalityOfResidence ?: "",
-            restrictedDetailsEnabled = person.restrictedDetails?.enabled ?: false,
-            restrictedDetailsEndDate = person.restrictedDetails?.endDate,
-        )
 }
 
 data class PersonDTO(
