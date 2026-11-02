@@ -10,14 +10,6 @@ import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.message.IMessageProvider
 
-private fun addressIsUnusable(
-    streetAddress: String?,
-    postalCode: String?,
-    postOffice: String?,
-): Boolean {
-    return streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()
-}
-
 fun getSendAddress(
     messageProvider: IMessageProvider,
     guardian: PersonDTO,
@@ -33,7 +25,7 @@ fun getSendAddress(
             messageProvider.getDefaultDecisionAddress(lang)
         }
 
-        addressIsUnusable(
+        !addressUsable(
             guardian.mailingStreetAddress,
             guardian.mailingPostalCode,
             guardian.mailingPostOffice,
