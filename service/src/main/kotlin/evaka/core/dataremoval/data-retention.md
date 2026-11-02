@@ -188,6 +188,8 @@ A scheduled job plans these jobs every night at 02:00. The time is fixed so that
 
 The `person` column `data_retention_last_attempted_at` records when a job last started a run for the person. The scheduled job picks the persons whose last attempt is the oldest. Persons who were never attempted come first, and among them the earliest created ones. For now every planned run is a dry run.
 
+A dry run can also carry a mock time (`mockNow`), and the rules are then evaluated as of that time instead of now. Inserting such a job by hand shows what a run would remove in the future, for example ten years from now. A mock time is rejected in a real run. A run with a mock time does not record an attempt, so it does not postpone the person's next nightly run.
+
 Two environment variables control the planning:
 
 - `EVAKA_DATA_RETENTION_PERSONS_PER_NIGHT` is the number of persons planned each night. The default is 0, which plans nothing.

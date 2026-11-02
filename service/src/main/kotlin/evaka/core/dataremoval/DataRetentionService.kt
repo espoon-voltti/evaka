@@ -14,6 +14,7 @@ import evaka.core.shared.async.AsyncJobType
 import evaka.core.shared.async.removeUnclaimedJobs
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.MockEvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.util.UUID
@@ -40,6 +41,7 @@ class DataRetentionService(
         clock: EvakaClock,
         msg: AsyncJob.DeleteExpiredPersonData,
     ) {
+        require(msg.dryRun || msg.mockNow == null) { "A mock time is only allowed in a dry run" }
         if (msg.skipIfStartedAfter != null && clock.now() > msg.skipIfStartedAfter) {
             // The rest of the night's jobs share the deadline, so they would be skipped too
             dbc.transaction {
@@ -50,11 +52,15 @@ class DataRetentionService(
             }
             return
         }
-        // Recorded in its own transaction so that a failed run counts as an attempt too
-        dbc.transaction { it.setDataRetentionLastAttemptedAt(msg.personId, clock.now()) }
+        // A run with a mock time does not tell whether the person's data is expired now, so it must
+        // not postpone the person's next nightly run
+        if (msg.mockNow == null) {
+            // Recorded in its own transaction so that a failed run counts as an attempt too
+            dbc.transaction { it.setDataRetentionLastAttemptedAt(msg.personId, clock.now()) }
+        }
         runDataRetention(
             dbc,
-            clock,
+            msg.mockNow?.let { MockEvakaClock(it) } ?: clock,
             asyncJobRunner,
             schema,
             msg.personId,
@@ -116,7 +122,7 @@ fun runDataRetention(
             val plan = graph.evaluate(today)
             if (dryRun) {
                 logger.info {
-                    "Dry run of data retention for person $personId: would ${plan.describe()}, evaluated in ${started.elapsedNow().inWholeMilliseconds} ms (${if (optimized) "optimized" else "not optimized"})"
+                    "Dry run of data retention for person $personId as of $today: would ${plan.describe()}, evaluated in ${started.elapsedNow().inWholeMilliseconds} ms (${if (optimized) "optimized" else "not optimized"})"
                 }
                 null
             } else {
