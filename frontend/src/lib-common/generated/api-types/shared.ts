@@ -204,6 +204,8 @@ export type HolidayQuestionnaireId = Id<'HolidayQuestionnaire'>
 
 export type IncomeId = Id<'Income'>
 
+export type IncomeNotificationId = Id<'IncomeNotification'>
+
 export type IncomeStatementId = Id<'IncomeStatement'>
 
 export type InvoiceCorrectionId = Id<'InvoiceCorrection'>

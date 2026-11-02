@@ -765,7 +765,96 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
             IncomeNotificationType.REMINDER_EMAIL -> outdatedIncomeNotificationReminder()
             IncomeNotificationType.EXPIRED_EMAIL -> outdatedIncomeNotificationExpired()
             IncomeNotificationType.NEW_CUSTOMER -> newCustomerIncomeNotification()
+            IncomeNotificationType.INCOMPLETE_INCOME_REMINDER -> incompleteIncomeReminder()
         }
+
+    fun incompleteIncomeReminder(): EmailContent =
+        EmailContent(
+            subject =
+                "Tulotietonne puuttuvat / Dina inkomstuppgifter saknas / Your income information is missing",
+            text =
+                """
+                Hyvä asiakkaamme
+
+                Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotietonne puuttuvat. Tämän vuoksi asiakasmaksunne määräytyy korkeimman maksuluokan mukaan.
+
+                Pyydämme toimittamaan tuloselvityksen eVakassa. eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.
+
+                Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.
+
+                Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen: Turun kaupunki / Kasvatuksen ja opetuksen palveluokokonaisuus, varhaiskasvatuksen asiakasmaksut/ PL 355 20101 Turun kaupunki
+
+                Lisätietoja saatte tarvittaessa: varhaiskasvatusmaksut@turku.fi
+
+                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
+
+                -----
+
+                Bästa klient
+
+                Dina inkomstuppgifter som ligger till grund för klientavgiften för småbarnspedagogik eller servicesedelns egenandel saknas. Därför bestäms din klientavgift enligt den högsta avgiften.
+
+                Vi ber att du skickar en inkomstutredning via eVaka. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.
+
+                En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.
+
+                Du kan vid behov också skicka inkomstutredningen per post till adressen: Åbo stad / Servicehelheten för fostran och undervisning, klientavgifter för småbarnspedagogik / PB 355 20101 Åbo stad
+
+                Mer information: varhaiskasvatusmaksut@turku.fi
+
+                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.
+
+                -----
+
+                Dear client
+
+                The income information used for determining your early childhood education fee or the out-of-pocket cost of a service voucher is missing. Therefore, your client fee is determined based on the highest fee category.
+
+                We ask you to submit your income statement through eVaka. Through eVaka, you can also give your consent to the highest fee or the use of the Incomes Register.
+
+                We will not retroactively reimburse you for fees charged in a situation where you have not provided your income information.
+
+                If necessary, you can also send your income information by post to the following address: City of Turku / Education Services, Early childhood education client fees / P.O. Box 355, 20101 City of Turku
+
+                Inquiries: varhaiskasvatusmaksut@turku.fi
+
+                This is an automatic message from the eVaka system. Do not reply to this message.
+                """
+                    .trimIndent(),
+            html =
+                """
+                <p>Hyvä asiakkaamme</p>
+                <p>Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotietonne puuttuvat. Tämän vuoksi asiakasmaksunne määräytyy korkeimman maksuluokan mukaan.</p>
+                <p>Pyydämme toimittamaan tuloselvityksen eVakassa. eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.</p>
+                <p>Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.</p>
+                <p>Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen: Turun kaupunki / Kasvatuksen ja opetuksen palveluokokonaisuus, varhaiskasvatuksen asiakasmaksut/ PL 355 20101 Turun kaupunki</p>
+                <p>Lisätietoja saatte tarvittaessa: varhaiskasvatusmaksut@turku.fi</p>
+                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+                $securityFi
+                $unsubscribeFi
+                <hr>
+                <p>Bästa klient</p>
+                <p>Dina inkomstuppgifter som ligger till grund för klientavgiften för småbarnspedagogik eller servicesedelns egenandel saknas. Därför bestäms din klientavgift enligt den högsta avgiften.</p>
+                <p>Vi ber att du skickar en inkomstutredning via eVaka. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.</p>
+                <p>En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.</p>
+                <p>Du kan vid behov också skicka inkomstutredningen per post till adressen: Åbo stad / Servicehelheten för fostran och undervisning, klientavgifter för småbarnspedagogik / PB 355 20101 Åbo stad</p>
+                <p>Mer information: varhaiskasvatusmaksut@turku.fi</p>
+                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+                $securitySv
+                $unsubscribeSv
+                <hr>
+                <p>Dear client</p>
+                <p>The income information used for determining your early childhood education fee or the out-of-pocket cost of a service voucher is missing. Therefore, your client fee is determined based on the highest fee category.</p>
+                <p>We ask you to submit your income statement through eVaka. Through eVaka, you can also give your consent to the highest fee or the use of the Incomes Register.</p>
+                <p>We will not retroactively reimburse you for fees charged in a situation where you have not provided your income information.</p>
+                <p>If necessary, you can also send your income information by post to the following address: City of Turku / Education Services, Early childhood education client fees / P.O. Box 355, 20101 City of Turku</p>
+                <p>Inquiries: varhaiskasvatusmaksut@turku.fi</p>
+                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+                $securityEn
+                $unsubscribeEn
+                """
+                    .trimIndent(),
+        )
 
     fun outdatedIncomeNotificationInitial(): EmailContent =
         EmailContent(

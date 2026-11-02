@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import sortBy from 'lodash/sortBy'
-
 import { Queries } from 'lib-common/query'
 
 import {
@@ -19,7 +17,11 @@ import {
   getActiveQuestionnaires,
   getHolidayPeriods
 } from '../generated/api-clients/holidayperiod'
-import { getExpiringIncome } from '../generated/api-clients/invoicing'
+import {
+  dismissExpiringIncomeCta,
+  dismissIncompleteIncomeReminderCta,
+  getIncomeCtas
+} from '../generated/api-clients/invoicing'
 import {
   getPreschoolOperationalDates,
   getReservations,
@@ -77,12 +79,16 @@ export const answerOpenRangesQuestionnaireMutation = q.mutation(
   [activeQuestionnaireQuery, reservationsQuery.prefix]
 )
 
-export const incomeExpirationDatesQuery = q.query(() =>
-  getExpiringIncome().then((incomeExpirationDates) =>
-    incomeExpirationDates.length > 0
-      ? sortBy(incomeExpirationDates, (d) => d)[0]
-      : null
-  )
+export const incomeCtasQuery = q.query(getIncomeCtas)
+
+export const dismissExpiringIncomeCtaMutation = q.mutation(
+  dismissExpiringIncomeCta,
+  [incomeCtasQuery]
+)
+
+export const dismissIncompleteIncomeReminderCtaMutation = q.mutation(
+  dismissIncompleteIncomeReminderCta,
+  [incomeCtasQuery]
 )
 
 export const unansweredChildDocumentsQuery = q.query(

@@ -20,6 +20,7 @@ import type { FeeThresholdsId } from './shared'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import type { IncomeId } from './shared'
+import type { IncomeNotificationId } from './shared'
 import type { InvoiceCorrectionId } from './shared'
 import type { InvoiceId } from './shared'
 import type { InvoiceRowId } from './shared'
@@ -43,6 +44,14 @@ export interface ChildWithDateOfBirth {
 }
 
 /**
+* Generated from evaka.core.invoicing.controller.IncomeControllerCitizen.CitizenIncomeCtas
+*/
+export interface CitizenIncomeCtas {
+  expiringIncomeDate: LocalDate | null
+  incompleteIncomeReminder: IncomeNotificationId | null
+}
+
+/**
 * Generated from evaka.core.invoicing.controller.CreateRetroactiveFeeDecisionsBody
 */
 export interface CreateRetroactiveFeeDecisionsBody {
@@ -60,6 +69,13 @@ export interface DecisionIncome {
   totalExpenses: number
   totalIncome: number
   worksAtECHA: boolean
+}
+
+/**
+* Generated from evaka.core.invoicing.controller.IncomeControllerCitizen.DismissExpiringIncomeCtaRequest
+*/
+export interface DismissExpiringIncomeCtaRequest {
+  expirationDate: LocalDate
 }
 
 /**
@@ -464,6 +480,7 @@ export type IncomeNotificationType =
   | 'REMINDER_EMAIL'
   | 'EXPIRED_EMAIL'
   | 'NEW_CUSTOMER'
+  | 'INCOMPLETE_INCOME_REMINDER'
 
 /**
 * Generated from evaka.core.invoicing.controller.IncomeController.IncomeOption
@@ -1192,10 +1209,26 @@ export function deserializeJsonChildWithDateOfBirth(json: JsonOf<ChildWithDateOf
 }
 
 
+export function deserializeJsonCitizenIncomeCtas(json: JsonOf<CitizenIncomeCtas>): CitizenIncomeCtas {
+  return {
+    ...json,
+    expiringIncomeDate: (json.expiringIncomeDate != null) ? LocalDate.parseIso(json.expiringIncomeDate) : null
+  }
+}
+
+
 export function deserializeJsonCreateRetroactiveFeeDecisionsBody(json: JsonOf<CreateRetroactiveFeeDecisionsBody>): CreateRetroactiveFeeDecisionsBody {
   return {
     ...json,
     from: LocalDate.parseIso(json.from)
+  }
+}
+
+
+export function deserializeJsonDismissExpiringIncomeCtaRequest(json: JsonOf<DismissExpiringIncomeCtaRequest>): DismissExpiringIncomeCtaRequest {
+  return {
+    ...json,
+    expirationDate: LocalDate.parseIso(json.expirationDate)
   }
 }
 

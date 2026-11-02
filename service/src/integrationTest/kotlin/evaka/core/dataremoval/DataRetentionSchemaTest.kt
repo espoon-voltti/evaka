@@ -113,6 +113,8 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
             "citizen_user.id",
             "decision_reasoning_individual_selection.decision_id",
             "evaka_user.citizen_id",
+            "income_cta_dismissal.income_notification_id",
+            "income_cta_dismissal.person_id",
             "invoiced_fee_decision.fee_decision_id",
             "invoiced_fee_decision.invoice_id",
             "message_draft.account_id",

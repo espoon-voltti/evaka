@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useQueryClient } from '@tanstack/react-query'
 import React, { useContext, useEffect, useMemo } from 'react'
 import { useLocation } from 'wouter'
 
@@ -11,7 +12,12 @@ import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import type { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { constantQuery, useQuery, useQueryResult } from 'lib-common/query'
+import {
+  constantQuery,
+  useMutation,
+  useQuery,
+  useQueryResult
+} from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Gap } from 'lib-components/white-space'
@@ -29,7 +35,9 @@ import { useCalendarModalState } from './modalState'
 import {
   activeQuestionnaireQuery,
   holidayPeriodsQuery,
-  incomeExpirationDatesQuery,
+  dismissExpiringIncomeCtaMutation,
+  dismissIncompleteIncomeReminderCtaMutation,
+  incomeCtasQuery,
   unansweredChildDocumentsQuery
 } from './queries'
 
@@ -58,8 +66,22 @@ export default React.memo(function CalendarNotifications({
   const { openHolidayModal, openReservationModal, openDiscussionSurveyModal } =
     useCalendarModalState()
 
-  const incomeExpirationDateResult = useQueryResult(
-    incomeExpirationDatesQuery()
+  const incomeCtasResult = useQueryResult(incomeCtasQuery())
+  const queryClient = useQueryClient()
+  // a failed dismissal must not look persisted, so the toast is brought back by refetching
+  const restoreIncomeCtasOnError = {
+    onError: () =>
+      void queryClient.invalidateQueries({
+        queryKey: incomeCtasQuery().queryKey
+      })
+  }
+  const { mutate: dismissExpiringIncomeCta } = useMutation(
+    dismissExpiringIncomeCtaMutation,
+    restoreIncomeCtasOnError
+  )
+  const { mutate: dismissIncompleteIncomeReminderCta } = useMutation(
+    dismissIncompleteIncomeReminderCtaMutation,
+    restoreIncomeCtasOnError
   )
 
   const activeDiscussionSurveys = useMemo(
@@ -81,37 +103,65 @@ export default React.memo(function CalendarNotifications({
   )
 
   useEffect(() => {
-    if (
-      !incomeExpirationDateResult.isSuccess ||
-      incomeExpirationDateResult.isReloading
-    ) {
+    if (!incomeCtasResult.isSuccess || incomeCtasResult.isReloading) {
       return
     }
 
-    const incomeExpirationDate = incomeExpirationDateResult.value
-    if (incomeExpirationDate) {
+    const { expiringIncomeDate, incompleteIncomeReminder } =
+      incomeCtasResult.value
+    if (expiringIncomeDate) {
       addNotification(
         {
           icon: faInfo,
           iconColor: colors.main.m2,
           children: i18n.ctaToast.incomeExpirationCta(
-            incomeExpirationDate.format()
+            expiringIncomeDate.format()
           ),
           onClick: () => {
             navigate('/income')
             removeNotification('expiring-income-cta')
           },
+          onClose: () =>
+            dismissExpiringIncomeCta({
+              body: { expirationDate: expiringIncomeDate }
+            }),
           dataQa: 'expiring-income-cta'
         },
         'expiring-income-cta'
       )
+    } else {
+      removeNotification('expiring-income-cta')
+    }
+
+    if (incompleteIncomeReminder) {
+      addNotification(
+        {
+          icon: faInfo,
+          iconColor: colors.main.m2,
+          children: i18n.ctaToast.incompleteIncomeCta,
+          onClick: () => {
+            navigate('/income')
+            removeNotification('incomplete-income-cta')
+          },
+          onClose: () =>
+            dismissIncompleteIncomeReminderCta({
+              notificationId: incompleteIncomeReminder
+            }),
+          dataQa: 'incomplete-income-cta'
+        },
+        'incomplete-income-cta'
+      )
+    } else {
+      removeNotification('incomplete-income-cta')
     }
   }, [
     addNotification,
     removeNotification,
     navigate,
     i18n,
-    incomeExpirationDateResult
+    incomeCtasResult,
+    dismissExpiringIncomeCta,
+    dismissIncompleteIncomeReminderCta
   ])
 
   const { data: activeQuestionnaire } = useQuery(activeQuestionnaireQuery())
@@ -281,7 +331,7 @@ export default React.memo(function CalendarNotifications({
           : 'loading'
       }
       data-expiring-income-cta-status={
-        isLoading(incomeExpirationDateResult) ? 'loading' : 'success'
+        isLoading(incomeCtasResult) ? 'loading' : 'success'
       }
     />
   )

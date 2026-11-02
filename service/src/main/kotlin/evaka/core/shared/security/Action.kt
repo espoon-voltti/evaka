@@ -552,15 +552,16 @@ sealed interface Action {
         enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) :
             ScopedAction<PersonId> {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).self()),
+            DISMISS_INCOME_CTA(IsCitizen(allowWeakLogin = true).self()),
             READ_APPLICATIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_APPLICATION_CHILDREN(IsCitizen(allowWeakLogin = false).self()),
             READ_APPLICATION_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_CALENDAR_EVENTS(IsCitizen(allowWeakLogin = true).self()),
             READ_CHILDREN(IsCitizen(allowWeakLogin = true).self()),
             READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
-            READ_EXPIRED_INCOME_DATES(IsCitizen(allowWeakLogin = true).self()),
             READ_FAMILY(IsCitizen(allowWeakLogin = true).self()),
             READ_FINANCE_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
+            READ_INCOME_CTAS(IsCitizen(allowWeakLogin = true).self()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
             READ_PARTNER_INCOME_STATEMENT_STATUS(IsCitizen(allowWeakLogin = false).self()),
             READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS(IsCitizen(allowWeakLogin = true).self()),

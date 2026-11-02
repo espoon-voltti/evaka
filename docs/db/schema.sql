@@ -313,7 +313,8 @@ CREATE TYPE public.income_notification_type AS ENUM (
     'INITIAL_EMAIL',
     'REMINDER_EMAIL',
     'EXPIRED_EMAIL',
-    'NEW_CUSTOMER'
+    'NEW_CUSTOMER',
+    'INCOMPLETE_INCOME_REMINDER'
 );
 
 -- Name: income_source; Type: TYPE; Schema: public
@@ -3146,6 +3147,17 @@ CREATE TABLE public.income (
     created_by uuid NOT NULL
 );
 
+-- Name: income_cta_dismissal; Type: TABLE; Schema: public
+
+CREATE TABLE public.income_cta_dismissal (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    person_id uuid NOT NULL,
+    income_expiration_date date,
+    income_notification_id uuid,
+    CONSTRAINT "check$exactly_one_target" CHECK ((num_nonnulls(income_expiration_date, income_notification_id) = 1))
+);
+
 -- Name: income_notification; Type: TABLE; Schema: public
 
 CREATE TABLE public.income_notification (
@@ -4676,6 +4688,11 @@ ALTER TABLE ONLY public.holiday_period_questionnaire
 ALTER TABLE ONLY public.holiday_questionnaire_answer
     ADD CONSTRAINT holiday_questionnaire_answer_pkey PRIMARY KEY (id);
 
+-- Name: income_cta_dismissal income_cta_dismissal_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.income_cta_dismissal
+    ADD CONSTRAINT income_cta_dismissal_pkey PRIMARY KEY (id);
+
 -- Name: income_notification income_notification_pkey; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.income_notification
@@ -5145,6 +5162,16 @@ ALTER TABLE ONLY public.employee
 
 ALTER TABLE ONLY public.employee
     ADD CONSTRAINT "uniq$employee_ssn" UNIQUE (social_security_number);
+
+-- Name: income_cta_dismissal uniq$income_cta_dismissal_expiration; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.income_cta_dismissal
+    ADD CONSTRAINT "uniq$income_cta_dismissal_expiration" UNIQUE (person_id, income_expiration_date);
+
+-- Name: income_cta_dismissal uniq$income_cta_dismissal_notification; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.income_cta_dismissal
+    ADD CONSTRAINT "uniq$income_cta_dismissal_notification" UNIQUE (income_notification_id);
 
 -- Name: invoice_row uniq$invoice_row_invoice_idx; Type: CONSTRAINT; Schema: public
 
@@ -7709,6 +7736,11 @@ ALTER TABLE ONLY public.absence
 ALTER TABLE ONLY public.attachment
     ADD CONSTRAINT "fk$income" FOREIGN KEY (income_id) REFERENCES public.income(id) ON DELETE SET NULL;
 
+-- Name: income_cta_dismissal fk$income_notification; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.income_cta_dismissal
+    ADD CONSTRAINT "fk$income_notification" FOREIGN KEY (income_notification_id) REFERENCES public.income_notification(id) ON DELETE CASCADE;
+
 -- Name: income_notification fk$income_notification_receiver; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.income_notification
@@ -7848,6 +7880,11 @@ ALTER TABLE ONLY public.citizen_push_subscription
 
 ALTER TABLE ONLY public.citizen_user
     ADD CONSTRAINT "fk$person" FOREIGN KEY (id) REFERENCES public.person(id) ON DELETE CASCADE;
+
+-- Name: income_cta_dismissal fk$person; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.income_cta_dismissal
+    ADD CONSTRAINT "fk$person" FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
 -- Name: income_statement fk$person; Type: FK CONSTRAINT; Schema: public
 

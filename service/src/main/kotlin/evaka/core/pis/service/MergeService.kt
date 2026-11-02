@@ -103,6 +103,14 @@ UPDATE child SET allergies = '', diet = '', additionalinfo = '' WHERE id = ${bin
 
 UPDATE evaka_user SET citizen_id = NULL WHERE citizen_id = ${bind(duplicate)};
 
+DELETE FROM income_cta_dismissal d
+WHERE d.person_id = ${bind(duplicate)}
+  AND d.income_expiration_date IS NOT NULL
+  AND EXISTS (
+      SELECT FROM income_cta_dismissal m
+      WHERE m.person_id = ${bind(master)} AND m.income_expiration_date = d.income_expiration_date
+  );
+
 ${personReferences.joinToString(separator = "") { (table, column) ->
     "UPDATE $table SET $column = ${bind(master)} WHERE $column = ${bind(duplicate)};"
 }}

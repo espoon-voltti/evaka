@@ -6,6 +6,8 @@ package evaka.core.pis.service
 
 import evaka.core.FullApplicationTest
 import evaka.core.childimages.replaceImage
+import evaka.core.invoicing.service.dismissExpiringIncomeCta
+import evaka.core.invoicing.service.getDismissedIncomeExpirationDates
 import evaka.core.messaging.MessageService
 import evaka.core.messaging.NewMessageStub
 import evaka.core.messaging.archiveThread
@@ -194,6 +196,28 @@ WHERE id = ${bind(childId)}
         }
 
         assertThrows<Conflict> { db.transaction { mergeService.deleteEmptyPerson(it, id) } }
+    }
+
+    @Test
+    fun `merging adults who both dismissed the same expiring income cta keeps one dismissal`() {
+        val master = DevPerson()
+        val duplicate = DevPerson()
+        val expirationDate = LocalDate.of(2024, 1, 31)
+        val otherExpirationDate = LocalDate.of(2023, 1, 31)
+        db.transaction {
+            it.insert(master, DevPersonType.ADULT)
+            it.insert(duplicate, DevPersonType.ADULT)
+            it.dismissExpiringIncomeCta(master.id, expirationDate)
+            it.dismissExpiringIncomeCta(duplicate.id, expirationDate)
+            it.dismissExpiringIncomeCta(duplicate.id, otherExpirationDate)
+        }
+
+        db.transaction { mergeService.mergePeople(it, clock, master.id, duplicate.id) }
+
+        assertEquals(
+            setOf(expirationDate, otherExpirationDate),
+            db.read { it.getDismissedIncomeExpirationDates(master.id) },
+        )
     }
 
     @Test

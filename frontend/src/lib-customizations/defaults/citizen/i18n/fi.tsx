@@ -291,6 +291,8 @@ export default {
       `Vastaa poissaolokyselyyn ${deadline.format()} mennessä.`,
     incomeExpirationCta: (expirationDate: string) =>
       `Muista päivittää tulotietosi ${expirationDate} mennessä`,
+    incompleteIncomeCta:
+      'Tulotietosi puuttuvat, joten maksusi määräytyy korkeimman maksun mukaan. Päivitä tulotietosi.',
     unansweredChildDocumentCta: (child: {
       firstName: string
       lastName: string

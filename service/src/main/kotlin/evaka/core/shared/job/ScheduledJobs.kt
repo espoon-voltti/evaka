@@ -31,6 +31,7 @@ import evaka.core.document.childdocument.ChildDocumentService
 import evaka.core.document.childdocument.endExpiredChildDocumentDecisions
 import evaka.core.dvv.DvvModificationsBatchRefreshService
 import evaka.core.invoicing.service.FinanceDecisionGenerator
+import evaka.core.invoicing.service.IncompleteIncomeReminders
 import evaka.core.invoicing.service.InvoiceGenerator
 import evaka.core.invoicing.service.NewCustomerIncomeNotification
 import evaka.core.invoicing.service.OutdatedIncomeNotifications
@@ -253,6 +254,10 @@ enum class ScheduledJob(
         ScheduledJobs::sendNewCustomerIncomeNotifications,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 45))),
     ),
+    SendIncompleteIncomeReminders(
+        ScheduledJobs::sendIncompleteIncomeReminders,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 45))),
+    ),
     SendCalendarEventDigests(
         ScheduledJobs::sendCalendarEventDigests,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0))),
@@ -359,6 +364,7 @@ class ScheduledJobs(
     private val missingHolidayReservationsReminders: MissingHolidayReservationsReminders,
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
     private val newCustomerIncomeNotification: NewCustomerIncomeNotification,
+    private val incompleteIncomeReminders: IncompleteIncomeReminders,
     private val calendarEventNotificationService: CalendarEventNotificationService,
     private val financeDecisionGenerator: FinanceDecisionGenerator,
     private val childDocumentService: ChildDocumentService,
@@ -646,6 +652,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction { tx ->
             val count = newCustomerIncomeNotification.scheduleNotifications(tx, clock)
             logger.info { "Scheduled $count notifications for new customer about income" }
+        }
+    }
+
+    fun sendIncompleteIncomeReminders(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            val count = incompleteIncomeReminders.scheduleReminders(tx, clock)
+            logger.info { "Scheduled $count reminders about incomplete income" }
         }
     }
 

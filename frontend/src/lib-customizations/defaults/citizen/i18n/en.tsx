@@ -286,6 +286,8 @@ const en: Translations = {
       `Answer the absence questionnaire before ${deadline.format()}.`,
     incomeExpirationCta: (expirationDate: string) =>
       `Please remember to update your income statement by ${expirationDate}`,
+    incompleteIncomeCta:
+      'Your income information is missing, so your fee is set at the highest fee. Please update your income information.',
     unansweredChildDocumentCta: (child: {
       firstName: string
       lastName: string

@@ -33,7 +33,8 @@ enum class IncomeNotificationType : DatabaseEnum {
     INITIAL_EMAIL,
     REMINDER_EMAIL,
     EXPIRED_EMAIL,
-    NEW_CUSTOMER;
+    NEW_CUSTOMER,
+    INCOMPLETE_INCOME_REMINDER;
 
     override val sqlType: String = "income_notification_type"
 }
@@ -201,6 +202,85 @@ AND NOT EXISTS (
         .toList<PersonId>()
 }
 
+fun Database.Read.incompleteIncomeReminderRecipients(
+    today: LocalDate,
+    personId: PersonId? = null,
+): List<PersonId> {
+    val personPredicate =
+        if (personId != null) PredicateSql { where("i.person_id = ${bind(personId)}") }
+        else PredicateSql.alwaysTrue()
+
+    return createQuery {
+        sql(
+            """
+WITH long_incomplete_income AS (
+    SELECT i.person_id
+    FROM income i
+    WHERE i.effect = 'INCOMPLETE'
+      AND i.valid_from <= ${bind(today.minusYears(1))}
+      -- a finite INCOMPLETE income usually means the next income has already been entered,
+      -- and its end is covered by the expiring income notifications
+      AND i.valid_to IS NULL
+      AND ${predicate(personPredicate)}
+), billable_family_adult AS (
+    SELECT DISTINCT adult.id AS person_id
+    FROM placement pl
+    JOIN daycare u ON u.id = pl.unit_id
+    LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
+    JOIN fridge_child fc_head ON fc_head.child_id = pl.child_id
+        AND daterange(fc_head.start_date, fc_head.end_date, '[]') @> ${bind(today)}
+        AND fc_head.conflict = false
+    LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child
+        AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
+        AND fp.conflict = false
+    LEFT JOIN fridge_partner fp_partner ON fp_partner.partnership_id = fp.partnership_id
+        AND fp_partner.person_id <> fp.person_id
+        AND daterange(fp_partner.start_date, fp_partner.end_date, '[]') @> ${bind(today)}
+        AND fp_partner.conflict = false
+    -- one row per adult (head and possible partner), each paired with the other adult for the max-fee check
+    CROSS JOIN LATERAL (VALUES (fc_head.head_of_child, fp_partner.person_id), (fp_partner.person_id, fc_head.head_of_child)) AS adult(id, other_id)
+    WHERE adult.id IN (SELECT person_id FROM long_incomplete_income)
+      AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
+      AND (u.invoiced_by_municipality OR u.provider_type = 'PRIVATE_SERVICE_VOUCHER')
+      -- placement is paid if its current service need has a fee,
+      -- or it has no current service need and the placement type's default option is paid
+      AND COALESCE(
+          (
+              SELECT bool_or(sno.fee_coefficient > 0)
+              FROM service_need sn
+              JOIN service_need_option sno ON sno.id = sn.option_id
+              WHERE sn.placement_id = pl.id
+                AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(today)}
+          ),
+          default_sno.fee_coefficient > 0
+      )
+      AND NOT EXISTS (
+          SELECT FROM income other_income
+          WHERE other_income.person_id = adult.other_id
+            AND other_income.effect = 'MAX_FEE_ACCEPTED'
+            AND daterange(other_income.valid_from, other_income.valid_to, '[]') @> ${bind(today)}
+      )
+)
+SELECT a.person_id
+FROM billable_family_adult a
+WHERE NOT EXISTS (
+    SELECT FROM income_statement s
+    WHERE s.person_id = a.person_id
+      AND s.status IN ('SENT', 'HANDLING')
+      AND s.sent_at > ${bind(today)} - INTERVAL '12 months'
+)
+AND NOT EXISTS (
+    SELECT FROM income_notification n
+    WHERE n.receiver_id = a.person_id
+      AND n.notification_type = 'INCOMPLETE_INCOME_REMINDER'
+      AND (n.created AT TIME ZONE 'Europe/Helsinki')::date > ${bind(today.minusYears(1))}
+)
+"""
+        )
+    }
+        .toList<PersonId>()
+}
+
 data class IncomeNotification(
     val receiverId: PersonId,
     val notificationType: IncomeNotificationType,
@@ -211,12 +291,13 @@ data class IncomeNotification(
 fun Database.Transaction.createIncomeNotification(
     receiverId: PersonId,
     notificationType: IncomeNotificationType,
+    created: HelsinkiDateTime? = null,
 ): IncomeNotificationId {
     return createUpdate {
         sql(
             """
-INSERT INTO income_notification(receiver_id, notification_type)
-VALUES (${bind(receiverId)}, ${bind(notificationType)})
+INSERT INTO income_notification(receiver_id, notification_type, created)
+VALUES (${bind(receiverId)}, ${bind(notificationType)}, coalesce(${bind(created)}, now()))
 RETURNING id
 """
         )
