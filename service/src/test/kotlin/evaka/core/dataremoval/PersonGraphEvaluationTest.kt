@@ -139,12 +139,15 @@ class PersonGraphEvaluationTest {
     fun `a date the loader did not read is an error naming the node`() {
         val error = assertFailsWith<IllegalStateException> { expired(After(oneYear, endDate)) }
         assertContains(error.message!!, "a: the loader did not read column end_date")
-        val source = customSource()
+        val source = customSource(description = "the retention end of the test row")
         val custom =
             assertFailsWith<IllegalStateException> {
                 expired(Coalesce(After(oneYear, source), Never))
             }
-        assertContains(custom.message!!, "a: the loader did not read custom date source")
+        assertContains(
+            custom.message!!,
+            "a: the loader did not read the retention end of the test row",
+        )
     }
 
     @Test

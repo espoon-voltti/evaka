@@ -47,10 +47,11 @@ sealed interface DateSource {
      * evaluated as a whole takes the latest date of its rows.
      */
     class Custom(
+        val description: String,
         val mayReturnNoDate: Boolean,
         val query: (tx: Database.Read, ids: List<UUID>) -> Map<UUID, LocalDate>,
     ) : DateSource {
-        override fun toString(): String = "custom date source"
+        override fun toString(): String = description
     }
 }
 

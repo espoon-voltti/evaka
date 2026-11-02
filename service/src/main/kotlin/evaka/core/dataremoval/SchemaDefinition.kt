@@ -420,6 +420,9 @@ class SchemaDefinition(tables: List<Table>) {
     fun getPrimaryPath(table: HandledTable): List<HandledTable> =
         generateSequence(table) { parentOf(it) }.toList()
 
+    fun deletionBundleRoot(table: HandledTable): HandledTable =
+        generateSequence(table) { if (it.deletedWithParent) parentOf(it) else null }.last()
+
     /** The optional references whose target is the table */
     fun optionalReferencesInto(table: Table): List<DeclaredOptionalReference> =
         optionalReferencesByReferencedTable[table.name].orEmpty()

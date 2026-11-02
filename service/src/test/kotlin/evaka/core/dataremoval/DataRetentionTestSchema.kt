@@ -94,8 +94,10 @@ val targetChildId = ChildId(targetId.raw)
 val neverSent = IntegrationFacts(today.minusYears(5), sentToKoski = false, sentToVarda = false)
 
 /** The unit tests give the dates and results of custom sources and not while rules by hand */
-fun customSource(mayHaveNoDate: Boolean = true) =
-    DateSource.Custom(mayHaveNoDate) { _, _ -> error("The query of a test source is never run") }
+fun customSource(mayHaveNoDate: Boolean = true, description: String = "a test date") =
+    DateSource.Custom(description, mayHaveNoDate) { _, _ ->
+        error("The query of a test source is never run")
+    }
 
 fun notWhileRule() =
     ExpirationRule.NotWhile("a test condition holds") { _, _ ->

@@ -931,17 +931,15 @@ private fun requireSafetyConditions(
     }
     // The finance thread removal finds the children of a thread through these tables and waits for
     // their placements. A connection deleted earlier would let the thread expire before them.
-    fun HandledTable.deletionBundleRoot(): HandledTable =
-        generateSequence(this) { if (it.deletedWithParent) schema.parentOf(it) else null }.last()
     for (name in FINANCE_CONNECTION_TABLES) {
         val table =
             requireNotNull(schema.tablesByName[name] as? HandledTable) {
                 "The finance thread removal reads $name, which is not declared as a handled table"
             }
-        val root = table.deletionBundleRoot()
+        val root = schema.deletionBundleRoot(table)
         require(
             schema.handledTables.any {
-                it.deletionBundleRoot() == root && it.waitsForFinanceThreads()
+                schema.deletionBundleRoot(it) == root && it.waitsForFinanceThreads()
             }
         ) {
             "The finance thread removal reads $table, so it must wait for the finance thread period after the placements of its children, directly or through a table it is deleted with"
