@@ -26,6 +26,7 @@ import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevFosterParent
+import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
@@ -101,6 +102,8 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insert(area)
             tx.insert(daycare)
             tx.insert(serviceWorker)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherVtjGuardian.id, childId = child.id))
         }
         MockVtjClient.addPersons(guardian, child, otherVtjGuardian)
         MockVtjClient.addDependants(guardian, child)

@@ -19,6 +19,7 @@ import evaka.core.invoicing.data.getVoucherValueDecisionByLiableCitizen
 import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.service.FeeDecisionService
 import evaka.core.invoicing.service.VoucherValueDecisionService
+import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonNameDetailsById
 import evaka.core.pis.isDuplicate
@@ -176,7 +177,7 @@ class ApplicationControllerCitizen(
     ): ApplicationDetails {
         val audit = AuditContext().add(applicationId)
         val application = db.connect { dbc ->
-            dbc.transaction { tx ->
+            dbc.read { tx ->
                 accessControl.requirePermissionFor(
                     tx,
                     user,
@@ -194,13 +195,9 @@ class ApplicationControllerCitizen(
                     )
                 tx.fetchApplicationDetails(applicationId, attachmentFilter)?.let { application ->
                     val otherGuardian =
-                        personService.getOtherGuardian(
-                            tx,
-                            user,
-                            clock.now(),
-                            application.guardianId,
-                            application.childId,
-                        )
+                        tx.getDependantGuardians(application.childId).firstOrNull {
+                            it.id != application.guardianId
+                        }
                     audit
                         .add(application.childId)
                         .add(application.guardianId)

@@ -20,9 +20,9 @@ import evaka.core.decision.updateDecisionDrafts
 import evaka.core.identity.Ssn
 import evaka.core.pis.controllers.CreatePersonBody
 import evaka.core.pis.createPerson
+import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getPersonById
 import evaka.core.pis.service.PersonJSON
-import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanDetails
@@ -119,7 +119,6 @@ enum class VoucherApplicationFilter {
 @RequestMapping("/employee/applications")
 class ApplicationControllerV2(
     private val accessControl: AccessControl,
-    private val personService: PersonService,
     private val vtjSyncService: VtjSyncService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
@@ -377,7 +376,7 @@ class ApplicationControllerV2(
     ): ApplicationResponse {
         val audit = AuditContext().add(applicationId)
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
                     val application =
                         tx.fetchApplicationDetails(applicationId)
                             ?: throw NotFound("Application $applicationId was not found")
@@ -404,9 +403,7 @@ class ApplicationControllerV2(
 
                     val decisions = tx.getDecisionsByApplication(applicationId, decisionFilter)
                     val guardians =
-                        personService
-                            .getGuardians(tx, user, clock.now(), application.childId)
-                            .map { personDTO -> PersonJSON.from(personDTO) }
+                        tx.getDependantGuardians(application.childId).map(PersonJSON::from)
 
                     val attachments =
                         tx.getApplicationAttachments(applicationId).let { allAttachments ->
@@ -637,7 +634,7 @@ class ApplicationControllerV2(
     ): DecisionDraftGroup {
         val audit = AuditContext().add(applicationId)
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -689,7 +686,7 @@ class ApplicationControllerV2(
                     val child =
                         tx.getPersonById(application.childId)
                             ?: throw NotFound("Child ${application.childId} not found")
-                    val vtjGuardians = personService.getGuardians(tx, user, clock.now(), child.id)
+                    val vtjGuardians = tx.getDependantGuardians(child.id)
 
                     val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any {
                         it.id == application.guardianId

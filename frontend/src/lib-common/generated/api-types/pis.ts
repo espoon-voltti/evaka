@@ -23,8 +23,6 @@ import type { IncomeEffect } from './invoicing'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import type { MobileDevice } from './pairing'
-import type { Nationality } from './vtjclient'
-import type { NativeLanguage } from './vtjclient'
 import type { ParentshipId } from './shared'
 import type { PartnershipId } from './shared'
 import type { PersonEmailVerificationId } from './shared'
@@ -471,14 +469,6 @@ export interface NotificationSettings {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonAddressDTO.Origin
-*/
-export type Origin =
-  | 'VTJ'
-  | 'MUNICIPAL'
-  | 'EVAKA'
-
-/**
 * Generated from evaka.core.pis.service.ParentshipDetailed
 */
 export interface ParentshipDetailed {
@@ -562,17 +552,6 @@ export interface PartnershipWithPermittedActions {
 */
 export interface PasskeyRegistrationOptions {
   credentialsCreate: string
-}
-
-/**
-* Generated from evaka.core.pis.service.PersonAddressDTO
-*/
-export interface PersonAddressDTO {
-  origin: Origin
-  postOffice: string
-  postalCode: string
-  residenceCode: string
-  streetAddress: string
 }
 
 /**
@@ -701,30 +680,6 @@ export interface PersonSummary {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonWithChildrenDTO
-*/
-export interface PersonWithChildrenDTO {
-  address: PersonAddressDTO
-  backupPhone: string
-  children: PersonWithChildrenDTO[]
-  dateOfBirth: LocalDate
-  dateOfDeath: LocalDate | null
-  duplicateOf: PersonId | null
-  email: string | null
-  firstName: string
-  id: PersonId
-  lastName: string
-  municipalityOfResidence: string
-  nationalities: Nationality[]
-  nativeLanguage: NativeLanguage | null
-  phone: string
-  preferredName: string
-  residenceCode: string
-  restrictedDetails: RestrictedDetails
-  socialSecurityNumber: string | null
-}
-
-/**
 * Generated from evaka.core.pis.PersonalDataUpdate
 */
 export interface PersonalDataUpdate {
@@ -764,14 +719,6 @@ export type PinLoginStatus =
   | 'SUCCESS'
   | 'WRONG_PIN'
   | 'PIN_LOCKED'
-
-/**
-* Generated from evaka.core.pis.service.RestrictedDetails
-*/
-export interface RestrictedDetails {
-  enabled: boolean
-  endDate: LocalDate | null
-}
 
 /**
 * Generated from evaka.core.pis.ScheduledDaycareRole
@@ -1091,25 +1038,6 @@ export function deserializeJsonPersonSummary(json: JsonOf<PersonSummary>): Perso
     ...json,
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null
-  }
-}
-
-
-export function deserializeJsonPersonWithChildrenDTO(json: JsonOf<PersonWithChildrenDTO>): PersonWithChildrenDTO {
-  return {
-    ...json,
-    children: json.children.map(e => deserializeJsonPersonWithChildrenDTO(e)),
-    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
-    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
-    restrictedDetails: deserializeJsonRestrictedDetails(json.restrictedDetails)
-  }
-}
-
-
-export function deserializeJsonRestrictedDetails(json: JsonOf<RestrictedDetails>): RestrictedDetails {
-  return {
-    ...json,
-    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
   }
 }
 

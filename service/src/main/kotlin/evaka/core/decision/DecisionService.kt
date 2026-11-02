@@ -29,7 +29,6 @@ import evaka.core.pdfgen.Template
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
 import evaka.core.pis.service.PersonDTO
-import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentLocation
@@ -67,7 +66,6 @@ val logger = KotlinLogging.logger {}
 
 @Service
 class DecisionService(
-    private val personService: PersonService,
     private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
     private val pdfGenerator: PdfGenerator,
@@ -225,15 +223,6 @@ class DecisionService(
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
-        // make sure VTJ guardians are up-to-date
-        val _ =
-            personService.getGuardians(
-                tx,
-                AuthenticatedUser.SystemInternalUser,
-                now,
-                decision.childId,
-            )
-
         val applicationId = decision.applicationId
         val application =
             tx.fetchApplicationDetails(applicationId)
@@ -354,10 +343,6 @@ class DecisionService(
                 tx.fetchApplicationDetails(applicationId)
                     ?: throw NotFound("Application $applicationId was not found")
             val childId = application.childId
-
-            // make sure VTJ guardians are up-to-date
-            val _ =
-                personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, now, childId)
 
             val currentGuardians = tx.getChildGuardiansAndFosterParents(childId, today)
 

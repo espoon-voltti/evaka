@@ -57,7 +57,9 @@ import evaka.core.messaging.MessageService
 import evaka.core.messaging.MessageType
 import evaka.core.messaging.NewMessageStub
 import evaka.core.messaging.getServiceWorkerAccountId
+import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getEmployeeUser
+import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
 import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.PersonService
@@ -191,7 +193,7 @@ class ApplicationStateService(
         val form =
             ApplicationForm.initForm(type, guardian, child)
                 .let { form -> withDefaultStartDate(tx, now.toLocalDate(), type, form) }
-                .let { form -> withDefaultOtherChildren(tx, user, now, guardian, child, form) }
+                .let { form -> withDefaultOtherChildren(tx, guardian, child, form) }
 
         return tx.insertApplication(
             now = now,
@@ -254,15 +256,12 @@ class ApplicationStateService(
     }
 
     private fun withDefaultOtherChildren(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
+        tx: Database.Read,
         guardian: PersonDTO,
         child: PersonDTO,
         form: ApplicationForm,
     ): ApplicationForm {
-        val vtjChildren =
-            personService.getPersonWithChildren(tx, user, now, guardian.id)?.children ?: listOf()
+        val vtjChildren = tx.getGuardianDependants(guardian.id)
         // if the applicant is not the child's guardian (ie. they are a foster parent) do not
         // include other children
         val vtjOtherChildren =
@@ -271,14 +270,12 @@ class ApplicationStateService(
             } else {
                 vtjChildren
                     .filter { it.id != child.id }
-                    .filter {
-                        personService.personsLiveInTheSameAddress(guardian, it.toPersonDTO())
-                    }
+                    .filter { personService.personsLiveInTheSameAddress(guardian, it) }
                     .map {
                         PersonBasics(
                             firstName = it.firstName,
                             lastName = it.lastName,
-                            socialSecurityNumber = it.socialSecurityNumber,
+                            socialSecurityNumber = it.ssn?.value,
                         )
                     }
             }
@@ -313,8 +310,6 @@ class ApplicationStateService(
             currentDate,
             citizen = user is AuthenticatedUser.Citizen,
         )
-
-        val _ = personService.getGuardians(tx, user, now, application.childId)
 
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags, now, user.evakaUserId)
@@ -695,7 +690,6 @@ class ApplicationStateService(
             .observeDate(placementPlan.period.start)
             .observeDate(placementPlan.preschoolDaycarePeriod?.start)
 
-        val _ = personService.getGuardians(tx, user, now, application.childId)
         tx.syncApplicationOtherGuardians(applicationId, today).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
         tx.deleteApplicationPlacementDraftIfExists(applicationId)?.also { audit.add(it.unitId) }
@@ -1677,7 +1671,7 @@ class ApplicationStateService(
         val skipGuardian =
             config.skipGuardianPreschoolDecisionApproval &&
                 application.type == ApplicationType.PRESCHOOL
-        val sendBySfi = canSendDecisionsBySfi(tx, user, now, application)
+        val sendBySfi = canSendDecisionsBySfi(tx, application)
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
         if (decisionDrafts.any { it.planned }) {
             val decisionIds =
@@ -1731,17 +1725,14 @@ class ApplicationStateService(
     }
 
     private fun canSendDecisionsBySfi(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
+        tx: Database.Read,
         application: ApplicationDetails,
     ): Boolean {
         val hasSsn =
             (tx.getPersonById(application.guardianId)!!.ssn != null &&
                 tx.getPersonById(application.childId)!!.ssn != null)
         val guardianIsVtjGuardian =
-            personService
-                .getGuardians(tx, user, now, application.childId)
+            tx.getDependantGuardians(application.childId)
                 .filter { it.dateOfDeath == null }
                 .any { it.id == application.guardianId }
 

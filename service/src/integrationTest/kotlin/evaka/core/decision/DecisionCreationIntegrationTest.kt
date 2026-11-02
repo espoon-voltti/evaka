@@ -34,7 +34,6 @@ import evaka.core.decision.reasoning.DecisionReasoningCollectionType
 import evaka.core.decision.reasoning.insertGenericReasoning
 import evaka.core.decision.reasoning.insertIndividualReasoning
 import evaka.core.decision.reasoning.setDecisionReasoningIndividualSelections
-import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.placement.PlacementPlanUnit
 import evaka.core.placement.PlacementType
@@ -51,6 +50,7 @@ import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDecisionReasoningGeneric
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.TestDecision
@@ -71,7 +71,6 @@ import evaka.core.test.getDecisionRowsByApplication
 import evaka.core.toApplicationType
 import evaka.core.toDaycareFormAdult
 import evaka.core.toDaycareFormChild
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -100,7 +99,6 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var applicationStateService: ApplicationStateService
-    @Autowired private lateinit var personService: PersonService
 
     private val primaryDecisionId = DecisionId(UUID.randomUUID())
     private val connectedDecisionId = DecisionId(UUID.randomUUID())
@@ -150,10 +148,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -197,10 +194,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 18), LocalDate.of(2023, 7, 29))
         val applicationId =
             insertInitialData(
@@ -244,10 +240,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
         val applicationId =
             insertInitialData(
@@ -291,10 +286,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
         val preschoolDaycarePeriod =
             FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
@@ -356,10 +350,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
         val applicationId =
             insertInitialData(
@@ -404,10 +397,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
         val preschoolDaycarePeriod =
             FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
@@ -469,10 +461,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -507,9 +498,10 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG) to
                     AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.WEAK)
             }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
+        db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
+        }
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -581,8 +573,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(child, DevPersonType.CHILD)
             AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
         }
-        MockVtjClient.addPersons(guardian, child)
-        MockVtjClient.addDependants(guardian, child)
+        db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+        }
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -629,8 +622,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(child, DevPersonType.CHILD)
             AuthenticatedUser.Citizen(otherPerson.id, CitizenAuthLevel.STRONG)
         }
-        MockVtjClient.addPersons(guardian, otherPerson, child)
-        MockVtjClient.addDependants(guardian, child)
+        db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+        }
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -669,10 +663,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -746,10 +739,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -824,10 +816,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
 
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
@@ -904,9 +895,10 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(child, DevPersonType.CHILD)
             AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
+        db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
+        }
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -977,9 +969,10 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(child, DevPersonType.CHILD)
             AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
         }
-        MockVtjClient.addPersons(guardian, otherGuardian, child)
-        MockVtjClient.addDependants(guardian, child)
-        MockVtjClient.addDependants(otherGuardian, child)
+        db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
+        }
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
         val applicationId =
             insertInitialData(
@@ -1030,9 +1023,8 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, child)
-        MockVtjClient.addDependants(guardian, child)
 
         val period = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 5, 31))
 
@@ -1069,9 +1061,8 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, child)
-        MockVtjClient.addDependants(guardian, child)
 
         val period = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 5, 31))
 
@@ -1162,9 +1153,8 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, child)
-        MockVtjClient.addDependants(guardian, child)
 
         val period = FiniteDateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31))
         val applicationId =
@@ -1273,9 +1263,8 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
         }
-        MockVtjClient.addPersons(guardian, child)
-        MockVtjClient.addDependants(guardian, child)
         return insertInitialData(
             type = PlacementType.DAYCARE,
             adult = guardian,
@@ -1430,9 +1419,6 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         preparatoryEducation: Boolean = false,
         hideFromGuardian: Boolean = false,
     ): ApplicationId = db.transaction { tx ->
-        // make sure guardians are up-to-date
-        personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, clock.now(), child.id)
-
         val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
         val applicationId =
             tx.insertTestApplication(

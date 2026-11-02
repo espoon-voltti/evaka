@@ -12,6 +12,8 @@ import evaka.core.identity.Ssn
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pis.PersonSummary
 import evaka.core.pis.createPerson
+import evaka.core.pis.getDependantGuardians
+import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
 import evaka.core.pis.searchPeople
 import evaka.core.pis.service.FridgeFamilyService
@@ -21,7 +23,6 @@ import evaka.core.pis.service.PersonJSON
 import evaka.core.pis.service.PersonPatch
 import evaka.core.pis.service.PersonSensitiveDetails
 import evaka.core.pis.service.PersonService
-import evaka.core.pis.service.PersonWithChildrenDTO
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.pis.service.createAddressPagePdf
@@ -184,22 +185,22 @@ class PersonController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
-    ): List<PersonWithChildrenDTO> {
+    ): List<PersonJSON> {
         val audit = AuditContext().add(personId)
         return db.connect { dbc ->
-                dbc.transaction {
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Person.READ_DEPENDANTS,
-                            personId,
-                        )
-                        personService
-                            .getPersonWithChildren(it, user, clock.now(), personId)
-                            ?.also { dto -> audit.add(dto.children.map { child -> child.id }) }
-                    }
-                    ?.children ?: throw NotFound()
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_DEPENDANTS,
+                        personId,
+                    )
+                }
+                vtjSyncService.ensureDependantsSynced(dbc, user.evakaUserId, clock, personId)
+                dbc.read { it.getGuardianDependants(personId) }
+                    .map(PersonJSON::from)
+                    .also { dependants -> audit.add(dependants.map { it.id }) }
             }
             .also { audit.log(Audit.PersonDependantRead, clock) }
     }
@@ -213,7 +214,7 @@ class PersonController(
     ): GuardiansResponse {
         val audit = AuditContext().add(personId)
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                val fetchBlockedGuardians = dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -221,20 +222,22 @@ class PersonController(
                         Action.Child.READ_GUARDIANS,
                         personId,
                     )
-                    val fetchBlockedGuardians =
-                        accessControl.hasPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Child.READ_BLOCKED_GUARDIANS,
-                            personId,
-                        )
+                    accessControl.hasPermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_BLOCKED_GUARDIANS,
+                        personId,
+                    )
+                }
+                vtjSyncService.ensureGuardiansSynced(dbc, user.evakaUserId, clock, personId)
+                dbc.read { tx ->
                     GuardiansResponse(
                             guardians =
-                                personService
-                                    .getGuardians(tx, user, clock.now(), personId)
-                                    .map(PersonJSON::from)
-                                    .also { guardians -> audit.add(guardians.map { it.id }) },
+                                tx.getDependantGuardians(personId).map(PersonJSON::from).also {
+                                    guardians ->
+                                    audit.add(guardians.map { it.id })
+                                },
                             blockedGuardians =
                                 if (fetchBlockedGuardians)
                                     tx.getBlockedGuardians(personId)

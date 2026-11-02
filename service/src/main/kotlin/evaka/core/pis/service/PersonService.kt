@@ -10,10 +10,6 @@ import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pis.applyDependants
-import evaka.core.pis.applyGuardians
-import evaka.core.pis.getDependantGuardians
-import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.splitFirstNames
@@ -21,7 +17,6 @@ import evaka.core.pis.updateNonSsnPersonDetails
 import evaka.core.pis.updatePersonNonVtjDetails
 import evaka.core.pis.updatePersonSsnAddingDisabled
 import evaka.core.s3.Document
-import evaka.core.shared.ChildId
 import evaka.core.shared.HtmlBuilder
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -30,8 +25,6 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.Rectangle
-import evaka.core.vtjclient.dto.Nationality
-import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import java.time.LocalDate
@@ -88,76 +81,6 @@ class PersonService(
             person1.postalCode == person2.postalCode &&
             person1.postOffice == person2.postOffice
     }
-
-    // Does a request to VTJ if SSN is present and the person hasn't had their dependants
-    // initialized
-    fun getPersonWithChildren(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
-        id: PersonId,
-        forceRefresh: Boolean = false,
-    ): PersonWithChildrenDTO? {
-        val guardian = tx.getPersonById(id) ?: return null
-        if (guardian.ssn == null) return toPersonWithChildrenDTO(guardian)
-
-        if (forceRefresh || guardian.vtjDependantsQueried == null) {
-            val snapshot =
-                vtjClient.fetchWithDependants(
-                    VtjClient.DetailsQuery(user.evakaUserId, guardian.ssn)
-                )
-            val children =
-                snapshot.dependants.map {
-                    vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
-                }
-            val guardianId = vtjSyncService.applyFromVtj(tx, now, snapshot.person).id
-            val childIds = children.map { vtjSyncService.applyFromVtj(tx, now, it).id }.toSet()
-            tx.applyDependants(guardianId, childIds, now)
-        }
-
-        val children = tx.getGuardianDependants(id).map { toPersonWithChildrenDTO(it) }
-        return tx.getPersonById(id)?.let { toPersonWithChildrenDTO(it).copy(children = children) }
-    }
-
-    // Does a request to VTJ if SSN is present
-    fun getGuardians(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
-        id: ChildId,
-        forceRefresh: Boolean = false,
-    ): List<PersonDTO> {
-        val child = tx.getPersonById(id) ?: return emptyList()
-        if (child.ssn == null) return emptyList()
-
-        if (forceRefresh || child.vtjGuardiansQueried == null) {
-            val snapshot =
-                vtjClient.fetchWithGuardians(VtjClient.DetailsQuery(user.evakaUserId, child.ssn))
-            val guardians =
-                snapshot.guardians.map {
-                    vtjClient.fetchPerson(VtjClient.DetailsQuery(user.evakaUserId, it.ssn))
-                }
-            val childId = vtjSyncService.applyFromVtj(tx, now, snapshot.person).id
-            val guardianIds = guardians.map { vtjSyncService.applyFromVtj(tx, now, it).id }.toSet()
-            tx.applyGuardians(childId, guardianIds, now)
-        }
-
-        return tx.getDependantGuardians(id)
-    }
-
-    // In extremely rare cases there might be more than 2 guardians, but it was agreed with product
-    // management to use
-    // just one of these as the other guardian.
-    fun getOtherGuardian(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        now: HelsinkiDateTime,
-        otherGuardianId: PersonId,
-        childId: ChildId,
-    ): PersonDTO? =
-        getGuardians(tx, user, now, childId).firstOrNull { guardian ->
-            guardian.id != otherGuardianId
-        }
 
     // Does a request to VTJ if person is not found in database or person data has not been
     // initialized from VTJ
@@ -233,35 +156,6 @@ class PersonService(
             municipalityOfResidence = person.municipalityOfResidence ?: "",
             restrictedDetailsEnabled = person.restrictedDetails?.enabled ?: false,
             restrictedDetailsEndDate = person.restrictedDetails?.endDate,
-        )
-
-    private fun toPersonWithChildrenDTO(person: PersonDTO): PersonWithChildrenDTO =
-        PersonWithChildrenDTO(
-            id = person.id,
-            duplicateOf = person.duplicateOf,
-            socialSecurityNumber = person.ssn?.value,
-            firstName = person.firstName,
-            lastName = person.lastName,
-            preferredName = person.preferredName,
-            dateOfBirth = person.dateOfBirth,
-            dateOfDeath = person.dateOfDeath,
-            nationalities = emptySet(),
-            nativeLanguage = person.language?.let { NativeLanguage(languageName = it, code = it) },
-            restrictedDetails = RestrictedDetails(enabled = false),
-            address =
-                PersonAddressDTO(
-                    origin = PersonAddressDTO.Origin.EVAKA,
-                    streetAddress = person.streetAddress,
-                    postalCode = person.postalCode,
-                    postOffice = person.postOffice,
-                    residenceCode = person.residenceCode,
-                ),
-            residenceCode = person.residenceCode,
-            municipalityOfResidence = person.municipalityOfResidence,
-            phone = person.phone,
-            backupPhone = person.backupPhone,
-            email = person.email,
-            children = emptyList(),
         )
 }
 
@@ -478,70 +372,6 @@ data class PersonPatch(
     val forceManualFeeDecisions: Boolean? = null,
     val ophPersonOid: String? = null,
 )
-
-data class PersonWithChildrenDTO(
-    val id: PersonId,
-    val duplicateOf: PersonId?,
-    val socialSecurityNumber: String?,
-    val dateOfBirth: LocalDate,
-    val dateOfDeath: LocalDate?,
-    val firstName: String,
-    val lastName: String,
-    val preferredName: String,
-    val address: PersonAddressDTO,
-    val residenceCode: String,
-    val municipalityOfResidence: String,
-    val phone: String,
-    val backupPhone: String,
-    val email: String?,
-    val children: List<PersonWithChildrenDTO>,
-    val nationalities: Set<Nationality>,
-    val nativeLanguage: NativeLanguage?,
-    val restrictedDetails: RestrictedDetails,
-) {
-    fun toPersonDTO() =
-        PersonDTO(
-            id = id,
-            duplicateOf = duplicateOf,
-            ssn = socialSecurityNumber?.let { Ssn.parse(it) ?: error("Invalid SSN") },
-            ssnAddingDisabled = false,
-            dateOfBirth = dateOfBirth,
-            dateOfDeath = dateOfDeath,
-            firstName = firstName,
-            lastName = lastName,
-            preferredName = preferredName,
-            residenceCode = residenceCode,
-            streetAddress = address.streetAddress,
-            postalCode = address.postalCode,
-            postOffice = address.postOffice,
-            mailingStreetAddress = address.streetAddress,
-            mailingPostalCode = address.postalCode,
-            mailingPostOffice = address.postOffice,
-            municipalityOfResidence = municipalityOfResidence,
-            restrictedDetailsEnabled = restrictedDetails.enabled,
-            restrictedDetailsEndDate = restrictedDetails.endDate,
-            language = nativeLanguage?.code,
-            email = email,
-            phone = phone,
-            backupPhone = backupPhone,
-        )
-}
-
-data class PersonAddressDTO(
-    val origin: Origin,
-    val streetAddress: String,
-    val postalCode: String,
-    val postOffice: String,
-    val residenceCode: String,
-) {
-    enum class Origin {
-        VTJ,
-        MUNICIPAL,
-        EVAKA,
-    }
-}
-
-data class RestrictedDetails(val enabled: Boolean, val endDate: LocalDate? = null)
 
 fun createAddressPagePdf(
     pdfGenerator: PdfGenerator,

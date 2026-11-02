@@ -12,6 +12,7 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.vtjclient.dto.Nationality
 import evaka.core.vtjclient.dto.NativeLanguage
 import evaka.core.vtjclient.dto.PersonAddress
@@ -35,7 +36,8 @@ import org.mockito.kotlin.mock
  */
 class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val user = AuthenticatedUser.SystemInternalUser
-    private val now = HelsinkiDateTime.of(LocalDate.of(2026, 1, 1), LocalTime.of(12, 0))
+    private val clock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2026, 1, 1), LocalTime.of(12, 0)))
 
     private val guardian =
         DevPerson(
@@ -70,7 +72,7 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
     private val vtjClient = StubRelativeVtjClient(guardian, child)
-    private val personService = PersonService(vtjClient, VtjSyncService(vtjClient, mock()))
+    private val vtjSyncService = VtjSyncService(vtjClient, mock())
 
     @BeforeEach
     fun insertFamily() {
@@ -105,7 +107,7 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `refreshing a child keeps their guardian's address`() {
-        db.transaction { personService.getGuardians(it, user, now, child.id, forceRefresh = true) }
+        vtjSyncService.refreshPerson(db, user.evakaUserId, clock, child.id)
 
         val refreshed = db.read { it.getPersonById(guardian.id) }!!
         assertEquals(guardian.streetAddress, refreshed.streetAddress)
@@ -114,9 +116,7 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun refreshGuardian() {
-        db.transaction {
-            personService.getPersonWithChildren(it, user, now, guardian.id, forceRefresh = true)
-        }
+        vtjSyncService.refreshPersonAndDependants(db, user.evakaUserId, clock, guardian.id)
     }
 }
 

@@ -72,7 +72,9 @@ async function setupFixtures() {
   await testCareArea.save()
   await testDaycare.save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-  await familyWithTwoGuardians.save()
+  // Each case inserts the guardian rows it needs, because a decision shows the partner only when
+  // the partner is a guardian or head of family of the child
+  await familyWithTwoGuardians.save({ insertGuardianRows: false })
   const careArea = await testCareArea2.save()
   await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 }
