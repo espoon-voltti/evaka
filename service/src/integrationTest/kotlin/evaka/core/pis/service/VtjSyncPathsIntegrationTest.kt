@@ -168,7 +168,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `weak login of a citizen whose dependants are not synced queries the dependants`() {
+    fun `weak login of a citizen whose dependants are not synced makes no VTJ requests`() {
         val password = Sensitive("test123123")
         db.transaction { tx ->
             tx.insert(a, DevPersonType.ADULT)
@@ -188,9 +188,9 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             SystemController.CitizenWeakLoginRequest("aino@example.com", password, emptyList()),
         )
 
-        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
-        assertPersons(a, x)
-        assertGuardians(a to x)
+        MockVtjSoapTransport.assertRequests()
+        assertPersons(a)
+        assertGuardians()
         assertFridgeChildren()
     }
 

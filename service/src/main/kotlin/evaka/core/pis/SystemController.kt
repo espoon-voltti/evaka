@@ -14,7 +14,6 @@ import evaka.core.holidayperiod.QuestionnaireType
 import evaka.core.identity.ExternalId
 import evaka.core.identity.Ssn
 import evaka.core.pairing.*
-import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.FeatureConfig
@@ -45,7 +44,6 @@ private val logger = KotlinLogging.logger {}
  */
 @RestController
 class SystemController(
-    private val personService: PersonService,
     private val vtjSyncService: VtjSyncService,
     private val accessControl: AccessControl,
     private val accessControlCitizen: AccessControlCitizen,
@@ -111,7 +109,6 @@ class SystemController(
                     val now = clock.now()
                     tx.updateLastWeakLogin(now, citizen.id)
                     tx.updateCitizenOnLogin(now, citizen.id)
-                    val _ = personService.getPersonWithChildren(tx, user, now, citizen.id)
                     CitizenUserIdentity(citizen.id)
                 }
                 .also {
@@ -187,7 +184,6 @@ class SystemController(
                     }
                     tx.updateLastWeakLogin(now, finished.person)
                     tx.updateCitizenOnLogin(now, finished.person)
-                    val _ = personService.getPersonWithChildren(tx, user, now, finished.person)
                     finished.passkey.id to CitizenUserIdentity(finished.person)
                 }
                 .let { (passkeyId, identity) ->
