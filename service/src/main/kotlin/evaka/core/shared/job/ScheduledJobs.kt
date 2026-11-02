@@ -90,7 +90,7 @@ enum class ScheduledJob(
     ),
     SyncMissingVtjRelations(
         ScheduledJobs::syncMissingVtjRelations,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     UpdateMailingAddresses(
         ScheduledJobs::updateMailingAddresses,
