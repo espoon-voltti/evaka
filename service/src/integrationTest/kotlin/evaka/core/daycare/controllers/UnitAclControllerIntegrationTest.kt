@@ -438,6 +438,35 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `personal mobile device is deleted in async job after supervisor role is changed to staff`() {
+        val supervisor = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(supervisor, unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(DevPersonalMobileDevice(employeeId = supervisor.id))
+        }
+
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 12, 13), LocalTime.of(12, 0))
+        unitAclController.addFullAclForRole(
+            dbInstance(),
+            admin,
+            MockEvakaClock(now),
+            daycare.id,
+            supervisor.id,
+            UnitAclController.AclUpdate(
+                role = UserRole.STAFF,
+                groupIds = null,
+                hasStaffOccupancyEffect = null,
+                endDate = null,
+            ),
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusHours(1)))
+
+        db.read { tx ->
+            assertEquals(emptyList(), tx.listPersonalDevices(employeeId = supervisor.id))
+        }
+    }
+
+    @Test
     fun temporaryEmployeeCrud() {
 
         assertThat(getTemporaryEmployees(daycare.id)).isEmpty()

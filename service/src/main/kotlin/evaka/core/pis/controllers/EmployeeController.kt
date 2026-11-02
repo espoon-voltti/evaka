@@ -10,6 +10,7 @@ import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.daycare.deactivatePersonalMessageAccountIfNeeded
 import evaka.core.daycare.domain.ProviderType
+import evaka.core.daycare.planPersonalMobileDeviceCleanup
 import evaka.core.messaging.upsertEmployeeMessageAccount
 import evaka.core.pis.Employee
 import evaka.core.pis.EmployeeWithDaycareRoles
@@ -32,6 +33,8 @@ import evaka.core.pis.upsertEmployeeDaycareRoles
 import evaka.core.pis.upsertPinCode
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.deleteScheduledDaycareAclRow
@@ -58,7 +61,11 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/employees")
-class EmployeeController(private val accessControl: AccessControl, private val env: EvakaEnv) {
+class EmployeeController(
+    private val accessControl: AccessControl,
+    private val env: EvakaEnv,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+) {
 
     @GetMapping
     fun getEmployees(
@@ -136,6 +143,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
                 }
 
                 it.updateEmployeeGlobalRoles(id = id, globalRoles = body)
+                planPersonalMobileDeviceCleanup(it, asyncJobRunner, clock.now(), id)
             }
         }
         Audit.EmployeeUpdateGlobalRoles.log(
@@ -197,6 +205,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
 
                 if (body.startDate == clock.today()) {
                     it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role, body.endDate)
+                    planPersonalMobileDeviceCleanup(it, asyncJobRunner, clock.now(), id)
                     it.upsertEmployeeMessageAccount(id)
                 } else {
                     it.insertScheduledDaycareAclRow(
@@ -250,6 +259,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
                 deletedScheduledRows.forEach { audit.observeDate(it.startDate) }
 
                 deactivatePersonalMessageAccountIfNeeded(tx, id)
+                planPersonalMobileDeviceCleanup(tx, asyncJobRunner, clock.now(), id)
             }
         }
         audit.log(Audit.EmployeeDeleteDaycareRoles, clock)

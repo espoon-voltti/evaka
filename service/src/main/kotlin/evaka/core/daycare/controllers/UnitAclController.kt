@@ -13,6 +13,7 @@ import evaka.core.attendance.OccupancyCoefficientUpsert
 import evaka.core.attendance.getOccupancyCoefficientForEmployeeInUnit
 import evaka.core.attendance.upsertOccupancyCoefficient
 import evaka.core.daycare.deactivatePersonalMessageAccountIfNeeded
+import evaka.core.daycare.planPersonalMobileDeviceCleanup
 import evaka.core.messaging.deactivateEmployeeMessageAccount
 import evaka.core.messaging.upsertEmployeeMessageAccount
 import evaka.core.pairing.deletePersonalDevices
@@ -432,6 +433,7 @@ class UnitAclController(
                 audit.addMeta("replacedScheduled", replacedScheduled != null)
                 replacedScheduled?.let { audit.addMeta("scheduledStartDate", it.startDate) }
                 tx.insertDaycareAclRow(unitId, employeeId, update.role, update.endDate)
+                planPersonalMobileDeviceCleanup(tx, asyncJobRunner, clock.now(), employeeId)
                 tx.upsertEmployeeMessageAccount(employeeId)
                 update.groupIds?.let {
                     accessControl.requirePermissionFor(
@@ -793,12 +795,5 @@ fun removeDaycareAclForRole(
     tx.syncDaycareGroupAcl(unitId, employeeId, emptyList())
     tx.deleteDaycareAclRow(unitId, employeeId, role)
     deactivatePersonalMessageAccountIfNeeded(tx, employeeId)
-
-    // Delete personal mobile devices after a while, in case the employee is added back to this
-    // or some other unit
-    asyncJobRunner.plan(
-        tx,
-        listOf(AsyncJob.DeletePersonalDevicesIfNeeded(employeeId)),
-        runAt = now.plusHours(1),
-    )
+    planPersonalMobileDeviceCleanup(tx, asyncJobRunner, now, employeeId)
 }
