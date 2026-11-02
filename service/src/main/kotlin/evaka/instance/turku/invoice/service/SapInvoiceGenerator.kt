@@ -7,6 +7,7 @@
 
 package evaka.instance.turku.invoice.service
 
+import evaka.core.invoicing.domain.InvoiceAddress
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.domain.InvoiceRowDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
@@ -20,6 +21,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
 import org.springframework.stereotype.Component
+
+private const val PARTNER_FIELD_MAX_LENGTH = 35
 
 @Component
 class SapInvoiceGenerator : StringInvoiceGenerator {
@@ -141,155 +144,30 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
         idoc.e1EDK03 = e1edk03list
 
         // E1EDKA1
-        val e1edka1list: MutableList<ORDERS05.IDOC.E1EDKA1> = mutableListOf()
-
         val headOfFamilyName =
             invoice.headOfFamily.invoiceRecipientName.ifBlank {
                 invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
             }
-        val (headOfFamilyStreetAddress, headOfFamilyPostalCode, headOfFamilyPostOffice) =
-            invoice.headOfFamily.invoiceAddress()
-
-        val e1edka1 = ORDERS05.IDOC.E1EDKA1()
-        e1edka1.segment = "1"
-        e1edka1.parvw = "AG"
-        e1edka1.partn = invoice.headOfFamily.ssn.toString()
-
-        if (headOfFamilyName.count() > 35) {
-            e1edka1.name1 = headOfFamilyName.substring(0, 35)
-            if (headOfFamilyName.length > 70) {
-                e1edka1.name2 = headOfFamilyName.substring(35, 70)
-            } else {
-                e1edka1.name2 = headOfFamilyName.substring(35, headOfFamilyName.length)
+        val headOfFamilyAddress = invoice.headOfFamily.invoiceAddress()
+        idoc.e1EDKA1 = buildList {
+            for (role in listOf("AG", "RE", "RG", "WE")) {
+                add(partner(role, invoice.headOfFamily.ssn, headOfFamilyName, headOfFamilyAddress))
             }
-        } else {
-            e1edka1.name1 = headOfFamilyName
-        }
-
-        if (headOfFamilyStreetAddress.count() > 35) {
-            e1edka1.stras = headOfFamilyStreetAddress.substring(0, 35)
-        } else {
-            e1edka1.stras = headOfFamilyStreetAddress
-        }
-
-        e1edka1.pstlz = headOfFamilyPostalCode
-        e1edka1.orT01 = headOfFamilyPostOffice
-        e1edka1.land1 = "FI"
-
-        e1edka1list.add(e1edka1)
-
-        val e1edka1_2 = ORDERS05.IDOC.E1EDKA1()
-        e1edka1_2.segment = "1"
-        e1edka1_2.parvw = "RE"
-        e1edka1_2.partn = invoice.headOfFamily.ssn.toString()
-        if (headOfFamilyName.count() > 35) {
-            e1edka1_2.name1 = headOfFamilyName.substring(0, 35)
-            if (headOfFamilyName.length > 70) {
-                e1edka1_2.name2 = headOfFamilyName.substring(35, 70)
-            } else {
-                e1edka1_2.name2 = headOfFamilyName.substring(35, headOfFamilyName.length)
+            if (invoice.codebtor != null) {
+                add(
+                    partner(
+                        "Y1",
+                        invoice.codebtor.ssn,
+                        invoice.codebtor.lastName + " " + invoice.codebtor.firstName,
+                        InvoiceAddress(
+                            invoice.codebtor.mailingStreetAddress,
+                            invoice.codebtor.mailingPostalCode,
+                            invoice.codebtor.mailingPostOffice,
+                        ),
+                    )
+                )
             }
-        } else {
-            e1edka1_2.name1 = headOfFamilyName
         }
-
-        if (headOfFamilyStreetAddress.count() > 35) {
-            e1edka1_2.stras = headOfFamilyStreetAddress.substring(0, 35)
-        } else {
-            e1edka1_2.stras = headOfFamilyStreetAddress
-        }
-
-        e1edka1_2.pstlz = headOfFamilyPostalCode
-        e1edka1_2.orT01 = headOfFamilyPostOffice
-        e1edka1_2.land1 = "FI"
-        e1edka1list.add(e1edka1_2)
-
-        val e1edka1_3 = ORDERS05.IDOC.E1EDKA1()
-        e1edka1_3.segment = "1"
-        e1edka1_3.parvw = "RG"
-        e1edka1_3.partn = invoice.headOfFamily.ssn.toString()
-
-        if (headOfFamilyName.count() > 35) {
-            e1edka1_3.name1 = headOfFamilyName.substring(0, 35)
-            if (headOfFamilyName.length > 70) {
-                e1edka1_3.name2 = headOfFamilyName.substring(35, 70)
-            } else {
-                e1edka1_3.name2 = headOfFamilyName.substring(35, headOfFamilyName.length)
-            }
-        } else {
-            e1edka1_3.name1 = headOfFamilyName
-        }
-
-        if (headOfFamilyStreetAddress.count() > 35) {
-            e1edka1_3.stras = headOfFamilyStreetAddress.substring(0, 35)
-        } else {
-            e1edka1_3.stras = headOfFamilyStreetAddress
-        }
-
-        e1edka1_3.pstlz = headOfFamilyPostalCode
-        e1edka1_3.orT01 = headOfFamilyPostOffice
-        e1edka1_3.land1 = "FI"
-        e1edka1list.add(e1edka1_3)
-
-        val e1edka1_4 = ORDERS05.IDOC.E1EDKA1()
-        e1edka1_4.segment = "1"
-        e1edka1_4.parvw = "WE"
-        e1edka1_4.partn = invoice.headOfFamily.ssn.toString()
-
-        if (headOfFamilyName.count() > 35) {
-            e1edka1_4.name1 = headOfFamilyName.substring(0, 35)
-            if (headOfFamilyName.length > 70) {
-                e1edka1_4.name2 = headOfFamilyName.substring(35, 70)
-            } else {
-                e1edka1_4.name2 = headOfFamilyName.substring(35, headOfFamilyName.length)
-            }
-        } else {
-            e1edka1_4.name1 = headOfFamilyName
-        }
-
-        if (headOfFamilyStreetAddress.count() > 35) {
-            e1edka1_4.stras = headOfFamilyStreetAddress.substring(0, 35)
-        } else {
-            e1edka1_4.stras = headOfFamilyStreetAddress
-        }
-
-        e1edka1_4.pstlz = headOfFamilyPostalCode
-        e1edka1_4.orT01 = headOfFamilyPostOffice
-        e1edka1_4.land1 = "FI"
-        e1edka1list.add(e1edka1_4)
-
-        if (invoice.codebtor != null) {
-            val e1edka1_5 = ORDERS05.IDOC.E1EDKA1()
-            e1edka1_5.segment = "1"
-            e1edka1_5.parvw = "Y1"
-            e1edka1_5.partn = invoice.codebtor.ssn.toString()
-
-            val nameOfCodebtorY1 = invoice.codebtor.lastName + " " + invoice.codebtor.firstName
-
-            if (nameOfCodebtorY1.count() > 35) {
-                e1edka1_5.name1 = nameOfCodebtorY1.substring(0, 35)
-                if (nameOfCodebtorY1.length > 70) {
-                    e1edka1_5.name2 = nameOfCodebtorY1.substring(35, 70)
-                } else {
-                    e1edka1_5.name2 = nameOfCodebtorY1.substring(35, nameOfCodebtorY1.length)
-                }
-            } else {
-                e1edka1_5.name1 = nameOfCodebtorY1
-            }
-
-            val streetAddressCodebtorY1 = invoice.codebtor.mailingStreetAddress
-            if (streetAddressCodebtorY1.count() > 35) {
-                e1edka1_5.stras = streetAddressCodebtorY1.substring(0, 35)
-            } else {
-                e1edka1_5.stras = streetAddressCodebtorY1
-            }
-
-            e1edka1_5.pstlz = invoice.codebtor.mailingPostalCode
-            e1edka1_5.orT01 = invoice.codebtor.mailingPostOffice
-            e1edka1_5.land1 = "FI"
-            e1edka1list.add(e1edka1_5)
-        }
-        idoc.e1EDKA1 = e1edka1list
 
         // E1EDK02
         val e1edk02list: MutableList<ORDERS05.IDOC.E1EDK02> = mutableListOf()
@@ -322,6 +200,25 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
 
         return idoc
     }
+
+    private fun partner(
+        role: String,
+        ssn: String?,
+        name: String,
+        address: InvoiceAddress,
+    ): ORDERS05.IDOC.E1EDKA1 =
+        ORDERS05.IDOC.E1EDKA1().apply {
+            segment = "1"
+            parvw = role
+            partn = ssn.toString()
+            name1 = name.take(PARTNER_FIELD_MAX_LENGTH)
+            name2 =
+                name.drop(PARTNER_FIELD_MAX_LENGTH).take(PARTNER_FIELD_MAX_LENGTH).ifEmpty { null }
+            stras = address.streetAddress.take(PARTNER_FIELD_MAX_LENGTH)
+            pstlz = address.postalCode
+            orT01 = address.postOffice
+            land1 = "FI"
+        }
 
     private fun generateRows(
         idoc: ORDERS05.IDOC,
