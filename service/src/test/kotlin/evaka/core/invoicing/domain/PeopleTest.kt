@@ -23,6 +23,9 @@ class PeopleTest {
             postalCode = "02770",
             postOffice = "Espoo",
             restrictedDetailsEnabled = false,
+            mailingStreetAddress = "Kamreerintie 2",
+            mailingPostalCode = "02770",
+            mailingPostOffice = "Espoo",
         )
 
     @Test
@@ -30,11 +33,11 @@ class PeopleTest {
         val address = DecisionSendAddress.fromPerson(testPerson)
         val expected =
             DecisionSendAddress(
-                testPerson.streetAddress,
-                testPerson.postalCode,
-                testPerson.postOffice,
-                testPerson.streetAddress,
-                "${testPerson.postalCode} ${testPerson.postOffice}",
+                testPerson.mailingStreetAddress,
+                testPerson.mailingPostalCode,
+                testPerson.mailingPostOffice,
+                testPerson.mailingStreetAddress,
+                "${testPerson.mailingPostalCode} ${testPerson.mailingPostOffice}",
                 "",
             )
         assertEquals(expected, address)
@@ -42,7 +45,12 @@ class PeopleTest {
 
     @Test
     fun `DecisionSendAddress handles missing fields`() {
-        val person = testPerson.copy(streetAddress = "", postalCode = "", postOffice = "")
+        val person =
+            testPerson.copy(
+                mailingStreetAddress = "",
+                mailingPostalCode = "",
+                mailingPostOffice = "",
+            )
         val address = DecisionSendAddress.fromPerson(person)
         assertNull(address)
     }

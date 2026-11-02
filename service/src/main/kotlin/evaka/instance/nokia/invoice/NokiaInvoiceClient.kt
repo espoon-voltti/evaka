@@ -6,6 +6,7 @@ package evaka.instance.nokia.invoice
 
 import evaka.core.daycare.CareType
 import evaka.core.daycare.domain.ProviderType
+import evaka.core.invoicing.domain.InvoiceAddress
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.domain.InvoiceRowDetailed
 import evaka.core.invoicing.domain.PersonDetailed
@@ -21,7 +22,6 @@ import evaka.trevaka.invoice.FixedLengthField.Date
 import evaka.trevaka.invoice.FixedLengthField.Empty
 import evaka.trevaka.invoice.FixedLengthField.Number
 import evaka.trevaka.invoice.FixedLengthField.Text
-import evaka.trevaka.invoice.InvoiceAddress
 import evaka.trevaka.invoice.InvoicePerson
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter

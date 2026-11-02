@@ -13,6 +13,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import org.springframework.stereotype.Component
 
+private const val ROW_TEXT_MAX_LENGTH = 35
+
 @Component
 class IdocGenerator {
     fun generate(payment: Payment, preSchoolAmount: Int, language: String): FIDCCP02.IDOC {
@@ -64,11 +66,12 @@ class IdocGenerator {
         e1FISEG.bschl = "31"
         e1FISEG.shkzg = "H"
         e1FISEG.wrbtr = String.format(Locale.ENGLISH, "%.2f", payment.amount.toDouble() / 100)
-        e1FISEG.sgtxt =
+        val rowText =
             "eVAKA " +
                 previousMonth?.format(dateTimeFormatterMonth) +
                 "/" +
                 previousMonth?.format(dateTimeFormatterYear)
+        e1FISEG.sgtxt = rowText
         e1FISEG.xref3 = ""
         val e1FINBU = FIDCCP02.IDOC.E1FIKPF.E1FISEG.E1FINBU()
         e1FINBU.segment = "1"
@@ -88,15 +91,8 @@ class IdocGenerator {
         e1FISEG_2.mwskz = "P4"
         var daycareAmount = payment.amount - preSchoolAmount
         e1FISEG_2.wrbtr = String.format(Locale.ENGLISH, "%.2f", daycareAmount.toDouble() / 100)
-        val rowTextWithDaycareName =
-            "eVAKA " +
-                previousMonth?.format(dateTimeFormatterMonth) +
-                "/" +
-                previousMonth?.format(dateTimeFormatterYear) +
-                " " +
-                payment.unit.name
-        e1FISEG_2.sgtxt =
-            rowTextWithDaycareName.substring(0, Math.min(rowTextWithDaycareName.length, 35))
+        val rowTextWithDaycareName = "$rowText ${payment.unit.name}".take(ROW_TEXT_MAX_LENGTH)
+        e1FISEG_2.sgtxt = rowTextWithDaycareName
         e1FISEG_2.kokrs = "1000"
         if (payment.unit.careType.contains(CareType.FAMILY)) {
             e1FISEG_2.kostl = "0000031442"
@@ -123,8 +119,7 @@ class IdocGenerator {
             e1FISEG_3.mwskz = "P4"
             e1FISEG_3.wrbtr =
                 String.format(Locale.ENGLISH, "%.2f", preSchoolAmount.toDouble() / 100)
-            e1FISEG_3.sgtxt =
-                rowTextWithDaycareName.substring(0, Math.min(rowTextWithDaycareName.length, 35))
+            e1FISEG_3.sgtxt = rowTextWithDaycareName
             e1FISEG_3.kokrs = "1000"
             e1FISEG_3.kostl = "0000031410"
             e1FISEG_3.aufnr = "000000000000"

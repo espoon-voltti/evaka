@@ -370,6 +370,9 @@ export class Fixture {
   static person(initial?: Partial<DevPerson>) {
     const id = uniqueLabel()
     const dateOfBirth = initial?.dateOfBirth ?? LocalDate.of(2020, 5, 5)
+    const streetAddress = initial?.streetAddress ?? `streetAddress_${id}`
+    const postalCode = initial?.postalCode ?? '02230'
+    const postOffice = initial?.postOffice ?? 'Espoo'
     const value: DevPerson = {
       id: randomId(),
       dateOfBirth,
@@ -384,13 +387,16 @@ export class Fixture {
       nationalities: [],
       phone: '123456789',
       backupPhone: '',
-      postalCode: '02230',
-      postOffice: 'Espoo',
+      postalCode,
+      postOffice,
       residenceCode: `residenceCode_${id}`,
       municipalityOfResidence: `municipalityOfResidence_${id}`,
       restrictedDetailsEnabled: false,
       restrictedDetailsEndDate: null,
-      streetAddress: `streetAddress_${id}`,
+      streetAddress,
+      mailingStreetAddress: streetAddress,
+      mailingPostalCode: postalCode,
+      mailingPostOffice: postOffice,
       duplicateOf: null,
       disabledEmailTypes: [],
       forceManualFeeDecisions: false,

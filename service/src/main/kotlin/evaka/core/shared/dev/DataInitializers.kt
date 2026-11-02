@@ -424,14 +424,16 @@ fun Database.Transaction.insert(person: DevPerson, type: DevPersonType): PersonI
 INSERT INTO person (
     id, date_of_birth, date_of_death, first_name, last_name, preferred_name,
     social_security_number, email, verified_email, phone, language, street_address,
-    postal_code, post_office, residence_code, nationalities, restricted_details_enabled,
+    postal_code, post_office, mailing_street_address, mailing_postal_code, mailing_post_office,
+    residence_code, nationalities, restricted_details_enabled,
     restricted_details_end_date, invoicing_street_address, invoicing_postal_code, invoicing_post_office,
     updated_from_vtj, vtj_guardians_queried, vtj_dependants_queried, oph_person_oid, duplicate_of,
     disabled_email_types, municipality_of_residence
 ) VALUES (
     ${bind(p.id)}, ${bind(p.dateOfBirth)}, ${bind(p.dateOfDeath)}, ${bind(p.firstName)}, ${bind(p.lastName)}, ${bind(p.preferredName)},
     ${bind(p.ssn)}, ${bind(p.email)}, ${bind(p.verifiedEmail)}, ${bind(p.phone)}, ${bind(p.language)}, ${bind(p.streetAddress)},
-    ${bind(p.postalCode)}, ${bind(p.postOffice)}, ${bind(p.residenceCode)}, ${bind(p.nationalities)}, ${bind(p.restrictedDetailsEnabled)},
+    ${bind(p.postalCode)}, ${bind(p.postOffice)}, ${bind(p.mailingStreetAddress)}, ${bind(p.mailingPostalCode)}, ${bind(p.mailingPostOffice)},
+    ${bind(p.residenceCode)}, ${bind(p.nationalities)}, ${bind(p.restrictedDetailsEnabled)},
     ${bind(p.restrictedDetailsEndDate)}, ${bind(p.invoicingStreetAddress)}, ${bind(p.invoicingPostalCode)}, ${bind(p.invoicingPostOffice)},
     ${bind(p.updatedFromVtj)}, ${bind(p.vtjGuardiansQueried)}, ${bind(p.vtjDependantsQueried)}, ${bind(p.ophPersonOid)}, ${bind(p.duplicateOf)},
     ${bind(p.disabledEmailTypes)}, ${bind(p.municipalityOfResidence)}

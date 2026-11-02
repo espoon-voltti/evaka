@@ -7,6 +7,7 @@
 
 package evaka.instance.turku.invoice.service
 
+import evaka.core.invoicing.domain.InvoiceAddress
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.domain.InvoiceRowDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
@@ -20,6 +21,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
 import org.springframework.stereotype.Component
+
+private const val PARTNER_FIELD_MAX_LENGTH = 35
 
 @Component
 class SapInvoiceGenerator : StringInvoiceGenerator {
@@ -141,156 +144,30 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
         idoc.e1EDK03 = e1edk03list
 
         // E1EDKA1
-        val e1edka1list: MutableList<ORDERS05.IDOC.E1EDKA1> = mutableListOf()
-
-        val e1edka1 = ORDERS05.IDOC.E1EDKA1()
-        e1edka1.segment = "1"
-        e1edka1.parvw = "AG"
-        e1edka1.partn = invoice.headOfFamily.ssn.toString()
-
-        val nameInInvoiceAG = invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
-        if (nameInInvoiceAG.count() > 35) {
-            e1edka1.name1 = nameInInvoiceAG.substring(0, 35)
-            if (nameInInvoiceAG.length > 70) {
-                e1edka1.name2 = nameInInvoiceAG.substring(35, 70)
-            } else {
-                e1edka1.name2 = nameInInvoiceAG.substring(35, nameInInvoiceAG.length)
+        val headOfFamilyName =
+            invoice.headOfFamily.invoiceRecipientName.ifBlank {
+                invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
             }
-        } else {
-            e1edka1.name1 = nameInInvoiceAG
-        }
-
-        val streetAddressAG = invoice.headOfFamily.streetAddress
-        if (streetAddressAG.count() > 35) {
-            e1edka1.stras = streetAddressAG.substring(0, 35)
-        } else {
-            e1edka1.stras = streetAddressAG
-        }
-
-        e1edka1.pstlz = invoice.headOfFamily.postalCode
-        e1edka1.orT01 = invoice.headOfFamily.postOffice
-        e1edka1.land1 = "FI"
-
-        e1edka1list.add(e1edka1)
-
-        val e1edka1_2 = ORDERS05.IDOC.E1EDKA1()
-        e1edka1_2.segment = "1"
-        e1edka1_2.parvw = "RE"
-        e1edka1_2.partn = invoice.headOfFamily.ssn.toString()
-        val nameInInvoiceRE = invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
-        if (nameInInvoiceRE.count() > 35) {
-            e1edka1_2.name1 = nameInInvoiceRE.substring(0, 35)
-            if (nameInInvoiceRE.length > 70) {
-                e1edka1_2.name2 = nameInInvoiceRE.substring(35, 70)
-            } else {
-                e1edka1_2.name2 = nameInInvoiceRE.substring(35, nameInInvoiceRE.length)
+        val headOfFamilyAddress = invoice.headOfFamily.invoiceAddress()
+        idoc.e1EDKA1 = buildList {
+            for (role in listOf("AG", "RE", "RG", "WE")) {
+                add(partner(role, invoice.headOfFamily.ssn, headOfFamilyName, headOfFamilyAddress))
             }
-        } else {
-            e1edka1_2.name1 = nameInInvoiceRE
-        }
-
-        val streetAddressRE = invoice.headOfFamily.streetAddress
-        if (streetAddressRE.count() > 35) {
-            e1edka1_2.stras = streetAddressRE.substring(0, 35)
-        } else {
-            e1edka1_2.stras = streetAddressRE
-        }
-
-        e1edka1_2.pstlz = invoice.headOfFamily.postalCode
-        e1edka1_2.orT01 = invoice.headOfFamily.postOffice
-        e1edka1_2.land1 = "FI"
-        e1edka1list.add(e1edka1_2)
-
-        val e1edka1_3 = ORDERS05.IDOC.E1EDKA1()
-        e1edka1_3.segment = "1"
-        e1edka1_3.parvw = "RG"
-        e1edka1_3.partn = invoice.headOfFamily.ssn.toString()
-
-        val nameInInvoiceRG = invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
-        if (nameInInvoiceRG.count() > 35) {
-            e1edka1_3.name1 = nameInInvoiceRG.substring(0, 35)
-            if (nameInInvoiceRE.length > 70) {
-                e1edka1_3.name2 = nameInInvoiceRG.substring(35, 70)
-            } else {
-                e1edka1_3.name2 = nameInInvoiceRG.substring(35, nameInInvoiceRG.length)
+            if (invoice.codebtor != null) {
+                add(
+                    partner(
+                        "Y1",
+                        invoice.codebtor.ssn,
+                        invoice.codebtor.lastName + " " + invoice.codebtor.firstName,
+                        InvoiceAddress(
+                            invoice.codebtor.mailingStreetAddress,
+                            invoice.codebtor.mailingPostalCode,
+                            invoice.codebtor.mailingPostOffice,
+                        ),
+                    )
+                )
             }
-        } else {
-            e1edka1_3.name1 = nameInInvoiceRG
         }
-
-        val streetAddressRG = invoice.headOfFamily.streetAddress
-        if (streetAddressRG.count() > 35) {
-            e1edka1_3.stras = streetAddressRG.substring(0, 35)
-        } else {
-            e1edka1_3.stras = streetAddressRG
-        }
-
-        e1edka1_3.pstlz = invoice.headOfFamily.postalCode
-        e1edka1_3.orT01 = invoice.headOfFamily.postOffice
-        e1edka1_3.land1 = "FI"
-        e1edka1list.add(e1edka1_3)
-
-        val e1edka1_4 = ORDERS05.IDOC.E1EDKA1()
-        e1edka1_4.segment = "1"
-        e1edka1_4.parvw = "WE"
-        e1edka1_4.partn = invoice.headOfFamily.ssn.toString()
-
-        val nameInInvoiceWE = invoice.headOfFamily.lastName + " " + invoice.headOfFamily.firstName
-        if (nameInInvoiceWE.count() > 35) {
-            e1edka1_4.name1 = nameInInvoiceWE.substring(0, 35)
-            if (nameInInvoiceRE.length > 70) {
-                e1edka1_4.name2 = nameInInvoiceWE.substring(35, 70)
-            } else {
-                e1edka1_4.name2 = nameInInvoiceWE.substring(35, nameInInvoiceWE.length)
-            }
-        } else {
-            e1edka1_4.name1 = nameInInvoiceWE
-        }
-
-        val streetAddressWE = invoice.headOfFamily.streetAddress
-        if (streetAddressWE.count() > 35) {
-            e1edka1_4.stras = streetAddressWE.substring(0, 35)
-        } else {
-            e1edka1_4.stras = streetAddressWE
-        }
-
-        e1edka1_4.pstlz = invoice.headOfFamily.postalCode
-        e1edka1_4.orT01 = invoice.headOfFamily.postOffice
-        e1edka1_4.land1 = "FI"
-        e1edka1list.add(e1edka1_4)
-
-        if (invoice.codebtor != null) {
-            val e1edka1_5 = ORDERS05.IDOC.E1EDKA1()
-            e1edka1_5.segment = "1"
-            e1edka1_5.parvw = "Y1"
-            e1edka1_5.partn = invoice.codebtor.ssn.toString()
-
-            val nameOfCodebtorY1 = invoice.codebtor.lastName + " " + invoice.codebtor.firstName
-
-            if (nameOfCodebtorY1.count() > 35) {
-                e1edka1_5.name1 = nameOfCodebtorY1.substring(0, 35)
-                if (nameInInvoiceRE.length > 70) {
-                    e1edka1_5.name2 = nameOfCodebtorY1.substring(35, 70)
-                } else {
-                    e1edka1_5.name2 = nameOfCodebtorY1.substring(35, nameOfCodebtorY1.length)
-                }
-            } else {
-                e1edka1_5.name1 = nameOfCodebtorY1
-            }
-
-            val streetAddressCodebtorY1 = invoice.codebtor.streetAddress
-            if (streetAddressCodebtorY1.count() > 35) {
-                e1edka1_5.stras = streetAddressCodebtorY1.substring(0, 35)
-            } else {
-                e1edka1_5.stras = streetAddressCodebtorY1
-            }
-
-            e1edka1_5.pstlz = invoice.codebtor.postalCode
-            e1edka1_5.orT01 = invoice.codebtor.postOffice
-            e1edka1_5.land1 = "FI"
-            e1edka1list.add(e1edka1_5)
-        }
-        idoc.e1EDKA1 = e1edka1list
 
         // E1EDK02
         val e1edk02list: MutableList<ORDERS05.IDOC.E1EDK02> = mutableListOf()
@@ -323,6 +200,25 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
 
         return idoc
     }
+
+    private fun partner(
+        role: String,
+        ssn: String?,
+        name: String,
+        address: InvoiceAddress,
+    ): ORDERS05.IDOC.E1EDKA1 =
+        ORDERS05.IDOC.E1EDKA1().apply {
+            segment = "1"
+            parvw = role
+            partn = ssn.toString()
+            name1 = name.take(PARTNER_FIELD_MAX_LENGTH)
+            name2 =
+                name.drop(PARTNER_FIELD_MAX_LENGTH).take(PARTNER_FIELD_MAX_LENGTH).ifEmpty { null }
+            stras = address.streetAddress.take(PARTNER_FIELD_MAX_LENGTH)
+            pstlz = address.postalCode
+            orT01 = address.postOffice
+            land1 = "FI"
+        }
 
     private fun generateRows(
         idoc: ORDERS05.IDOC,

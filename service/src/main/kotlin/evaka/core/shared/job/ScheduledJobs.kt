@@ -44,6 +44,7 @@ import evaka.core.pis.deactivateInactiveEmployees
 import evaka.core.pis.deleteExpiredEmailVerifications
 import evaka.core.pis.deleteNeverLoggedInSsnEmployees
 import evaka.core.pis.service.VtjSyncService
+import evaka.core.pis.updateMailingAddressesFromPeriods
 import evaka.core.reports.freezeVoucherValueReportRows
 import evaka.core.reservations.MissingHolidayReservationsReminders
 import evaka.core.reservations.MissingReservationsReminders
@@ -90,6 +91,10 @@ enum class ScheduledJob(
     SyncMissingVtjRelations(
         ScheduledJobs::syncMissingVtjRelations,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+    ),
+    UpdateMailingAddresses(
+        ScheduledJobs::updateMailingAddresses,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     EndAssistanceFactorsWhichBelongToPastPlacements(
         ScheduledJobs::endAssistanceFactorsWhichBelongToPastPlacements,
@@ -388,6 +393,11 @@ class ScheduledJobs(
         clock: EvakaClock,
     ) {
         db.transaction { tx -> tx.endAssistanceFactorsWhichBelongToPastPlacements(clock.today()) }
+    }
+
+    fun updateMailingAddresses(db: Database.Connection, clock: EvakaClock) {
+        val updated = db.transaction { tx -> tx.updateMailingAddressesFromPeriods(clock.today()) }
+        logger.info { "Updated the mailing address of $updated persons" }
     }
 
     fun endOutdatedAssistanceNeedVoucherValueCoefficients(

@@ -155,6 +155,12 @@ const SensitivePersonDetails = React.memo(function SensitivePersonDetails({
   )
 
   const canEditPersonalDetails = permittedActions.has('UPDATE_PERSONAL_DETAILS')
+  const showMailingAddress =
+    !person.restrictedDetailsEnabled &&
+    !(powerEditing && canEditPersonalDetails) &&
+    (sensitiveDetails.mailingStreetAddress !== sensitiveDetails.streetAddress ||
+      sensitiveDetails.mailingPostalCode !== sensitiveDetails.postalCode ||
+      sensitiveDetails.mailingPostOffice !== sensitiveDetails.postOffice)
 
   const language = useMemo(
     () =>
@@ -244,7 +250,9 @@ const SensitivePersonDetails = React.memo(function SensitivePersonDetails({
             ]
           : []),
         {
-          label: i18n.common.form.address,
+          label: showMailingAddress
+            ? i18n.common.form.residentialAddress
+            : i18n.common.form.address,
           dataQa: 'person-address',
           valueWidth: '100%',
           value:
@@ -281,6 +289,20 @@ const SensitivePersonDetails = React.memo(function SensitivePersonDetails({
               </span>
             )
         },
+        ...(showMailingAddress
+          ? [
+              {
+                label: i18n.common.form.mailingAddress,
+                dataQa: 'person-mailing-address',
+                valueWidth: '100%',
+                value: (
+                  <span data-qa="person-details-mailing-address">
+                    {`${sensitiveDetails.mailingStreetAddress}, ${sensitiveDetails.mailingPostalCode} ${sensitiveDetails.mailingPostOffice}`}
+                  </span>
+                )
+              }
+            ]
+          : []),
         {
           label: i18n.common.form.municipalityOfResidence,
           dataQa: 'municipality-of-residence',

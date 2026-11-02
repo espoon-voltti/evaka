@@ -2935,6 +2935,34 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `decision is sent to the mailing address of the head of family`() {
+        val headOfFamily =
+            DevPerson(
+                dateOfBirth = LocalDate.of(1970, 1, 1),
+                ssn = "010170-9516",
+                streetAddress = "Kotikatu 1",
+                postalCode = "02100",
+                postOffice = "Espoo",
+                mailingStreetAddress = "PL 10",
+                mailingPostalCode = "02101",
+                mailingPostOffice = "Espoo",
+            )
+        db.transaction {
+            it.insert(headOfFamily, DevPersonType.ADULT)
+            it.insertGuardian(headOfFamily.id, child1.id)
+        }
+        createAndConfirmFeeDecisionsForFamily(headOfFamily, null, listOf(child1))
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(
+            listOf(Triple("PL 10", "02101", "Espoo")),
+            MockSfiMessagesClient.getMessages().map {
+                Triple(it.streetAddress, it.postalCode, it.postOffice)
+            },
+        )
+    }
+
+    @Test
     fun `decision is not sent to a partner who is not a codebtor`() {
         db.transaction {
             it.insertGuardian(adult1.id, child1.id)
@@ -3229,6 +3257,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             invoicingPostOffice = invoicingPostOffice,
             restrictedDetailsEnabled = restrictedDetailsEnabled,
             forceManualFeeDecisions = forceManualFeeDecisions,
+            mailingStreetAddress = mailingStreetAddress,
+            mailingPostalCode = mailingPostalCode,
+            mailingPostOffice = mailingPostOffice,
         )
 
     private fun DevEmployee.toEmployeeWithName() =

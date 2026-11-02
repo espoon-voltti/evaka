@@ -1885,6 +1885,8 @@ const sv: Translations = {
       preferredName: 'Tilltalsnamn',
       contactInfo: 'Kontakt information',
       address: 'Adress',
+      residentialAddress: 'Bostadsadress',
+      mailingAddress: 'Postadress',
       phone: 'Telefonnummer',
       backupPhone: 'Reservtelefonnummer',
       backupPhonePlaceholder: 'T.ex. arbetstelefon',

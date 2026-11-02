@@ -264,6 +264,9 @@ fun validPerson() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Meikäläisenkuja Teikäläisenkuja Heikäläisenkuja 6 B 7",
+        mailingPostalCode = "20100",
+        mailingPostOffice = "TURKU",
     )
 
 fun validCodebtor() =
@@ -282,6 +285,9 @@ fun validCodebtor() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Meikäläisenkuja Teikäläisenkuja Heikäläisenkuja 6 B 7",
+        mailingPostalCode = "20100",
+        mailingPostOffice = "TURKU",
     )
 
 fun personWithoutSSN() =
@@ -300,6 +306,9 @@ fun personWithoutSSN() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Meikäläisenkuja 6 B 7",
+        mailingPostalCode = "20100",
+        mailingPostOffice = "TURKU",
     )
 
 fun personWithRestrictedDetails() =
@@ -318,6 +327,9 @@ fun personWithRestrictedDetails() =
         "",
         null,
         restrictedDetailsEnabled = true,
+        mailingStreetAddress = "Todistajansuojeluohjelmankatu 9",
+        mailingPostalCode = "25600",
+        mailingPostOffice = "TURKU",
     )
 
 fun personWithLongName() =
@@ -336,4 +348,7 @@ fun personWithLongName() =
         "",
         null,
         restrictedDetailsEnabled = false,
+        mailingStreetAddress = "Aateliskulma 3",
+        mailingPostalCode = "20200",
+        mailingPostOffice = "TURKU",
     )

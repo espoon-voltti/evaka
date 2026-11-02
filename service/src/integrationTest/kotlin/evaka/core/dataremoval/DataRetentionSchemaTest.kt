@@ -120,6 +120,7 @@ class DataRetentionSchemaTest : PureJdbiTest(resetDbBeforeEach = false) {
             "message_thread_folder.owner_id",
             "message_thread_participant.participant_id",
             "person_email_verification.person_id",
+            "person_address_period.person_id",
             "sfi_message.decision_id",
             "sfi_message.document_id",
             "sfi_message.fee_decision_id",

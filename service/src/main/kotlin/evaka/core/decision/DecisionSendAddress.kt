@@ -10,14 +10,6 @@ import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.message.IMessageProvider
 
-private fun addressIsUnusable(
-    streetAddress: String?,
-    postalCode: String?,
-    postOffice: String?,
-): Boolean {
-    return streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()
-}
-
 fun getSendAddress(
     messageProvider: IMessageProvider,
     guardian: PersonDTO,
@@ -33,18 +25,22 @@ fun getSendAddress(
             messageProvider.getDefaultDecisionAddress(lang)
         }
 
-        addressIsUnusable(guardian.streetAddress, guardian.postalCode, guardian.postOffice) -> {
+        !addressUsable(
+            guardian.mailingStreetAddress,
+            guardian.mailingPostalCode,
+            guardian.mailingPostOffice,
+        ) -> {
             logMissingAddress()
             messageProvider.getDefaultDecisionAddress(lang)
         }
 
         else -> {
             DecisionSendAddress(
-                street = guardian.streetAddress,
-                postalCode = guardian.postalCode,
-                postOffice = guardian.postOffice,
-                row1 = guardian.streetAddress,
-                row2 = "${guardian.postalCode} ${guardian.postOffice}",
+                street = guardian.mailingStreetAddress,
+                postalCode = guardian.mailingPostalCode,
+                postOffice = guardian.mailingPostOffice,
+                row1 = guardian.mailingStreetAddress,
+                row2 = "${guardian.mailingPostalCode} ${guardian.mailingPostOffice}",
                 row3 = "",
             )
         }
@@ -62,13 +58,19 @@ data class DecisionSendAddress(
     companion object {
         fun fromPerson(person: PersonDetailed): DecisionSendAddress? {
             person.let {
-                if (addressUsable(person.streetAddress, person.postalCode, person.postOffice)) {
+                if (
+                    addressUsable(
+                        person.mailingStreetAddress,
+                        person.mailingPostalCode,
+                        person.mailingPostOffice,
+                    )
+                ) {
                     return DecisionSendAddress(
-                        person.streetAddress,
-                        person.postalCode,
-                        person.postOffice,
-                        person.streetAddress,
-                        "${person.postalCode} ${person.postOffice}",
+                        person.mailingStreetAddress,
+                        person.mailingPostalCode,
+                        person.mailingPostOffice,
+                        person.mailingStreetAddress,
+                        "${person.mailingPostalCode} ${person.mailingPostOffice}",
                         "",
                     )
                 }

@@ -591,6 +591,9 @@ private val testChildInfo =
         streetAddress = "",
         postalCode = "",
         postOffice = "",
+        mailingStreetAddress = "",
+        mailingPostalCode = "",
+        mailingPostOffice = "",
         residenceCode = "",
         municipalityOfResidence = "",
     )
@@ -613,6 +616,9 @@ private val testNoSsnChildInfo =
         streetAddress = "",
         postalCode = "",
         postOffice = "",
+        mailingStreetAddress = "",
+        mailingPostalCode = "",
+        mailingPostOffice = "",
         residenceCode = "",
         municipalityOfResidence = "",
     )
@@ -635,6 +641,9 @@ private val testAdultInfo =
         streetAddress = "",
         postalCode = "",
         postOffice = "",
+        mailingStreetAddress = "",
+        mailingPostalCode = "",
+        mailingPostOffice = "",
         residenceCode = "",
         municipalityOfResidence = "",
     )

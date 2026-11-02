@@ -195,9 +195,9 @@ class EspooInvoiceIntegrationClient(
         private fun asClient(headOfFamily: PersonDetailed, lang: EspooLang): EspooClient {
             val (streetAddress, postalCode, postOffice) =
                 Triple(
-                    headOfFamily.streetAddress.trim(),
-                    headOfFamily.postalCode.trim(),
-                    headOfFamily.postOffice.trim(),
+                    headOfFamily.mailingStreetAddress.trim(),
+                    headOfFamily.mailingPostalCode.trim(),
+                    headOfFamily.mailingPostOffice.trim(),
                 )
             val addressIsUseable = addressIsValid(streetAddress, postalCode, postOffice)
             return EspooClient(
@@ -221,9 +221,9 @@ class EspooInvoiceIntegrationClient(
 
             val address =
                 Triple(
-                    headOfFamily.streetAddress.trim(),
-                    headOfFamily.postalCode.trim(),
-                    headOfFamily.postOffice.trim(),
+                    headOfFamily.mailingStreetAddress.trim(),
+                    headOfFamily.mailingPostalCode.trim(),
+                    headOfFamily.mailingPostOffice.trim(),
                 )
             val invoiceAddress =
                 Triple(
@@ -263,9 +263,9 @@ class EspooInvoiceIntegrationClient(
                 ssn = codebtor.ssn,
                 firstnames = codebtor.firstName,
                 lastname = codebtor.lastName,
-                street = codebtor.streetAddress,
-                postalCode = codebtor.postalCode,
-                post = codebtor.postOffice,
+                street = codebtor.mailingStreetAddress,
+                postalCode = codebtor.mailingPostalCode,
+                post = codebtor.mailingPostOffice,
             )
         }
 

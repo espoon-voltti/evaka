@@ -41,7 +41,7 @@ data class DummyIdpVtjPerson(
             firstNames = firstNames,
             lastName = lastName,
             socialSecurityNumber = socialSecurityNumber,
-            address = address,
+            residentialAddress = address,
             nativeLanguage = nativeLanguage,
             nationalities = nationalities,
             restrictedDetails = restrictedDetails,

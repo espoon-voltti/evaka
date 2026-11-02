@@ -5,7 +5,11 @@
 package evaka.core.vtjclient.mapper
 
 import evaka.core.identity.Ssn
+import evaka.core.shared.domain.DateRange
+import evaka.core.vtjclient.dto.AddressPeriodType
+import evaka.core.vtjclient.dto.MailingAddressPeriod
 import evaka.core.vtjclient.dto.Nationality
+import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjRelative
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
@@ -19,7 +23,6 @@ import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.Turvakielto
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite
 import java.time.LocalDate
 import java.time.Month
-import java.time.format.DateTimeFormatter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -74,15 +77,15 @@ class VtjHenkiloMapperTest {
         assertThat(result.firstNames).isEqualTo(value.nykyisetEtunimet.etunimet)
         assertThat(result.lastName).isEqualTo(value.nykyinenSukunimi.sukunimi)
 
-        assertThat(result.address!!.streetAddress)
+        assertThat(result.residentialAddress!!.streetAddress)
             .isEqualTo(value.vakinainenKotimainenLahiosoite.lahiosoiteS)
-        assertThat(result.address!!.postOffice)
+        assertThat(result.residentialAddress.postOffice)
             .isEqualTo(value.vakinainenKotimainenLahiosoite.postitoimipaikkaS)
-        assertThat(result.address!!.streetAddressSe)
+        assertThat(result.residentialAddress.streetAddressSe)
             .isEqualTo(value.vakinainenKotimainenLahiosoite.lahiosoiteR)
-        assertThat(result.address!!.postOfficeSe)
+        assertThat(result.residentialAddress.postOfficeSe)
             .isEqualTo(value.vakinainenKotimainenLahiosoite.postitoimipaikkaR)
-        assertThat(result.address!!.postalCode)
+        assertThat(result.residentialAddress.postalCode)
             .isEqualTo(value.vakinainenKotimainenLahiosoite.postinumero)
         assertThat(result.residenceCode).isEqualTo("testiasuinpaikkatunnus")
 
@@ -202,85 +205,79 @@ class VtjHenkiloMapperTest {
     }
 
     @Test
-    fun `parseAddress uses mailAddress is available`() {
-        val mailAddress =
-            Henkilo.KotimainenPostiosoite().apply {
-                postiosoiteS = "postiosoiteS"
-                postinumero = "postinumero"
-                postitoimipaikkaS = "postitoimipaikkaS"
-                postiosoiteR = "postiosoiteR"
-                postitoimipaikkaR = "postitoimipaikkaR"
-                postiosoiteAlkupvm = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                postiosoiteLoppupvm =
-                    LocalDate.now().plusDays(10).format(DateTimeFormatter.BASIC_ISO_DATE)
+    fun `mail and temporary addresses are mapped to periods whether they are valid today or not`() {
+        val value =
+            Henkilo().apply {
+                nykyisetEtunimet = NykyisetEtunimet().apply { etunimet = "Heikki" }
+                nykyinenSukunimi = NykyinenSukunimi().apply { sukunimi = "Heikinheimo" }
+                henkilotunnus = Henkilo.Henkilotunnus().apply { value = "010180-1232" }
+                vakinainenKotimainenLahiosoite =
+                    VakinainenKotimainenLahiosoite().apply {
+                        lahiosoiteS = "Kotikatu 1"
+                        postinumero = "02100"
+                        postitoimipaikkaS = "Espoo"
+                    }
+                kotimainenPostiosoite.add(
+                    Henkilo.KotimainenPostiosoite().apply {
+                        postiosoiteS = "PL 10"
+                        postinumero = "02101"
+                        postitoimipaikkaS = "Espoo"
+                        postiosoiteR = "PB 10"
+                        postitoimipaikkaR = "Esbo"
+                        postiosoiteAlkupvm = "20300101"
+                    }
+                )
+                tilapainenKotimainenLahiosoite.add(
+                    Henkilo.TilapainenKotimainenLahiosoite().apply {
+                        lahiosoiteS = "Mökkitie 2"
+                        postinumero = "10900"
+                        postitoimipaikkaS = "Hanko"
+                        asuminenAlkupvm = "20200601"
+                        asuminenLoppupvm = "20200831"
+                    }
+                )
+                aidinkieli = Aidinkieli()
+                turvakielto = Turvakielto()
+                kuolintiedot = Henkilo.Kuolintiedot()
             }
 
-        val temporaryAddress =
-            Henkilo.TilapainenKotimainenLahiosoite().apply {
-                lahiosoiteS = ""
-                postinumero = ""
-                postitoimipaikkaS = ""
-                lahiosoiteR = ""
-                postitoimipaikkaR = ""
-            }
+        val result = value.mapToVtjPerson()
 
-        val address =
-            VakinainenKotimainenLahiosoite().apply {
-                lahiosoiteS = "lahiosoiteS"
-                postinumero = "postinumero"
-                postitoimipaikkaS = "postitoimipaikkaS"
-                lahiosoiteR = "lahiosoiteR"
-                postitoimipaikkaR = "postitoimipaikkaR"
-            }
-
-        assertThat(mailAddress.postiosoiteS).isEqualTo("postiosoiteS")
-
-        val result = parseAddress(listOf(mailAddress), listOf(temporaryAddress), address)
-        assertThat(result?.streetAddress).isEqualTo(mailAddress.postiosoiteS)
-        assertThat(result?.postalCode).isEqualTo(mailAddress.postinumero)
-        assertThat(result?.postOffice).isEqualTo(mailAddress.postitoimipaikkaS)
-        assertThat(result?.streetAddressSe).isEqualTo(mailAddress.postiosoiteR)
-        assertThat(result?.postOfficeSe).isEqualTo(mailAddress.postitoimipaikkaR)
+        assertThat(result.residentialAddress)
+            .isEqualTo(PersonAddress("Kotikatu 1", "02100", "Espoo", null, null))
+        assertThat(result.mailingAddressPeriods)
+            .containsExactly(
+                MailingAddressPeriod(
+                    AddressPeriodType.MAILING,
+                    DateRange(LocalDate.of(2030, 1, 1), null),
+                    PersonAddress("PL 10", "02101", "Espoo", "PB 10", "Esbo"),
+                ),
+                MailingAddressPeriod(
+                    AddressPeriodType.TEMPORARY,
+                    DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 8, 31)),
+                    PersonAddress("Mökkitie 2", "10900", "Hanko", null, null),
+                ),
+            )
     }
 
     @Test
-    fun `parseAddress uses temporaryAddress if mailAddress is unavailable`() {
-        val mailAddress =
+    fun `mail addresses without a valid period or without address fields are skipped`() {
+        fun mailAddress(start: String?, end: String?, street: String) =
             Henkilo.KotimainenPostiosoite().apply {
-                postiosoiteS = ""
-                postinumero = ""
-                postitoimipaikkaS = ""
-                postiosoiteR = ""
-                postitoimipaikkaR = ""
+                postiosoiteS = street
+                postinumero = if (street.isEmpty()) "" else "02101"
+                postitoimipaikkaS = if (street.isEmpty()) "" else "Espoo"
+                postiosoiteAlkupvm = start
+                postiosoiteLoppupvm = end
             }
 
-        val temporaryAddress =
-            Henkilo.TilapainenKotimainenLahiosoite().apply {
-                lahiosoiteS = "tilap-lahiosoiteS"
-                postinumero = "tilap-postinumero"
-                postitoimipaikkaS = "tilap-postitoimipaikkaS"
-                lahiosoiteR = "tilap-lahiosoiteR"
-                postitoimipaikkaR = "tilap-postitoimipaikkaR"
-                asuminenAlkupvm = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                asuminenLoppupvm =
-                    LocalDate.now().plusDays(10).format(DateTimeFormatter.BASIC_ISO_DATE)
-            }
+        val noStartDate = mailAddress(null, "20300101", "PL 1")
+        val endBeforeStart = mailAddress("20300101", "20291231", "PL 2")
+        val blank = mailAddress("20300101", null, "")
 
-        val address =
-            VakinainenKotimainenLahiosoite().apply {
-                lahiosoiteS = "lahiosoiteS"
-                postinumero = "postinumero"
-                postitoimipaikkaS = "postitoimipaikkaS"
-                lahiosoiteR = "lahiosoiteR"
-                postitoimipaikkaR = "postitoimipaikkaR"
-            }
-
-        val result = parseAddress(listOf(mailAddress), listOf(temporaryAddress), address)
-        assertThat(result?.streetAddress).isEqualTo(temporaryAddress.lahiosoiteS)
-        assertThat(result?.postalCode).isEqualTo(temporaryAddress.postinumero)
-        assertThat(result?.postOffice).isEqualTo(temporaryAddress.postitoimipaikkaS)
-        assertThat(result?.streetAddressSe).isEqualTo(temporaryAddress.lahiosoiteR)
-        assertThat(result?.postOfficeSe).isEqualTo(temporaryAddress.postitoimipaikkaR)
+        assertThat(parseMailAddress(noStartDate)).isNull()
+        assertThat(parseMailAddress(endBeforeStart)).isNull()
+        assertThat(parseMailAddress(blank)).isNull()
     }
 
     @Test

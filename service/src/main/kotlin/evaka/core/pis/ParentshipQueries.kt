@@ -200,8 +200,8 @@ private val personColumns =
         "restricted_details_enabled",
         "invoice_recipient_name",
         "invoicing_street_address",
-        "postal_code",
-        "post_office",
+        "invoicing_postal_code",
+        "invoicing_post_office",
         "force_manual_fee_decisions",
     )
 
@@ -270,8 +270,8 @@ internal val toPersonJSON: Row.(String) -> PersonJSON = { table ->
         restrictedDetailsEnabled = column("${table}_restricted_details_enabled"),
         invoiceRecipientName = column("${table}_invoice_recipient_name"),
         invoicingStreetAddress = column("${table}_invoicing_street_address"),
-        invoicingPostalCode = column("${table}_postal_code"),
-        invoicingPostOffice = column("${table}_post_office"),
+        invoicingPostalCode = column("${table}_invoicing_postal_code"),
+        invoicingPostOffice = column("${table}_invoicing_post_office"),
         forceManualFeeDecisions = column("${table}_force_manual_fee_decisions"),
     )
 }

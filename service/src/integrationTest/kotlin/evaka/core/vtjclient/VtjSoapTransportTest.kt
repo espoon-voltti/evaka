@@ -103,7 +103,7 @@ class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
         with(result) {
             assertThat(firstNames).isEqualTo("Albert Kristian")
             assertThat(lastName).isEqualTo("Jäppinen")
-            with(address!!) {
+            with(residentialAddress!!) {
                 assertThat(streetAddress).isEqualTo("Kauppa Puistikko 6 B 23")
                 assertThat(postOffice).isEqualTo("VAASA")
                 assertThat(postalCode).isEqualTo("65100")
@@ -226,7 +226,7 @@ private val annaPopov =
         lastName = "Popov",
         socialSecurityNumber = "020190-9521",
         nativeLanguage = NativeLanguage("viro, eesti", "et"),
-        address =
+        residentialAddress =
             PersonAddress(
                 streetAddress = "Kurteninkatu 13 H 45",
                 postalCode = "65100",
