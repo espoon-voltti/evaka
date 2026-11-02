@@ -95,7 +95,7 @@ docker exec -u postgres "$CONTAINER" \
   | awk '
     /-- Name: (lock_database_nowait|reset_database)\(\); Type: FUNCTION/ { skip=1 }
     skip { if (/\$\$;/) skip=0; next }
-    { print }
-  ' \
-  | cat -s \
-  | sed '/./,$!d'
+    /^$/ { if (printed) blank=1; next }
+    { if (blank) print ""; blank=0; printed=1; print }
+    END { if (blank) print "" }
+  '
