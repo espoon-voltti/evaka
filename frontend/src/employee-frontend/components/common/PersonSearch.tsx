@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
@@ -74,10 +74,6 @@ function PersonSearch<T extends SearchablePerson>({
   const { i18n } = useTranslation()
   const [selectedPerson, setSelectedPerson] = useState<T>()
 
-  useEffect(() => {
-    onResult(selectedPerson)
-  }, [selectedPerson]) // oxlint-disable-line react-hooks/exhaustive-deps
-
   const options = useMemo(
     () =>
       results
@@ -91,7 +87,7 @@ function PersonSearch<T extends SearchablePerson>({
           })
         )
         .getOrElse([]),
-    [results] // oxlint-disable-line react-hooks/exhaustive-deps
+    [results, isExcluded, ageLessThan, ageAtLeast]
   )
 
   const formatItemLabel = useCallback(
@@ -108,8 +104,12 @@ function PersonSearch<T extends SearchablePerson>({
   )
 
   const onChange = useCallback(
-    (option: T | null) => setSelectedPerson(option || undefined),
-    []
+    (option: T | null) => {
+      const person = option ?? undefined
+      setSelectedPerson(person)
+      onResult(person)
+    },
+    [onResult]
   )
   return (
     <Container data-qa={dataQa}>
