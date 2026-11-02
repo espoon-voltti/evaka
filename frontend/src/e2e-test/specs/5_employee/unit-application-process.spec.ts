@@ -264,6 +264,7 @@ test.describe('Unit groups - placement plans / proposals', () => {
       2
     )
     await responsePage.acceptDecision(decision1.id)
+    await responsePage.assertDecisionStatus(decision1.id, 'Vahvistettu')
     await page.close()
 
     // Unit supervisor checks that the application is still shown
@@ -284,6 +285,7 @@ test.describe('Unit groups - placement plans / proposals', () => {
       1
     )
     await responsePage.acceptDecision(decision2.id)
+    await responsePage.assertDecisionStatus(decision2.id, 'Vahvistettu')
     await page.close()
 
     // Unit supervisor checks that the application is no longer shown
