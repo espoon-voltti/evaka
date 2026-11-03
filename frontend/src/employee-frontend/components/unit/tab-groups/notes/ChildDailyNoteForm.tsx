@@ -47,9 +47,7 @@ interface ChildDailyNoteFormData extends Omit<
   sleepingMinutes: string
 }
 
-const initialFormData = (
-  note: ChildDailyNote | null
-): ChildDailyNoteFormData =>
+const initialFormData = (note: ChildDailyNote | null): ChildDailyNoteFormData =>
   note
     ? {
         ...note,
