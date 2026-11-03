@@ -524,6 +524,7 @@ enum class Audit(
     CitizenChildrenRead,
     CitizenFeeDecisionDownloadPdf,
     CitizenVoucherValueDecisionDownloadPdf,
+    DataRemovalDuplicateLinkCleared,
     DaycareAssistanceCreate,
     DaycareAssistanceDelete,
     DaycareAssistanceUpdate,

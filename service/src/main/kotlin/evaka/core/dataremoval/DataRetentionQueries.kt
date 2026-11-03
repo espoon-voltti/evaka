@@ -22,31 +22,26 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.reflect.KClass
 
-fun Database.Transaction.loadPersonGraph(
+/**
+ * Jobs working on people related to each other might interfere with each other. This makes sure
+ * that different instances do not run this job in parallel.
+ */
+fun Database.Transaction.lockDataRetention() {
+    execute { sql("SELECT pg_advisory_xact_lock(hashtext('data_retention'))") }
+}
+
+/** Null if the person does not exist */
+fun Database.Read.loadPersonGraph(
     schema: SchemaDefinition,
     personId: PersonId,
     today: LocalDate,
     optimized: Boolean,
 ): PersonGraph? {
-    // Jobs working on people related to each other might interfere with each other.
-    // This makes sure that different instances do not run this job in parallel
-    execute { sql("SELECT pg_advisory_xact_lock(hashtext('data_retention'))") }
-
-    // TODO: duplicate children are rejected until it is decided how to handle them
-    val hasDuplicates =
-        createQuery {
-            sql(
-                """
-SELECT p.duplicate_of IS NOT NULL OR EXISTS (SELECT FROM person d WHERE d.duplicate_of = p.id)
-FROM person p
-WHERE p.id = ${bind(personId)}
-"""
-            )
-        }
-            .exactlyOneOrNull<Boolean>() ?: return null // Null if the person does not exist
-    check(!hasDuplicates) {
-        "Person $personId is a duplicate of another person or has duplicates, so it is refused"
+    val personExists = createQuery {
+        sql("SELECT EXISTS (SELECT FROM person WHERE id = ${bind(personId)})")
     }
+        .exactlyOne<Boolean>()
+    if (!personExists) return null
 
     val idsOfOwnRowsByTable = mutableMapOf<String, List<UUID>>()
     val preloadedNodes =

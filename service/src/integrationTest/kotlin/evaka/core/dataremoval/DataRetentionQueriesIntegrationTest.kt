@@ -93,9 +93,7 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.util.UUID
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.BeforeEach
 
 class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
@@ -1459,16 +1457,6 @@ FROM snapshot
             financeTables.associateWith { 2 },
             execute(guardian.id).deletedRowCountsByTable.filterKeys { it in financeTables },
         )
-    }
-
-    @Test
-    fun `a person that is a duplicate or has duplicates is refused`() {
-        val duplicate = DevPerson(duplicateOf = child.id)
-        db.transaction { tx -> tx.insert(duplicate, DevPersonType.CHILD) }
-        for (id in listOf(child.id, duplicate.id)) {
-            val error = assertFailsWith<IllegalStateException> { load(id) }
-            assertContains(error.message!!, "is a duplicate")
-        }
     }
 
     @Test

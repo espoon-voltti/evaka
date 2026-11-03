@@ -199,7 +199,7 @@ The timestamp is recorded in a transaction of its own before the run starts. A f
 
 ### 4.1 Processing one person
 
-One run goes through four steps. All of them run in one transaction. Evaluation is expected to be fast, so there is no need to load the data in a separate read-only transaction.
+One run goes through four steps. All of them run in one transaction. Evaluation is expected to be fast, so there is no need to load the data in a separate read-only transaction. A person linked to a duplicate is first skipped or unlinked (section 6.6).
 
 **Step 1: load the person's graph.** The *loader* starts from the person row. The `child` node is identified by the person id whether or not the child row exists. The tables are then loaded one at a time in root-first order along the primary references. A table's own rows are the rows whose primary reference column holds the id of a row already loaded from the referenced table. For every own node the loader reads:
 
@@ -295,7 +295,7 @@ A leaf table whose rows should simply be deleted with the rows they reference ca
 
 ### 5.4 The evaka_user row
 
-`evaka_user` reaches `person` through `citizen_id`, but it is excluded too. The database sets the column null when the person row is deleted, and the row lives on as the author of what the citizen created. Whether its name should then be anonymised is open (section 9.2). References to `evaka_user`, such as `created_by` columns, are therefore not declared.
+`evaka_user` reaches `person` through `citizen_id`, but it is excluded too. The database sets the column null when the person row is deleted, and the row lives on as the author of what the citizen created. Whether its name should then be anonymised is open (section 9.1). References to `evaka_user`, such as `created_by` columns, are therefore not declared.
 
 ### 5.5 Data in the child table
 
@@ -365,6 +365,18 @@ A frozen month loses the rows of deleted decisions. The report is therefore show
 
 A decision that no frozen month holds yet has no report rows, but its own conditions keep it meanwhile.
 
+### 6.6 Duplicate persons
+
+Some children have a duplicate. It is a second `person` row, whose `duplicate_of` references the original. The duplicate was a workaround that let a child have two placements at the same time, for example in preschool in one unit and in the connected daycare in another. Duplicates can no longer be created, and the link is always between two persons. A person with more than one link is refused, and its run fails.
+
+While the two are linked, eVaka treats them as the same child. For example, the page of the original lists the documents of the duplicate, and Koski leaves out the placements of the original and sends those of the duplicate. A run therefore skips a person who is linked, and nothing of either person is deleted.
+
+The link is cleared once the last placement of either person ended more than ten years ago. If neither has been placed, the later of the two must have been created more than a month ago. A pending application of either keeps the link. The two are then separate persons, and each is processed by its own rules. Most child data expires ten years after the last placement, so the run that clears the link usually deletes most of the data too. Data with a shorter rule, such as child images, is kept longer for these children.
+
+Clearing the link brings the placements of the original back to Koski. It is therefore treated like deleting rows that Koski reads of both persons (section 3.3). Both must be safe for Koski, and the sync of each one that has been sent is frozen in the same transaction. Only the original strictly needs this, but then the handling does not depend on which of the two Koski leaves out. Varda does not read the link.
+
+The run clears the link before it deletes anything, and it plans a run for the other person right away. A dry run leaves the link as it is. It evaluates the person as if the link was cleared, since no rule reads it.
+
 ## 7. Validation
 
 The schema definition is validated when it is constructed, with the overrides of the municipality applied:
@@ -385,7 +397,7 @@ The schema definition is validated when it is constructed, with the overrides of
 
 Integration tests then compare the schema definition against the database schema:
 
-- Every foreign key into a table whose rows are deleted here is declared as a reference, handled by the database with `ON DELETE CASCADE` or `SET NULL` (section 5.3), or refused. The only composite foreign key is the partnership self-reference (section 6.2), and the only other self-reference is the replacement invoice's (section 6.3).
+- Every foreign key into a table whose rows are deleted here is declared as a reference, handled by the database with `ON DELETE CASCADE` or `SET NULL` (section 5.3), or refused. Only `person.duplicate_of` is refused (section 6.6). The only composite foreign key is the partnership self-reference (section 6.2), and the only other self-references are the replacement invoice's (section 6.3) and `person.duplicate_of`.
 - Every declared reference is a real foreign key to the primary key column of the declared table, or to either `child` or `person` when declared to `child`, and its column is indexed.
 - The declared primary key of a table is unique in the database, as its real primary key or a unique constraint or index, alone or together with the primary reference to the target person, and its columns are uuids.
 - An orphan to delete is the only foreign key into its table and points at the orphan's declared primary key column, which is a uuid, from a unique column.
@@ -457,11 +469,7 @@ An integration test runs the algorithm with and without skipping and checks that
 
 ## 9. Things to figure out
 
-### 9.1 Duplicate persons
-
-`person.duplicate_of` references another person. It is a deprecated workaround feature and `NULL` in most cases, but some municipalities may have old data in it. A `person` row cannot be deleted while a duplicate row references it, and we may also need to combine their data when evaluating the expiration rules. Until that is decided, the algorithm refuses to process a person whose row is a duplicate of another, or that has duplicates: the job aborts before loading anything.
-
-### 9.2 Anonymising orphan evaka_user rows
+### 9.1 Anonymising orphan evaka_user rows
 
 Whether the `name` column of an orphaned `evaka_user` row should be anonymised, for example to "Poistettu kuntalainen", is an open question.
 

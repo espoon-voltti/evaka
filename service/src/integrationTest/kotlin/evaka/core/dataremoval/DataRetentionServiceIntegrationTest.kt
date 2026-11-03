@@ -8,16 +8,24 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import evaka.core.FullApplicationTest
+import evaka.core.application.ApplicationStatus
+import evaka.core.application.ApplicationType
+import evaka.core.application.persistence.club.Adult as ClubAdult
+import evaka.core.application.persistence.club.Apply as ClubApply
+import evaka.core.application.persistence.club.Child as ClubChild
+import evaka.core.application.persistence.club.ClubFormV0
 import evaka.core.childimages.insertChildImage
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import java.time.Duration
@@ -238,17 +246,157 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
 
     @Test
     fun `a failed run still records the attempt`() {
-        val duplicate = DevPerson(duplicateOf = recent.id)
-        db.transaction { tx -> tx.insert(duplicate, DevPersonType.ADULT) }
+        // Only one duplicate per person is supported
+        db.transaction { tx ->
+            repeat(2) { tx.insert(DevPerson(duplicateOf = recent.id), DevPersonType.CHILD) }
+        }
 
-        assertFailsWith<IllegalStateException> {
-            dataRetentionService.deleteExpiredPersonData(
-                db,
-                clock,
-                AsyncJob.DeleteExpiredPersonData(duplicate.id, dryRun = true),
+        val error =
+            assertFailsWith<IllegalStateException> {
+                dataRetentionService.deleteExpiredPersonData(
+                    db,
+                    clock,
+                    AsyncJob.DeleteExpiredPersonData(recent.id, dryRun = true),
+                )
+            }
+
+        assertContains(error.message!!, "is linked to several duplicates or originals")
+        assertEquals(clock.now(), lastAttemptedAt(recent.id))
+    }
+
+    private fun duplicateOf(id: PersonId): PersonId? = db.read { tx ->
+        tx.createQuery { sql("SELECT duplicate_of FROM person WHERE id = ${bind(id)}") }
+            .exactlyOne<PersonId?>()
+    }
+
+    private fun koskiFrozenAt(id: PersonId): HelsinkiDateTime? = db.read { tx ->
+        tx.createQuery {
+                sql("SELECT koski_data_first_removed_at FROM child WHERE id = ${bind(id)}")
+            }
+            .exactlyOne<HelsinkiDateTime?>()
+    }
+
+    private fun Database.Transaction.setCreated(id: PersonId, created: HelsinkiDateTime) {
+        execute { sql("UPDATE person SET created = ${bind(created)} WHERE id = ${bind(id)}") }
+    }
+
+    @Test
+    fun `a duplicate pair is skipped until neither has been placed for ten years, and then each is handled on its own`() {
+        val duplicate = DevPerson(dateOfBirth = longGone.dateOfBirth, duplicateOf = longGone.id)
+        val duplicatePlacementEnd = today.minus(DUPLICATE_LINK_PERIOD)
+        db.transaction { tx ->
+            tx.insert(duplicate, DevPersonType.CHILD)
+            tx.setCreated(duplicate.id, HelsinkiDateTime.of(today.minusYears(13), LocalTime.NOON))
+            tx.insert(
+                DevPlacement(
+                    childId = duplicate.id,
+                    unitId = daycare.id,
+                    startDate = duplicatePlacementEnd.minusYears(1),
+                    endDate = duplicatePlacementEnd,
+                )
             )
         }
 
-        assertEquals(clock.now(), lastAttemptedAt(duplicate.id))
+        realRun(longGone.id)
+        realRun(duplicate.id)
+        assertEquals(0, asyncJobRunner.runPendingJobsSync(clock))
+        assertEquals(longGone.id, duplicateOf(duplicate.id))
+        assertEquals(setOf("person", "child", "placement", "child_images"), remaining(longGone.id))
+        assertEquals(setOf("person", "child", "placement"), remaining(duplicate.id))
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE placement SET end_date = end_date - 1 WHERE child_id = ${bind(duplicate.id)}"
+                )
+            }
+        }
+        realRun(longGone.id)
+        assertEquals(emptySet(), remaining(longGone.id))
+        // The run planned for the duplicate, and the image deletion
+        assertEquals(2, asyncJobRunner.runPendingJobsSync(clock))
+        assertEquals(emptySet(), remaining(duplicate.id))
+    }
+
+    @Test
+    fun `only a real run clears the link of a duplicate pair, and it freezes the Koski sync of both`() {
+        val duplicate = DevPerson(dateOfBirth = longGone.dateOfBirth, duplicateOf = longGone.id)
+        db.transaction { tx ->
+            tx.insert(duplicate, DevPersonType.CHILD)
+            tx.execute {
+                sql(
+                    """
+INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_version)
+VALUES
+    (${bind(longGone.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1),
+    (${bind(duplicate.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
+"""
+                )
+            }
+        }
+
+        dataRetentionService.deleteExpiredPersonData(
+            db,
+            clock,
+            AsyncJob.DeleteExpiredPersonData(duplicate.id, dryRun = true),
+        )
+        assertEquals(longGone.id, duplicateOf(duplicate.id))
+        assertNull(koskiFrozenAt(longGone.id))
+        assertNull(koskiFrozenAt(duplicate.id))
+
+        realRun(duplicate.id)
+        assertNull(duplicateOf(duplicate.id))
+        assertEquals(clock.now(), koskiFrozenAt(longGone.id))
+        assertEquals(clock.now(), koskiFrozenAt(duplicate.id))
+    }
+
+    @Test
+    fun `a duplicate pair that was never placed is unlinked a month after the later of them was created, unless an application is pending`() {
+        val guardian = DevPerson()
+        val original = DevPerson(dateOfBirth = today.minusYears(3))
+        val duplicate = DevPerson(dateOfBirth = original.dateOfBirth, duplicateOf = original.id)
+        val aMonthAgo = HelsinkiDateTime.of(today.minusMonths(1), LocalTime.NOON)
+        val applicationId = db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(original, DevPersonType.CHILD)
+            tx.insert(duplicate, DevPersonType.CHILD)
+            tx.setCreated(original.id, aMonthAgo.minusMonths(6))
+            tx.setCreated(duplicate.id, aMonthAgo)
+            tx.insertTestApplication(
+                type = ApplicationType.CLUB,
+                status = ApplicationStatus.CANCELLED,
+                confidential = false,
+                guardianId = guardian.id,
+                childId = duplicate.id,
+                document =
+                    ClubFormV0(
+                        child = ClubChild(dateOfBirth = null),
+                        guardian = ClubAdult(),
+                        apply = ClubApply(preferredUnits = listOf(daycare.id)),
+                    ),
+            )
+        }
+
+        fun Database.Transaction.setApplicationStatus(status: ApplicationStatus) {
+            execute {
+                sql(
+                    "UPDATE application SET status = ${bind(status)} WHERE id = ${bind(applicationId)}"
+                )
+            }
+        }
+
+        realRun(original.id)
+        assertEquals(original.id, duplicateOf(duplicate.id))
+
+        db.transaction { tx ->
+            tx.setCreated(duplicate.id, aMonthAgo.minusDays(1))
+            tx.setApplicationStatus(ApplicationStatus.SENT)
+        }
+        realRun(original.id)
+        assertEquals(original.id, duplicateOf(duplicate.id))
+
+        db.transaction { tx -> tx.setApplicationStatus(ApplicationStatus.CANCELLED) }
+        realRun(original.id)
+        assertNull(duplicateOf(duplicate.id))
     }
 }
