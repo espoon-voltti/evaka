@@ -624,5 +624,10 @@ class SchemaDefinitionTest {
         invalid("varda_state holds the sync state of an integration") {
             withOverrides("varda_state" to TableOverride(Never, deletedWithParent = false))
         }
+        invalid("voucher_value_report_decision must be deleted with voucher_value_decision") {
+            withOverrides(
+                "voucher_value_report_decision" to TableOverride(Never, deletedWithParent = false)
+            )
+        }
     }
 }

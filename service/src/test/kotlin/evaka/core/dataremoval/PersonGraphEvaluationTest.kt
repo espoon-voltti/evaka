@@ -17,12 +17,14 @@ import evaka.core.dataremoval.Handler.CHILD
 import evaka.core.dataremoval.Integration.KOSKI
 import evaka.core.dataremoval.Integration.VARDA
 import evaka.core.invoicing.domain.financeFreezeDate
+import evaka.core.reports.oldestShownVoucherValueReportMonth
 import evaka.core.shared.ChildId
 import evaka.core.shared.DatabaseTable
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import java.time.LocalDate
 import java.time.Period
+import java.time.YearMonth
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -85,6 +87,32 @@ class PersonGraphEvaluationTest {
                 val freezeDate = financeFreezeDate(day)
                 assert(!expired(rule, endedAt(freezeDate), on = day)) { "$day" }
                 assert(expired(rule, endedAt(freezeDate.minusMonths(2)), on = day)) { "$day" }
+            }
+    }
+
+    @Test
+    fun `a report row stays while the service voucher report shows the month that holds it`() {
+        val rule =
+            checkNotNull(
+                buildDataRetentionSchema(
+                        valueDecisionCapacityFactorEnabled = false,
+                        overrides = DataRetentionOverrides.NONE,
+                    )
+                    .handled("voucher_value_report_decision")
+                    .financeFreeze
+            )
+        fun heldIn(month: YearMonth) =
+            row(
+                "child_id" to target,
+                dateByCustomSource = mapOf(voucherValueReportRowMonthEnd to month.atEndOfMonth()),
+            )
+        generateSequence(LocalDate.of(2024, 1, 1)) { it.plusDays(1) }
+            .takeWhile { it.year < 2029 }
+            .forEach { day ->
+                val oldestShownMonth = oldestShownVoucherValueReportMonth(day)
+                assert(!expired(rule, heldIn(oldestShownMonth), on = day)) { "$day" }
+                // and goes within a month after the month is no longer shown
+                assert(expired(rule, heldIn(oldestShownMonth.minusMonths(2)), on = day)) { "$day" }
             }
     }
 

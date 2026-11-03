@@ -36,6 +36,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.service.ProductKey
 import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.placement.PlacementSource
+import evaka.core.reports.oldestShownVoucherValueReportMonth
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
@@ -1301,41 +1302,42 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `a voucher value decision waits for the report rows that name it, and goes once the snapshot is gone`() {
+    fun `the report rows of a voucher value decision keep it while the report shows the month that holds them, and are deleted with it`() {
         val family = db.transaction { it.insertFamily() }
+        // A correction to the decision, frozen years after it ended
+        val oldestShownMonth = oldestShownVoucherValueReportMonth(today)
         db.transaction { tx ->
             tx.execute {
                 sql(
                     """
 WITH snapshot AS (
     INSERT INTO voucher_value_report_snapshot (month, year, taken_at)
-    VALUES (6, 2015, ${bind(longAgo)})
+    VALUES (${bind(oldestShownMonth.monthValue)}, ${bind(oldestShownMonth.year)}, ${bind(now)})
     RETURNING id
 )
-INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period)
-SELECT id, ${bind(family.voucherValueDecisionId)}, 100, daterange('2015-06-01', '2015-07-01', '[)')
+INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period, type)
+SELECT id, ${bind(family.voucherValueDecisionId)}, 100, daterange('2015-06-01', '2015-07-01'), 'CORRECTION'
 FROM snapshot
 """
                 )
             }
         }
 
-        assertContains(load(child.id).foreign(), "voucher_value_report_decision.decision_id")
         assertEquals(null, execute(child.id).deletedRowCountsByTable["voucher_value_decision"])
-        assertEquals(
-            1,
-            count("voucher_value_decision WHERE id = '${family.voucherValueDecisionId.raw}'"),
-        )
 
+        val monthNoLongerShown = oldestShownMonth.minusMonths(2)
         db.transaction { tx ->
-            tx.execute { sql("DELETE FROM voucher_value_report_decision") }
-            tx.execute { sql("DELETE FROM voucher_value_report_snapshot") }
+            tx.execute {
+                sql(
+                    "UPDATE voucher_value_report_snapshot SET year = ${bind(monthNoLongerShown.year)}, month = ${bind(monthNoLongerShown.monthValue)}"
+                )
+            }
         }
+        val result = execute(child.id)
 
-        assertEquals(
-            mapOf("voucher_value_decision" to 1),
-            execute(child.id).deletedRowCountsByTable,
-        )
+        assertEquals(1, result.deletedRowCountsByTable["voucher_value_decision"])
+        assertEquals(1, result.deletedRowCountsByTable["voucher_value_report_decision"])
+        assertEquals(1, count("voucher_value_report_snapshot"))
     }
 
     @Test
