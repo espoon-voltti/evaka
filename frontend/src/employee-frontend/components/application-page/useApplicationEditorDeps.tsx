@@ -44,7 +44,6 @@ export function useApplicationEditorDeps(): {
       employeeTexts: {
         childInformationLink: i18n.application.child.title,
         childDateOfBirth: i18n.application.person.dob,
-        nationality: i18n.application.person.nationality,
         language: i18n.application.person.language,
         addressRestricted: i18n.application.person.restricted,
         secondGuardianExists:

@@ -294,7 +294,6 @@ export interface ApplicationEditorTranslations {
 export interface EmployeeApplicationEditorTexts {
   childInformationLink: string
   childDateOfBirth: string
-  nationality: string
   language: string
   addressRestricted: string
   secondGuardianExists: string

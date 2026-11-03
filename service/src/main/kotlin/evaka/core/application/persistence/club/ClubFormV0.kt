@@ -9,7 +9,6 @@ import evaka.core.application.persistence.DatabaseForm
 import evaka.core.shared.DaycareId
 import java.time.LocalDate
 
-const val DEFAULT_CHILD_NATIONALITY = "FI"
 const val DEFAULT_CHILD_LANGUAGE = "fi"
 
 @JsonIgnoreProperties(
@@ -75,7 +74,6 @@ data class ClubFormV0(
                                     editable = false,
                                 )
                             } ?: Address(),
-                        nationality = form.child.nationality,
                         language = form.child.language,
                         hasCorrectingAddress = form.child.futureAddress != null,
                         correctingAddress =
@@ -140,13 +138,13 @@ data class ClubFormV0(
     }
 }
 
+@JsonIgnoreProperties("nationality")
 data class Child(
     val firstName: String = "",
     val lastName: String = "",
     val socialSecurityNumber: String = "",
     val dateOfBirth: LocalDate?,
     val address: Address = Address(),
-    val nationality: String = DEFAULT_CHILD_NATIONALITY,
     val language: String = DEFAULT_CHILD_LANGUAGE,
     val hasCorrectingAddress: Boolean? = null,
     val correctingAddress: Address = Address(editable = true),

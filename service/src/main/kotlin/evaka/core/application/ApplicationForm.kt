@@ -93,7 +93,6 @@ data class ApplicationForm(
                                             v0.child.hasCorrectingAddress == true &&
                                                 !childRestricted
                                         },
-                                nationality = v0.child.nationality,
                                 language = v0.child.language,
                                 allergies = v0.additionalDetails.allergyType,
                                 diet = v0.additionalDetails.dietType,
@@ -246,7 +245,6 @@ data class ApplicationForm(
                                             v0.child.hasCorrectingAddress == true &&
                                                 !childRestricted
                                         },
-                                nationality = v0.child.nationality,
                                 language = v0.child.language,
                                 allergies = "",
                                 diet = "",
@@ -343,7 +341,6 @@ data class ApplicationForm(
                                 postOffice = child.postOffice,
                             ),
                         futureAddress = null,
-                        nationality = child.nationalities.firstOrNull() ?: "",
                         language = child.language ?: "",
                         allergies = "",
                         diet = "",
@@ -433,7 +430,6 @@ data class ChildDetails(
     val dateOfBirth: LocalDate?,
     val address: Address?,
     val futureAddress: FutureAddress?,
-    val nationality: String,
     val language: String,
     val allergies: String,
     val diet: String,

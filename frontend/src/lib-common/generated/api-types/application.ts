@@ -424,7 +424,6 @@ export interface ChildDetails {
   diet: string
   futureAddress: FutureAddress | null
   language: string
-  nationality: string
   person: PersonBasics
 }
 

@@ -532,7 +532,6 @@ export const sv: typeof fi = {
         'Adressen i befolkningsregistret har ändrats / kommer att ändras',
       futureAddress: 'Kommande adress',
       movingDate: 'Flyttdatum',
-      nationality: 'Medborgarskap',
       language: 'Språk',
       phone: 'Telefonnummer',
       email: 'E-post',

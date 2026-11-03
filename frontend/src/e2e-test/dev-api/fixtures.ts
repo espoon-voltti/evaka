@@ -2857,7 +2857,6 @@ const applicationForm = (
         postOffice: child.postOffice ?? ''
       },
       futureAddress: null,
-      nationality: 'FI',
       language: 'fi',
       allergies: '',
       diet: '',

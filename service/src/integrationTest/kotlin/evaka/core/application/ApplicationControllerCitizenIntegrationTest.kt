@@ -588,7 +588,6 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             dateOfBirth = child.dateOfBirth,
                             address = Address("", "", ""),
                             futureAddress = null,
-                            nationality = "fi",
                             language = "fi",
                             allergies = "",
                             diet = "",
