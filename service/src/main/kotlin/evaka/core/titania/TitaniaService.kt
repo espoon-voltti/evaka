@@ -6,8 +6,8 @@ package evaka.core.titania
 
 import evaka.core.EvakaEnv
 import evaka.core.attendance.*
-import evaka.core.pis.getEmployeeIdsByNumbers
-import evaka.core.pis.getEmployeeIdsByNumbersMapById
+import evaka.core.employee.getEmployeeIdsByNumbers
+import evaka.core.employee.getEmployeeIdsByNumbersMapById
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime

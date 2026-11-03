@@ -5,7 +5,7 @@
 package evaka.core.reports
 
 import evaka.core.Audit
-import evaka.core.pis.getTransferablePersonReferences
+import evaka.core.person.getTransferablePersonReferences
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database

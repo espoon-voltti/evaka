@@ -43,7 +43,7 @@ import evaka.core.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import evaka.core.invoicing.service.FinanceDecisionGenerator
 import evaka.core.invoicing.service.VoucherValueDecisionService
 import evaka.core.invoicing.validateFinanceDecisionHandler
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.shared.ArchiveProcessType
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId

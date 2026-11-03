@@ -19,7 +19,7 @@ import {
 import type {
   EmailVerification,
   EmailVerificationStatusResponse
-} from 'lib-common/generated/api-types/pis'
+} from 'lib-common/generated/api-types/person'
 import { NotificationsContext } from 'lib-components/Notifications'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import IconChip from 'lib-components/atoms/IconChip'

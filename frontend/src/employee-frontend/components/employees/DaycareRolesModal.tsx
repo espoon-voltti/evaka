@@ -23,7 +23,7 @@ import type { Daycare } from 'lib-common/generated/api-types/daycare'
 import type {
   EmployeeWithDaycareRoles,
   UpsertEmployeeDaycareRolesRequest
-} from 'lib-common/generated/api-types/pis'
+} from 'lib-common/generated/api-types/employee'
 import type {
   AreaId,
   DaycareId,

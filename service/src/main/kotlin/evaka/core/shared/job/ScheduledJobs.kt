@@ -31,6 +31,8 @@ import evaka.core.document.archival.planChildDocumentArchival
 import evaka.core.document.childdocument.ChildDocumentService
 import evaka.core.document.childdocument.endExpiredChildDocumentDecisions
 import evaka.core.dvv.DvvModificationsBatchRefreshService
+import evaka.core.employee.deactivateInactiveEmployees
+import evaka.core.employee.deleteNeverLoggedInSsnEmployees
 import evaka.core.invoicing.service.FinanceDecisionGenerator
 import evaka.core.invoicing.service.InvoiceGenerator
 import evaka.core.invoicing.service.NewCustomerIncomeNotification
@@ -40,10 +42,8 @@ import evaka.core.koski.KoskiUpdateService
 import evaka.core.messaging.upsertEmployeeMessageAccount
 import evaka.core.nekku.NekkuService
 import evaka.core.note.child.daily.deleteExpiredNotes
-import evaka.core.pis.cleanUpInactivePeople
-import evaka.core.pis.deactivateInactiveEmployees
-import evaka.core.pis.deleteExpiredEmailVerifications
-import evaka.core.pis.deleteNeverLoggedInSsnEmployees
+import evaka.core.person.cleanUpInactivePeople
+import evaka.core.person.deleteExpiredEmailVerifications
 import evaka.core.reports.freezeVoucherValueReportRows
 import evaka.core.reservations.MissingHolidayReservationsReminders
 import evaka.core.reservations.MissingReservationsReminders

@@ -6,7 +6,7 @@ package evaka.core.messaging
 
 import evaka.core.PureJdbiTest
 import evaka.core.daycare.domain.Language
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.shared.*
 import evaka.core.shared.auth.AuthenticatedUser

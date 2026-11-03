@@ -6,7 +6,7 @@ package evaka.core.pedagogicaldocument
 
 import evaka.core.FullApplicationTest
 import evaka.core.attachment.AttachmentsController
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.shared.AttachmentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.PedagogicalDocumentId

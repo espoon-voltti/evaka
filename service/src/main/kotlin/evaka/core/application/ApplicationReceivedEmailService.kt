@@ -9,7 +9,7 @@ import evaka.core.daycare.domain.Language
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.NotificationCategory
+import evaka.core.person.NotificationCategory
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import io.github.oshai.kotlinlogging.KotlinLogging

@@ -5,7 +5,7 @@
 package evaka.core.application
 
 import evaka.core.ConstList
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanRejectReason
 import evaka.core.placement.PlacementType

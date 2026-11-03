@@ -6,7 +6,7 @@ package evaka.core.vtj
 
 import evaka.core.PureJdbiTest
 import evaka.core.identity.Ssn
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.shared.PersonId
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime

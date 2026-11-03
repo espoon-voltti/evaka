@@ -17,9 +17,9 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.getPersonById
-import evaka.core.pis.service.getChildGuardiansAndFosterParents
+import evaka.core.person.NotificationCategory
+import evaka.core.person.getChildGuardiansAndFosterParents
+import evaka.core.person.getPersonById
 import evaka.core.placement.getPlacementsForChild
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService

@@ -18,9 +18,9 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailContent
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.emailclient.MockEmailClient
-import evaka.core.pis.PersonalDataUpdate
-import evaka.core.pis.service.insertGuardian
-import evaka.core.pis.updatePersonalDetails
+import evaka.core.person.PersonalDataUpdate
+import evaka.core.person.insertGuardian
+import evaka.core.person.updatePersonalDetails
 import evaka.core.placement.GroupTransferRequestBody
 import evaka.core.placement.PlacementController
 import evaka.core.placement.PlacementControllerCitizen

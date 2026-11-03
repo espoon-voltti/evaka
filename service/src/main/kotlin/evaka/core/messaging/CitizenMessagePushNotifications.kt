@@ -4,7 +4,7 @@
 
 package evaka.core.messaging
 
-import evaka.core.pis.NotificationCategory
+import evaka.core.person.NotificationCategory
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.MessageAccountId

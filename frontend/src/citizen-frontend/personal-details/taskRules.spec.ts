@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
+import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/person'
 import type { CitizenPasskey } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid } from 'lib-common/id-type'

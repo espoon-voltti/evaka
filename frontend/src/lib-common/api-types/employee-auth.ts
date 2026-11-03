@@ -5,12 +5,12 @@
 import type { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 
 import type { Action } from '../generated/action'
-import type { EmployeeStartPage } from '../generated/api-types/pis'
 import type {
   EmployeeFeatureConfig,
   EmployeeFeatures,
   EmployeeId
 } from '../generated/api-types/shared'
+import type { EmployeeStartPage } from '../generated/api-types/user'
 
 export interface User {
   id: EmployeeId

@@ -9,10 +9,10 @@ import evaka.core.attachment.AttachmentsController
 import evaka.core.daycare.addUnitFeatures
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.MockEmailClient
+import evaka.core.family.Creator
+import evaka.core.family.createParentship
 import evaka.core.messaging.upsertEmployeeMessageAccount
-import evaka.core.pis.Creator
-import evaka.core.pis.createParentship
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner

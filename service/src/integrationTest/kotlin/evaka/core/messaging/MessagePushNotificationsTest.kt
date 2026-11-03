@@ -5,7 +5,7 @@
 package evaka.core.messaging
 
 import evaka.core.FullApplicationTest
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.async.AsyncJob

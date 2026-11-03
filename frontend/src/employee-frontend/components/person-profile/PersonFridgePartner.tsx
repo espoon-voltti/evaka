@@ -7,7 +7,7 @@ import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/person'
 import type {
   PartnershipId,
   PersonId

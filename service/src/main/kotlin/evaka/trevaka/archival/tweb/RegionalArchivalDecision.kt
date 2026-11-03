@@ -8,7 +8,7 @@ import com.profium.reception._2022._03.Collections
 import evaka.core.caseprocess.CaseProcess
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionType
-import evaka.core.pis.PersonDTO
+import evaka.core.person.PersonDTO
 import evaka.core.s3.Document
 import evaka.core.shared.ArchiveProcessType
 import evaka.core.shared.FeatureConfig

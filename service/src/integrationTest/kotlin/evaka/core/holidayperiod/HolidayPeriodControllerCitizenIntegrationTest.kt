@@ -9,7 +9,7 @@ import evaka.core.FullApplicationTest
 import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType
 import evaka.core.daycare.domain.ProviderType
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.serviceneed.ServiceNeedOption
 import evaka.core.serviceneed.ShiftCareType

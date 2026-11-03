@@ -5,9 +5,9 @@
 package evaka.core.messaging
 
 import evaka.core.FullApplicationTest
-import evaka.core.pis.Creator
-import evaka.core.pis.createParentship
-import evaka.core.pis.service.insertGuardian
+import evaka.core.family.Creator
+import evaka.core.family.createParentship
+import evaka.core.person.insertGuardian
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.GroupId

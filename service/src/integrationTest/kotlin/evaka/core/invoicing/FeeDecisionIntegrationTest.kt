@@ -34,8 +34,8 @@ import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.domain.PersonBasic
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.UnitData
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.NotificationCategory
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.sficlient.MockSfiMessagesClient
 import evaka.core.sficlient.SfiAsyncJobs

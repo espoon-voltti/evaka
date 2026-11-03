@@ -5,11 +5,11 @@
 package evaka.core.invoicing.service.generator
 
 import evaka.core.daycare.domain.ProviderType
+import evaka.core.family.HasDateOfBirth
 import evaka.core.invoicing.domain.DecisionIncome
 import evaka.core.invoicing.domain.FeeAlteration
 import evaka.core.invoicing.domain.FeeThresholds
 import evaka.core.invoicing.domain.FinanceDecisionType
-import evaka.core.pis.HasDateOfBirth
 import evaka.core.placement.PlacementType
 import evaka.core.serviceneed.ServiceNeedOption
 import evaka.core.serviceneed.ServiceNeedOptionFee

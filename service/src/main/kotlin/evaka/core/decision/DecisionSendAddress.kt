@@ -6,7 +6,7 @@ package evaka.core.decision
 
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.addressUsable
-import evaka.core.pis.PersonDTO
+import evaka.core.person.PersonDTO
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.message.IMessageProvider
 

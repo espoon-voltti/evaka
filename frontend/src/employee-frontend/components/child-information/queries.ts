@@ -88,6 +88,12 @@ import {
   createDecisionDocument
 } from '../../generated/api-clients/document'
 import {
+  getFamilyContactSummary,
+  getFosterParents,
+  updateFamilyContactDetails,
+  updateFamilyContactPriority
+} from '../../generated/api-clients/family'
+import {
   createFeeAlteration,
   deleteFeeAlteration,
   getFeeAlterations,
@@ -100,13 +106,9 @@ import {
   updatePedagogicalDocument
 } from '../../generated/api-clients/pedagogicaldocument'
 import {
-  getFamilyContactSummary,
-  getFosterParents,
   getPersonGuardians,
-  updateFamilyContactDetails,
-  updateFamilyContactPriority,
   updateGuardianEvakaRights
-} from '../../generated/api-clients/pis'
+} from '../../generated/api-clients/person'
 import {
   createPlacement,
   deletePlacement,

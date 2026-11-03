@@ -5,6 +5,7 @@
 package evaka.core.invoicing.service
 
 import evaka.core.FullApplicationTest
+import evaka.core.family.deleteParentship
 import evaka.core.feeThresholds
 import evaka.core.insertServiceNeedOptions
 import evaka.core.invoicing.controller.FeeDecisionController
@@ -12,7 +13,6 @@ import evaka.core.invoicing.data.feeDecisionQuery
 import evaka.core.invoicing.domain.FeeDecision
 import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.IncomeEffect
-import evaka.core.pis.deleteParentship
 import evaka.core.placement.cancelPlacement
 import evaka.core.placement.updatePlacementStartAndEndDate
 import evaka.core.shared.async.AsyncJob

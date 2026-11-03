@@ -13,6 +13,6 @@ val ignoredPlacementTypes =
 /**
  * When true, handles such cases where both parents in partnership are heads of some children
  * simultaneously, so that one parent is implicitly considered as head of all children, based on the
- * logic in evaka.core.pis.determineHeadOfFamily
+ * logic in evaka.core.family.determineHeadOfFamily
  */
 const val mergeFamilies = true

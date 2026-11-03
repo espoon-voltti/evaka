@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from '../api-client'
-import { startPasskeyRegistration } from '../generated/api-clients/pis'
+import { startPasskeyRegistration } from '../generated/api-clients/user'
 
 import { passkeyProviderName } from './passkey-providers'
 import {

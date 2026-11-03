@@ -47,7 +47,7 @@ import evaka.core.invoicing.domain.isRetroactive
 import evaka.core.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import evaka.core.invoicing.validateFinanceDecisionHandler
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pis.NotificationCategory
+import evaka.core.person.NotificationCategory
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentLocation
 import evaka.core.s3.DocumentService

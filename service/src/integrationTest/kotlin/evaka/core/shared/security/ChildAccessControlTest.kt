@@ -4,7 +4,7 @@
 
 package evaka.core.shared.security
 
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevCareArea

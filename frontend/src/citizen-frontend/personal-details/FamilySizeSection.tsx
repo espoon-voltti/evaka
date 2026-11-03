@@ -7,7 +7,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import type { FamilyMembers } from 'lib-common/generated/api-types/pis'
+import type { FamilyMembers } from 'lib-common/generated/api-types/family'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

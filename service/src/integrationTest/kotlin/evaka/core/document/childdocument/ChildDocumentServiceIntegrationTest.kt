@@ -12,7 +12,7 @@ import evaka.core.document.Question
 import evaka.core.document.Section
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.MockEmailClient
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.async.AsyncJob

@@ -29,7 +29,7 @@ import evaka.core.messaging.createServiceWorkerMessageAccount
 import evaka.core.messaging.deleteExpiredRegularThreads
 import evaka.core.messaging.getCitizenMessageAccount
 import evaka.core.messaging.upsertEmployeeMessageAccount
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementController
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AttachmentId

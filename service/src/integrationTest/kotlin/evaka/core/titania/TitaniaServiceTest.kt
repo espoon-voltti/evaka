@@ -9,9 +9,9 @@ import evaka.core.attendance.StaffAttendancePlan
 import evaka.core.attendance.StaffAttendanceType
 import evaka.core.attendance.findStaffAttendancePlansBy
 import evaka.core.attendance.upsertStaffAttendance
-import evaka.core.pis.createEmployee
-import evaka.core.pis.getEmployeeIdsByNumbers
-import evaka.core.pis.getEmployees
+import evaka.core.employee.createEmployee
+import evaka.core.employee.getEmployeeIdsByNumbers
+import evaka.core.employee.getEmployees
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.*

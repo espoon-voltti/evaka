@@ -6,8 +6,8 @@ package evaka.core.titania
 
 import evaka.core.PureJdbiTest
 import evaka.core.attendance.*
-import evaka.core.pis.createEmployee
-import evaka.core.pis.getEmployeeIdsByNumbers
+import evaka.core.employee.createEmployee
+import evaka.core.employee.getEmployeeIdsByNumbers
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.GroupId

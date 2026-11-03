@@ -5,10 +5,10 @@
 package evaka.core.vtj
 
 import evaka.core.PureJdbiTest
+import evaka.core.family.getParentships
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner

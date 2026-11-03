@@ -6,7 +6,7 @@ package evaka.core.vtj
 
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
-import evaka.core.pis.PersonDTO
+import evaka.core.person.PersonDTO
 import evaka.core.shared.dev.DevPerson
 import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap

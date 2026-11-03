@@ -7,7 +7,7 @@ import type { SetStateAction } from 'react'
 import React from 'react'
 import styled from 'styled-components'
 
-import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import type { CreatePersonBody } from 'lib-common/generated/api-types/person'
 import LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import ListGrid from 'lib-components/layout/ListGrid'

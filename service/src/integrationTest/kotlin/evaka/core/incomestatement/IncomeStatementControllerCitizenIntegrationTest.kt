@@ -6,7 +6,7 @@ package evaka.core.incomestatement
 
 import evaka.core.FullApplicationTest
 import evaka.core.attachment.AttachmentsController
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.shared.AttachmentId
 import evaka.core.shared.ChildId

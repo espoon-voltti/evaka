@@ -7,7 +7,7 @@ package evaka.trevaka.archival.tweb
 import com.profium.reception._2022._03.Collections
 import evaka.core.caseprocess.CaseProcess
 import evaka.core.document.childdocument.ChildDocumentDetails
-import evaka.core.pis.PersonDTO
+import evaka.core.person.PersonDTO
 import evaka.core.s3.Document
 import evaka.trevaka.archival.status
 import evaka.trevaka.jaxb.localDateToXMLGregorianCalendar

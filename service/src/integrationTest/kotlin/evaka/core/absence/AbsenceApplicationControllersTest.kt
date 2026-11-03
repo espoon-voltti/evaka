@@ -15,8 +15,8 @@ import evaka.core.absence.application.AbsenceApplicationSummary
 import evaka.core.absence.application.getAbsenceApplicationDateRanges
 import evaka.core.absence.application.selectAbsenceApplication
 import evaka.core.emailclient.MockEmailClient
-import evaka.core.pis.PersonNameDetails
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.PersonNameDetails
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ChildId

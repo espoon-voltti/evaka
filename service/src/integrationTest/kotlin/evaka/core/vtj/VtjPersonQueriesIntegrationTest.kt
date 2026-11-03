@@ -10,10 +10,10 @@ import ch.qos.logback.core.read.ListAppender
 import evaka.core.PureJdbiTest
 import evaka.core.daycare.getChild
 import evaka.core.identity.Ssn
-import evaka.core.pis.getPersonById
-import evaka.core.pis.service.blockGuardian
-import evaka.core.pis.service.getChildGuardians
-import evaka.core.pis.service.getGuardianChildIds
+import evaka.core.person.blockGuardian
+import evaka.core.person.getChildGuardians
+import evaka.core.person.getGuardianChildIds
+import evaka.core.person.getPersonById
 import evaka.core.shared.PersonId
 import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson

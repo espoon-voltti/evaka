@@ -21,8 +21,8 @@ import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.document.childdocument.generateChildDocumentHtml
 import evaka.core.identity.Ssn
-import evaka.core.pis.PersonDTO
-import evaka.core.pis.createAddressPagePdf
+import evaka.core.person.PersonDTO
+import evaka.core.person.createAddressPagePdf
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.DocumentTemplateId

@@ -19,11 +19,11 @@ import evaka.core.invoicing.data.getVoucherValueDecisionByLiableCitizen
 import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.service.FeeDecisionService
 import evaka.core.invoicing.service.VoucherValueDecisionService
-import evaka.core.pis.getDependantGuardians
-import evaka.core.pis.getPersonById
-import evaka.core.pis.getPersonNameDetailsById
-import evaka.core.pis.isDuplicate
-import evaka.core.pis.personsLiveInTheSameAddress
+import evaka.core.person.getDependantGuardians
+import evaka.core.person.getPersonById
+import evaka.core.person.getPersonNameDetailsById
+import evaka.core.person.isDuplicate
+import evaka.core.person.personsLiveInTheSameAddress
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DecisionId

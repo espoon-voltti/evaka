@@ -8,12 +8,12 @@ import evaka.core.Audit
 import evaka.core.AuditLogCapture
 import evaka.core.FullApplicationTest
 import evaka.core.attendance.getOccupancyCoefficientsByUnit
+import evaka.core.employee.PinCode
+import evaka.core.employee.TemporaryEmployee
+import evaka.core.employee.TemporaryEmployeeResponse
+import evaka.core.employee.deactivateInactiveEmployees
+import evaka.core.employee.employeePinIsCorrect
 import evaka.core.pairing.listPersonalDevices
-import evaka.core.pis.TemporaryEmployee
-import evaka.core.pis.TemporaryEmployeeResponse
-import evaka.core.pis.controllers.PinCode
-import evaka.core.pis.deactivateInactiveEmployees
-import evaka.core.pis.employeePinIsCorrect
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.GroupId

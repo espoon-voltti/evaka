@@ -4,8 +4,8 @@
 
 package evaka.core.emailclient
 
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.getEmployee
+import evaka.core.employee.getEmployee
+import evaka.core.person.NotificationCategory
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database

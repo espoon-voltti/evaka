@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'wouter'
 
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/person'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'

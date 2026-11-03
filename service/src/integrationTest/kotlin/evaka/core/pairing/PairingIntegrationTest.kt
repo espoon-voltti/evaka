@@ -5,7 +5,6 @@
 package evaka.core.pairing
 
 import evaka.core.FullApplicationTest
-import evaka.core.pis.SystemController
 import evaka.core.shared.DaycareId
 import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.PairingId
@@ -18,6 +17,7 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.updateDaycareAclWithEmployee
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.user.SystemController
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

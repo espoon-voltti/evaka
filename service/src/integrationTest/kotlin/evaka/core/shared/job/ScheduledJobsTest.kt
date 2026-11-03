@@ -28,8 +28,8 @@ import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
 import evaka.core.note.child.sticky.getChildStickyNotesForChild
 import evaka.core.pairing.listPersonalDevices
-import evaka.core.pis.service.getGuardianChildIds
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.getGuardianChildIds
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.reservations.getReservationsCitizen
 import evaka.core.serviceneed.ShiftCareType

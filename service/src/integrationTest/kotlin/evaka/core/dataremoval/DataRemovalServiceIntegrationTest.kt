@@ -41,7 +41,7 @@ import evaka.core.invoicing.service.createIncomeNotification
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
-import evaka.core.pis.service.blockGuardian
+import evaka.core.person.blockGuardian
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.PlacementType
 import evaka.core.s3.DocumentService

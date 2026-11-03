@@ -7,12 +7,12 @@ import styled from 'styled-components'
 import { Link } from 'wouter'
 
 import { isLoading } from 'lib-common/api'
-import type { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
 import type {
   FamilyOverview,
   FamilyOverviewIncome,
   FamilyOverviewPerson
-} from 'lib-common/generated/api-types/pis'
+} from 'lib-common/generated/api-types/family'
+import type { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'

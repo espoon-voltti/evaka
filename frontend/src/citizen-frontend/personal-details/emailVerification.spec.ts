@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
+import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/person'
 
 import type { EmailVerificationProblem } from './emailVerification'
 import {

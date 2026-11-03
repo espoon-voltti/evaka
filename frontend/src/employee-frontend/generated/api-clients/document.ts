@@ -21,7 +21,7 @@ import type { DocumentTemplateBasicsRequest } from 'lib-common/generated/api-typ
 import type { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import type { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
-import type { Employee } from 'lib-common/generated/api-types/pis'
+import type { Employee } from 'lib-common/generated/api-types/employee'
 import type { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
 import type { GroupId } from 'lib-common/generated/api-types/shared'
 import type { JsonCompatible } from 'lib-common/json'
@@ -39,7 +39,7 @@ import { deserializeJsonChildDocumentWithPermittedActions } from 'lib-common/gen
 import { deserializeJsonDocumentLockResponse } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplateSummary } from 'lib-common/generated/api-types/document'
-import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
+import { deserializeJsonEmployee } from 'lib-common/generated/api-types/employee'
 import { uri } from 'lib-common/uri'
 
 

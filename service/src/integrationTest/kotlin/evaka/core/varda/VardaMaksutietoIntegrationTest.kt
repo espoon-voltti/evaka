@@ -8,7 +8,7 @@ import evaka.core.PureJdbiTest
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.serviceneed.ServiceNeedOption
 import evaka.core.shared.ServiceNeedOptionId

@@ -6,7 +6,7 @@ import isEqual from 'lodash/isEqual'
 import range from 'lodash/range'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import type { FamilyContact } from 'lib-common/generated/api-types/pis'
+import type { FamilyContact } from 'lib-common/generated/api-types/family'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'

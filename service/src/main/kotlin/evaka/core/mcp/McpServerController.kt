@@ -7,8 +7,8 @@ package evaka.core.mcp
 import evaka.core.Audit
 import evaka.core.AuditContext
 import evaka.core.ExcludeCodeGen
-import evaka.core.pis.getEmployee
-import evaka.core.pis.getEmployeeRoles
+import evaka.core.employee.getEmployee
+import evaka.core.employee.getEmployeeRoles
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest

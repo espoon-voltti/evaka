@@ -1,0 +1,153 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.person
+
+import evaka.core.EmailEnv
+import evaka.core.daycare.domain.Language
+import evaka.core.emailclient.Email
+import evaka.core.emailclient.EmailClient
+import evaka.core.emailclient.IEmailMessageProvider
+import evaka.core.shared.HtmlSafe
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.EvakaClock
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.stereotype.Service
+
+@Service
+class PersonEmailJobs(
+    private val emailClient: EmailClient,
+    private val emailMessageProvider: IEmailMessageProvider,
+    private val emailEnv: EmailEnv,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+) {
+    init {
+        asyncJobRunner.registerHandler(::sendConfirmationCodeEmail)
+        asyncJobRunner.registerHandler(::sendPasswordChangedEmail)
+        asyncJobRunner.registerHandler(::sendEmailChangedEmail)
+        asyncJobRunner.registerHandler(::sendPasskeyAddedEmail)
+        asyncJobRunner.registerHandler(::sendPasskeyRemovedEmail)
+        asyncJobRunner.registerHandler(::sendWeakCredentialsRemovedEmail)
+    }
+
+    private val logger = KotlinLogging.logger {}
+
+    fun sendConfirmationCodeEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendConfirmationCodeEmail,
+    ) {
+        val (email, confirmationCode) =
+            dbc.read {
+                it.createQuery {
+                        sql(
+                            """
+SELECT email, verification_code
+FROM person_email_verification
+WHERE id = ${bind(job.id)}
+AND sent_at IS NULL
+AND expires_at > ${bind(clock.now())}
+"""
+                        )
+                    }
+                    .map { columnPair<String, String>("email", "verification_code") }
+                    .exactlyOneOrNull()
+            } ?: return
+        Email.createForAddress(
+                toAddress = email,
+                fromAddress = emailEnv.sender(Language.fi),
+                emailMessageProvider.confirmationCode(HtmlSafe(confirmationCode)),
+                "${clock.today()}:${job.id}",
+            )
+            ?.also { emailClient.send(it) }
+        // try to set sent_at safely so we don't retry the entire job and send the e-mail again on
+        // failure
+        try {
+            dbc.transaction { it.markEmailVerificationSent(job.id, clock.now()) }
+        } catch (e: Exception) {
+            logger.error(e) { "Error marking email verification sent" }
+        }
+    }
+
+    fun sendPasswordChangedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendPasswordChangedEmail,
+    ) {
+        Email.create(
+                dbc,
+                job.personId,
+                NotificationCategory.TRANSACTIONAL,
+                fromAddress = emailEnv.sender(Language.fi),
+                content = emailMessageProvider.passwordChanged(),
+                traceId = "${clock.today()}:${job.personId}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendPasskeyAddedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendPasskeyAddedEmail,
+    ) {
+        Email.create(
+                dbc,
+                job.personId,
+                NotificationCategory.TRANSACTIONAL,
+                fromAddress = emailEnv.sender(Language.fi),
+                content = emailMessageProvider.passkeyAdded(),
+                traceId = "${clock.today()}:${job.personId}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendPasskeyRemovedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendPasskeyRemovedEmail,
+    ) {
+        Email.create(
+                dbc,
+                job.personId,
+                NotificationCategory.TRANSACTIONAL,
+                fromAddress = emailEnv.sender(Language.fi),
+                content = emailMessageProvider.passkeyRemoved(),
+                traceId = "${clock.today()}:${job.personId}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendWeakCredentialsRemovedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendWeakCredentialsRemovedEmail,
+    ) {
+        Email.create(
+                dbc,
+                job.personId,
+                NotificationCategory.TRANSACTIONAL,
+                fromAddress = emailEnv.sender(Language.fi),
+                content = emailMessageProvider.weakCredentialsRemoved(),
+                traceId = "${clock.today()}:${job.personId}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendEmailChangedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendEmailChangedEmail,
+    ) {
+        val (email, _) = dbc.read { it.getPersonEmails(job.personId) }
+        Email.createForAddress(
+                toAddress = job.oldEmail,
+                fromAddress = emailEnv.sender(Language.fi),
+                emailMessageProvider.emailChanged(email ?: ""),
+                "${clock.today()}:${job.oldEmail}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+}

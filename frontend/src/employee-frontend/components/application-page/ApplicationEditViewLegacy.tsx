@@ -20,7 +20,7 @@ import type {
 } from 'lib-common/generated/api-types/application'
 import type { Attachment } from 'lib-common/generated/api-types/attachment'
 import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/person'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import type { AttachmentId } from 'lib-common/generated/api-types/shared'

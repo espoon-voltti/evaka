@@ -6,11 +6,11 @@ package evaka.core.invoicing
 
 import evaka.core.children.getChildIdsByGuardians
 import evaka.core.children.getChildIdsByHeadsOfFamily
+import evaka.core.employee.getEmployeeWithRoles
 import evaka.core.invoicing.domain.DecisionIncome
 import evaka.core.invoicing.domain.Income
 import evaka.core.invoicing.domain.IncomeValue
 import evaka.core.invoicing.service.IncomeCoefficientMultiplierProvider
-import evaka.core.pis.getEmployeeWithRoles
 import evaka.core.shared.ChildId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.PersonId

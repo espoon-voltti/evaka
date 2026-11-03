@@ -10,7 +10,6 @@ import evaka.core.Sensitive
 import evaka.core.identity.ExternalId
 import evaka.core.invoicing.service.ProductKey
 import evaka.core.pairing.MobileDeviceDetails
-import evaka.core.pis.SystemController
 import evaka.core.shared.Id
 import evaka.core.shared.data.DateSet
 import evaka.core.shared.domain.DateRange
@@ -19,6 +18,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.TimeInterval
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.security.Action
+import evaka.core.user.SystemController
 import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate

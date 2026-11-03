@@ -5,21 +5,23 @@
 import { Queries } from 'lib-common/query'
 
 import {
-  deletePasskey,
   deleteWeakLoginCredentials,
-  finishPasskeyRegistration,
   getEmailVerificationStatus,
   getFamily,
   getNotificationSettings,
-  getPasskeys,
   getPasswordConstraints,
   sendEmailVerificationCode,
   updateNotificationSettings,
-  updatePasskeyName,
   updatePersonalData,
   updateWeakLoginCredentials,
   verifyEmail
-} from '../generated/api-clients/pis'
+} from '../generated/api-clients/person'
+import {
+  deletePasskey,
+  finishPasskeyRegistration,
+  getPasskeys,
+  updatePasskeyName
+} from '../generated/api-clients/user'
 
 const q = new Queries()
 

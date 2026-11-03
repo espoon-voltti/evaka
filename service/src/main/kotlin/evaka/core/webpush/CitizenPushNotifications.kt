@@ -5,7 +5,7 @@
 package evaka.core.webpush
 
 import evaka.core.EvakaEnv
-import evaka.core.pis.NotificationCategory
+import evaka.core.person.NotificationCategory
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob

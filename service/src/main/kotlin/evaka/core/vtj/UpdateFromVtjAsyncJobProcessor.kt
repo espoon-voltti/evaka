@@ -4,9 +4,9 @@
 
 package evaka.core.vtj
 
+import evaka.core.family.FridgeFamilyService
 import evaka.core.identity.Ssn
-import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.service.FridgeFamilyService
+import evaka.core.person.getPersonBySSN
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner

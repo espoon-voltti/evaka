@@ -6,7 +6,7 @@ package evaka.core.dailyservicetimes
 
 import evaka.core.FullApplicationTest
 import evaka.core.absence.getAbsencesOfChildByRange
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.reservations.DailyReservationRequest
 import evaka.core.reservations.ReservationControllerCitizen

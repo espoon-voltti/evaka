@@ -26,7 +26,7 @@ import type {
   InvoiceDaycare,
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/person'
 import type {
   ChildId,
   DaycareId,

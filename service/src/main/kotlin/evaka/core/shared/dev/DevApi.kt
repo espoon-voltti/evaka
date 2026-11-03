@@ -70,6 +70,8 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.emailclient.MessageThreadData
 import evaka.core.emailclient.MockEmailClient
+import evaka.core.employee.Employee
+import evaka.core.employee.getEmployees
 import evaka.core.finance.notes.createFinanceNote
 import evaka.core.holidayperiod.HolidayPeriodCreate
 import evaka.core.holidayperiod.QuestionnaireBody
@@ -130,10 +132,8 @@ import evaka.core.pairing.challengePairing
 import evaka.core.pairing.incrementAttempts
 import evaka.core.pairing.initPairing
 import evaka.core.pairing.respondPairingChallengeCreateDevice
-import evaka.core.pis.Employee
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.PersonDTO
-import evaka.core.pis.getEmployees
+import evaka.core.person.NotificationCategory
+import evaka.core.person.PersonDTO
 import evaka.core.placement.PlacementPlanService
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.PlacementType

@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
 import type { Action } from 'lib-common/generated/action'
-import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/family'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'

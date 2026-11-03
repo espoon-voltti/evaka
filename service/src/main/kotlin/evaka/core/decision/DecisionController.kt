@@ -10,7 +10,7 @@ import evaka.core.EvakaEnv
 import evaka.core.application.fetchApplicationDetails
 import evaka.core.application.getApplicationOtherGuardians
 import evaka.core.document.archival.validateArchivability
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.shared.DecisionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob

@@ -5,8 +5,8 @@
 package evaka.core.reports
 
 import evaka.core.FullApplicationTest
-import evaka.core.pis.deleteFosterParentRelationship
-import evaka.core.pis.deleteParentship
+import evaka.core.family.deleteFosterParentRelationship
+import evaka.core.family.deleteParentship
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare

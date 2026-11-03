@@ -6,13 +6,13 @@ package evaka.core.vtj
 
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
-import evaka.core.pis.PersonDTO
-import evaka.core.pis.applyDeathEffects
-import evaka.core.pis.getPersonById
-import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.getPersonIdsBySsns
-import evaka.core.pis.isMinor
-import evaka.core.pis.updatePersonSsnAddingDisabled
+import evaka.core.person.PersonDTO
+import evaka.core.person.applyDeathEffects
+import evaka.core.person.getPersonById
+import evaka.core.person.getPersonBySSN
+import evaka.core.person.getPersonIdsBySsns
+import evaka.core.person.isMinor
+import evaka.core.person.updatePersonSsnAddingDisabled
 import evaka.core.shared.ChildId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId

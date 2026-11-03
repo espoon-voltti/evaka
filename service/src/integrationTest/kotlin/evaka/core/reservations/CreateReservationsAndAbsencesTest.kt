@@ -18,7 +18,7 @@ import evaka.core.holidayperiod.QuestionnaireBody
 import evaka.core.holidayperiod.QuestionnaireConditions
 import evaka.core.holidayperiod.createOpenRangesQuestionnaire
 import evaka.core.holidayperiod.insertHolidayPeriod
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.auth.CitizenAuthLevel

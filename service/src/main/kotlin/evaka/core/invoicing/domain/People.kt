@@ -4,7 +4,7 @@
 
 package evaka.core.invoicing.domain
 
-import evaka.core.pis.HasDateOfBirth
+import evaka.core.family.HasDateOfBirth
 import evaka.core.shared.ChildId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.PersonId

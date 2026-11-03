@@ -7,7 +7,7 @@ package evaka.core.application
 import evaka.core.application.persistence.DatabaseForm
 import evaka.core.application.persistence.club.ClubFormV0
 import evaka.core.application.persistence.daycare.DaycareFormV0
-import evaka.core.pis.PersonDTO
+import evaka.core.person.PersonDTO
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ServiceNeedOptionId
 import java.time.LocalDate

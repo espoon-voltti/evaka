@@ -11,7 +11,7 @@ import evaka.core.invoicing.testFeeThresholds
 import evaka.core.messaging.createServiceWorkerMessageAccount
 import evaka.core.messaging.getCitizenMessageAccount
 import evaka.core.messaging.getUnreadMessagesCountsCitizen
-import evaka.core.pis.getPersonBySSN
+import evaka.core.person.getPersonBySSN
 import evaka.core.placement.PlacementType
 import evaka.core.shared.AreaId
 import evaka.core.shared.ChildId

@@ -13,7 +13,7 @@ import type {
   DaycareGroupResponse,
   DaycareResponse
 } from 'lib-common/generated/api-types/daycare'
-import type { Employee } from 'lib-common/generated/api-types/pis'
+import type { Employee } from 'lib-common/generated/api-types/employee'
 import type {
   DaycareAclRow,
   DaycareId,

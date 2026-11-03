@@ -12,8 +12,8 @@ import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.clubTerm2023
 import evaka.core.daycare.CareType
 import evaka.core.decision.getDecisionsByApplication
-import evaka.core.pis.service.blockGuardian
-import evaka.core.pis.updateFosterParentRelationshipValidity
+import evaka.core.family.updateFosterParentRelationshipValidity
+import evaka.core.person.blockGuardian
 import evaka.core.sficlient.MockSfiMessagesClient
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DaycareId

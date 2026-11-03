@@ -4,14 +4,14 @@
 
 package evaka.core.dvv
 
-import evaka.core.pis.Creator
-import evaka.core.pis.createParentship
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPartnersForPerson
-import evaka.core.pis.getPersonById
-import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.service.getChildGuardians
-import evaka.core.pis.service.getGuardianChildIds
+import evaka.core.family.Creator
+import evaka.core.family.createParentship
+import evaka.core.family.getParentships
+import evaka.core.family.getPartnersForPerson
+import evaka.core.person.getChildGuardians
+import evaka.core.person.getGuardianChildIds
+import evaka.core.person.getPersonById
+import evaka.core.person.getPersonBySSN
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.dev.DevFridgePartnership

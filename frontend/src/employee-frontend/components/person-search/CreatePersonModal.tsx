@@ -6,7 +6,7 @@ import { set } from 'lodash/fp'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
+import type { CreatePersonBody } from 'lib-common/generated/api-types/person'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'

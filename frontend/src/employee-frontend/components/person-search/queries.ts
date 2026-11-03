@@ -8,7 +8,7 @@ import {
   createPerson,
   getOrCreatePersonBySsn,
   previewVtjPerson
-} from '../../generated/api-clients/pis'
+} from '../../generated/api-clients/person'
 
 const q = new Queries()
 

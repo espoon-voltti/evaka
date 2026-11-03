@@ -6,7 +6,7 @@ package evaka.core.vtj
 
 import evaka.core.PureJdbiTest
 import evaka.core.identity.Ssn
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType

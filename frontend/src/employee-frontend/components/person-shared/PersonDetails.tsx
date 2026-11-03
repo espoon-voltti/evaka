@@ -16,7 +16,7 @@ import type { Action } from 'lib-common/generated/action'
 import type {
   PersonBasicInfo,
   PersonSensitiveDetails
-} from 'lib-common/generated/api-types/pis'
+} from 'lib-common/generated/api-types/person'
 import { isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
@@ -49,7 +49,7 @@ import {
   faSync
 } from 'lib-icons'
 
-import { getAddressPagePdf } from '../../generated/api-clients/pis'
+import { getAddressPagePdf } from '../../generated/api-clients/person'
 import { useTranslation } from '../../state/i18n'
 import type { UiState } from '../../state/ui'
 import { UIContext } from '../../state/ui'

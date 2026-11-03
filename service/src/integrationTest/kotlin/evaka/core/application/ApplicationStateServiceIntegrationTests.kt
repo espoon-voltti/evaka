@@ -38,8 +38,8 @@ import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.getSentDecisionsByApplication
 import evaka.core.decision.updateDecisionDrafts
 import evaka.core.emailclient.MockEmailClient
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPersonById
+import evaka.core.family.getParentships
+import evaka.core.person.getPersonById
 import evaka.core.placement.PlacementPlan
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanRejectReason

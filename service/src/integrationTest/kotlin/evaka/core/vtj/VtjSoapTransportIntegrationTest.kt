@@ -5,10 +5,10 @@
 package evaka.core.vtj
 
 import evaka.core.FullApplicationTest
+import evaka.core.employee.Employee
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.lookup
-import evaka.core.pis.Employee
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtj.VtjSoapTransport.RequestType

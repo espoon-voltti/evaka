@@ -13,7 +13,7 @@ import { array, object, validated, value } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
 import { optionalEmail } from 'lib-common/form/validators'
 import type { Daycare } from 'lib-common/generated/api-types/daycare'
-import type { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
+import type { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/employee'
 import type {
   EmployeeId,
   UserRole
