@@ -139,15 +139,6 @@ class MockDataServiceTest {
         assertEquals(3, parent.dependants.size)
     }
 
-    @Test
-    fun `nationalities come through`() {
-        val parent = mockDetailsService.fetchPerson(mapToQuery("070644-937X"))
-
-        val expectedNationality = Nationality("Suomi", "FIN")
-
-        assertEquals(listOf(expectedNationality), parent.nationalities)
-    }
-
     private fun fetchInFull(relatives: List<VtjRelative>) = relatives.map {
         mockDetailsService.fetchPerson(mapToQuery(it.ssn.value))
     }
@@ -287,8 +278,6 @@ class MockDataServiceTest {
                         "Karhula",
                         "070644-937X",
                         RestrictedDetails(enabled = false),
-                        nationalities =
-                            listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
                     ),
                     MockVtjPerson(
                         "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",

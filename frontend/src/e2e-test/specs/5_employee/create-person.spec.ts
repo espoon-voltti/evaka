@@ -80,7 +80,6 @@ test.describe('Create person', () => {
             postOfficeSe: null
           },
           dateOfDeath: null,
-          nationalities: [],
           nativeLanguage: null,
           residenceCode: null,
           municipalityOfResidence: null,

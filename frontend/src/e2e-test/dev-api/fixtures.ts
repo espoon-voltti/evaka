@@ -447,7 +447,6 @@ export class Fixture {
               postOfficeSe: person.postalCode || ''
             },
             dateOfDeath: person.dateOfDeath?.formatIso() ?? null,
-            nationalities: [],
             nativeLanguage: null,
             residenceCode:
               person.residenceCode ??

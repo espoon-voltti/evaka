@@ -109,7 +109,6 @@ fun Henkilo.mapToVtjPerson(): VtjPerson =
         firstNames = nykyisetEtunimet.etunimet,
         lastName = nykyinenSukunimi.sukunimi,
         ssn = Ssn.parse(henkilotunnus.value) ?: error("VTJ returned an invalid SSN"),
-        nationalities = mapNationalities(),
         residentialAddress = parseRegularAddress(vakinainenKotimainenLahiosoite),
         mailingAddressPeriods =
             kotimainenPostiosoite.mapNotNull { parseMailAddress(it) } +
@@ -142,17 +141,6 @@ private fun toRelative(
         lastName = lastName,
     )
 }
-
-/*
-   kansalaisuuskoodi3: "ISO 3166-1-koodiston mukainen kolminumeroinen valtionimeen liittyva tunnus.
-                       Muoto 3 numeroa tai voi olla tyhja."
-
-   kansalaisuusS:       "Valtion nimi selvakielisena (lyhyt muoto) 0-100 merkkia."
-*/
-fun Henkilo.mapNationalities() =
-    kansalaisuus
-        .filter { it.kansalaisuuskoodi3.isNotBlank() && it.kansalaisuusS.isNotBlank() }
-        .map { Nationality(countryName = it.kansalaisuusS, countryCode = it.kansalaisuuskoodi3) }
 
 fun Henkilo.mapDependants(): List<VtjRelative> =
     huollettava.filter { !it.henkilotunnus.isNullOrEmpty() }.map { it.mapToRelative() }
