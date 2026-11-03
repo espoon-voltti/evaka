@@ -4,19 +4,20 @@
 
 package evaka.core.vtjclient.dto
 
+import evaka.core.identity.Ssn
 import java.time.LocalDate
 
 data class VtjPerson(
     val firstNames: String,
     val lastName: String,
-    val socialSecurityNumber: String,
+    val ssn: Ssn,
     val residentialAddress: PersonAddress? = null,
     val mailingAddressPeriods: List<MailingAddressPeriod> = emptyList(),
-    var nationalities: List<Nationality> = emptyList(),
-    var nativeLanguage: NativeLanguage? = null,
-    var restrictedDetails: RestrictedDetails?,
-    var dateOfDeath: LocalDate? = null,
-    var residenceCode: String? = null,
+    val nationalities: List<Nationality> = emptyList(),
+    val nativeLanguage: NativeLanguage? = null,
+    val restrictedDetails: RestrictedDetails?,
+    val dateOfDeath: LocalDate? = null,
+    val residenceCode: String? = null,
     val municipalityOfResidence: String? = null,
     val municipalityOfResidenceSe: String? = null,
 )

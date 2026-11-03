@@ -5,6 +5,7 @@
 package evaka.core.pis.dao
 
 import evaka.core.PureJdbiTest
+import evaka.core.identity.Ssn
 import evaka.core.pis.PersonDTO
 import evaka.core.pis.applyPerson
 import evaka.core.pis.getPersonById
@@ -448,7 +449,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         VtjPerson(
             firstNames = "Matti Yrjö Jari-Ville",
             lastName = "O'Brien",
-            socialSecurityNumber = validSSN,
+            ssn = Ssn.from(validSSN),
             nativeLanguage = NativeLanguage(code = "fi"),
             nationalities =
                 listOf(Nationality(countryCode = "248"), Nationality(countryCode = "060")),

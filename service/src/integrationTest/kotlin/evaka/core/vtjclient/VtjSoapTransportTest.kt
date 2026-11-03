@@ -161,7 +161,7 @@ class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
         with(result) {
             assertThat(firstNames).isEqualTo("Minja Zavutina")
             assertThat(lastName).isEqualTo("Popov")
-            assertThat(socialSecurityNumber).isEqualTo("311211A9527")
+            assertThat(ssn.value).isEqualTo("311211A9527")
         }
         assertThat(response.mapGuardians().map { it.ssn.value })
             .containsExactlyInAnyOrder("010181-9533", "020190-9521")
@@ -224,7 +224,7 @@ private val annaPopov =
     VtjPerson(
         firstNames = "Anna Alexandra",
         lastName = "Popov",
-        socialSecurityNumber = "020190-9521",
+        ssn = Ssn.from("020190-9521"),
         nativeLanguage = NativeLanguage("viro, eesti", "et"),
         residentialAddress =
             PersonAddress(

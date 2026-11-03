@@ -34,7 +34,7 @@ class VtjHenkiloMapperTest {
             Henkilo().apply {
                 nykyisetEtunimet = NykyisetEtunimet().apply { etunimet = "Heikki Jaska" }
                 nykyinenSukunimi = NykyinenSukunimi().apply { sukunimi = "Heikinheimo" }
-                henkilotunnus = Henkilo.Henkilotunnus().apply { value = "33221A312Z" }
+                henkilotunnus = Henkilo.Henkilotunnus().apply { value = "070644-937X" }
                 kansalaisuus.clear()
                 kansalaisuus.add(
                     Kansalaisuus().apply {

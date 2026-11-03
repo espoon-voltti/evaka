@@ -116,7 +116,7 @@ fun Henkilo.mapToVtjPerson(): VtjPerson =
     VtjPerson(
         firstNames = nykyisetEtunimet.etunimet,
         lastName = nykyinenSukunimi.sukunimi,
-        socialSecurityNumber = henkilotunnus.value,
+        ssn = Ssn.parse(henkilotunnus.value) ?: error("VTJ returned an invalid SSN"),
         nationalities = mapNationalities(),
         residentialAddress = parseRegularAddress(vakinainenKotimainenLahiosoite),
         mailingAddressPeriods =

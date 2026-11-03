@@ -36,7 +36,7 @@ class DummyIdpVtjPersonTest {
     @Test
     fun `a person keeps the basic details`() {
         val result = child.toVtjPerson()
-        assertEquals("050120A910J", result.socialSecurityNumber)
+        assertEquals("050120A910J", result.ssn.value)
         assertEquals("Kotikatu 1", result.residentialAddress?.streetAddress)
     }
 }

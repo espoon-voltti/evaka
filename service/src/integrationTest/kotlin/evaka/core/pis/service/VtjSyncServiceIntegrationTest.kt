@@ -235,7 +235,7 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 VtjPerson(
                     firstNames = "Johannes",
                     lastName = "Karhula",
-                    socialSecurityNumber = "010199-8137",
+                    ssn = Ssn.from("010199-8137"),
                     restrictedDetails = null,
                 )
 

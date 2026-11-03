@@ -138,7 +138,7 @@ private fun DevPerson.toFullVtjPerson() =
     VtjPerson(
         firstNames = firstName,
         lastName = lastName,
-        socialSecurityNumber = ssn!!,
+        ssn = Ssn.from(ssn!!),
         residentialAddress = PersonAddress(streetAddress, postalCode, postOffice),
         nativeLanguage = language?.let { NativeLanguage(code = it) },
         nationalities = nationalities.map { Nationality(countryName = it, countryCode = it) },

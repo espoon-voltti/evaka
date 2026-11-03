@@ -151,7 +151,7 @@ class VtjSyncService(
             }
         }
         val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
-        if (vtjPerson.socialSecurityNumber != ssn.value) {
+        if (vtjPerson.ssn != ssn) {
             throw BadRequest("VTJ returned a different SSN than the one being added")
         }
         val person = dbc.transaction { tx ->
@@ -171,10 +171,10 @@ class VtjSyncService(
     fun previewPerson(requestingUserId: EvakaUserId, ssn: Ssn): VtjPersonPreview {
         val person = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
         return VtjPersonPreview(
-            socialSecurityNumber = person.socialSecurityNumber,
+            socialSecurityNumber = person.ssn.value,
             firstName = person.firstNames,
             lastName = person.lastName,
-            dateOfBirth = getDobFromSsn(person.socialSecurityNumber),
+            dateOfBirth = getDobFromSsn(person.ssn.value),
             streetAddress = person.residentialAddress?.streetAddress ?: "",
             restrictedDetailsEnabled = person.restrictedDetails?.enabled ?: false,
         )
@@ -238,7 +238,7 @@ class VtjSyncService(
         clearDependantsSynced: Boolean,
     ): PersonDTO {
         val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
-        if (vtjPerson.socialSecurityNumber != ssn.value) {
+        if (vtjPerson.ssn != ssn) {
             throw BadRequest("VTJ returned a different SSN than the requested one")
         }
         return dbc.transaction { tx ->

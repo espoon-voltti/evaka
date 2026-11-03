@@ -42,7 +42,7 @@ data class MockVtjPerson(
         VtjPerson(
             firstNames = firstNames,
             lastName = lastName,
-            socialSecurityNumber = socialSecurityNumber,
+            ssn = Ssn.from(socialSecurityNumber),
             restrictedDetails = restrictedDetails,
             residentialAddress = residentialAddress,
             mailingAddressPeriods = mailingAddressPeriods,
@@ -54,7 +54,7 @@ data class MockVtjPerson(
         )
 
     fun toVtjRelative(): VtjRelative {
-        val ssn = checkNotNull(Ssn.parse(socialSecurityNumber)) { "Invalid mock VTJ SSN" }
+        val ssn = Ssn.from(socialSecurityNumber)
         return VtjRelative(
             ssn = ssn,
             dateOfBirth = getDobFromSsn(ssn.value),
