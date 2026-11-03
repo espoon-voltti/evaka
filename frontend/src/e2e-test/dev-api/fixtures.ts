@@ -384,7 +384,6 @@ export class Fixture {
       preferredName: '',
       lastName: `lastName_${id}`,
       language: null,
-      nationalities: [],
       phone: '123456789',
       backupPhone: '',
       postalCode,
@@ -2486,7 +2485,6 @@ export const testAdult = Fixture.person({
   streetAddress: 'Kamreerintie 1',
   postalCode: '00340',
   postOffice: 'Espoo',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2504,7 +2502,6 @@ export const testChild = Fixture.person({
   streetAddress: testAdult.streetAddress,
   postalCode: testAdult.postalCode,
   postOffice: testAdult.postOffice,
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2521,7 +2518,6 @@ export const testChild2 = Fixture.person({
   streetAddress: testAdult.streetAddress,
   postalCode: testAdult.postalCode,
   postOffice: testAdult.postOffice,
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2538,7 +2534,6 @@ export const testChildRestricted = Fixture.person({
   streetAddress: '',
   postalCode: '',
   postOffice: '',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: true,
   restrictedDetailsEndDate: null
 })
@@ -2555,7 +2550,6 @@ export const testAdult2 = Fixture.person({
   streetAddress: 'Toistie 33',
   postalCode: '02230',
   postOffice: 'Espoo',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2573,7 +2567,6 @@ export const testChildDeceased = Fixture.person({
   streetAddress: 'Aapiskatu 1',
   postalCode: '00340',
   postOffice: 'Espoo',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2590,7 +2583,6 @@ export const testChildNoSsn = Fixture.person({
   streetAddress: 'Suosiellä 1',
   postalCode: '00340',
   postOffice: 'Espoo',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2608,7 +2600,6 @@ const twoGuardiansGuardian1 = Fixture.person({
   postalCode: '02100',
   postOffice: 'Espoo',
   residenceCode: 'twoGuardiansSameAddressResidenceCode',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2625,7 +2616,6 @@ const twoGuardiansGuardian2 = Fixture.person({
   postalCode: '02100',
   postOffice: 'Espoo',
   residenceCode: 'twoGuardiansSameAddressResidenceCode',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2642,7 +2632,6 @@ const twoGuardiansChildren = [
     streetAddress: 'Kamreerintie 4',
     postalCode: '02100',
     postOffice: 'Espoo',
-    nationalities: ['FI'],
     restrictedDetailsEnabled: false,
     restrictedDetailsEndDate: null
   })
@@ -2703,7 +2692,6 @@ const restrictedDetailsGuardian = Fixture.person({
   streetAddress: '',
   postalCode: '',
   postOffice: '',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: true,
   restrictedDetailsEndDate: null
 })
@@ -2720,7 +2708,6 @@ const guardian2WithNoRestrictions = Fixture.person({
   streetAddress: 'Westendinkatu 3',
   postalCode: '02100',
   postOffice: 'Espoo',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2757,7 +2744,6 @@ const deadGuardian = Fixture.person({
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
   postOffice: 'Espoo',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2790,7 +2776,6 @@ export const testChildZeroYearOld = Fixture.person({
   streetAddress: 'Kamreerintie 2',
   postalCode: '00370',
   postOffice: 'Espoo',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 })
@@ -2807,7 +2792,6 @@ export const testAdultRestricted = Fixture.person({
   streetAddress: '',
   postalCode: '',
   postOffice: '',
-  nationalities: ['FI'],
   restrictedDetailsEnabled: true,
   restrictedDetailsEndDate: null
 })

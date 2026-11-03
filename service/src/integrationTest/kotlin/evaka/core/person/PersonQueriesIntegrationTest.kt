@@ -49,7 +49,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 firstName = "dfhjcn",
                 lastName = "bvxdafs",
                 language = "sv",
-                nationalities = listOf("087"),
                 streetAddress = "Muutie 8",
                 postalCode = "00001",
                 postOffice = "Muula",
@@ -70,7 +69,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(updated.email, actual.email)
         assertEquals(updated.phone, actual.phone)
         assertEquals(updated.language, actual.language)
-        assertEquals(updated.nationalities, actual.nationalities)
 
         assertEquals(updated.streetAddress, actual.streetAddress)
         assertEquals(updated.postalCode, actual.postalCode)

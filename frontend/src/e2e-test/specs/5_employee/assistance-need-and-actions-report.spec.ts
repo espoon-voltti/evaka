@@ -961,7 +961,6 @@ test.describe('Assistance need and actions report', () => {
       streetAddress: 'Kamreerintie 4',
       postalCode: '02100',
       postOffice: 'Espoo',
-      nationalities: ['FI'],
       restrictedDetailsEnabled: false,
       restrictedDetailsEndDate: null
     }).saveChild()
