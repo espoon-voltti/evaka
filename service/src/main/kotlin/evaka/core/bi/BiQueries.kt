@@ -23,7 +23,7 @@ object BiQueries {
         csvQuery<BiPerson> { _ ->
             sql(
                 """
-            SELECT id, social_security_number, first_name, last_name, email, aad_object_id, language, date_of_birth, created::text, updated::text, street_address, postal_code, post_office, nationalities, restricted_details_enabled, restricted_details_end_date, phone, updated_from_vtj::text, invoicing_street_address, invoicing_postal_code, invoicing_post_office, invoice_recipient_name, date_of_death, residence_code, force_manual_fee_decisions, backup_phone, last_login::text, oph_person_oid, vtj_guardians_queried::text, vtj_dependants_queried::text, ssn_adding_disabled, preferred_name, duplicate_of, NULL AS enabled_email_types
+            SELECT id, social_security_number, first_name, last_name, email, aad_object_id, language, date_of_birth, created::text, updated::text, street_address, postal_code, post_office, '{}'::text[] AS nationalities, restricted_details_enabled, restricted_details_end_date, phone, updated_from_vtj::text, invoicing_street_address, invoicing_postal_code, invoicing_post_office, invoice_recipient_name, date_of_death, residence_code, force_manual_fee_decisions, backup_phone, last_login::text, oph_person_oid, vtj_guardians_queried::text, vtj_dependants_queried::text, ssn_adding_disabled, preferred_name, duplicate_of, NULL AS enabled_email_types
             FROM person
             """
             )

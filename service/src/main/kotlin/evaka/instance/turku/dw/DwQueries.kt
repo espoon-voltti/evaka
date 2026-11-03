@@ -109,7 +109,7 @@ object DwQueries {
                     child.street_address                        AS postiosoite,
                     child.postal_code                           AS postinumero,
                     child.post_office                           AS postitoimipaikka,
-                    child.nationalities                         AS kansalaisuudet
+                    '{}'::text[]                                AS kansalaisuudet
                 FROM (
                     SELECT
                         p.id,
@@ -118,8 +118,7 @@ object DwQueries {
                         p.language,
                         p.street_address,
                         p.postal_code,
-                        p.post_office,
-                        p.nationalities
+                        p.post_office
                     FROM person p
                         JOIN placement pl ON pl.child_id = p.id
                             AND pl.end_date >= current_date::DATE - INTERVAL '3 years'
@@ -146,8 +145,7 @@ object DwQueries {
                         p.language,
                         p.street_address,
                         p.postal_code,
-                        p.post_office,
-                        p.nationalities
+                        p.post_office
                     FROM fee_decision fd
                         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
                         JOIN person p on fdc.child_id = p.id
@@ -164,8 +162,7 @@ object DwQueries {
                         p.language,
                         p.street_address,
                         p.postal_code,
-                        p.post_office,
-                        p.nationalities
+                        p.post_office
                     FROM voucher_value_decision vvd
                         JOIN person p on vvd.child_id = p.id
                         JOIN daycare d ON vvd.placement_unit_id = d.id
@@ -227,7 +224,7 @@ object DwQueries {
                     p.street_address                        AS postiosoite,
                     p.postal_code                           AS postinumero,
                     p.post_office                           AS postitoimipaikka,
-                    p.nationalities                         AS kansalaisuudet,
+                    '{}'::text[]                            AS kansalaisuudet,
                     pl.type                                 AS sijoitustyyppi,
                     pl.unit_id                              AS sijoitusyksikkö_id,
                     pl.start_date                           AS sijoituksen_aloitus_pvm,
