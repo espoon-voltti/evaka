@@ -34,7 +34,7 @@ import evaka.core.shared.security.actionrule.ActionRuleMapping
 import evaka.core.shared.sftp.SftpClient
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
-import evaka.core.vtjclient.config.httpsMessageSender
+import evaka.core.vtj.httpsMessageSender
 import evaka.instance.espoo.DefaultPasswordSpecification
 import evaka.instance.turku.database.DevDataInitializer
 import evaka.instance.turku.dw.DwExportClient

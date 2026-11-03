@@ -9,7 +9,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.dev.resetDatabase
 import evaka.core.shared.dev.runSqlScripts
 import evaka.core.shared.noopTracer
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import org.jdbi.v3.core.Jdbi

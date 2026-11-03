@@ -18,7 +18,6 @@ import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.service.FridgeFamilyService
-import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.getBlockedGuardians
 import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.serviceneed.getServiceNeedOptions
@@ -36,6 +35,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.vtj.VtjSyncService
 import java.io.InputStream
 import java.time.LocalDate
 import java.util.UUID

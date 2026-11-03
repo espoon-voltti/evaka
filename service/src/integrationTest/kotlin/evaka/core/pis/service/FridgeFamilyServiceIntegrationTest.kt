@@ -23,10 +23,12 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
-import evaka.core.vtjclient.service.persondetails.SoapVtjClient
-import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
-import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
+import evaka.core.vtj.MockVtjClient
+import evaka.core.vtj.MockVtjSoapTransport
+import evaka.core.vtj.SoapVtjClient
+import evaka.core.vtj.VtjSoapTransport
+import evaka.core.vtj.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
+import evaka.core.vtj.VtjSyncService
 import java.time.LocalDateTime
 import kotlin.test.assertContains
 import kotlin.test.assertEquals

@@ -44,8 +44,6 @@ import evaka.core.pis.cleanUpInactivePeople
 import evaka.core.pis.deactivateInactiveEmployees
 import evaka.core.pis.deleteExpiredEmailVerifications
 import evaka.core.pis.deleteNeverLoggedInSsnEmployees
-import evaka.core.pis.service.VtjSyncService
-import evaka.core.pis.updateMailingAddressesFromPeriods
 import evaka.core.reports.freezeVoucherValueReportRows
 import evaka.core.reservations.MissingHolidayReservationsReminders
 import evaka.core.reservations.MissingReservationsReminders
@@ -67,6 +65,8 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.titania.cleanTitaniaErrors
 import evaka.core.varda.VardaUpdateService
 import evaka.core.varda.freezeVardaSync
+import evaka.core.vtj.VtjSyncService
+import evaka.core.vtj.updateMailingAddressesFromPeriods
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.opentelemetry.api.trace.Tracer
 import java.nio.file.Path

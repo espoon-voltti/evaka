@@ -9,7 +9,6 @@ import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getFosterParents
 import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
-import evaka.core.pis.isDependantSyncPerson
 import evaka.core.pis.isMinor
 import evaka.core.pis.personIsHeadOfFamily
 import evaka.core.pis.personsLiveInTheSameAddress
@@ -18,6 +17,8 @@ import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.vtj.VtjSyncService
+import evaka.core.vtj.isDependantSyncPerson
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service

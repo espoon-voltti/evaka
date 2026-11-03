@@ -39,7 +39,7 @@ import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.security.actionrule.AccessControlFilter
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID

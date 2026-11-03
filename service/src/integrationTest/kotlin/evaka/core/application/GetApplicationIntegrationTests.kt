@@ -36,7 +36,7 @@ import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.job.ScheduledJobs
 import evaka.core.toDaycareFormAdult
 import evaka.core.toDaycareFormChild
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID

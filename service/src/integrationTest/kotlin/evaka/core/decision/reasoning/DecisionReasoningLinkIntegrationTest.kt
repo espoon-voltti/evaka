@@ -53,7 +53,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.security.actionrule.AccessControlFilter
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals

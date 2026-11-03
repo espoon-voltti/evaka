@@ -23,7 +23,6 @@ import evaka.core.pis.controllers.CreatePersonBody
 import evaka.core.pis.createPerson
 import evaka.core.pis.getDependantGuardians
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.VtjSyncService
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanDetails
 import evaka.core.placement.PlacementPlanDraft
@@ -51,6 +50,7 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.utils.letIf
+import evaka.core.vtj.VtjSyncService
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

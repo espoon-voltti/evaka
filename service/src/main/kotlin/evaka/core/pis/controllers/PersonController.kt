@@ -26,8 +26,6 @@ import evaka.core.pis.patchUserDetails
 import evaka.core.pis.searchPeople
 import evaka.core.pis.service.FridgeFamilyService
 import evaka.core.pis.service.MergeService
-import evaka.core.pis.service.VtjPersonPreview
-import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.pis.service.getBlockedGuardians
 import evaka.core.pis.service.unblockGuardian
@@ -41,6 +39,8 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.utils.EMAIL_PATTERN
+import evaka.core.vtj.VtjPersonPreview
+import evaka.core.vtj.VtjSyncService
 import java.time.LocalDate
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.ContentDisposition

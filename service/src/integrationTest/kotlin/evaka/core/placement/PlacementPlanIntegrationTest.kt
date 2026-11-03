@@ -39,7 +39,7 @@ import evaka.core.test.getPlacementPlanRowByApplication
 import evaka.core.toApplicationType
 import evaka.core.toDaycareFormAdult
 import evaka.core.toDaycareFormChild
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID

@@ -25,7 +25,7 @@ import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals

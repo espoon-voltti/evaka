@@ -34,7 +34,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.security.Action.Citizen
 import evaka.core.test.getApplicationStatus
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.Test

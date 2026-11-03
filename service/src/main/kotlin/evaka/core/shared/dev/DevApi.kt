@@ -134,7 +134,6 @@ import evaka.core.pis.Employee
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.PersonDTO
 import evaka.core.pis.getEmployees
-import evaka.core.pis.service.VtjSyncService
 import evaka.core.placement.PlacementPlanService
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.PlacementType
@@ -177,7 +176,8 @@ import evaka.core.user.EvakaUser
 import evaka.core.user.EvakaUserType
 import evaka.core.user.updateLastStrongLogin
 import evaka.core.user.updateWeakLoginCredentials
-import evaka.core.vtjclient.service.persondetails.DummyIdpVtjClient
+import evaka.core.vtj.DummyIdpVtjClient
+import evaka.core.vtj.VtjSyncService
 import evaka.core.webpush.PushNotificationCategory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal

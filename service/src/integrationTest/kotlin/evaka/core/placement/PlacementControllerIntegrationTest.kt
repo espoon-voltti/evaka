@@ -8,7 +8,6 @@ import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.absence.getAbsencesOfChildByRange
 import evaka.core.backupcare.getBackupCaresForChild
-import evaka.core.pis.service.VtjSyncService
 import evaka.core.reservations.DailyReservationRequest
 import evaka.core.reservations.createReservationsAndAbsences
 import evaka.core.reservations.getReservationsForChildInRange
@@ -52,6 +51,7 @@ import evaka.core.shared.security.actionrule.ActionRuleMapping
 import evaka.core.shared.security.actionrule.DefaultActionRuleMapping
 import evaka.core.shared.security.actionrule.ScopedActionRule
 import evaka.core.shared.security.actionrule.UnscopedActionRule
+import evaka.core.vtj.VtjSyncService
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID

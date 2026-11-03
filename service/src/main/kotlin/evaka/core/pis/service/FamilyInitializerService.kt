@@ -29,6 +29,7 @@ import evaka.core.shared.db.psqlCause
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.vtj.VtjSyncService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLState

@@ -25,7 +25,7 @@ import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

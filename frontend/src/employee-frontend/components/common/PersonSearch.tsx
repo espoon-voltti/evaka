@@ -6,11 +6,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
-import type {
-  PersonSummary,
-  VtjPersonPreview
-} from 'lib-common/generated/api-types/pis'
+import type { PersonSummary } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { VtjPersonPreview } from 'lib-common/generated/api-types/vtj'
 import { tryFromUuid } from 'lib-common/id-type'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'

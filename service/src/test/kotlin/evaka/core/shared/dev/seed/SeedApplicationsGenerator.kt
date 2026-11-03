@@ -44,8 +44,8 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertApplication
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.OfficialLanguage
-import evaka.core.vtjclient.service.persondetails.MockVtjDataset
-import evaka.core.vtjclient.service.persondetails.MockVtjPerson
+import evaka.core.vtj.MockVtjDataset
+import evaka.core.vtj.MockVtjPerson
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime

@@ -14,7 +14,6 @@ import evaka.core.holidayperiod.QuestionnaireType
 import evaka.core.identity.ExternalId
 import evaka.core.identity.Ssn
 import evaka.core.pairing.*
-import evaka.core.pis.service.VtjSyncService
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.MobileDeviceId
@@ -29,6 +28,7 @@ import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.*
 import evaka.core.user.*
+import evaka.core.vtj.VtjSyncService
 import evaka.core.webpush.WebPush
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging

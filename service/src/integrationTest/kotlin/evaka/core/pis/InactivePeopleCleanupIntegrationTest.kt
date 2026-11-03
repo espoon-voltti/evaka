@@ -27,8 +27,6 @@ import evaka.core.messaging.insertMessageContent
 import evaka.core.messaging.insertRecipients
 import evaka.core.messaging.insertThread
 import evaka.core.messaging.upsertEmployeeMessageAccount
-import evaka.core.pis.service.MockVtjSoapTransport
-import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.pis.service.deleteGuardianRelationship
 import evaka.core.pis.service.insertGuardian
@@ -58,7 +56,9 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
-import evaka.core.vtjclient.service.persondetails.SoapVtjClient
+import evaka.core.vtj.MockVtjSoapTransport
+import evaka.core.vtj.SoapVtjClient
+import evaka.core.vtj.VtjSyncService
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID

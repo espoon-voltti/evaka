@@ -7,7 +7,6 @@ package evaka.core.pis.dao
 import evaka.core.PureJdbiTest
 import evaka.core.identity.Ssn
 import evaka.core.pis.PersonDTO
-import evaka.core.pis.applyPerson
 import evaka.core.pis.getPersonById
 import evaka.core.pis.searchPeople
 import evaka.core.pis.updatePersonFromVtj
@@ -19,11 +18,12 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.vtjclient.dto.Nationality
-import evaka.core.vtjclient.dto.NativeLanguage
-import evaka.core.vtjclient.dto.PersonAddress
-import evaka.core.vtjclient.dto.RestrictedDetails
-import evaka.core.vtjclient.dto.VtjPerson
+import evaka.core.vtj.Nationality
+import evaka.core.vtj.NativeLanguage
+import evaka.core.vtj.PersonAddress
+import evaka.core.vtj.RestrictedDetails
+import evaka.core.vtj.VtjPerson
+import evaka.core.vtj.applyPerson
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID

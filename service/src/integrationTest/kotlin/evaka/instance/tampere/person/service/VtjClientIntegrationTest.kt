@@ -13,7 +13,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.verify
 import evaka.core.identity.Ssn
 import evaka.core.shared.auth.AuthenticatedUser
-import evaka.core.vtjclient.service.persondetails.VtjClient
+import evaka.core.vtj.VtjClient
 import evaka.instance.tampere.AbstractTampereIntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

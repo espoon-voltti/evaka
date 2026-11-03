@@ -29,7 +29,7 @@ import evaka.core.user.CitizenPasskey
 import evaka.core.user.DeviceClass
 import evaka.core.user.getCitizenPasskeys
 import evaka.core.user.updateLastStrongLogin
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import kotlin.test.assertContains

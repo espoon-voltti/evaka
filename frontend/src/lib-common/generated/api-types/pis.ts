@@ -803,18 +803,6 @@ export interface UpsertEmployeeDaycareRolesRequest {
 }
 
 /**
-* Generated from evaka.core.pis.service.VtjPersonPreview
-*/
-export interface VtjPersonPreview {
-  dateOfBirth: LocalDate
-  firstName: string
-  lastName: string
-  restrictedDetailsEnabled: boolean
-  socialSecurityNumber: string
-  streetAddress: string
-}
-
-/**
 * Generated from evaka.core.pis.controllers.VtjPersonPreviewRequest
 */
 export interface VtjPersonPreviewRequest {
@@ -1074,13 +1062,5 @@ export function deserializeJsonUpsertEmployeeDaycareRolesRequest(json: JsonOf<Up
     ...json,
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     startDate: LocalDate.parseIso(json.startDate)
-  }
-}
-
-
-export function deserializeJsonVtjPersonPreview(json: JsonOf<VtjPersonPreview>): VtjPersonPreview {
-  return {
-    ...json,
-    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
   }
 }

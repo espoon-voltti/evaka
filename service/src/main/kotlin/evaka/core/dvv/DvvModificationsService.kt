@@ -10,7 +10,6 @@ import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.getPersonIdsBySsns
 import evaka.core.pis.lockPersonBySSN
-import evaka.core.pis.replaceAddressPeriods
 import evaka.core.pis.updatePersonFromVtj
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
@@ -18,6 +17,7 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.vtj.replaceAddressPeriods
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 

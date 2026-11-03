@@ -53,7 +53,7 @@ import evaka.core.shared.sftp.SftpClient
 import evaka.core.shared.template.EvakaTemplateProvider
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
-import evaka.core.vtjclient.config.httpsMessageSender
+import evaka.core.vtj.httpsMessageSender
 import evaka.instance.espoo.archival.SärmäChildDocumentClient
 import evaka.instance.espoo.archival.SärmäHttpClient
 import evaka.instance.espoo.archival.SärmäMockClient

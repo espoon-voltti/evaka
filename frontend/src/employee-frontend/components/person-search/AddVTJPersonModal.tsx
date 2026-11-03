@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
 import { Loading } from 'lib-common/api'
-import type { VtjPersonPreview } from 'lib-common/generated/api-types/pis'
+import type { VtjPersonPreview } from 'lib-common/generated/api-types/vtj'
 import { useMutationResult } from 'lib-common/query'
 import InputField from 'lib-components/atoms/form/InputField'
 import Spinner from 'lib-components/atoms/state/Spinner'

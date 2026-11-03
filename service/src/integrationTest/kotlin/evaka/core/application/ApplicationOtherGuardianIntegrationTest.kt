@@ -40,7 +40,7 @@ import evaka.core.shared.security.actionrule.AccessControlFilter
 import evaka.core.test.getApplicationStatus
 import evaka.core.toDaycareFormAdult
 import evaka.core.toDaycareFormChild
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
