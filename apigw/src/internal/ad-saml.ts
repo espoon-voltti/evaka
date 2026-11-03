@@ -38,7 +38,8 @@ export function createSamlAdIntegration(
     userIdKey: string
     saml: EvakaSamlConfig
   },
-  redisClient: RedisClient
+  redisClient: RedisClient,
+  employeeCookieSecret: string
 ) {
   const authenticate = authenticateProfile(
     Profile,
@@ -74,6 +75,7 @@ export function createSamlAdIntegration(
       )
     ),
     authenticate,
-    defaultPageUrl: '/employee'
+    defaultPageUrl: '/employee',
+    nonceCookieSecret: employeeCookieSecret
   })
 }
