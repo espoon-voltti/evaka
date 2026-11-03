@@ -16,7 +16,7 @@ import evaka.core.decision.DecisionUnit
 import evaka.core.decision.createDecisionPdf
 import evaka.core.identity.Ssn
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.setting.SettingType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
@@ -189,7 +189,7 @@ private fun validDecisionUnit(providerType: ProviderType, lang: OfficialLanguage
     )
 
 private fun validChild() =
-    PersonDTO(
+    Person(
         PersonId(UUID.randomUUID()),
         duplicateOf = null,
         Ssn.parse("010115A9532"),

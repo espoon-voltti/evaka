@@ -6,7 +6,7 @@ package evaka.core.family
 
 import evaka.core.PureJdbiTest
 import evaka.core.identity.getDobFromSsn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.getPersonById
 import evaka.core.shared.ChildId
 import evaka.core.shared.PartnershipId
@@ -374,7 +374,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         endDate: LocalDate,
     ) = db.transaction { it.createParentship(childId, parentId, startDate, endDate, Creator.DVV) }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO {
+    private fun createPerson(ssn: String, firstName: String): Person {
         return db.transaction { tx ->
             tx.insert(
                     DevPerson(

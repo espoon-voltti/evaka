@@ -225,7 +225,7 @@ class PersonController(
                                 if (fetchBlockedGuardians)
                                     tx.getBlockedGuardians(personId)
                                         .mapNotNull { tx.getPersonById(it) }
-                                        .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
+                                        .map(PersonJSON::from)
                                         .also { blocked -> audit.add(blocked.map { it.id }) }
                                 else null,
                         )

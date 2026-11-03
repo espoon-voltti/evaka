@@ -16,7 +16,7 @@ import evaka.core.document.childdocument.ChildDocumentDetails
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.s3.Document
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.FeatureConfig
@@ -43,7 +43,7 @@ class RegionalTwebArchivalClient(
 
     override fun uploadDecisionToArchive(
         caseProcess: CaseProcess,
-        child: PersonDTO,
+        child: Person,
         decision: Decision,
         document: Document,
         user: EvakaUser,
@@ -79,7 +79,7 @@ class RegionalTwebArchivalClient(
     override fun uploadChildDocumentToArchive(
         documentId: ChildDocumentId,
         caseProcess: CaseProcess?,
-        childInfo: PersonDTO,
+        childInfo: Person,
         childDocumentDetails: ChildDocumentDetails,
         documentMetadata: DocumentMetadata,
         documentContent: Document,
@@ -175,7 +175,7 @@ internal fun hofTitle(type: String, status: String, owner: PersonDetailed): Stri
         )
         .joinToString(SEPARATOR_CHARACTER)
 
-internal fun childTitle(type: String, status: String, owner: PersonDTO): String =
+internal fun childTitle(type: String, status: String, owner: Person): String =
     listOf(
             type,
             status,

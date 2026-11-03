@@ -6,7 +6,7 @@ package evaka.core.vtj
 
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.applyDeathEffects
 import evaka.core.person.getPersonById
 import evaka.core.person.getPersonBySSN
@@ -131,7 +131,7 @@ class VtjSyncService(
         clock: EvakaClock,
         personId: PersonId,
         ssn: Ssn,
-    ): PersonDTO {
+    ): Person {
         dbc.read { tx ->
             val person = tx.getPersonById(personId) ?: throw NotFound("Person $personId not found")
             if (person.ssn != null) throw BadRequest("User already has ssn")
@@ -211,7 +211,7 @@ class VtjSyncService(
         tx: Database.Transaction,
         now: HelsinkiDateTime,
         person: VtjPerson,
-    ): PersonDTO {
+    ): Person {
         val result = tx.applyPerson(person, now)
         if (result.newDateOfDeath != null) {
             tx.applyDeathEffects(asyncJobRunner, now, result.id, result.newDateOfDeath)
@@ -225,7 +225,7 @@ class VtjSyncService(
         clock: EvakaClock,
         ssn: Ssn,
         clearDependantsSynced: Boolean,
-    ): PersonDTO {
+    ): Person {
         val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
         if (vtjPerson.ssn != ssn) {
             throw BadRequest("VTJ returned a different SSN than the requested one")
@@ -288,7 +288,7 @@ class VtjSyncService(
     }
 }
 
-data class GetOrCreateResult(val person: PersonDTO, val created: Boolean)
+data class GetOrCreateResult(val person: Person, val created: Boolean)
 
 data class VtjPersonPreview(
     val socialSecurityNumber: String,

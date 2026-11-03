@@ -6,7 +6,7 @@ package evaka.core.family
 
 import evaka.core.FullApplicationTest
 import evaka.core.identity.getDobFromSsn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.getPersonById
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
@@ -59,7 +59,7 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO {
+    private fun createPerson(ssn: String, firstName: String): Person {
         return db.transaction { tx ->
             tx.insert(
                     DevPerson(

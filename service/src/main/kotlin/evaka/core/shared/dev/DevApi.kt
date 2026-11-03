@@ -133,7 +133,7 @@ import evaka.core.pairing.incrementAttempts
 import evaka.core.pairing.initPairing
 import evaka.core.pairing.respondPairingChallengeCreateDevice
 import evaka.core.person.NotificationCategory
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.placement.PlacementPlanService
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.PlacementType
@@ -2194,8 +2194,8 @@ data class DevPerson(
     val duplicateOf: PersonId? = null,
     val disabledEmailTypes: Set<NotificationCategory> = emptySet(),
 ) {
-    fun toPersonDTO() =
-        PersonDTO(
+    fun toPerson() =
+        Person(
             id = this.id,
             duplicateOf = this.duplicateOf,
             ssn = this.ssn?.let { Ssn.parse(it) ?: throw BadRequest("Invalid SSN") },

@@ -103,12 +103,12 @@ fun Database.Transaction.applyDeathEffects(
 fun Database.Read.personsLiveInTheSameAddress(person1Id: PersonId, person2Id: PersonId): Boolean =
     personsLiveInTheSameAddress(getPersonById(person1Id), getPersonById(person2Id))
 
-fun personsLiveInTheSameAddress(person1: PersonDTO?, person2: PersonDTO?): Boolean {
+fun personsLiveInTheSameAddress(person1: Person?, person2: Person?): Boolean {
     return personsHaveSameResidenceCode(person1, person2) ||
         personsHaveSameAddress(person1, person2)
 }
 
-private fun personsHaveSameResidenceCode(person1: PersonDTO?, person2: PersonDTO?): Boolean {
+private fun personsHaveSameResidenceCode(person1: Person?, person2: Person?): Boolean {
     return person1 != null &&
         person2 != null &&
         !person1.restrictedDetailsEnabled &&
@@ -120,7 +120,7 @@ private fun personsHaveSameResidenceCode(person1: PersonDTO?, person2: PersonDTO
         person1.residenceCode == person2.residenceCode
 }
 
-private fun personsHaveSameAddress(person1: PersonDTO?, person2: PersonDTO?): Boolean {
+private fun personsHaveSameAddress(person1: Person?, person2: Person?): Boolean {
     return person1 != null &&
         person2 != null &&
         !person1.restrictedDetailsEnabled &&
@@ -139,7 +139,7 @@ private fun personsHaveSameAddress(person1: PersonDTO?, person2: PersonDTO?): Bo
 }
 
 @IgnorableReturnValue
-fun Database.Transaction.patchUserDetails(id: PersonId, data: PersonPatch): PersonDTO {
+fun Database.Transaction.patchUserDetails(id: PersonId, data: PersonPatch): Person {
     val person = getPersonById(id) ?: throw NotFound("Person $id not found")
 
     // People with SSN get basic details from VTJ which should not be modified
@@ -166,7 +166,7 @@ fun createAddressPagePdf(
     pdfGenerator: PdfGenerator,
     today: LocalDate,
     envelopeWindowPosition: Rectangle,
-    guardian: PersonDTO,
+    guardian: Person,
 ): Document {
     val personDetails = guardian.let {
         val firstWordOfFirstName = splitFirstNames(it.firstName).firstOrNull() ?: ""

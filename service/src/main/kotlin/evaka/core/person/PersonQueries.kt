@@ -17,7 +17,7 @@ import evaka.core.shared.domain.UiLanguage
 import java.time.LocalDate
 import java.util.UUID
 
-val personDTOColumns =
+val personColumns =
     listOf(
         "id",
         "duplicate_of",
@@ -54,7 +54,7 @@ val personDTOColumns =
         "oph_person_oid",
         "updated_from_vtj",
     )
-val commaSeparatedPersonDTOColumns = personDTOColumns.joinToString()
+val commaSeparatedPersonColumns = personColumns.joinToString()
 
 data class CitizenUserIdentity(val id: PersonId)
 
@@ -88,19 +88,19 @@ WHERE id = ${bind(id)}
 }
     .exactlyOneOrNull()
 
-fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
+fun Database.Read.getPersonById(id: PersonId): Person? {
     return createQuery {
             sql(
                 """
 SELECT
-$commaSeparatedPersonDTOColumns
+$commaSeparatedPersonColumns
 FROM person
 WHERE id = ${bind(id)}
         """
             )
         }
         .bind("id", id)
-        .exactlyOneOrNull(toPersonDTO)
+        .exactlyOneOrNull(toPerson)
 }
 
 data class PersonNameDetails(val id: PersonId, val firstName: String, val lastName: String)
@@ -123,18 +123,18 @@ fun Database.Read.isDuplicate(id: PersonId): Boolean =
     createQuery { sql("SELECT duplicate_of IS NOT NULL FROM person WHERE id = ${bind(id)}") }
         .exactlyOneOrNull<Boolean>() ?: false
 
-fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? = createQuery {
+fun Database.Transaction.lockPersonBySSN(ssn: String): Person? = createQuery {
     sql(
         """
 SELECT
-$commaSeparatedPersonDTOColumns
+$commaSeparatedPersonColumns
 FROM person
 WHERE social_security_number = ${bind(ssn)}
 FOR UPDATE
     """
     )
 }
-    .exactlyOneOrNull(toPersonDTO)
+    .exactlyOneOrNull(toPerson)
 
 data class GetPersonIdsBySsnsResult(val found: Map<Ssn, PersonId>, val notFound: List<Ssn>)
 
@@ -153,24 +153,24 @@ WHERE social_security_number = ANY(${bind(ssns)})
     return GetPersonIdsBySsnsResult(found, notFound)
 }
 
-fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
+fun Database.Read.getPersonBySSN(ssn: String): Person? {
     return createQuery {
             sql(
                 """
 SELECT
-$commaSeparatedPersonDTOColumns
+$commaSeparatedPersonColumns
 FROM person
 WHERE social_security_number = ${bind(ssn)}
         """
             )
         }
-        .exactlyOneOrNull(toPersonDTO)
+        .exactlyOneOrNull(toPerson)
 }
 
-fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> = createQuery {
-    sql("SELECT $commaSeparatedPersonDTOColumns FROM person WHERE duplicate_of = ${bind(id)}")
+fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<Person> = createQuery {
+    sql("SELECT $commaSeparatedPersonColumns FROM person WHERE duplicate_of = ${bind(id)}")
 }
-    .toList(toPersonDTO)
+    .toList(toPerson)
 
 fun Database.Read.getPersonDuplicateOf(id: PersonId): PersonId? = createQuery {
     sql("SELECT duplicate_of FROM person WHERE id = ${bind(id)}")
@@ -343,7 +343,7 @@ RETURNING id
     .exactlyOneOrNull<PersonId>()
 
 @IgnorableReturnValue
-fun Database.Transaction.updatePersonFromVtj(person: PersonDTO, now: HelsinkiDateTime): PersonDTO {
+fun Database.Transaction.updatePersonFromVtj(person: Person, now: HelsinkiDateTime): Person {
     val p = person.copy(updatedFromVtj = now)
     return createQuery {
             sql(
@@ -372,7 +372,7 @@ RETURNING *
 """
             )
         }
-        .exactlyOne(toPersonDTO)
+        .exactlyOne(toPerson)
 }
 
 // email is only updated if the user has no verified email
@@ -455,8 +455,8 @@ fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: Ssn) {
         .execute()
 }
 
-internal val toPersonDTO: Row.() -> PersonDTO = {
-    PersonDTO(
+internal val toPerson: Row.() -> Person = {
+    Person(
         id = PersonId(column("id")),
         duplicateOf = column<UUID?>("duplicate_of")?.let { PersonId(it) },
         ssn = column<Ssn?>("social_security_number"),
@@ -530,25 +530,25 @@ fun Database.Read.getGuardianDependants(personId: PersonId) = createQuery {
     sql(
         """
 SELECT
-$commaSeparatedPersonDTOColumns
+$commaSeparatedPersonColumns
 FROM person
 WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = ${bind(personId)})
         """
     )
 }
-    .toList(toPersonDTO)
+    .toList(toPerson)
 
 fun Database.Read.getDependantGuardians(personId: ChildId) = createQuery {
     sql(
         """
 SELECT
-$commaSeparatedPersonDTOColumns
+$commaSeparatedPersonColumns
 FROM person
 WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = ${bind(personId)})
         """
     )
 }
-    .toList(toPersonDTO)
+    .toList(toPerson)
 
 fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: Boolean) {
     createUpdate {

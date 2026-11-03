@@ -6,7 +6,7 @@ package evaka.core.vtj
 
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.shared.dev.DevPerson
 import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap
@@ -82,27 +82,30 @@ data class MockVtjPerson(
                 nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
             )
 
-        fun from(dto: PersonDTO): MockVtjPerson =
+        fun from(person: Person): MockVtjPerson =
             MockVtjPerson(
-                firstNames = dto.firstName,
-                lastName = dto.lastName,
+                firstNames = person.firstName,
+                lastName = person.lastName,
                 socialSecurityNumber =
-                    checkNotNull(dto.ssn) { "Person ${dto.id} has no SSN" }.value,
+                    checkNotNull(person.ssn) { "Person ${person.id} has no SSN" }.value,
                 restrictedDetails =
-                    RestrictedDetails(dto.restrictedDetailsEnabled, dto.restrictedDetailsEndDate),
+                    RestrictedDetails(
+                        person.restrictedDetailsEnabled,
+                        person.restrictedDetailsEndDate,
+                    ),
                 residentialAddress =
                     PersonAddress(
-                        streetAddress = dto.streetAddress,
-                        postalCode = dto.postalCode,
-                        postOffice = dto.postOffice,
+                        streetAddress = person.streetAddress,
+                        postalCode = person.postalCode,
+                        postOffice = person.postOffice,
                         streetAddressSe = null,
                         postOfficeSe = null,
                     ),
-                nativeLanguage = NativeLanguage(code = dto.language ?: ""),
-                nationalities = dto.nationalities.map { Nationality(it, it) },
-                dateOfDeath = dto.dateOfDeath,
-                residenceCode = dto.residenceCode,
-                municipalityOfResidence = dto.municipalityOfResidence,
+                nativeLanguage = NativeLanguage(code = person.language ?: ""),
+                nationalities = person.nationalities.map { Nationality(it, it) },
+                dateOfDeath = person.dateOfDeath,
+                residenceCode = person.residenceCode,
+                municipalityOfResidence = person.municipalityOfResidence,
             )
     }
 }
@@ -149,7 +152,7 @@ class MockVtjClient : VtjClient {
             persons.forEach { addPerson(MockVtjPerson.from(it)) }
         }
 
-        fun addPersons(vararg persons: PersonDTO) {
+        fun addPersons(vararg persons: Person) {
             persons.forEach { addPerson(MockVtjPerson.from(it)) }
         }
 
@@ -166,7 +169,7 @@ class MockVtjClient : VtjClient {
             addDependants(guardian, dependants.asSequence())
         }
 
-        fun addDependants(guardian: PersonDTO, vararg dependants: PersonDTO) {
+        fun addDependants(guardian: Person, vararg dependants: Person) {
             addDependants(guardian.ssn!!.value, dependants.asSequence().map { it.ssn!!.value })
         }
 

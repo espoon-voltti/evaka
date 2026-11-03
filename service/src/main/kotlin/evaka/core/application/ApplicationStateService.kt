@@ -58,7 +58,7 @@ import evaka.core.messaging.MessageService
 import evaka.core.messaging.MessageType
 import evaka.core.messaging.NewMessageStub
 import evaka.core.messaging.getServiceWorkerAccountId
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.getDependantGuardians
 import evaka.core.person.getGuardianDependants
 import evaka.core.person.getPersonById
@@ -183,8 +183,8 @@ class ApplicationStateService(
         now: HelsinkiDateTime,
         origin: ApplicationOrigin,
         type: ApplicationType,
-        guardian: PersonDTO,
-        child: PersonDTO,
+        guardian: Person,
+        child: Person,
         hideFromGuardian: Boolean = false,
         sentDate: LocalDate? = null,
         allowOtherGuardianAccess: Boolean = false,
@@ -256,8 +256,8 @@ class ApplicationStateService(
 
     private fun withDefaultOtherChildren(
         tx: Database.Read,
-        guardian: PersonDTO,
-        child: PersonDTO,
+        guardian: Person,
+        child: Person,
         form: ApplicationForm,
     ): ApplicationForm {
         val vtjChildren = tx.getGuardianDependants(guardian.id)

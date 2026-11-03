@@ -10,7 +10,7 @@ import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
 import evaka.core.identity.getDobFromSsn
 import evaka.core.messaging.createPersonMessageAccount
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.getPersonById
 import evaka.core.person.isGuardianBlocked
 import evaka.core.person.lockPersonBySSN
@@ -31,7 +31,7 @@ private val logger = KotlinLogging.logger {}
 /** [newDateOfDeath] is set only when the stored date of death changed from NULL to a date. */
 data class ApplyResult(
     val id: PersonId,
-    val person: PersonDTO,
+    val person: Person,
     val created: Boolean,
     val newDateOfDeath: LocalDate?,
 )
@@ -374,14 +374,14 @@ private fun Database.Transaction.initChildIfNotExists(childId: ChildId, now: Hel
     }
 }
 
-private fun newDateOfDeath(old: PersonDTO?, new: PersonDTO): LocalDate? =
+private fun newDateOfDeath(old: Person?, new: Person): LocalDate? =
     new.dateOfDeath.takeIf { old != null && old.dateOfDeath == null }
 
-private fun logChangedFields(old: PersonDTO, new: PersonDTO) {
+private fun logChangedFields(old: Person, new: Person) {
     val changedFields =
-        PersonDTO::class
+        Person::class
             .memberProperties
-            .filter { it != PersonDTO::updatedFromVtj && it.get(old) != it.get(new) }
+            .filter { it != Person::updatedFromVtj && it.get(old) != it.get(new) }
             .map { it.name }
     if (changedFields.isNotEmpty()) {
         logger.info { "Updated person ${old.id} from VTJ, changed fields: $changedFields" }
@@ -392,7 +392,7 @@ private fun Database.Transaction.applyMailingAddress(
     personId: PersonId,
     person: VtjPerson,
     today: LocalDate,
-): PersonDTO {
+): Person {
     replaceAddressPeriods(
         personId,
         person.mailingAddressPeriods

@@ -457,7 +457,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             language = "fi",
         )
 
-    private fun createPerson(): PersonDTO {
+    private fun createPerson(): Person {
         return db.transaction { tx ->
             tx.insert(searchPerson, DevPersonType.RAW_ROW).let { tx.getPersonById(it)!! }
         }

@@ -8,7 +8,7 @@ import com.profium.reception._2022._03.Collections
 import evaka.core.caseprocess.CaseProcess
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionType
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.s3.Document
 import evaka.trevaka.archival.status
 import evaka.trevaka.jaxb.localDateToXMLGregorianCalendar
@@ -18,7 +18,7 @@ internal fun transform(
     caseProcess: CaseProcess,
     decision: Decision,
     document: Document,
-    child: PersonDTO,
+    child: Person,
 ): Pair<Collections.Collection, Map<String, Document>> {
     val originalId = decision.id.toString()
     val title = title(decision)

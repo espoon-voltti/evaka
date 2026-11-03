@@ -10,7 +10,7 @@ import ch.qos.logback.core.Appender
 import evaka.core.Sensitive
 import evaka.core.VtjEnv
 import evaka.core.identity.Ssn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.shared.PersonId
 import evaka.core.vtj.VtjSoapTransport.RequestType
 import evaka.core.vtj.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
@@ -276,7 +276,7 @@ class VtjSoapTransportTest {
         municipalityOfResidence: String = "Jokutoinenkaupunki",
         dateOfBirth: LocalDate = LocalDate.of(1972, 3, 27),
     ) =
-        PersonDTO(
+        Person(
             id = id,
             duplicateOf = null,
             ssn = ssn,

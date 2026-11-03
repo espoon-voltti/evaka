@@ -21,7 +21,7 @@ import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.document.childdocument.generateChildDocumentHtml
 import evaka.core.identity.Ssn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.createAddressPagePdf
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildDocumentId
@@ -46,7 +46,7 @@ private val logger = KotlinLogging.logger {}
 private val testAdult = DevPerson(ssn = "010180-1232", dateOfBirth = LocalDate.of(1980, 1, 1))
 
 private val guardian =
-    PersonDTO(
+    Person(
         testAdult.id,
         null,
         Ssn.parse(testAdult.ssn!!),

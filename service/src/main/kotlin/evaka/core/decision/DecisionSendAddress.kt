@@ -6,13 +6,13 @@ package evaka.core.decision
 
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.addressUsable
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.message.IMessageProvider
 
 fun getSendAddress(
     messageProvider: IMessageProvider,
-    guardian: PersonDTO,
+    guardian: Person,
     lang: OfficialLanguage,
 ): DecisionSendAddress {
     val logMissingAddress = {

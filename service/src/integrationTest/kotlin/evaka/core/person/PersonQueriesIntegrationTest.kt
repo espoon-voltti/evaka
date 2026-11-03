@@ -436,7 +436,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun createVtjPerson(
         tx: Database.Transaction,
         validSSN: String = "010199-8137",
-    ): PersonDTO {
+    ): Person {
         val id = tx.applyPerson(testVtjPerson(validSSN), now).id
         return tx.getPersonById(id)!!
     }

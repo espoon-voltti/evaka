@@ -6,7 +6,7 @@ package evaka.core.family
 
 import evaka.core.PureJdbiTest
 import evaka.core.identity.getDobFromSsn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.getPersonById
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
@@ -123,7 +123,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(null, fetched.endDate)
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO = db.transaction { tx ->
+    private fun createPerson(ssn: String, firstName: String): Person = db.transaction { tx ->
         tx.insert(
                 DevPerson(
                     ssn = ssn,

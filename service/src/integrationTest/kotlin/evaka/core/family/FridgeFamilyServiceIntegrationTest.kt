@@ -6,7 +6,7 @@ package evaka.core.family
 
 import evaka.core.FullApplicationTest
 import evaka.core.identity.getDobFromSsn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.getChildGuardians
 import evaka.core.person.getPersonById
 import evaka.core.shared.PersonId
@@ -40,10 +40,10 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private val employee = DevEmployee()
 
-    lateinit var adult1: PersonDTO
-    lateinit var adult2: PersonDTO
-    lateinit var child1: PersonDTO
-    lateinit var child2: PersonDTO
+    lateinit var adult1: Person
+    lateinit var adult2: Person
+    lateinit var child1: Person
+    lateinit var child2: Person
     private val partnershipCreator = employee.evakaUserId
 
     @BeforeEach
@@ -155,7 +155,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         db.transaction { it.insert(child, DevPersonType.RAW_ROW) }
         MockVtjClient.addPersons(child)
-        MockVtjClient.addDependants(adult1, child.toPersonDTO())
+        MockVtjClient.addDependants(adult1, child.toPerson())
 
         fridgeFamilyService.refreshFamily(
             db,
@@ -382,7 +382,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to parent)
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO {
+    private fun createPerson(ssn: String, firstName: String): Person {
         return db.transaction {
             val id =
                 it.insert(

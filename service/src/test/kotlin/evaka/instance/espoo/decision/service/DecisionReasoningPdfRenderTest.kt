@@ -14,7 +14,7 @@ import evaka.core.decision.DecisionUnit
 import evaka.core.decision.PdfReasoning
 import evaka.core.decision.generateDecisionPages
 import evaka.core.identity.Ssn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.setting.SettingType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
@@ -288,7 +288,7 @@ private fun validDecisionUnit() =
     )
 
 private fun validChild() =
-    PersonDTO(
+    Person(
         PersonId(UUID.randomUUID()),
         duplicateOf = null,
         Ssn.parse("010115A9532"),

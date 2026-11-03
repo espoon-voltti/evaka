@@ -9,7 +9,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
-data class PersonDTO(
+data class Person(
     val id: PersonId,
     val duplicateOf: PersonId?,
     val ssn: Ssn?,
@@ -45,7 +45,7 @@ data class PersonDTO(
     val ophPersonOid: String? = "",
 )
 
-fun PersonDTO.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
+fun Person.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
     this.let {
             if (includeInvoiceAddress) {
                 it
@@ -95,7 +95,7 @@ data class PersonJSON(
     val updatedFromVtj: HelsinkiDateTime? = null,
 ) {
     companion object {
-        fun from(p: PersonDTO): PersonJSON =
+        fun from(p: Person): PersonJSON =
             PersonJSON(
                 id = p.id,
                 duplicateOf = p.duplicateOf,
@@ -138,7 +138,7 @@ data class PersonBasicInfo(
     val restrictedDetailsEnabled: Boolean,
 ) {
     companion object {
-        fun from(p: PersonDTO): PersonBasicInfo =
+        fun from(p: Person): PersonBasicInfo =
             PersonBasicInfo(
                 id = p.id,
                 duplicateOf = p.duplicateOf,
@@ -176,7 +176,7 @@ data class PersonSensitiveDetails(
     val updatedFromVtj: HelsinkiDateTime?,
 ) {
     companion object {
-        fun from(p: PersonDTO, includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
+        fun from(p: Person, includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
             PersonSensitiveDetails(
                 socialSecurityNumber = p.ssn?.value,
                 language = p.language,

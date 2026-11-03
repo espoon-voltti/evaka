@@ -27,7 +27,7 @@ import evaka.core.pdfgen.Page
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pdfgen.Template
 import evaka.core.person.NotificationCategory
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.getChildGuardiansAndFosterParents
 import evaka.core.person.getPersonById
 import evaka.core.s3.DocumentKey
@@ -181,7 +181,7 @@ class DecisionService(
         settings: Map<SettingType, String>,
         decision: Decision,
         application: ApplicationDetails,
-        child: PersonDTO,
+        child: Person,
         decisionLanguage: OfficialLanguage,
         unitManager: UnitManager,
         preschoolManager: UnitManager,
@@ -288,7 +288,7 @@ class DecisionService(
         tx: Database.Transaction,
         now: HelsinkiDateTime,
         decision: Decision,
-        guardian: PersonDTO,
+        guardian: Person,
         documentLocation: DocumentLocation,
         skipGuardianApproval: Boolean?,
     ) {
@@ -429,7 +429,7 @@ fun createDecisionPdf(
     pdfService: PdfGenerator,
     settings: Map<SettingType, String>,
     decision: Decision,
-    child: PersonDTO,
+    child: Person,
     isTransferApplication: Boolean,
     serviceNeed: ServiceNeed?,
     lang: OfficialLanguage,
@@ -462,7 +462,7 @@ internal fun generateDecisionPages(
     lang: OfficialLanguage,
     settings: Map<SettingType, String>,
     decision: Decision,
-    child: PersonDTO,
+    child: Person,
     unitManager: UnitManager,
     preschoolManager: UnitManager,
     isPartTimeDecision: Boolean,

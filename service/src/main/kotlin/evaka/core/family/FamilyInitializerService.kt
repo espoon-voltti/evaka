@@ -7,7 +7,7 @@ package evaka.core.family
 import evaka.core.application.ApplicationDetails
 import evaka.core.application.fetchApplicationDetails
 import evaka.core.identity.Ssn
-import evaka.core.person.PersonDTO
+import evaka.core.person.Person
 import evaka.core.person.getDependantGuardians
 import evaka.core.person.getPersonById
 import evaka.core.person.personsLiveInTheSameAddress
@@ -128,10 +128,10 @@ class FamilyInitializerService(
     }
 
     private data class FridgeFamilyMembers(
-        val headOfFamily: PersonDTO,
-        val fridgePartner: PersonDTO?,
-        val fridgeChild: PersonDTO,
-        val fridgeSiblings: List<PersonDTO>,
+        val headOfFamily: Person,
+        val fridgePartner: Person?,
+        val fridgeChild: Person,
+        val fridgeSiblings: List<Person>,
     )
 
     private fun parseFridgeFamilyMembersFromApplication(
@@ -236,7 +236,7 @@ class FamilyInitializerService(
     private fun createParentship(
         tx: Database.Transaction,
         evakaClock: EvakaClock,
-        child: PersonDTO,
+        child: Person,
         headOfChildId: PersonId,
         applicationId: ApplicationId,
     ) {
