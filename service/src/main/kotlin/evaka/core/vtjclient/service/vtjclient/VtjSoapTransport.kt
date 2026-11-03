@@ -6,7 +6,7 @@ package evaka.core.vtjclient.service.vtjclient
 
 import evaka.core.VtjEnv
 import evaka.core.vtjclient.config.SoapRequestAdapter
-import evaka.core.vtjclient.mapper.VTJResponseMapper
+import evaka.core.vtjclient.mapper.mapResponseToHenkilo
 import evaka.core.vtjclient.service.vtjclient.QueryStatus.CREATING_REQUEST
 import evaka.core.vtjclient.service.vtjclient.QueryStatus.ERROR_DURING_REQUEST
 import evaka.core.vtjclient.service.vtjclient.QueryStatus.RESPONSE_PARSING_FAILURE
@@ -48,7 +48,6 @@ class XroadVtjSoapTransport(
     private val wsTemplate: WebServiceTemplate,
     private val vtjEnv: VtjEnv,
     private val requestAdapter: SoapRequestAdapter,
-    private val responseMapper: VTJResponseMapper,
 ) : VtjSoapTransport {
 
     private val logger = KotlinLogging.logger {}
@@ -72,7 +71,7 @@ class XroadVtjSoapTransport(
                 throw e
             }
 
-        val person = responseMapper.mapResponseToHenkilo(response)
+        val person = mapResponseToHenkilo(response)
         if (person == null) {
             logger.auditVTJ(toLogParamsMap(query = query, status = RESPONSE_PARSING_FAILURE)) {
                 "Did not receive VTJ results"

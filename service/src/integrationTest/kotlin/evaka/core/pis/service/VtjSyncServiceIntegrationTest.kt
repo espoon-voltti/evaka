@@ -23,7 +23,6 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.user.updateLastStrongLogin
 import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
@@ -57,7 +56,7 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
         vtjSyncService =
             VtjSyncService(
-                SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper()),
+                SoapVtjClient(MockVtjSoapTransport()),
                 asyncJobRunner,
             )
         MockVtjSoapTransport.resetQueryCounts()

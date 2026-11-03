@@ -8,7 +8,6 @@ import evaka.core.identity.Ssn
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevPerson
 import evaka.core.vtjclient.dto.VtjRelative
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.persondetails.VtjClient
@@ -90,7 +89,7 @@ class SoapVtjClientContractTest : VtjClientContract() {
         MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(child)
         MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(guardian, listOf(child))
         MockVtjSoapTransport.addHUOLLETTAVAHUOLTAJATRequestExpectation(child, listOf(guardian))
-        return SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
+        return SoapVtjClient(MockVtjSoapTransport())
     }
 
     @Test

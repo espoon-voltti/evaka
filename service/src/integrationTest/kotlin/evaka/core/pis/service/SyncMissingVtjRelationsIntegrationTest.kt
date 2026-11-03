@@ -33,7 +33,6 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
@@ -71,7 +70,7 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
     @BeforeEach
     fun beforeEach() {
         asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
-        val vtjClient = SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
+        val vtjClient = SoapVtjClient(MockVtjSoapTransport())
         vtjSyncService = VtjSyncService(vtjClient, asyncJobRunner)
         UpdateFromVtjAsyncJobProcessor(
             asyncJobRunner,

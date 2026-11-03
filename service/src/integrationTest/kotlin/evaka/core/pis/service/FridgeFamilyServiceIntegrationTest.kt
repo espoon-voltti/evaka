@@ -23,7 +23,6 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
@@ -361,8 +360,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
         MockVtjSoapTransport.resetQueryCounts()
 
-        val vtjSyncService =
-            VtjSyncService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()), mock())
+        val vtjSyncService = VtjSyncService(SoapVtjClient(mockVtjSoapTransport), mock())
         val service =
             FridgeFamilyService(
                 vtjSyncService,

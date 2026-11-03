@@ -57,7 +57,6 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
 import evaka.core.user.updateWeakLoginCredentials
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
@@ -1025,8 +1024,6 @@ WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(clock.today())}
     }
 
     companion object {
-        @JvmStatic
-        fun countingVtjClient(): VtjClient =
-            SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
+        @JvmStatic fun countingVtjClient(): VtjClient = SoapVtjClient(MockVtjSoapTransport())
     }
 }
