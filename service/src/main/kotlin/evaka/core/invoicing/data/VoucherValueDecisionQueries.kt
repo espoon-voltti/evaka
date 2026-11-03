@@ -290,6 +290,7 @@ fun Database.Read.searchValueDecisions(
     financeDecisionHandlerId: EmployeeId?,
     difference: Set<VoucherValueDecisionDifference>,
     distinctiveParams: List<VoucherValueDecisionDistinctiveParams>,
+    matchAddresses: Boolean,
 ): PagedVoucherValueDecisionSummaries {
     val sortColumn =
         when (sortBy) {
@@ -304,7 +305,12 @@ fun Database.Read.searchValueDecisions(
             VoucherValueDecisionSortParam.STATUS -> "decision.status"
         }
 
-    val freeTextPredicate = freeTextSearchPredicate(listOf("head", "partner", "child"), searchTerms)
+    val freeTextPredicate =
+        freeTextSearchPredicate(
+            listOf("head", "partner", "child"),
+            searchTerms,
+            matchAddresses,
+        )
 
     val withNullHours =
         distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.UNCONFIRMED_HOURS)

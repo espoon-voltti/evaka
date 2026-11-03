@@ -53,6 +53,30 @@ test.describe('Search person', () => {
     page = evaka
   })
 
+  test('Service worker can search by address and sees the addresses', async () => {
+    const serviceWorker = await Fixture.employee().serviceWorker().save()
+    const searchPage = await openPage(page, serviceWorker)
+
+    await searchPage.searchInput.fill(testAdult.streetAddress)
+    await expect(searchPage.searchResults).toHaveCount(3)
+    await expect(searchPage.addressColumn).toBeVisible()
+    await expect(searchPage.searchResultAddresses).toHaveText([
+      testAdult.streetAddress,
+      testAdult.streetAddress,
+      testAdult.streetAddress
+    ])
+  })
+
+  test('Finance admin does not see the addresses', async () => {
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
+    const searchPage = await openPage(page, financeAdmin)
+
+    await searchPage.searchInput.fill(testAdult.lastName)
+    await expect(searchPage.searchResults).toHaveCount(3)
+    await expect(searchPage.addressColumn).toBeHidden()
+    await expect(searchPage.searchResultAddresses).toHaveCount(0)
+  })
+
   test('Special education teacher (VEO) sees person from application only if the application has assistance needed selected', async () => {
     const careArea1 = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()

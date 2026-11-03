@@ -125,6 +125,13 @@ class VoucherValueDecisionController(
                             body.financeDecisionHandlerId,
                             body.difference ?: emptySet(),
                             body.distinctions ?: emptyList(),
+                            matchAddresses =
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Global.SEARCH_PEOPLE_BY_ADDRESS,
+                                ),
                         )
                         .also { page ->
                             audit.addMeta("count", page.data.size)

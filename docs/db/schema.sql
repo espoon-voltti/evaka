@@ -1234,6 +1234,7 @@ CREATE TABLE public.person (
     mailing_street_address text DEFAULT ''::text NOT NULL,
     mailing_postal_code text DEFAULT ''::text NOT NULL,
     mailing_post_office text DEFAULT ''::text NOT NULL,
+    freetext_vec_no_address tsvector GENERATED ALWAYS AS ((to_tsvector('public.unaccent'::regconfig, COALESCE(first_name, ''::text)) || to_tsvector('public.unaccent'::regconfig, COALESCE(last_name, ''::text)))) STORED,
     CONSTRAINT person_disabled_ssn_no_ssn CHECK (((NOT ssn_adding_disabled) OR (social_security_number IS NULL))),
     CONSTRAINT person_ssn_not_empty CHECK ((social_security_number <> ''::text)),
     CONSTRAINT ssn_require_vtj_update CHECK (((social_security_number IS NULL) OR (updated_from_vtj IS NOT NULL)))
@@ -6299,6 +6300,10 @@ CREATE INDEX "idx$person_address_period_person_id" ON public.person_address_peri
 -- Name: idx$person_duplicate_of; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$person_duplicate_of" ON public.person USING btree (duplicate_of);
+
+-- Name: idx$person_freetext_vec_no_address; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$person_freetext_vec_no_address" ON public.person USING gin (freetext_vec_no_address);
 
 -- Name: idx$pin_user_id; Type: INDEX; Schema: public
 

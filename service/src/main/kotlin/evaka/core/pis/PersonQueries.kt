@@ -190,7 +190,7 @@ data class PersonSummary(
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate?,
     val socialSecurityNumber: String?,
-    val streetAddress: String,
+    val streetAddress: String?,
     val restrictedDetailsEnabled: Boolean,
 )
 
@@ -204,8 +204,12 @@ fun Database.Read.searchPeople(
     sortColumns: String,
     sortDirection: String,
     restricted: Boolean,
+    includeAddresses: Boolean,
 ): List<PersonSummary> {
     if (searchTerms.isBlank()) return listOf()
+
+    val sortableColumns =
+        if (includeAddresses) personSortColumns else personSortColumns - "street_address"
 
     val direction = if (sortDirection.equals("DESC", ignoreCase = true)) "DESC" else "ASC"
     val orderBy =
@@ -213,14 +217,15 @@ fun Database.Read.searchPeople(
             .split(",")
             .map { it.trim() }
             .let { columns ->
-                if (personSortColumns.containsAll(columns)) {
+                if (sortableColumns.containsAll(columns)) {
                     columns.joinToString(", ") { column -> "$column $direction" }
                 } else {
                     "last_name $direction"
                 }
             }
 
-    val freeTextPredicate = freeTextSearchPredicate(listOf("person"), searchTerms)
+    val freeTextPredicate =
+        freeTextSearchPredicate(listOf("person"), searchTerms, matchAddresses = includeAddresses)
     val restrictedPredicate =
         if (restricted)
             PredicateSql {
@@ -243,7 +248,7 @@ fun Database.Read.searchPeople(
             last_name,
             date_of_birth,
             date_of_death,
-            street_address,
+            CASE WHEN ${bind(includeAddresses)} THEN street_address END AS street_address,
             restricted_details_enabled
         FROM person
         WHERE

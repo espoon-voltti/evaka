@@ -257,6 +257,13 @@ class ApplicationControllerV2(
                             readWithoutAssistanceNeed = readWithoutAssistanceNeed,
                             readWithAssistanceNeed = readWithAssistanceNeed,
                             canReadServiceWorkerNotes = canReadServiceWorkerNotes,
+                            matchAddresses =
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Global.SEARCH_PEOPLE_BY_ADDRESS,
+                                ),
                         )
                     val permittedActions =
                         accessControl.getPermittedActions<ApplicationId, Action.Application>(

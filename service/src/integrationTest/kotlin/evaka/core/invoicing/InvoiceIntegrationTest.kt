@@ -102,6 +102,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val daycare = DevDaycare(areaId = area.id)
     private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
     private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val adult1 =
         DevPerson(
             ssn = "010180-1232",
@@ -224,6 +225,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insert(employee)
+            tx.insert(admin)
             allAreas.forEach { tx.insert(it) }
             allDaycares.forEach { tx.insert(it) }
             allAdults.forEach { tx.insert(it, DevPersonType.ADULT) }
@@ -317,12 +319,28 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     searchTerms = "${adult1.streetAddress} ${adult1.firstName.substring(0, 2)}",
-                )
+                ),
+                searchingUser = admin.user,
             )
         assertEqualEnough(
             testInvoices.filter { it.status == InvoiceStatus.DRAFT }.map(::toSummary),
             result,
         )
+    }
+
+    @Test
+    fun `search does not match addresses for a user without address search permission`() {
+        db.transaction { tx -> tx.insert(testInvoices) }
+
+        val result =
+            searchInvoices(
+                SearchInvoicesRequest(
+                    page = 1,
+                    status = InvoiceStatus.DRAFT,
+                    searchTerms = adult1.streetAddress,
+                )
+            )
+        assertEqualEnough(listOf(), result)
     }
 
     @Test
@@ -704,6 +722,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 listOf(),
                 null,
                 listOf(),
+                matchAddresses = true,
             )
         }
 
@@ -727,6 +746,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 listOf(),
                 null,
                 listOf(),
+                matchAddresses = true,
             )
         }
 
@@ -752,6 +772,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 listOf(),
                 null,
                 listOf(),
+                matchAddresses = true,
             )
         }
 
@@ -872,9 +893,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun searchInvoices(request: SearchInvoicesRequest): List<InvoiceSummary> {
+    private fun searchInvoices(
+        request: SearchInvoicesRequest,
+        searchingUser: AuthenticatedUser.Employee = employee.user,
+    ): List<InvoiceSummary> {
         return invoiceController
-            .searchInvoices(dbInstance(), employee.user, RealEvakaClock(), request)
+            .searchInvoices(dbInstance(), searchingUser, RealEvakaClock(), request)
             .data
             .map { it.data }
     }

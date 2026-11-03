@@ -23,6 +23,8 @@ import { financeDecisionHandlersQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import type { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { UserContext } from '../../state/user'
+import { hasGlobalAction } from '../../utils/roles'
 import {
   AreaFilter,
   Filters,
@@ -46,6 +48,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
 
   const financeDecisionHandlers: Result<FinanceDecisionHandlerOption[]> =
     useQueryResult(financeDecisionHandlersQuery()).map((employees) =>
@@ -166,7 +169,11 @@ export default React.memo(function VoucherValueDecisionFilters() {
 
   return (
     <Filters
-      searchPlaceholder={i18n.filters.freeTextPlaceholder}
+      searchPlaceholder={
+        hasGlobalAction(user, 'SEARCH_PEOPLE_BY_ADDRESS')
+          ? i18n.filters.freeTextPlaceholder
+          : i18n.filters.freeTextPlaceholderWithoutAddress
+      }
       freeText={searchFilters.searchTerms}
       setFreeText={(s) =>
         setSearchFilters((prev) => ({ ...prev, searchTerms: s }))

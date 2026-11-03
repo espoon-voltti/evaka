@@ -90,6 +90,13 @@ class InvoiceController(
                             body.searchTerms ?: "",
                             body.periodStart,
                             body.periodEnd,
+                            matchAddresses =
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Global.SEARCH_PEOPLE_BY_ADDRESS,
+                                ),
                         )
                     val permittedActions =
                         accessControl.getPermittedActions<InvoiceId, Action.Invoice>(

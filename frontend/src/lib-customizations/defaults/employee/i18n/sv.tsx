@@ -485,6 +485,7 @@ export const sv: typeof fi = {
       ALL: 'Alla'
     },
     searchPlaceholder: 'Sök med namn, personbeteckning eller adress',
+    searchPlaceholderWithoutAddress: 'Sök med namn eller personbeteckning',
     basis: 'Observationer',
     distinctions: 'Preciserad sökning',
     secondaryTooltip: 'Välj först verksamhetsställe'
@@ -1447,6 +1448,7 @@ export const sv: typeof fi = {
     searchByName: 'Sök med personbeteckning eller namn',
     notFound: 'Person hittades inte',
     inputPlaceholder: 'Sök med namn, adress eller personbeteckning',
+    inputPlaceholderWithoutAddress: 'Sök med namn eller personbeteckning',
     age: 'Ålder',
     address: 'Adress',
     maxResultsFound: 'Begränsa sökningen för att se övriga resultat',
@@ -3197,6 +3199,8 @@ export const sv: typeof fi = {
     searchTerms: 'Sökvillkor',
     freeTextPlaceholder:
       'Sök med namn, personbeteckning, adress eller avgiftsbeslutets nummer',
+    freeTextPlaceholderWithoutAddress:
+      'Sök med namn, personbeteckning eller avgiftsbeslutets nummer',
     area: 'Område',
     unit: 'Enhet',
     financeDecisionHandler: 'Handläggare av ekonomibeslut',

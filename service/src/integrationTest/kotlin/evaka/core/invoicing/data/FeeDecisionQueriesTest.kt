@@ -512,6 +512,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 endDate = null,
                 financeDecisionHandlerId = null,
                 difference = emptySet(),
+                matchAddresses = true,
             )
         }
 
@@ -587,6 +588,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 endDate = null,
                 financeDecisionHandlerId = null,
                 difference = setOf(FeeDecisionDifference.INCOME),
+                matchAddresses = true,
             )
         }
 
@@ -669,6 +671,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = null,
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
+                    matchAddresses = true,
                 )
             }
             .data
@@ -692,6 +695,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 endDate = null,
                 financeDecisionHandlerId = null,
                 difference = emptySet(),
+                matchAddresses = true,
             )
         }
         assertEquals(1, result.data.size)

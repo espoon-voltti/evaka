@@ -353,6 +353,7 @@ private fun translate(action: Global) =
             Global.CREATE_PERSON_FROM_VTJ -> "Henkilön luonti VTJ:stä"
             Global.SEARCH_PEOPLE -> "Henkilöiden haku"
             Global.SEARCH_PEOPLE_UNRESTRICTED -> "Henkilöiden haku (rajoittamaton)"
+            Global.SEARCH_PEOPLE_BY_ADDRESS -> "Henkilöiden haku osoitteella"
             Global.READ_FEE_THRESHOLDS -> "Talouden maksuasetuksien luku"
             Global.CREATE_FEE_THRESHOLDS -> "Talouden maksuasetuksien luonti"
             Global.READ_VOUCHER_VALUES -> "Palveluseteliarvojen luku"
