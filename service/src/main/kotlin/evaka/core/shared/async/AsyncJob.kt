@@ -279,6 +279,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val dryRun: Boolean,
         val optimized: Boolean? = true,
         val skipIfStartedAfter: HelsinkiDateTime? = null,
+        val mockNow: HelsinkiDateTime? = null,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }

@@ -4,6 +4,9 @@
 
 package evaka.core.dataremoval
 
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import evaka.core.FullApplicationTest
 import evaka.core.childimages.insertChildImage
 import evaka.core.shared.PersonId
@@ -22,10 +25,13 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 class DataRetentionServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -39,6 +45,21 @@ class DataRetentionServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private val daycare = DevDaycare(areaId = area.id)
     private val longGone = DevPerson(dateOfBirth = today.minusYears(15))
     private val recent = DevPerson(dateOfBirth = today.minusYears(5))
+
+    private val logAppender = ListAppender<ILoggingEvent>()
+    private val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
+
+    @BeforeEach
+    fun startLogCapture() {
+        logAppender.start()
+        rootLogger.addAppender(logAppender)
+    }
+
+    @AfterEach
+    fun stopLogCapture() {
+        rootLogger.detachAppender(logAppender)
+        logAppender.stop()
+    }
 
     @BeforeEach
     fun setup() {
@@ -133,6 +154,45 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
         )
         assertEquals(setOf("person", "child", "placement", "child_images"), remaining(longGone.id))
         assertEquals(0, asyncJobRunner.runPendingJobsSync(clock))
+    }
+
+    @Test
+    fun `a dry run with a mock time evaluates the data as of that time`() {
+        val mockNow = clock.now().plusYears(15)
+        dataRetentionService.deleteExpiredPersonData(
+            db,
+            clock,
+            AsyncJob.DeleteExpiredPersonData(recent.id, dryRun = true, mockNow = mockNow),
+        )
+
+        // The data of the recent child is not yet expired today, but would be 15 years from now
+        val dryRunLog =
+            logAppender.list
+                .map { it.formattedMessage }
+                .single { it.startsWith("Dry run of data retention for person ${recent.id}") }
+        assertContains(dryRunLog, "as of ${mockNow.toLocalDate()}: would delete ")
+        assertContains(dryRunLog, "person (1 rows)")
+        assertEquals(setOf("person", "child", "placement"), remaining(recent.id))
+        assertEquals(0, asyncJobRunner.runPendingJobsSync(clock))
+        assertNull(lastAttemptedAt(recent.id))
+    }
+
+    @Test
+    fun `a mock time is not allowed in a real run`() {
+        assertFailsWith<IllegalArgumentException> {
+            dataRetentionService.deleteExpiredPersonData(
+                db,
+                clock,
+                AsyncJob.DeleteExpiredPersonData(
+                    longGone.id,
+                    dryRun = false,
+                    mockNow = clock.now().plusYears(15),
+                ),
+            )
+        }
+
+        assertEquals(setOf("person", "child", "placement", "child_images"), remaining(longGone.id))
+        assertNull(lastAttemptedAt(longGone.id))
     }
 
     @Test
