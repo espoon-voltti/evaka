@@ -45,28 +45,6 @@ data class Person(
     val ophPersonOid: String? = "",
 )
 
-fun Person.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
-    this.let {
-            if (includeInvoiceAddress) {
-                it
-            } else {
-                it.copy(
-                    invoiceRecipientName = "",
-                    invoicingStreetAddress = "",
-                    invoicingPostalCode = "",
-                    invoicingPostOffice = "",
-                    forceManualFeeDecisions = false,
-                )
-            }
-        }
-        .let {
-            if (includeOphOid) {
-                it
-            } else {
-                it.copy(ophPersonOid = "")
-            }
-        }
-
 data class PersonJSON(
     val id: PersonId,
     val duplicateOf: PersonId?,
@@ -86,12 +64,6 @@ data class PersonJSON(
     val residenceCode: String = "",
     val municipalityOfResidence: String = "",
     val restrictedDetailsEnabled: Boolean = false,
-    val invoiceRecipientName: String = "",
-    val invoicingStreetAddress: String = "",
-    val invoicingPostalCode: String = "",
-    val invoicingPostOffice: String = "",
-    val forceManualFeeDecisions: Boolean = false,
-    val ophPersonOid: String? = null,
     val updatedFromVtj: HelsinkiDateTime? = null,
 ) {
     companion object {
@@ -115,12 +87,6 @@ data class PersonJSON(
                 residenceCode = p.residenceCode,
                 municipalityOfResidence = p.municipalityOfResidence,
                 restrictedDetailsEnabled = p.restrictedDetailsEnabled,
-                invoiceRecipientName = p.invoiceRecipientName,
-                invoicingStreetAddress = p.invoicingStreetAddress,
-                invoicingPostalCode = p.invoicingPostalCode,
-                invoicingPostOffice = p.invoicingPostOffice,
-                forceManualFeeDecisions = p.forceManualFeeDecisions,
-                ophPersonOid = p.ophPersonOid,
                 updatedFromVtj = p.updatedFromVtj,
             )
     }

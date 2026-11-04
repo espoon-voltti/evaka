@@ -137,26 +137,7 @@ class PersonController(
                         Action.Person.READ,
                         personId,
                     )
-                    (tx.getPersonById(personId) ?: throw NotFound())
-                        .hideNonPermittedPersonData(
-                            includeInvoiceAddress =
-                                accessControl.hasPermissionFor(
-                                    tx,
-                                    user,
-                                    clock,
-                                    Action.Person.READ_INVOICE_ADDRESS,
-                                    personId,
-                                ),
-                            includeOphOid =
-                                accessControl.hasPermissionFor(
-                                    tx,
-                                    user,
-                                    clock,
-                                    Action.Person.READ_OPH_OID,
-                                    personId,
-                                ),
-                        )
-                        .let { PersonJSON.from(it) }
+                    (tx.getPersonById(personId) ?: throw NotFound()).let { PersonJSON.from(it) }
                 }
             }
             .also { audit.log(Audit.PersonDetailsRead, clock) }
@@ -181,8 +162,7 @@ class PersonController(
                     )
                 }
                 vtjSyncService.ensureDependantsSynced(dbc, user.evakaUserId, clock, personId)
-                dbc.read { it.getGuardianDependants(personId) }
-                    .map(PersonJSON::from)
+                dbc.read { tx -> tx.getGuardianDependants(personId).map { PersonJSON.from(it) } }
                     .also { dependants -> audit.add(dependants.map { it.id }) }
             }
             .also { audit.log(Audit.PersonDependantRead, clock) }
