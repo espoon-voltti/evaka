@@ -36,6 +36,14 @@ evaka:
       url: ""
       user_id: ""
       xroad_client_id: ""
+    # POC only: DVV sandbox /perustiedot query. Blank url disables the POC endpoint.
+    # DVV's public demo credentials, so the sandbox works out of the box; it holds
+    # only synthetic persons. mutpT1x over mutpT1: both return the same tietoryhmät,
+    # but only mutpT1x censors turvakielto persons' data the way production does.
+    dvv_perustiedot_poc:
+      password: pwd
+      url: https://api.hiekkalaatikko.muutostietopalvelu.dvv.fi/api/v1
+      user_id: mutpT1x
     invoice:
       send_codebtor: true
     sfi:

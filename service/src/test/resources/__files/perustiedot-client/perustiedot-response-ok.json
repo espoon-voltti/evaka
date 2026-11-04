@@ -1,0 +1,3895 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "010121A962W",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "246",
+              "voimassaolo": "AKTIIVI"
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "NAIMATON"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "vanhempi": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AITIYS_VAHVISTETTU",
+          "alkupv": {
+            "arvo": "2021-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "rooli": "VANHEMPI",
+          "isaAiti": "AITI",
+          "lapsilaatu": "AITIYS_VAHVISTETTU",
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2021-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "rooli": "VANHEMPI",
+          "isaAiti": "AITI",
+          "lapsilaatu": "AU_LAPSI",
+          "vanhemmuusnimike": "AITI",
+          "loppupv": {
+            "arvo": "2021-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolo": "PASSIIVI"
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "vanhempi": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2021-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "JARJESTYSKIRJAIN",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "010188-916P",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Malla",
+          "sukunimi": "Heikkinen Tes",
+          "etunimiUTF8": "Malla",
+          "sukunimiUTF8": "Heikkinen Tes"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_SYNTYMAPAIKKA",
+          "valtiokoodi": "246"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "REKISTEROIDYSSA_PARISUHTEESSA"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1988-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUOMEEN_MUUTTOPAIVA",
+          "suomeenMuuttopv": {
+            "arvo": "1988-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "LAPSI",
+          "lapsi": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AITIYS_VAHVISTETTU",
+          "alkupv": {
+            "arvo": "2021-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "rooli": "LAPSI",
+          "isaAiti": "AITI",
+          "lapsilaatu": "AITIYS_VAHVISTETTU",
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2021-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "rooli": "LAPSI",
+          "isaAiti": "AITI",
+          "lapsilaatu": "AU_LAPSI",
+          "vanhemmuusnimike": "AITI",
+          "loppupv": {
+            "arvo": "2021-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolo": "PASSIIVI"
+        },
+        {
+          "tietoryhma": "LAPSI_SUPPEA",
+          "lapsi": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2021-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "010192-921W",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILOTUNNUS_KORJAUS",
+          "aktiivinenHenkilotunnus": "010192-921W",
+          "edellisetHenkilotunnukset": [],
+          "muutettuHenkilotunnus": "010192-921W",
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "fi",
+          "kielikoodiISO6392": "fin",
+          "alkupv": {
+            "arvo": "2024-02-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "MIES"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Hanna",
+          "sukunimi": "Kolehmainen Tes",
+          "etunimiUTF8": "Hanna",
+          "sukunimiUTF8": "Kolehmainen Tes"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "246",
+              "voimassaolo": "AKTIIVI",
+              "saamispv": {
+                "arvo": "1992-01-01",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "091"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_SYNTYMAPAIKKA",
+          "valtiokoodi": "246"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "AVIOLIITOSSA"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Mikkolantie",
+            "sv": "Mickelsvägen"
+          },
+          "katunumero": "30",
+          "huoneistokirjain": "F",
+          "huoneistonumero": "028",
+          "postinumero": "00640",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUOMEEN_MUUTTOPAIVA",
+          "suomeenMuuttopv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "huoneistonumero": "028",
+          "huoneistokirjain": "F",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000041C1F028 "
+        },
+        {
+          "tietoryhma": "LAPSI",
+          "lapsi": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "ISA",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "LAPSI",
+          "lapsi": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "ADOPTIOAITI",
+          "vanhemmuusnimike": "ISA",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "rooli": "LAPSI",
+          "isaAiti": "ADOPTIOAITI",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "vanhemmuusnimike": "ISA",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "rooli": "LAPSI",
+          "isaAiti": "AITI",
+          "lapsilaatu": "AVIOLAPSI",
+          "vanhemmuusnimike": "ISA",
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "LAPSI_SUPPEA",
+          "lapsi": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "ISA",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "LAPSI_SUPPEA",
+          "lapsi": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "ISA",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "AVIOLIITTO",
+          "puoliso": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "voimassaolo": "AKTIIVI",
+          "vihkipv": {
+            "arvo": "2012-02-15",
+            "tarkkuus": "PAIVA"
+          },
+          "vihkitapa": "KIRKOLLINEN_VIHKIMINEN",
+          "jarjestysnumero": 1
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "REKISTERIVIRANOMAINEN",
+          "viranomaisnumero": 706
+        },
+        {
+          "tietoryhma": "LAPSEN_REKISTEROINNIN_LISATIEDOT",
+          "lapsi": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "lisatiedot": {
+            "sukupuoli": "MIES",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        },
+        {
+          "tietoryhma": "LAPSEN_REKISTEROINNIN_LISATIEDOT",
+          "lapsi": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "lisatiedot": {
+            "sukupuoli": "NAINEN",
+            "syntymakotikunta": "091"
+          }
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_PUOLISOSTA",
+          "puoliso": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "lisatiedot": {
+            "sukupuoli": "NAINEN"
+          }
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "020275-9862",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Sisko Pauliina",
+          "sukunimi": "Kurkimoisio Tes",
+          "etunimiUTF8": "Sisko Pauliina",
+          "sukunimiUTF8": "Kurkimoisio Tes",
+          "alkupv": {
+            "tarkkuus": "PAIVA",
+            "arvo": "1997-04-21"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "NYKYINEN_VALINIMI",
+          "nimi": "Katriina",
+          "nimiUTF8": "Katriina",
+          "alkupv": {
+            "arvo": "2009-11-11",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2010-11-11",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "NYKYINEN_KUTSUMANIMI",
+          "nimi": "Sisko",
+          "nimiUTF8": "Sisko",
+          "alkupv": {
+            "arvo": "2013-03-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "EDELLINEN_SUKUNIMI",
+          "nimi": "Rantanen Tes",
+          "nimiUTF8": "Rantanen Tes",
+          "alkupv": {
+            "arvo": "1992-03-23",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1997-04-21",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "VIIMEKSI_NAIMATTOMANA_OLLESSA_OLLUT_SUKUNIMI",
+          "nimi": "Ahtinen",
+          "nimiUTF8": "Ahtinen",
+          "loppupv": {
+            "arvo": "1992-03-23",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "EDELLINEN_KUTSUMANIMI",
+          "nimi": "Pauliina",
+          "nimiUTF8": "Pauliina",
+          "alkupv": {
+            "arvo": "2009-09-24",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2011-11-04",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "PATRONYYMI",
+          "nimi": "Siskontytär",
+          "nimiUTF8": "Siskontytär",
+          "alkupv": {
+            "arvo": "2000-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2002-06-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "NYKYINEN_VALINIMI",
+          "nimi": "Katriina",
+          "nimiUTF8": "Katriina",
+          "alkupv": {
+            "arvo": "2009-11-11",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2010-11-11",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "NYKYINEN_KUTSUMANIMI",
+          "nimi": "Sisko",
+          "nimiUTF8": "Sisko",
+          "nimenmuutostapa": "KUTSUMANIMEN_MUUTOS",
+          "alkupv": {
+            "arvo": "2013-03-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "EDELLINEN_SUKUNIMI",
+          "nimi": "Rantanen Tes",
+          "nimiUTF8": "Rantanen Tes",
+          "alkupv": {
+            "arvo": "1992-03-23",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1997-04-21",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "VIIMEKSI_NAIMATTOMANA_OLLESSA_OLLUT_SUKUNIMI",
+          "nimi": "Ahtinen",
+          "nimiUTF8": "Ahtinen",
+          "loppupv": {
+            "arvo": "1992-03-23",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "EDELLINEN_KUTSUMANIMI",
+          "nimi": "Pauliina",
+          "nimiUTF8": "Pauliina",
+          "alkupv": {
+            "arvo": "2009-09-24",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2011-11-04",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "PATRONYYMI",
+          "nimi": "Siskontytär",
+          "nimiUTF8": "Siskontytär",
+          "alkupv": {
+            "arvo": "2000-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2002-06-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "233",
+              "voimassaolo": "AKTIIVI",
+              "saamispv": {
+                "arvo": "1980-10-08",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "564"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "AVIOLIITOSSA"
+        },
+        {
+          "tietoryhma": "TURVAKIELTO",
+          "turvaLoppuPv": {
+            "arvo": "2120-02-28",
+            "tarkkuus": "PAIVA"
+          },
+          "turvakieltoAktiivinen": true
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1967-11-07",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "katunimi",
+            "katunumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "postinumero",
+            "postitoimipaikka",
+            "rakennustunnus",
+            "osoitenumero",
+            "kuntakoodi"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "katunimi",
+            "katunumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "postinumero",
+            "postitoimipaikka",
+            "rakennustunnus",
+            "osoitenumero",
+            "kuntakoodi"
+          ]
+        },
+        {
+          "tietoryhma": "KOTIMAINEN_POSTIOSOITE",
+          "turvakiellonAlaisetKentat": [
+            "postiosoite",
+            "postinumero",
+            "postitoimipaikka"
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_ULKOMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "lahiosoite",
+            "paikkakunta",
+            "valtiokoodi",
+            "valtionimi"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_ULKOMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "lahiosoite",
+            "paikkakunta",
+            "valtiokoodi",
+            "valtionimi"
+          ]
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_POSTIOSOITE",
+          "turvakiellonAlaisetKentat": [
+            "postiosoite",
+            "postiosoiteLisarivi",
+            "postitoimipaikka",
+            "valtiokoodi",
+            "valtionimi"
+          ]
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "kuntaanMuuttopv"
+          ]
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "564",
+          "kuntaanMuuttopv": {
+            "arvo": "1974-04-30",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "1985-05-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1985-05-27",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2020-01-31",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KUNTA",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "kuntaanMuuttopv",
+            "kunnastaPoisMuuttopv"
+          ]
+        },
+        {
+          "tietoryhma": "VUODENVAIHTEEN_KUNTA",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "vuodenvaihde"
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "turvakiellonAlaisetKentat": [
+            "rakennustunnus",
+            "osoitenumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "kuntakoodi",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "kuntakoodi": "564",
+          "alkupv": {
+            "arvo": "1974-04-30",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1982-10-15",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "kuntakoodi": "564",
+          "alkupv": {
+            "arvo": "1982-10-16",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1985-05-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000048L",
+          "osoitenumero": 1,
+          "huoneistonumero": "001",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1985-05-27",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1996-09-30",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000048L1 001 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000000378",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1997-04-21",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2013-03-11",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000003781 000 "
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "turvakiellonAlaisetKentat": [
+            "rakennustunnus",
+            "osoitenumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "kuntakoodi",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_OLINPAIKASSA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "lajikoodi",
+            "numero",
+            "laitos",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_ULKOMAILLA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "valtiokoodi",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "ENTINEN_OLINPAIKASSA_ASUMINEN",
+          "kuntakoodi": "091",
+          "lajikoodi": 902,
+          "numero": "0909",
+          "laitos": "0000",
+          "alkupv": {
+            "arvo": "1996-10-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1997-04-20",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "09190209090000"
+        },
+        {
+          "tietoryhma": "TILAPAINEN_OLINPAIKASSA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "lajikoodi",
+            "numero",
+            "laitos",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_ULKOMAILLA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "valtiokoodi",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "SAHKOPOSTIOSOITE",
+          "turvakiellonAlaisetKentat": [
+            "sahkopostiosoite",
+            "lajikoodi"
+          ]
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_HENKILOTUNNUS",
+          "ulkomainenHenkilotunnus": "46711070029",
+          "sukupuoli": "NAINEN",
+          "valtiokoodi": "233",
+          "tietolahde": "HENKILO_ITSE",
+          "voimassaolo": "AKTIIVI",
+          "antopv": {
+            "arvo": "2013-09-01",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjTallennuspv": {
+            "arvo": "2013-09-25",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjVoimassaolo": "PARAS_TIEDOSSA_OLEVA"
+        },
+        {
+          "tietoryhma": "KUTSUMANIMI",
+          "nimilaji": "NYKYINEN_KUTSUMANIMI",
+          "nimi": "Sisko",
+          "nimiUTF8": "Sisko",
+          "alkupv": {
+            "arvo": "2013-03-12",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "010978-9932",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Verannan",
+          "sukunimi": "Tiikeri",
+          "etunimiUTF8": "Verannan",
+          "sukunimiUTF8": "Tiikeri",
+          "alkupv": {
+            "tarkkuus": "PAIVA",
+            "arvo": "2011-11-11"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "VIIMEKSI_NAIMATTOMANA_OLLESSA_OLLUT_SUKUNIMI",
+          "nimi": "Saad Tes",
+          "nimiUTF8": "Saad Tes",
+          "loppupv": {
+            "arvo": "2011-11-11",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "VIIMEKSI_NAIMATTOMANA_OLLESSA_OLLUT_SUKUNIMI",
+          "nimi": "Saad Tes",
+          "nimiUTF8": "Saad Tes",
+          "loppupv": {
+            "arvo": "2011-11-11",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "233",
+              "voimassaolo": "AKTIIVI",
+              "saamispv": {
+                "arvo": "1984-11-05",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "200"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_SYNTYMAPAIKKA",
+          "valtiokoodi": "422",
+          "ulkomainenSyntymapaikka": "Beirut"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "ERONNUT"
+        },
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "kuollut": true,
+          "kuolinpv": {
+            "arvo": "2018-11-08",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1974-12-02",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1985-08-12",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2018-10-28",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VUODENVAIHTEEN_KUNTA",
+          "kuntakoodi": "091",
+          "vuodenvaihde": 1985
+        },
+        {
+          "tietoryhma": "SUOMEEN_MUUTTOPAIVA",
+          "suomeenMuuttopv": {
+            "arvo": "1985-08-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "ENTINEN_OLINPAIKASSA_ASUMINEN",
+          "kuntakoodi": "091",
+          "lajikoodi": 904,
+          "numero": "0000",
+          "laitos": "0010",
+          "alkupv": {
+            "arvo": "1985-08-12",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2018-10-28",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "09190400000010"
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_HENKILOTUNNUS",
+          "ulkomainenHenkilotunnus": "34411044734",
+          "sukupuoli": "NAINEN",
+          "valtiokoodi": "233",
+          "tietolahde": "HENKILO_ITSE",
+          "voimassaolo": "AKTIIVI",
+          "antopv": {
+            "arvo": "2013-09-01",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjTallennuspv": {
+            "arvo": "2013-09-25",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjVoimassaolo": "PARAS_TIEDOSSA_OLEVA"
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "011069-9184",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Jaana Helena",
+          "sukunimi": "Pynnönen Tes",
+          "etunimiUTF8": "Jaana Helena",
+          "sukunimiUTF8": "Pynnönen Tes",
+          "alkupv": {
+            "tarkkuus": "PAIVA",
+            "arvo": "2018-03-08"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "EDELLINEN_SUKUNIMI",
+          "nimi": "Pyhälä Tes",
+          "nimiUTF8": "Pyhälä Tes",
+          "loppupv": {
+            "arvo": "2018-03-08",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "EDELLINEN_ETUNIMI",
+          "nimi": "Jaakko Heikki",
+          "nimiUTF8": "Jaakko Heikki",
+          "loppupv": {
+            "arvo": "2018-03-08",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "EDELLINEN_SUKUNIMI",
+          "nimi": "Pyhälä Tes",
+          "nimiUTF8": "Pyhälä Tes",
+          "loppupv": {
+            "arvo": "2018-03-08",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "EDELLINEN_ETUNIMI",
+          "nimi": "Jaakko Heikki",
+          "nimiUTF8": "Jaakko Heikki",
+          "loppupv": {
+            "arvo": "2018-03-08",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "233",
+              "voimassaolo": "AKTIIVI"
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "049"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "AVIOLIITOSSA"
+        },
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "kuollut": true,
+          "kuolinpv": {
+            "arvo": "2019-03-15",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KUOLLEEKSIJULISTAMISPAIVA",
+          "kuollut": true,
+          "kuolleeksijulistamispv": {
+            "arvo": "2020-03-24",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1956-12-31",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1979-10-08",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-03-15",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VUODENVAIHTEEN_KUNTA",
+          "kuntakoodi": "091",
+          "vuodenvaihde": 1970
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "kuntakoodi": "499",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-09-16",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1979-10-08",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1980-03-31",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "029",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1980-04-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1989-04-15",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1B029 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000000688",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1989-04-16",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2001-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000006881B000 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2002-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2002-11-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000000367",
+          "osoitenumero": 1,
+          "huoneistonumero": "001",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2002-11-21",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-08-20",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000003671A001 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000142M",
+          "osoitenumero": 2,
+          "jakokirjain": "c",
+          "huoneistonumero": "003",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "257",
+          "alkupv": {
+            "arvo": "2019-08-21",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-09-15",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000142M2A003c"
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900001852T",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "499",
+          "alkupv": {
+            "arvo": "2019-09-16",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2020-02-12",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900001852T1A000 "
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_HENKILOTUNNUS",
+          "ulkomainenHenkilotunnus": "47709112207",
+          "sukupuoli": "NAINEN",
+          "valtiokoodi": "233",
+          "tietolahde": "HENKILO_ITSE",
+          "voimassaolo": "AKTIIVI",
+          "antopv": {
+            "arvo": "2013-09-01",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjTallennuspv": {
+            "arvo": "2013-09-25",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjVoimassaolo": "PARAS_TIEDOSSA_OLEVA"
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "120598-9999",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "se",
+          "kielikoodiISO6392": "mis",
+          "nimi": "saame",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "MIES"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Eleanore",
+          "sukunimi": "Möira",
+          "etunimiUTF8": "Eleanore",
+          "sukunimiUTF8": "Möira"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "246",
+              "voimassaolo": "AKTIIVI"
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "890"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "REKISTEROIDYSSA_PARISUHTEESSA"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1971-06-03",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Mikonkatu",
+            "sv": "Mikaelsgatan"
+          },
+          "katunumero": "8",
+          "huoneistokirjain": "J",
+          "huoneistonumero": "001",
+          "postinumero": "00100",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "jakokirjain": "j",
+          "rakennustunnus": "9000000323",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2013-08-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_ULKOMAINEN_OSOITE",
+          "lahiosoite": "Sadama 5/7",
+          "paikkakunta": "10111 TALLINN",
+          "valtiokoodi": "233",
+          "alkupv": {
+            "arvo": "2020-01-24",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "200",
+          "kuntaanMuuttopv": {
+            "arvo": "2020-01-24",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "890",
+          "kuntaanMuuttopv": {
+            "arvo": "1972-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2020-01-23",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2013-08-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VUODENVAIHTEEN_KUNTA",
+          "kuntakoodi": "890",
+          "vuodenvaihde": 1971
+        },
+        {
+          "tietoryhma": "POISSAOLO",
+          "poissaolo": "KOTIPAIKKA_MUUALLA_KUIN_POHJOISMAISSA",
+          "siirtopv": {
+            "arvo": "2020-01-24",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VALTIO_JOHON_MUUTTANUT",
+          "valtiokoodi": "233"
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "kuntakoodi": "890"
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000006866",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "1972-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2013-07-08",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000068661 000 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000006257",
+          "osoitenumero": 2,
+          "huoneistonumero": "006",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2013-07-09",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2020-01-23",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000062572 006 "
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000000323",
+          "osoitenumero": 1,
+          "jakokirjain": "j",
+          "huoneistonumero": "001",
+          "huoneistokirjain": "J",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2013-08-26",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000003231J001j"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_ULKOMAILLA_ASUMINEN",
+          "valtiokoodi": "233",
+          "alkupv": {
+            "arvo": "2020-01-24",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "20023300000000"
+        },
+        {
+          "tietoryhma": "REKISTEROITY_PARISUHDE",
+          "osapuoli": {
+            "henkilotunnus": "301070-9814",
+            "etunimet": "Patrice",
+            "sukunimi": "Dupont Tes",
+            "etunimetUTF8": "Patrice",
+            "sukunimiUTF8": "Dupont Tes",
+            "syntymapv": {
+              "arvo": "1970-10-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "voimassaolo": "AKTIIVI",
+          "virallistamispv": {
+            "arvo": "2002-06-19",
+            "tarkkuus": "PAIVA"
+          },
+          "virallistamistapa": "REKISTEROINTI",
+          "jarjestysnumero": 1
+        },
+        {
+          "tietoryhma": "USKONTOKUNTA",
+          "uskontokunta": 275
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_HENKILOTUNNUS",
+          "ulkomainenHenkilotunnus": "37106030016",
+          "sukupuoli": "NAINEN",
+          "valtiokoodi": "233",
+          "tietolahde": "HENKILO_ITSE",
+          "voimassaolo": "AKTIIVI",
+          "antopv": {
+            "arvo": "2013-09-01",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjTallennuspv": {
+            "arvo": "2013-09-25",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjVoimassaolo": "PARAS_TIEDOSSA_OLEVA"
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_PUOLISOSTA",
+          "puoliso": {
+            "henkilotunnus": "301070-9814",
+            "etunimet": "Patrice",
+            "sukunimi": "Dupont Tes",
+            "etunimetUTF8": "Patrice",
+            "sukunimiUTF8": "Dupont Tes",
+            "syntymapv": {
+              "arvo": "1970-10-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "lisatiedot": {
+            "sukupuoli": "MIES"
+          }
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "150327-977K",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "sv",
+          "kielikoodiISO6392": "swe",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "MIES"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Adolf",
+          "sukunimi": "Lindholm Tes",
+          "etunimiUTF8": "Adolf",
+          "sukunimiUTF8": "Lindholm Tes"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "233",
+              "voimassaolo": "AKTIIVI"
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "766"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "NAIMATON"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1927-03-15",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Palosuvanto"
+          },
+          "katunumero": "5-7",
+          "huoneistokirjain": "B",
+          "huoneistonumero": "004",
+          "postinumero": "99980",
+          "postitoimipaikka": {
+            "fi": "UTSJOKI",
+            "sv": "UTSJOKI"
+          },
+          "rakennustunnus": "900000630C",
+          "osoitenumero": 2,
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Mustatie",
+            "sv": "Svartvägen"
+          },
+          "katunumero": "3b",
+          "huoneistokirjain": "C",
+          "huoneistonumero": "000",
+          "postinumero": "02400",
+          "postitoimipaikka": {
+            "fi": "KIRKKONUMMI",
+            "sv": "KYRKSLÄTT"
+          },
+          "rakennustunnus": "900000182X",
+          "osoitenumero": 1,
+          "kuntakoodi": "257",
+          "alkupv": {
+            "arvo": "2018-09-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "890",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "766",
+          "kuntaanMuuttopv": {
+            "arvo": "1965-11-01",
+            "tarkkuus": "KUUKAUSI"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-08-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-08-21",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-09-09",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "200",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-09-10",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-09-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KUNTA",
+          "kuntakoodi": "257",
+          "kuntaanMuuttopv": {
+            "arvo": "2018-09-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VUODENVAIHTEEN_KUNTA",
+          "kuntakoodi": "766",
+          "vuodenvaihde": 1970
+        },
+        {
+          "tietoryhma": "SUOMEEN_MUUTTOPAIVA",
+          "suomeenMuuttopv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "kuntakoodi": "890",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000630C",
+          "osoitenumero": 2,
+          "huoneistonumero": "004",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000630C2B004 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000005272",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "766",
+          "alkupv": {
+            "arvo": "1965-11-01",
+            "tarkkuus": "KUUKAUSI"
+          },
+          "loppupv": {
+            "arvo": "2019-08-20",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000052721 000 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000000688",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2019-08-21",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-09-02",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000006881B000 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000000622",
+          "osoitenumero": 1,
+          "huoneistonumero": "001",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2019-09-03",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-09-08",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000006221 001 "
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000182X",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "huoneistokirjain": "C",
+          "kuntakoodi": "257",
+          "alkupv": {
+            "arvo": "2018-09-20",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000182X1C000 "
+        },
+        {
+          "tietoryhma": "ENTINEN_OLINPAIKASSA_ASUMINEN",
+          "kuntakoodi": "091",
+          "lajikoodi": 901,
+          "numero": "0000",
+          "laitos": "0000",
+          "alkupv": {
+            "arvo": "2019-09-09",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-09-09",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "09190100000000"
+        },
+        {
+          "tietoryhma": "USKONTOKUNTA",
+          "uskontokunta": 275,
+          "alkupv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HISTORIAA_USKONTOKUNNASTA",
+          "uskontokunta": 590,
+          "alkupv": {
+            "arvo": "2019-08-21",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-09-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HISTORIAA_USKONTOKUNNASTA",
+          "uskontokunta": 551,
+          "loppupv": {
+            "arvo": "2019-08-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_HENKILOTUNNUS",
+          "ulkomainenHenkilotunnus": "36509062208",
+          "sukupuoli": "NAINEN",
+          "valtiokoodi": "233",
+          "tietolahde": "HENKILO_ITSE",
+          "voimassaolo": "AKTIIVI",
+          "antopv": {
+            "arvo": "2013-09-01",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjTallennuspv": {
+            "arvo": "2013-09-25",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjVoimassaolo": "PARAS_TIEDOSSA_OLEVA"
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "260260-925P",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "MIES"
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "890"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "NAIMATON"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1960-02-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Porotie"
+          },
+          "katunumero": "4-6",
+          "huoneistokirjain": "A",
+          "huoneistonumero": "001",
+          "postinumero": "99980",
+          "postitoimipaikka": {
+            "fi": "UTSJOKI",
+            "sv": "UTSJOKI"
+          },
+          "rakennustunnus": "900000630C",
+          "osoitenumero": 3,
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2018-01-21",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "200",
+          "kuntaanMuuttopv": {
+            "arvo": "1977-02-02",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "kuntakoodi": "890",
+          "kuntaanMuuttopv": {
+            "arvo": "1973-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "1977-02-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KUNTA",
+          "kuntakoodi": "890",
+          "kuntaanMuuttopv": {
+            "arvo": "2018-01-21",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VUODENVAIHTEEN_KUNTA",
+          "kuntakoodi": "200",
+          "vuodenvaihde": 1977
+        },
+        {
+          "tietoryhma": "POISSAOLO",
+          "poissaolo": "KOTIPAIKKA_POHJOISMAISSA",
+          "siirtopv": {
+            "arvo": "1977-02-02",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "kuntakoodi": "890"
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "1973-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "1977-02-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000630C",
+          "osoitenumero": 3,
+          "huoneistonumero": "001",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2018-01-21",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000630C3A001 "
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "240582-9477",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "MIES"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "AVIOLIITOSSA"
+        },
+        {
+          "tietoryhma": "TURVAKIELTO",
+          "turvaLoppuPv": {
+            "arvo": "2120-02-28",
+            "tarkkuus": "PAIVA"
+          },
+          "turvakieltoAktiivinen": true
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1965-07-08",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "katunimi",
+            "katunumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "postinumero",
+            "postitoimipaikka",
+            "rakennustunnus",
+            "osoitenumero",
+            "kuntakoodi"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "katunimi",
+            "katunumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "postinumero",
+            "postitoimipaikka",
+            "rakennustunnus",
+            "osoitenumero",
+            "kuntakoodi"
+          ]
+        },
+        {
+          "tietoryhma": "KOTIMAINEN_POSTIOSOITE",
+          "turvakiellonAlaisetKentat": [
+            "postiosoite",
+            "postinumero",
+            "postitoimipaikka"
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_ULKOMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "lahiosoite",
+            "paikkakunta",
+            "valtiokoodi",
+            "valtionimi"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_ULKOMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "lahiosoite",
+            "paikkakunta",
+            "valtiokoodi",
+            "valtionimi"
+          ]
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_POSTIOSOITE",
+          "turvakiellonAlaisetKentat": [
+            "postiosoite",
+            "postiosoiteLisarivi",
+            "postitoimipaikka",
+            "valtiokoodi",
+            "valtionimi"
+          ]
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "kuntaanMuuttopv"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KUNTA",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "kuntaanMuuttopv",
+            "kunnastaPoisMuuttopv"
+          ]
+        },
+        {
+          "tietoryhma": "VUODENVAIHTEEN_KUNTA",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "vuodenvaihde"
+          ]
+        },
+        {
+          "tietoryhma": "SUOMEEN_MUUTTOPAIVA",
+          "suomeenMuuttopv": {
+            "arvo": "1992-11-11",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "turvakiellonAlaisetKentat": [
+            "rakennustunnus",
+            "osoitenumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "kuntakoodi",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "turvakiellonAlaisetKentat": [
+            "rakennustunnus",
+            "osoitenumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "kuntakoodi",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_OLINPAIKASSA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "lajikoodi",
+            "numero",
+            "laitos",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_ULKOMAILLA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "valtiokoodi",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_OLINPAIKASSA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "kuntakoodi",
+            "lajikoodi",
+            "numero",
+            "laitos",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_ULKOMAILLA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "valtiokoodi",
+            "asuinpaikantunnus"
+          ]
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "SAHKOPOSTIOSOITE",
+          "turvakiellonAlaisetKentat": [
+            "sahkopostiosoite",
+            "lajikoodi"
+          ]
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "010515A957D",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "fi",
+          "kielikoodiISO6392": "fin",
+          "alkupv": {
+            "arvo": "2024-02-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "MIES"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Henri",
+          "sukunimi": "Kolehmainen Tes",
+          "etunimiUTF8": "Henri",
+          "sukunimiUTF8": "Kolehmainen Tes"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "246",
+              "voimassaolo": "AKTIIVI",
+              "saamispv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "091"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_SYNTYMAPAIKKA",
+          "valtiokoodi": "246"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "NAIMATON"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Mikkolantie",
+            "sv": "Mickelsvägen"
+          },
+          "katunumero": "30",
+          "huoneistokirjain": "F",
+          "huoneistonumero": "028",
+          "postinumero": "00640",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUOMEEN_MUUTTOPAIVA",
+          "suomeenMuuttopv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "huoneistonumero": "028",
+          "huoneistokirjain": "F",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000041C1F028 "
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "vanhempi": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "ADOPTIOISA",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "ADOPTIOAITI",
+          "vanhemmuusnimike": "ISA",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOAITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "rooli": "VANHEMPI",
+          "isaAiti": "ADOPTIOAITI",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "vanhemmuusnimike": "ISA",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "rooli": "VANHEMPI",
+          "isaAiti": "ADOPTIOISA",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "ISA",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "vanhempi": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "REKISTERIVIRANOMAINEN",
+          "viranomaisnumero": 706
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_VANHEMMASTA",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "lisatiedot": {
+            "henkilotunnus": "010192-921W",
+            "sukupuoli": "MIES",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_VANHEMMASTA",
+          "vanhempi": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "lisatiedot": {
+            "henkilotunnus": "020291-904J",
+            "sukupuoli": "NAINEN",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_HUOLTAJASTA",
+          "huoltaja": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "lisatiedot": {
+            "henkilotunnus": "020291-904J",
+            "sukupuoli": "NAINEN",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_HUOLTAJASTA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "lisatiedot": {
+            "henkilotunnus": "010192-921W",
+            "sukupuoli": "MIES",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "120514A9501",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "fi",
+          "kielikoodiISO6392": "fin",
+          "alkupv": {
+            "arvo": "2024-02-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Aino",
+          "sukunimi": "Kolehmainen Tes",
+          "etunimiUTF8": "Aino",
+          "sukunimiUTF8": "Kolehmainen Tes"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "233",
+              "voimassaolo": "AKTIIVI"
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "091"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "NAIMATON"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Mikkolantie",
+            "sv": "Mickelsvägen"
+          },
+          "katunumero": "30",
+          "huoneistokirjain": "F",
+          "huoneistonumero": "028",
+          "postinumero": "00640",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "huoneistonumero": "028",
+          "huoneistokirjain": "F",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000041C1F028 "
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "vanhempi": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "ISA",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "ISA",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "rooli": "VANHEMPI",
+          "isaAiti": "AITI",
+          "lapsilaatu": "AVIOLAPSI",
+          "vanhemmuusnimike": "ISA",
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "PERHESUHDE",
+          "henkilo": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "rooli": "VANHEMPI",
+          "isaAiti": "ISA",
+          "lapsilaatu": "AVIOLAPSI",
+          "vanhemmuusnimike": "AITI",
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "ISA",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "vanhempi": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "JARJESTYSKIRJAIN",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_HENKILOTUNNUS",
+          "ulkomainenHenkilotunnus": "61204244900",
+          "sukupuoli": "NAINEN",
+          "valtiokoodi": "233",
+          "tietolahde": "HENKILO_ITSE",
+          "voimassaolo": "AKTIIVI",
+          "antopv": {
+            "arvo": "2013-09-01",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjTallennuspv": {
+            "arvo": "2013-09-25",
+            "tarkkuus": "PAIVA"
+          },
+          "vtjVoimassaolo": "PARAS_TIEDOSSA_OLEVA"
+        },
+        {
+          "tietoryhma": "REKISTERIVIRANOMAINEN",
+          "viranomaisnumero": 706
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_VANHEMMASTA",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "lisatiedot": {
+            "henkilotunnus": "010192-921W",
+            "sukupuoli": "MIES",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_VANHEMMASTA",
+          "vanhempi": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "lisatiedot": {
+            "henkilotunnus": "020291-904J",
+            "sukupuoli": "NAINEN",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_HUOLTAJASTA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "lisatiedot": {
+            "henkilotunnus": "010192-921W",
+            "sukupuoli": "MIES",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        },
+        {
+          "tietoryhma": "MAASTAMUUTON_LISATIEDOT_HUOLTAJASTA",
+          "huoltaja": {
+            "henkilotunnus": "020291-904J",
+            "etunimet": "Pauli",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Pauli",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1991-02-02",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "lisatiedot": {
+            "henkilotunnus": "020291-904J",
+            "sukupuoli": "NAINEN",
+            "syntymakotikunta": "091",
+            "valtiokoodi": "246"
+          }
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "020155-997E",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "MIES"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "998",
+              "kansalaisuusnimi": "ei kenenkään maa",
+              "voimassaolo": "AKTIIVI",
+              "saamispv": {
+                "arvo": "2012-10-20",
+                "tarkkuus": "PAIVA"
+              }
+            },
+            {
+              "kansalaisuuskoodi": "004",
+              "voimassaolo": "AKTIIVI",
+              "saamispv": {
+                "arvo": "2012-11-22",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "091"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "EI_TIETOA"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1950-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Öljymäki",
+            "sv": "Oljebacka"
+          },
+          "katunumero": "11",
+          "huoneistokirjain": "C",
+          "huoneistonumero": "003",
+          "postinumero": "00780",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "900000759J",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1986-06-02",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-05-04",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUOMEEN_MUUTTOPAIVA",
+          "suomeenMuuttopv": {
+            "arvo": "2012-05-11",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-05-04",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000759J",
+          "osoitenumero": 1,
+          "huoneistonumero": "003",
+          "huoneistokirjain": "C",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1986-06-02",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000759J1C003 "
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "301062-907N",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "98",
+          "kielikoodiISO6392": "fse",
+          "nimi": "suomalainen viittomakieli",
+          "alkupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "AVIOLIITOSSA"
+        },
+        {
+          "tietoryhma": "HENKILOMATRIKKELIKIELTO",
+          "alkupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUKUTUTKIMUSKIELTO",
+          "alkupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUORAMARKKINOINTIKIELTO",
+          "alkupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "YHTEYSTIETOJEN_LUOVUTUSKIELTO",
+          "alkupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "ASIAKASREKISTERIN_PAIVITYSKIELTO",
+          "alkupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1977-08-12",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "JARJESTYSKIRJAIN",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "ASIOINTIKIELI",
+          "kielikoodi": "sv",
+          "kielikoodiISO6392": "swe",
+          "alkupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "160976-904B",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "fr",
+          "kielikoodiISO6392": "fra",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Ville",
+          "sukunimi": "Virtanen",
+          "etunimiUTF8": "Ville",
+          "sukunimiUTF8": "Virtanen"
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "nimilaji": "EDELLINEN_SUKUNIMI",
+          "nimi": "Miettinen",
+          "nimiUTF8": "Miettinen"
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "nimilaji": "EDELLINEN_SUKUNIMI",
+          "nimi": "Miettinen",
+          "nimiUTF8": "Miettinen"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "752",
+              "voimassaolo": "AKTIIVI",
+              "saamispv": {
+                "arvo": "2010-01-01",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "kuntakoodi": "200"
+        },
+        {
+          "tietoryhma": "ULKOMAINEN_SYNTYMAPAIKKA",
+          "valtiokoodi": "810"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "siviilisaaty": "EI_TIETOA"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "syntymapv": {
+            "arvo": "1997-01-31",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "198",
+          "kuntaanMuuttopv": {
+            "arvo": "2012-04-10",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA"
+        },
+        {
+          "tietoryhma": "ASIOINTIKIELI",
+          "kielikoodi": "sv",
+          "kielikoodiISO6392": "swe",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}
