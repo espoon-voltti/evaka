@@ -112,8 +112,16 @@ fun runDataRetention(
 ) {
     val started = TimeSource.Monotonic.markNow()
     val today = clock.today()
-    val deletionResult =
+    val (clearedLink, deletionResult) =
         dbc.transaction { tx ->
+            tx.lockDataRetention()
+            val duplicateLink = tx.getDuplicateLink(personId)
+            if (duplicateLink != null && !duplicateLink.mayBeCleared(today)) {
+                logger.info {
+                    "Data retention for person $personId skipped: it is still linked to its duplicate pair ${duplicateLink.otherThan(personId)}"
+                }
+                return@transaction null
+            }
             val graph = tx.loadPersonGraph(schema, personId, today, optimized)
             if (graph == null) {
                 logger.warn { "Data retention for person $personId: the person no longer exists" }
@@ -122,20 +130,51 @@ fun runDataRetention(
             val plan = graph.evaluate(today)
             if (dryRun) {
                 logger.info {
-                    "Dry run of data retention for person $personId as of $today: would ${plan.describe()}, evaluated in ${started.elapsedNow().inWholeMilliseconds} ms (${if (optimized) "optimized" else "not optimized"})"
+                    "Dry run of data retention for person $personId as of $today: would ${duplicateLink?.let { "clear the duplicate link to ${it.otherThan(personId)}, " }.orEmpty()}${plan.describe()}, evaluated in ${started.elapsedNow().inWholeMilliseconds} ms (${if (optimized) "optimized" else "not optimized"})"
                 }
                 null
             } else {
+                val childrenFrozenWithLink =
+                    duplicateLink
+                        ?.let { link ->
+                            // The other person no longer waits for this one
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.DeleteExpiredPersonData(
+                                        link.otherThan(personId),
+                                        dryRun = false,
+                                        optimized = optimized,
+                                    )
+                                ),
+                                retryCount = 3,
+                                runAt = clock.now(),
+                            )
+                            tx.clearDuplicateLink(link, clock.now())
+                        }
+                        .orEmpty()
                 asyncJobRunner.plan(tx, plan.asyncJobs, runAt = clock.now())
-                tx.executeDeletionPlan(plan, clock.now())
+                val result = tx.executeDeletionPlan(plan, clock.now())
+                Pair(
+                    duplicateLink,
+                    result.copy(
+                        childrenFrozenForKoski =
+                            childrenFrozenWithLink + result.childrenFrozenForKoski
+                    ),
+                )
             }
         } ?: return
 
     logger.info {
-        "Data retention for person $personId: deleted ${describeRowCounts(deletionResult.deletedRowCountsByTable)}, cleared ${describeRowCounts(deletionResult.clearedRowCountsByTable)}, froze ${describeFreezes(deletionResult.childrenFrozenForKoski, deletionResult.childrenFrozenForVarda)}, in ${started.elapsedNow().inWholeMilliseconds} ms (${if (optimized) "optimized" else "not optimized"})"
+        "Data retention for person $personId: ${clearedLink?.let { "cleared the duplicate link to ${it.otherThan(personId)}, " }.orEmpty()}deleted ${describeRowCounts(deletionResult.deletedRowCountsByTable)}, cleared ${describeRowCounts(deletionResult.clearedRowCountsByTable)}, froze ${describeFreezes(deletionResult.childrenFrozenForKoski, deletionResult.childrenFrozenForVarda)}, in ${started.elapsedNow().inWholeMilliseconds} ms (${if (optimized) "optimized" else "not optimized"})"
     }
 
     // Audit logs
+    if (clearedLink != null) {
+        AuditContext()
+            .add(listOf(clearedLink.duplicateId, clearedLink.originalId))
+            .log(Audit.DataRemovalDuplicateLinkCleared, clock)
+    }
     if (deletionResult.deletedRowsByTable.isNotEmpty()) {
         val audit =
             AuditContext()
