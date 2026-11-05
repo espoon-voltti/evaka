@@ -32,7 +32,7 @@ import evaka.core.invoicing.service.VoucherValueDecisionPdfData
 import evaka.core.invoicing.testDecision1
 import evaka.core.invoicing.testDecisionIncome
 import evaka.core.invoicing.testFeeThresholds
-import evaka.core.pis.PersonDTO
+import evaka.core.person.Person
 import evaka.core.placement.PlacementType
 import evaka.core.setting.SettingType
 import evaka.core.shared.ApplicationId
@@ -117,8 +117,8 @@ abstract class AbstractDecisionPdfGeneratorTest {
 
     protected open val decisionsWithoutReasonings: Set<DecisionType> = emptySet()
 
-    protected val child: PersonDTO =
-        PersonDTO(
+    protected val child: Person =
+        Person(
             testChild.id,
             null,
             Ssn.parse(testChild.ssn!!),
@@ -142,7 +142,7 @@ abstract class AbstractDecisionPdfGeneratorTest {
             "",
         )
 
-    private val restrictedChild: PersonDTO
+    private val restrictedChild: Person
         get() = child.copy(restrictedDetailsEnabled = true)
 
     protected val manager: UnitManager =

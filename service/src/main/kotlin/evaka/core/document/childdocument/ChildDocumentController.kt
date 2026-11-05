@@ -19,8 +19,8 @@ import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.getCurrentOrNextPlacement
 import evaka.core.document.getTemplate
 import evaka.core.document.isTemplateApplicableToPlacement
-import evaka.core.pis.Employee
-import evaka.core.pis.listPersonByDuplicateOf
+import evaka.core.employee.Employee
+import evaka.core.person.listPersonByDuplicateOf
 import evaka.core.placement.getPlacementsForChildDuring
 import evaka.core.shared.ChildDocumentDecisionId
 import evaka.core.shared.ChildDocumentId

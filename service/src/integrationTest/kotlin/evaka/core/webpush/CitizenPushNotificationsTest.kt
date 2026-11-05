@@ -8,8 +8,8 @@ import evaka.core.FullApplicationTest
 import evaka.core.decision.DecisionType
 import evaka.core.document.childdocument.ChildDocumentNotificationType
 import evaka.core.invoicing.service.IncomeNotificationType
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.updateDisabledPushTypes
+import evaka.core.person.NotificationCategory
+import evaka.core.person.updateDisabledPushTypes
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.CalendarEventId

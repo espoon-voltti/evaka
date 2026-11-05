@@ -38,8 +38,8 @@ import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.getSentDecisionsByApplication
 import evaka.core.decision.updateDecisionDrafts
 import evaka.core.emailclient.MockEmailClient
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPersonById
+import evaka.core.family.getParentships
+import evaka.core.person.getPersonById
 import evaka.core.placement.PlacementPlan
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanRejectReason
@@ -87,11 +87,11 @@ import evaka.core.snPreschoolClub45
 import evaka.core.snPreschoolDaycare45
 import evaka.core.test.getDecisionRowById
 import evaka.core.toApplicationType
-import evaka.core.vtjclient.dto.AddressPeriodType
-import evaka.core.vtjclient.dto.MailingAddressPeriod
-import evaka.core.vtjclient.dto.PersonAddress
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
-import evaka.core.vtjclient.service.persondetails.MockVtjPerson
+import evaka.core.vtj.AddressPeriodType
+import evaka.core.vtj.MailingAddressPeriod
+import evaka.core.vtj.MockVtjClient
+import evaka.core.vtj.MockVtjPerson
+import evaka.core.vtj.PersonAddress
 import evaka.core.webpush.ApplicationDecision
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.getPlannedCitizenPushNotifications

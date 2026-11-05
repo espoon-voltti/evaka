@@ -1,0 +1,41 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.employee
+
+import evaka.core.identity.ExternalId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.EmployeeId
+import evaka.core.shared.GroupId
+import evaka.core.shared.domain.HelsinkiDateTime
+
+data class Employee(
+    val id: EmployeeId,
+    val preferredFirstName: String?,
+    val firstName: String,
+    val lastName: String,
+    val email: String?,
+    val externalId: ExternalId?,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime?,
+    val temporaryInUnitId: DaycareId?,
+    val active: Boolean,
+    val hasSsn: Boolean,
+    val lastLogin: HelsinkiDateTime?,
+)
+
+data class TemporaryEmployee(
+    val firstName: String,
+    val lastName: String,
+    val groupIds: Set<GroupId>,
+    val hasStaffOccupancyEffect: Boolean,
+    val pinCode: PinCode?,
+)
+
+data class TemporaryEmployeeResponse(
+    val firstName: String,
+    val lastName: String,
+    val groupIds: Set<GroupId>,
+    val hasStaffOccupancyEffect: Boolean,
+)

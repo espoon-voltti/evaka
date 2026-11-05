@@ -4,7 +4,7 @@
 
 package evaka.core.absence.application
 
-import evaka.core.pis.PersonNameDetails
+import evaka.core.person.PersonNameDetails
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.EvakaUserId

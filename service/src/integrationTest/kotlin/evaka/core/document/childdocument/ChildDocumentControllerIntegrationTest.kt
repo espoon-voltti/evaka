@@ -20,7 +20,7 @@ import evaka.core.document.DocumentTemplateController
 import evaka.core.document.Question
 import evaka.core.document.RadioButtonGroupQuestionOption
 import evaka.core.document.Section
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.sficlient.MockSfiMessagesClient
 import evaka.core.sficlient.rest.EventType

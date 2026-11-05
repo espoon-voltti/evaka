@@ -7,10 +7,8 @@ import { useState, useContext, useMemo } from 'react'
 import type { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import type { UpdateStateFn } from 'lib-common/form-state'
-import type {
-  ParentshipDetailed,
-  PersonSummary
-} from 'lib-common/generated/api-types/pis'
+import type { ParentshipDetailed } from 'lib-common/generated/api-types/family'
+import type { PersonSummary } from 'lib-common/generated/api-types/person'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'

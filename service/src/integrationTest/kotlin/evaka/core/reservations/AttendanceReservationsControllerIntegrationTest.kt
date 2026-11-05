@@ -16,7 +16,7 @@ import evaka.core.dailyservicetimes.DailyServiceTimesValue
 import evaka.core.daycare.insertPreschoolTerm
 import evaka.core.holidayperiod.insertHolidayPeriod
 import evaka.core.insertServiceNeedOptions
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.placement.ScheduleType
 import evaka.core.preschoolTerm2020

@@ -19,7 +19,7 @@ import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.backupcare.getBackupCaresForChild
 import evaka.core.daycare.addUnitFeatures
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.serviceneed.insertServiceNeed
 import evaka.core.shared.AbsenceId

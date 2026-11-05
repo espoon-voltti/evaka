@@ -4,13 +4,13 @@
 
 package evaka.core.pairing
 
-import evaka.core.pis.SystemController
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
+import evaka.core.user.SystemController
 import java.util.UUID
 
 fun Database.Read.getDevice(id: MobileDeviceId): MobileDeviceDetails {

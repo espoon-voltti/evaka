@@ -8,7 +8,7 @@ import evaka.core.EmailEnv
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.NotificationCategory
+import evaka.core.person.NotificationCategory
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType

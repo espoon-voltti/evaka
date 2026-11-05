@@ -16,8 +16,8 @@ import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
 import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
-import evaka.core.pis.getPersonById
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.getPersonById
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.data.DateSet

@@ -11,7 +11,7 @@ import type {
   Term
 } from 'lib-common/application/validations'
 import type { ApplicationDetails } from 'lib-common/generated/api-types/application'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/person'
 import type LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import AdditionalDetailsSection from 'lib-components/application-editor/AdditionalDetailsSection'

@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import type { Action } from 'lib-common/generated/action'
 import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
-import type { Employee } from 'lib-common/generated/api-types/pis'
+import type { Employee } from 'lib-common/generated/api-types/employee'
 import type {
   DaycareId,
   EmployeeId,

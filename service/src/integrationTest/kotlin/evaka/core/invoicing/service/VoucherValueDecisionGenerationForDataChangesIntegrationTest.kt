@@ -6,6 +6,7 @@ package evaka.core.invoicing.service
 
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.domain.ProviderType
+import evaka.core.family.deleteParentship
 import evaka.core.feeThresholds
 import evaka.core.insertServiceNeedOptionVoucherValues
 import evaka.core.insertServiceNeedOptions
@@ -14,7 +15,6 @@ import evaka.core.invoicing.data.findValueDecisionsForChild
 import evaka.core.invoicing.domain.IncomeEffect
 import evaka.core.invoicing.domain.VoucherValueDecision
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
-import evaka.core.pis.deleteParentship
 import evaka.core.placement.cancelPlacement
 import evaka.core.placement.updatePlacementStartAndEndDate
 import evaka.core.shared.async.AsyncJob

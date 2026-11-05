@@ -4,7 +4,7 @@
 
 package evaka.core.titania
 
-import evaka.core.pis.NewEmployee
+import evaka.core.employee.NewEmployee
 import java.time.LocalDate
 
 internal val testEmployee =

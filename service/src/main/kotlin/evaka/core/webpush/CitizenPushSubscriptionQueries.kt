@@ -4,8 +4,8 @@
 
 package evaka.core.webpush
 
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.splitFirstNames
+import evaka.core.person.NotificationCategory
+import evaka.core.person.splitFirstNames
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database

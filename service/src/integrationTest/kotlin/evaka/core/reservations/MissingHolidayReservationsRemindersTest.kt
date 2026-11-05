@@ -9,7 +9,7 @@ import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.emailclient.MockEmailClient
-import evaka.core.pis.service.blockGuardian
+import evaka.core.person.blockGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.async.AsyncJob

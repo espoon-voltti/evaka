@@ -7,8 +7,8 @@ package evaka.core.sensitive
 import evaka.core.attendance.ContactInfo
 import evaka.core.backuppickup.getBackupPickupsForChild
 import evaka.core.daycare.getChild
-import evaka.core.pis.controllers.fetchFamilyContacts
-import evaka.core.pis.getPersonById
+import evaka.core.family.fetchFamilyContacts
+import evaka.core.person.getPersonById
 import evaka.core.placement.getCurrentPlacementForChild
 import evaka.core.shared.ChildId
 import evaka.core.shared.db.Database

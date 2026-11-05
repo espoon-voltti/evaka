@@ -24,7 +24,7 @@ import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
 import evaka.core.shared.PersonId

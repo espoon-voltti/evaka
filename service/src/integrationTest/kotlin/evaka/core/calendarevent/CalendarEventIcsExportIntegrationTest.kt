@@ -5,7 +5,7 @@
 package evaka.core.calendarevent
 
 import evaka.core.FullApplicationTest
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole

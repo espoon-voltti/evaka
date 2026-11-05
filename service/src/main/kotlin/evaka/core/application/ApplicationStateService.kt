@@ -52,18 +52,18 @@ import evaka.core.decision.markDecisionAccepted
 import evaka.core.decision.markDecisionRejected
 import evaka.core.decision.reasoning.clearGenericReasoningFromUnsentDecisions
 import evaka.core.decision.setDecisionDecidedBy
+import evaka.core.employee.getEmployeeUser
 import evaka.core.messaging.MessageRecipient
 import evaka.core.messaging.MessageService
 import evaka.core.messaging.MessageType
 import evaka.core.messaging.NewMessageStub
 import evaka.core.messaging.getServiceWorkerAccountId
-import evaka.core.pis.PersonDTO
-import evaka.core.pis.getDependantGuardians
-import evaka.core.pis.getEmployeeUser
-import evaka.core.pis.getGuardianDependants
-import evaka.core.pis.getPersonById
-import evaka.core.pis.personsLiveInTheSameAddress
-import evaka.core.pis.updatePersonBasicContactInfo
+import evaka.core.person.Person
+import evaka.core.person.getDependantGuardians
+import evaka.core.person.getGuardianDependants
+import evaka.core.person.getPersonById
+import evaka.core.person.personsLiveInTheSameAddress
+import evaka.core.person.updatePersonBasicContactInfo
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanExtent
 import evaka.core.placement.PlacementPlanRejectReason
@@ -183,8 +183,8 @@ class ApplicationStateService(
         now: HelsinkiDateTime,
         origin: ApplicationOrigin,
         type: ApplicationType,
-        guardian: PersonDTO,
-        child: PersonDTO,
+        guardian: Person,
+        child: Person,
         hideFromGuardian: Boolean = false,
         sentDate: LocalDate? = null,
         allowOtherGuardianAccess: Boolean = false,
@@ -256,8 +256,8 @@ class ApplicationStateService(
 
     private fun withDefaultOtherChildren(
         tx: Database.Read,
-        guardian: PersonDTO,
-        child: PersonDTO,
+        guardian: Person,
+        child: Person,
         form: ApplicationForm,
     ): ApplicationForm {
         val vtjChildren = tx.getGuardianDependants(guardian.id)

@@ -6,16 +6,16 @@ package evaka.core.timeline
 
 import evaka.core.Audit
 import evaka.core.AuditId
+import evaka.core.family.CreationModificationMetadata
+import evaka.core.family.getParentships
+import evaka.core.family.getPartnersForPerson
 import evaka.core.invoicing.data.findFeeDecisionsForHeadOfFamily
 import evaka.core.invoicing.domain.FeeAlterationType
 import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.IncomeEffect
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.service.generator.WithRange
-import evaka.core.pis.CreationModificationMetadata
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPartnersForPerson
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DaycareId

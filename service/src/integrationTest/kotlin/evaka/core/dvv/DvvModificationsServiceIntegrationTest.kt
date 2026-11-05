@@ -4,17 +4,14 @@
 
 package evaka.core.dvv
 
-import evaka.core.pis.AddressPeriodRow
-import evaka.core.pis.Creator
-import evaka.core.pis.createParentship
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPartnersForPerson
-import evaka.core.pis.getPersonById
-import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.replaceAddressPeriods
-import evaka.core.pis.service.getChildGuardians
-import evaka.core.pis.service.getGuardianChildIds
-import evaka.core.pis.updateMailingAddressesFromPeriods
+import evaka.core.family.Creator
+import evaka.core.family.createParentship
+import evaka.core.family.getParentships
+import evaka.core.family.getPartnersForPerson
+import evaka.core.person.getChildGuardians
+import evaka.core.person.getGuardianChildIds
+import evaka.core.person.getPersonById
+import evaka.core.person.getPersonBySSN
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.dev.DevFridgePartnership
@@ -26,8 +23,11 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
-import evaka.core.vtjclient.dto.AddressPeriodType
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.AddressPeriodRow
+import evaka.core.vtj.AddressPeriodType
+import evaka.core.vtj.MockVtjClient
+import evaka.core.vtj.replaceAddressPeriods
+import evaka.core.vtj.updateMailingAddressesFromPeriods
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID

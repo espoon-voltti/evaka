@@ -5,8 +5,8 @@
 package evaka.core.timeline
 
 import evaka.core.FullApplicationTest
+import evaka.core.family.CreationModificationMetadata
 import evaka.core.invoicing.domain.IncomeEffect
-import evaka.core.pis.CreationModificationMetadata
 import evaka.core.shared.IncomeId
 import evaka.core.shared.ParentshipId
 import evaka.core.shared.PersonId

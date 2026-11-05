@@ -56,7 +56,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionPlacementDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionServiceNeed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType
-import evaka.core.pis.PersonDTO
+import evaka.core.person.Person
 import evaka.core.placement.PlacementType
 import evaka.core.s3.Document
 import evaka.core.s3.DocumentKey
@@ -531,9 +531,9 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
     }
 }
 
-private fun PersonDTO.toChildBasics() = ChildBasics(id, firstName, lastName, dateOfBirth)
+private fun Person.toChildBasics() = ChildBasics(id, firstName, lastName, dateOfBirth)
 
-private fun PersonDTO.toChildDetails() =
+private fun Person.toChildDetails() =
     ChildDetails(
         PersonBasics(firstName, lastName, ssn?.value),
         dateOfBirth,
@@ -547,7 +547,7 @@ private fun PersonDTO.toChildDetails() =
         "",
     )
 
-private fun PersonDTO.toGuardian() =
+private fun Person.toGuardian() =
     Guardian(PersonBasics(firstName, lastName, ssn?.value), null, null, "", null)
 
 private fun ChildDocumentDetails.toDocumentMetadata() =
@@ -565,7 +565,7 @@ private fun ChildDocumentDetails.toDocumentMetadata() =
     )
 
 private val testChildInfo =
-    PersonDTO(
+    Person(
         id = PersonId(UUID.randomUUID()),
         duplicateOf = null,
         ssn = Ssn.parse("081222A9859"),
@@ -590,7 +590,7 @@ private val testChildInfo =
     )
 
 private val testAdultInfo =
-    PersonDTO(
+    Person(
         id = PersonId(UUID.randomUUID()),
         duplicateOf = null,
         ssn = Ssn.parse("020998-958R"),

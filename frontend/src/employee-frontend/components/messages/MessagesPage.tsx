@@ -15,7 +15,7 @@ import type {
   PostMessageBody,
   SelectableRecipientsResponse
 } from 'lib-common/generated/api-types/messaging'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/person'
 import type {
   MessageAccountId,
   MessageDraftId,

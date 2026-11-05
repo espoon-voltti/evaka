@@ -1,0 +1,608 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.employee
+
+import evaka.core.Audit
+import evaka.core.AuditLogCapture
+import evaka.core.FullApplicationTest
+import evaka.core.Sensitive
+import evaka.core.identity.ExternalId
+import evaka.core.messaging.upsertEmployeeMessageAccount
+import evaka.core.pairing.listPersonalDevices
+import evaka.core.shared.DaycareId
+import evaka.core.shared.EmployeeId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.UserRole
+import evaka.core.shared.db.Database
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareGroup
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevPersonalMobileDevice
+import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.job.ScheduledJobs
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.whenever
+import org.springframework.beans.factory.annotation.Autowired
+
+class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+
+    @Autowired lateinit var employeeController: EmployeeController
+    @Autowired lateinit var scheduledJobs: ScheduledJobs
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    private val clock = MockEvakaClock(2025, 1, 1, 12, 0)
+
+    private val auditLogCapture = AuditLogCapture()
+
+    @BeforeEach
+    fun attachAuditLogCapture() {
+        auditLogCapture.attach()
+    }
+
+    @AfterEach
+    fun detachAuditLogCapture() {
+        auditLogCapture.detach()
+    }
+
+    @Test
+    fun `no employees return empty list`() {
+        val employees = getEmployees()
+        assertEquals(listOf(), employees)
+    }
+
+    @Test
+    fun `admin gets all employees`() {
+        db.transaction {
+            it.createEmployee(requestFromEmployee(employee1))
+            it.createEmployee(requestFromEmployee(employee2))
+        }
+        val employees = getEmployees()
+        assertEquals(2, employees.size)
+        assertEquals(employee1.email, employees[0].email)
+        assertEquals(employee2.email, employees[1].email)
+    }
+
+    @Test
+    fun `admin can get employee`() {
+        val employee = db.transaction { it.createEmployee(requestFromEmployee(employee1)) }
+        assertEquals(employee.firstName, getEmployeeDetails(employee.id).firstName)
+    }
+
+    @Test
+    fun `admin can not delete employee without SSN (AD user)`() {
+        val employee = db.transaction { it.createEmployee(requestFromEmployee(employee1)) }
+
+        assertThrows<BadRequest> { deleteEmployee(employee.id) }
+    }
+
+    @Test
+    fun `admin can delete employee with SSN who has not yet logged in`() {
+        val employee =
+            createSsnEmployee(
+                NewSsnEmployee(
+                    ssn = Sensitive("010107A9917"),
+                    firstName = "First",
+                    lastName = "Last",
+                    email = "test@example.com",
+                )
+            )
+
+        deleteEmployee(employee.id)
+
+        assertEquals(0, getEmployees().size)
+    }
+
+    @Test
+    fun `admin can update employee global roles`() {
+        val employee = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+        db.transaction { tx -> tx.insert(employee) }
+
+        updateEmployeeGlobalRoles(employee.id, listOf(UserRole.FINANCE_ADMIN, UserRole.DIRECTOR))
+
+        val updated = getEmployeeDetails(employee.id)
+        assertEquals(setOf(UserRole.FINANCE_ADMIN, UserRole.DIRECTOR), updated.globalRoles.toSet())
+    }
+
+    @Test
+    fun `ADMIN role can only be set on AD-only employees by default`() {
+        val adEmployee =
+            DevEmployee(
+                externalId =
+                    ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString())
+            )
+        val sfiEmployee = DevEmployee(ssn = "010107A9917")
+        db.transaction { tx ->
+            tx.insert(adEmployee)
+            tx.insert(sfiEmployee)
+        }
+
+        // AD-only employee: canSetAsAdmin=true, setting ADMIN succeeds
+        assertTrue(getEmployeeDetails(adEmployee.id).canSetAsAdmin)
+        updateEmployeeGlobalRoles(adEmployee.id, listOf(UserRole.ADMIN))
+        assertEquals(listOf(UserRole.ADMIN), getEmployeeDetails(adEmployee.id).globalRoles)
+
+        // SFI employee: canSetAsAdmin=false, setting ADMIN is rejected
+        assertFalse(getEmployeeDetails(sfiEmployee.id).canSetAsAdmin)
+        assertThrows<BadRequest> {
+            updateEmployeeGlobalRoles(sfiEmployee.id, listOf(UserRole.ADMIN))
+        }
+    }
+
+    @Test
+    fun `ADMIN role can be set on any employee when allowSfiAdmins is true`() {
+        val adEmployee =
+            DevEmployee(
+                externalId =
+                    ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString())
+            )
+        val sfiEmployee = DevEmployee(ssn = "010107A9917")
+        db.transaction { tx ->
+            tx.insert(adEmployee)
+            tx.insert(sfiEmployee)
+        }
+        whenever(evakaEnv.allowSfiAdmins).thenReturn(true)
+
+        // Both employees: canSetAsAdmin=true, setting ADMIN succeeds
+        assertTrue(getEmployeeDetails(adEmployee.id).canSetAsAdmin)
+        updateEmployeeGlobalRoles(adEmployee.id, listOf(UserRole.ADMIN))
+        assertEquals(listOf(UserRole.ADMIN), getEmployeeDetails(adEmployee.id).globalRoles)
+
+        assertTrue(getEmployeeDetails(sfiEmployee.id).canSetAsAdmin)
+        updateEmployeeGlobalRoles(sfiEmployee.id, listOf(UserRole.ADMIN))
+        assertEquals(listOf(UserRole.ADMIN), getEmployeeDetails(sfiEmployee.id).globalRoles)
+    }
+
+    @Test
+    fun `admin can upsert employee daycare roles`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val daycare2 = DevDaycare(areaId = careArea.id)
+        val daycare3 = DevDaycare(areaId = careArea.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare3)
+            tx.insert(
+                employee,
+                unitRoles = mapOf(daycare1.id to UserRole.STAFF, daycare2.id to UserRole.STAFF),
+            )
+        }
+
+        val endDate = clock.today().plusMonths(9)
+        upsertEmployeeDaycareRoles(
+            employee.id,
+            listOf(daycare2.id, daycare3.id),
+            UserRole.SPECIAL_EDUCATION_TEACHER,
+            startDate = clock.today(),
+            endDate,
+        )
+
+        assertEquals(
+            setOf(
+                DaycareRole(daycare1.id, daycare1.name, UserRole.STAFF, null),
+                DaycareRole(
+                    daycare2.id,
+                    daycare2.name,
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
+                    endDate,
+                ),
+                DaycareRole(
+                    daycare3.id,
+                    daycare3.name,
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
+                    endDate,
+                ),
+            ),
+            getEmployeeDetails(employee.id).daycareRoles.toSet(),
+        )
+        assertEquals(0, getEmployeeDetails(employee.id).scheduledDaycareRoles.size)
+        db.read { assertTrue(it.hasActiveMessagingAccount(employee.id)) }
+    }
+
+    @Test
+    fun `admin can schedule employee daycare roles`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val daycare2 = DevDaycare(areaId = careArea.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(employee)
+        }
+
+        val startDate = clock.today().plusMonths(1)
+        val endDate = clock.today().plusMonths(9)
+        upsertEmployeeDaycareRoles(
+            employee.id,
+            listOf(daycare1.id, daycare2.id),
+            UserRole.SPECIAL_EDUCATION_TEACHER,
+            startDate,
+            endDate,
+        )
+
+        assertEquals(0, getEmployeeDetails(employee.id).daycareRoles.size)
+        assertEquals(
+            listOf(
+                ScheduledDaycareRole(
+                    daycare1.id,
+                    daycare1.name,
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
+                    startDate,
+                    endDate,
+                ),
+                ScheduledDaycareRole(
+                    daycare2.id,
+                    daycare2.name,
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
+                    startDate,
+                    endDate,
+                ),
+            ),
+            getEmployeeDetails(employee.id).scheduledDaycareRoles,
+        )
+        db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
+
+        auditLogCapture
+            .event(Audit.EmployeeUpdateDaycareRoles)
+            .assertContext { add(employee.id).add(listOf(daycare1.id, daycare2.id)) }
+            .assertMeta(
+                "role" to UserRole.SPECIAL_EDUCATION_TEACHER,
+                "startDate" to startDate,
+                "endDate" to endDate,
+                "scheduled" to true,
+            )
+            .assertMinDate(startDate)
+    }
+
+    @Test
+    fun `scheduled role grant and its activation form an audit event chain by employee id`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(employee)
+        }
+
+        val startDate = clock.today().plusDays(7)
+        val endDate = clock.today().plusMonths(6)
+        upsertEmployeeDaycareRoles(
+            employee.id,
+            listOf(daycare1.id),
+            UserRole.STAFF,
+            startDate,
+            endDate,
+        )
+
+        auditLogCapture.event(Audit.EmployeeUpdateDaycareRoles).assertContext {
+            add(employee.id).add(daycare1.id)
+        }
+
+        // the nightly job activates the scheduled role once the start date has come
+        scheduledJobs.syncAclRows(
+            db,
+            MockEvakaClock(HelsinkiDateTime.of(startDate, LocalTime.of(0, 5))),
+        )
+
+        // both events in the chain carry the same employee id in their context
+        auditLogCapture
+            .event(Audit.UnitAclActivateScheduled)
+            .assertContext { add(employee.id).add(daycare1.id) }
+            .assertMeta(
+                "role" to UserRole.STAFF,
+                "startDate" to startDate,
+                "endDate" to endDate,
+            )
+    }
+
+    @Test
+    fun `admin can delete employee daycare role`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val daycare2 = DevDaycare(areaId = careArea.id)
+        val daycare1Group = DevDaycareGroup(daycareId = daycare1.id)
+        val daycare2Group = DevDaycareGroup(daycareId = daycare2.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare1Group)
+            tx.insert(daycare2Group)
+            tx.insert(
+                employee,
+                unitRoles = mapOf(daycare1.id to UserRole.STAFF, daycare2.id to UserRole.STAFF),
+                groupAcl =
+                    mapOf(
+                        daycare1.id to listOf(daycare1Group.id),
+                        daycare2.id to listOf(daycare2Group.id),
+                    ),
+            )
+            tx.upsertEmployeeMessageAccount(employee.id)
+        }
+
+        deleteEmployeeDaycareRoles(id = employee.id, daycareId = daycare1.id)
+
+        val updated = getEmployeeDetails(employee.id)
+        assertEquals(
+            listOf(DaycareRole(daycare2.id, daycare2.name, UserRole.STAFF, null)),
+            updated.daycareRoles,
+        )
+        assertEquals(
+            listOf(
+                DaycareGroupRole(daycare2.id, daycare2.name, daycare2Group.id, daycare2Group.name)
+            ),
+            updated.daycareGroupRoles,
+        )
+        db.read { assertTrue(it.hasActiveMessagingAccount(employee.id)) }
+    }
+
+    @Test
+    fun `admin can delete employee all daycare roles`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val daycare2 = DevDaycare(areaId = careArea.id)
+        val daycare1Group = DevDaycareGroup(daycareId = daycare1.id)
+        val daycare2Group = DevDaycareGroup(daycareId = daycare2.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare1Group)
+            tx.insert(daycare2Group)
+            tx.insert(
+                employee,
+                unitRoles = mapOf(daycare1.id to UserRole.STAFF, daycare2.id to UserRole.STAFF),
+                groupAcl =
+                    mapOf(
+                        daycare1.id to listOf(daycare1Group.id),
+                        daycare2.id to listOf(daycare2Group.id),
+                    ),
+            )
+            tx.upsertEmployeeMessageAccount(employee.id)
+        }
+
+        deleteEmployeeDaycareRoles(id = employee.id, daycareId = null)
+
+        val updated = getEmployeeDetails(employee.id)
+        assertEquals(emptyList(), updated.daycareRoles)
+        assertEquals(emptyList(), updated.daycareGroupRoles)
+        db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
+
+        auditLogCapture
+            .event(Audit.EmployeeDeleteDaycareRoles)
+            .assertContext { add(employee.id).add(listOf(daycare1.id, daycare2.id)) }
+            .assertMeta(
+                "daycareId" to null,
+                "roles" to listOf(UserRole.STAFF),
+                "deletedAclCount" to 2,
+                "deletedScheduledCount" to 0,
+            )
+    }
+
+    @Test
+    fun `personal mobile device is deleted in async job after supervisor role is changed to staff`() {
+        val careArea = DevCareArea()
+        val daycare = DevDaycare(areaId = careArea.id)
+        val supervisor = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare)
+            tx.insert(supervisor, unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(DevPersonalMobileDevice(employeeId = supervisor.id))
+        }
+
+        upsertEmployeeDaycareRoles(
+            supervisor.id,
+            listOf(daycare.id),
+            UserRole.STAFF,
+            startDate = clock.today(),
+            endDate = null,
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusHours(1)))
+
+        db.read { tx ->
+            assertEquals(emptyList(), tx.listPersonalDevices(employeeId = supervisor.id))
+        }
+    }
+
+    @Test
+    fun `personal mobile device is deleted in async job after all daycare roles are deleted`() {
+        val careArea = DevCareArea()
+        val daycare = DevDaycare(areaId = careArea.id)
+        val supervisor = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare)
+            tx.insert(supervisor, unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(DevPersonalMobileDevice(employeeId = supervisor.id))
+        }
+
+        deleteEmployeeDaycareRoles(id = supervisor.id, daycareId = null)
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusHours(1)))
+
+        db.read { tx ->
+            assertEquals(emptyList(), tx.listPersonalDevices(employeeId = supervisor.id))
+        }
+    }
+
+    @Test
+    fun `personal mobile device is deleted in async job after admin role is removed`() {
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { tx ->
+            tx.insert(admin)
+            tx.insert(DevPersonalMobileDevice(employeeId = admin.id))
+        }
+
+        updateEmployeeGlobalRoles(admin.id, emptyList())
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusHours(1)))
+
+        db.read { tx -> assertEquals(emptyList(), tx.listPersonalDevices(employeeId = admin.id)) }
+    }
+
+    @Test
+    fun `a new employee can be added using an ssn`() {
+        val request =
+            NewSsnEmployee(
+                ssn = Sensitive("010107A9917"),
+                firstName = "First",
+                lastName = "Last",
+                email = "test@example.com",
+            )
+        val response = createSsnEmployee(request)
+        val employee = getEmployeeDetails(response.id)
+        assertEquals(request.firstName, employee.firstName)
+        assertEquals(request.lastName, employee.lastName)
+        assertEquals(request.email, employee.email)
+        assertTrue(employee.active)
+    }
+
+    @Test
+    fun `admin can not update email of employee without SSN (AD user)`() {
+        val employee = db.transaction { it.createEmployee(requestFromEmployee(employee1)) }
+
+        assertThrows<BadRequest> { updateEmployeeEmail(employee.id, "test@example.com") }
+    }
+
+    @Test
+    fun `admin can update employee email`() {
+        val employee =
+            createSsnEmployee(
+                NewSsnEmployee(
+                    ssn = Sensitive("010107A9917"),
+                    firstName = "First",
+                    lastName = "Last",
+                    email = "test@example.com",
+                )
+            )
+
+        updateEmployeeEmail(employee.id, "updated@example.com")
+
+        assertEquals("updated@example.com", getEmployeeDetails(employee.id).email)
+    }
+
+    val adminUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+
+    fun getEmployees() = employeeController.getEmployees(dbInstance(), adminUser, clock)
+
+    fun getEmployeeDetails(id: EmployeeId) =
+        employeeController.getEmployeeDetails(dbInstance(), adminUser, clock, id)
+
+    fun upsertEmployeeDaycareRoles(
+        id: EmployeeId,
+        daycareIds: List<DaycareId>,
+        role: UserRole,
+        startDate: LocalDate,
+        endDate: LocalDate?,
+    ) =
+        employeeController.upsertEmployeeDaycareRoles(
+            dbInstance(),
+            adminUser,
+            clock,
+            id,
+            EmployeeController.UpsertEmployeeDaycareRolesRequest(
+                daycareIds,
+                role,
+                startDate,
+                endDate,
+            ),
+        )
+
+    fun updateEmployeeGlobalRoles(id: EmployeeId, roles: List<UserRole>) =
+        employeeController.updateEmployeeGlobalRoles(dbInstance(), adminUser, clock, id, roles)
+
+    fun deleteEmployee(id: EmployeeId) =
+        employeeController.deleteEmployee(dbInstance(), adminUser, clock, id)
+
+    fun deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: DaycareId?) =
+        employeeController.deleteEmployeeDaycareRoles(dbInstance(), adminUser, clock, id, daycareId)
+
+    fun createSsnEmployee(employee: NewSsnEmployee) =
+        employeeController.createSsnEmployee(dbInstance(), adminUser, clock, employee)
+
+    fun updateEmployeeEmail(id: EmployeeId, email: String?) =
+        employeeController.updateEmployeeEmail(
+            dbInstance(),
+            adminUser,
+            clock,
+            id,
+            EmployeeController.EmployeeEmailRequest(email),
+        )
+
+    fun requestFromEmployee(employee: Employee) =
+        NewEmployee(
+            email = employee.email,
+            firstName = employee.firstName,
+            lastName = employee.lastName,
+            externalId = employee.externalId,
+            employeeNumber = null,
+            temporaryInUnitId = null,
+            active = true,
+        )
+
+    val employee1 =
+        Employee(
+            email = "employee1@espoo.fi",
+            preferredFirstName = null,
+            firstName = "etunimi1",
+            lastName = "sukunimi1",
+            externalId =
+                ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
+            created = HelsinkiDateTime.now(),
+            updated = HelsinkiDateTime.now(),
+            id = EmployeeId(UUID.randomUUID()),
+            temporaryInUnitId = null,
+            active = true,
+            hasSsn = false,
+            lastLogin = null,
+        )
+
+    val employee2 =
+        Employee(
+            email = "employee2@espoo.fi",
+            preferredFirstName = null,
+            firstName = "etunimi2",
+            lastName = "sukunimi2",
+            externalId =
+                ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
+            created = HelsinkiDateTime.now(),
+            updated = HelsinkiDateTime.now(),
+            id = EmployeeId(UUID.randomUUID()),
+            temporaryInUnitId = null,
+            active = true,
+            hasSsn = false,
+            lastLogin = null,
+        )
+
+    private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) = createQuery {
+        sql(
+            """
+        SELECT EXISTS (SELECT 1 FROM message_account WHERE employee_id = ${bind(employeeId)} AND active)
+    """
+        )
+    }
+        .exactlyOne<Boolean>()
+}

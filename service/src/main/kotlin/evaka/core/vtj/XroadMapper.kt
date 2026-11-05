@@ -1,0 +1,39 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.vtj
+
+import evaka.core.VtjXroadClientEnv
+import evaka.core.VtjXroadServiceEnv
+import evaka.core.vtj.soap.ObjectFactory
+import evaka.core.vtj.soap.XRoadClientIdentifierType
+import evaka.core.vtj.soap.XRoadObjectType
+import evaka.core.vtj.soap.XRoadServiceIdentifierType
+import jakarta.xml.bind.JAXBElement
+
+private val factory = ObjectFactory()
+
+fun VtjXroadClientEnv.toClientHeader(): JAXBElement<XRoadClientIdentifierType>? =
+    XRoadClientIdentifierType()
+        .also {
+            it.objectType = XRoadObjectType.SUBSYSTEM
+            it.xRoadInstance = instance
+            it.memberClass = memberClass
+            it.memberCode = memberCode
+            it.subsystemCode = subsystemCode
+        }
+        .let { factory.createClient(it) }
+
+fun VtjXroadServiceEnv.toServiceHeader(): JAXBElement<XRoadServiceIdentifierType> =
+    XRoadServiceIdentifierType()
+        .also {
+            it.objectType = XRoadObjectType.SERVICE
+            it.xRoadInstance = instance
+            it.memberClass = memberClass
+            it.memberCode = memberCode
+            it.subsystemCode = subsystemCode
+            it.serviceCode = serviceCode
+            it.serviceVersion = serviceVersion
+        }
+        .let { factory.createService(it) }

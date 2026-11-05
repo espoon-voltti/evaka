@@ -5,8 +5,8 @@
 package evaka.core.emailclient
 
 import evaka.core.PureJdbiTest
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.updateDisabledEmailTypes
+import evaka.core.person.NotificationCategory
+import evaka.core.person.updateDisabledEmailTypes
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert

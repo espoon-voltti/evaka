@@ -13,13 +13,13 @@ import evaka.core.application.fetchApplicationDetails
 import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
 import evaka.core.decision.getDecisionsByApplication
+import evaka.core.employee.getEmployeeRoles
 import evaka.core.messaging.MessageRecipient
 import evaka.core.messaging.MessageService
 import evaka.core.messaging.MessageType
 import evaka.core.messaging.NewMessageStub
 import evaka.core.messaging.upsertEmployeeMessageAccount
 import evaka.core.messaging.upsertRecipientThreadParticipants
-import evaka.core.pis.getEmployeeRoles
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId

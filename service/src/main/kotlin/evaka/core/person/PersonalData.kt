@@ -1,0 +1,66 @@
+//  SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+//  SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.person
+
+import evaka.core.ConstList
+import evaka.core.shared.db.DatabaseEnum
+
+data class PersonalDataUpdate(
+    val preferredName: String? = null,
+    val phone: String? = null,
+    val backupPhone: String? = null,
+    val email: String? = null,
+)
+
+@ConstList("notificationCategories")
+enum class NotificationCategory : DatabaseEnum {
+    /**
+     * Messages sent in response to a user's action (e.g. "your application was received"). These
+     * messages are always sent to the receiver.
+     */
+    TRANSACTIONAL,
+
+    /**
+     * Notifications about new eVaka messages from daycare staff including bulletins sent by unit
+     * supervisor
+     */
+    MESSAGE_NOTIFICATION,
+
+    /** Notifications about new general bulletins from municipal accounts (tiedotteet) */
+    BULLETIN_NOTIFICATION,
+
+    /** Income related notifications such as reminders about expiring or missing income info */
+    INCOME_NOTIFICATION,
+
+    /** Notifications about new calendar events of daycare groups */
+    CALENDAR_EVENT_NOTIFICATION,
+
+    /**
+     * Notifications about new decisions (e.g. daycare decision, assistance decision, finance
+     * decisions)
+     */
+    DECISION_NOTIFICATION,
+
+    /**
+     * Notifications about *official documents* that are not decisions (e.g. vasu, pedagogical
+     * assesments, etc.)
+     */
+    DOCUMENT_NOTIFICATION,
+
+    /** Notifications about informal documents (photos of children's drawings, etc.) */
+    INFORMAL_DOCUMENT_NOTIFICATION,
+
+    /** Reminders about making attendance reservations */
+    ATTENDANCE_RESERVATION_NOTIFICATION,
+
+    /** Discussion time related notifications */
+    DISCUSSION_TIME_NOTIFICATION;
+
+    override val sqlType: String = "notification_category"
+
+    companion object {
+        val alwaysEnabled: Set<NotificationCategory> = setOf(TRANSACTIONAL)
+    }
+}

@@ -12,7 +12,7 @@ import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.invoicing.data.insertIncome
 import evaka.core.invoicing.domain.IncomeEffect
 import evaka.core.invoicing.domain.IncomeRequest
-import evaka.core.pis.NotificationCategory
+import evaka.core.person.NotificationCategory
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner

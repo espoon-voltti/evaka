@@ -10,8 +10,8 @@ import evaka.core.daycare.getDaycare
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.service.getChildGuardiansAndFosterParents
+import evaka.core.person.NotificationCategory
+import evaka.core.person.getChildGuardiansAndFosterParents
 import evaka.core.placement.getPlacementsForChildDuring
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner

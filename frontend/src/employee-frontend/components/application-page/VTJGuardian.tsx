@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'wouter'
 
 import { isLoading } from 'lib-common/api'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/person'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { pendingQuery, useQueryResult } from 'lib-common/query'
 import ListGrid from 'lib-components/layout/ListGrid'

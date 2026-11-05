@@ -70,6 +70,8 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.emailclient.MessageThreadData
 import evaka.core.emailclient.MockEmailClient
+import evaka.core.employee.Employee
+import evaka.core.employee.getEmployees
 import evaka.core.finance.notes.createFinanceNote
 import evaka.core.holidayperiod.HolidayPeriodCreate
 import evaka.core.holidayperiod.QuestionnaireBody
@@ -130,11 +132,8 @@ import evaka.core.pairing.challengePairing
 import evaka.core.pairing.incrementAttempts
 import evaka.core.pairing.initPairing
 import evaka.core.pairing.respondPairingChallengeCreateDevice
-import evaka.core.pis.Employee
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.PersonDTO
-import evaka.core.pis.getEmployees
-import evaka.core.pis.service.VtjSyncService
+import evaka.core.person.NotificationCategory
+import evaka.core.person.Person
 import evaka.core.placement.PlacementPlanService
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.PlacementType
@@ -177,7 +176,8 @@ import evaka.core.user.EvakaUser
 import evaka.core.user.EvakaUserType
 import evaka.core.user.updateLastStrongLogin
 import evaka.core.user.updateWeakLoginCredentials
-import evaka.core.vtjclient.service.persondetails.DummyIdpVtjClient
+import evaka.core.vtj.DummyIdpVtjClient
+import evaka.core.vtj.VtjSyncService
 import evaka.core.webpush.PushNotificationCategory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
@@ -2194,8 +2194,8 @@ data class DevPerson(
     val duplicateOf: PersonId? = null,
     val disabledEmailTypes: Set<NotificationCategory> = emptySet(),
 ) {
-    fun toPersonDTO() =
-        PersonDTO(
+    fun toPerson() =
+        Person(
             id = this.id,
             duplicateOf = this.duplicateOf,
             ssn = this.ssn?.let { Ssn.parse(it) ?: throw BadRequest("Invalid SSN") },

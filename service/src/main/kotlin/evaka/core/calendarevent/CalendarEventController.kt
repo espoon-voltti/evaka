@@ -10,9 +10,9 @@ import evaka.core.backupcare.getBackupCareChildrenInGroup
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.getDaycare
 import evaka.core.daycare.getDaycareGroups
-import evaka.core.pis.PersonDTO
-import evaka.core.pis.getPersonById
-import evaka.core.pis.service.getChildGuardiansAndFosterParents
+import evaka.core.person.Person
+import evaka.core.person.getChildGuardiansAndFosterParents
+import evaka.core.person.getPersonById
 import evaka.core.placement.getDaycarePlacements
 import evaka.core.placement.getGroupPlacementChildren
 import evaka.core.shared.CalendarEventId
@@ -1051,7 +1051,7 @@ private fun getPeriodOfTimes(
     else FiniteDateRange(default, default)
 }
 
-private fun getRecipientsForChild(tx: Database.Transaction, childId: ChildId): List<PersonDTO> {
+private fun getRecipientsForChild(tx: Database.Transaction, childId: ChildId): List<Person> {
     return tx.getChildGuardiansAndFosterParents(childId, LocalDate.now()).mapNotNull {
         tx.getPersonById(it)
     }

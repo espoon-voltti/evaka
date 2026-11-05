@@ -4,10 +4,10 @@
 
 package evaka.core.shared.security
 
-import evaka.core.pis.employeePinIsCorrect
-import evaka.core.pis.markEmployeeLastLogin
-import evaka.core.pis.resetEmployeePinFailureCount
-import evaka.core.pis.updateEmployeePinFailureCountAndCheckIfLocked
+import evaka.core.employee.employeePinIsCorrect
+import evaka.core.employee.markEmployeeLastLogin
+import evaka.core.employee.resetEmployeePinFailureCount
+import evaka.core.employee.updateEmployeePinFailureCountAndCheckIfLocked
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.Tracing

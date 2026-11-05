@@ -14,8 +14,8 @@ import type { StateOf } from 'lib-common/form/types'
 import type {
   NotificationCategory,
   NotificationSettings
-} from 'lib-common/generated/api-types/pis'
-import { notificationCategories } from 'lib-common/generated/api-types/pis'
+} from 'lib-common/generated/api-types/person'
+import { notificationCategories } from 'lib-common/generated/api-types/person'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'

@@ -7,7 +7,7 @@ import React, { createContext, useMemo } from 'react'
 import type { Result } from 'lib-common/api'
 import { Loading } from 'lib-common/api'
 import type { Action } from 'lib-common/generated/action'
-import type { PersonBasicInfo } from 'lib-common/generated/api-types/pis'
+import type { PersonBasicInfo } from 'lib-common/generated/api-types/person'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 

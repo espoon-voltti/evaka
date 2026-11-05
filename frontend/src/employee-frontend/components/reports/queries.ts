@@ -5,7 +5,10 @@
 import { Queries } from 'lib-common/query'
 
 import { sendJamixOrders } from '../../generated/api-clients/jamix'
-import { mergePeople, safeDeletePerson } from '../../generated/api-clients/pis'
+import {
+  mergePeople,
+  safeDeletePerson
+} from '../../generated/api-clients/person'
 import {
   clearTitaniaErrors,
   getApplicationsReport,

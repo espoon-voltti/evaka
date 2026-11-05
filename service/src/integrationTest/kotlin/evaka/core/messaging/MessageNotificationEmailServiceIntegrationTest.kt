@@ -12,7 +12,7 @@ import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.MockEmailClient
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.MessageAccountId

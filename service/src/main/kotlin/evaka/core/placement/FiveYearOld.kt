@@ -4,7 +4,7 @@
 
 package evaka.core.placement
 
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.shared.ChildId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.FiniteDateRange

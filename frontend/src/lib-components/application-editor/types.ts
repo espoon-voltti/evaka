@@ -25,7 +25,7 @@ import type {
   Language,
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
-import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
+import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/person'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import type {

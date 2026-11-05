@@ -11,7 +11,7 @@ import type {
   MobileUser,
   User
 } from 'lib-common/api-types/employee-auth'
-import type { PinLoginResponse } from 'lib-common/generated/api-types/pis'
+import type { PinLoginResponse } from 'lib-common/generated/api-types/user'
 import type { JsonOf } from 'lib-common/json'
 
 import { client } from '../client'

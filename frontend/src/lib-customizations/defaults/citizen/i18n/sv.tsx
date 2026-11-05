@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 import React from 'react'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
-import type { EmailVerification } from 'lib-common/generated/api-types/pis'
+import type { EmailVerification } from 'lib-common/generated/api-types/person'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'

@@ -8,7 +8,7 @@ import React, { createContext, useCallback, useContext, useMemo } from 'react'
 
 import type { Result } from 'lib-common/api'
 import { Loading } from 'lib-common/api'
-import type { CitizenUserDetails } from 'lib-common/generated/api-types/pis'
+import type { CitizenUserDetails } from 'lib-common/generated/api-types/person'
 import type {
   CitizenAuthLevel,
   CitizenFeatures

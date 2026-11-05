@@ -5,11 +5,11 @@
 package evaka.trevaka.invoice
 
 import evaka.core.invoicing.domain.PersonDetailed
-import evaka.core.pis.PersonDTO
+import evaka.core.person.Person
 
 fun expectedRowLength(lastPos: Int, lastLength: Int) = lastPos + lastLength - 1
 
-fun PersonDTO.toPersonDetailed() =
+fun Person.toPersonDetailed() =
     PersonDetailed(
         id = this.id,
         dateOfBirth = this.dateOfBirth,

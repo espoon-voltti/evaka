@@ -7,7 +7,7 @@ import { Queries } from 'lib-common/query'
 import {
   getEmployeePreferredFirstName,
   setEmployeePreferredFirstName
-} from '../../generated/api-clients/pis'
+} from '../../generated/api-clients/employee'
 
 const q = new Queries()
 

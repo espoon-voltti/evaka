@@ -4,7 +4,7 @@
 
 package evaka.core.mcp
 
-import evaka.core.pis.getEmployee
+import evaka.core.employee.getEmployee
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.EmployeeId

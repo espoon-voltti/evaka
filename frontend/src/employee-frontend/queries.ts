@@ -12,20 +12,22 @@ import {
   getUnits
 } from './generated/api-clients/daycare'
 import {
+  getEmployees,
+  getFinanceDecisionHandlers
+} from './generated/api-clients/employee'
+import {
   getPairingStatus,
   postPairing,
   postPairingResponse,
   putMobileDeviceName
 } from './generated/api-clients/pairing'
 import {
-  getEmployees,
-  getFinanceDecisionHandlers,
   getOrCreatePersonBySsn,
   getPersonDependants,
   getPersonIdentity,
   previewVtjPerson,
   searchPerson
-} from './generated/api-clients/pis'
+} from './generated/api-clients/person'
 import { getChildDocumentDecisionsReportNotificationCount } from './generated/api-clients/reports'
 import { getServiceNeedOptions } from './generated/api-clients/serviceneed'
 

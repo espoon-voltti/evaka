@@ -6,8 +6,8 @@ package evaka.core.shared.auth
 
 import com.google.common.hash.HashCode
 import com.google.common.hash.Hashing
-import evaka.core.pis.EmployeeRoles
-import evaka.core.pis.EmployeeUser
+import evaka.core.employee.EmployeeRoles
+import evaka.core.employee.EmployeeUser
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.MobileDeviceId

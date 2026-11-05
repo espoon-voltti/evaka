@@ -11,7 +11,7 @@ import type { Result } from 'lib-common/api'
 import type {
   GuardiansResponse,
   PersonJSON
-} from 'lib-common/generated/api-types/pis'
+} from 'lib-common/generated/api-types/person'
 import type { ChildId, PersonId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'

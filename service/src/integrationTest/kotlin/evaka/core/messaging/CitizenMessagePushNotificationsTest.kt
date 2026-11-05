@@ -5,9 +5,9 @@
 package evaka.core.messaging
 
 import evaka.core.FullApplicationTest
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.service.insertGuardian
-import evaka.core.pis.updateDisabledPushTypes
+import evaka.core.person.NotificationCategory
+import evaka.core.person.insertGuardian
+import evaka.core.person.updateDisabledPushTypes
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MessageRecipientId
 import evaka.core.shared.async.AsyncJob

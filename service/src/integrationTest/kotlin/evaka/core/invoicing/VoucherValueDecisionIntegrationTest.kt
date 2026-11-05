@@ -14,6 +14,7 @@ import evaka.core.daycare.domain.ProviderType
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.emailclient.MockEmailClient
+import evaka.core.family.ParentshipController
 import evaka.core.feeThresholds
 import evaka.core.insertServiceNeedOptionVoucherValues
 import evaka.core.insertServiceNeedOptions
@@ -26,9 +27,8 @@ import evaka.core.invoicing.data.getVoucherValueDecision
 import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.domain.VoucherValueDecision
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.controllers.ParentshipController
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.NotificationCategory
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementController
 import evaka.core.placement.PlacementCreateRequestBody
 import evaka.core.placement.PlacementType

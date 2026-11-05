@@ -10,8 +10,8 @@ import type {
   ApplicationType,
   PaperApplicationCreateRequest
 } from 'lib-common/generated/api-types/application'
-import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { CreatePersonBody } from 'lib-common/generated/api-types/person'
+import type { PersonJSON } from 'lib-common/generated/api-types/person'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'

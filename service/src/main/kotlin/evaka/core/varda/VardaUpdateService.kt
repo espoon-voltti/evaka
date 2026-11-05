@@ -7,7 +7,7 @@ package evaka.core.varda
 import evaka.core.OphEnv
 import evaka.core.VardaEnv
 import evaka.core.invoicing.service.generator.getChildFamilyRelations
-import evaka.core.pis.updateOphPersonOid
+import evaka.core.person.updateOphPersonOid
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId

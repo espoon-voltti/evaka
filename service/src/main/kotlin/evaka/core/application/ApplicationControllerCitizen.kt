@@ -19,12 +19,11 @@ import evaka.core.invoicing.data.getVoucherValueDecisionByLiableCitizen
 import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.service.FeeDecisionService
 import evaka.core.invoicing.service.VoucherValueDecisionService
-import evaka.core.pis.getDependantGuardians
-import evaka.core.pis.getPersonById
-import evaka.core.pis.getPersonNameDetailsById
-import evaka.core.pis.isDuplicate
-import evaka.core.pis.personsLiveInTheSameAddress
-import evaka.core.pis.service.VtjSyncService
+import evaka.core.person.getDependantGuardians
+import evaka.core.person.getPersonById
+import evaka.core.person.getPersonNameDetailsById
+import evaka.core.person.isDuplicate
+import evaka.core.person.personsLiveInTheSameAddress
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DecisionId
@@ -41,6 +40,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import evaka.core.vtj.VtjSyncService
 import java.time.LocalDate
 import java.util.UUID
 import org.springframework.http.MediaType

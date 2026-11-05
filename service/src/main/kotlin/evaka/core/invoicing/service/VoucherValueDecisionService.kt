@@ -30,7 +30,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pis.NotificationCategory
+import evaka.core.person.NotificationCategory
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentLocation
 import evaka.core.s3.DocumentService

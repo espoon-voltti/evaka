@@ -37,7 +37,7 @@ import type {
   ChildDocumentDetails,
   ChildDocumentWithPermittedActions
 } from 'lib-common/generated/api-types/document'
-import type { Employee } from 'lib-common/generated/api-types/pis'
+import type { Employee } from 'lib-common/generated/api-types/employee'
 import type {
   ChildDocumentDecisionId,
   ChildDocumentId,

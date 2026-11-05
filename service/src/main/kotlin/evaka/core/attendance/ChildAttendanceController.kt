@@ -17,8 +17,8 @@ import evaka.core.daycare.getClubTerm
 import evaka.core.daycare.getPreschoolTerm
 import evaka.core.note.child.daily.getChildDailyNotesForChildren
 import evaka.core.note.child.sticky.getChildStickyNotesForChildren
-import evaka.core.pis.service.getFosterParentsForChildren
-import evaka.core.pis.service.getGuardiansForChildren
+import evaka.core.person.getFosterParentsForChildren
+import evaka.core.person.getGuardiansForChildren
 import evaka.core.placement.PlacementType
 import evaka.core.reservations.clearOldReservations
 import evaka.core.reservations.getExpectedAbsenceCategories

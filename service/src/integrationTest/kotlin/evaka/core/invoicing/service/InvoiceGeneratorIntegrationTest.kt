@@ -25,7 +25,7 @@ import evaka.core.invoicing.domain.FeeDecisionType
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.domain.feeAlterationEffect
 import evaka.core.invoicing.domain.roundToEuros
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.serviceneed.ServiceNeedOption
 import evaka.core.serviceneed.ShiftCareType

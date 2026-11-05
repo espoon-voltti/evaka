@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy'
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
-import type { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
+import type { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/employee'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'

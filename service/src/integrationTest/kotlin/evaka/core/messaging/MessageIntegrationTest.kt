@@ -15,12 +15,12 @@ import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.attachment.AttachmentsController
 import evaka.core.daycare.CareType
 import evaka.core.emailclient.MockEmailClient
+import evaka.core.employee.updateEmployeeGlobalRoles
 import evaka.core.incomestatement.IncomeStatementBody
 import evaka.core.incomestatement.IncomeStatementStatus
 import evaka.core.insertServiceNeedOptions
 import evaka.core.messaging.MessageController.PostMessagePreflightResponse
-import evaka.core.pis.service.insertGuardian
-import evaka.core.pis.updateEmployeeGlobalRoles
+import evaka.core.person.insertGuardian
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AttachmentId

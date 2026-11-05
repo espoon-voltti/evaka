@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
+import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/person'
 import type { CitizenPasskey } from 'lib-common/generated/api-types/user'
 
 import type { User } from '../auth/state'

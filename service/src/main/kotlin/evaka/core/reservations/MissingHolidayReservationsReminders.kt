@@ -10,8 +10,8 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.holidayperiod.getHolidayPeriodsWithReservationDeadline
-import evaka.core.pis.NotificationCategory
-import evaka.core.pis.getPersonById
+import evaka.core.person.NotificationCategory
+import evaka.core.person.getPersonById
 import evaka.core.placement.PlacementType
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob

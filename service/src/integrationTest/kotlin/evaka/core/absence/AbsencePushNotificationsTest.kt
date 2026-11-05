@@ -5,7 +5,7 @@
 package evaka.core.absence
 
 import evaka.core.FullApplicationTest
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.reservations.AbsenceRequest
 import evaka.core.reservations.ReservationControllerCitizen
 import evaka.core.shared.MobileDeviceId

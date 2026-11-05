@@ -4,6 +4,7 @@
 
 package evaka.core.invoicing.service.generator
 
+import evaka.core.family.determineHeadOfFamily
 import evaka.core.invoicing.controller.getFeeThresholds
 import evaka.core.invoicing.data.deleteFeeDecisions
 import evaka.core.invoicing.data.findFeeDecisionsForHeadOfFamily
@@ -30,7 +31,6 @@ import evaka.core.invoicing.domain.toFeeAlterationsWithEffects
 import evaka.core.invoicing.mapIncomeToDecisionIncome
 import evaka.core.invoicing.service.IncomeCoefficientMultiplierProvider
 import evaka.core.invoicing.service.IncomeTypesProvider
-import evaka.core.pis.determineHeadOfFamily
 import evaka.core.serviceneed.ServiceNeedOptionFee
 import evaka.core.serviceneed.getServiceNeedOptionFees
 import evaka.core.shared.FeeDecisionId

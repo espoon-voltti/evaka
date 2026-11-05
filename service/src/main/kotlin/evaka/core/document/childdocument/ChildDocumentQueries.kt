@@ -6,7 +6,7 @@ package evaka.core.document.childdocument
 
 import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.document.ChildDocumentType
-import evaka.core.pis.Employee
+import evaka.core.employee.Employee
 import evaka.core.shared.CaseProcessId
 import evaka.core.shared.ChildDocumentDecisionId
 import evaka.core.shared.ChildDocumentId

@@ -12,11 +12,11 @@ import evaka.core.daycare.getChild
 import evaka.core.daycare.updateChild
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.nekku.NekkuSpecialDietChoices
-import evaka.core.pis.PersonBasicInfo
-import evaka.core.pis.getPersonById
-import evaka.core.pis.service.getFosterParentsForChildren
-import evaka.core.pis.service.getGuardiansForChildren
-import evaka.core.pis.updatePreferredName
+import evaka.core.person.PersonBasicInfo
+import evaka.core.person.getFosterParentsForChildren
+import evaka.core.person.getGuardiansForChildren
+import evaka.core.person.getPersonById
+import evaka.core.person.updatePreferredName
 import evaka.core.shared.ChildId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.auth.AuthenticatedUser

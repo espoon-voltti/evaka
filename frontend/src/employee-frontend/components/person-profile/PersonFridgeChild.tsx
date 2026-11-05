@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'wouter'
 
-import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/family'
 import type {
   ParentshipId,
   PersonId

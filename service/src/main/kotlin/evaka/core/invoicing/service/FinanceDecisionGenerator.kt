@@ -6,12 +6,12 @@ package evaka.core.invoicing.service
 
 import evaka.core.AuditContext
 import evaka.core.EvakaEnv
+import evaka.core.family.getParentships
+import evaka.core.family.getPartnersForPerson
 import evaka.core.invoicing.domain.financeDecisionMinDate
 import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.invoicing.service.generator.generateAndInsertFeeDecisionsV2
 import evaka.core.invoicing.service.generator.generateAndInsertVoucherValueDecisionsV2
-import evaka.core.pis.getParentships
-import evaka.core.pis.getPartnersForPerson
 import evaka.core.shared.ChildId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.PersonId

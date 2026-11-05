@@ -5,7 +5,6 @@
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
-import { deleteMobileDevice } from '../../generated/api-clients/pairing'
 import {
   activateEmployee,
   createSsnEmployee,
@@ -18,7 +17,8 @@ import {
   updateEmployeeEmail,
   updateEmployeeGlobalRoles,
   upsertEmployeeDaycareRoles
-} from '../../generated/api-clients/pis'
+} from '../../generated/api-clients/employee'
+import { deleteMobileDevice } from '../../generated/api-clients/pairing'
 
 const q = new Queries()
 

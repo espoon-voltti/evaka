@@ -5,19 +5,19 @@
 package evaka.core.dvv
 
 import evaka.core.identity.Ssn
-import evaka.core.pis.addSSNToPerson
-import evaka.core.pis.applyDeathEffects
-import evaka.core.pis.getPersonBySSN
-import evaka.core.pis.getPersonIdsBySsns
-import evaka.core.pis.lockPersonBySSN
-import evaka.core.pis.replaceAddressPeriods
-import evaka.core.pis.updatePersonFromVtj
+import evaka.core.person.addSSNToPerson
+import evaka.core.person.applyDeathEffects
+import evaka.core.person.getPersonBySSN
+import evaka.core.person.getPersonIdsBySsns
+import evaka.core.person.lockPersonBySSN
+import evaka.core.person.updatePersonFromVtj
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.vtj.replaceAddressPeriods
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 

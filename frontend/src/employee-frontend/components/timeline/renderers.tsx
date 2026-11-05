@@ -8,7 +8,7 @@ import { Link } from 'wouter'
 
 import type DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import type { CreationModificationMetadata } from 'lib-common/generated/api-types/pis'
+import type { CreationModificationMetadata } from 'lib-common/generated/api-types/family'
 import type {
   TimelineChildDetailed,
   TimelineFeeAlteration,

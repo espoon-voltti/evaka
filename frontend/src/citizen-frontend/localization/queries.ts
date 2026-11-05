@@ -4,7 +4,7 @@
 
 import { Queries } from 'lib-common/query'
 
-import { updatePreferredUiLanguage } from '../generated/api-clients/pis'
+import { updatePreferredUiLanguage } from '../generated/api-clients/person'
 
 const q = new Queries()
 

@@ -11,6 +11,23 @@ import {
   planArchiveDecision
 } from '../../generated/api-clients/decision'
 import {
+  createFosterParentRelationship,
+  createParentship,
+  createPartnership,
+  deleteFosterParentRelationship,
+  deleteParentship,
+  deletePartnership,
+  getFamilyByPerson,
+  getFosterChildren,
+  getParentships,
+  getPartnerships,
+  retryParentship,
+  retryPartnership,
+  updateFosterParentRelationshipValidity,
+  updateParentship,
+  updatePartnership
+} from '../../generated/api-clients/family'
+import {
   createFinanceNote,
   deleteFinanceNote,
   getFinanceNotes,
@@ -43,27 +60,12 @@ import {
 } from '../../generated/api-clients/invoicing'
 import {
   addSsn,
-  createFosterParentRelationship,
-  createParentship,
-  createPartnership,
-  deleteFosterParentRelationship,
-  deleteParentship,
-  deletePartnership,
   disableSsn,
-  getFamilyByPerson,
-  getFosterChildren,
-  getParentships,
-  getPartnerships,
   getPerson,
   getPersonSensitiveDetails,
-  retryParentship,
-  retryPartnership,
-  updateFosterParentRelationshipValidity,
-  updateParentship,
-  updatePartnership,
   updatePersonAndFamilyFromVtj,
   updatePersonDetails
-} from '../../generated/api-clients/pis'
+} from '../../generated/api-clients/person'
 import { getChildPlacementPeriods } from '../../generated/api-clients/placement'
 import { childQuery } from '../child-information/queries'
 

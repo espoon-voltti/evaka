@@ -12,7 +12,7 @@ import evaka.core.shared.config.getTestDataSource
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.configureJdbi
 import evaka.core.shared.dev.resetDatabase
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtj.MockVtjClient
 import io.opentelemetry.api.trace.Tracer
 import java.net.URL
 import org.jdbi.v3.core.Jdbi

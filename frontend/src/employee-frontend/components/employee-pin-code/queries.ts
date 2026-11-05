@@ -4,7 +4,10 @@
 
 import { Queries } from 'lib-common/query'
 
-import { isPinLocked, upsertPinCode } from '../../generated/api-clients/pis'
+import {
+  isPinLocked,
+  upsertPinCode
+} from '../../generated/api-clients/employee'
 
 const q = new Queries()
 

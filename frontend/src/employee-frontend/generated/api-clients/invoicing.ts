@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import type { CreateRetroactiveFeeDecisionsBody } from 'lib-common/generated/api-types/invoicing'
-import type { Employee } from 'lib-common/generated/api-types/pis'
+import type { Employee } from 'lib-common/generated/api-types/employee'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import type { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import type { FeeAlterationId } from 'lib-common/generated/api-types/shared'
@@ -58,7 +58,7 @@ import type { VoucherValueDecisionSummaryWithPermittedActions } from 'lib-common
 import type { VoucherValueDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
-import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
+import { deserializeJsonEmployee } from 'lib-common/generated/api-types/employee'
 import { deserializeJsonFeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeDecisionWithPermittedActions } from 'lib-common/generated/api-types/invoicing'

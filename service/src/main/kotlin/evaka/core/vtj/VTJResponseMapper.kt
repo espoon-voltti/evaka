@@ -1,0 +1,63 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.vtj
+
+import evaka.core.vtj.soap.HenkiloTunnusKyselyResBody
+import evaka.core.vtj.soap.HenkiloTunnusKyselyResType
+import evaka.core.vtj.soap.ObjectFactory
+import evaka.core.vtj.soap.VTJHenkiloVastaussanoma
+import jakarta.xml.bind.JAXBElement
+
+fun mapResponseToHenkilo(
+    response: JAXBElement<HenkiloTunnusKyselyResBody>
+): VTJHenkiloVastaussanoma.Henkilo? =
+    response.value.response
+        .let(HenkiloTunnusKyselyResType::mapResponse)
+        .let(VTJResponse::mapToHenkiloOrLogError)
+
+data class VTJResponse(
+    val henkiloSanoma: VTJHenkiloVastaussanoma? = null,
+    val faultString: String? = null,
+    val faultCode: String? = null,
+) {
+
+    fun mapToHenkiloOrLogError(): VTJHenkiloVastaussanoma.Henkilo? =
+        if (henkiloSanoma == null) {
+            if (faultString != "0001") {
+                error("VTJ Responded with faultCode: \"$faultCode\" faultString: \"$faultString\"")
+            }
+            null
+        } else {
+            // possible content: any of AsiakasInfo, Paluukoodi, Hakuperusteet and Henkilo
+            henkiloSanoma.asiakasinfoOrPaluukoodiOrHakuperusteet?.firstNotNullOfOrNull {
+                it as? VTJHenkiloVastaussanoma.Henkilo
+            } ?: error("VTJ response did not contain results for a person")
+        }
+}
+
+private val faultCodeName = ObjectFactory().createHenkiloTunnusKyselyResTypeFaultString("").name
+
+private fun HenkiloTunnusKyselyResType.mapResponse(): VTJResponse =
+    this.vtjHenkiloVastaussanomaAndFaultCodeAndFaultString.fold(VTJResponse()) {
+        result: VTJResponse,
+        field: Any? ->
+        when (field) {
+            is JAXBElement<*> -> {
+                if (field.name == faultCodeName) {
+                    result.copy(faultCode = "${field.value}")
+                } else {
+                    result.copy(faultString = "${field.value}")
+                }
+            }
+
+            is VTJHenkiloVastaussanoma -> {
+                result.copy(henkiloSanoma = field)
+            }
+
+            else -> {
+                throw IllegalStateException("Unexpected error parsing VTJ response")
+            }
+        }
+    }

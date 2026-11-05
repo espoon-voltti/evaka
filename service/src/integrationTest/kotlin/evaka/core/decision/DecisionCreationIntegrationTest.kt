@@ -34,7 +34,7 @@ import evaka.core.decision.reasoning.DecisionReasoningCollectionType
 import evaka.core.decision.reasoning.insertGenericReasoning
 import evaka.core.decision.reasoning.insertIndividualReasoning
 import evaka.core.decision.reasoning.setDecisionReasoningIndividualSelections
-import evaka.core.pis.service.blockGuardian
+import evaka.core.person.blockGuardian
 import evaka.core.placement.PlacementPlanUnit
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ApplicationId

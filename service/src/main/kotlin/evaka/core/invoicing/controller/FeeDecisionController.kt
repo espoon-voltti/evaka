@@ -22,7 +22,7 @@ import evaka.core.invoicing.domain.FeeDecisionType
 import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.invoicing.service.FeeDecisionService
 import evaka.core.invoicing.service.FinanceDecisionGenerator
-import evaka.core.pis.getPersonById
+import evaka.core.person.getPersonById
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.FeatureConfig

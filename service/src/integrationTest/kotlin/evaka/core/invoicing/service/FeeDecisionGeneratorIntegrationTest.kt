@@ -7,6 +7,8 @@ package evaka.core.invoicing.service
 import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.CareType
+import evaka.core.family.ParentshipController
+import evaka.core.family.PartnershipsController
 import evaka.core.feeThresholds
 import evaka.core.insertServiceNeedOptions
 import evaka.core.invoicing.calculateMonthlyAmount
@@ -29,9 +31,7 @@ import evaka.core.invoicing.domain.IncomeValue
 import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.invoicing.oldTestFeeThresholds
 import evaka.core.invoicing.testFeeThresholds
-import evaka.core.pis.controllers.ParentshipController
-import evaka.core.pis.controllers.PartnershipsController
-import evaka.core.pis.service.insertGuardian
+import evaka.core.person.insertGuardian
 import evaka.core.placement.PlacementType.CLUB
 import evaka.core.placement.PlacementType.DAYCARE
 import evaka.core.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS

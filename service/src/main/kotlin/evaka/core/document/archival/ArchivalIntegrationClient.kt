@@ -10,7 +10,7 @@ import evaka.core.decision.Decision
 import evaka.core.document.childdocument.ChildDocumentDetails
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
-import evaka.core.pis.PersonDTO
+import evaka.core.person.Person
 import evaka.core.s3.Document
 import evaka.core.shared.ChildDocumentId
 import evaka.core.user.EvakaUser
@@ -18,7 +18,7 @@ import evaka.core.user.EvakaUser
 interface ArchivalIntegrationClient {
     fun uploadDecisionToArchive(
         caseProcess: CaseProcess,
-        child: PersonDTO,
+        child: Person,
         decision: Decision,
         document: Document,
         user: EvakaUser,
@@ -41,7 +41,7 @@ interface ArchivalIntegrationClient {
     fun uploadChildDocumentToArchive(
         documentId: ChildDocumentId,
         caseProcess: CaseProcess?,
-        childInfo: PersonDTO,
+        childInfo: Person,
         childDocumentDetails: ChildDocumentDetails,
         documentMetadata: DocumentMetadata,
         documentContent: Document,
@@ -51,7 +51,7 @@ interface ArchivalIntegrationClient {
     class FailingClient() : ArchivalIntegrationClient {
         override fun uploadDecisionToArchive(
             caseProcess: CaseProcess,
-            child: PersonDTO,
+            child: Person,
             decision: Decision,
             document: Document,
             user: EvakaUser,
@@ -80,7 +80,7 @@ interface ArchivalIntegrationClient {
         override fun uploadChildDocumentToArchive(
             documentId: ChildDocumentId,
             caseProcess: CaseProcess?,
-            childInfo: PersonDTO,
+            childInfo: Person,
             childDocumentDetails: ChildDocumentDetails,
             documentMetadata: DocumentMetadata,
             documentContent: Document,

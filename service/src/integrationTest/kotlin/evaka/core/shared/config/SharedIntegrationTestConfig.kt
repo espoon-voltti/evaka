@@ -50,9 +50,9 @@ import evaka.core.shared.security.actionrule.UnscopedActionRule
 import evaka.core.shared.template.EvakaTemplateProvider
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
-import evaka.core.vtjclient.config.httpsMessageSender
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
-import evaka.core.vtjclient.service.persondetails.VtjClient
+import evaka.core.vtj.MockVtjClient
+import evaka.core.vtj.VtjClient
+import evaka.core.vtj.httpsMessageSender
 import evaka.instance.espoo.DefaultPasswordSpecification
 import evaka.instance.espoo.archival.SärmäChildDocumentClient
 import evaka.instance.espoo.archival.SärmäMockClient

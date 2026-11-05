@@ -11,7 +11,7 @@ import evaka.core.invoicing.testFeeThresholds
 import evaka.core.messaging.createServiceWorkerMessageAccount
 import evaka.core.messaging.getCitizenMessageAccount
 import evaka.core.messaging.getUnreadMessagesCountsCitizen
-import evaka.core.pis.getPersonBySSN
+import evaka.core.person.getPersonBySSN
 import evaka.core.placement.PlacementType
 import evaka.core.shared.AreaId
 import evaka.core.shared.ChildId
@@ -43,9 +43,9 @@ import evaka.core.shared.job.ScheduledJobs
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.security.PilotFeature
-import evaka.core.vtjclient.service.persondetails.MockVtjClient
-import evaka.core.vtjclient.service.persondetails.MockVtjDataset
-import evaka.core.vtjclient.service.persondetails.MockVtjPerson
+import evaka.core.vtj.MockVtjClient
+import evaka.core.vtj.MockVtjDataset
+import evaka.core.vtj.MockVtjPerson
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate

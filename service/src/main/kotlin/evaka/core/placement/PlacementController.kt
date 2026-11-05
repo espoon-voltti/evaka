@@ -12,7 +12,6 @@ import evaka.core.daycare.controllers.Child
 import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
 import evaka.core.daycare.getDaycares
-import evaka.core.pis.service.VtjSyncService
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.FeatureConfig
@@ -31,6 +30,7 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import evaka.core.vtj.VtjSyncService
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
