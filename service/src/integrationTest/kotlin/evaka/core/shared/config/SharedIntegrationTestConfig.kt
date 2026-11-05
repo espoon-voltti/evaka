@@ -11,6 +11,7 @@ import evaka.core.ArchiveEnv
 import evaka.core.BucketEnv
 import evaka.core.EvakaEnv
 import evaka.core.TestInvoiceProductProvider
+import evaka.core.VtjXroadEnv
 import evaka.core.dataremoval.DataRetentionOverrides
 import evaka.core.document.archival.ArchivalClient
 import evaka.core.document.archival.ArchivalIntegrationClient
@@ -49,6 +50,9 @@ import evaka.core.shared.security.actionrule.UnscopedActionRule
 import evaka.core.shared.template.EvakaTemplateProvider
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
+import evaka.core.vtjclient.config.httpsMessageSender
+import evaka.core.vtjclient.service.persondetails.MockVtjClient
+import evaka.core.vtjclient.service.persondetails.VtjClient
 import evaka.instance.espoo.DefaultPasswordSpecification
 import evaka.instance.espoo.archival.SärmäChildDocumentClient
 import evaka.instance.espoo.archival.SärmäMockClient
@@ -62,6 +66,8 @@ import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Primary
+import org.springframework.ws.transport.WebServiceMessageSender
 import org.thymeleaf.ITemplateEngine
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
@@ -298,6 +304,12 @@ class SharedIntegrationTestConfig {
         archivalClient: ArchivalClient,
         archiveEnv: ArchiveEnv,
     ): ArchivalIntegrationClient = SärmäChildDocumentClient(archivalClient, archiveEnv)
+
+    @Bean @Primary fun mockVtjClient(): VtjClient = MockVtjClient()
+
+    @Bean
+    fun vtjWebServiceMessageSender(xroadEnv: VtjXroadEnv): WebServiceMessageSender =
+        httpsMessageSender(xroadEnv.trustStore, null)
 }
 
 val testArchiveEnv =

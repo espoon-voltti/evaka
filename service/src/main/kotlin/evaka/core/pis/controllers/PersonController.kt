@@ -10,23 +10,26 @@ import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.identity.Ssn
 import evaka.core.pdfgen.PdfGenerator
+import evaka.core.pis.PersonBasicInfo
+import evaka.core.pis.PersonJSON
+import evaka.core.pis.PersonPatch
+import evaka.core.pis.PersonSensitiveDetails
 import evaka.core.pis.PersonSummary
+import evaka.core.pis.createAddressPagePdf
 import evaka.core.pis.createPerson
+import evaka.core.pis.disableSsn
+import evaka.core.pis.getDependantGuardians
+import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
+import evaka.core.pis.hideNonPermittedPersonData
+import evaka.core.pis.patchUserDetails
 import evaka.core.pis.searchPeople
 import evaka.core.pis.service.FridgeFamilyService
 import evaka.core.pis.service.MergeService
-import evaka.core.pis.service.PersonBasicInfo
-import evaka.core.pis.service.PersonJSON
-import evaka.core.pis.service.PersonPatch
-import evaka.core.pis.service.PersonSensitiveDetails
-import evaka.core.pis.service.PersonService
-import evaka.core.pis.service.PersonWithChildrenDTO
+import evaka.core.pis.service.VtjPersonPreview
 import evaka.core.pis.service.VtjSyncService
 import evaka.core.pis.service.blockGuardian
-import evaka.core.pis.service.createAddressPagePdf
 import evaka.core.pis.service.getBlockedGuardians
-import evaka.core.pis.service.hideNonPermittedPersonData
 import evaka.core.pis.service.unblockGuardian
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
@@ -57,7 +60,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/employee/person")
 class PersonController(
-    private val personService: PersonService,
     private val mergeService: MergeService,
     private val accessControl: AccessControl,
     private val fridgeFamilyService: FridgeFamilyService,
@@ -184,22 +186,22 @@ class PersonController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
-    ): List<PersonWithChildrenDTO> {
+    ): List<PersonJSON> {
         val audit = AuditContext().add(personId)
         return db.connect { dbc ->
-                dbc.transaction {
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Person.READ_DEPENDANTS,
-                            personId,
-                        )
-                        personService
-                            .getPersonWithChildren(it, user, clock.now(), personId)
-                            ?.also { dto -> audit.add(dto.children.map { child -> child.id }) }
-                    }
-                    ?.children ?: throw NotFound()
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_DEPENDANTS,
+                        personId,
+                    )
+                }
+                vtjSyncService.ensureDependantsSynced(dbc, user.evakaUserId, clock, personId)
+                dbc.read { it.getGuardianDependants(personId) }
+                    .map(PersonJSON::from)
+                    .also { dependants -> audit.add(dependants.map { it.id }) }
             }
             .also { audit.log(Audit.PersonDependantRead, clock) }
     }
@@ -213,7 +215,7 @@ class PersonController(
     ): GuardiansResponse {
         val audit = AuditContext().add(personId)
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                val fetchBlockedGuardians = dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -221,20 +223,22 @@ class PersonController(
                         Action.Child.READ_GUARDIANS,
                         personId,
                     )
-                    val fetchBlockedGuardians =
-                        accessControl.hasPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Child.READ_BLOCKED_GUARDIANS,
-                            personId,
-                        )
+                    accessControl.hasPermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_BLOCKED_GUARDIANS,
+                        personId,
+                    )
+                }
+                vtjSyncService.ensureGuardiansSynced(dbc, user.evakaUserId, clock, personId)
+                dbc.read { tx ->
                     GuardiansResponse(
                             guardians =
-                                personService
-                                    .getGuardians(tx, user, clock.now(), personId)
-                                    .map(PersonJSON::from)
-                                    .also { guardians -> audit.add(guardians.map { it.id }) },
+                                tx.getDependantGuardians(personId).map(PersonJSON::from).also {
+                                    guardians ->
+                                    audit.add(guardians.map { it.id })
+                                },
                             blockedGuardians =
                                 if (fetchBlockedGuardians)
                                     tx.getBlockedGuardians(personId)
@@ -376,9 +380,7 @@ class PersonController(
                         }
                 }
 
-                dbc.transaction {
-                        personService.patchUserDetails(it, personId, userEditablePersonData)
-                    }
+                dbc.transaction { it.patchUserDetails(personId, userEditablePersonData) }
                     .let { PersonJSON.from(it) }
             }
             .also { Audit.PersonUpdate.log(targetId = AuditId(personId)) }
@@ -469,7 +471,7 @@ class PersonController(
                     )
                 }
 
-                personService.disableSsn(it, personId, body.disabled)
+                it.disableSsn(personId, body.disabled)
             }
         }
         Audit.PersonUpdate.log(targetId = AuditId(personId))
@@ -484,7 +486,7 @@ class PersonController(
     ): PersonJSON {
         val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid SSN")
 
-        val audit = AuditContext().addMeta("readonly", body.readonly)
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -494,25 +496,35 @@ class PersonController(
                         Action.Global.CREATE_PERSON_FROM_VTJ,
                     )
                 }
-                if (body.readonly) {
-                    dbc.transaction {
-                        personService.getOrCreatePerson(
-                            it,
-                            user,
-                            clock.now(),
-                            ssn,
-                            readonly = true,
-                            audit,
-                        )
-                    } ?: throw NotFound()
-                } else {
-                    val result = vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, ssn)
-                    audit.add(result.person.id).addMeta("created", result.created)
-                    result.person
-                }
+                val result = vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, ssn)
+                audit.add(result.person.id).addMeta("created", result.created)
+                result.person
             }
             .let { PersonJSON.from(it) }
             .also { audit.log(Audit.PersonGetOrCreateBySsn, clock) }
+    }
+
+    @PostMapping("/vtj-preview")
+    fun previewVtjPerson(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody body: VtjPersonPreviewRequest,
+    ): VtjPersonPreview {
+        val ssn = Ssn.parse(body.ssn) ?: throw BadRequest("Invalid SSN")
+        db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.CREATE_PERSON_FROM_VTJ,
+                )
+            }
+        }
+        return vtjSyncService.previewPerson(user.evakaUserId, ssn).also {
+            AuditContext().log(Audit.PersonVtjPreview, clock)
+        }
     }
 
     @PostMapping("/merge")
@@ -678,4 +690,6 @@ data class CreatePersonBody(
     val email: String?,
 )
 
-data class GetOrCreatePersonBySsnRequest(val ssn: String, val readonly: Boolean = false)
+data class GetOrCreatePersonBySsnRequest(val ssn: String)
+
+data class VtjPersonPreviewRequest(val ssn: String)

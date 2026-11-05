@@ -45,7 +45,7 @@ internal class VtjClientIntegrationTest : AbstractTampereIntegrationTest() {
                 )
             )
 
-        assertThat(person).returns("070644-937X", { it.socialSecurityNumber })
+        assertThat(person).returns("070644-937X", { it.ssn.value })
         verify(
             postRequestedFor(urlEqualTo("/mock/vtj"))
                 .withoutHeader("Authorization")

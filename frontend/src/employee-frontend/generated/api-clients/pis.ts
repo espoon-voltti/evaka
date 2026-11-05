@@ -44,13 +44,14 @@ import type { PersonPatch } from 'lib-common/generated/api-types/pis'
 import type { PersonResponse } from 'lib-common/generated/api-types/pis'
 import type { PersonSensitiveDetails } from 'lib-common/generated/api-types/pis'
 import type { PersonSummary } from 'lib-common/generated/api-types/pis'
-import type { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import type { PinCode } from 'lib-common/generated/api-types/pis'
 import type { SearchEmployeeRequest } from 'lib-common/generated/api-types/pis'
 import type { SearchPersonBody } from 'lib-common/generated/api-types/pis'
 import type { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
 import type { Uri } from 'lib-common/uri'
 import type { UserRole } from 'lib-common/generated/api-types/shared'
+import type { VtjPersonPreview } from 'lib-common/generated/api-types/pis'
+import type { VtjPersonPreviewRequest } from 'lib-common/generated/api-types/pis'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
@@ -64,7 +65,7 @@ import { deserializeJsonPersonJSON } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonResponse } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonSensitiveDetails } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonSummary } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonPersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
+import { deserializeJsonVtjPersonPreview } from 'lib-common/generated/api-types/pis'
 import { uri } from 'lib-common/uri'
 
 
@@ -780,12 +781,12 @@ export async function getPersonDependants(
   request: {
     personId: PersonId
   }
-): Promise<PersonWithChildrenDTO[]> {
-  const { data: json } = await client.request<JsonOf<PersonWithChildrenDTO[]>>({
+): Promise<PersonJSON[]> {
+  const { data: json } = await client.request<JsonOf<PersonJSON[]>>({
     url: uri`/employee/person/dependants/${request.personId}`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonPersonWithChildrenDTO(e))
+  return json.map(e => deserializeJsonPersonJSON(e))
 }
 
 
@@ -851,6 +852,23 @@ export async function mergePeople(
     data: request.body satisfies JsonCompatible<MergeRequest>
   })
   return json
+}
+
+
+/**
+* Generated from evaka.core.pis.controllers.PersonController.previewVtjPerson
+*/
+export async function previewVtjPerson(
+  request: {
+    body: VtjPersonPreviewRequest
+  }
+): Promise<VtjPersonPreview> {
+  const { data: json } = await client.request<JsonOf<VtjPersonPreview>>({
+    url: uri`/employee/person/vtj-preview`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<VtjPersonPreviewRequest>
+  })
+  return deserializeJsonVtjPersonPreview(json)
 }
 
 

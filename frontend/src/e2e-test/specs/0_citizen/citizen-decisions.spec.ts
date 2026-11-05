@@ -277,6 +277,8 @@ test.describe('Citizen application decisions', () => {
     const otherGuardian = await Fixture.person({
       ssn: '010106A9388'
     }).saveAdult({ updateMockVtjWithDependants: [child] })
+    await Fixture.guardian(child, guardian).save()
+    await Fixture.guardian(child, otherGuardian).save()
 
     const application = applicationFixture(
       child,

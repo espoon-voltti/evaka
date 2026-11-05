@@ -7,11 +7,11 @@ package evaka.core.pis.controller
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.controllers.ChildController
 import evaka.core.identity.getDobFromSsn
+import evaka.core.pis.PersonDTO
+import evaka.core.pis.PersonPatch
 import evaka.core.pis.controllers.PersonController
 import evaka.core.pis.controllers.SearchPersonBody
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonDTO
-import evaka.core.pis.service.PersonPatch
 import evaka.core.pis.service.blockGuardian
 import evaka.core.shared.ChildId
 import evaka.core.shared.auth.UserRole
@@ -22,6 +22,7 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.user.updateLastStrongLogin
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -63,6 +64,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             firstName = "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
             lastName = "Karhula",
             ssn = "070714A9126",
+            dateOfBirth = getDobFromSsn("070714A9126"),
             streetAddress = "Kamreerintie 1",
             postalCode = "00340",
             postOffice = "Espoo",
@@ -72,6 +74,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             firstName = "Kaarina Veera Nelli",
             lastName = "Karhula",
             ssn = "160616A978U",
+            dateOfBirth = getDobFromSsn("160616A978U"),
             streetAddress = "Kamreerintie 1",
             postalCode = "00340",
             postOffice = "Espoo",
@@ -81,6 +84,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             firstName = "Porri Hatter",
             lastName = "Karhula",
             ssn = "160620A999J",
+            dateOfBirth = getDobFromSsn("160620A999J"),
             restrictedDetailsEnabled = true,
         )
 
@@ -240,7 +244,12 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Guardian blocklist prevents dependants from being added from VTJ data`() {
-        val guardianId = db.transaction { tx -> tx.insert(johannesKarhula, DevPersonType.RAW_ROW) }
+        // The view syncs the dependants of a citizen user, but not of a leaf adult
+        val guardianId = db.transaction { tx ->
+            tx.insert(johannesKarhula, DevPersonType.ADULT).also {
+                tx.updateLastStrongLogin(clock.now(), it)
+            }
+        }
 
         val dependants = controller.getPersonDependants(dbInstance(), admin.user, clock, guardianId)
         assertEquals(3, dependants.size)

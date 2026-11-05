@@ -6,12 +6,13 @@ package evaka.core.vtjclient.mapper
 
 import evaka.core.VtjXroadClientEnv
 import evaka.core.VtjXroadServiceEnv
-import evaka.core.vtjclient.mapper.XroadMapper.Companion.factory
 import evaka.core.vtjclient.soap.ObjectFactory
 import evaka.core.vtjclient.soap.XRoadClientIdentifierType
 import evaka.core.vtjclient.soap.XRoadObjectType
 import evaka.core.vtjclient.soap.XRoadServiceIdentifierType
 import jakarta.xml.bind.JAXBElement
+
+private val factory = ObjectFactory()
 
 fun VtjXroadClientEnv.toClientHeader(): JAXBElement<XRoadClientIdentifierType>? =
     XRoadClientIdentifierType()
@@ -36,9 +37,3 @@ fun VtjXroadServiceEnv.toServiceHeader(): JAXBElement<XRoadServiceIdentifierType
             it.serviceVersion = serviceVersion
         }
         .let { factory.createService(it) }
-
-class XroadMapper {
-    companion object {
-        val factory = ObjectFactory()
-    }
-}

@@ -48,7 +48,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         VtjPerson(
             firstNames = "Matti Yrjö",
             lastName = "Meikäläinen",
-            socialSecurityNumber = "010199-8137",
+            ssn = Ssn.from("010199-8137"),
             residentialAddress =
                 PersonAddress("Jokutie 66", "00100", "Helsinki", "Någonvägen 66", "Helsingfors"),
             nativeLanguage = NativeLanguage(languageName = "suomi", code = "fi"),
@@ -110,7 +110,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `applyPerson uses the Swedish address of a Swedish speaker when it updates an existing row`() {
-        val existing = DevPerson(ssn = vtjPerson.socialSecurityNumber)
+        val existing = DevPerson(ssn = vtjPerson.ssn.value)
         db.transaction { it.insert(existing, DevPersonType.ADULT) }
 
         db.transaction {
@@ -176,7 +176,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `applyPerson updates the existing row by SSN and keeps the fields that VTJ does not own`() {
         val existing =
             DevPerson(
-                ssn = vtjPerson.socialSecurityNumber,
+                ssn = vtjPerson.ssn.value,
                 email = "matti@example.com",
                 phone = "123",
             )
@@ -277,7 +277,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(person.id, result.id)
         assertFalse(result.created)
         val updated = db.read { it.getPersonById(person.id) }!!
-        assertEquals(Ssn.parse(vtjPerson.socialSecurityNumber), updated.ssn)
+        assertEquals(vtjPerson.ssn, updated.ssn)
         assertEquals("Matti Yrjö", updated.firstName)
         assertEquals("Jokutie 66", updated.streetAddress)
         assertEquals("matti@example.com", updated.email)

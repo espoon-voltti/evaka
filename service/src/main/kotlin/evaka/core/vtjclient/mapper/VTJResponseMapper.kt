@@ -9,17 +9,13 @@ import evaka.core.vtjclient.soap.HenkiloTunnusKyselyResType
 import evaka.core.vtjclient.soap.ObjectFactory
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma
 import jakarta.xml.bind.JAXBElement
-import org.springframework.stereotype.Service
 
-@Service
-class VTJResponseMapper {
-    fun mapResponseToHenkilo(
-        response: JAXBElement<HenkiloTunnusKyselyResBody>
-    ): VTJHenkiloVastaussanoma.Henkilo? =
-        response.value.response
-            .let(HenkiloTunnusKyselyResType::mapResponse)
-            .let(VTJResponse::mapToHenkiloOrLogError)
-}
+fun mapResponseToHenkilo(
+    response: JAXBElement<HenkiloTunnusKyselyResBody>
+): VTJHenkiloVastaussanoma.Henkilo? =
+    response.value.response
+        .let(HenkiloTunnusKyselyResType::mapResponse)
+        .let(VTJResponse::mapToHenkiloOrLogError)
 
 data class VTJResponse(
     val henkiloSanoma: VTJHenkiloVastaussanoma? = null,

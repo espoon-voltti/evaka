@@ -7,6 +7,7 @@ package evaka.core.pis.service
 import evaka.core.pis.CreationModificationMetadata
 import evaka.core.pis.Creator
 import evaka.core.pis.Modifier
+import evaka.core.pis.PersonJSON
 import evaka.core.pis.createParentship
 import evaka.core.pis.deleteParentship
 import evaka.core.pis.getParentship

@@ -7,9 +7,9 @@ package evaka.core.pis.dao
 import evaka.core.PureJdbiTest
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.Creator
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.createParentship
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.ChildId
 import evaka.core.shared.PartnershipId
 import evaka.core.shared.PersonId

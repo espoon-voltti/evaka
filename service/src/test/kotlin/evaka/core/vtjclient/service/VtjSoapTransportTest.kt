@@ -10,10 +10,9 @@ import ch.qos.logback.core.Appender
 import evaka.core.Sensitive
 import evaka.core.VtjEnv
 import evaka.core.identity.Ssn
-import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.PersonDTO
 import evaka.core.shared.PersonId
 import evaka.core.vtjclient.config.SoapRequestAdapter
-import evaka.core.vtjclient.mapper.VTJResponseMapper
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.PERUSSANOMA3
@@ -22,6 +21,7 @@ import evaka.core.vtjclient.service.vtjclient.XroadVtjSoapTransport
 import evaka.core.vtjclient.soap.HenkiloTunnusKyselyReqBody
 import evaka.core.vtjclient.soap.HenkiloTunnusKyselyResBody
 import evaka.core.vtjclient.soap.ObjectFactory
+import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma
 import evaka.core.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
 import jakarta.xml.bind.JAXBElement
 import java.time.LocalDate
@@ -29,7 +29,6 @@ import java.util.UUID
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -68,22 +67,10 @@ class VtjSoapTransportTest {
 
     @Mock lateinit var mockCallback: WebServiceMessageCallback
 
-    @Mock lateinit var responseMapper: VTJResponseMapper
-
     @InjectMocks lateinit var service: XroadVtjSoapTransport
-
-    lateinit var responseBody: HenkiloTunnusKyselyResBody
-
-    lateinit var response: JAXBElement<HenkiloTunnusKyselyResBody>
 
     /* TODO:  This is a lot of mocks for a single service which might indicate the target service has too many responsibilities
     is there a split that could be done here? */
-
-    @BeforeEach
-    fun setup() {
-        responseBody = vtjObjectFactory.createHenkiloTunnusKyselyResBody()
-        response = vtjObjectFactory.createHenkilonTunnusKyselyResponse(responseBody)
-    }
 
     @Test
     fun `logger should be called with endUser details when querying for data from VTJ`() {
@@ -97,9 +84,7 @@ class VtjSoapTransportTest {
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
         // see: NB1
         whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
-            .thenReturn(response)
-        whenever(responseMapper.mapResponseToHenkilo(response))
-            .thenReturn(createPersonResponse(forSsn = ssn))
+            .thenReturn(responseWithPerson(ssn))
 
         val _ = service.query(query)
 
@@ -130,8 +115,7 @@ class VtjSoapTransportTest {
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
         // see: NB1
         whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
-            .thenReturn(response)
-        whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(null)
+            .thenReturn(responsePersonNotFound())
 
         val _ = service.query(query)
 
@@ -205,9 +189,7 @@ class VtjSoapTransportTest {
         // exception as
         // the service expects at least non-null JAXBElement<*> as a response
         whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
-            .thenReturn(response)
-        whenever(responseMapper.mapResponseToHenkilo(response))
-            .thenReturn(createPersonResponse(forSsn = ssn))
+            .thenReturn(responseWithPerson(ssn))
 
         val _ = service.query(query)
 
@@ -240,8 +222,7 @@ class VtjSoapTransportTest {
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
         whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
-            .thenReturn(response)
-        whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(createPersonResponse())
+            .thenReturn(responseWithPerson())
 
         val _ = service.query(query)
 
@@ -260,8 +241,7 @@ class VtjSoapTransportTest {
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
         whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
-            .thenReturn(response)
-        whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(createPersonResponse())
+            .thenReturn(responseWithPerson())
 
         val userName = "sdfhj2o123ju1l23"
         whenever(mockVtjProps.username).thenReturn(userName)
@@ -323,8 +303,33 @@ class VtjSoapTransportTest {
             restrictedDetailsEndDate = null,
         )
 
-    private fun createPersonResponse(forSsn: String? = DEFAULT_PERSON_SSN) =
-        Henkilo().apply { henkilotunnus = Henkilo.Henkilotunnus().apply { value = forSsn } }
+    // A factory separate from the spy, so that building a response inside a stubbing call does not
+    // interact with a mock
+    private val responseFactory = ObjectFactory()
+
+    private fun responseWithPerson(ssn: String = DEFAULT_PERSON_SSN) =
+        response(
+            VTJHenkiloVastaussanoma().apply {
+                asiakasinfoOrPaluukoodiOrHakuperusteet.add(
+                    Henkilo().apply {
+                        henkilotunnus = Henkilo.Henkilotunnus().apply { value = ssn }
+                    }
+                )
+            }
+        )
+
+    private fun responsePersonNotFound() =
+        response(responseFactory.createHenkiloTunnusKyselyResTypeFaultCode("0001"))
+
+    private fun response(content: Any): JAXBElement<HenkiloTunnusKyselyResBody> =
+        responseFactory.createHenkilonTunnusKyselyResponse(
+            responseFactory.createHenkiloTunnusKyselyResBody().apply {
+                response =
+                    responseFactory.createHenkiloTunnusKyselyResType().apply {
+                        vtjHenkiloVastaussanomaAndFaultCodeAndFaultString.add(content)
+                    }
+            }
+        )
 
     private fun createDefaultQuery(
         ssn: String = DEFAULT_PERSON_SSN,

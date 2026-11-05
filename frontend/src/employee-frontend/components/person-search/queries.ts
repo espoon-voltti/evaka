@@ -6,10 +6,12 @@ import { Queries } from 'lib-common/query'
 
 import {
   createPerson,
-  getOrCreatePersonBySsn
+  getOrCreatePersonBySsn,
+  previewVtjPerson
 } from '../../generated/api-clients/pis'
 
 const q = new Queries()
 
 export const getOrCreatePersonBySsnMutation = q.mutation(getOrCreatePersonBySsn)
 export const createPersonMutation = q.mutation(createPerson)
+export const previewVtjPersonMutation = q.mutation(previewVtjPerson)

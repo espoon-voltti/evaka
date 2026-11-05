@@ -510,7 +510,7 @@ export class Fixture {
   static family(value: Family) {
     return {
       ...value,
-      async save() {
+      async save(opts: { insertGuardianRows?: boolean } = {}) {
         for (const child of value.children) {
           await Fixture.person(child).saveChild({ updateMockVtj: true })
         }
@@ -520,6 +520,21 @@ export class Fixture {
         if (value.otherGuardian) {
           await Fixture.person(value.otherGuardian).saveAdult({
             updateMockVtjWithDependants: value.children
+          })
+        }
+        // Application and decision flows read the guardians only from the database, so the
+        // guardian rows that a VTJ sync would write are inserted here
+        if (opts.insertGuardianRows ?? true) {
+          const guardians = value.otherGuardian
+            ? [value.guardian, value.otherGuardian]
+            : [value.guardian]
+          await insertGuardians({
+            body: guardians.flatMap((guardian) =>
+              value.children.map((child) => ({
+                guardianId: guardian.id,
+                childId: child.id
+              }))
+            )
           })
         }
       }

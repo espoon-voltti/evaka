@@ -7,10 +7,10 @@ package evaka.core.pis.dao
 import evaka.core.PureJdbiTest
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.Creator
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.createPartnership
 import evaka.core.pis.getPartnershipsForPerson
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonDTO
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType

@@ -40,7 +40,7 @@ data class DummyIdpVtjPerson(
         VtjPerson(
             firstNames = firstNames,
             lastName = lastName,
-            socialSecurityNumber = socialSecurityNumber,
+            ssn = Ssn.from(socialSecurityNumber),
             residentialAddress = address,
             nativeLanguage = nativeLanguage,
             nationalities = nationalities,
@@ -51,7 +51,7 @@ data class DummyIdpVtjPerson(
         )
 
     fun toVtjRelative(): VtjRelative {
-        val ssn = Ssn.parse(socialSecurityNumber) ?: error("dummy-idp returned an invalid SSN")
+        val ssn = Ssn.from(socialSecurityNumber)
         return VtjRelative(
             ssn = ssn,
             dateOfBirth = getDobFromSsn(ssn.value),

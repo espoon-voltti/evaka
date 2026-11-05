@@ -6,7 +6,6 @@ package evaka.core.pis
 
 import evaka.core.pis.service.Parentship
 import evaka.core.pis.service.ParentshipDetailed
-import evaka.core.pis.service.PersonJSON
 import evaka.core.shared.ChildId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.ParentshipId

@@ -7,6 +7,7 @@ package evaka.core.pis.service
 import evaka.core.FullApplicationTest
 import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.Creator
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.createPartnership
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
@@ -22,7 +23,6 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
@@ -360,14 +360,9 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val mockVtjSoapTransport: VtjSoapTransport = MockVtjSoapTransport()
         MockVtjSoapTransport.resetQueryCounts()
 
-        val vtjSyncService =
-            VtjSyncService(SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()), mock())
+        val vtjSyncService = VtjSyncService(SoapVtjClient(mockVtjSoapTransport), mock())
         val service =
             FridgeFamilyService(
-                PersonService(
-                    SoapVtjClient(mockVtjSoapTransport, VtjHenkiloMapper()),
-                    vtjSyncService,
-                ),
                 vtjSyncService,
                 parentshipService,
             )

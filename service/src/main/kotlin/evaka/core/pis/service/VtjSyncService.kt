@@ -5,6 +5,8 @@
 package evaka.core.pis.service
 
 import evaka.core.identity.Ssn
+import evaka.core.identity.getDobFromSsn
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.applyDeathEffects
 import evaka.core.pis.applyDependants
 import evaka.core.pis.applyGuardians
@@ -37,6 +39,7 @@ import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.LocalDate
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -148,7 +151,7 @@ class VtjSyncService(
             }
         }
         val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
-        if (vtjPerson.socialSecurityNumber != ssn.value) {
+        if (vtjPerson.ssn != ssn) {
             throw BadRequest("VTJ returned a different SSN than the one being added")
         }
         val person = dbc.transaction { tx ->
@@ -163,6 +166,18 @@ class VtjSyncService(
         ensureGuardiansSynced(dbc, requestingUserId, clock, personId)
         ensureDependantsSynced(dbc, requestingUserId, clock, personId)
         return person
+    }
+
+    fun previewPerson(requestingUserId: EvakaUserId, ssn: Ssn): VtjPersonPreview {
+        val person = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
+        return VtjPersonPreview(
+            socialSecurityNumber = person.ssn.value,
+            firstName = person.firstNames,
+            lastName = person.lastName,
+            dateOfBirth = getDobFromSsn(person.ssn.value),
+            streetAddress = person.residentialAddress?.streetAddress ?: "",
+            restrictedDetailsEnabled = person.restrictedDetails?.enabled ?: false,
+        )
     }
 
     /**
@@ -223,7 +238,7 @@ class VtjSyncService(
         clearDependantsSynced: Boolean,
     ): PersonDTO {
         val vtjPerson = vtjClient.fetchPerson(VtjClient.DetailsQuery(requestingUserId, ssn))
-        if (vtjPerson.socialSecurityNumber != ssn.value) {
+        if (vtjPerson.ssn != ssn) {
             throw BadRequest("VTJ returned a different SSN than the requested one")
         }
         return dbc.transaction { tx ->
@@ -285,3 +300,12 @@ class VtjSyncService(
 }
 
 data class GetOrCreateResult(val person: PersonDTO, val created: Boolean)
+
+data class VtjPersonPreview(
+    val socialSecurityNumber: String,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+    val streetAddress: String,
+    val restrictedDetailsEnabled: Boolean,
+)

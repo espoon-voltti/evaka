@@ -12,10 +12,10 @@ import evaka.core.pis.FamilyContactRole.LOCAL_FOSTER_PARENT
 import evaka.core.pis.FamilyContactRole.LOCAL_GUARDIAN
 import evaka.core.pis.FamilyContactRole.REMOTE_FOSTER_PARENT
 import evaka.core.pis.FamilyContactRole.REMOTE_GUARDIAN
+import evaka.core.pis.PersonPatch
+import evaka.core.pis.patchUserDetails
 import evaka.core.pis.service.FamilyOverview
 import evaka.core.pis.service.FamilyOverviewService
-import evaka.core.pis.service.PersonPatch
-import evaka.core.pis.service.PersonService
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/employee/family")
 class FamilyController(
     private val familyOverviewService: FamilyOverviewService,
-    private val personService: PersonService,
     private val accessControl: AccessControl,
 ) {
     @GetMapping("/by-adult/{id}")
@@ -138,8 +137,7 @@ class FamilyController(
                 ) {
                     throw BadRequest("Invalid child or contact person")
                 }
-                personService.patchUserDetails(
-                    it,
+                it.patchUserDetails(
                     body.contactPersonId,
                     PersonPatch(
                         email = body.email,

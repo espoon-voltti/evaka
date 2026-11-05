@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'wouter'
 
-import type { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
@@ -39,7 +39,7 @@ export default React.memo(function PersonDependants({ id }: Props) {
       </Thead>
       <Tbody>
         {orderBy(dependants, ['dateOfBirth'], ['asc']).map(
-          (dependant: PersonWithChildrenDTO) => (
+          (dependant: PersonJSON) => (
             <Tr
               key={dependant.id}
               data-qa={`table-dependant-row-${dependant.id}`}
@@ -52,7 +52,9 @@ export default React.memo(function PersonDependants({ id }: Props) {
               <Td data-qa="dependant-ssn">{dependant.socialSecurityNumber}</Td>
               <Td data-qa="dependant-age">{getAge(dependant.dateOfBirth)}</Td>
               <Td data-qa="dependant-street-address">
-                {printableAddresses(dependant.address)}
+                {dependant.streetAddress
+                  ? `${dependant.streetAddress}, ${dependant.postalCode}, ${dependant.postOffice}`
+                  : ''}
               </Td>
             </Tr>
           )
@@ -61,9 +63,3 @@ export default React.memo(function PersonDependants({ id }: Props) {
     </Table>
   ))
 })
-
-function printableAddresses(address: PersonWithChildrenDTO['address']) {
-  return address.streetAddress
-    ? `${address.streetAddress}, ${address.postalCode}, ${address.postOffice}`
-    : ''
-}

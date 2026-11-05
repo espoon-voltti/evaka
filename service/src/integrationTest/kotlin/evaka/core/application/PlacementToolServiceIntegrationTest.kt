@@ -587,6 +587,48 @@ ${child.ssn!!};${unit.id}
     }
 
     @Test
+    fun `other children come from VTJ when the child's guardians are synced but the guardian's dependants are not`() {
+        val sibling =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 3, 1),
+                ssn = "010318A925J",
+                firstName = "Rita",
+                lastName = "Doe",
+                streetAddress = adult.streetAddress,
+                postalCode = adult.postalCode,
+                postOffice = adult.postOffice,
+            )
+        MockVtjClient.addPersons(sibling)
+        MockVtjClient.addDependants(adult, sibling)
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child.copy(vtjGuardiansQueried = clock.now()), DevPersonType.CHILD)
+            tx.insert(DevGuardian(adult.id, child.id))
+            tx.insert(testFeeThresholds)
+        }
+        val file =
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.ssn!!};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            )
+
+        controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val summary = db.read { it.fetchApplicationSummariesForGuardian(adult.id) }.single()
+        val application = db.read { it.fetchApplicationDetails(summary.applicationId) }
+        assertEquals(
+            listOf(PersonBasics(sibling.firstName, sibling.lastName, sibling.ssn)),
+            application?.form?.otherChildren,
+        )
+    }
+
+    @Test
     fun `service need option can be configured`() {
         whenever(evakaEnv.placementToolServiceNeedOptionId)
             .thenReturn(nonDefaultServiceNeedOption.id)

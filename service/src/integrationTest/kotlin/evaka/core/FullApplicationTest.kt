@@ -12,7 +12,6 @@ import evaka.core.shared.config.getTestDataSource
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.configureJdbi
 import evaka.core.shared.dev.resetDatabase
-import evaka.core.vtjclient.VtjIntegrationTestConfig
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import io.opentelemetry.api.trace.Tracer
 import java.net.URL
@@ -32,7 +31,7 @@ import tools.jackson.databind.json.JsonMapper
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = [SharedIntegrationTestConfig::class, VtjIntegrationTestConfig::class],
+    classes = [SharedIntegrationTestConfig::class],
 )
 abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @LocalServerPort protected var httpPort: Int = 0

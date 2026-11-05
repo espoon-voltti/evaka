@@ -5,7 +5,7 @@
 package evaka.trevaka.invoice
 
 import evaka.core.invoicing.domain.PersonDetailed
-import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.PersonDTO
 
 fun expectedRowLength(lastPos: Int, lastLength: Int) = lastPos + lastLength - 1
 

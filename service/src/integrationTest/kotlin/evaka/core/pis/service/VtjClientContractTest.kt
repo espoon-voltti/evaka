@@ -8,7 +8,6 @@ import evaka.core.identity.Ssn
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevPerson
 import evaka.core.vtjclient.dto.VtjRelative
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.MockVtjClient
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.persondetails.VtjClient
@@ -60,7 +59,7 @@ abstract class VtjClientContract {
     fun `dependants are stubs`() {
         val result = createClientReturningTheFamily().fetchWithDependants(query(guardian))
 
-        assertEquals(guardian.ssn, result.person.socialSecurityNumber)
+        assertEquals(guardian.ssn, result.person.ssn.value)
         assertEquals(guardian.streetAddress, result.person.residentialAddress?.streetAddress)
         assertEquals(listOf(child.toStub()), result.dependants)
     }
@@ -69,7 +68,7 @@ abstract class VtjClientContract {
     fun `guardians are stubs`() {
         val result = createClientReturningTheFamily().fetchWithGuardians(query(child))
 
-        assertEquals(child.ssn, result.person.socialSecurityNumber)
+        assertEquals(child.ssn, result.person.ssn.value)
         assertEquals(child.streetAddress, result.person.residentialAddress?.streetAddress)
         assertEquals(listOf(guardian.toStub()), result.guardians)
     }
@@ -90,7 +89,7 @@ class SoapVtjClientContractTest : VtjClientContract() {
         MockVtjSoapTransport.addPERUSSANOMA3RequestExpectation(child)
         MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(guardian, listOf(child))
         MockVtjSoapTransport.addHUOLLETTAVAHUOLTAJATRequestExpectation(child, listOf(guardian))
-        return SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
+        return SoapVtjClient(MockVtjSoapTransport())
     }
 
     @Test

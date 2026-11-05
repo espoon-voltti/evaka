@@ -23,6 +23,7 @@ import {
   getOrCreatePersonBySsn,
   getPersonDependants,
   getPersonIdentity,
+  previewVtjPerson,
   searchPerson
 } from './generated/api-clients/pis'
 import { getChildDocumentDecisionsReportNotificationCount } from './generated/api-clients/reports'
@@ -45,6 +46,8 @@ export const personIdentityQuery = q.query(getPersonIdentity)
 export const personBySsnQuery = q.query(getOrCreatePersonBySsn)
 
 export const searchPersonQuery = q.query(searchPerson)
+
+export const vtjPersonPreviewQuery = q.query(previewVtjPerson)
 
 export const personDependantsQuery = q.query(getPersonDependants)
 

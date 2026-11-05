@@ -21,18 +21,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
-
-@Service
-class VtjHenkiloMapper {
-    fun mapToVtjPerson(henkilo: Henkilo) = henkilo.mapToVtjPerson()
-
-    fun mapGuardians(henkilo: Henkilo) = henkilo.mapGuardians()
-
-    fun mapDependants(henkilo: Henkilo) = henkilo.mapDependants()
-}
 
 // As per
 // https://stackoverflow.com/questions/1650249/how-to-make-generated-classes-contain-javadoc-from-xml-schema-documentation
@@ -126,7 +116,7 @@ fun Henkilo.mapToVtjPerson(): VtjPerson =
     VtjPerson(
         firstNames = nykyisetEtunimet.etunimet,
         lastName = nykyinenSukunimi.sukunimi,
-        socialSecurityNumber = henkilotunnus.value,
+        ssn = Ssn.parse(henkilotunnus.value) ?: error("VTJ returned an invalid SSN"),
         nationalities = mapNationalities(),
         residentialAddress = parseRegularAddress(vakinainenKotimainenLahiosoite),
         mailingAddressPeriods =

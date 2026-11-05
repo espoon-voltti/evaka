@@ -10,8 +10,8 @@ import evaka.core.backupcare.getBackupCareChildrenInGroup
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.getDaycare
 import evaka.core.daycare.getDaycareGroups
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.placement.getDaycarePlacements
 import evaka.core.placement.getGroupPlacementChildren

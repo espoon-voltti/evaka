@@ -45,7 +45,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionPlacementDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionServiceNeed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType
-import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.PersonDTO
 import evaka.core.placement.PlacementType
 import evaka.core.s3.Document
 import evaka.core.s3.DocumentKey

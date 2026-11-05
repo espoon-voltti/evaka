@@ -8,10 +8,8 @@ import evaka.core.daycare.controllers.AdditionalInformation
 import evaka.core.daycare.controllers.Child
 import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
-import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.messaging.createPersonMessageAccount
-import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.isGuardianBlocked
 import evaka.core.pis.service.replaceChildGuardians
 import evaka.core.pis.service.replaceGuardianChildren
@@ -39,8 +37,7 @@ data class ApplyResult(
 
 /** Creates or updates the person row that has the SSN of [person]. */
 fun Database.Transaction.applyPerson(person: VtjPerson, now: HelsinkiDateTime): ApplyResult {
-    val ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN")
-    val old = lockPersonBySSN(ssn.value)
+    val old = lockPersonBySSN(person.ssn.value)
     val (id, created) =
         createQuery {
             sql(
@@ -63,10 +60,10 @@ INSERT INTO person (
     updated_from_vtj
 )
 VALUES (
-    ${bind(ssn)},
+    ${bind(person.ssn)},
     ${bind(person.firstNames)},
     ${bind(person.lastName)},
-    ${bind(getDobFromSsn(ssn.value))},
+    ${bind(getDobFromSsn(person.ssn.value))},
     ${bind(person.dateOfDeath)},
     ${bind(person.nativeLanguage?.code ?: "")},
     ${bind(person.nationalities.map { it.countryCode })},
@@ -122,17 +119,16 @@ fun Database.Transaction.setSsnFromVtj(
     person: VtjPerson,
     now: HelsinkiDateTime,
 ): ApplyResult {
-    val ssn = Ssn.parse(person.socialSecurityNumber) ?: error("VTJ returned an invalid SSN")
     val old = getPersonById(personId) ?: error("Person $personId not found")
     val _ =
         createQuery {
             sql(
                 """
 UPDATE person SET
-    social_security_number = ${bind(ssn)},
+    social_security_number = ${bind(person.ssn)},
     first_name = ${bind(person.firstNames)},
     last_name = ${bind(person.lastName)},
-    date_of_birth = ${bind(getDobFromSsn(ssn.value))},
+    date_of_birth = ${bind(getDobFromSsn(person.ssn.value))},
     date_of_death = ${bind(person.dateOfDeath)},
     language = ${bind(person.nativeLanguage?.code ?: "")},
     nationalities = ${bind(person.nationalities.map { it.countryCode })},

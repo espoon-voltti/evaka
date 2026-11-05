@@ -5,7 +5,6 @@
 package evaka.core.vtjclient.config
 
 import evaka.core.EvakaEnv
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.DummyIdpVtjClient
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.persondetails.VtjClient
@@ -23,11 +22,7 @@ class VtjClientConfig {
         ctx: ApplicationContext,
     ): VtjClient =
         when (evakaEnv.vtjEnabled) {
-            true ->
-                SoapVtjClient(
-                    vtjSoapTransport = ctx.getBean(XroadVtjSoapTransport::class.java),
-                    henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
-                )
+            true -> SoapVtjClient(ctx.getBean(XroadVtjSoapTransport::class.java))
             false -> DummyIdpVtjClient(evakaEnv.vtjMockUrl, jsonMapper)
         }
 }

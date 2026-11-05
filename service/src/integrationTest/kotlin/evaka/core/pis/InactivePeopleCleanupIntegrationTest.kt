@@ -58,7 +58,6 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import java.time.LocalDate
 import java.time.LocalTime
@@ -564,7 +563,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         addToVtj(vtjZ, guardians = listOf(vtjB, vtjC))
         AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer).use { runner ->
             f(
-                VtjSyncService(SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper()), runner),
+                VtjSyncService(SoapVtjClient(MockVtjSoapTransport()), runner),
                 runner,
             )
         }

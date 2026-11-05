@@ -5,6 +5,7 @@
 package evaka.core.pis
 
 import evaka.core.PureJdbiTest
+import evaka.core.identity.Ssn
 import evaka.core.shared.PersonId
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -29,7 +30,7 @@ class MailingAddressIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         VtjPerson(
             firstNames = "Matti",
             lastName = "Meikäläinen",
-            socialSecurityNumber = "010199-8137",
+            ssn = Ssn.from("010199-8137"),
             residentialAddress =
                 PersonAddress("Kotikatu 1", "02100", "Espoo", "Hemgatan 1", "Esbo"),
             nativeLanguage = NativeLanguage(languageName = "suomi", code = "fi"),

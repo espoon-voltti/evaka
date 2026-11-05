@@ -32,7 +32,7 @@ import evaka.core.invoicing.service.VoucherValueDecisionPdfData
 import evaka.core.invoicing.testDecision1
 import evaka.core.invoicing.testDecisionIncome
 import evaka.core.invoicing.testFeeThresholds
-import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.PersonDTO
 import evaka.core.placement.PlacementType
 import evaka.core.setting.SettingType
 import evaka.core.shared.ApplicationId

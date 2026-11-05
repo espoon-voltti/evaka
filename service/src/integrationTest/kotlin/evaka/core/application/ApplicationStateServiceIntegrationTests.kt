@@ -40,7 +40,6 @@ import evaka.core.decision.updateDecisionDrafts
 import evaka.core.emailclient.MockEmailClient
 import evaka.core.pis.getParentships
 import evaka.core.pis.getPersonById
-import evaka.core.pis.service.insertGuardian
 import evaka.core.placement.PlacementPlan
 import evaka.core.placement.PlacementPlanConfirmationStatus
 import evaka.core.placement.PlacementPlanRejectReason
@@ -69,6 +68,7 @@ import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevFridgePartner
+import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevParentship
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -265,6 +265,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx.insert(it, DevPersonType.ADULT)
             }
             listOf(child1, child2, child6, child7).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(DevGuardian(guardianId = adult1.id, childId = child1.id))
+            tx.insert(DevGuardian(guardianId = adult1.id, childId = child2.id))
+            tx.insert(DevGuardian(guardianId = adult2.id, childId = child1.id))
+            tx.insert(DevGuardian(guardianId = adult5.id, childId = child6.id))
+            tx.insert(DevGuardian(guardianId = adult6.id, childId = child6.id))
             tx.insert(preschoolTerm2020)
         }
         MockVtjClient.addPersons(adult1, adult2, adult5, adult6, child1, child2, child6)
@@ -1532,6 +1537,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL,
                 guardian = guardian,
@@ -2311,8 +2317,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     createdAt = clock.now(),
                 )
             )
-
-            tx.insertGuardian(adult2.id, child1.id)
 
             tx.insert(
                 DevParentship(

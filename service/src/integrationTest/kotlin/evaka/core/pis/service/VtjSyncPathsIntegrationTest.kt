@@ -28,6 +28,7 @@ import evaka.core.identity.getDobFromSsn
 import evaka.core.pis.SystemController
 import evaka.core.pis.controllers.GetOrCreatePersonBySsnRequest
 import evaka.core.pis.controllers.PersonController
+import evaka.core.pis.controllers.VtjPersonPreviewRequest
 import evaka.core.pis.getPersonBySSN
 import evaka.core.placement.PlacementController
 import evaka.core.placement.PlacementCreateRequestBody
@@ -56,7 +57,6 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.updateLastStrongLogin
 import evaka.core.user.updateWeakLoginCredentials
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.SoapVtjClient
 import evaka.core.vtjclient.service.persondetails.VtjClient
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
@@ -168,7 +168,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `weak login of a citizen whose dependants are not synced queries the dependants`() {
+    fun `weak login of a citizen whose dependants are not synced makes no VTJ requests`() {
         val password = Sensitive("test123123")
         db.transaction { tx ->
             tx.insert(a, DevPersonType.ADULT)
@@ -188,9 +188,9 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             SystemController.CitizenWeakLoginRequest("aino@example.com", password, emptyList()),
         )
 
-        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
-        assertPersons(a, x)
-        assertGuardians(a to x)
+        MockVtjSoapTransport.assertRequests()
+        assertPersons(a)
+        assertGuardians()
         assertFridgeChildren()
     }
 
@@ -672,7 +672,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `sending an application queries the guardians of a child whose guardians are not synced`() {
+    fun `sending an application makes no VTJ requests`() {
         db.transaction { tx ->
             tx.insert(a, DevPersonType.ADULT)
             tx.insert(x, DevPersonType.CHILD)
@@ -687,14 +687,76 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             applicationId,
         )
 
+        MockVtjSoapTransport.assertRequests()
+        assertPersons(a, x)
+        assertGuardians(a to x)
+        assertFridgeChildren()
+    }
+
+    @Test
+    fun `employee guardians view syncs the guardians of a child whose guardians are not synced`() {
+        db.transaction { tx -> tx.insert(x, DevPersonType.CHILD) }
+
+        val response = personController.getPersonGuardians(dbInstance(), admin.user, clock, x.id)
+
         MockVtjSoapTransport.assertRequests(
             HUOLLETTAVA_HUOLTAJAT to x,
             PERUSSANOMA3 to a,
             PERUSSANOMA3 to b,
         )
-        assertPersons(a, b, x)
-        assertGuardians(a to x, b to x)
-        assertFridgeChildren()
+        assertEquals(
+            setOf(a.ssn, b.ssn),
+            response.guardians.map { it.socialSecurityNumber }.toSet(),
+        )
+    }
+
+    @Test
+    fun `employee guardians view makes no request for a child whose guardians are synced`() {
+        insertFamilyOfA()
+
+        val response = personController.getPersonGuardians(dbInstance(), admin.user, clock, x.id)
+
+        MockVtjSoapTransport.assertRequests()
+        assertEquals(setOf(a.id, b.id), response.guardians.map { it.id }.toSet())
+    }
+
+    @Test
+    fun `employee dependants view syncs the dependants of a citizen whose dependants are not synced`() {
+        db.transaction { tx -> tx.insertCitizen(a) }
+
+        val dependants = personController.getPersonDependants(dbInstance(), admin.user, clock, a.id)
+
+        MockVtjSoapTransport.assertRequests(HUOLTAJA_HUOLLETTAVA to a, PERUSSANOMA3 to x)
+        assertEquals(listOf(x.ssn), dependants.map { it.socialSecurityNumber })
+    }
+
+    @Test
+    fun `employee dependants view of a leaf adult shows the dependants in the DB without VTJ requests`() {
+        db.transaction { tx ->
+            tx.insert(b, DevPersonType.RAW_ROW)
+            tx.insert(x, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = b.id, childId = x.id))
+        }
+
+        val dependants = personController.getPersonDependants(dbInstance(), admin.user, clock, b.id)
+
+        MockVtjSoapTransport.assertRequests()
+        assertEquals(listOf(x.id), dependants.map { it.id })
+    }
+
+    @Test
+    fun `VTJ preview reads the basic details and writes nothing`() {
+        val preview =
+            personController.previewVtjPerson(
+                dbInstance(),
+                admin.user,
+                clock,
+                VtjPersonPreviewRequest(a.ssn!!),
+            )
+
+        MockVtjSoapTransport.assertRequests(PERUSSANOMA3 to a)
+        assertEquals(a.ssn, preview.socialSecurityNumber)
+        assertPersons()
     }
 
     private fun person(ssn: String, firstName: String, streetAddress: String) =
@@ -962,8 +1024,6 @@ WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(clock.today())}
     }
 
     companion object {
-        @JvmStatic
-        fun countingVtjClient(): VtjClient =
-            SoapVtjClient(MockVtjSoapTransport(), VtjHenkiloMapper())
+        @JvmStatic fun countingVtjClient(): VtjClient = SoapVtjClient(MockVtjSoapTransport())
     }
 }

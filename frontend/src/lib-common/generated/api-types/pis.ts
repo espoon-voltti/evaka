@@ -23,8 +23,6 @@ import type { IncomeEffect } from './invoicing'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import type { MobileDevice } from './pairing'
-import type { Nationality } from './vtjclient'
-import type { NativeLanguage } from './vtjclient'
 import type { ParentshipId } from './shared'
 import type { PartnershipId } from './shared'
 import type { PersonEmailVerificationId } from './shared'
@@ -407,7 +405,6 @@ export interface FosterParentRelationship {
 * Generated from evaka.core.pis.controllers.GetOrCreatePersonBySsnRequest
 */
 export interface GetOrCreatePersonBySsnRequest {
-  readonly: boolean
   ssn: string
 }
 
@@ -469,14 +466,6 @@ export interface NotificationSettings {
   disabledEmailTypes: NotificationCategory[]
   disabledPushTypes: NotificationCategory[]
 }
-
-/**
-* Generated from evaka.core.pis.service.PersonAddressDTO.Origin
-*/
-export type Origin =
-  | 'VTJ'
-  | 'MUNICIPAL'
-  | 'EVAKA'
 
 /**
 * Generated from evaka.core.pis.service.ParentshipDetailed
@@ -565,18 +554,7 @@ export interface PasskeyRegistrationOptions {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonAddressDTO
-*/
-export interface PersonAddressDTO {
-  origin: Origin
-  postOffice: string
-  postalCode: string
-  residenceCode: string
-  streetAddress: string
-}
-
-/**
-* Generated from evaka.core.pis.service.PersonBasicInfo
+* Generated from evaka.core.pis.PersonBasicInfo
 */
 export interface PersonBasicInfo {
   dateOfBirth: LocalDate
@@ -591,7 +569,7 @@ export interface PersonBasicInfo {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonJSON
+* Generated from evaka.core.pis.PersonJSON
 */
 export interface PersonJSON {
   backupPhone: string
@@ -631,7 +609,7 @@ export interface PersonNameDetails {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonPatch
+* Generated from evaka.core.pis.PersonPatch
 */
 export interface PersonPatch {
   backupPhone: string | null
@@ -661,7 +639,7 @@ export interface PersonResponse {
 }
 
 /**
-* Generated from evaka.core.pis.service.PersonSensitiveDetails
+* Generated from evaka.core.pis.PersonSensitiveDetails
 */
 export interface PersonSensitiveDetails {
   backupPhone: string
@@ -698,30 +676,6 @@ export interface PersonSummary {
   restrictedDetailsEnabled: boolean
   socialSecurityNumber: string | null
   streetAddress: string | null
-}
-
-/**
-* Generated from evaka.core.pis.service.PersonWithChildrenDTO
-*/
-export interface PersonWithChildrenDTO {
-  address: PersonAddressDTO
-  backupPhone: string
-  children: PersonWithChildrenDTO[]
-  dateOfBirth: LocalDate
-  dateOfDeath: LocalDate | null
-  duplicateOf: PersonId | null
-  email: string | null
-  firstName: string
-  id: PersonId
-  lastName: string
-  municipalityOfResidence: string
-  nationalities: Nationality[]
-  nativeLanguage: NativeLanguage | null
-  phone: string
-  preferredName: string
-  residenceCode: string
-  restrictedDetails: RestrictedDetails
-  socialSecurityNumber: string | null
 }
 
 /**
@@ -764,14 +718,6 @@ export type PinLoginStatus =
   | 'SUCCESS'
   | 'WRONG_PIN'
   | 'PIN_LOCKED'
-
-/**
-* Generated from evaka.core.pis.service.RestrictedDetails
-*/
-export interface RestrictedDetails {
-  enabled: boolean
-  endDate: LocalDate | null
-}
 
 /**
 * Generated from evaka.core.pis.ScheduledDaycareRole
@@ -854,6 +800,25 @@ export interface UpsertEmployeeDaycareRolesRequest {
   endDate: LocalDate | null
   role: UserRole
   startDate: LocalDate
+}
+
+/**
+* Generated from evaka.core.pis.service.VtjPersonPreview
+*/
+export interface VtjPersonPreview {
+  dateOfBirth: LocalDate
+  firstName: string
+  lastName: string
+  restrictedDetailsEnabled: boolean
+  socialSecurityNumber: string
+  streetAddress: string
+}
+
+/**
+* Generated from evaka.core.pis.controllers.VtjPersonPreviewRequest
+*/
+export interface VtjPersonPreviewRequest {
+  ssn: string
 }
 
 
@@ -1095,25 +1060,6 @@ export function deserializeJsonPersonSummary(json: JsonOf<PersonSummary>): Perso
 }
 
 
-export function deserializeJsonPersonWithChildrenDTO(json: JsonOf<PersonWithChildrenDTO>): PersonWithChildrenDTO {
-  return {
-    ...json,
-    children: json.children.map(e => deserializeJsonPersonWithChildrenDTO(e)),
-    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
-    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
-    restrictedDetails: deserializeJsonRestrictedDetails(json.restrictedDetails)
-  }
-}
-
-
-export function deserializeJsonRestrictedDetails(json: JsonOf<RestrictedDetails>): RestrictedDetails {
-  return {
-    ...json,
-    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
-  }
-}
-
-
 export function deserializeJsonScheduledDaycareRole(json: JsonOf<ScheduledDaycareRole>): ScheduledDaycareRole {
   return {
     ...json,
@@ -1128,5 +1074,13 @@ export function deserializeJsonUpsertEmployeeDaycareRolesRequest(json: JsonOf<Up
     ...json,
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonVtjPersonPreview(json: JsonOf<VtjPersonPreview>): VtjPersonPreview {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
   }
 }

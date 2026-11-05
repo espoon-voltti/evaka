@@ -220,29 +220,34 @@ WHERE application.type = 'PRESCHOOL'
         val desiredStatus = featureConfig.placementToolApplicationStatus
         val audit =
             AuditContext().add(data.childId).add(data.preschoolId).addMeta("status", desiredStatus)
+        val (guardianIds, guardianId) =
+            dbc.read { tx ->
+                if (tx.getPersonById(data.childId) == null) {
+                    throw Exception("No person found with id ${data.childId}")
+                }
+                val guardianIds =
+                    tx.getChildGuardiansAndFosterParents(data.childId, clock.today()) -
+                        tx.getBlockedGuardians(data.childId).toSet()
+                if (guardianIds.isEmpty()) {
+                    throw Exception("No guardians found for child ${data.childId}")
+                }
+                val guardianId =
+                    guardianIds.find { id ->
+                        id ==
+                            tx.getParentships(
+                                    headOfChildId = null,
+                                    childId = data.childId,
+                                    period = DateRange(clock.today(), null),
+                                )
+                                .firstOrNull()
+                                ?.headOfChildId
+                    } ?: guardianIds.first()
+                guardianIds to guardianId
+            }
+        audit.add(guardianIds)
+        // The application form lists the guardian's dependants as other children
+        vtjSyncService.syncDependantsForFamilySetup(dbc, user.evakaUserId, clock, guardianId)
         dbc.transaction { tx ->
-            if (tx.getPersonById(data.childId) == null) {
-                throw Exception("No person found with id ${data.childId}")
-            }
-            val guardianIds =
-                tx.getChildGuardiansAndFosterParents(data.childId, clock.today()) -
-                    tx.getBlockedGuardians(data.childId).toSet()
-            if (guardianIds.isEmpty()) {
-                throw Exception("No guardians found for child ${data.childId}")
-            }
-            audit.add(guardianIds)
-            val guardianId =
-                guardianIds.find { id ->
-                    id ==
-                        tx.getParentships(
-                                headOfChildId = null,
-                                childId = data.childId,
-                                period = DateRange(clock.today(), null),
-                            )
-                            .firstOrNull()
-                            ?.headOfChildId
-                } ?: guardianIds.first()
-
             val applicationId =
                 savePaperApplication(
                     tx,

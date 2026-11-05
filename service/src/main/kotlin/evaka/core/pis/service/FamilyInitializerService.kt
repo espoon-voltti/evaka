@@ -8,6 +8,7 @@ import evaka.core.application.ApplicationDetails
 import evaka.core.application.fetchApplicationDetails
 import evaka.core.identity.Ssn
 import evaka.core.pis.Creator
+import evaka.core.pis.PersonDTO
 import evaka.core.pis.createParentship
 import evaka.core.pis.createPartnership
 import evaka.core.pis.getDependantGuardians
@@ -16,6 +17,7 @@ import evaka.core.pis.getParentships
 import evaka.core.pis.getPartnershipsForPerson
 import evaka.core.pis.getPersonById
 import evaka.core.pis.personIsHeadOfFamily
+import evaka.core.pis.personsLiveInTheSameAddress
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
@@ -34,7 +36,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class FamilyInitializerService(
-    private val personService: PersonService,
     private val vtjSyncService: VtjSyncService,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
@@ -84,8 +85,7 @@ class FamilyInitializerService(
                         familyFromApplication.fridgePartner.id,
                         evakaClock.today(),
                     ) &&
-                    personService.personsLiveInTheSameAddress(
-                        tx,
+                    tx.personsLiveInTheSameAddress(
                         familyFromApplication.fridgePartner.id,
                         familyFromApplication.headOfFamily.id,
                     )
@@ -165,7 +165,7 @@ class FamilyInitializerService(
                     tx.getDependantGuardians(application.childId)
                         .firstOrNull { it.id != application.guardianId }
                         ?.takeIf { otherGuardian ->
-                            personService.personsLiveInTheSameAddress(headOfFamily, otherGuardian)
+                            personsLiveInTheSameAddress(headOfFamily, otherGuardian)
                         }
 
                 val fridgePartnerSSN =
@@ -180,8 +180,7 @@ class FamilyInitializerService(
                                 DateRange(it.startDate, it.endDate).includes(today) &&
                                     it.partners.any { partner ->
                                         partner.id != application.guardianId &&
-                                            personService.personsLiveInTheSameAddress(
-                                                tx,
+                                            tx.personsLiveInTheSameAddress(
                                                 partner.id,
                                                 application.guardianId,
                                             )
@@ -191,8 +190,7 @@ class FamilyInitializerService(
                                 it.partners
                                     .first { partner ->
                                         partner.id != application.guardianId &&
-                                            personService.personsLiveInTheSameAddress(
-                                                tx,
+                                            tx.personsLiveInTheSameAddress(
                                                 partner.id,
                                                 application.guardianId,
                                             )

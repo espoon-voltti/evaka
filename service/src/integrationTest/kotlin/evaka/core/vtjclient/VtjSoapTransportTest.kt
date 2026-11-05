@@ -16,7 +16,9 @@ import evaka.core.vtjclient.dto.PersonAddress
 import evaka.core.vtjclient.dto.RestrictedDetails
 import evaka.core.vtjclient.dto.VtjPerson
 import evaka.core.vtjclient.dto.VtjRelative
-import evaka.core.vtjclient.mapper.VtjHenkiloMapper
+import evaka.core.vtjclient.mapper.mapDependants
+import evaka.core.vtjclient.mapper.mapGuardians
+import evaka.core.vtjclient.mapper.mapToVtjPerson
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType
 import evaka.core.vtjclient.service.vtjclient.VtjSoapTransport.RequestType.ASUKASMAARA
@@ -46,8 +48,6 @@ val NIL_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Autowired lateinit var vtjSoapTransport: VtjSoapTransport
-
-    @Autowired lateinit var mapper: VtjHenkiloMapper
 
     private val schemaResource: Resource = ClassPathResource("wsdl/query.xsd")
 
@@ -98,7 +98,7 @@ class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
             )
         val response = vtjSoapTransport.query(query)
 
-        val result = mapper.mapToVtjPerson(response!!)
+        val result = response!!.mapToVtjPerson()
 
         with(result) {
             assertThat(firstNames).isEqualTo("Albert Kristian")
@@ -130,7 +130,7 @@ class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
             )
         val response = vtjSoapTransport.query(query)
 
-        val result = mapper.mapToVtjPerson(response!!)
+        val result = response!!.mapToVtjPerson()
 
         with(result) {
             assertThat(firstNames).isEqualTo("Anna Alexandra")
@@ -138,7 +138,7 @@ class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
 
             assertThat(result).isEqualTo(annaPopov)
         }
-        assertThat(mapper.mapDependants(response)).isEqualTo(annaPopovsChildren)
+        assertThat(response.mapDependants()).isEqualTo(annaPopovsChildren)
         mockServer?.verify()
     }
 
@@ -156,14 +156,14 @@ class VtjSoapTransportTest : FullApplicationTest(resetDbBeforeEach = false) {
             )
         val response = vtjSoapTransport.query(query)
 
-        val result = mapper.mapToVtjPerson(response!!)
+        val result = response!!.mapToVtjPerson()
 
         with(result) {
             assertThat(firstNames).isEqualTo("Minja Zavutina")
             assertThat(lastName).isEqualTo("Popov")
-            assertThat(socialSecurityNumber).isEqualTo("311211A9527")
+            assertThat(ssn.value).isEqualTo("311211A9527")
         }
-        assertThat(mapper.mapGuardians(response).map { it.ssn.value })
+        assertThat(response.mapGuardians().map { it.ssn.value })
             .containsExactlyInAnyOrder("010181-9533", "020190-9521")
         mockServer?.verify()
     }
@@ -224,7 +224,7 @@ private val annaPopov =
     VtjPerson(
         firstNames = "Anna Alexandra",
         lastName = "Popov",
-        socialSecurityNumber = "020190-9521",
+        ssn = Ssn.from("020190-9521"),
         nativeLanguage = NativeLanguage("viro, eesti", "et"),
         residentialAddress =
             PersonAddress(
