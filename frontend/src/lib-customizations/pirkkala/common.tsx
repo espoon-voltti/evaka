@@ -7,7 +7,15 @@ import type { CommonCustomizations } from 'lib-customizations/types'
 import theme from './pirkkala-theme'
 
 const customizations: CommonCustomizations = {
-  theme
+  theme,
+  placementTypes: [
+    'DAYCARE',
+    'TEMPORARY_DAYCARE',
+    'PRESCHOOL',
+    'PRESCHOOL_DAYCARE',
+    'PRESCHOOL_DAYCARE_ONLY',
+    'CLUB'
+  ]
 }
 
 export default customizations

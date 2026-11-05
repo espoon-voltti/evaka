@@ -31,9 +31,9 @@ import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRange
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { placementTypes as placementTypeValues } from 'lib-customizations/common'
 import {
   featureFlags,
-  placementTypes as placementTypeValues,
   additionalPlacementTypesForDocumentTemplates
 } from 'lib-customizations/employee'
 

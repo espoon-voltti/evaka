@@ -14,7 +14,8 @@ import {
   getMaxPreferredUnits,
   translations as citizenTranslations
 } from 'lib-customizations/citizen'
-import { featureFlags, placementTypes } from 'lib-customizations/employee'
+import { placementTypes } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { applicationAttachment, getAttachmentUrl } from '../../api/attachments'
 import { deleteAttachmentMutation } from '../../queries'

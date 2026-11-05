@@ -45,17 +45,6 @@ const customizations: EmployeeCustomizations = {
   },
   cityLogo: <img src={Logo} alt="Espoo Logo" data-qa="footer-city-logo" />,
   featureFlags,
-  placementTypes: [
-    'PRESCHOOL',
-    'PRESCHOOL_DAYCARE',
-    'DAYCARE',
-    'DAYCARE_PART_TIME',
-    'PREPARATORY',
-    'PREPARATORY_DAYCARE',
-    'CLUB',
-    'TEMPORARY_DAYCARE',
-    'TEMPORARY_DAYCARE_PART_DAY'
-  ],
   additionalPlacementTypesForDocumentTemplates: [
     'DAYCARE_FIVE_YEAR_OLDS',
     'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'

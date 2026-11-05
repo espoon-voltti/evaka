@@ -66,6 +66,7 @@ export interface BaseAppConfig {
 
 export interface CommonCustomizations {
   theme: Theme
+  placementTypes: PlacementType[]
 }
 
 export interface CitizenCustomizations {
@@ -103,7 +104,6 @@ export interface EmployeeCustomizations {
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
   cityLogo: CityLogo
   featureFlags: FeatureFlags
-  placementTypes: PlacementType[]
   absenceTypes: AbsenceType[]
   absenceTypesNotSelectableInWeekCalendar: AbsenceType[]
   daycareAssistanceLevels: DaycareAssistanceLevel[]

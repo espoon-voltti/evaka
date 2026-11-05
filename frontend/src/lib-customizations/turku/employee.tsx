@@ -410,16 +410,6 @@ const customizations: EmployeeCustomizations = {
     alt: 'Turku logo'
   },
   featureFlags,
-  placementTypes: [
-    'DAYCARE',
-    'DAYCARE_PART_TIME',
-    'PRESCHOOL',
-    'PRESCHOOL_DAYCARE',
-    'PREPARATORY',
-    'PREPARATORY_DAYCARE',
-    'CLUB',
-    'TEMPORARY_DAYCARE'
-  ],
   absenceTypes: [
     'OTHER_ABSENCE',
     'UNKNOWN_ABSENCE',

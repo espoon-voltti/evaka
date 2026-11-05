@@ -41,11 +41,11 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { placementTypes } from 'lib-customizations/common'
 import {
   daycareAssistanceLevels,
   featureFlags,
   otherAssistanceMeasureTypes,
-  placementTypes,
   preschoolAssistanceLevels,
   unitProviderTypes
 } from 'lib-customizations/employee'

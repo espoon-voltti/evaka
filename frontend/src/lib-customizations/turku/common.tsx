@@ -11,7 +11,17 @@ import type { CommonCustomizations } from 'lib-customizations/types'
 import theme from './turku-theme'
 
 const customizations: CommonCustomizations = {
-  theme
+  theme,
+  placementTypes: [
+    'DAYCARE',
+    'DAYCARE_PART_TIME',
+    'PRESCHOOL',
+    'PRESCHOOL_DAYCARE',
+    'PREPARATORY',
+    'PREPARATORY_DAYCARE',
+    'CLUB',
+    'TEMPORARY_DAYCARE'
+  ]
 }
 
 export default customizations

@@ -47,9 +47,9 @@ import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { placementTypes as placementTypeValues } from 'lib-customizations/common'
 import {
   featureFlags,
-  placementTypes as placementTypeValues,
   additionalPlacementTypesForDocumentTemplates
 } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'

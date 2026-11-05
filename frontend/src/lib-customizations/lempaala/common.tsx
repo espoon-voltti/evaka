@@ -7,7 +7,8 @@ import type { CommonCustomizations } from 'lib-customizations/types'
 import theme from './lempaala-theme'
 
 const customizations: CommonCustomizations = {
-  theme
+  theme,
+  placementTypes: ['DAYCARE', 'TEMPORARY_DAYCARE']
 }
 
 export default customizations

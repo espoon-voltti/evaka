@@ -5,6 +5,19 @@
 import theme from 'lib-common/themes/espoo-theme'
 import type { CommonCustomizations } from 'lib-customizations/types'
 
-const customizations: CommonCustomizations = { theme }
+const customizations: CommonCustomizations = {
+  theme,
+  placementTypes: [
+    'PRESCHOOL',
+    'PRESCHOOL_DAYCARE',
+    'DAYCARE',
+    'DAYCARE_PART_TIME',
+    'PREPARATORY',
+    'PREPARATORY_DAYCARE',
+    'CLUB',
+    'TEMPORARY_DAYCARE',
+    'TEMPORARY_DAYCARE_PART_DAY'
+  ]
+}
 
 export default customizations
