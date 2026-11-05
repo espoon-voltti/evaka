@@ -10,6 +10,8 @@ import evaka.core.application.ApplicationType
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.application.persistence.daycare.OtherPerson
+import evaka.core.shared.ApplicationId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevCareArea
@@ -214,5 +216,107 @@ class FamilyInitializerServiceIntegrationTest : FullApplicationTest(resetDbBefor
                 tx.getParentships(adult.id, child2.id, false, DateRange(clock.today(), null)).size,
             )
         }
+    }
+
+    @Test
+    fun `partner listed on the application is added to the family when the partner lives at the same address`() {
+        val partner = partner(ssn = "120385-915L", streetAddress = adult.streetAddress)
+        MockVtjClient.addPersons(partner)
+
+        initializeFamily(insertApplication(otherPartner = partner))
+
+        assertEquals(setOf(partner.ssn), partnersOf(adult))
+    }
+
+    @Test
+    fun `partner listed on the application is not added to the family when the partner lives at another address`() {
+        val partner = partner(ssn = "120385-915L", streetAddress = "Muukatu 2")
+        MockVtjClient.addPersons(partner)
+
+        initializeFamily(insertApplication(otherPartner = partner))
+
+        assertEquals(emptySet(), partnersOf(adult))
+    }
+
+    @Test
+    fun `partner listed on the application is added to the family when the partner has restricted details`() {
+        val partner =
+            partner(ssn = "120385-915L", streetAddress = "").copy(restrictedDetailsEnabled = true)
+        MockVtjClient.addPersons(partner)
+
+        initializeFamily(insertApplication(otherPartner = partner))
+
+        assertEquals(setOf(partner.ssn), partnersOf(adult))
+    }
+
+    @Test
+    fun `other guardian at the same address is added to the family when the listed partner lives at another address`() {
+        val otherGuardian = partner(ssn = "230488-9159", streetAddress = adult.streetAddress)
+        val partner = partner(ssn = "120385-915L", streetAddress = "Muukatu 2")
+        db.transaction { tx ->
+            tx.insert(otherGuardian, DevPersonType.ADULT)
+            tx.insert(DevGuardian(guardianId = otherGuardian.id, childId = child.id))
+        }
+        MockVtjClient.addPersons(otherGuardian, partner)
+
+        initializeFamily(insertApplication(otherPartner = partner))
+
+        assertEquals(setOf(otherGuardian.ssn), partnersOf(adult))
+    }
+
+    private fun partner(ssn: String, streetAddress: String) =
+        DevPerson(
+            ssn = ssn,
+            firstName = "Puoliso",
+            lastName = "Meikäläinen",
+            streetAddress = streetAddress,
+            postalCode = adult.postalCode,
+            postOffice = adult.postOffice,
+        )
+
+    private fun insertApplication(otherPartner: DevPerson) = db.transaction { tx ->
+        tx.insertTestApplication(
+            type = ApplicationType.DAYCARE,
+            guardianId = adult.id,
+            childId = child.id,
+            status = ApplicationStatus.WAITING_PLACEMENT,
+            document =
+                DaycareFormV0(
+                    type = ApplicationType.DAYCARE,
+                    child =
+                        Child(
+                            dateOfBirth = child.dateOfBirth,
+                            socialSecurityNumber = child.ssn ?: "",
+                        ),
+                    guardian = Adult(socialSecurityNumber = adult.ssn ?: ""),
+                    hasOtherAdults = true,
+                    otherAdults =
+                        listOf(
+                            OtherPerson(
+                                firstName = otherPartner.firstName,
+                                lastName = otherPartner.lastName,
+                                socialSecurityNumber = otherPartner.ssn ?: "",
+                            )
+                        ),
+                ),
+        )
+    }
+
+    private fun initializeFamily(applicationId: ApplicationId) =
+        familyInitializerService.handleInitializeFamilyFromApplication(
+            db,
+            clock,
+            AsyncJob.InitializeFamilyFromApplication(
+                applicationId,
+                AuthenticatedUser.SystemInternalUser,
+            ),
+        )
+
+    private fun partnersOf(person: DevPerson): Set<String?> = db.read { tx ->
+        tx.getPartnershipsForPerson(person.id)
+            .flatMap { it.partners }
+            .filter { it.id != person.id }
+            .map { it.socialSecurityNumber }
+            .toSet()
     }
 }

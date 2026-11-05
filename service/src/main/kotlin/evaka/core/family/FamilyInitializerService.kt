@@ -142,7 +142,7 @@ class FamilyInitializerService(
     ): FridgeFamilyMembers {
         val today = clock.today()
 
-        val (headOfFamily, child, fridgePartnerSsn) =
+        val (headOfFamily, child, partnerInSameAddressSsn) =
             dbc.read { tx ->
                 val headOfFamily =
                     tx.getPersonById(application.guardianId)
@@ -155,65 +155,47 @@ class FamilyInitializerService(
                             "Application child not found with id ${application.childId}"
                         )
 
-                val otherGuardian =
+                val otherGuardianInSameAddressSsn =
                     tx.getDependantGuardians(application.childId)
                         .firstOrNull { it.id != application.guardianId }
-                        ?.takeIf { otherGuardian ->
-                            personsLiveInTheSameAddress(headOfFamily, otherGuardian)
-                        }
+                        ?.takeIf { personsLiveInTheSameAddress(headOfFamily, it) }
+                        ?.ssn
 
-                val fridgePartnerSSN =
-                    application.form.otherPartner?.socialSecurityNumber ?: otherGuardian?.ssn?.value
-
-                val existingFridgePartnerInSameAddressAsGuardianSSN =
-                    if (otherGuardian != null || fridgePartnerSSN != null) {
-                        null
-                    } else {
-                        tx.getPartnershipsForPerson(application.guardianId, false)
-                            .filter {
-                                DateRange(it.startDate, it.endDate).includes(today) &&
-                                    it.partners.any { partner ->
-                                        partner.id != application.guardianId &&
-                                            tx.personsLiveInTheSameAddress(
-                                                partner.id,
-                                                application.guardianId,
-                                            )
-                                    }
+                val partnerInSameAddressSsn =
+                    otherGuardianInSameAddressSsn
+                        ?: tx.getPartnershipsForPerson(application.guardianId)
+                            .filter { DateRange(it.startDate, it.endDate).includes(today) }
+                            .flatMap { it.partners }
+                            .firstOrNull {
+                                it.id != application.guardianId &&
+                                    tx.personsLiveInTheSameAddress(it.id, application.guardianId)
                             }
-                            .map {
-                                it.partners
-                                    .first { partner ->
-                                        partner.id != application.guardianId &&
-                                            tx.personsLiveInTheSameAddress(
-                                                partner.id,
-                                                application.guardianId,
-                                            )
-                                    }
-                                    .socialSecurityNumber
-                            }
-                            .firstOrNull()
-                    }
+                            ?.socialSecurityNumber
+                            ?.let { Ssn.from(it) }
 
-                Triple(
-                    headOfFamily,
-                    child,
-                    fridgePartnerSSN ?: existingFridgePartnerInSameAddressAsGuardianSSN,
-                )
+                Triple(headOfFamily, child, partnerInSameAddressSsn)
+            }
+
+        fun getOrCreatePartner(ssn: Ssn): Person? =
+            try {
+                vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, ssn).person
+            } catch (e: NotFound) {
+                logger.error(e) {
+                    "Family initialization failed for application ${application.id} partner with a valid SSN that cannot be found in VTJ"
+                }
+                null
             }
 
         val fridgePartner =
-            fridgePartnerSsn
+            application.form.otherPartner
+                ?.socialSecurityNumber
                 ?.let { Ssn.parse(it) }
-                ?.let {
-                    try {
-                        vtjSyncService.getOrCreatePerson(dbc, user.evakaUserId, clock, it).person
-                    } catch (e: NotFound) {
-                        logger.error(e) {
-                            "Family initialization failed for application ${application.id} partner with a valid SSN that cannot be found in VTJ"
-                        }
-                        null
-                    }
-                }
+                ?.let { getOrCreatePartner(it) }
+                ?.takeIf { partner ->
+                    headOfFamily.restrictedDetailsEnabled ||
+                        partner.restrictedDetailsEnabled ||
+                        personsLiveInTheSameAddress(headOfFamily, partner)
+                } ?: partnerInSameAddressSsn?.let { getOrCreatePartner(it) }
 
         val fridgeSiblings =
             application.form.otherChildren

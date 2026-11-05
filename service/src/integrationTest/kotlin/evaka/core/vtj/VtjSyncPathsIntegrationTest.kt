@@ -649,6 +649,31 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `family init creates the partner as a leaf, then syncs the dependants of the head and the partner`() {
+        val partner = person("040779-9154", "Pirjo", a.streetAddress)
+        addToVtj(partner)
+        db.transaction { tx ->
+            tx.insert(a, DevPersonType.ADULT)
+            tx.insert(x, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = a.id, childId = x.id))
+        }
+        val applicationId = db.transaction { tx ->
+            tx.insertApplication(ApplicationStatus.WAITING_PLACEMENT, otherPartner = partner)
+        }
+
+        runFamilyInit(applicationId)
+
+        MockVtjSoapTransport.assertRequests(
+            PERUSSANOMA3 to partner,
+            HUOLTAJA_HUOLLETTAVA to a,
+            HUOLTAJA_HUOLLETTAVA to partner,
+        )
+        assertPersons(a, partner, x)
+        assertGuardians(a to x)
+        assertFridgeChildren(a to x)
+    }
+
+    @Test
+    fun `family init creates a partner who lives at another address as a leaf, but syncs only the dependants of the head`() {
         db.transaction { tx ->
             tx.insert(a, DevPersonType.ADULT)
             tx.insert(x, DevPersonType.CHILD)
@@ -660,14 +685,9 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         runFamilyInit(applicationId)
 
-        MockVtjSoapTransport.assertRequests(
-            PERUSSANOMA3 to b,
-            HUOLTAJA_HUOLLETTAVA to a,
-            HUOLTAJA_HUOLLETTAVA to b,
-            PERUSSANOMA3 to z,
-        )
-        assertPersons(a, b, x, z)
-        assertGuardians(a to x, b to x, b to z)
+        MockVtjSoapTransport.assertRequests(PERUSSANOMA3 to b, HUOLTAJA_HUOLLETTAVA to a)
+        assertPersons(a, b, x)
+        assertGuardians(a to x)
         assertFridgeChildren(a to x)
     }
 
