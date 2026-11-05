@@ -620,6 +620,19 @@ fun buildDataRetentionSchema(
                     },
             ),
             HandledTable(
+                name = "voucher_value_report_decision",
+                handledBy = CHILD,
+                references =
+                    listOf(
+                        primaryReference("decision_id", referencedTable = "voucher_value_decision")
+                    ),
+                auditIdType = DatabaseTable.VoucherValueReportDecision::class,
+                expirationRule = Always,
+                // The report shows the months back to the finance freeze
+                financeFreeze = After(FINANCE_FREEZE_WITH_MARGIN, voucherValueReportRowMonthEnd),
+                deletedWithParent = true,
+            ),
+            HandledTable(
                 name = "fridge_child",
                 handledBy = ADULT,
                 references =
@@ -871,16 +884,6 @@ fun buildDataRetentionSchema(
                 name = "message_thread_children",
                 references = listOf(secondaryReference("child_id", referencedTable = "child")),
             ),
-            ExternalTable(
-                name = "voucher_value_report_decision",
-                references =
-                    listOf(
-                        secondaryReference(
-                            "decision_id",
-                            referencedTable = "voucher_value_decision",
-                        )
-                    ),
-            ),
         )
     val schema = SchemaDefinition(overrides.applyTo(tables))
     requireSafetyConditions(schema, valueDecisionCapacityFactorEnabled)
@@ -899,6 +902,17 @@ private fun requireSafetyConditions(
         require(table.deletedWithParent && schema.parentOf(table) == schema.child) {
             "$table holds the sync state of an integration, so it must be deleted with its parent ${schema.child}"
         }
+    }
+    val voucherValueReportRows =
+        requireNotNull(schema.tablesByName["voucher_value_report_decision"] as? HandledTable) {
+            "voucher_value_report_decision is not declared as a handled table"
+        }
+    require(
+        voucherValueReportRows.deletedWithParent &&
+            schema.parentOf(voucherValueReportRows)?.name == "voucher_value_decision" &&
+            !voucherValueReportRows.independentRows
+    ) {
+        "$voucherValueReportRows must be deleted with voucher_value_decision and be evaluated as a whole, so that the service voucher report loses all the rows of a child at once"
     }
     for (table in schema.handledTables) {
         // The sync state of each integration is deleted with the child row

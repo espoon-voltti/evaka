@@ -26,6 +26,7 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
@@ -38,6 +39,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -112,6 +114,31 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `area voucher report is not shown for a month before the finance freeze`() {
+        val sum = createTestSetOfDecisions()
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+
+        val janReport =
+            getAreaReport(
+                area1.id,
+                janFirst.year,
+                janFirst.monthValue,
+                today = LocalDate.of(2025, 1, 31),
+            )
+        janReport.assertContainsSum(daycareInArea1.id, sum)
+        assertThrows<BadRequest> {
+            getAreaReport(
+                area1.id,
+                janFirst.year,
+                janFirst.monthValue,
+                today = LocalDate.of(2025, 2, 1),
+            )
+        }
+    }
+
+    @Test
     fun `area voucher report includes corrections and refunds`() {
         val sum = createTestSetOfDecisions()
         db.transaction {
@@ -175,9 +202,17 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         areaId: AreaId,
         year: Int,
         month: Int,
+        today: LocalDate = clock.today(),
     ): List<ServiceVoucherValueUnitAggregate> {
         return serviceVoucherValueReportController
-            .getServiceVoucherReportForAllUnits(dbInstance(), adminUser, clock, year, month, areaId)
+            .getServiceVoucherReportForAllUnits(
+                dbInstance(),
+                adminUser,
+                MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.NOON)),
+                year,
+                month,
+                areaId,
+            )
             .rows
     }
 

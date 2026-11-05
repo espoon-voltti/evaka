@@ -33,8 +33,10 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.snDaycareContractDays15
 import evaka.core.snDefaultDaycare
@@ -50,6 +52,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -146,6 +149,31 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val janReport = getUnitReport(daycare2.id, janFirst.year, janFirst.monthValue)
         assertEquals(0, janReport.size)
+    }
+
+    @Test
+    fun `service voucher unit report is not shown for a month before the finance freeze`() {
+        createVoucherDecision(janFirst, unitId = daycare.id, value = 87000, coPayment = 28800)
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+
+        val janReport =
+            getUnitReport(
+                daycare.id,
+                janFirst.year,
+                janFirst.monthValue,
+                today = LocalDate.of(2025, 1, 31),
+            )
+        assertEquals(1, janReport.size)
+        assertThrows<BadRequest> {
+            getUnitReport(
+                daycare.id,
+                janFirst.year,
+                janFirst.monthValue,
+                today = LocalDate.of(2025, 2, 1),
+            )
+        }
     }
 
     @Test
@@ -1474,12 +1502,13 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         unitId: DaycareId,
         year: Int,
         month: Int,
+        today: LocalDate = LocalDate.of(year, month, 1),
     ): List<ServiceVoucherValueRow> =
         serviceVoucherValueReportController
             .getServiceVoucherReportForUnit(
                 dbInstance(),
                 adminUser,
-                RealEvakaClock(),
+                MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.NOON)),
                 unitId,
                 year,
                 month,

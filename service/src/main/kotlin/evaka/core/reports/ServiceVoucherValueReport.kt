@@ -6,6 +6,7 @@ package evaka.core.reports
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
+import evaka.core.invoicing.domain.financeFreezeDate
 import evaka.core.shared.AreaId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
@@ -13,6 +14,7 @@ import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.DatabaseEnum
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -23,6 +25,7 @@ import evaka.core.shared.security.actionrule.AccessControlFilter
 import evaka.core.shared.security.actionrule.forTable
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.YearMonth
 import java.util.UUID
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -52,6 +55,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
                         clock,
                         Action.Unit.READ_SERVICE_VOUCHER_REPORT,
                     )
+                requireShownMonth(year, month, clock.today())
                 getServiceVoucherReport(tx, year, month, areaId, filter)
             }
         }
@@ -81,6 +85,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
                     Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT,
                     unitId,
                 )
+                requireShownMonth(year, month, clock.today())
 
                 val snapshotTime = tx.getSnapshotDate(year, month)
                 val rows =
@@ -98,7 +103,17 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
             }
         }
     }
+
+    private fun requireShownMonth(year: Int, month: Int, today: LocalDate) {
+        if (YearMonth.of(year, month) < oldestShownVoucherValueReportMonth(today)) {
+            throw BadRequest("The months before the finance freeze are not shown")
+        }
+    }
 }
+
+/** Data retention may have deleted rows of the months before this */
+fun oldestShownVoucherValueReportMonth(today: LocalDate): YearMonth =
+    YearMonth.from(financeFreezeDate(today))
 
 fun freezeVoucherValueReportRows(
     tx: Database.Transaction,

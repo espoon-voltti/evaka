@@ -101,6 +101,24 @@ WHERE id = ANY(${bind(ids)}) AND status IN ('SENT', 'ANNULLED') AND archived_at 
             .toSet<UUID>()
     }
 
+val voucherValueReportRowMonthEnd =
+    DateSource.Custom(
+        "the end of the month whose frozen report holds the row",
+        mayReturnNoDate = false,
+    ) { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT r.id, (make_date(s.year, s.month, 1) + interval '1 month' - interval '1 day')::date AS date
+FROM voucher_value_report_decision r
+JOIN voucher_value_report_snapshot s ON s.id = r.voucher_value_report_snapshot_id
+WHERE r.id = ANY(${bind(ids)})
+"""
+                )
+            }
+            .toDatesById()
+    }
+
 /**
  * A draft expires a year after it was created. A sent statement that a fee decision of its person
  * overlaps, other than an ignored one, expires ten years after its period, and a missing end date

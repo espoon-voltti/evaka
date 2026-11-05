@@ -208,6 +208,8 @@ sealed interface DatabaseTable {
 
     sealed class VoucherValueDecision : DatabaseTable
 
+    sealed class VoucherValueReportDecision : DatabaseTable
+
     sealed class VardaState : DatabaseTable
 
     sealed class SfiMessage : DatabaseTable

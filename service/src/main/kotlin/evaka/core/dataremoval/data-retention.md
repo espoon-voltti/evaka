@@ -284,7 +284,7 @@ A table that the graph only references, and that references nothing in it, is ou
 
 - Case processes and their history rows are left as orphans. At least the ones from the current year must stay, so that the sequence numbers are not reused.
 - A `child_document_decision` is deleted with its child document.
-- A `voucher_value_report_snapshot` is referenced by many decisions through its `voucher_value_report_decision` rows, an external table, and needs a job of its own (section 9.3).
+- A `voucher_value_report_snapshot` is left as an orphan when its report rows are deleted (section 6.5).
 - A `calendar_event` is left as an orphan.
 
 ### 5.3 Tables excluded by exception
@@ -347,9 +347,23 @@ A row expires only when no decision that can still be generated needs it. For mo
 
 Every table the generators read declares the freeze as a safety condition (chapter 2), so that overriding its rule cannot break it. This holds even where a longer period such as ten years already outlasts the freeze. The condition is written like an expiration rule and validated the same way, since its dates and fallbacks vary by table. The list of those tables is kept by hand next to the freeze period. A table that is deleted with its parent may rely on the condition of the parent.
 
-The condition of `placement`, `fridge_child` and `fridge_partner` also waits for the placements that the finance threads wait for (section 5.6).
+The condition of `placement`, `fridge_child` and `fridge_partner` also waits for the placements that the finance threads wait for (section 5.6). The report rows of the service voucher report declare a condition too, which keeps the voucher value decisions while the report shows a month that holds their rows (section 6.5).
 
 The voucher value decision generator reads the assistance coefficients from `assistance_factor` when the municipality uses capacity factors, and from `assistance_need_voucher_coefficient` otherwise. The schema definition is therefore built for that setting, and only the table the generator reads waits for the freeze.
+
+### 6.5 Service voucher report
+
+The service voucher report of each month is frozen into one `voucher_value_report_snapshot` row and its `voucher_value_report_decision` rows. A report row is an amount paid to a unit for one month, and it names the voucher value decision it was paid for. The payments to the units are created from the latest frozen month.
+
+`voucher_value_report_decision` is handled by child and deleted with its parent `voucher_value_decision`. The voucher value decisions of a child are evaluated as a whole, so all the report rows of the child are deleted at once. The snapshot row holds no personal data, so it stays.
+
+The report corrects a past month of a child in two steps. It refunds the rows of the child's decisions for that month. Then it pays the amount computed from the decisions in effect now. Both steps only see the decisions that still exist. Once the decisions of a child are deleted, nothing is refunded or paid again for the child.
+
+Deleting the decisions of a child one by one would break this. A refund of one decision and an equal payment of another cancel out, so neither is stored. The rows of one decision then do not add up to what was paid for it. The construction therefore checks that the report rows are deleted with `voucher_value_decision`, and that they do not have independent rows. Then the decisions do not have them either (section 1.5).
+
+A frozen month loses the rows of deleted decisions. The report is therefore shown only from the month of the finance freeze date onwards, and older months are refused. A month that is shown must still have all of its rows. Besides its own amounts, a month holds corrections to earlier months, which may name decisions that ended years before. A report row therefore stays for the freeze and its margin after the end of the month that holds it. That is about a month longer than the month is shown. The report rows of a child are evaluated as a whole, so they all stay as long as the latest month that holds any of them. The decisions stay with them. This is the finance freeze condition of the report rows, so overrides cannot shorten it.
+
+A decision that no frozen month holds yet has no report rows, but its own conditions keep it meanwhile.
 
 ## 7. Validation
 
@@ -364,6 +378,7 @@ The schema definition is validated when it is constructed, with the overrides of
 - Every override names a handled table.
 - Every table an integration reads, and `child`, names that integration, and no other table names one.
 - The tables that hold the sync state of an integration are deleted with `child`.
+- The report rows of the service voucher report are deleted with `voucher_value_decision`, and do not have independent rows.
 - Every table the finance generators read waits for the finance freeze, or is deleted with a parent that does.
 - Every table that connects a recipient of a finance thread to children waits for the thread period after their placements, or is deleted together with a table that does.
 - Every table whose rule is `Always` is deleted with its parent or waits for the finance freeze.
@@ -449,10 +464,6 @@ An integration test runs the algorithm with and without skipping and checks that
 ### 9.2 Anonymising orphan evaka_user rows
 
 Whether the `name` column of an orphaned `evaka_user` row should be anonymised, for example to "Poistettu kuntalainen", is an open question.
-
-### 9.3 Voucher value report snapshots
-
-The frozen monthly service voucher report is one `voucher_value_report_snapshot` row per month and its `voucher_value_report_decision` rows, each naming a voucher value decision. The algorithm waits for those rows before it deletes the decision but must not delete them (section 5.2), and nothing deletes them today. A job must delete each snapshot a set time after the month it covers, no longer than the ten years of the decisions themselves, or the decisions wait for the report. For the report rows to be deleted with their snapshot, `voucher_value_report_decision.voucher_value_report_snapshot_id` must become `ON DELETE CASCADE`; `decision_id` stays as it is, so that the rows keep holding the decision.
 
 ## 10. Existing issues to fix
 
