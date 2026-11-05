@@ -10,6 +10,7 @@ import type {
   InfoDialogMessage
 } from 'lib-components/application-editor/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+// The application editor shows the same texts and preferred unit limit as for citizens
 import {
   getMaxPreferredUnits,
   translations as citizenTranslations
