@@ -351,7 +351,7 @@ VALUES
     }
 
     @Test
-    fun `a duplicate pair that was never placed is unlinked a month after the later of them was created, unless an application is pending`() {
+    fun `a duplicate pair that was never placed is unlinked a month after the later of them was created, unless an application sent within a year is pending`() {
         val guardian = DevPerson()
         val original = DevPerson(dateOfBirth = today.minusYears(3))
         val duplicate = DevPerson(dateOfBirth = original.dateOfBirth, duplicateOf = original.id)
@@ -377,10 +377,10 @@ VALUES
             )
         }
 
-        fun Database.Transaction.setApplicationStatus(status: ApplicationStatus) {
+        fun Database.Transaction.setApplicationSent(date: LocalDate) {
             execute {
                 sql(
-                    "UPDATE application SET status = ${bind(status)} WHERE id = ${bind(applicationId)}"
+                    "UPDATE application SET status = 'SENT', sentdate = ${bind(date)} WHERE id = ${bind(applicationId)}"
                 )
             }
         }
@@ -390,12 +390,12 @@ VALUES
 
         db.transaction { tx ->
             tx.setCreated(duplicate.id, aMonthAgo.minusDays(1))
-            tx.setApplicationStatus(ApplicationStatus.SENT)
+            tx.setApplicationSent(today.minusYears(1))
         }
         realRun(original.id)
         assertEquals(original.id, duplicateOf(duplicate.id))
 
-        db.transaction { tx -> tx.setApplicationStatus(ApplicationStatus.CANCELLED) }
+        db.transaction { tx -> tx.setApplicationSent(today.minusYears(1).minusDays(1)) }
         realRun(original.id)
         assertNull(duplicateOf(duplicate.id))
     }

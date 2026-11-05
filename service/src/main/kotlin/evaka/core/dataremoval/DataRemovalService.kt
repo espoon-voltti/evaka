@@ -208,7 +208,7 @@ class DataRemovalService(
         // must run after the applications expired above
         deleteExpiredServiceWorkerThreads(dbc, now, limit = limit)
 
-        deleteExpiredMessageDrafts(dbc, now, expiresBefore = now.minusYears(1), limit = limit)
+        deleteExpiredMessageDrafts(dbc, now, expiresBefore = now.minusMonths(6), limit = limit)
 
         unsetExpiredChildReferences(
             dbc,

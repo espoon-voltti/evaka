@@ -95,7 +95,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     private val bulletinExpiresBefore = now.minusYears(5)
     private val bulletinPlacementExpireDate = today.minusYears(5)
-    private val draftExpiresBefore = now.minusYears(1)
+    private val draftExpiresBefore = now.minusMonths(6)
     private val applicationExpireDate = today.minusYears(10)
     private val financePlacementExpireDate = today.minusYears(5)
     private val financeExpiresBefore = now.minusYears(5)
@@ -1483,7 +1483,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
     }
 
     @Test
-    fun `deleteExpiredMessageDrafts deletes a draft created over a year ago even if it was modified today`() {
+    fun `deleteExpiredMessageDrafts deletes a draft created over six months ago even if it was modified today`() {
         createDraft(createdAt = draftExpiresBefore.minusDays(1), modifiedAt = now)
 
         deleteExpiredMessageDrafts()
@@ -1496,7 +1496,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
         insertGroupPlacement(child.id, expiredPlacementPeriod)
         val sent = sendMessage(sentAt = sendTimeOverFiveYearsAgo, attachmentCount = 1)
         val draftAttachment =
-            insertDraftAttachment(createDraft(createdAt = now.minusYears(1).minusDays(1)), now)
+            insertDraftAttachment(createDraft(createdAt = now.minusMonths(6).minusDays(1)), now)
 
         withLimit(1000) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
@@ -1537,14 +1537,14 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
     }
 
     @Test
-    fun `deleteExpiredData keeps a bulletin thread of exactly five years and a draft of exactly one year`() {
+    fun `deleteExpiredData keeps a bulletin thread of exactly five years and a draft of exactly six months`() {
         insertGroupPlacement(child.id, ongoingPlacementPeriod)
         sendMessage(
             sentAt = now.minusYears(5),
             sender = municipalSender,
             recipients = listOf(MessageRecipient.Unit(daycare.id)),
         )
-        createDraft(createdAt = now.minusYears(1))
+        createDraft(createdAt = now.minusMonths(6))
 
         withLimit(1000) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)

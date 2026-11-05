@@ -37,6 +37,7 @@ import evaka.core.invoicing.service.ProductKey
 import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.placement.PlacementSource
 import evaka.core.reports.oldestShownVoucherValueReportMonth
+import evaka.core.serviceneed.application.ServiceApplicationDecisionStatus
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
@@ -52,6 +53,7 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevBackupCare
 import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevChildAttendance
 import evaka.core.shared.dev.DevChildDocument
 import evaka.core.shared.dev.DevChildDocumentDecision
 import evaka.core.shared.dev.DevChildDocumentPublishedVersion
@@ -77,6 +79,8 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevPlacementDraft
 import evaka.core.shared.dev.DevPlacementPlan
+import evaka.core.shared.dev.DevReservation
+import evaka.core.shared.dev.DevServiceApplication
 import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.DevVoucherValueDecision
 import evaka.core.shared.dev.TestDecision
@@ -995,7 +999,38 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `a pending application is kept with its decision however old, and expires once rejected and archived`() {
+    fun `a pending application is kept a year after it was sent, even when the last placement ended long ago`() {
+        val applicationId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2012, 8, 1),
+                    endDate = LocalDate.of(2014, 7, 31),
+                )
+            )
+            tx.insertApplication(
+                child.id,
+                ApplicationStatus.WAITING_PLACEMENT,
+                sentDate = today.minusYears(1),
+            )
+        }
+
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(1).minusDays(1))} WHERE id = ${bind(applicationId)}"
+                )
+            }
+        }
+
+        assertEquals(1, execute(child.id).deletedRowCountsByTable["application"])
+    }
+
+    @Test
+    fun `a pending decision keeps its application a year after the decision was sent, even when the last placement ended long ago`() {
         val applicationId = db.transaction { tx ->
             tx.insert(
                 DevPlacement(
@@ -1007,23 +1042,80 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
             )
             tx.insertApplicationTree(ApplicationStatus.WAITING_CONFIRMATION, DecisionStatus.PENDING)
         }
+        fun setDecisionSent(date: LocalDate) = db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE decision SET sent_date = ${bind(date)} WHERE application_id = ${bind(applicationId)}"
+                )
+            }
+        }
+
+        setDecisionSent(today.minusYears(1))
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
+
+        setDecisionSent(today.minusYears(1).minusDays(1))
+        val deleted = execute(child.id).deletedRowCountsByTable
+        assertEquals(1, deleted["application"])
+        assertEquals(1, deleted["decision"])
+    }
+
+    @Test
+    fun `a pending application of a child never placed expires ten years after it was sent`() {
+        val applicationId = db.transaction { tx ->
+            tx.insertApplication(
+                child.id,
+                ApplicationStatus.SENT,
+                sentDate = today.minusYears(10),
+            )
+        }
 
         assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
 
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE decision SET status = 'REJECTED', archived_at = ${bind(now)} WHERE application_id = ${bind(applicationId)}"
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(applicationId)}"
                 )
-            }
-            tx.execute {
-                sql("UPDATE application SET status = 'REJECTED' WHERE id = ${bind(applicationId)}")
             }
         }
 
-        val deleted = execute(child.id).deletedRowCountsByTable
-        assertEquals(1, deleted["application"])
-        assertEquals(1, deleted["decision"])
+        assertEquals(1, execute(child.id).deletedRowCountsByTable["application"])
+    }
+
+    @Test
+    fun `a draft of a child never placed expires 60 days after it was created, and does not shorten the retention of a sent application`() {
+        val (draftId, sentId) =
+            db.transaction { tx ->
+                tx.insertApplication(child.id, ApplicationStatus.CREATED, sentDate = null) to
+                    tx.insertApplication(
+                        child.id,
+                        ApplicationStatus.CANCELLED,
+                        sentDate = today.minusYears(1),
+                    )
+            }
+        fun setDraftCreated(date: LocalDate) = db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE application SET created_at = ${bind(HelsinkiDateTime.of(date, LocalTime.NOON))} WHERE id = ${bind(draftId)}"
+                )
+            }
+        }
+
+        setDraftCreated(today.minusDays(61))
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(sentId)}"
+                )
+            }
+        }
+        setDraftCreated(today.minusDays(60))
+        assertEquals(null, execute(child.id).deletedRowCountsByTable["application"])
+
+        setDraftCreated(today.minusDays(61))
+        assertEquals(2, execute(child.id).deletedRowCountsByTable["application"])
     }
 
     @Test
@@ -1050,14 +1142,14 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `an application sent after the last placement ended expires ten years after it was sent`() {
-        val applicationId = db.transaction { tx ->
+    fun `a resolved application sent after the last placement ended expires with the placement, ten years after it ended`() {
+        db.transaction { tx ->
             tx.insert(
                 DevPlacement(
                     childId = child.id,
                     unitId = daycare.id,
-                    startDate = LocalDate.of(2012, 8, 1),
-                    endDate = LocalDate.of(2014, 7, 31),
+                    startDate = today.minusYears(12),
+                    endDate = today.minusYears(10),
                 )
             )
             tx.insertApplication(
@@ -1072,7 +1164,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(applicationId)}"
+                    "UPDATE placement SET end_date = end_date - 1 WHERE child_id = ${bind(child.id)}"
                 )
             }
         }
@@ -1535,7 +1627,8 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
     }
 
     @Test
-    fun `an open-ended income waits ten years after it started and after the last finance decision naming its person`() {
+    fun `an open-ended income waits six years after it started, and five years and a month after the last finance decision naming its person`() {
+        val fiveYearsAndAMonthAgo = today.minusYears(5).minusMonths(1)
         fun openEndedIncome(personId: PersonId, validFrom: LocalDate) =
             DevIncome(
                 personId = personId,
@@ -1555,7 +1648,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
             tx.insert(openEndedIncome(guardian.id, LocalDate.of(2014, 1, 1)))
             tx.insert(
                 DevFeeDecision(
-                    validDuring = FiniteDateRange(LocalDate.of(2014, 1, 1), today.minusYears(10)),
+                    validDuring = FiniteDateRange(LocalDate.of(2014, 1, 1), fiveYearsAndAMonthAgo),
                     headOfFamilyId = otherGuardian.id,
                     partnerId = guardian.id,
                 )
@@ -1590,14 +1683,14 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
         assertEquals(null, execute(guardian.id).deletedRowCountsByTable["income"])
 
         // The voucher value decision names the guardian as the head of family
-        endDecisions(LocalDate.of(2014, 12, 31), today.minusYears(10))
+        endDecisions(LocalDate.of(2014, 12, 31), fiveYearsAndAMonthAgo)
         assertEquals(null, execute(guardian.id).deletedRowCountsByTable["income"])
 
-        endDecisions(LocalDate.of(2014, 12, 31), today.minusYears(10).minusDays(1))
+        endDecisions(LocalDate.of(2014, 12, 31), fiveYearsAndAMonthAgo.minusDays(1))
         assertEquals(1, execute(guardian.id).deletedRowCountsByTable["income"])
 
-        // A new income waits for its own start, however old the decisions are
-        db.transaction { it.insert(openEndedIncome(guardian.id, today.minusYears(1))) }
+        // A newer income waits six years after its own start, however old the decisions are
+        db.transaction { it.insert(openEndedIncome(guardian.id, today.minusYears(6))) }
         assertEquals(null, execute(guardian.id).deletedRowCountsByTable["income"])
     }
 
@@ -1636,6 +1729,161 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
             }
         }
         assertEquals(1, execute(child.id).deletedRowCountsByTable["fee_alteration"])
+    }
+
+    @Test
+    fun `attendances and reservations are kept five years after the child's last placement`() {
+        val placementId = db.transaction { tx ->
+            val date = LocalDate.of(2020, 9, 1)
+            tx.insert(
+                DevChildAttendance(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 0),
+                    departed = LocalTime.of(16, 0),
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = employee.evakaUserId,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2019, 8, 1),
+                    endDate = today.minusYears(5),
+                )
+            )
+        }
+
+        assertEquals(emptyMap(), execute(child.id).deletedRowCountsByTable)
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE placement SET end_date = ${bind(today.minusYears(5).minusDays(1))} WHERE id = ${bind(placementId)}"
+                )
+            }
+        }
+        assertEquals(
+            mapOf("child_attendance" to 1, "attendance_reservation" to 1),
+            execute(child.id).deletedRowCountsByTable,
+        )
+    }
+
+    @Test
+    fun `a service application expires five years after its requested start whether or not the child is still placed, but waits while a sent fee or voucher value decision of the child covers days from that start`() {
+        val applicationStart = today.minusYears(5)
+        val pastFiveYears = applicationStart.minusDays(1)
+        val (applicationId, feeDecisionId, voucherValueDecisionId) =
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = LocalDate.of(2019, 8, 1),
+                        endDate = today.plusYears(1),
+                    )
+                )
+                fun feeDecision(status: FeeDecisionStatus, validDuring: FiniteDateRange) =
+                    tx.insert(
+                            DevFeeDecision(
+                                status = status,
+                                validDuring = validDuring,
+                                headOfFamilyId = guardian.id,
+                            )
+                        )
+                        .also {
+                            tx.insert(
+                                DevFeeDecisionChild(
+                                    feeDecisionId = it,
+                                    childId = child.id,
+                                    placementUnitId = daycare.id,
+                                )
+                            )
+                        }
+                feeDecision(
+                    FeeDecisionStatus.SENT,
+                    FiniteDateRange(pastFiveYears.minusYears(1), pastFiveYears.minusDays(1)),
+                )
+                val feeDecisionId =
+                    feeDecision(FeeDecisionStatus.DRAFT, FiniteDateRange(pastFiveYears, today))
+                val voucherValueDecisionId =
+                    tx.insert(
+                        DevVoucherValueDecision(
+                            validFrom = pastFiveYears,
+                            validTo = today,
+                            headOfFamilyId = guardian.id,
+                            childId = child.id,
+                            placementUnitId = daycare.id,
+                        )
+                    )
+                val applicationId =
+                    tx.insert(
+                        DevServiceApplication(
+                            sentAt =
+                                HelsinkiDateTime.of(
+                                    applicationStart.minusMonths(1),
+                                    LocalTime.NOON,
+                                ),
+                            personId = guardian.id,
+                            childId = child.id,
+                            startDate = applicationStart,
+                            serviceNeedOptionId = snDefaultDaycare.id,
+                            decisionStatus = ServiceApplicationDecisionStatus.ACCEPTED,
+                            decidedBy = employee.id,
+                            decidedAt =
+                                HelsinkiDateTime.of(applicationStart.minusDays(14), LocalTime.NOON),
+                        )
+                    )
+                Triple(applicationId, feeDecisionId, voucherValueDecisionId)
+            }
+        fun setStatuses(
+            feeDecisionStatus: FeeDecisionStatus,
+            voucherValueDecisionStatus: VoucherValueDecisionStatus,
+        ) = db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE fee_decision SET status = ${bind(feeDecisionStatus)} WHERE id = ${bind(feeDecisionId)}"
+                )
+            }
+            tx.execute {
+                sql(
+                    "UPDATE voucher_value_decision SET status = ${bind(voucherValueDecisionStatus)} WHERE id = ${bind(voucherValueDecisionId)}"
+                )
+            }
+        }
+
+        // Five years have not yet passed since the requested start
+        assertEquals(emptyMap(), execute(child.id).deletedRowCountsByTable)
+
+        // Past the five years, a sent decision covering the start keeps it
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE service_application SET start_date = ${bind(pastFiveYears)} WHERE id = ${bind(applicationId)}"
+                )
+            }
+        }
+        setStatuses(FeeDecisionStatus.SENT, VoucherValueDecisionStatus.DRAFT)
+        assertEquals(emptyMap(), execute(child.id).deletedRowCountsByTable)
+        setStatuses(FeeDecisionStatus.DRAFT, VoucherValueDecisionStatus.SENT)
+        assertEquals(emptyMap(), execute(child.id).deletedRowCountsByTable)
+
+        // Neither drafts nor a sent decision that ended before the start keep it, nor does the
+        // ongoing placement
+        setStatuses(FeeDecisionStatus.DRAFT, VoucherValueDecisionStatus.DRAFT)
+        assertEquals(
+            mapOf("service_application" to 1),
+            execute(child.id).deletedRowCountsByTable,
+        )
     }
 
     @Test
@@ -1917,7 +2165,7 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
     private fun Database.Transaction.insertApplication(
         childId: ChildId,
         status: ApplicationStatus,
-        sentDate: LocalDate,
+        sentDate: LocalDate?,
     ): ApplicationId =
         insertTestApplication(
             type = ApplicationType.DAYCARE,

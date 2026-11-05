@@ -71,6 +71,47 @@ WHERE id = ANY(${bind(ids)}) AND status IN ('ACCEPTED', 'REJECTED') AND type <> 
             .toSet<UUID>()
     }
 
+val notWhileDecisionPending =
+    NotWhile("the decision is pending") { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT id
+FROM decision
+WHERE id = ANY(${bind(ids)}) AND status = 'PENDING'
+"""
+                )
+            }
+            .toSet<UUID>()
+    }
+
+/**
+ * A sent decision expires ten years after it was sent, and a draft a year after it was created.
+ * Evaluated per row, so that a draft does not shorten the retention of the sent decisions in the
+ * same node.
+ */
+val decisionRetentionEnd =
+    DateSource.Custom(
+        "ten years after sending, or a year after creation if never sent",
+        mayReturnNoDate = false,
+    ) { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT
+  id,
+  CASE
+    WHEN sent_date IS NULL THEN ((created AT TIME ZONE 'Europe/Helsinki')::date + interval '1 year')::date
+    ELSE (sent_date + interval '10 years')::date
+  END AS date
+FROM decision
+WHERE id = ANY(${bind(ids)})
+"""
+                )
+            }
+            .toDatesById()
+    }
+
 /** A sent or annulled fee decision waits until it has been archived */
 val notWhileFeeDecisionAwaitingArchival =
     NotWhile("the fee decision awaits archival") { tx, ids ->
@@ -331,6 +372,67 @@ val notWhileApplicationPending =
 SELECT id
 FROM application
 WHERE id = ANY(${bind(ids)}) AND status = ANY(${bind(ApplicationStatus.pending)})
+"""
+                )
+            }
+            .toSet<UUID>()
+    }
+
+/**
+ * A sent application expires ten years after it was sent, and a draft after the same 60 days as the
+ * drafts that removeOldDrafts deletes. Evaluated per row, so that a draft does not shorten the
+ * retention of the sent applications in the same node.
+ */
+val applicationRetentionEnd =
+    DateSource.Custom(
+        "ten years after sending, or 60 days after creation if never sent",
+        mayReturnNoDate = false,
+    ) { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT
+  id,
+  CASE
+    WHEN sentdate IS NULL THEN (created_at AT TIME ZONE 'Europe/Helsinki')::date + 60
+    ELSE (sentdate + interval '10 years')::date
+  END AS date
+FROM application
+WHERE id = ANY(${bind(ids)})
+"""
+                )
+            }
+            .toDatesById()
+    }
+
+/**
+ * The fee and voucher value decisions from the start of a service application onward may have been
+ * made from the service need it led to, so it is kept for as long as they are, to resolve
+ * complaints about them
+ */
+val notWhileFinanceDecisionsFromServiceApplicationStart =
+    NotWhile(
+        "a sent fee or voucher value decision of the child covers days from the application's start"
+    ) { tx, ids ->
+        tx.createQuery {
+                sql(
+                    """
+SELECT sa.id
+FROM service_application sa
+WHERE sa.id = ANY(${bind(ids)})
+AND (
+    EXISTS (
+        SELECT FROM fee_decision_child fdc
+        JOIN fee_decision fd ON fd.id = fdc.fee_decision_id
+        WHERE fdc.child_id = sa.child_id AND fd.status = 'SENT'
+        AND fd.valid_during && daterange(sa.start_date, NULL)
+    )
+    OR EXISTS (
+        SELECT FROM voucher_value_decision vvd
+        WHERE vvd.child_id = sa.child_id AND vvd.status = 'SENT'
+        AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sa.start_date, NULL)
+    )
+)
 """
                 )
             }
