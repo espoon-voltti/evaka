@@ -140,15 +140,9 @@ Null never reaches all of or any of: validation checks that such a rule is wrapp
 
 Under a not while rule a node is not expired while a condition holds for any of its rows. The condition is a query that takes the primary keys of the rows and returns those for which it holds.
 
-Child documents, placement decisions, fee decisions and voucher value decisions can be archived to an external system. Which rows are archived varies by municipality, and many do not archive yet. By default, these rows keep their node until they have been archived:
+Child documents, placement decisions, fee decisions and voucher value decisions can be archived to an external system. Which rows are archived varies by municipality, and many do not archive yet. By default, a row that may be archived keeps its node until it has been archived. A row deleted before it was archived cannot be archived anymore, so keeping it is the safe default. A municipality that archives fewer rows overrides the rules of those tables (section 1.7).
 
-- a placement decision that has been accepted or rejected, unless it is a club decision
-- a fee or voucher value decision that has been sent or annulled
-- a child document that is not a draft, if its template is archived externally
-
-A row deleted before it was archived cannot be archived anymore, so keeping it is the safe default. A municipality that archives fewer rows overrides the rules of those tables (section 1.7). Espoo, for example, archives only child documents.
-
-An application that is still open keeps its node too. The parentships and partnerships of a family are also kept while one of the children they affect has a pending application.
+The parentships and partnerships of a family are kept while one of the children they affect has a pending application (section 6.4).
 
 ### 2.4 Safe for integrations
 
@@ -309,9 +303,9 @@ A thread that records children expires by their placements, so the placements mu
 
 The message removal deletes a thread about an application only after the application is gone, together with the application notes that copy the thread's messages. The thread does not hold the application: `message_thread.application_id` is an optional reference, which is cleared when the application is deleted. The notes are deleted with their parent application.
 
-A finance thread expires once the placements of the children connected to its recipients ended five years ago, and it has had no messages for five years. A recipient is connected to the children they are a guardian or a foster parent of, and to the children whose placements the finance freeze conditions of their parentships and partnerships wait for (section 6.4). The message removal finds the latter with the same queries as those conditions.
+A finance thread waits for the placements of the children connected to its recipients. A recipient is connected to the children they are a guardian or a foster parent of, and to the children whose placements the finance freeze conditions of their parentships and partnerships wait for (section 6.4). The message removal finds the latter with the same queries as those conditions.
 
-These rows are not held for the threads. Instead, each of them waits until the five years of the threads have passed the same placements. The period is written into the finance freeze conditions of `fridge_child` and `fridge_partner`, and into that of `placement` for `guardian` and `foster_parent`, which are deleted with their parent `child` and so with the placements. Overrides cannot remove it, since it is part of a safety condition (chapter 2). The construction checks this against a list of the tables that connect a recipient to the children, kept by hand next to the query that finds them. Deleting such a row therefore does not make a thread expire earlier.
+These rows are not held for the threads. Instead, each of them waits as long after the same placements as the threads do. The period, `FINANCE_THREAD_PLACEMENT_PERIOD`, is written into the finance freeze conditions of `fridge_child` and `fridge_partner`, and into that of `placement` for `guardian` and `foster_parent`, which are deleted with their parent `child` and so with the placements. Overrides cannot remove it, since it is part of a safety condition (chapter 2). The construction checks this against a list of the tables that connect a recipient to the children, kept by hand next to the query that finds them. Deleting such a row therefore does not make a thread expire earlier.
 
 The exception is a parentship or a partnership that itself ended longer ago than the finance freeze. It expires even if the children are still placed, and the finance thread of that former head of the family or partner then no longer waits for them. This is in line with the finance freeze, since no decisions are generated for the time of that parentship or partnership anymore.
 
@@ -333,7 +327,7 @@ Therefore the `child` node is part of every graph, identified by the person id, 
 
 ### 6.2 Partnerships
 
-A partnership is stored as two `fridge_partner` rows, one for each partner, which reference each other through a composite self-reference. Each row references its own person, so it is an own row of that partner's run. The table has `independentRows`, and the declared primary key of a row is the partnership id rather than its own id, so deleting it deletes both rows of the partnership at once, in whichever partner's run first finds the rule met. The other partner's run then finds no row. The rule reads only what the two rows share, the partnership's own dates and the placements and pending applications of the children of either partner, so both runs reach the same verdict. The self-reference is not declared, and the schema test lists it as the only composite foreign key.
+A partnership is stored as two `fridge_partner` rows, one for each partner, which reference each other through a composite self-reference. Each row references its own person, so it is an own row of that partner's run. The table has `independentRows`, and the declared primary key of a row is the partnership id rather than its own id, so deleting it deletes both rows of the partnership at once, in whichever partner's run first finds the rule met. The other partner's run then finds no row. The rule must read only what the two rows share, so that both runs reach the same verdict. The self-reference is not declared, and the schema test lists it as the only composite foreign key.
 
 ### 6.3 Replacement invoices
 
@@ -341,11 +335,11 @@ A replacement invoice references the invoice it replaced through `invoice.replac
 
 ### 6.4 Finance freeze
 
-Finance decisions are generated from the family and income data, the parentships, partnerships and incomes, placements and service needs, etc. The *finance freeze* limits how far back in time they are generated. They are never generated for days more than five years before today, not even retroactively. The freeze date moves forward every day.
+Finance decisions are generated from the family and income data, the parentships, partnerships and incomes, placements and service needs, etc. The *finance freeze* limits how far back in time they are generated. They are never generated for days further back than `FINANCE_FREEZE_PERIOD` from today, not even retroactively. The freeze date moves forward every day.
 
-A row expires only when no decision that can still be generated needs it. For most tables, the row's period must have ended longer ago than the freeze. A margin of one month is added to the freeze, so that data is deleted only after the generator no longer reads it. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
+A row expires only when no decision that can still be generated needs it. For most tables, the row's period must have ended longer ago than the freeze. A margin is added to the freeze, so that data is deleted only after the generator no longer reads it. Parentships and partnerships usually stay in effect long after they matter, so they also expire once the placements of the children they affect ended longer ago than the freeze. A pending application of one of those children keeps them. A family with no placements and no pending application loses them at once. They are created again when they matter, from the next application or manually.
 
-Every table the generators read declares the freeze as a safety condition (chapter 2), so that overriding its rule cannot break it. This holds even where a longer period such as ten years already outlasts the freeze. The condition is written like an expiration rule and validated the same way, since its dates and fallbacks vary by table. The list of those tables is kept by hand next to the freeze period. A table that is deleted with its parent may rely on the condition of the parent.
+Every table the generators read declares the freeze as a safety condition (chapter 2), so that overriding its rule cannot break it. This holds even where a longer period already outlasts the freeze. The condition is written like an expiration rule and validated the same way, since its dates and fallbacks vary by table. The list of those tables is kept by hand next to the freeze period. A table that is deleted with its parent may rely on the condition of the parent.
 
 The condition of `placement`, `fridge_child` and `fridge_partner` also waits for the placements that the finance threads wait for (section 5.6). The report rows of the service voucher report declare a condition too, which keeps the voucher value decisions while the report shows a month that holds their rows (section 6.5).
 
@@ -371,7 +365,7 @@ Some children have a duplicate. It is a second `person` row, whose `duplicate_of
 
 While the two are linked, eVaka treats them as the same child. For example, the page of the original lists the documents of the duplicate, and Koski leaves out the placements of the original and sends those of the duplicate. A run therefore skips a person who is linked, and nothing of either person is deleted.
 
-The link is cleared once the last placement of either person ended more than ten years ago. If neither has been placed, the later of the two must have been created more than a month ago. A pending application of either keeps the link. The two are then separate persons, and each is processed by its own rules. Most child data expires ten years after the last placement, so the run that clears the link usually deletes most of the data too. Data with a shorter rule, such as child images, is kept longer for these children.
+The link is cleared once the two are no longer in use, judged by their placements, their creation and their pending applications (`DuplicateLink.mayBeCleared`). The two are then separate persons, and each is processed by its own rules.
 
 Clearing the link brings the placements of the original back to Koski. It is therefore treated like deleting rows that Koski reads of both persons (section 3.3). Both must be safe for Koski, and the sync of each one that has been sent is frozen in the same transaction. Only the original strictly needs this, but then the handling does not depend on which of the two Koski leaves out. Varda does not read the link.
 
