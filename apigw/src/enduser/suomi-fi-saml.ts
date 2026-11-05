@@ -74,6 +74,7 @@ export function createCitizenSuomiFiIntegration(
     authenticate: authenticateCitizen,
     defaultPageUrl: '/',
     citizenCookieSecret,
+    nonceCookieSecret: citizenCookieSecret,
     secondaryCookieConfig
   })
 }
@@ -107,6 +108,7 @@ export function createEmployeeSuomiFiIntegration(
   sessions: Sessions<'employee'>,
   config: EvakaSamlConfig,
   redisClient: RedisClient,
+  employeeCookieSecret: string,
   secondaryCookieConfig?: {
     cookieName: string
     cookieSecret: string
@@ -123,6 +125,7 @@ export function createEmployeeSuomiFiIntegration(
     ),
     authenticate: authenticateEmployee,
     defaultPageUrl: '/employee',
+    nonceCookieSecret: employeeCookieSecret,
     secondaryCookieConfig
   })
 }

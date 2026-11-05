@@ -152,7 +152,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     adIntegration = createSamlAdIntegration(
       employeeSessions,
       config.ad,
-      redisClient
+      redisClient,
+      config.employee.cookieSecret
     )
     router.use('/employee/auth/ad', adIntegration.router)
   }
@@ -162,6 +163,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       employeeSessions,
       config.sfi.saml,
       redisClient,
+      config.employee.cookieSecret,
       {
         cookieName: sessionCookie('citizen'),
         cookieSecret: config.citizen.cookieSecret

@@ -29,6 +29,14 @@ import {
   SamlSessionSchema,
   validateRelayStateUrl
 } from '../saml/index.ts'
+import type { NonceCookieConfig } from '../saml/nonce-cookie.ts'
+import {
+  checkNonceCookie,
+  clearNonceCookie,
+  nonceCookiePrefix,
+  setNonceCookie
+} from '../saml/nonce-cookie.ts'
+import { authnRequestId } from '../saml/request-id.ts'
 import type { LoginCorrelation, Sessions, SessionType } from '../session.ts'
 
 const urlencodedParser = express.urlencoded({ extended: false })
@@ -40,6 +48,7 @@ export interface SamlEndpointConfig<T extends SessionType> {
   defaultPageUrl: string
   authenticate: AuthenticateProfile
   citizenCookieSecret?: string
+  nonceCookieSecret: string
   secondaryCookieConfig?: {
     cookieName: string
     cookieSecret: string
@@ -78,6 +87,7 @@ type SamlAuditEvent =
   | 'sign_in_started'
   | 'sign_in'
   | 'sign_in_failed'
+  | 'sign_in_nonce_check'
   | 'sign_out_requested'
   | 'sign_out'
   | 'sign_out_failed'
@@ -97,8 +107,15 @@ export function createSamlIntegration<T extends SessionType>(
     defaultPageUrl,
     authenticate,
     citizenCookieSecret,
+    nonceCookieSecret,
     secondaryCookieConfig
   } = endpointConfig
+  const nonceCookieConfig: NonceCookieConfig = {
+    namePrefix: nonceCookiePrefix(strategyName, sessions.sessionType),
+    path: new URL(saml.options.callbackUrl).pathname,
+    secret: nonceCookieSecret
+  }
+  const userAgent = (req: express.Request) => req.headers['user-agent'] ?? ''
 
   const eventCode = (name: SamlAuditEvent) =>
     `evaka.saml.${strategyName}.${name}`
@@ -156,7 +173,15 @@ export function createSamlIntegration<T extends SessionType>(
   }
 
   const login: AsyncRequestHandler = async (req, res) => {
-    logAuditEvent(eventCode('sign_in_started'), req, 'Login endpoint called')
+    let started = false
+    const logStarted = (requestId: string | undefined) => {
+      started = true
+      logAuditEvent(
+        eventCode('sign_in_started'),
+        req,
+        `Login endpoint called requestId=${requestId ?? ''} sessionType=${sessions.sessionType} host=${req.hostname} userAgent=${userAgent(req)}`
+      )
+    }
     // Run cookieParser to get req.cookies, but do not pass cookie secret to get access to raw cookies
     await runMiddleware(cookieParser(), req, res)
     try {
@@ -190,8 +215,21 @@ export function createSamlIntegration<T extends SessionType>(
         undefined,
         samlRequestOptions(req)
       )
+      const requestId = authnRequestId(idpLoginUrl)
+      logStarted(requestId)
+      try {
+        if (requestId) setNonceCookie(res, nonceCookieConfig, requestId)
+      } catch (err) {
+        logError(
+          'SAML nonce cookie could not be set',
+          req,
+          undefined,
+          err instanceof Error ? err : undefined
+        )
+      }
       return res.redirect(idpLoginUrl)
     } catch (err) {
+      if (!started) logStarted(undefined)
       logAuditEvent(
         eventCode('sign_in_failed'),
         req,
@@ -214,6 +252,39 @@ export function createSamlIntegration<T extends SessionType>(
     )
     if (ids.length === 0) return
     await sessions.saveRejectedSfiLogin(ids, samlSession.data)
+  }
+
+  const checkNonce = async (
+    req: express.Request,
+    res: express.Response,
+    profile: Profile
+  ): Promise<void> => {
+    try {
+      await runMiddleware(cookieParser(), req, res)
+      const inResponseTo =
+        typeof profile.inResponseTo === 'string'
+          ? profile.inResponseTo
+          : undefined
+      const { outcome, cookieId, otherCookies } = checkNonceCookie(
+        req.cookies as Record<string, unknown>,
+        nonceCookieConfig,
+        inResponseTo
+      )
+      if (outcome !== 'missing' && inResponseTo !== undefined)
+        clearNonceCookie(res, nonceCookieConfig, inResponseTo)
+      logAuditEvent(
+        eventCode('sign_in_nonce_check'),
+        req,
+        `outcome=${outcome} sessionType=${sessions.sessionType} host=${req.hostname} cookieId=${cookieId ?? ''} inResponseTo=${inResponseTo ?? ''} otherCookies=${otherCookies} userAgent=${userAgent(req)}`
+      )
+    } catch (err) {
+      logError(
+        'SAML nonce check failed',
+        req,
+        undefined,
+        err instanceof Error ? err : undefined
+      )
+    }
   }
 
   const loginCallback: AsyncRequestHandler = async (req, res) => {
@@ -267,6 +338,7 @@ export function createSamlIntegration<T extends SessionType>(
         })
       }
     }
+    await checkNonce(req, res, profile)
     const correlationToken = extractCorrelationToken(req)
     const correlation = correlationToken
       ? await sessions.consumeLoginCorrelation(correlationToken)
