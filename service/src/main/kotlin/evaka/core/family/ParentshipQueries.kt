@@ -196,11 +196,6 @@ private val personColumns =
         "postal_code",
         "residence_code",
         "restricted_details_enabled",
-        "invoice_recipient_name",
-        "invoicing_street_address",
-        "invoicing_postal_code",
-        "invoicing_post_office",
-        "force_manual_fee_decisions",
     )
 
 private val toParentship: (String, String) -> Row.() -> Parentship = { childAlias, headAlias ->
@@ -266,10 +261,5 @@ internal val toPersonJSON: Row.(String) -> PersonJSON = { table ->
         postalCode = column("${table}_postal_code"),
         residenceCode = column("${table}_residence_code"),
         restrictedDetailsEnabled = column("${table}_restricted_details_enabled"),
-        invoiceRecipientName = column("${table}_invoice_recipient_name"),
-        invoicingStreetAddress = column("${table}_invoicing_street_address"),
-        invoicingPostalCode = column("${table}_invoicing_postal_code"),
-        invoicingPostOffice = column("${table}_invoicing_post_office"),
-        forceManualFeeDecisions = column("${table}_force_manual_fee_decisions"),
     )
 }

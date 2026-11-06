@@ -170,16 +170,10 @@ export interface PersonJSON {
   duplicateOf: PersonId | null
   email: string | null
   firstName: string
-  forceManualFeeDecisions: boolean
   id: PersonId
-  invoiceRecipientName: string
-  invoicingPostOffice: string
-  invoicingPostalCode: string
-  invoicingStreetAddress: string
   language: string | null
   lastName: string
   municipalityOfResidence: string
-  ophPersonOid: string | null
   phone: string
   postOffice: string
   postalCode: string
