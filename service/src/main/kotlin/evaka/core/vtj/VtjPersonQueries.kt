@@ -8,6 +8,7 @@ import evaka.core.daycare.controllers.AdditionalInformation
 import evaka.core.daycare.controllers.Child
 import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
+import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.person.Person
@@ -258,18 +259,37 @@ AND (
     )
 }
 
-fun Database.Read.isDependantSyncPerson(personId: PersonId, today: LocalDate): Boolean =
-    createQuery {
-        sql(
-            """
-SELECT EXISTS (
-    SELECT FROM person p
-    WHERE p.id = ${bind(personId)} AND ${predicate(dependantSyncPerson(today).forTable("p"))}
+data class VtjSyncPerson(
+    val id: PersonId,
+    val ssn: Ssn?,
+    val dateOfBirth: LocalDate,
+    val vtjGuardiansQueried: HelsinkiDateTime?,
+    val vtjDependantsQueried: HelsinkiDateTime?,
+    val dependantSync: Boolean,
 )
+
+fun Database.Read.getVtjSyncPersons(
+    personIds: Collection<PersonId>,
+    today: LocalDate,
+): List<VtjSyncPerson> = createQuery {
+    sql(
+        """
+SELECT
+    p.id,
+    p.social_security_number AS ssn,
+    p.date_of_birth,
+    p.vtj_guardians_queried,
+    p.vtj_dependants_queried,
+    (${predicate(dependantSyncPerson(today).forTable("p"))}) AS dependant_sync
+FROM person p
+WHERE p.id = ANY(${bind(personIds)})
 """
-        )
-    }
-    .exactlyOne()
+    )
+}
+    .toList()
+
+fun Database.Read.getVtjSyncPerson(personId: PersonId, today: LocalDate) =
+    getVtjSyncPersons(listOf(personId), today).singleOrNull()
 
 /** Clears the marker of a person who is no longer a dependant-sync person. */
 fun Database.Transaction.clearStaleDependantsSynced(

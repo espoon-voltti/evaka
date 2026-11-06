@@ -585,7 +585,7 @@ class PersonController(
                 meta = mapOf("denied" to body.denied),
             )
             if (!body.denied) {
-                vtjSyncService.refreshPerson(dbc, user.evakaUserId, clock, childId)
+                vtjSyncService.refreshPersons(dbc, user.evakaUserId, clock, listOf(childId))
             }
         }
     }

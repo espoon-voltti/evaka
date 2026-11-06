@@ -7,7 +7,6 @@ package evaka.core.vtj
 import evaka.core.FullApplicationTest
 import evaka.core.employee.Employee
 import evaka.core.identity.Ssn
-import evaka.core.identity.getDobFromSsn
 import evaka.core.lookup
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -154,7 +153,7 @@ class VtjSoapTransportIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             assertThat(lastName).isEqualTo("Popov")
             assertThat(ssn.value).isEqualTo("311211A9527")
         }
-        assertThat(response.mapGuardians().map { it.ssn.value })
+        assertThat(response.mapGuardians().map { it.value })
             .containsExactlyInAnyOrder("010181-9533", "020190-9521")
         mockServer?.verify()
     }
@@ -232,21 +231,9 @@ private val annaPopov =
     )
 
 private val annaPopovsChildren =
-    listOf(
-            "011014A9510" to "Kak Ty",
-            "311211A9527" to "Minja Zavutina",
-            "010110A951P" to "Mir",
-            "010108A9516" to "Petrus",
-            "010506A951W" to "Pan Olov",
-        )
-        .map { (ssn, firstNames) ->
-            VtjRelative(
-                ssn = Ssn.parse(ssn)!!,
-                dateOfBirth = getDobFromSsn(ssn),
-                firstNames = firstNames,
-                lastName = "Popov",
-            )
-        }
+    listOf("011014A9510", "311211A9527", "010110A951P", "010108A9516", "010506A951W").map {
+        Ssn.from(it)
+    }
 
 // an example model for resident count. Decide actual model/useage later based on confirmed
 // requirements

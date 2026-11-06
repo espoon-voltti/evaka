@@ -37,15 +37,11 @@ internal class VtjClientIntegrationTest : AbstractTampereIntegrationTest() {
                 )
         )
 
-        val person =
-            vtjClient.fetchPerson(
-                VtjClient.DetailsQuery(
-                    AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    Ssn.parse("070644-937X")!!,
-                )
-            )
+        val ssn = Ssn.from("070644-937X")
+        val persons =
+            vtjClient.fetchPersons(AuthenticatedUser.SystemInternalUser.evakaUserId, listOf(ssn))
 
-        assertThat(person).returns("070644-937X", { it.ssn.value })
+        assertThat(persons.getValue(ssn)).returns("070644-937X", { it.ssn.value })
         verify(
             postRequestedFor(urlEqualTo("/mock/vtj"))
                 .withoutHeader("Authorization")

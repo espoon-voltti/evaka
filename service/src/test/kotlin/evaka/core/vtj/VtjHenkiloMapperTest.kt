@@ -84,7 +84,7 @@ class VtjHenkiloMapperTest {
     }
 
     @Test
-    fun `valid dependants should be mapped to relative stubs`() {
+    fun `valid dependants should be mapped to SSNs`() {
         val dependant =
             Huollettava().apply {
                 henkilotunnus = "010104A123E"
@@ -101,18 +101,11 @@ class VtjHenkiloMapperTest {
                 huollettava.add(dependant)
             }
 
-        val result = value.mapDependants()
-        assertThat(result).size().isEqualTo(1)
-
-        val child = result[0]
-        assertThat(child.ssn.value).isEqualTo(dependant.henkilotunnus)
-        assertThat(child.dateOfBirth).isEqualTo(LocalDate.of(2004, 1, 1))
-        assertThat(child.firstNames).isEqualTo(dependant.nykyisetEtunimet.etunimet)
-        assertThat(child.lastName).isEqualTo(dependant.nykyinenSukunimi.sukunimi)
+        assertThat(value.mapDependants()).containsExactly(Ssn.from("010104A123E"))
     }
 
     @Test
-    fun `valid guardians should be mapped to relative stubs`() {
+    fun `valid guardians should be mapped to SSNs`() {
         val guardian =
             Huoltaja().apply {
                 henkilotunnus = "070644-937X"
@@ -126,18 +119,7 @@ class VtjHenkiloMapperTest {
                 huoltaja.add(guardian)
             }
 
-        val result = value.mapGuardians()
-
-        // With no syntymaaika in the response, the date of birth comes from the SSN
-        assertThat(result)
-            .containsExactly(
-                VtjRelative(
-                    ssn = Ssn.parse("070644-937X")!!,
-                    dateOfBirth = LocalDate.of(1944, 6, 7),
-                    firstNames = "Johannes",
-                    lastName = "Karhula",
-                )
-            )
+        assertThat(value.mapGuardians()).containsExactly(Ssn.from("070644-937X"))
     }
 
     @Test

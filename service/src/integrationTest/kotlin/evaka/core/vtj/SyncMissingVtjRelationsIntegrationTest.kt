@@ -422,7 +422,9 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
             asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusMinutes(5L * it)))
         }
 
+        // One request in the batch, then three tries of the person's own job
         MockVtjSoapTransport.assertRequests(
+            HUOLLETTAVA_HUOLTAJAT to x,
             HUOLLETTAVA_HUOLTAJAT to x,
             HUOLLETTAVA_HUOLTAJAT to x,
             HUOLLETTAVA_HUOLTAJAT to x,
@@ -433,6 +435,62 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         vtjSyncService.planMissingSyncs(db, MockEvakaClock(clock.now().plusDays(1)), limit = 100)
 
         assertEquals(setOf(x.id), plannedSyncs())
+    }
+
+    @Test
+    fun `a person that VTJ does not find gets a job of their own, and the batch saves the others`() {
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(a, listOf(x))
+        db.transaction { tx ->
+            tx.insertCitizenUser(a, createdAt = clock.now())
+            tx.insertCitizenUser(b, createdAt = clock.now())
+        }
+
+        planMissingSyncs()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        // A job of A's own would fetch A again
+        assertEquals(1, MockVtjSoapTransport.getHUOLTAJAHUOLLETTAVARequestCount(a))
+        assertNotNull(getPerson(a).vtjDependantsQueried)
+        assertNull(getPerson(b).vtjDependantsQueried)
+        assertEquals(setOf(b.id), plannedSyncs())
+    }
+
+    @Test
+    fun `when fetching a batch fails, each person gets a job of their own`() {
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(a, emptyList())
+        MockVtjSoapTransport.addFailingRequest(b, HUOLTAJA_HUOLLETTAVA)
+        db.transaction { tx ->
+            tx.insertCitizenUser(a, createdAt = clock.now())
+            tx.insertCitizenUser(b, createdAt = clock.now())
+        }
+
+        planMissingSyncs()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertNotNull(getPerson(a).vtjDependantsQueried)
+        assertNull(getPerson(b).vtjDependantsQueried)
+        assertEquals(setOf(b.id), plannedSyncs())
+    }
+
+    @Test
+    fun `when saving a batch fails, each person gets a job of their own`() {
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(a, emptyList())
+        // PostgreSQL cannot store a NUL character, so saving B fails
+        MockVtjSoapTransport.addHUOLTAJAHUOLLETTAVARequestExpectation(
+            b.copy(firstName = "B\u0000"),
+            emptyList(),
+        )
+        db.transaction { tx ->
+            tx.insertCitizenUser(a, createdAt = clock.now())
+            tx.insertCitizenUser(b, createdAt = clock.now())
+        }
+
+        planMissingSyncs()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertNotNull(getPerson(a).vtjDependantsQueried)
+        assertNull(getPerson(b).vtjDependantsQueried)
+        assertEquals(setOf(b.id), plannedSyncs())
     }
 
     // Everyone lives at the same address, so a synced child can be added to the family of a
@@ -454,6 +512,10 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         tx.createQuery {
                 sql(
                     """
+SELECT person_id::uuid
+FROM async_job, jsonb_array_elements_text(payload -> 'personIds') person_id
+WHERE type = 'SyncMissingVtjRelations' AND completed_at IS NULL AND retry_count > 0
+UNION ALL
 SELECT (payload ->> 'personId')::uuid
 FROM async_job
 WHERE type = 'SyncMissingVtjRelationsOfPerson' AND completed_at IS NULL AND retry_count > 0

@@ -4,8 +4,8 @@
 
 package evaka.core.vtj
 
-import evaka.core.shared.domain.NotFound
-import evaka.core.vtj.VtjClient.DetailsQuery
+import evaka.core.identity.Ssn
+import evaka.core.shared.EvakaUserId
 import evaka.core.vtj.VtjSoapTransport.RequestType
 import evaka.core.vtj.VtjSoapTransport.RequestType.HUOLLETTAVA_HUOLTAJAT
 import evaka.core.vtj.VtjSoapTransport.RequestType.HUOLTAJA_HUOLLETTAVA
@@ -14,29 +14,37 @@ import evaka.core.vtj.VtjSoapTransport.VTJQuery
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo
 
 class SoapVtjClient(private val vtjSoapTransport: VtjSoapTransport) : VtjClient {
-    override fun fetchWithDependants(query: DetailsQuery): VtjPersonAndDependants {
-        val henkilo = doVtjQuery(query, HUOLTAJA_HUOLLETTAVA)
-        return VtjPersonAndDependants(
-            person = henkilo.mapToVtjPerson(),
-            dependants = henkilo.mapDependants(),
-        )
-    }
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        query(requestingUser, ssns, PERUSSANOMA3) { it.mapToVtjPerson() }
 
-    override fun fetchWithGuardians(query: DetailsQuery): VtjPersonAndGuardians {
-        val henkilo = doVtjQuery(query, HUOLLETTAVA_HUOLTAJAT)
-        return VtjPersonAndGuardians(
-            person = henkilo.mapToVtjPerson(),
-            guardians = henkilo.mapGuardians(),
-        )
-    }
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        query(requestingUser, ssns, HUOLLETTAVA_HUOLTAJAT) {
+            VtjPersonAndGuardians(person = it.mapToVtjPerson(), guardians = it.mapGuardians())
+        }
 
-    override fun fetchPerson(query: DetailsQuery): VtjPerson =
-        doVtjQuery(query, PERUSSANOMA3).mapToVtjPerson()
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        query(requestingUser, ssns, HUOLTAJA_HUOLLETTAVA) {
+            VtjPersonAndDependants(person = it.mapToVtjPerson(), dependants = it.mapDependants())
+        }
 
-    private fun doVtjQuery(query: DetailsQuery, requestType: RequestType): Henkilo =
-        vtjSoapTransport.query(query.mapToVtjQuery(requestType))
-            ?: throw NotFound("VTJ person not found")
+    private fun <T> query(
+        requestingUser: EvakaUserId,
+        ssns: Collection<Ssn>,
+        type: RequestType,
+        map: (Henkilo) -> T,
+    ): Map<Ssn, T> =
+        ssns
+            .distinct()
+            .mapNotNull { ssn ->
+                vtjSoapTransport
+                    .query(
+                        VTJQuery(
+                            requestingUserId = requestingUser.raw,
+                            ssn = ssn.value,
+                            type = type,
+                        )
+                    )
+                    ?.let { ssn to map(it) }
+            }
+            .toMap()
 }
-
-fun DetailsQuery.mapToVtjQuery(type: RequestType) =
-    VTJQuery(requestingUserId = requestingUser.raw, ssn = ssn.value, type = type)

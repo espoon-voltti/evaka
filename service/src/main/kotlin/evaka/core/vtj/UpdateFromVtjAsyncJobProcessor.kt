@@ -26,9 +26,8 @@ class UpdateFromVtjAsyncJobProcessor(
     private val fridgeFamilyService: FridgeFamilyService,
 ) {
     init {
-        asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.UpdateFromVtj ->
-            updateFromVtj(db, clock, msg)
-        }
+        asyncJobRunner.registerHandler(::updateFromVtj)
+        asyncJobRunner.registerHandler(::syncMissingVtjRelations)
         asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.SyncMissingVtjRelationsOfPerson ->
             refreshPersonAndFamilies(db, clock, msg.personId)
         }
@@ -50,16 +49,26 @@ class UpdateFromVtjAsyncJobProcessor(
         refreshPersonAndFamilies(db, clock, person.id)
     }
 
+    fun syncMissingVtjRelations(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SyncMissingVtjRelations,
+    ) {
+        vtjSyncService.syncMissingRelations(db, clock, msg.personIds).forEach {
+            fridgeFamilyService.addChildrenToFridgeFamilies(db, clock, it)
+        }
+    }
+
     private fun refreshPersonAndFamilies(
         db: Database.Connection,
         clock: EvakaClock,
         personId: PersonId,
     ) {
-        vtjSyncService.refreshPerson(
+        vtjSyncService.refreshPersons(
             db,
             AuthenticatedUser.SystemInternalUser.evakaUserId,
             clock,
-            personId,
+            listOf(personId),
         )
         fridgeFamilyService.addChildrenToFridgeFamilies(db, clock, personId)
     }

@@ -9,6 +9,7 @@ import evaka.core.family.getParentships
 import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.person.getPersonById
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -92,6 +93,34 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertNotNull(getPerson(a).vtjDependantsQueried)
         assertGuardians(a to x)
+    }
+
+    @Test
+    fun `refreshing persons fetches each group and the missing relatives with one call each`() {
+        // X is a minor, A is a dependant-sync adult and C is another adult. B and Y are only in
+        // VTJ.
+        val c = person("070644-937X", "Cecilia")
+        val y = person("080622A9123", "Yrjö")
+        db.transaction { tx ->
+            tx.insert(a, DevPersonType.ADULT)
+            tx.updateLastStrongLogin(clock.now(), a.id)
+            tx.insert(c, DevPersonType.ADULT)
+            tx.insert(x, DevPersonType.CHILD)
+        }
+        MockVtjClient.reset()
+        MockVtjClient.addPersons(a, b, c, x, y)
+        MockVtjClient.addDependants(a, x, y)
+        MockVtjClient.addDependants(b, x)
+
+        VtjSyncService(MockVtjClient(), asyncJobRunner)
+            .refreshPersons(db, user.evakaUserId, clock, listOf(x.id, a.id, c.id))
+
+        assertEquals(
+            mapOf("fetchPersons" to 2, "fetchWithGuardians" to 1, "fetchWithDependants" to 1),
+            MockVtjClient.getCallCounts(),
+        )
+        assertPersons(a, b, c, x, y)
+        assertGuardians(a to x, b to x, a to y)
     }
 
     @Test
@@ -228,17 +257,31 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val vtjClientReturningAnotherSsn =
         object : VtjClient {
-            override fun fetchPerson(query: VtjClient.DetailsQuery) =
-                VtjPerson(
-                    firstNames = "Johannes",
-                    lastName = "Karhula",
-                    ssn = Ssn.from("010199-8137"),
-                    restrictedDetails = null,
-                )
+            override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+                ssns.associateWith {
+                    VtjPerson(
+                        firstNames = "Johannes",
+                        lastName = "Karhula",
+                        ssn = Ssn.from("010199-8137"),
+                        restrictedDetails = null,
+                    )
+                }
 
-            override fun fetchWithGuardians(query: VtjClient.DetailsQuery) = error("unused")
+            override fun fetchWithGuardians(
+                requestingUser: EvakaUserId,
+                ssns: Collection<Ssn>,
+            ): Map<Ssn, VtjPersonAndGuardians> {
+                check(ssns.isEmpty())
+                return emptyMap()
+            }
 
-            override fun fetchWithDependants(query: VtjClient.DetailsQuery) = error("unused")
+            override fun fetchWithDependants(
+                requestingUser: EvakaUserId,
+                ssns: Collection<Ssn>,
+            ): Map<Ssn, VtjPersonAndDependants> {
+                check(ssns.isEmpty())
+                return emptyMap()
+            }
         }
 
     private fun addToVtj(
