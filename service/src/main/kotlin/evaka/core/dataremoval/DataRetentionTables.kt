@@ -32,9 +32,9 @@ val FINANCE_FREEZE_WITH_MARGIN: Period = FINANCE_FREEZE_PERIOD.plusMonths(1)
 
 private val oneMonth = Period.ofMonths(1)
 private val twoMonths = Period.ofMonths(2)
-private val sixMonths = Period.ofMonths(6)
 private val oneYear = Period.ofYears(1)
 private val fiveYears = Period.ofYears(5)
+private val sixYears = Period.ofYears(6)
 private val tenYears = Period.ofYears(10)
 
 private val lastPlacementEnd = GraphTableColumn("placement", "end_date")
@@ -42,6 +42,33 @@ private val lastPlacementEnd = GraphTableColumn("placement", "end_date")
 private val oneYearAfterLastPlacement = After(oneYear, lastPlacementEnd)
 private val fiveYearsAfterLastPlacement = After(fiveYears, lastPlacementEnd)
 private val tenYearsAfterLastPlacement = After(tenYears, lastPlacementEnd)
+
+// The rules of the tables that wait for archival, apart from that wait, for the overrides of the
+// municipalities that do not archive them
+
+val decisionRetentionBeforeArchival: ExpirationRule =
+    AllOf(
+        Coalesce(tenYearsAfterLastPlacement, After(Period.ZERO, decisionRetentionEnd)),
+        AnyOf(
+            Coalesce(
+                After(oneYear, OwnColumn("sent_date")),
+                After(oneYear, OwnColumn("created", TIMESTAMP_WITH_TIME_ZONE)),
+            ),
+            notWhileDecisionPending,
+        ),
+    )
+
+val childDocumentRetentionBeforeArchival: ExpirationRule =
+    Coalesce(
+        After(Period.ZERO, childDocumentRetentionEnd),
+        After(tenYears, OwnColumn("status_modified_at", TIMESTAMP_WITH_TIME_ZONE)),
+    )
+
+val voucherValueDecisionRetentionBeforeArchival: ExpirationRule =
+    Coalesce(tenYearsAfterLastPlacement, After(tenYears, OwnColumn("valid_to")))
+
+val feeDecisionRetentionBeforeArchival: ExpirationRule =
+    After(tenYears, feeDecisionChildrenPlacementOrValidityEnd)
 
 /**
  * The tables whose rows the algorithm deletes or waits for, and their expiration rules, with the
@@ -72,7 +99,7 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.Person::class,
                 expirationRule =
                     After(
-                        sixMonths,
+                        twoMonths,
                         GraphTableColumn("person", "created", TIMESTAMP_WITH_TIME_ZONE),
                     ),
                 safeForIntegrations = setOf(KOSKI, VARDA),
@@ -142,12 +169,17 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.Application::class,
                 expirationRule =
                     AllOf(
-                        Coalesce(tenYearsAfterLastPlacement, Always),
                         Coalesce(
-                            After(tenYears, OwnColumn("sentdate")),
-                            After(tenYears, OwnColumn("created_at", TIMESTAMP_WITH_TIME_ZONE)),
+                            tenYearsAfterLastPlacement,
+                            After(Period.ZERO, applicationRetentionEnd),
                         ),
-                        notWhileApplicationPending,
+                        AnyOf(
+                            Coalesce(
+                                After(oneYear, OwnColumn("sentdate")),
+                                After(oneYear, OwnColumn("created_at", TIMESTAMP_WITH_TIME_ZONE)),
+                            ),
+                            notWhileApplicationPending,
+                        ),
                     ),
                 safeForIntegrations = setOf(VARDA),
             ),
@@ -198,14 +230,7 @@ fun buildDataRetentionSchema(
                     listOf(primaryReference("application_id", referencedTable = "application")),
                 auditIdType = DatabaseTable.Decision::class,
                 expirationRule =
-                    AllOf(
-                        Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(tenYears, OwnColumn("sent_date")),
-                            Always,
-                        ),
-                        notWhileDecisionAwaitingArchival,
-                    ),
+                    AllOf(decisionRetentionBeforeArchival, notWhileDecisionAwaitingArchival),
                 safeForIntegrations = setOf(VARDA),
                 deletedWithParent = true,
                 asyncJobsPlannedOnDelete =
@@ -263,13 +288,7 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.ChildDocument::class,
                 expirationRule =
                     AllOf(
-                        Coalesce(
-                            After(Period.ZERO, childDocumentRetentionEnd),
-                            After(
-                                tenYears,
-                                OwnColumn("status_modified_at", TIMESTAMP_WITH_TIME_ZONE),
-                            ),
-                        ),
+                        childDocumentRetentionBeforeArchival,
                         notWhileChildDocumentAwaitingArchival,
                     ),
                 orphansToDelete =
@@ -384,7 +403,7 @@ fun buildDataRetentionSchema(
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
                 auditIdType = DatabaseTable.ChildAttendance::class,
                 expirationRule =
-                    Coalesce(tenYearsAfterLastPlacement, After(tenYears, OwnColumn("date"))),
+                    Coalesce(fiveYearsAfterLastPlacement, After(fiveYears, OwnColumn("date"))),
             ),
             HandledTable(
                 name = "attendance_reservation",
@@ -392,7 +411,7 @@ fun buildDataRetentionSchema(
                 references = listOf(primaryReference("child_id", referencedTable = "child")),
                 auditIdType = DatabaseTable.AttendanceReservation::class,
                 expirationRule =
-                    Coalesce(tenYearsAfterLastPlacement, After(tenYears, OwnColumn("date"))),
+                    Coalesce(fiveYearsAfterLastPlacement, After(fiveYears, OwnColumn("date"))),
             ),
             HandledTable(
                 name = "daily_service_time",
@@ -570,7 +589,10 @@ fun buildDataRetentionSchema(
                     ),
                 auditIdType = DatabaseTable.ServiceApplication::class,
                 expirationRule =
-                    Coalesce(fiveYearsAfterLastPlacement, After(oneYear, OwnColumn("start_date"))),
+                    AllOf(
+                        After(fiveYears, OwnColumn("start_date")),
+                        notWhileFinanceDecisionsFromServiceApplicationStart,
+                    ),
             ),
             HandledTable(
                 name = "fee_alteration",
@@ -604,10 +626,7 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.VoucherValueDecision::class,
                 expirationRule =
                     AllOf(
-                        Coalesce(
-                            tenYearsAfterLastPlacement,
-                            After(tenYears, OwnColumn("valid_to")),
-                        ),
+                        voucherValueDecisionRetentionBeforeArchival,
                         notWhileVoucherValueDecisionAwaitingArchival,
                     ),
                 financeFreeze = After(FINANCE_FREEZE_WITH_MARGIN, OwnColumn("valid_to")),
@@ -725,11 +744,8 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.Income::class,
                 expirationRule =
                     Coalesce(
-                        After(tenYears, OwnColumn("valid_to")),
-                        AllOf(
-                            After(tenYears, OwnColumn("valid_from")),
-                            Coalesce(After(tenYears, incomePersonLastFinanceDecisionEnd), Always),
-                        ),
+                        After(fiveYears, OwnColumn("valid_to")),
+                        After(sixYears, OwnColumn("valid_from")),
                     ),
                 financeFreeze =
                     Coalesce(
@@ -761,7 +777,7 @@ fun buildDataRetentionSchema(
                 auditIdType = DatabaseTable.FeeDecision::class,
                 expirationRule =
                     AllOf(
-                        After(tenYears, feeDecisionChildrenPlacementOrValidityEnd),
+                        feeDecisionRetentionBeforeArchival,
                         notWhileFeeDecisionAwaitingArchival,
                     ),
                 financeFreeze =

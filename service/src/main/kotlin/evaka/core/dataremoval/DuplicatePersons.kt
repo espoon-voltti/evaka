@@ -30,7 +30,8 @@ data class DuplicateLink(
     val lastPlacementEnd: LocalDate?,
     /** Of the person created later */
     val lastCreated: LocalDate,
-    val applicationPending: Boolean,
+    /** Of either person, or null if neither has a pending application */
+    val lastPendingApplicationSent: LocalDate?,
     val duplicate: IntegrationFacts,
     val original: IntegrationFacts,
 ) {
@@ -41,6 +42,9 @@ data class DuplicateLink(
         val inactive =
             if (lastPlacementEnd != null) lastPlacementEnd.plus(DUPLICATE_LINK_PERIOD) < today
             else lastCreated.plusMonths(1) < today
+        // An application pending longer is abandoned, as in the rule of the application
+        val applicationPending =
+            lastPendingApplicationSent != null && lastPendingApplicationSent.plusYears(1) >= today
         // Koski reads the link, so clearing it is treated like deleting the Koski data of both
         return inactive &&
             !applicationPending &&
@@ -58,10 +62,11 @@ SELECT
     o.id AS original_id,
     (SELECT max(end_date) FROM placement WHERE child_id IN (d.id, o.id)) AS last_placement_end,
     greatest(d.created, o.created) AS last_created,
-    EXISTS (
-        SELECT FROM application
+    (
+        SELECT max(coalesce(sentdate, (created_at AT TIME ZONE 'Europe/Helsinki')::date))
+        FROM application
         WHERE child_id IN (d.id, o.id) AND status = ANY(${bind(ApplicationStatus.pending)})
-    ) AS application_pending,
+    ) AS last_pending_application_sent,
     d.date_of_birth AS duplicate_date_of_birth,
     ${predicate(childSentToKoski.forTable("d"))} AS duplicate_sent_to_koski,
     ${predicate(childSentToVarda.forTable("d"))} AS duplicate_sent_to_varda,
@@ -80,7 +85,7 @@ WHERE ${bind(personId)} IN (d.id, o.id)
                 originalId = column("original_id"),
                 lastPlacementEnd = column("last_placement_end"),
                 lastCreated = column<HelsinkiDateTime>("last_created").toLocalDate(),
-                applicationPending = column("application_pending"),
+                lastPendingApplicationSent = column("last_pending_application_sent"),
                 duplicate =
                     IntegrationFacts(
                         dateOfBirth = column("duplicate_date_of_birth"),
