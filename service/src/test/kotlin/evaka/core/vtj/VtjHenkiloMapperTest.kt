@@ -10,7 +10,6 @@ import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo.Aidinkieli
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo.Huollettava
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo.Huoltaja
-import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo.Kansalaisuus
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo.NykyinenSukunimi
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo.NykyisetEtunimet
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo.Turvakielto
@@ -29,13 +28,6 @@ class VtjHenkiloMapperTest {
                 nykyisetEtunimet = NykyisetEtunimet().apply { etunimet = "Heikki Jaska" }
                 nykyinenSukunimi = NykyinenSukunimi().apply { sukunimi = "Heikinheimo" }
                 henkilotunnus = Henkilo.Henkilotunnus().apply { value = "070644-937X" }
-                kansalaisuus.clear()
-                kansalaisuus.add(
-                    Kansalaisuus().apply {
-                        kansalaisuusS = "Suomi"
-                        kansalaisuuskoodi3 = "247"
-                    }
-                )
                 vakinainenKotimainenLahiosoite =
                     VakinainenKotimainenLahiosoite().apply {
                         lahiosoiteS = "Reitti 1"
@@ -272,66 +264,6 @@ class VtjHenkiloMapperTest {
         assertThat(parseMailAddress(noStartDate)).isNull()
         assertThat(parseMailAddress(endBeforeStart)).isNull()
         assertThat(parseMailAddress(blank)).isNull()
-    }
-
-    @Test
-    fun `valid nationality should be mapped to a list of Nationalities`() {
-        val value =
-            Henkilo().apply {
-                kansalaisuus.clear()
-                kansalaisuus.add(
-                    Kansalaisuus().apply {
-                        kansalaisuusS = "Suomi"
-                        kansalaisuuskoodi3 = "247"
-                    }
-                )
-            }
-        val result: List<Nationality> = value.mapNationalities()
-
-        assertThat(result).size().isEqualTo(1)
-
-        val nationality = result[0]
-        assertThat(nationality.countryName).isEqualTo("Suomi")
-        assertThat(nationality.countryCode).isEqualTo("247")
-    }
-
-    @Test
-    fun `empty nationality list should be mapped to an empty list of Nationalities`() {
-        val value = Henkilo().apply { kansalaisuus.clear() }
-        val result: List<Nationality> = value.mapNationalities()
-
-        assertThat(result).size().isEqualTo(0)
-    }
-
-    @Test
-    fun `multiple nationalities should be mapped to a Nationality`() {
-        val value =
-            Henkilo().apply {
-                kansalaisuus.clear()
-                kansalaisuus.add(
-                    Kansalaisuus().apply {
-                        kansalaisuusS = "Suomi"
-                        kansalaisuuskoodi3 = "247"
-                    }
-                )
-                kansalaisuus.add(
-                    Kansalaisuus().apply {
-                        kansalaisuusS = "Ruotsi"
-                        kansalaisuuskoodi3 = "123"
-                    }
-                )
-            }
-        val result: List<Nationality> = value.mapNationalities()
-
-        assertThat(result).size().isEqualTo(2)
-
-        val nationality1 = result[0]
-        assertThat(nationality1.countryName).isEqualTo("Suomi")
-        assertThat(nationality1.countryCode).isEqualTo("247")
-
-        val nationality2 = result[1]
-        assertThat(nationality2.countryName).isEqualTo("Ruotsi")
-        assertThat(nationality2.countryCode).isEqualTo("123")
     }
 
     @Test

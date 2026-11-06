@@ -888,7 +888,6 @@ export interface DevPerson {
   mailingPostalCode: string
   mailingStreetAddress: string
   municipalityOfResidence: string
-  nationalities: string[]
   ophPersonOid: string | null
   phone: string
   postOffice: string

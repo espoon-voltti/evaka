@@ -14,7 +14,6 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.vtj.Nationality
 import evaka.core.vtj.NativeLanguage
 import evaka.core.vtj.PersonAddress
 import evaka.core.vtj.RestrictedDetails
@@ -50,7 +49,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 firstName = "dfhjcn",
                 lastName = "bvxdafs",
                 language = "sv",
-                nationalities = listOf("087"),
                 streetAddress = "Muutie 8",
                 postalCode = "00001",
                 postOffice = "Muula",
@@ -71,7 +69,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(updated.email, actual.email)
         assertEquals(updated.phone, actual.phone)
         assertEquals(updated.language, actual.language)
-        assertEquals(updated.nationalities, actual.nationalities)
 
         assertEquals(updated.streetAddress, actual.streetAddress)
         assertEquals(updated.postalCode, actual.postalCode)
@@ -447,8 +444,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             lastName = "O'Brien",
             ssn = Ssn.from(validSSN),
             nativeLanguage = NativeLanguage(code = "fi"),
-            nationalities =
-                listOf(Nationality(countryCode = "248"), Nationality(countryCode = "060")),
             residentialAddress = PersonAddress("Jokutie 66", "00000", "Jokula", null, null),
             municipalityOfResidence = "Jokunta",
             restrictedDetails = RestrictedDetails(true, LocalDate.now().plusYears(1)),

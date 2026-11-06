@@ -143,7 +143,7 @@ class McpToolsRowsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     """{"status":"DRAFT","childId":"$child","templateId":"$template","content":{"answers":[]},"modifiedAt":"$ts","modifiedBy":"${admin.id}","contentLockedAt":"$ts","contentLockedBy":null}""",
                 "application" to
                     """{"id":"${UUID.randomUUID()}","type":"DAYCARE","createdAt":"$ts","createdBy":"${admin.id}","modifiedAt":"$ts","modifiedBy":"${admin.id}","sentDate":"2026-09-01","status":"SENT","guardianId":"$guardian","childId":"$child","origin":"ELECTRONIC","checkedByAdmin":false,"hideFromGuardian":false,"transferApplication":false,"otherGuardians":[],
-                    "form":{"child":{"person":{"firstName":"Hupu","lastName":"Ankka"},"dateOfBirth":"2022-05-05","nationality":"FI","language":"fi","allergies":"","diet":"","assistanceNeeded":false,"assistanceDescription":""},
+                    "form":{"child":{"person":{"firstName":"Hupu","lastName":"Ankka"},"dateOfBirth":"2022-05-05","language":"fi","allergies":"","diet":"","assistanceNeeded":false,"assistanceDescription":""},
                     "guardian":{"person":{"firstName":"Anna","lastName":"Ankka"},"phoneNumber":"0401234567"},"otherChildren":[],"otherInfo":"",
                     "preferences":{"preferredUnits":[{"id":"$unit","name":"Testipäiväkoti"}],"preferredStartDate":"2026-11-01","preparatory":false,"urgent":false}}}""",
             )

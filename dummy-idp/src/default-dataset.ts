@@ -25,12 +25,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie3',
       municipalityOfResidence: null
@@ -54,7 +48,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -78,7 +71,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -102,7 +94,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -126,7 +117,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -150,7 +140,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie5',
       municipalityOfResidence: null
@@ -174,7 +163,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -198,7 +186,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -222,7 +209,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -246,7 +232,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie3',
       municipalityOfResidence: null
@@ -270,7 +255,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -294,7 +278,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -318,7 +301,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -342,7 +324,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -366,7 +347,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -390,7 +370,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -414,7 +393,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -438,7 +416,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -462,7 +439,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -486,7 +462,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -510,12 +485,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_toistie33',
       municipalityOfResidence: null
@@ -539,12 +508,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie2',
       municipalityOfResidence: null
@@ -568,7 +531,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -592,12 +554,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie2',
       municipalityOfResidence: null
@@ -621,7 +577,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie6',
       municipalityOfResidence: null
@@ -645,7 +600,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -669,7 +623,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -693,7 +646,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -717,7 +669,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -741,7 +692,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie4',
       municipalityOfResidence: null
@@ -765,7 +715,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -789,12 +738,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie2',
       municipalityOfResidence: null
@@ -818,7 +761,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -842,12 +784,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie2',
       municipalityOfResidence: null
@@ -871,7 +807,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -895,7 +830,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -919,7 +853,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -943,7 +876,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -967,7 +899,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie3',
       municipalityOfResidence: null
@@ -991,7 +922,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1015,12 +945,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie1',
       municipalityOfResidence: null
@@ -1044,7 +968,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1068,7 +991,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1092,7 +1014,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1116,7 +1037,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1140,7 +1060,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1164,7 +1083,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1188,7 +1106,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1212,12 +1129,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'nimeton_kankkulankaivo1',
       municipalityOfResidence: null
@@ -1241,12 +1152,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: '',
       municipalityOfResidence: null
@@ -1270,7 +1175,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1294,7 +1198,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1318,7 +1221,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1342,7 +1244,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1366,7 +1267,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1390,7 +1290,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1414,12 +1313,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'nimeton_kankkulankaivo1',
       municipalityOfResidence: null
@@ -1443,7 +1336,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1467,7 +1359,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1491,7 +1382,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie4',
       municipalityOfResidence: null
@@ -1515,7 +1405,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1539,7 +1428,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1563,7 +1451,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie5',
       municipalityOfResidence: null
@@ -1587,7 +1474,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1611,7 +1497,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1635,7 +1520,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1659,7 +1543,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1683,7 +1566,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1707,7 +1589,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1731,7 +1612,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie4',
       municipalityOfResidence: null
@@ -1755,7 +1635,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1779,7 +1658,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1803,12 +1681,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie2',
       municipalityOfResidence: null
@@ -1832,12 +1704,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie1',
       municipalityOfResidence: null
@@ -1861,7 +1727,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1885,7 +1750,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1909,7 +1773,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1933,12 +1796,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: '2020-06-01',
       residenceCode: 'aapinen_1',
       municipalityOfResidence: null
@@ -1962,7 +1819,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -1986,7 +1842,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2010,7 +1865,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2034,7 +1888,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2058,7 +1911,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2082,7 +1934,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2106,7 +1957,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2130,7 +1980,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2154,7 +2003,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2178,12 +2026,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie1',
       municipalityOfResidence: null
@@ -2207,7 +2049,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2231,7 +2072,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie4',
       municipalityOfResidence: null
@@ -2255,7 +2095,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2279,7 +2118,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2303,7 +2141,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2327,7 +2164,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2351,7 +2187,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2375,7 +2210,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2399,7 +2233,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2423,7 +2256,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2447,7 +2279,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2471,7 +2302,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2495,7 +2325,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2519,7 +2348,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2543,7 +2371,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2567,7 +2394,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2591,7 +2417,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2615,7 +2440,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2639,7 +2463,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2663,7 +2486,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2687,7 +2509,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2711,12 +2532,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie1',
       municipalityOfResidence: null
@@ -2740,7 +2555,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2764,7 +2578,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2788,7 +2601,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2812,12 +2624,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie2',
       municipalityOfResidence: null
@@ -2841,7 +2647,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie6',
       municipalityOfResidence: null
@@ -2865,7 +2670,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2889,7 +2693,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2913,7 +2716,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2937,7 +2739,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2961,7 +2762,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -2985,7 +2785,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3009,7 +2808,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3033,7 +2831,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3057,7 +2854,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3081,7 +2877,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3105,7 +2900,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3129,7 +2923,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3153,7 +2946,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie6',
       municipalityOfResidence: null
@@ -3177,7 +2969,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3201,7 +2992,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3225,7 +3015,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3249,7 +3038,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3273,7 +3061,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3297,7 +3084,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3321,7 +3107,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: 'hogfors_kamreerintie2',
       municipalityOfResidence: null
@@ -3345,7 +3130,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3369,12 +3153,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [
-        {
-          countryName: 'Suomi',
-          countryCode: 'FIN'
-        }
-      ],
       dateOfDeath: null,
       residenceCode: 'aapinen_1',
       municipalityOfResidence: null
@@ -3398,7 +3176,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3422,7 +3199,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3446,7 +3222,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null
@@ -3470,7 +3245,6 @@ export const defaultDataset: MockVtjDataset = {
         languageName: 'suomi',
         code: 'fi'
       },
-      nationalities: [],
       dateOfDeath: null,
       residenceCode: null,
       municipalityOfResidence: null

@@ -48,7 +48,6 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             residentialAddress =
                 PersonAddress("Jokutie 66", "00100", "Helsinki", "Någonvägen 66", "Helsingfors"),
             nativeLanguage = NativeLanguage(languageName = "suomi", code = "fi"),
-            nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "246")),
             restrictedDetails = RestrictedDetails(enabled = false),
             residenceCode = "abc123",
             municipalityOfResidence = "Helsinki",
@@ -87,7 +86,6 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("abc123", person.residenceCode)
         assertEquals("Helsinki", person.municipalityOfResidence)
         assertEquals("fi", person.language)
-        assertEquals(listOf("246"), person.nationalities)
         assertEquals(now, person.updatedFromVtj)
         assertEquals(1, countMessageAccounts(result.id))
     }

@@ -1854,7 +1854,6 @@ for (const env of ['desktop', 'mobile'] as const) {
         streetAddress: testAdult.streetAddress,
         postalCode: testAdult.postalCode,
         postOffice: testAdult.postOffice,
-        nationalities: ['FI'],
         restrictedDetailsEnabled: false,
         restrictedDetailsEndDate: null
       })
@@ -1869,7 +1868,6 @@ for (const env of ['desktop', 'mobile'] as const) {
         streetAddress: testAdult.streetAddress,
         postalCode: testAdult.postalCode,
         postOffice: testAdult.postOffice,
-        nationalities: ['FI'],
         restrictedDetailsEnabled: false,
         restrictedDetailsEndDate: null
       })
@@ -1884,7 +1882,6 @@ for (const env of ['desktop', 'mobile'] as const) {
         streetAddress: testAdult.streetAddress,
         postalCode: testAdult.postalCode,
         postOffice: testAdult.postOffice,
-        nationalities: ['FI'],
         restrictedDetailsEnabled: false,
         restrictedDetailsEndDate: null
       })

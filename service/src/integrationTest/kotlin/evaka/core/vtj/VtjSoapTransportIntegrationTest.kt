@@ -229,7 +229,6 @@ private val annaPopov =
         municipalityOfResidence = "Vaasa",
         municipalityOfResidenceSe = "Vasa",
         restrictedDetails = RestrictedDetails(false),
-        nationalities = emptyList(),
     )
 
 private val annaPopovsChildren =

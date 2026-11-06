@@ -13,32 +13,27 @@ const dataset: MockVtjDataset = {
     {
       firstNames: 'Grandparent',
       lastName: 'One',
-      socialSecurityNumber: 'GP1',
-      nationalities: []
+      socialSecurityNumber: 'GP1'
     },
     {
       firstNames: 'Guardian',
       lastName: 'One',
-      socialSecurityNumber: 'G1',
-      nationalities: []
+      socialSecurityNumber: 'G1'
     },
     {
       firstNames: 'Child',
       lastName: 'A',
-      socialSecurityNumber: 'C1',
-      nationalities: []
+      socialSecurityNumber: 'C1'
     },
     {
       firstNames: 'Child',
       lastName: 'B',
-      socialSecurityNumber: 'C2',
-      nationalities: []
+      socialSecurityNumber: 'C2'
     },
     {
       firstNames: 'Grandchild',
       lastName: 'A',
-      socialSecurityNumber: 'GC1',
-      nationalities: []
+      socialSecurityNumber: 'GC1'
     }
   ],
   guardianDependants: { GP1: ['G1'], G1: ['C1', 'C2'], C1: ['GC1'] }
@@ -89,8 +84,7 @@ void test('upsert overwrites a person and merges links without duplicates', () =
       {
         firstNames: 'Guardian',
         lastName: 'Renamed',
-        socialSecurityNumber: 'G1',
-        nationalities: []
+        socialSecurityNumber: 'G1'
       }
     ],
     guardianDependants: { G1: ['C1'] }
@@ -119,8 +113,7 @@ void test('snapshot can be restored after clearing and mutating', () => {
       {
         firstNames: 'Other',
         lastName: 'X',
-        socialSecurityNumber: 'O1',
-        nationalities: []
+        socialSecurityNumber: 'O1'
       }
     ],
     guardianDependants: {}

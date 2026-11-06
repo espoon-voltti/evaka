@@ -422,8 +422,6 @@ export default React.memo(function ApplicationReadView({
             </>
           )}
 
-          <Label>{i18n.application.person.nationality}</Label>
-          <span>{child.nationality}</span>
           <Label>{i18n.application.person.language}</Label>
           <span>{child.language}</span>
         </ListGrid>

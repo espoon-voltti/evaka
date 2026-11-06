@@ -36,7 +36,6 @@ fun PlacementType.toApplicationType(): ApplicationType =
 
 fun DevPerson.toDaycareFormChild(
     dateOfBirth: LocalDate? = null,
-    nationality: String = "FI",
     language: String = "fi",
     restricted: Boolean = false,
 ) =
@@ -47,7 +46,6 @@ fun DevPerson.toDaycareFormChild(
         dateOfBirth = dateOfBirth,
         address =
             DaycareFormAddress(street = streetAddress, postalCode = postalCode, city = postOffice),
-        nationality = nationality,
         language = language,
         restricted = restricted,
     )

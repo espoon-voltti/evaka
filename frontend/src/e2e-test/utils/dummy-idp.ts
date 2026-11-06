@@ -16,7 +16,6 @@ export interface DummyIdpVtjPerson {
     postOfficeSe?: string | null
   } | null
   nativeLanguage?: { languageName?: string; code: string } | null
-  nationalities?: { countryName?: string; countryCode: string }[]
   restrictedDetails?: { enabled: boolean; endDate?: string | null } | null
   dateOfDeath?: string | null
   residenceCode?: string | null

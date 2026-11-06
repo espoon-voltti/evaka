@@ -172,7 +172,6 @@ fun buildApplication(
                         dateOfBirth = child.dateOfBirth,
                         address = Address(child.streetAddress, child.postalCode, child.postOffice),
                         futureAddress = null,
-                        nationality = "FI",
                         language = "fi",
                         allergies = "",
                         diet = "",

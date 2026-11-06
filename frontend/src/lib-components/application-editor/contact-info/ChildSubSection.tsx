@@ -87,12 +87,6 @@ export default React.memo(function ChildSubSection({
                 </FixedSpaceColumn>
               )}
               <FixedSpaceColumn $spacing="xs">
-                <Label>{employeeTexts.nationality}</Label>
-                <span data-qa="child-nationality">
-                  {application.form.child.nationality}
-                </span>
-              </FixedSpaceColumn>
-              <FixedSpaceColumn $spacing="xs">
                 <Label>{employeeTexts.language}</Label>
                 <span data-qa="child-language">
                   {application.form.child.language}

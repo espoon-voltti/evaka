@@ -548,7 +548,6 @@ private fun Person.toChildDetails() =
         dateOfBirth,
         null,
         null,
-        "FI",
         "fi",
         allergies = "",
         diet = "",

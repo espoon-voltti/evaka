@@ -31,7 +31,6 @@ data class Person(
     val mailingPostOffice: String,
     val residenceCode: String,
     val municipalityOfResidence: String,
-    val nationalities: List<String> = emptyList(),
     val restrictedDetailsEnabled: Boolean = false,
     val restrictedDetailsEndDate: LocalDate? = null,
     val updatedFromVtj: HelsinkiDateTime? = null,

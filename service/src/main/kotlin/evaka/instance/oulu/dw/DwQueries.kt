@@ -131,7 +131,7 @@ SELECT
     p.street_address                        AS postiosoite,
     p.postal_code                           AS postinumero,
     p.post_office                           AS postitoimipaikka,
-    p.nationalities                         AS kansalaisuudet,
+    '{}'::text[]                            AS kansalaisuudet,
     pl.type                                 AS sijoitustyyppi,
     pl.unit_id                              AS sijoitusyksikkö_id,
     d.name                                  AS yksikön_nimi,

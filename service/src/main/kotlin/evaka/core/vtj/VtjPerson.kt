@@ -15,7 +15,6 @@ data class VtjPerson(
     val ssn: Ssn,
     val residentialAddress: PersonAddress? = null,
     val mailingAddressPeriods: List<MailingAddressPeriod> = emptyList(),
-    val nationalities: List<Nationality> = emptyList(),
     val nativeLanguage: NativeLanguage? = null,
     val restrictedDetails: RestrictedDetails?,
     val dateOfDeath: LocalDate? = null,
@@ -57,8 +56,6 @@ data class MailingAddressPeriod(
     val validDuring: DateRange,
     val address: PersonAddress,
 )
-
-data class Nationality(val countryName: String = "", val countryCode: String)
 
 data class NativeLanguage(val languageName: String = "", val code: String) {
     companion object {

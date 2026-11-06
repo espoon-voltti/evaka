@@ -42,7 +42,6 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             postOffice = "Espoo",
             residenceCode = "abc123",
             municipalityOfResidence = "Espoo",
-            nationalities = listOf("246"),
         )
 
     private val child =
@@ -57,7 +56,6 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             postOffice = "Espoo",
             residenceCode = "abc123",
             municipalityOfResidence = "Espoo",
-            nationalities = listOf("246"),
             restrictedDetailsEnabled = true,
             restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
         )
@@ -84,7 +82,6 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(child.residenceCode, refreshed.residenceCode)
         assertEquals(child.municipalityOfResidence, refreshed.municipalityOfResidence)
         assertEquals(child.language, refreshed.language)
-        assertEquals(child.nationalities, refreshed.nationalities)
     }
 
     @Test
@@ -132,7 +129,6 @@ private fun DevPerson.toFullVtjPerson() =
         ssn = Ssn.from(ssn!!),
         residentialAddress = PersonAddress(streetAddress, postalCode, postOffice),
         nativeLanguage = language?.let { NativeLanguage(code = it) },
-        nationalities = nationalities.map { Nationality(countryName = it, countryCode = it) },
         residenceCode = residenceCode,
         municipalityOfResidence = municipalityOfResidence,
         restrictedDetails = RestrictedDetails(restrictedDetailsEnabled, restrictedDetailsEndDate),

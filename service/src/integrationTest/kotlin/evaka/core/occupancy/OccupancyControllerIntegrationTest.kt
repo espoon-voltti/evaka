@@ -1405,7 +1405,6 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             dateOfBirth = child.dateOfBirth,
                             address = Address("Testikatu 1", "00200", "Espoo"),
                             futureAddress = null,
-                            nationality = "fi",
                             language = "fi",
                             allergies = "",
                             diet = "",

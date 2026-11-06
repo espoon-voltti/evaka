@@ -928,8 +928,6 @@ export default React.memo(function ApplicationEditViewLegacy({
             </>
           )}
 
-          <Label>{i18n.application.person.nationality}</Label>
-          <span data-qa="child-nationality">{child.nationality}</span>
           <Label>{i18n.application.person.language}</Label>
           <span data-qa="child-language">{child.language}</span>
         </ListGrid>

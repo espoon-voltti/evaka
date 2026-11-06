@@ -529,7 +529,6 @@ export const fi = {
         'Väestorekisterissä oleva osoite on muuttunut / muuttumassa',
       futureAddress: 'Tuleva osoite',
       movingDate: 'Muuttopäivä',
-      nationality: 'Kansalaisuus',
       language: 'Kieli',
       phone: 'Puhelinnumero',
       email: 'Sähköposti',

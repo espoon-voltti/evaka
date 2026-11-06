@@ -12,11 +12,6 @@ export const personAddressSchema = z.object({
   postOfficeSe: z.string().nullish()
 })
 
-export const nationalitySchema = z.object({
-  countryName: z.string().default(''),
-  countryCode: z.string()
-})
-
 export const nativeLanguageSchema = z.object({
   languageName: z.string().default(''),
   code: z.string()
@@ -34,7 +29,6 @@ export const vtjPersonSchema = z.object({
   socialSecurityNumber: z.string(),
   address: personAddressSchema.nullish(),
   nativeLanguage: nativeLanguageSchema.nullish(),
-  nationalities: z.array(nationalitySchema).default([]),
   restrictedDetails: restrictedDetailsSchema.nullish(),
   dateOfDeath: z.string().nullish(),
   residenceCode: z.string().nullish(),
