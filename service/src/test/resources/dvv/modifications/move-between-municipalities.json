@@ -1,0 +1,490 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "070504A9208",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "LISATTY",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "9000001596",
+          "katunumero": "6a-6b",
+          "osoitenumero": 4,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "002",
+          "jakokirjain": "a",
+          "kuntakoodi": "287",
+          "postinumero": "64370",
+          "katunimi": {
+            "fi": "Gabriella",
+            "sv": "Gabriella"
+          },
+          "postitoimipaikka": {
+            "fi": "MYRKKY",
+            "sv": "MÖRTMARK"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "MUUTETTU",
+          "alkupv": {
+            "arvo": "2004-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000046J",
+          "katunumero": "32",
+          "osoitenumero": 1,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "004",
+          "kuntakoodi": "091",
+          "postinumero": "00200",
+          "katunimi": {
+            "fi": "Lauttasaarentie",
+            "sv": "Drumsövägen"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "LISATTY",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "muutosattribuutti": "MUUTETTU",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2004-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "MUUTETTU",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "LISATTY",
+          "rakennustunnus": "9000001596",
+          "osoitenumero": 4,
+          "jakokirjain": "a",
+          "huoneistonumero": "002",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "287",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000015964A002a"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "MUUTETTU",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "004",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2004-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1A004 "
+        }
+      ],
+      "muutospv": "2019-06-27T10:12:59.522Z"
+    },
+    {
+      "henkilotunnus": "071285-9038",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "LISATTY",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "9000001596",
+          "katunumero": "6a-6b",
+          "osoitenumero": 4,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "002",
+          "jakokirjain": "a",
+          "kuntakoodi": "287",
+          "postinumero": "64370",
+          "katunimi": {
+            "fi": "Gabriella",
+            "sv": "Gabriella"
+          },
+          "postitoimipaikka": {
+            "fi": "MYRKKY",
+            "sv": "MÖRTMARK"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "MUUTETTU",
+          "alkupv": {
+            "arvo": "2004-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000046J",
+          "katunumero": "32",
+          "osoitenumero": 1,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "004",
+          "kuntakoodi": "091",
+          "postinumero": "00200",
+          "katunimi": {
+            "fi": "Lauttasaarentie",
+            "sv": "Drumsövägen"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "LISATTY",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "muutosattribuutti": "MUUTETTU",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2004-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "MUUTETTU",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "LISATTY",
+          "rakennustunnus": "9000001596",
+          "osoitenumero": 4,
+          "jakokirjain": "a",
+          "huoneistonumero": "002",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "287",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000015964A002a"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "MUUTETTU",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "004",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2004-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1A004 "
+        }
+      ],
+      "muutospv": "2019-06-27T10:12:59.522Z"
+    },
+    {
+      "henkilotunnus": "160418A914N",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "LISATTY",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "9000001596",
+          "katunumero": "6a-6b",
+          "osoitenumero": 4,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "002",
+          "jakokirjain": "a",
+          "kuntakoodi": "287",
+          "postinumero": "64370",
+          "katunimi": {
+            "fi": "Gabriella",
+            "sv": "Gabriella"
+          },
+          "postitoimipaikka": {
+            "fi": "MYRKKY",
+            "sv": "MÖRTMARK"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "MUUTETTU",
+          "alkupv": {
+            "arvo": "2012-07-12",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000046J",
+          "katunumero": "32",
+          "osoitenumero": 1,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "004",
+          "kuntakoodi": "091",
+          "postinumero": "00200",
+          "katunimi": {
+            "fi": "Lauttasaarentie",
+            "sv": "Drumsövägen"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "LISATTY",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "muutosattribuutti": "MUUTETTU",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2012-07-12",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "MUUTETTU",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "LISATTY",
+          "rakennustunnus": "9000001596",
+          "osoitenumero": 4,
+          "jakokirjain": "a",
+          "huoneistonumero": "002",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "287",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000015964A002a"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "MUUTETTU",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "004",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2012-07-12",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1A004 "
+        }
+      ],
+      "muutospv": "2019-06-27T10:12:59.522Z"
+    },
+    {
+      "henkilotunnus": "180219A977M",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "LISATTY",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "9000001596",
+          "katunumero": "6a-6b",
+          "osoitenumero": 4,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "002",
+          "jakokirjain": "a",
+          "kuntakoodi": "287",
+          "postinumero": "64370",
+          "katunimi": {
+            "fi": "Gabriella",
+            "sv": "Gabriella"
+          },
+          "postitoimipaikka": {
+            "fi": "MYRKKY",
+            "sv": "MÖRTMARK"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "MUUTETTU",
+          "alkupv": {
+            "arvo": "2012-07-12",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000046J",
+          "katunumero": "32",
+          "osoitenumero": 1,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "004",
+          "kuntakoodi": "091",
+          "postinumero": "00200",
+          "katunimi": {
+            "fi": "Lauttasaarentie",
+            "sv": "Drumsövägen"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "LISATTY",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "muutosattribuutti": "MUUTETTU",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2012-07-12",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "MUUTETTU",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "LISATTY",
+          "rakennustunnus": "9000001596",
+          "osoitenumero": 4,
+          "jakokirjain": "a",
+          "huoneistonumero": "002",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "287",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000015964A002a"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "MUUTETTU",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "004",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2012-07-12",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1A004 "
+        }
+      ],
+      "muutospv": "2019-06-27T10:12:59.522Z"
+    }
+  ],
+  "ajanTasalla": true
+}

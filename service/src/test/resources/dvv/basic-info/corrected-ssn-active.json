@@ -1,0 +1,128 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "010192-921W",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILOTUNNUS_KORJAUS",
+          "aktiivinenHenkilotunnus": "010192-921W",
+          "edellisetHenkilotunnukset": [],
+          "muutettuHenkilotunnus": "010192-921W",
+          "voimassaolo": "AKTIIVI"
+        },
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "fi",
+          "kielikoodiISO6392": "fin",
+          "alkupv": {
+            "arvo": "2024-02-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Hanna",
+          "sukunimi": "Kolehmainen Tes",
+          "etunimiUTF8": "Hanna",
+          "sukunimiUTF8": "Kolehmainen Tes"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Mikkolantie",
+            "sv": "Mickelsvägen"
+          },
+          "katunumero": "30",
+          "huoneistokirjain": "F",
+          "huoneistonumero": "028",
+          "postinumero": "00640",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "huoneistonumero": "028",
+          "huoneistokirjain": "F",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000041C1F028 "
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

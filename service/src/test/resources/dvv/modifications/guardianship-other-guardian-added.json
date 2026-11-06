@@ -1,0 +1,1210 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "100391-9566",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "MAARATTY_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": true,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA",
+              "huollettava": {
+                "henkilotunnus": "140515A9342",
+                "syntymapv": {
+                  "arvo": "2018-12-30",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "MAARATTY_HUOLTAJA",
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "asuminen": "AIDIN_LUONA",
+              "asumisenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "asumisenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": [
+                {
+                  "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+                  "oikeudenAlkupv": {
+                    "arvo": "2020-05-14",
+                    "tarkkuus": "PAIVA"
+                  },
+                  "oikeudenLoppupv": {
+                    "arvo": "2036-12-30",
+                    "tarkkuus": "PAIVA"
+                  },
+                  "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "MAARATTY_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": true,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA_SUPPEA",
+              "huollettava": {
+                "henkilotunnus": "140515A9342",
+                "syntymapv": {
+                  "arvo": "2018-12-30",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "MAARATTY_HUOLTAJA",
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "asuminen": "AIDIN_LUONA",
+              "asumisenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "asumisenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": [
+                {
+                  "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+                  "oikeudenAlkupv": {
+                    "arvo": "2020-05-14",
+                    "tarkkuus": "PAIVA"
+                  },
+                  "oikeudenLoppupv": {
+                    "arvo": "2036-12-30",
+                    "tarkkuus": "PAIVA"
+                  },
+                  "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "MUUTETTU",
+          "huoltosuhteenMuutos": true,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+              "huollettava": {
+                "henkilotunnus": "140515A9342",
+                "syntymapv": {
+                  "arvo": "2018-12-30",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "asuminen": "AIDIN_LUONA",
+              "asumisenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "asumisenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        }
+      ],
+      "muutospv": "2020-05-15T05:10:34.840Z"
+    },
+    {
+      "henkilotunnus": "140515A9342",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "100391-9566",
+            "etunimet": "Lina Margretha",
+            "sukunimi": "Stenman Tes",
+            "etunimetUTF8": "Lina Margretha",
+            "sukunimiUTF8": "Stenman Tes",
+            "syntymapv": {
+              "arvo": "1994-10-11",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "MAARATTY_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "syntymapv": {
+              "arvo": "2000-11-22",
+              "tarkkuus": "PAIVA"
+            },
+            "etunimet": "Paola Peppina",
+            "sukunimi": "Weitsell Tes",
+            "etunimetUTF8": "Paola Peppina",
+            "sukunimiUTF8": "Weitsell Tes",
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "MAARATTY_HUOLTAJA",
+          "huoltajanRooli": "MUU_HUOLTAJA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "140891-9642",
+            "etunimet": "Henriikka",
+            "sukunimi": "Hui Lai Lee Tes",
+            "etunimetUTF8": "Henriikka",
+            "sukunimiUTF8": "Hui Lai Lee Tes",
+            "syntymapv": {
+              "arvo": "1994-11-05",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "TUNNUSTANUT_AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": true,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "100391-9566",
+            "etunimet": "Lina Margretha",
+            "sukunimi": "Stenman Tes",
+            "etunimetUTF8": "Lina Margretha",
+            "sukunimiUTF8": "Stenman Tes",
+            "syntymapv": {
+              "arvo": "1994-10-11",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": true,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA",
+              "huoltaja": {
+                "henkilotunnus": "100391-9566",
+                "etunimet": "Lina Margretha",
+                "sukunimi": "Stenman Tes",
+                "etunimetUTF8": "Lina Margretha",
+                "sukunimiUTF8": "Stenman Tes",
+                "syntymapv": {
+                  "arvo": "1994-10-11",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "MAARATTY_HUOLTAJA",
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "asuminen": "AIDIN_LUONA",
+              "asumisenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "asumisenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": [
+                {
+                  "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+                  "oikeudenAlkupv": {
+                    "arvo": "2020-05-14",
+                    "tarkkuus": "PAIVA"
+                  },
+                  "oikeudenLoppupv": {
+                    "arvo": "2036-12-30",
+                    "tarkkuus": "PAIVA"
+                  },
+                  "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "100391-9566",
+            "etunimet": "Lina Margretha",
+            "sukunimi": "Stenman Tes",
+            "etunimetUTF8": "Lina Margretha",
+            "sukunimiUTF8": "Stenman Tes",
+            "syntymapv": {
+              "arvo": "1994-10-11",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "MAARATTY_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "syntymapv": {
+              "arvo": "2000-11-22",
+              "tarkkuus": "PAIVA"
+            },
+            "etunimet": "Paola Peppina",
+            "sukunimi": "Weitsell Tes",
+            "etunimetUTF8": "Paola Peppina",
+            "sukunimiUTF8": "Weitsell Tes",
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "MAARATTY_HUOLTAJA",
+          "huoltajanRooli": "MUU_HUOLTAJA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "140891-9642",
+            "etunimet": "Henriikka",
+            "sukunimi": "Hui Lai Lee Tes",
+            "etunimetUTF8": "Henriikka",
+            "sukunimiUTF8": "Hui Lai Lee Tes",
+            "syntymapv": {
+              "arvo": "1994-11-05",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "TUNNUSTANUT_AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": true,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "100391-9566",
+            "etunimet": "Lina Margretha",
+            "sukunimi": "Stenman Tes",
+            "etunimetUTF8": "Lina Margretha",
+            "sukunimiUTF8": "Stenman Tes",
+            "syntymapv": {
+              "arvo": "1994-10-11",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [
+            {
+              "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+              "oikeudenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+            }
+          ],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": true,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA_SUPPEA",
+              "huoltaja": {
+                "henkilotunnus": "100391-9566",
+                "etunimet": "Lina Margretha",
+                "sukunimi": "Stenman Tes",
+                "etunimetUTF8": "Lina Margretha",
+                "sukunimiUTF8": "Stenman Tes",
+                "syntymapv": {
+                  "arvo": "1994-10-11",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "MAARATTY_HUOLTAJA",
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "asuminen": "AIDIN_LUONA",
+              "asumisenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "asumisenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": [
+                {
+                  "oikeus": "HUOLLON_JAKO_KUVATTU_SISALTOTEKSTISSA",
+                  "oikeudenAlkupv": {
+                    "arvo": "2020-05-14",
+                    "tarkkuus": "PAIVA"
+                  },
+                  "oikeudenLoppupv": {
+                    "arvo": "2036-12-30",
+                    "tarkkuus": "PAIVA"
+                  },
+                  "sisalto": "Lapsi asuu äidin luona. Vahvistettu äiti ei ole enää lapsen huoltaja, lisätty uusi määräyksenvarainen oheishuoltaja."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "100391-9566",
+            "etunimet": "Lina Margretha",
+            "sukunimi": "Stenman Tes",
+            "etunimetUTF8": "Lina Margretha",
+            "sukunimiUTF8": "Stenman Tes",
+            "syntymapv": {
+              "arvo": "1994-10-11",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "syntymapv": {
+              "arvo": "2000-11-22",
+              "tarkkuus": "PAIVA"
+            },
+            "etunimet": "Paola Peppina",
+            "sukunimi": "Weitsell Tes",
+            "etunimetUTF8": "Paola Peppina",
+            "sukunimiUTF8": "Weitsell Tes",
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "MUU_HUOLTAJA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "140891-9642",
+            "etunimet": "Henriikka",
+            "sukunimi": "Hui Lai Lee Tes",
+            "etunimetUTF8": "Henriikka",
+            "sukunimiUTF8": "Hui Lai Lee Tes",
+            "syntymapv": {
+              "arvo": "1994-11-05",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "MUUTETTU",
+          "huoltosuhteenMuutos": true,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "100391-9566",
+            "etunimet": "Lina Margretha",
+            "sukunimi": "Stenman Tes",
+            "etunimetUTF8": "Lina Margretha",
+            "sukunimiUTF8": "Stenman Tes",
+            "syntymapv": {
+              "arvo": "1994-10-11",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asuminen": "AIDIN_LUONA",
+          "asumisenAlkupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asumisenLoppupv": {
+            "arvo": "2036-12-30",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "MUUTETTU",
+          "huoltosuhteenMuutos": true,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA_RAJOITETTU",
+              "huoltaja": {
+                "henkilotunnus": "100391-9566",
+                "etunimet": "Lina Margretha",
+                "sukunimi": "Stenman Tes",
+                "etunimetUTF8": "Lina Margretha",
+                "sukunimiUTF8": "Stenman Tes",
+                "syntymapv": {
+                  "arvo": "1994-10-11",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              },
+              "asuminen": "AIDIN_LUONA",
+              "asumisenAlkupv": {
+                "arvo": "2020-05-14",
+                "tarkkuus": "PAIVA"
+              },
+              "asumisenLoppupv": {
+                "arvo": "2036-12-30",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        }
+      ],
+      "muutospv": "2020-05-15T05:10:34.840Z"
+    },
+    {
+      "henkilotunnus": "140891-9642",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "TUNNUSTANUT_AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": true,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "TUNNUSTANUT_AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": true,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "140515A9342",
+            "syntymapv": {
+              "arvo": "2018-12-30",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2018-12-31",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2020-05-14",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "MUUTETTU",
+          "huoltosuhteenMuutos": true,
+          "huollonAsumisenMuutos": false
+        }
+      ],
+      "muutospv": "2020-05-15T05:10:34.840Z"
+    }
+  ],
+  "ajanTasalla": true
+}

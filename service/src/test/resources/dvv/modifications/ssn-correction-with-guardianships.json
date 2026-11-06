@@ -1,0 +1,2257 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "010192-912L",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILOTUNNUS_KORJAUS",
+          "voimassaolo": "AKTIIVI",
+          "muutosattribuutti": "LISATTY",
+          "muutettuHenkilotunnus": "010192-921W",
+          "aktiivinenHenkilotunnus": "010192-921W",
+          "edellisetHenkilotunnukset": []
+        },
+        {
+          "tietoryhma": "HENKILOTUNNUS_KORJAUS",
+          "voimassaolo": "PASSIIVI",
+          "muutosattribuutti": "MUUTETTU",
+          "muutettuHenkilotunnus": "010192-912L",
+          "aktiivinenHenkilotunnus": "010192-921W",
+          "edellisetHenkilotunnukset": []
+        },
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "muutosattribuutti": "MUUTETTU",
+          "sukupuoli": "MIES"
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Hanna",
+          "sukunimi": "Kolehmainen Tes",
+          "etunimiUTF8": "Hanna",
+          "sukunimiUTF8": "Kolehmainen Tes",
+          "muutosattribuutti": "LISATIETO"
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "muutosattribuutti": "MUUTETTU",
+          "syntymapv": {
+            "arvo": "1992-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ],
+      "muutospv": "2024-02-20T09:33:35.186Z"
+    },
+    {
+      "henkilotunnus": "010192-921W",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "LAPSI",
+          "muutosattribuutti": "KORJATTAVA",
+          "lapsi": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "ADOPTIOAITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "LAPSI",
+          "muutosattribuutti": "KORJATTU",
+          "lapsi": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "ADOPTIOAITI",
+          "vanhemmuusnimike": "ISA",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "LAPSI",
+          "muutosattribuutti": "KORJATTAVA",
+          "lapsi": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "LAPSI",
+          "muutosattribuutti": "KORJATTU",
+          "lapsi": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "ISA",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOAITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "POISTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA",
+              "huollettava": {
+                "henkilotunnus": "120514A9501",
+                "etunimet": "Aino",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Aino",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2014-05-12",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            },
+            {
+              "tietoryhma": "HUOLLETTAVA",
+              "huollettava": {
+                "henkilotunnus": "010515A957D",
+                "etunimet": "Henri",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Henri",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2015-05-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ADOPTIOISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "POISTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA",
+              "huollettava": {
+                "henkilotunnus": "120514A9501",
+                "etunimet": "Aino",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Aino",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2014-05-12",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            },
+            {
+              "tietoryhma": "HUOLLETTAVA",
+              "huollettava": {
+                "henkilotunnus": "010515A957D",
+                "etunimet": "Henri",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Henri",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2015-05-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ADOPTIOISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "LAPSI_SUPPEA",
+          "muutosattribuutti": "KORJATTAVA",
+          "lapsi": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "LAPSI_SUPPEA",
+          "muutosattribuutti": "KORJATTU",
+          "lapsi": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "ISA",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "LAPSI_SUPPEA",
+          "muutosattribuutti": "KORJATTAVA",
+          "lapsi": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "LAPSI_SUPPEA",
+          "muutosattribuutti": "KORJATTU",
+          "lapsi": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "ISA",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "POISTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA_SUPPEA",
+              "huollettava": {
+                "henkilotunnus": "120514A9501",
+                "etunimet": "Aino",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Aino",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2014-05-12",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            },
+            {
+              "tietoryhma": "HUOLLETTAVA_SUPPEA",
+              "huollettava": {
+                "henkilotunnus": "010515A957D",
+                "etunimet": "Henri",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Henri",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2015-05-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "POISTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA_SUPPEA",
+              "huollettava": {
+                "henkilotunnus": "120514A9501",
+                "etunimet": "Aino",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Aino",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2014-05-12",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            },
+            {
+              "tietoryhma": "HUOLLETTAVA_SUPPEA",
+              "huollettava": {
+                "henkilotunnus": "010515A957D",
+                "etunimet": "Henri",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Henri",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2015-05-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "POISTETTU",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+              "huollettava": {
+                "henkilotunnus": "120514A9501",
+                "etunimet": "Aino",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Aino",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2014-05-12",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              }
+            },
+            {
+              "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+              "huollettava": {
+                "henkilotunnus": "010515A957D",
+                "etunimet": "Henri",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Henri",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2015-05-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "POISTETTU",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+              "huollettava": {
+                "henkilotunnus": "120514A9501",
+                "etunimet": "Aino",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Aino",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2014-05-12",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              }
+            },
+            {
+              "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+              "huollettava": {
+                "henkilotunnus": "010515A957D",
+                "etunimet": "Henri",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Henri",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "2015-05-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "010515A957D",
+            "etunimet": "Henri",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Henri",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "120514A9501",
+            "etunimet": "Aino",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Aino",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "2014-05-12",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        }
+      ],
+      "muutospv": "2024-02-20T09:33:35.186Z"
+    },
+    {
+      "henkilotunnus": "010515A957D",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "KORJATTAVA",
+          "vanhempi": {
+            "henkilotunnus": "010192-912L",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "ADOPTIOAITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "KORJATTU",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "ADOPTIOAITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "KORJATTAVA",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "ADOPTIOAITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "KORJATTU",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "ADOPTIOAITI",
+          "vanhemmuusnimike": "ISA",
+          "lapsilaatu": "SAATU_ADOPTIOLAPSEKSI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "adoptiosuhde": {
+            "alkupv": {
+              "arvo": "2015-05-01",
+              "tarkkuus": "PAIVA"
+            }
+          }
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-912L"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "KORJATTAVA",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "KORJATTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOAITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "POISTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA",
+              "huoltaja": {
+                "henkilotunnus": "020291-904J",
+                "etunimet": "Pauli",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Pauli",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1991-02-02",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ADOPTIOAITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            },
+            {
+              "tietoryhma": "HUOLTAJA",
+              "huoltaja": {
+                "henkilotunnus": "010192-921W",
+                "etunimet": "Hanna",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Hanna",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1992-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ADOPTIOISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ADOPTIOISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "KORJATTAVA",
+          "vanhempi": {
+            "henkilotunnus": "010192-912L",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "KORJATTU",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "KORJATTAVA",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "AITI",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "KORJATTU",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "ISA",
+          "alkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-912L"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "KORJATTAVA",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "KORJATTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "POISTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA_SUPPEA",
+              "huoltaja": {
+                "henkilotunnus": "020291-904J",
+                "etunimet": "Pauli",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Pauli",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1991-02-02",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            },
+            {
+              "tietoryhma": "HUOLTAJA_SUPPEA",
+              "huoltaja": {
+                "henkilotunnus": "010192-921W",
+                "etunimet": "Hanna",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Hanna",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1992-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-912L"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "KORJATTAVA"
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "KORJATTU"
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "POISTETTU",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA_RAJOITETTU",
+              "huoltaja": {
+                "henkilotunnus": "020291-904J",
+                "etunimet": "Pauli",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Pauli",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1991-02-02",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              }
+            },
+            {
+              "tietoryhma": "HUOLTAJA_RAJOITETTU",
+              "huoltaja": {
+                "henkilotunnus": "010192-921W",
+                "etunimet": "Hanna",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Hanna",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1992-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2015-05-01",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2033-05-01",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2015-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2033-05-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        }
+      ],
+      "muutospv": "2024-02-20T09:33:35.186Z"
+    },
+    {
+      "henkilotunnus": "120514A9501",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "KORJATTAVA",
+          "vanhempi": {
+            "henkilotunnus": "010192-912L",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "KORJATTU",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "KORJATTAVA",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "KORJATTU",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "ISA",
+          "lapsilaatu": "AVIOLAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-912L"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "KORJATTAVA",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "KORJATTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "POISTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA",
+              "huoltaja": {
+                "henkilotunnus": "010192-921W",
+                "etunimet": "Hanna",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Hanna",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1992-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            },
+            {
+              "tietoryhma": "HUOLTAJA",
+              "huoltaja": {
+                "henkilotunnus": "020291-904J",
+                "etunimet": "Pauli",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Pauli",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1991-02-02",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "KORJATTAVA",
+          "vanhempi": {
+            "henkilotunnus": "010192-912L",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "KORJATTU",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "AITI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "KORJATTAVA",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "AITI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "KORJATTU",
+          "vanhempi": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "vanhemmuusnimike": "ISA",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-912L"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "KORJATTAVA",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "KORJATTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": []
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "POISTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA_SUPPEA",
+              "huoltaja": {
+                "henkilotunnus": "010192-921W",
+                "etunimet": "Hanna",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Hanna",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1992-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            },
+            {
+              "tietoryhma": "HUOLTAJA_SUPPEA",
+              "huoltaja": {
+                "henkilotunnus": "020291-904J",
+                "etunimet": "Pauli",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Pauli",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1991-02-02",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-912L"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "KORJATTAVA"
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "KORJATTU"
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "POISTETTU",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA_RAJOITETTU",
+              "huoltaja": {
+                "henkilotunnus": "010192-921W",
+                "etunimet": "Hanna",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Hanna",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1992-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "MIES"
+              },
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              }
+            },
+            {
+              "tietoryhma": "HUOLTAJA_RAJOITETTU",
+              "huoltaja": {
+                "henkilotunnus": "020291-904J",
+                "etunimet": "Pauli",
+                "sukunimi": "Kolehmainen Tes",
+                "etunimetUTF8": "Pauli",
+                "sukunimiUTF8": "Kolehmainen Tes",
+                "syntymapv": {
+                  "arvo": "1991-02-02",
+                  "tarkkuus": "PAIVA"
+                },
+                "sukupuoli": "NAINEN"
+              },
+              "huoltajanRooli": "AITI",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2014-05-12",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2032-05-12",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010192-921W",
+            "etunimet": "Hanna",
+            "sukunimi": "Kolehmainen Tes",
+            "etunimetUTF8": "Hanna",
+            "sukunimiUTF8": "Kolehmainen Tes",
+            "syntymapv": {
+              "arvo": "1992-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2014-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2032-05-12",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        }
+      ],
+      "muutospv": "2024-02-20T09:33:35.186Z"
+    }
+  ],
+  "ajanTasalla": true
+}

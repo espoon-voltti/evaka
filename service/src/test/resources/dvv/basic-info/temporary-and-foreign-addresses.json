@@ -1,0 +1,183 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "091155-9351",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Väinö",
+          "sukunimi": "Vähätietoinen",
+          "etunimiUTF8": "Väinö",
+          "sukunimiUTF8": "Vähätietoinen"
+        },
+        {
+          "tietoryhma": "TILAPAINEN_ULKOMAINEN_OSOITE",
+          "lahiosoite": "C/o Trõll, Ø. Eyjæskullav. 22",
+          "paikkakunta": "0400 REYKJAVIK",
+          "valtiokoodi": "352",
+          "alkupv": {
+            "arvo": "2010-05-19",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "198",
+          "kuntaanMuuttopv": {
+            "arvo": "1993-12-15",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "120598-9999",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "se",
+          "kielikoodiISO6392": "mis",
+          "nimi": "saame",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Eleanore",
+          "sukunimi": "Möira",
+          "etunimiUTF8": "Eleanore",
+          "sukunimiUTF8": "Möira"
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Mikonkatu",
+            "sv": "Mikaelsgatan"
+          },
+          "katunumero": "8",
+          "huoneistokirjain": "J",
+          "huoneistonumero": "001",
+          "postinumero": "00100",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "jakokirjain": "j",
+          "rakennustunnus": "9000000323",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2013-08-26",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_ULKOMAINEN_OSOITE",
+          "lahiosoite": "Sadama 5/7",
+          "paikkakunta": "10111 TALLINN",
+          "valtiokoodi": "233",
+          "alkupv": {
+            "arvo": "2020-01-24",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "200",
+          "kuntaanMuuttopv": {
+            "arvo": "2020-01-24",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "150327-977K",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "sv",
+          "kielikoodiISO6392": "swe",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Adolf",
+          "sukunimi": "Lindholm Tes",
+          "etunimiUTF8": "Adolf",
+          "sukunimiUTF8": "Lindholm Tes"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Palosuvanto"
+          },
+          "katunumero": "5-7",
+          "huoneistokirjain": "B",
+          "huoneistonumero": "004",
+          "postinumero": "99980",
+          "postitoimipaikka": {
+            "fi": "UTSJOKI",
+            "sv": "UTSJOKI"
+          },
+          "rakennustunnus": "900000630C",
+          "osoitenumero": 2,
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Mustatie",
+            "sv": "Svartvägen"
+          },
+          "katunumero": "3b",
+          "huoneistokirjain": "C",
+          "huoneistonumero": "000",
+          "postinumero": "02400",
+          "postitoimipaikka": {
+            "fi": "KIRKKONUMMI",
+            "sv": "KYRKSLÄTT"
+          },
+          "rakennustunnus": "900000182X",
+          "osoitenumero": 1,
+          "kuntakoodi": "257",
+          "alkupv": {
+            "arvo": "2018-09-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "890",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000630C",
+          "osoitenumero": 2,
+          "huoneistonumero": "004",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2019-09-13",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000630C2B004 "
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

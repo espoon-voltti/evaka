@@ -1,0 +1,75 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "280709A909B",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Rajala"
+          },
+          "huoneistonumero": "000",
+          "postinumero": "99990",
+          "postitoimipaikka": {
+            "fi": "NUORGAM",
+            "sv": "NUORGAM"
+          },
+          "rakennustunnus": "9000006501",
+          "osoitenumero": 1,
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2012-08-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "890",
+          "kuntaanMuuttopv": {
+            "arvo": "2012-08-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000006501",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2012-08-01",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000065011 000 "
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "280790-9696",
+            "etunimet": "Henriikka Sandra",
+            "sukunimi": "Valkeavirta Tes",
+            "etunimetUTF8": "Henriikka Sandra",
+            "sukunimiUTF8": "Valkeavirta Tes",
+            "syntymapv": {
+              "arvo": "1984-06-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2012-08-02",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2030-08-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": []
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

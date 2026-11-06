@@ -83,11 +83,11 @@ class DvvModificationsService(
             personModifications.tietoryhmat.forEach { infoGroup ->
                 try {
                     when (infoGroup) {
-                        is DeathDvvInfoGroup -> {
+                        is Kuolinpaiva -> {
                             handleDeath(db, now, personModifications.henkilotunnus, infoGroup)
                         }
 
-                        is RestrictedInfoDvvInfoGroup -> {
+                        is Turvakielto -> {
                             handleRestrictedInfo(
                                 db,
                                 now,
@@ -96,21 +96,11 @@ class DvvModificationsService(
                             )
                         }
 
-                        is SsnDvvInfoGroup -> {
+                        is HenkilotunnusKorjaus -> {
                             handleSsnDvvInfoGroup(db, personModifications.henkilotunnus, infoGroup)
                         }
 
-                        is CaretakerLimitedDvvInfoGroup,
-                        is DefaultDvvInfoGroup -> {
-                            personId?.let { personsToUpdateFromVtj.add(it) }
-                        }
-
                         else -> {
-                            logger.error {
-                                "Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${
-                                    personModifications.tietoryhmat.joinToString(", ") { it.tietoryhma }
-                                })"
-                            }
                             personId?.let { personsToUpdateFromVtj.add(it) }
                         }
                     }
@@ -164,36 +154,26 @@ class DvvModificationsService(
         }
     }
 
-    private fun DvvInfoGroup.describe(): String {
+    private fun Tietoryhma.describe(): String {
         val dates =
             when (this) {
-                is DefaultDvvInfoGroup -> {
-                    listOf(
-                        "alkupv" to alkupv,
-                        "loppupv" to loppupv,
-                        "huoltosuhteenAlkupv" to huoltosuhteenAlkupv,
-                        "huoltosuhteenLoppupv" to huoltosuhteenLoppupv,
-                    )
-                }
-
-                is CaretakerLimitedDvvInfoGroup -> {
+                is DefaultTietoryhma -> listOf("alkupv" to alkupv, "loppupv" to loppupv)
+                is Huoltosuhde ->
                     listOf(
                         "huoltosuhteenAlkupv" to huoltosuhteenAlkupv,
                         "huoltosuhteenLoppupv" to huoltosuhteenLoppupv,
                     )
-                }
-
-                is DeathDvvInfoGroup -> {
-                    listOf("kuolinpv" to kuolinpv)
-                }
-
-                is RestrictedInfoDvvInfoGroup -> {
-                    listOf("turvaLoppuPv" to turvaLoppuPv)
-                }
-
-                else -> {
-                    emptyList()
-                }
+                is Kuolinpaiva -> listOf("kuolinpv" to kuolinpv)
+                is Turvakielto -> listOf("turvaLoppuPv" to turvaLoppuPv)
+                is HenkilonNimi -> listOf("alkupv" to alkupv)
+                is Aidinkieli -> listOf("alkupv" to alkupv, "loppupv" to loppupv)
+                is KotimainenOsoite -> listOf("alkupv" to alkupv, "loppupv" to loppupv)
+                is UlkomainenOsoite -> listOf("alkupv" to alkupv, "loppupv" to loppupv)
+                is KotimainenPostiosoite -> listOf("alkupv" to alkupv, "loppupv" to loppupv)
+                is Kotikunta -> listOf("kuntaanMuuttopv" to kuntaanMuuttopv)
+                is VakinainenKotimainenAsuinpaikkatunnus ->
+                    listOf("alkupv" to alkupv, "loppupv" to loppupv)
+                is HenkilotunnusKorjaus -> emptyList()
             }
         return (listOf(tietoryhma, muutosattribuutti ?: "-") +
                 dates.mapNotNull { (name, date) -> date?.let { "$name=${it.arvo}" } })
@@ -204,13 +184,13 @@ class DvvModificationsService(
         db: Database.Connection,
         now: HelsinkiDateTime,
         ssn: String,
-        deathDvvInfoGroup: DeathDvvInfoGroup,
+        deathDvvInfoGroup: Kuolinpaiva,
     ) {
-        if (deathDvvInfoGroup.kuollut != true || deathDvvInfoGroup.kuolinpv == null) return
+        if (!deathDvvInfoGroup.kuollut) return
+        val dateOfDeath = deathDvvInfoGroup.kuolinpv?.asLocalDate() ?: return
 
         db.transaction { tx ->
             tx.lockPersonBySSN(ssn)?.let { person ->
-                val dateOfDeath = deathDvvInfoGroup.kuolinpv.asLocalDate()
                 logger.info { "Dvv modification for ${person.id}: marking dead since $dateOfDeath" }
                 tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath), now)
                 if (person.dateOfDeath == null) {
@@ -224,7 +204,7 @@ class DvvModificationsService(
         db: Database.Connection,
         now: HelsinkiDateTime,
         ssn: String,
-        restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup,
+        restrictedInfoDvvInfoGroup: Turvakielto,
     ) {
         val _ = db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
@@ -270,13 +250,13 @@ class DvvModificationsService(
     private fun handleSsnDvvInfoGroup(
         db: Database.Connection,
         ssn: String,
-        ssnDvvInfoGroup: SsnDvvInfoGroup,
+        ssnDvvInfoGroup: HenkilotunnusKorjaus,
     ) {
         val _ = db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
                 logger.info { "Dvv modification for ${it.id}: ssn change" }
 
-                val newSsn = ssnDvvInfoGroup.aktiivinenHenkilotunnus?.let { ssn -> Ssn.parse(ssn) }
+                val newSsn = ssnDvvInfoGroup.aktiivinenHenkilotunnus?.let(Ssn::parse)
                 if (newSsn != null) {
                     tx.addSSNToPerson(it.id, newSsn)
                 } else {

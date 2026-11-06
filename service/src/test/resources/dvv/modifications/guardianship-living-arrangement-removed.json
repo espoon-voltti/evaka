@@ -1,0 +1,181 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "251121A995H",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "syntymapv": {
+              "arvo": "1971-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "etunimet": "Iikka",
+            "sukunimi": "Isukki Tes",
+            "etunimetUTF8": "Iikka",
+            "sukunimiUTF8": "Isukki Tes",
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "MAARATTY_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2017-02-22",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2031-05-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": true,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA",
+              "huoltaja": {
+                "syntymapv": {
+                  "arvo": "1971-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "etunimet": "Iikka",
+                "sukunimi": "Isukki Tes",
+                "etunimetUTF8": "Iikka",
+                "sukunimiUTF8": "Isukki Tes",
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "MAARATTY_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2017-02-22",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2031-05-30",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "syntymapv": {
+              "arvo": "1971-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "etunimet": "Iikka",
+            "sukunimi": "Isukki Tes",
+            "etunimetUTF8": "Iikka",
+            "sukunimiUTF8": "Isukki Tes",
+            "sukupuoli": "MIES"
+          },
+          "huoltajanLaji": "MAARATTY_HUOLTAJA",
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2017-02-22",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2031-05-30",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "MUUTETTU",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": true,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA_SUPPEA",
+              "huoltaja": {
+                "syntymapv": {
+                  "arvo": "1971-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "etunimet": "Iikka",
+                "sukunimi": "Isukki Tes",
+                "etunimetUTF8": "Iikka",
+                "sukunimiUTF8": "Isukki Tes",
+                "sukupuoli": "MIES"
+              },
+              "huoltajanLaji": "MAARATTY_HUOLTAJA",
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2017-02-22",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2031-05-30",
+                "tarkkuus": "PAIVA"
+              },
+              "oikeudet": []
+            }
+          ]
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "syntymapv": {
+              "arvo": "1971-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "etunimet": "Iikka",
+            "sukunimi": "Isukki Tes",
+            "etunimetUTF8": "Iikka",
+            "sukunimiUTF8": "Isukki Tes",
+            "sukupuoli": "MIES"
+          },
+          "huoltajanRooli": "ISA",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2017-02-22",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2031-05-30",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "MUUTETTU",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": true,
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "HUOLTAJA_RAJOITETTU",
+              "huoltaja": {
+                "syntymapv": {
+                  "arvo": "1971-01-01",
+                  "tarkkuus": "PAIVA"
+                },
+                "etunimet": "Iikka",
+                "sukunimi": "Isukki Tes",
+                "etunimetUTF8": "Iikka",
+                "sukunimiUTF8": "Isukki Tes",
+                "sukupuoli": "MIES"
+              },
+              "huoltajanRooli": "ISA",
+              "huoltosuhteenAlkupv": {
+                "arvo": "2017-02-22",
+                "tarkkuus": "PAIVA"
+              },
+              "huoltosuhteenLoppupv": {
+                "arvo": "2031-05-30",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        }
+      ],
+      "muutospv": "2020-05-15T06:14:45.381Z"
+    }
+  ],
+  "ajanTasalla": true
+}

@@ -1,0 +1,382 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "010121A962W",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SUKUPUOLI",
+          "muutosattribuutti": "LISATTY",
+          "sukupuoli": "NAINEN"
+        },
+        {
+          "tietoryhma": "KANSALAISUUS",
+          "muutosattribuutti": "MUUTETTU",
+          "henkilonKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "246",
+              "voimassaolo": "AKTIIVI"
+            }
+          ],
+          "korjattavatKansalaisuudet": [],
+          "korjatutKansalaisuudet": [],
+          "poistetutKansalaisuudet": [],
+          "lisatytKansalaisuudet": [
+            {
+              "kansalaisuuskoodi": "246",
+              "voimassaolo": "AKTIIVI"
+            }
+          ],
+          "muutetutKansalaisuudet": []
+        },
+        {
+          "tietoryhma": "SYNTYMAKOTIKUNTA",
+          "muutosattribuutti": "LISATTY",
+          "kuntakoodi": "091"
+        },
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "muutosattribuutti": "LISATTY",
+          "siviilisaaty": "NAIMATON",
+          "siviilisaadynMuutospv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "SYNTYMAPAIVA",
+          "muutosattribuutti": "LISATTY",
+          "syntymapv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "LISATTY",
+          "alkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000041C",
+          "katunumero": "30",
+          "osoitenumero": 1,
+          "huoneistokirjain": "F",
+          "huoneistonumero": "028",
+          "kuntakoodi": "091",
+          "postinumero": "00640",
+          "katunimi": {
+            "fi": "Mikkolantie",
+            "sv": "Mickelsvägen"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "LISATTY",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "LISATTY",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "LISATTY",
+          "rakennustunnus": "900000041C",
+          "osoitenumero": 1,
+          "huoneistonumero": "028",
+          "huoneistokirjain": "F",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000041C1F028 "
+        },
+        {
+          "tietoryhma": "VANHEMPI",
+          "muutosattribuutti": "LISATTY",
+          "vanhempi": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AU_LAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLTAJA",
+          "huoltaja": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "VANHEMPI_SUPPEA",
+          "muutosattribuutti": "LISATTY",
+          "vanhempi": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLTAJA_SUPPEA",
+          "huoltaja": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLTAJA_RAJOITETTU",
+          "huoltaja": {
+            "henkilotunnus": "010188-916P",
+            "etunimet": "Malla",
+            "sukunimi": "Heikkinen Tes",
+            "etunimetUTF8": "Malla",
+            "sukunimiUTF8": "Heikkinen Tes",
+            "syntymapv": {
+              "arvo": "1988-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "JARJESTYSKIRJAIN",
+          "muutosattribuutti": "LISATTY",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "muutosattribuutti": "LISATTY",
+          "tietoryhma": "USKONTOKUNTALAJI",
+          "uskontokuntalaji": "EI_USKONTOKUNTAA",
+          "alkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ],
+      "muutospv": "2024-02-20T13:29:47.615Z"
+    },
+    {
+      "henkilotunnus": "010188-916P",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "LAPSI",
+          "muutosattribuutti": "LISATTY",
+          "lapsi": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "isaAiti": "AITI",
+          "vanhemmuusnimike": "AITI",
+          "lapsilaatu": "AU_LAPSI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "LAPSEN_SUKUPUOLI_JA_KANSALAISUUS",
+          "muutosattribuutti": "LISATTY",
+          "sukupuoli": "NAINEN",
+          "kansalaisuuskoodi": "246"
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA",
+          "huollettava": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "LAPSI_SUPPEA",
+          "muutosattribuutti": "LISATTY",
+          "lapsi": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "vanhemmuusnimike": "AITI",
+          "jarjestyskirjain": "A"
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_SUPPEA",
+          "huollettava": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "oikeudet": [],
+          "muutosattribuutti": "LISATTY",
+          "lisatytOikeudet": [],
+          "poistetutOikeudet": [],
+          "muutetutOikeudet": [],
+          "huoltosuhteenMuutos": false,
+          "huollonOikeudenMuutos": false,
+          "huollonAsumisenMuutos": false
+        },
+        {
+          "tietoryhma": "HUOLLETTAVA_RAJOITETTU",
+          "huollettava": {
+            "henkilotunnus": "010121A962W",
+            "syntymapv": {
+              "arvo": "2021-01-01",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "NAINEN"
+          },
+          "huoltajanRooli": "AITI",
+          "huoltosuhteenAlkupv": {
+            "arvo": "2021-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "huoltosuhteenLoppupv": {
+            "arvo": "2039-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY",
+          "huoltosuhteenMuutos": false,
+          "huollonAsumisenMuutos": false
+        }
+      ],
+      "muutospv": "2024-02-20T13:29:47.615Z"
+    }
+  ],
+  "ajanTasalla": true
+}

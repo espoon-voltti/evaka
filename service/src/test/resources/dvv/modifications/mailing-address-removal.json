@@ -1,0 +1,28 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "150327-977K",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "KOTIMAINEN_POSTIOSOITE",
+          "muutosattribuutti": "POISTETTU",
+          "postiosoite": {
+            "sv": "Övägen 172, Sottunga by"
+          },
+          "postinumero": "22720",
+          "postitoimipaikka": {
+            "sv": "SOTTUNGA"
+          },
+          "alkupv": {
+            "arvo": "2012-07-19",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolevatTiedot": []
+        }
+      ],
+      "muutospv": "2020-01-27T11:10:39.125Z"
+    }
+  ],
+  "ajanTasalla": true
+}
