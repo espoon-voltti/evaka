@@ -860,8 +860,8 @@ const sv: Translations = {
               <P>
                 Barn deltar i förskoleundervisning året innan läroplikten
                 inleds. Förskoleundervisningen är avgiftsfri. Anmälningstiden
-                till förskoleundervisningen 2026–2027 är 8.–20.1.2026. Förskolan
-                börjar i 13.8.2026. Beslutet delges inom mars i{' '}
+                till förskoleundervisningen 2027–2028 är 8.–19.1.2027. Förskolan
+                börjar i 11.8.2027. Beslutet delges inom mars i{' '}
                 <a
                   href="https://www.suomi.fi/meddelanden"
                   target="_blank"
@@ -1132,7 +1132,7 @@ const sv: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Den finskspråkiga och den svenskspråkiga förskoleundervisningen börjar den 13 augusti 2026.'
+              'Den finskspråkiga och den svenskspråkiga förskoleundervisningen börjar den 11 augusti 2027.'
             ],
             CLUB: [
               'Klubbar följer förskolans arbetstid och semester. Klubbens verksamhetsperiod är från augusti till slutet av maj och ansökas om separat för varje operationsperiod. Olika klubbar möts olika veckodagar.'
