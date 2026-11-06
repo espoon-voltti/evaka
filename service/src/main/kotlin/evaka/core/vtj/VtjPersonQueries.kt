@@ -12,8 +12,11 @@ import evaka.core.identity.Ssn
 import evaka.core.identity.getDobFromSsn
 import evaka.core.messaging.createPersonMessageAccount
 import evaka.core.person.Person
+import evaka.core.person.getDependantGuardians
+import evaka.core.person.getGuardianDependants
 import evaka.core.person.getPersonById
 import evaka.core.person.isGuardianBlocked
+import evaka.core.person.isMinor
 import evaka.core.person.lockPersonBySSN
 import evaka.core.person.replaceChildGuardians
 import evaka.core.person.replaceGuardianChildren
@@ -291,6 +294,86 @@ WHERE p.id = ANY(${bind(personIds)})
 fun Database.Read.getVtjSyncPerson(personId: PersonId, today: LocalDate) =
     getVtjSyncPersons(listOf(personId), today).singleOrNull()
 
+/**
+ * The VTJ data of a person as eVaka stores it. [guardians] and [dependants] are null when eVaka
+ * does not sync them for the person. [blockedRelatives] are the guardians and dependants that eVaka
+ * never adds.
+ */
+data class StoredVtjPerson(
+    val ssn: Ssn,
+    val firstName: String,
+    val lastName: String,
+    val language: String,
+    val dateOfDeath: LocalDate?,
+    val restrictedDetailsEnabled: Boolean,
+    val restrictedDetailsEndDate: LocalDate?,
+    val streetAddress: String,
+    val postalCode: String,
+    val postOffice: String,
+    val residenceCode: String,
+    val municipalityOfResidence: String,
+    val addressPeriods: Set<AddressPeriodRow>,
+    val guardians: Set<Ssn>?,
+    val dependants: Set<Ssn>?,
+    val blockedRelatives: Set<Ssn>,
+)
+
+fun Database.Read.getStoredVtjPerson(personId: PersonId, today: LocalDate): StoredVtjPerson? {
+    val syncPerson = getVtjSyncPerson(personId, today) ?: return null
+    val ssn = syncPerson.ssn ?: return null
+    val person = getPersonById(personId) ?: return null
+    val addressPeriods = createQuery {
+        sql(
+            """
+SELECT type, valid_during, street_address, postal_code, post_office
+FROM person_address_period
+WHERE person_id = ${bind(personId)}
+"""
+        )
+    }
+        .toSet<AddressPeriodRow>()
+    val blockedRelatives = createQuery {
+        sql(
+            """
+SELECT p.social_security_number
+FROM guardian_blocklist b
+JOIN person p ON p.id = b.guardian_id
+WHERE b.child_id = ${bind(personId)} AND p.social_security_number IS NOT NULL
+UNION
+SELECT p.social_security_number
+FROM guardian_blocklist b
+JOIN person p ON p.id = b.child_id
+WHERE b.guardian_id = ${bind(personId)} AND p.social_security_number IS NOT NULL
+"""
+        )
+    }
+        .toSet<Ssn>()
+    return StoredVtjPerson(
+        ssn = ssn,
+        firstName = person.firstName,
+        lastName = person.lastName,
+        language = person.language ?: "",
+        dateOfDeath = person.dateOfDeath,
+        restrictedDetailsEnabled = person.restrictedDetailsEnabled,
+        restrictedDetailsEndDate = person.restrictedDetailsEndDate,
+        streetAddress = person.streetAddress,
+        postalCode = person.postalCode,
+        postOffice = person.postOffice,
+        residenceCode = person.residenceCode,
+        municipalityOfResidence = person.municipalityOfResidence,
+        addressPeriods = addressPeriods,
+        guardians =
+            if (isMinor(syncPerson.dateOfBirth, today))
+                getDependantGuardians(personId).mapNotNull { it.ssn }.toSet()
+            else null,
+        dependants =
+            if (syncPerson.dependantSync)
+                getGuardianDependants(personId).mapNotNull { it.ssn }.toSet()
+            else null,
+        blockedRelatives = blockedRelatives,
+    )
+}
+
 /** Clears the marker of a person who is no longer a dependant-sync person. */
 fun Database.Transaction.clearStaleDependantsSynced(
     olderThan: HelsinkiDateTime,
@@ -429,10 +512,10 @@ private fun Database.Transaction.applyMailingAddress(
 
 private fun VtjPerson.prefersSwedish(): Boolean = nativeLanguage?.code == "sv"
 
-private fun PersonAddress.streetAddressByLanguage(swedish: Boolean): String =
+fun PersonAddress.streetAddressByLanguage(swedish: Boolean): String =
     streetAddressSe?.takeIf { swedish && it.isNotEmpty() } ?: streetAddress ?: ""
 
-private fun PersonAddress.postOfficeByLanguage(swedish: Boolean): String =
+fun PersonAddress.postOfficeByLanguage(swedish: Boolean): String =
     postOfficeSe?.takeIf { swedish && it.isNotEmpty() } ?: postOffice ?: ""
 
 private fun VtjPerson.municipalityOfResidenceByLanguage(): String =

@@ -4,6 +4,7 @@
 
 package evaka.core.dvv
 
+import evaka.core.vtj.Muutosattribuutti
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -93,7 +94,7 @@ class DvvModificationsServiceClientIntegrationTest :
             dvvModificationsServiceClient.getModifications("100000000", listOf("010181-999K"))
         assertEquals("HENKILOTUNNUS_KORJAUS", response.muutokset[0].tietoryhmat[0].tietoryhma)
         val ssnModified = response.muutokset[0].tietoryhmat[0] as HenkilotunnusKorjaus
-        assertEquals("LISATTY", ssnModified.muutosattribuutti)
+        assertEquals(Muutosattribuutti.LISATTY, ssnModified.muutosattribuutti)
         assertEquals("010281-999C", ssnModified.aktiivinenHenkilotunnus)
         assertEquals(listOf("010181-999K"), ssnModified.edellisetHenkilotunnukset)
     }

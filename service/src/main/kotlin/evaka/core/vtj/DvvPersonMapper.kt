@@ -72,7 +72,7 @@ fun mapDvvPerson(ssn: Ssn, groups: List<Tietoryhma>, today: LocalDate): VtjPerso
         groups
             .filterIsInstance<Kotikunta>()
             .firstNotNullOfOrNull { it.kuntakoodi }
-            ?.let { municipalities[it] }
+            ?.let(::municipalityByCode)
             .takeUnless { restricted }
     return VtjPerson(
         firstNames = name?.etunimi ?: "",
@@ -150,7 +150,7 @@ private fun KotimainenOsoite.streetAddress(streetName: String?): String? {
         .joinToString(" ")
 }
 
-private fun KotimainenOsoite.toPersonAddress(): PersonAddress? =
+fun KotimainenOsoite.toPersonAddress(): PersonAddress? =
     PersonAddress(
             streetAddress = streetAddress(katunimi?.fi ?: katunimi?.sv),
             postalCode = postinumero,
@@ -160,13 +160,13 @@ private fun KotimainenOsoite.toPersonAddress(): PersonAddress? =
         )
         .takeUnless { it.isBlank() }
 
-private fun KotimainenOsoite.toTemporaryAddressPeriod(): MailingAddressPeriod? {
+fun KotimainenOsoite.toTemporaryAddressPeriod(): MailingAddressPeriod? {
     val validDuring = validity(alkupv, loppupv) ?: return null
     val address = toPersonAddress() ?: return null
     return MailingAddressPeriod(AddressPeriodType.TEMPORARY, validDuring, address)
 }
 
-private fun KotimainenPostiosoite.toMailingAddressPeriod(): MailingAddressPeriod? {
+fun KotimainenPostiosoite.toMailingAddressPeriod(): MailingAddressPeriod? {
     if (tietoryhma != KOTIMAINEN_POSTIOSOITE || turvakiellonAlaisetKentat != null) return null
     val validDuring = validity(alkupv, loppupv) ?: return null
     val address =
@@ -192,17 +192,20 @@ private fun PersonAddress.isBlank() =
         it.isNullOrBlank()
     }
 
-private data class Municipality(val fi: String, val sv: String)
+data class MunicipalityName(val fi: String, val sv: String)
+
+/** Null for an artificial code, for example 198 (no home municipality in Finland) */
+fun municipalityByCode(code: String): MunicipalityName? = municipalities[code]
 
 /**
  * The municipality classification 2026 of Statistics Finland. When municipalities merge, update
  * `vtj/municipalities.csv` with `bin/update-municipalities.sh`.
  */
-private val municipalities: Map<String, Municipality> by lazy {
+private val municipalities: Map<String, MunicipalityName> by lazy {
     ClassPathResource("vtj/municipalities.csv").inputStream.bufferedReader().useLines { lines ->
         lines
             .drop(1)
             .map { it.split(';') }
-            .associate { (code, fi, sv) -> code to Municipality(fi, sv) }
+            .associate { (code, fi, sv) -> code to MunicipalityName(fi, sv) }
     }
 }

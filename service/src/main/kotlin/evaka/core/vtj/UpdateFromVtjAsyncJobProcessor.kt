@@ -4,6 +4,8 @@
 
 package evaka.core.vtj
 
+import evaka.core.dvv.custodyCounts
+import evaka.core.dvv.startDate
 import evaka.core.family.FridgeFamilyService
 import evaka.core.identity.Ssn
 import evaka.core.person.getPersonBySSN
@@ -14,6 +16,7 @@ import evaka.core.shared.async.PermanentAsyncJobFailure
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -46,7 +49,44 @@ class UpdateFromVtjAsyncJobProcessor(
             logger.info { "Person of an UpdateFromVtj job is not in eVaka, nothing to refresh" }
             return
         }
-        refreshPersonAndFamilies(db, clock, person.id)
+        val modifications = msg.modifications
+        if (modifications == null) {
+            refreshPersonAndFamilies(db, clock, person.id)
+            return
+        }
+
+        val today = clock.today()
+        val stored = db.read { it.getStoredVtjPerson(person.id, today) }
+        val predicted = stored?.let { applyDvvChanges(it, modifications, today) }
+        ComparingVtjClient.withoutComparison { refreshPersonAndFamilies(db, clock, person.id) }
+        val refreshed = db.read { it.getStoredVtjPerson(person.id, today) }
+        if (predicted == null || refreshed == null) return
+
+        val groups = modifications.flatMap { it.tietoryhmat }
+        val differences = compareStoredVtjPersons(predicted.person, refreshed)
+        val result =
+            if (differences.isEmpty()) ComparisonResult.EQUAL else ComparisonResult.DIFFERENT
+        logger.info(
+            mapOf(
+                "path" to "MODIFICATIONS",
+                "changes" to
+                    groups.map { "${it.tietoryhma}:${it.muutosattribuutti}" }.distinct().sorted(),
+                "result" to result.name,
+                "differences" to differences.map { mapOf("field" to it.field) + it.details },
+                "unknown" to predicted.unknown,
+                "newRelatives" to predicted.newRelatives.size,
+                "futureGroups" to
+                    groups
+                        .filter { it.startDate()?.isAfter(today) == true }
+                        .groupingBy { it.tietoryhma }
+                        .eachCount(),
+                "custody" to custodyCounts(groups),
+                "personId" to person.id.toString(),
+                "targetId" to ssn.value.take(6),
+            )
+        ) {
+            "VTJ comparison of DVV modifications: ${result.name}"
+        }
     }
 
     fun syncMissingVtjRelations(

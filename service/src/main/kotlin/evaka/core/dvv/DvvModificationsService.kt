@@ -4,6 +4,8 @@
 
 package evaka.core.dvv
 
+import evaka.core.EvakaEnv
+import evaka.core.VtjDvvMode
 import evaka.core.identity.Ssn
 import evaka.core.person.addSSNToPerson
 import evaka.core.person.applyDeathEffects
@@ -27,6 +29,7 @@ private val logger = KotlinLogging.logger {}
 class DvvModificationsService(
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val evakaEnv: EvakaEnv,
 ) {
 
     fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
@@ -123,10 +126,27 @@ class DvvModificationsService(
         db.transaction { tx ->
             // Read the SSNs after the loop: an SSN correction on this page may have changed them,
             // and the job finds the person by SSN
+            val ssns = tx.getSsnsOfPersons(personsToUpdateFromVtj)
+            val modificationsOfPersons =
+                if (evakaEnv.vtjDvvMode == VtjDvvMode.COMPARE) {
+                    val personIdsAfterCorrections =
+                        tx.getPersonIdsBySsns(
+                                page.muutokset.mapNotNull { Ssn.parse(it.henkilotunnus) }.distinct()
+                            )
+                            .found
+                            .mapKeys { it.key.value }
+                    page.muutokset.groupBy {
+                        personIds[it.henkilotunnus] ?: personIdsAfterCorrections[it.henkilotunnus]
+                    }
+                } else {
+                    emptyMap()
+                }
             asyncJobRunner.plan(
                 tx,
                 payloads =
-                    tx.getSsnsOfPersons(personsToUpdateFromVtj).map { AsyncJob.UpdateFromVtj(it) },
+                    ssns.map { (personId, ssn) ->
+                        AsyncJob.UpdateFromVtj(ssn.value, modificationsOfPersons[personId])
+                    },
                 runAt = now,
             )
             if (token != page.viimeisinKirjausavain) {
