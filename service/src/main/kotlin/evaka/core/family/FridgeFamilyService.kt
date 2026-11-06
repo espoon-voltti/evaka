@@ -15,7 +15,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.vtj.VtjSyncService
-import evaka.core.vtj.isDependantSyncPerson
+import evaka.core.vtj.getVtjSyncPersons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service
@@ -35,24 +35,27 @@ class FridgeFamilyService(
     ) {
         val today = clock.today()
         val person = db.read { it.getPersonById(personId) } ?: return
+        val minor = isMinor(person.dateOfBirth, today)
+        if (minor) vtjSyncService.refreshPersons(db, requestingUserId, clock, listOf(personId))
+        val guardiansToRefresh =
+            if (minor) db.read { it.getDependantGuardians(personId) }.map { it.id }
+            else listOf(personId)
+        val isDependantSync =
+            minor &&
+                db.read { it.getVtjSyncPersons(listOf(personId), today) }.any { it.dependantSync }
         val guardianIds =
-            if (isMinor(person.dateOfBirth, today)) {
-                vtjSyncService.refreshPerson(db, requestingUserId, clock, personId)
-                val childGuardianIds = db.read { it.getDependantGuardians(personId) }.map { it.id }
-                childGuardianIds.forEach {
-                    vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, it)
-                }
-                val isDependantSync = db.read { tx -> tx.isDependantSyncPerson(personId, today) }
-                childGuardianIds + if (isDependantSync) listOf(personId) else emptyList()
-            } else {
-                vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, personId)
-                listOf(personId)
-            }
-        guardianIds
-            .mapNotNull { id -> db.read { getPartnerId(it, clock, id) } }
-            .filter { it !in guardianIds }
-            .distinct()
-            .forEach { vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, it) }
+            guardiansToRefresh + if (isDependantSync) listOf(personId) else emptyList()
+        val partnerIds =
+            guardianIds
+                .mapNotNull { id -> db.read { getPartnerId(it, clock, id) } }
+                .filter { it !in guardianIds }
+                .distinct()
+        vtjSyncService.refreshPersonsAndDependants(
+            db,
+            requestingUserId,
+            clock,
+            guardiansToRefresh + partnerIds,
+        )
         guardianIds.forEach { addChildrenToFridgeFamily(db, clock, it) }
     }
 
@@ -69,9 +72,10 @@ class FridgeFamilyService(
             } else {
                 emptyList()
             }
-        (listOf(personId) + guardianIds)
-            .filter { id -> db.read { it.isDependantSyncPerson(id, today) } }
-            .forEach { addChildrenToFridgeFamily(db, clock, it) }
+        val ids = listOf(personId) + guardianIds
+        val dependantSyncIds =
+            db.read { it.getVtjSyncPersons(ids, today) }.filter { it.dependantSync }.map { it.id }
+        ids.filter { it in dependantSyncIds }.forEach { addChildrenToFridgeFamily(db, clock, it) }
     }
 
     fun addChildrenToFridgeFamily(

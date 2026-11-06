@@ -7,12 +7,20 @@ package evaka.core.vtj
 import evaka.core.identity.Ssn
 import evaka.core.shared.EvakaUserId
 
+/**
+ * Each function returns a map whose key is the requested SSN. A person that VTJ does not find has
+ * no key. For a corrected SSN, the person in the value has the active SSN.
+ */
 interface VtjClient {
-    fun fetchPerson(query: DetailsQuery): VtjPerson
+    fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>): Map<Ssn, VtjPerson>
 
-    fun fetchWithGuardians(query: DetailsQuery): VtjPersonAndGuardians
+    fun fetchWithGuardians(
+        requestingUser: EvakaUserId,
+        ssns: Collection<Ssn>,
+    ): Map<Ssn, VtjPersonAndGuardians>
 
-    fun fetchWithDependants(query: DetailsQuery): VtjPersonAndDependants
-
-    data class DetailsQuery(val requestingUser: EvakaUserId, val ssn: Ssn)
+    fun fetchWithDependants(
+        requestingUser: EvakaUserId,
+        ssns: Collection<Ssn>,
+    ): Map<Ssn, VtjPersonAndDependants>
 }

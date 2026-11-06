@@ -24,9 +24,18 @@ class MockVtjSoapTransport : VtjSoapTransport {
             ConcurrentHashMap<Pair<String, VtjSoapTransport.RequestType>, Int> =
             ConcurrentHashMap()
 
+        private val failingQueries: MutableSet<Pair<String, VtjSoapTransport.RequestType>> =
+            ConcurrentHashMap.newKeySet()
+
         fun resetQueryCounts() {
             this.queryCounts.clear()
             this.queryRequestResponse.clear()
+            this.failingQueries.clear()
+        }
+
+        /** The query of [person] throws, like a SOAP error of the VTJ service */
+        fun addFailingRequest(person: DevPerson, type: VtjSoapTransport.RequestType) {
+            failingQueries += Pair(person.ssn!!, type)
         }
 
         fun addPERUSSANOMA3RequestExpectation(person: DevPerson) {
@@ -144,6 +153,7 @@ class MockVtjSoapTransport : VtjSoapTransport {
 
     override fun query(query: VtjSoapTransport.VTJQuery): VTJHenkiloVastaussanoma.Henkilo? {
         queryCounts.compute(Pair(query.ssn, query.type)) { _, value -> value?.plus(1) ?: 1 }
+        if (Pair(query.ssn, query.type) in failingQueries) error("Mock VTJ SOAP error")
         return queryRequestResponse[Pair(query.ssn, query.type)]
     }
 }

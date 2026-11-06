@@ -538,7 +538,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
             val user = AuthenticatedUser.SystemInternalUser
             db.read { tx -> tx.createQuery { sql("SELECT id FROM person") }.toList<PersonId>() }
-                .forEach { vtjSync.refreshPerson(db, user.evakaUserId, laterClock, it) }
+                .forEach { vtjSync.refreshPersons(db, user.evakaUserId, laterClock, listOf(it)) }
 
             assertTrue(setOf(vtjA.ssn, vtjB.ssn, vtjX.ssn).all { it in personSsns() })
             assertFalse(vtjY.ssn in personSsns())

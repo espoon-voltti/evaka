@@ -5,8 +5,8 @@
 package evaka.core.vtj
 
 import evaka.core.identity.Ssn
-import evaka.core.identity.getDobFromSsn
 import evaka.core.person.Person
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.dev.DevPerson
 import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap
@@ -41,16 +41,6 @@ data class MockVtjPerson(
             residenceCode = residenceCode,
             municipalityOfResidence = municipalityOfResidence,
         )
-
-    fun toVtjRelative(): VtjRelative {
-        val ssn = Ssn.from(socialSecurityNumber)
-        return VtjRelative(
-            ssn = ssn,
-            dateOfBirth = getDobFromSsn(ssn.value),
-            firstNames = firstNames,
-            lastName = lastName,
-        )
-    }
 
     companion object {
         fun from(person: DevPerson): MockVtjPerson =
@@ -110,6 +100,7 @@ data class MockVtjPerson(
 class MockVtjClient : VtjClient {
     companion object {
         private val readCounts: ConcurrentHashMap<String, Int> = ConcurrentHashMap()
+        private val callCounts: ConcurrentHashMap<String, Int> = ConcurrentHashMap()
 
         private val persons: ConcurrentHashMap<String, MockVtjPerson> = ConcurrentHashMap()
         private val dependantsOfGuardian: ConcurrentHashMap<String, Set<String>> =
@@ -119,16 +110,24 @@ class MockVtjClient : VtjClient {
 
         fun reset() {
             readCounts.clear()
+            callCounts.clear()
             persons.clear()
             dependantsOfGuardian.clear()
             guardiansOfDependant.clear()
         }
 
-        fun getGuardians(ssn: String): List<VtjRelative> =
-            (guardiansOfDependant[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjRelative() }
+        fun getGuardians(ssn: String): List<Ssn> =
+            (guardiansOfDependant[ssn] ?: emptySet())
+                .filter { persons.containsKey(it) }
+                .map { Ssn.from(it) }
 
-        fun getDependants(ssn: String): List<VtjRelative> =
-            (dependantsOfGuardian[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjRelative() }
+        fun getDependants(ssn: String): List<Ssn> =
+            (dependantsOfGuardian[ssn] ?: emptySet())
+                .filter { persons.containsKey(it) }
+                .map { Ssn.from(it) }
+
+        /** The number of client calls of each function, for example `fetchPersons`. */
+        fun getCallCounts(): Map<String, Int> = callCounts.toMap()
 
         fun add(dataset: MockVtjDataset) {
             dataset.persons.forEach(::addPerson)
@@ -175,15 +174,30 @@ class MockVtjClient : VtjClient {
         }
     }
 
-    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPersonAndDependants =
-        VtjPersonAndDependants(fetchPerson(query), getDependants(query.ssn.value))
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        fetch("fetchPersons", ssns) { it }
 
-    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPersonAndGuardians =
-        VtjPersonAndGuardians(fetchPerson(query), getGuardians(query.ssn.value))
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        fetch("fetchWithGuardians", ssns) { VtjPersonAndGuardians(it, getGuardians(it.ssn.value)) }
 
-    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson {
-        val ssn = query.ssn.value
-        readCounts.merge(ssn, 1, Int::plus)
-        return persons[ssn]?.toVtjPerson() ?: error("Mock VTJ person with ${query.ssn} not found")
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        fetch("fetchWithDependants", ssns) {
+            VtjPersonAndDependants(it, getDependants(it.ssn.value))
+        }
+
+    private fun <T> fetch(
+        function: String,
+        ssns: Collection<Ssn>,
+        map: (VtjPerson) -> T,
+    ): Map<Ssn, T> {
+        if (ssns.isEmpty()) return emptyMap()
+        callCounts.merge(function, 1, Int::plus)
+        return ssns
+            .distinct()
+            .mapNotNull { ssn ->
+                readCounts.merge(ssn.value, 1, Int::plus)
+                persons[ssn.value]?.let { ssn to map(it.toVtjPerson()) }
+            }
+            .toMap()
     }
 }

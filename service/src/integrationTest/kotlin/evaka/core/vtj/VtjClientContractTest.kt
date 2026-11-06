@@ -14,8 +14,8 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
- * A relations query returns the person in full and each relative as a stub: SSN, date of birth and
- * names. Subclass this for every new [VtjClient].
+ * A relations query returns the person in full and each relative as an SSN. Subclass this for every
+ * new [VtjClient].
  */
 abstract class VtjClientContract {
     protected val guardian =
@@ -45,37 +45,33 @@ abstract class VtjClientContract {
     /** Seed the implementation's backing store with [guardian] as the parent of [child]. */
     protected abstract fun createClientReturningTheFamily(): VtjClient
 
-    protected fun query(person: DevPerson) =
-        VtjClient.DetailsQuery(
-            AuthenticatedUser.SystemInternalUser.evakaUserId,
-            Ssn.parse(person.ssn!!)!!,
-        )
+    private val requestingUser = AuthenticatedUser.SystemInternalUser.evakaUserId
+
+    protected fun ssn(person: DevPerson) = Ssn.from(person.ssn!!)
+
+    protected fun fetchWithDependants(client: VtjClient, person: DevPerson) =
+        client.fetchWithDependants(requestingUser, listOf(ssn(person))).getValue(ssn(person))
+
+    protected fun fetchWithGuardians(client: VtjClient, person: DevPerson) =
+        client.fetchWithGuardians(requestingUser, listOf(ssn(person))).getValue(ssn(person))
 
     @Test
-    fun `dependants are stubs`() {
-        val result = createClientReturningTheFamily().fetchWithDependants(query(guardian))
+    fun `dependants are SSNs`() {
+        val result = fetchWithDependants(createClientReturningTheFamily(), guardian)
 
         assertEquals(guardian.ssn, result.person.ssn.value)
         assertEquals(guardian.streetAddress, result.person.residentialAddress?.streetAddress)
-        assertEquals(listOf(child.toStub()), result.dependants)
+        assertEquals(listOf(ssn(child)), result.dependants)
     }
 
     @Test
-    fun `guardians are stubs`() {
-        val result = createClientReturningTheFamily().fetchWithGuardians(query(child))
+    fun `guardians are SSNs`() {
+        val result = fetchWithGuardians(createClientReturningTheFamily(), child)
 
         assertEquals(child.ssn, result.person.ssn.value)
         assertEquals(child.streetAddress, result.person.residentialAddress?.streetAddress)
-        assertEquals(listOf(guardian.toStub()), result.guardians)
+        assertEquals(listOf(ssn(guardian)), result.guardians)
     }
-
-    private fun DevPerson.toStub() =
-        VtjRelative(
-            ssn = Ssn.parse(ssn!!)!!,
-            dateOfBirth = dateOfBirth,
-            firstNames = firstName,
-            lastName = lastName,
-        )
 }
 
 class SoapVtjClientContractTest : VtjClientContract() {
@@ -92,8 +88,8 @@ class SoapVtjClientContractTest : VtjClientContract() {
     fun `a relations query is one request`() {
         val client = createClientReturningTheFamily()
 
-        client.fetchWithDependants(query(guardian))
-        client.fetchWithGuardians(query(child))
+        fetchWithDependants(client, guardian)
+        fetchWithGuardians(client, child)
 
         MockVtjSoapTransport.assertRequests(
             HUOLTAJA_HUOLLETTAVA to guardian,

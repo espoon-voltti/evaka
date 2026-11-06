@@ -7,6 +7,7 @@ package evaka.core.vtj
 import evaka.core.PureJdbiTest
 import evaka.core.identity.Ssn
 import evaka.core.person.getPersonById
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -22,8 +23,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 
 /**
- * A [VtjClient] returns relatives as stubs (SSN, date of birth and names), so a refresh must not
- * write a stub over the VTJ-owned fields of a relative's person row.
+ * A [VtjClient] returns relatives as SSNs only, so a refresh must not change the VTJ-owned fields
+ * of a relative who is already in eVaka.
  */
 class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val user = AuthenticatedUser.SystemInternalUser
@@ -95,7 +96,7 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `refreshing a child keeps their guardian's address`() {
-        vtjSyncService.refreshPerson(db, user.evakaUserId, clock, child.id)
+        vtjSyncService.refreshPersons(db, user.evakaUserId, clock, listOf(child.id))
 
         val refreshed = db.read { it.getPersonById(guardian.id) }!!
         assertEquals(guardian.streetAddress, refreshed.streetAddress)
@@ -104,22 +105,28 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun refreshGuardian() {
-        vtjSyncService.refreshPersonAndDependants(db, user.evakaUserId, clock, guardian.id)
+        vtjSyncService.refreshPersonsAndDependants(db, user.evakaUserId, clock, listOf(guardian.id))
     }
 }
 
 private class StubRelativeVtjClient(private vararg val persons: DevPerson) : VtjClient {
-    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson =
-        persons.single { it.ssn == query.ssn.value }.toFullVtjPerson()
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        ssns.associateWith { ssn ->
+            persons.single { it.ssn == ssn.value }.toFullVtjPerson()
+        }
 
-    override fun fetchWithDependants(query: VtjClient.DetailsQuery) =
-        VtjPersonAndDependants(fetchPerson(query), relativesOf(query))
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        fetchPersons(requestingUser, ssns).mapValues { (ssn, person) ->
+            VtjPersonAndDependants(person, relativesOf(ssn))
+        }
 
-    override fun fetchWithGuardians(query: VtjClient.DetailsQuery) =
-        VtjPersonAndGuardians(fetchPerson(query), relativesOf(query))
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        fetchPersons(requestingUser, ssns).mapValues { (ssn, person) ->
+            VtjPersonAndGuardians(person, relativesOf(ssn))
+        }
 
-    private fun relativesOf(query: VtjClient.DetailsQuery) =
-        persons.filter { it.ssn != query.ssn.value }.map { it.toRelativeStub() }
+    private fun relativesOf(ssn: Ssn) =
+        persons.filter { it.ssn != ssn.value }.map { Ssn.from(it.ssn!!) }
 }
 
 private fun DevPerson.toFullVtjPerson() =
@@ -132,12 +139,4 @@ private fun DevPerson.toFullVtjPerson() =
         residenceCode = residenceCode,
         municipalityOfResidence = municipalityOfResidence,
         restrictedDetails = RestrictedDetails(restrictedDetailsEnabled, restrictedDetailsEndDate),
-    )
-
-private fun DevPerson.toRelativeStub() =
-    VtjRelative(
-        ssn = Ssn.parse(ssn!!)!!,
-        dateOfBirth = dateOfBirth,
-        firstNames = firstName,
-        lastName = lastName,
     )
