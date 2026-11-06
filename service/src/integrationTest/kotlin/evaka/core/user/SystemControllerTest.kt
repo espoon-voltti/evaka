@@ -23,6 +23,7 @@ import evaka.core.shared.dev.DevMobileDevice
 import evaka.core.shared.dev.DevPersonalMobileDevice
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.NotFound
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -46,6 +47,29 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(area)
             tx.insert(daycare)
         }
+    }
+
+    @Test
+    fun `employee user is returned for an active employee`() {
+        val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { tx -> tx.insert(employee) }
+
+        val result = systemController.employeeUser(dbInstance(), user, clock, employee.id)
+
+        assertEquals(employee.id, result.user.id)
+        assertEquals(setOf(UserRole.ADMIN), result.user.globalRoles)
+    }
+
+    @Test
+    fun `employee user is not found for a deactivated employee`() {
+        val employee = DevEmployee(roles = setOf(UserRole.ADMIN), active = false)
+        db.transaction { tx -> tx.insert(employee) }
+
+        val error =
+            assertThrows<NotFound> {
+                systemController.employeeUser(dbInstance(), user, clock, employee.id)
+            }
+        assertEquals("ACCOUNT_INACTIVE", error.errorCode)
     }
 
     @Test
