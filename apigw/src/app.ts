@@ -23,6 +23,10 @@ import {
 import { createSamlAdIntegration } from './internal/ad-saml.ts'
 import { createDevAdRouter } from './internal/dev-ad-auth.ts'
 import {
+  employeeRoleRefresh,
+  employeeSessionMaxAge
+} from './internal/employee-session-refresh.ts'
+import {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
   finishPairing,
@@ -337,8 +341,16 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     citizenProxy
   )
 
-  router.use('/employee/', employeeSessions.middleware)
+  router.use(
+    '/employee/',
+    employeeSessions.middleware,
+    employeeSessionMaxAge(employeeSessions, config.employee)
+  )
   router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
+  router.use(
+    '/employee/',
+    employeeRoleRefresh(employeeSessions, config.employee)
+  )
   router.all('/employee/auth/{*rest}', (_, res) => res.redirect('/employee'))
   router.all('/employee/public/{*rest}', employeeProxy)
   router.all(

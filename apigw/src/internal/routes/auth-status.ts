@@ -3,12 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type express from 'express'
-import _ from 'lodash'
 
-import type {
-  EmployeeSessionUser,
-  EvakaSessionUser
-} from '../../shared/auth/index.ts'
+import type { EvakaSessionUser } from '../../shared/auth/index.ts'
 import { appCommit } from '../../shared/config.ts'
 import { toRequestHandler } from '../../shared/express.ts'
 import type { UUID } from '../../shared/service-client.ts'
@@ -17,6 +13,7 @@ import {
   getEmployeeDetails
 } from '../../shared/service-client.ts'
 import type { Sessions } from '../../shared/session.ts'
+import { updateEmployeeSessionRoles } from '../employee-session-refresh.ts'
 
 export interface AuthStatus {
   loggedIn: boolean
@@ -89,10 +86,10 @@ async function validateUser(
     }
     case 'EMPLOYEE': {
       const response = await getEmployeeDetails(req, user.id)
-      if (!response) {
+      if (response.status !== 'found') {
         return undefined
       }
-      const { user: employee, featureConfig } = response
+      const { user: employee, featureConfig } = response.details
       const {
         id,
         firstName,
@@ -123,16 +120,6 @@ async function validateUser(
   }
 }
 
-const rolesChanged = (a: string[] | undefined, b: string[] | undefined) =>
-  !_.isEqual(new Set(a), new Set(b))
-
-const userChanged = (
-  sessionUser: EmployeeSessionUser,
-  user: ValidatedUser
-): boolean =>
-  rolesChanged(sessionUser.allScopedRoles, user.allScopedRoles) ||
-  rolesChanged(sessionUser.globalRoles, user.globalRoles)
-
 export const internalAuthStatus = (
   sessions: Sessions<'employee' | 'employee-mobile'>
 ) =>
@@ -142,16 +129,8 @@ export const internalAuthStatus = (
     let status: AuthStatus
     if (validUser) {
       const { user, featureConfig, globalRoles, allScopedRoles } = validUser
-      // Refresh roles if necessary
-      if (
-        sessionUser?.userType === 'EMPLOYEE' &&
-        userChanged(sessionUser, validUser)
-      ) {
-        await sessions.updateUser(req, {
-          ...sessionUser,
-          globalRoles,
-          allScopedRoles
-        })
+      if (sessionUser?.userType === 'EMPLOYEE') {
+        await updateEmployeeSessionRoles(req, sessions, sessionUser, validUser)
       }
       status = {
         loggedIn: true,

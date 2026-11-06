@@ -70,6 +70,8 @@ declare module 'express-session' {
     idpProvider?: string | null
     logoutToken?: LogoutToken
     employeeIdToken?: string
+    employeeLoginAt?: number
+    employeeRolesCheckedAt?: number
   }
 }
 

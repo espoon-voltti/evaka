@@ -311,6 +311,8 @@ class SystemController(
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val employeeUser = tx.getEmployeeUser(id) ?: throw NotFound()
+                    if (!employeeUser.active)
+                        throw NotFound("Account is not active", "ACCOUNT_INACTIVE")
                     val user = AuthenticatedUser.Employee(employeeUser)
                     val permittedGlobalActions =
                         accessControl.getPermittedActions<Action.Global>(tx, user, clock)
