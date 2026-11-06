@@ -77,6 +77,23 @@ const envVariables = {
    */
   EMPLOYEE_SESSION_TIMEOUT_MINUTES: unset<number>(),
   /**
+   * How often (in seconds) the roles of an employee session are checked against evaka-service.
+   *
+   * Revoked roles normally stop working within this time, but concurrent requests can extend it to
+   * about twice this long. If the check fails for a reason other than the employee being missing or
+   * inactive, the session keeps its roles and the check is retried on the next request. A
+   * deactivated employee's existing session is ended; logging in again through AD reactivates the
+   * account without roles.
+   */
+  EMPLOYEE_ROLE_REFRESH_INTERVAL_SECONDS: 120,
+  /**
+   * Maximum age (in minutes) of an employee session, regardless of activity.
+   *
+   * If unset, employee sessions only expire after being idle. Does not apply to employee mobile
+   * sessions.
+   */
+  EMPLOYEE_SESSION_MAX_AGE_MINUTES: unset<number>(),
+  /**
    * Timeout (in seconds) for employee mobile pin login sessions.
    */
   PIN_SESSION_TIMEOUT_SECONDS: 10 * 60,
@@ -407,7 +424,10 @@ export interface Config {
     weakLoginIpRateLimit: number
     weakLoginIpRateLimitEnforce: boolean
   }
-  employee: SessionConfig
+  employee: SessionConfig & {
+    roleRefreshIntervalSeconds: number
+    maxSessionAgeMinutes: number | undefined
+  }
   ad:
     | { type: 'mock' | 'disabled' }
     | {
@@ -655,7 +675,15 @@ export function configFromEnv(): Config {
       ),
       sessionTimeoutMinutes:
         optional('EMPLOYEE_SESSION_TIMEOUT_MINUTES', parseInteger) ??
-        defaultSessionTimeoutMinutes
+        defaultSessionTimeoutMinutes,
+      roleRefreshIntervalSeconds: required(
+        'EMPLOYEE_ROLE_REFRESH_INTERVAL_SECONDS',
+        parseInteger
+      ),
+      maxSessionAgeMinutes: optional(
+        'EMPLOYEE_SESSION_MAX_AGE_MINUTES',
+        parseInteger
+      )
     },
     ad,
     sfi,
