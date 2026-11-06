@@ -4,20 +4,15 @@
 
 package evaka.core.dvv
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import evaka.core.vtj.Muutosattribuutti
 import java.time.LocalDate
 
-/**
- * An info group (tietoryhmä) of the DVV modifications or basic info query. A modification has
- * [muutosattribuutti], and a basic info row has no [muutosattribuutti]. A field is nullable when
- * the OpenAPI description of the DVV API
- * (https://hiekkalaatikko.muutostietopalvelu.cloud.dvv.fi/api) does not require it, or when the
- * group has a restricted details variant that has only `turvakiellonAlaisetKentat`.
- */
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "tietoryhma",
     defaultImpl = DefaultTietoryhma::class,
     visible = true,
@@ -50,7 +45,8 @@ import java.time.LocalDate
 )
 sealed interface Tietoryhma {
     val tietoryhma: String
-    val muutosattribuutti: String?
+    // Responses from perustietohaku don't have muutosattribuutti
+    val muutosattribuutti: Muutosattribuutti?
 
     /** The data that is valid after the change, in the basic info form of the same group */
     val voimassaolevatTiedot: List<Tietoryhma>?
@@ -59,7 +55,7 @@ sealed interface Tietoryhma {
 /** A group that eVaka does not read, for example a group outside the VAKA product */
 data class DefaultTietoryhma(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val alkupv: DvvDate? = null,
     val loppupv: DvvDate? = null,
@@ -71,7 +67,7 @@ data class DefaultTietoryhma(
  */
 data class HenkilotunnusKorjaus(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val aktiivinenHenkilotunnus: String? = null,
     val edellisetHenkilotunnukset: List<String>? = null,
@@ -79,7 +75,7 @@ data class HenkilotunnusKorjaus(
 
 data class HenkilonNimi(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val etunimi: String,
     val sukunimi: String,
@@ -90,7 +86,7 @@ data class HenkilonNimi(
 
 data class Aidinkieli(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val kielikoodi: String,
     val kielikoodiISO6392: String,
@@ -101,7 +97,7 @@ data class Aidinkieli(
 
 data class Kuolinpaiva(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val kuollut: Boolean,
     val kuolinpv: DvvDate? = null,
@@ -109,7 +105,7 @@ data class Kuolinpaiva(
 
 data class Turvakielto(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val turvakieltoAktiivinen: Boolean,
     val turvaLoppuPv: DvvDate? = null,
@@ -130,7 +126,7 @@ sealed interface Huoltosuhde : Tietoryhma {
 
 data class HuoltajaSuppea(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val huoltaja: DvvSsn,
     val huoltajanRooli: String,
@@ -140,13 +136,14 @@ data class HuoltajaSuppea(
     override val asuminen: String? = null,
     override val oikeudet: List<DvvCustodyRight>? = null,
 ) : Huoltosuhde {
+    @get:JsonIgnore
     override val relative: DvvSsn
         get() = huoltaja
 }
 
 data class HuollettavaSuppea(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val huollettava: DvvSsn,
     val huoltajanRooli: String,
@@ -156,6 +153,7 @@ data class HuollettavaSuppea(
     override val asuminen: String? = null,
     override val oikeudet: List<DvvCustodyRight>? = null,
 ) : Huoltosuhde {
+    @get:JsonIgnore
     override val relative: DvvSsn
         get() = huollettava
 }
@@ -172,7 +170,7 @@ data class DvvCustodyRight(
 /** A permanent or temporary domestic address */
 data class KotimainenOsoite(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val turvakiellonAlaisetKentat: List<String>? = null,
     val katunimi: DvvText? = null,
@@ -190,7 +188,7 @@ data class KotimainenOsoite(
 /** A permanent or temporary foreign address */
 data class UlkomainenOsoite(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val turvakiellonAlaisetKentat: List<String>? = null,
     val lahiosoite: String? = null,
@@ -203,7 +201,7 @@ data class UlkomainenOsoite(
 /** A domestic mailing address, or the contact address of a person with restricted details */
 data class KotimainenPostiosoite(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val turvakiellonAlaisetKentat: List<String>? = null,
     val postiosoite: DvvText? = null,
@@ -215,7 +213,7 @@ data class KotimainenPostiosoite(
 
 data class Kotikunta(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val turvakiellonAlaisetKentat: List<String>? = null,
     val kuntakoodi: String? = null,
@@ -224,7 +222,7 @@ data class Kotikunta(
 
 data class VakinainenKotimainenAsuinpaikkatunnus(
     override val tietoryhma: String,
-    override val muutosattribuutti: String? = null,
+    override val muutosattribuutti: Muutosattribuutti? = null,
     override val voimassaolevatTiedot: List<Tietoryhma>? = null,
     val turvakiellonAlaisetKentat: List<String>? = null,
     val asuinpaikantunnus: String? = null,

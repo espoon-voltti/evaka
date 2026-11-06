@@ -761,7 +761,10 @@ data class DataRemovalEnv(
 /** How eVaka uses the basic info query of the DVV modifications service instead of VTJ SOAP */
 enum class VtjDvvMode {
     OFF,
-    /** Queries use SOAP, and their results are compared with the basic info query */
+    /**
+     * Queries use SOAP, and their results are compared with the basic info query. A refresh caused
+     * by DVV modifications is compared with the result of applying the modifications.
+     */
     COMPARE,
 }
 

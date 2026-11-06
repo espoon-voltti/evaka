@@ -35,6 +35,6 @@ class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) :
                 DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl),
             )
         dvvModificationsService =
-            DvvModificationsService(dvvModificationsServiceClient, asyncJobRunner)
+            DvvModificationsService(dvvModificationsServiceClient, asyncJobRunner, evakaEnv)
     }
 }
