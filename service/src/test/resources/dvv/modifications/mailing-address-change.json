@@ -1,0 +1,48 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "140965-924V",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "KOTIMAINEN_POSTIOSOITE",
+          "muutosattribuutti": "LISATTY",
+          "postiosoite": {
+            "fi": "Vaasagatan 34 016"
+          },
+          "postinumero": "65100",
+          "postitoimipaikka": {
+            "fi": "VAASA"
+          },
+          "alkupv": {
+            "arvo": "2020-01-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIMAINEN_POSTIOSOITE",
+          "muutosattribuutti": "MUUTETTU",
+          "postiosoite": {
+            "fi": "Poste restante",
+            "sv": "Poste restante"
+          },
+          "postinumero": "65101",
+          "postitoimipaikka": {
+            "fi": "VAASA",
+            "sv": "VASA"
+          },
+          "alkupv": {
+            "arvo": "2011-01-15",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2020-01-26",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ],
+      "muutospv": "2020-01-27T11:35:02.754Z"
+    }
+  ],
+  "ajanTasalla": true
+}
