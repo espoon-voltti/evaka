@@ -99,8 +99,8 @@ const customizations: CitizenCustomizations = {
                   <P>
                     Esiopetukseen osallistutaan oppivelvollisuuden alkamista
                     edeltävänä vuonna. Esiopetus on maksutonta. Lukuvuoden
-                    2026–2027 esiopetukseen ilmoittaudutaan 8.–20.1.2026.
-                    Suomen- ja ruotsinkielinen esiopetus alkaa 13.8.2026.
+                    2027–2028 esiopetukseen ilmoittaudutaan 8.–19.1.2027.
+                    Suomen- ja ruotsinkielinen esiopetus alkaa 11.8.2027.
                   </P>
                   <P>
                     Päätökset tulevat{' '}
@@ -134,7 +134,7 @@ const customizations: CitizenCustomizations = {
                   </a>
                 ],
                 PRESCHOOL: [
-                  'Suomen- ja ruotsinkielinen esiopetus alkaa 13.8.2026. Jos tarvitset varhaiskasvatusta elokuun alusta ennen esiopetuksen alkua, hae sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
+                  'Suomen- ja ruotsinkielinen esiopetus alkaa 11.8.2027. Jos tarvitset varhaiskasvatusta elokuun alusta ennen esiopetuksen alkua, hae sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
                 ]
               },
               instructions: {
@@ -625,9 +625,9 @@ const customizations: CitizenCustomizations = {
                   <P>
                     Barn deltar i förskoleundervisning året innan läroplikten
                     inleds. Förskoleundervisningen är kostnadsfri. Anmälan till
-                    förskoleundervisning under läsåret 2026–2027 pågår 8–20
-                    januari 2026. Den finsk- och den svenskspråkiga
-                    förskoleundervisningen börjar den 13 augusti 2026.
+                    förskoleundervisning under läsåret 2027–2028 pågår 8–19
+                    januari 2027. Den finsk- och den svenskspråkiga
+                    förskoleundervisningen börjar den 11 augusti 2027.
                   </P>
                   <P>
                     Du får ett skriftligt beslut om plats inom
@@ -667,7 +667,7 @@ const customizations: CitizenCustomizations = {
                   </a>
                 ],
                 PRESCHOOL: [
-                  'Den finsk- och den svenskspråkiga förskoleundervisningen börjar den 13 augusti 2026. Om du behöver småbarnspedagogik i början av augusti före förskoleundervisningen börjar, ska du ansöka om det med denna ansökan genom att kryssa för ”Jag ansöker också om småbarnspedagogik i samband med förskolan”.'
+                  'Den finsk- och den svenskspråkiga förskoleundervisningen börjar den 11 augusti 2027. Om du behöver småbarnspedagogik i början av augusti före förskoleundervisningen börjar, ska du ansöka om det med denna ansökan genom att kryssa för ”Jag ansöker också om småbarnspedagogik i samband med förskolan”.'
                 ]
               },
               label: {
@@ -1176,9 +1176,9 @@ const customizations: CitizenCustomizations = {
                     Children attend pre-primary education during the year before
                     the start of compulsory education. Pre-primary education is
                     free of charge. Enrolment for pre-primary education for the
-                    school year 2026–2027 takes place between 8 and 20 January
-                    2026. Finnish and Swedish pre-primary education starts on 13
-                    August 2026.
+                    school year 2027–2028 takes place between 8 and 19 January
+                    2027. Finnish and Swedish pre-primary education starts on 11
+                    August 2027.
                   </P>
                   <P>
                     The decisions will be sent to the{' '}
@@ -1218,7 +1218,7 @@ const customizations: CitizenCustomizations = {
                   </a>
                 ],
                 PRESCHOOL: [
-                  'Finnish and Swedish pre-primary education starts on 13 August 2026. If your child needs early childhood education at the beginning of August before pre-primary education starts, you can apply for it on this application by selecting  I also apply for early childhood education related to pre-primary education.'
+                  'Finnish and Swedish pre-primary education starts on 11 August 2027. If your child needs early childhood education at the beginning of August before pre-primary education starts, you can apply for it on this application by selecting I also apply for early childhood education related to pre-primary education.'
                 ]
               },
               instructions: {

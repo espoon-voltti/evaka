@@ -858,9 +858,9 @@ const en: Translations = {
                 Children attend pre-primary education in the year preceding the
                 start of their compulsory education. Pre-primary education is
                 free of charge. Enrolment for pre-primary education in the
-                2026–2027 school year takes place between 8 and 20 January 2026.
-                Finnish and Swedish pre-primary education begins on 13 August
-                2026. The decisions will be sent to the{' '}
+                2027–2028 school year takes place between 8 and 19 January 2027.
+                Finnish and Swedish pre-primary education begins on 11 August
+                2027. The decisions will be sent to the{' '}
                 <a
                   href="https://www.suomi.fi/messages"
                   target="_blank"
@@ -1135,7 +1135,7 @@ const en: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Finnish and Swedish pre-primary education starts on 13 August 2026.'
+              'Finnish and Swedish pre-primary education starts on 11 August 2027.'
             ],
             CLUB: [
               'Clubs follow pre-primary education work and vacation times.'
