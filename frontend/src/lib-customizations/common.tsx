@@ -43,9 +43,9 @@ const customizations: CommonCustomizations = overrides
   ? mergeWith({}, defaults, overrides, mergeCustomizer)
   : defaults
 
-const { theme }: CommonCustomizations = customizations
+const { theme, placementTypes }: CommonCustomizations = customizations
 
-export { theme }
+export { theme, placementTypes }
 
 // mimic lib-components/colors api:
 

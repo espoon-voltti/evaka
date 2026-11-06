@@ -18,7 +18,7 @@ import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employeeMobile'
+import { featureFlags } from 'lib-customizations/employee'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'

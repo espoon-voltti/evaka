@@ -7,7 +7,18 @@ import type { CommonCustomizations } from 'lib-customizations/types'
 import theme from './hameenkyro-theme'
 
 const customizations: CommonCustomizations = {
-  theme
+  theme,
+  placementTypes: [
+    'DAYCARE',
+    'TEMPORARY_DAYCARE',
+    'PRESCHOOL',
+    'PRESCHOOL_DAYCARE',
+    'PRESCHOOL_DAYCARE_ONLY',
+    'PREPARATORY',
+    'PREPARATORY_DAYCARE',
+    'PREPARATORY_DAYCARE_ONLY',
+    'SCHOOL_SHIFT_CARE'
+  ]
 }
 
 export default customizations

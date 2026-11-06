@@ -316,17 +316,6 @@ const customizations: EmployeeCustomizations = {
     (level) => level !== 'GENERAL_SUPPORT'
   ),
   otherAssistanceMeasureTypes: ['TRANSPORT_BENEFIT', 'ACCULTURATION_SUPPORT'],
-  placementTypes: [
-    'DAYCARE',
-    'DAYCARE_PART_TIME',
-    'TEMPORARY_DAYCARE',
-    'TEMPORARY_DAYCARE_PART_DAY',
-    'PRESCHOOL',
-    'PRESCHOOL_DAYCARE',
-    'PRESCHOOL_DAYCARE_ONLY',
-    'CLUB',
-    'SCHOOL_SHIFT_CARE'
-  ],
   placementPlanRejectReasons: ['REASON_1', 'REASON_2', 'REASON_3', 'OTHER'],
   preschoolAssistanceLevels: preschoolAssistanceLevels.filter(
     (level) => level !== 'GROUP_SUPPORT'

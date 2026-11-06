@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import type { ReactNode } from 'react'
-import React, { useMemo, useState } from 'react'
+import React, { Suspense, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
@@ -27,7 +27,6 @@ import { useTranslation } from '../localization'
 import { headerHeightDesktop } from '../navigation/const'
 import useTitle from '../useTitle'
 
-import MapBox from './MapBox'
 import MobileTabs from './MobileTabs'
 import SearchSection from './SearchSection'
 import UnitDetailsPanel from './UnitDetailsPanel'
@@ -48,6 +47,8 @@ export type MapAddress = {
 }
 
 export type CareTypeOption = ApplicationType
+
+const MapBox = React.lazy(() => import('./MapBox'))
 
 interface MapContainerProps {
   loggedIn: boolean
@@ -176,12 +177,14 @@ export default React.memo(function MapView() {
           </PanelWrapper>
         )}
         <MapContainer>
-          <MapBox
-            units={units}
-            selectedUnit={selectedUnit}
-            selectedAddress={selectedAddress}
-            setSelectedUnit={setSelectedUnit}
-          />
+          <Suspense fallback={null}>
+            <MapBox
+              units={units}
+              selectedUnit={selectedUnit}
+              selectedAddress={selectedAddress}
+              setSelectedUnit={setSelectedUnit}
+            />
+          </Suspense>
         </MapContainer>
       </FlexContainer>
     </MapFullscreenContainer>

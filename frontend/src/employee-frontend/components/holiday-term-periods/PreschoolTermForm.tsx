@@ -33,7 +33,7 @@ import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employeeMobile'
+import { featureFlags } from 'lib-customizations/employee'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'

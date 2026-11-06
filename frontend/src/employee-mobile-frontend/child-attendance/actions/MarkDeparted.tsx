@@ -36,7 +36,7 @@ import {
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faArrowLeft } from 'lib-icons'
 
 import { routes } from '../../App'

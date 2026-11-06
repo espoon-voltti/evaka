@@ -21,7 +21,7 @@ import {
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import RequireAuth from './RequireAuth'
 import { RequirePinAuth } from './RequirePinAuth'

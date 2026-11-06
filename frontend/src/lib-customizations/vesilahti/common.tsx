@@ -4,10 +4,19 @@
 
 import type { CommonCustomizations } from 'lib-customizations/types'
 
+import featureFlags from './featureFlags'
 import theme from './vesilahti-theme'
 
 const customizations: CommonCustomizations = {
-  theme
+  theme,
+  placementTypes: [
+    'DAYCARE',
+    'TEMPORARY_DAYCARE',
+    ...(featureFlags.preschool ? (['PRESCHOOL_DAYCARE'] as const) : []),
+    'PRESCHOOL_DAYCARE_ONLY',
+    'PREPARATORY_DAYCARE_ONLY',
+    'SCHOOL_SHIFT_CARE'
+  ]
 }
 
 export default customizations

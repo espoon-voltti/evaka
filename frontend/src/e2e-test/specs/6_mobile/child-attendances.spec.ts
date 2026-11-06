@@ -242,7 +242,7 @@ test.describe('Child attendances', () => {
     }) => {
       await openPage(newEvakaPage, {
         mockedTime: now,
-        employeeCustomizations: { featureFlags: { noAbsenceType: true } }
+        employeeMobileCustomizations: { featureFlags: { noAbsenceType: true } }
       })
 
       await createPlacementAndReload('PRESCHOOL_DAYCARE')
