@@ -184,7 +184,7 @@ const fi: DeepPartial<Translations> = {
                 <P>
                   Voit nimetä 1-3 paikkaa toivomassasi järjestyksessä. Valitse
                   hakutoiveet -valikossa näkyvät yksiköt, missä järjestetään
-                  esiopetusta lukuvuonna 2025-2026.
+                  esiopetusta lukuvuonna 2027-2028.
                 </P>
                 <P>
                   Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.
@@ -257,11 +257,12 @@ const fi: DeepPartial<Translations> = {
             <>
               <P>
                 Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden
-                Esiopetus on maksutonta. Lukuvuoden 2026–2027 esiopetuspaikat
-                ilmoitetaan huoltajille 8.1.2026 alkaen ilman ilmoittautumis-
-                tai hakuvaihetta lapsen kotiosoitteen perusteella. Halutessaan
-                huoltajat voivat tehdä toissijaisen hakemuksen 19.-31.1.2026
-                välisenä aikana. Esiopetus alkaa 17.8.2026.
+                alkua. Esiopetus on maksutonta. Lukuvuoden 2027–2028
+                esiopetuspaikat ilmoitetaan huoltajille 7.1.2027 alkaen ilman
+                ilmoittautumis- tai hakuvaihetta lapsen kotiosoitteen
+                perusteella. Halutessaan huoltajat voivat tehdä toissijaisen
+                hakemuksen 11.-24.1.2027 välisenä aikana. Esiopetus alkaa
+                16.8.2027.
               </P>
               <P>
                 Ilmoittautumisen tehnyt huoltaja saa kirjallisen päätöksen
