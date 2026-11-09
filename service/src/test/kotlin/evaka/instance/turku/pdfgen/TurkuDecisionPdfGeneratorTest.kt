@@ -8,6 +8,7 @@ import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.DecisionType
 import evaka.core.invoicing.domain.FeeAlterationType
 import evaka.core.invoicing.domain.FeeAlterationWithEffect
+import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionType
 import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.pdfgen.AbstractDecisionPdfGeneratorTest
@@ -110,6 +111,42 @@ class TurkuDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
             FeeDecisionScenario("fee_relief_rejected", FeeDecisionType.RELIEF_REJECTED),
             FeeDecisionScenario("fee_relief_partly", FeeDecisionType.RELIEF_PARTLY_ACCEPTED),
             FeeDecisionScenario("fee_relief_accepted", FeeDecisionType.RELIEF_ACCEPTED),
+            FeeDecisionScenario(
+                "fee_zero",
+                languages = finnishAndSwedish,
+                customize = { it.withOneChild(fee = 0) },
+            ),
+            FeeDecisionScenario(
+                "fee_max",
+                languages = finnishAndSwedish,
+                customize = { it.withOneChild(fee = 28500) },
+            ),
+            FeeDecisionScenario(
+                "fee_alteration",
+                languages = finnishAndSwedish,
+                customize = {
+                    it.withOneChild(
+                        fee = 28500,
+                        feeAlterations =
+                            listOf(
+                                FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -14250)
+                            ),
+                    )
+                },
+            ),
+            FeeDecisionScenario(
+                "fee_zero_long_name",
+                languages = finnishAndSwedish,
+                customize = { it.withOneChild(fee = 0, lastName = "Virtanen-Korhonen-Lehtinen") },
+            ),
+            FeeDecisionScenario(
+                "fee_zero_two_children",
+                languages = finnishAndSwedish,
+                customize = {
+                    val child = it.withOneChild(fee = 0).children.single()
+                    it.copy(children = listOf(child, child))
+                },
+            ),
         ) + feeEdgeScenarios()
 
     override fun voucherValueDecisionScenarios() =
@@ -148,4 +185,25 @@ class TurkuDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 VoucherValueDecisionType.RELIEF_REJECTED,
             ),
         ) + voucherEdgeScenarios()
+
+    private fun FeeDecisionDetailed.withOneChild(
+        fee: Int,
+        feeAlterations: List<FeeAlterationWithEffect> = emptyList(),
+        lastName: String = "Virtanen",
+    ): FeeDecisionDetailed =
+        copy(
+            children =
+                children.take(1).map { child ->
+                    child.copy(
+                        child = child.child.copy(firstName = "Matti", lastName = lastName),
+                        serviceNeedDescriptionFi =
+                            "Varhaiskasvatus enintään 35h/vko (enintään 147h/kk)",
+                        serviceNeedDescriptionSv =
+                            "Småbarnspedagogik högst 35 h/vecka (högst 147 h/månad)",
+                        fee = fee,
+                        feeAlterations = feeAlterations,
+                        finalFee = fee + feeAlterations.sumOf { it.effect },
+                    )
+                }
+        )
 }

@@ -37,33 +37,34 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <p th:unless="${isReliefDecision}"
        th:utext="${not #strings.isEmpty(validTo)} ? #{text.decision_retroactive(${totalFee}, ${validFrom}, ${validTo})} : #{text.decision(${totalFee}, ${validFrom})}"></p>
 
-    <tbody th:each="part: ${parts}">
-    <div>
-        <span th:text="${part.childName}"></span>
-        <span th:text="${part.serviceNeedDescription}"></span>
-        <span th:text="${part.feeFormatted}"></span>
-    </div>
-    <tr th:each="alteration: ${part.feeAlterations}">
-        <td>
-            <th:block th:switch="${alteration.type.name}">
-                <span th:case="'DISCOUNT'" th:text="#{text.feeAlterationType.DISCOUNT}"></span>
-                <span th:case="'INCREASE'" th:text="#{text.feeAlterationType.INCREASE}"></span>
-                <span th:case="'RELIEF'" th:text="#{text.feeAlterationType.RELIEF}"></span>
-            </th:block>
-            <span>
-                <th:block th:text="${alteration.amount}"/><th:block th:text="${alteration.isAbsolute}? '€' : '%'"/>
-            </span>
-        </td>
-        <td class="text-right" th:text="${alteration.effectFormatted}"></td>
-    </tr>
-    <tr>
-        <td th:text="#{text.table.finalFee}"></td>
-        <td class="text-right" th:text="${part.finalFeeFormatted}"></td>
-    </tr>
-    </tbody>
-
     <table class="narrow">
         <tbody>
+        <th:block th:each="part: ${parts}">
+        <tr>
+            <td class="child-row" colspan="2">
+                <span th:text="${part.childName}"></span>
+                <span th:text="${part.serviceNeedDescription}"></span>
+                <span th:text="${part.feeFormatted}"></span>
+            </td>
+        </tr>
+        <tr th:each="alteration: ${part.feeAlterations}">
+            <td>
+                <th:block th:switch="${alteration.type.name}">
+                    <span th:case="'DISCOUNT'" th:text="#{text.feeAlterationType.DISCOUNT}"></span>
+                    <span th:case="'INCREASE'" th:text="#{text.feeAlterationType.INCREASE}"></span>
+                    <span th:case="'RELIEF'" th:text="#{text.feeAlterationType.RELIEF}"></span>
+                </th:block>
+                <span>
+                    <th:block th:text="${alteration.amount}"/><th:block th:text="${alteration.isAbsolute}? '€' : '%'"/>
+                </span>
+            </td>
+            <td class="text-right" th:text="${alteration.effectFormatted}"></td>
+        </tr>
+        <tr>
+            <td th:text="#{text.table.finalFee}"></td>
+            <td class="text-right" th:text="${part.finalFeeFormatted}"></td>
+        </tr>
+        </th:block>
         <tr>
             <td><strong class="semi" th:text="#{text.table.combined}"></strong></td>
             <td class="text-right"><strong class="semi" th:text="${totalFee}"></strong></td>
