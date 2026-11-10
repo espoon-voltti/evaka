@@ -12,6 +12,8 @@ VALUES
     ('d60f3dae-e164-4ad0-b5ec-af9c8c35a586', 'Espoonlahti', 252, '04', 'espoonlahti'),
     ('7119009f-ec26-45d2-be61-d3f802c1d1e5', 'Espoon keskus (eteläinen)', 253, '05', 'espoon-keskus-etela'),
     ('10842fdc-5750-447d-9b6b-50a1ca66864c', 'Espoon keskus (pohjoinen)', 253, '05', 'espoon-keskus-pohjoinen'),
+    ('070a64e8-dc2c-11f1-9360-5fe557daa11d', 'Pohjoinen varhaiskasvatusalue', 253, '05', 'pohjoinen-varhaiskasvatusalue'),
+    ('070a6538-dc2c-11f1-9360-b7509c5d7efd', 'Itäinen varhaiskasvatusalue', 249, '01', 'itainen-varhaiskasvatusalue'),
     ('2daff112-788e-11e9-bd0e-07d5525c2890', 'Svenska bildningstjänster', 254, NULL, 'svenska-bildningstjanster'),
     ('b4c4e4ce-123c-11f1-8104-af3da164f107', 'Palveluseteli muut kunnat', NULL, NULL, 'palveluseteli-muut-kunnat')
 ON CONFLICT (id) DO
