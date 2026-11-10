@@ -211,7 +211,6 @@ export default React.memo(function MessagesPage() {
                 hasMoreThreads={hasMoreThreads}
                 loadMoreThreads={loadMoreThreads}
                 selectThread={selectThread}
-                closeThread={closeThread}
                 setEditorVisible={changeEditorVisibility}
                 newMessageButtonEnabled={canSendNewMessage}
               />

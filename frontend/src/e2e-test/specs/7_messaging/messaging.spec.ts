@@ -16,6 +16,7 @@ import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { mobileViewport } from '../../browser'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
@@ -1042,6 +1043,38 @@ test.describe('Sending and receiving messages', () => {
       })
     })
   }
+
+  test('Citizen on mobile returns from a long thread with the back button in the header', async () => {
+    await openSupervisorPage(mockedDateAt10)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage(defaultMessage)
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    citizenPage = await newPage({
+      mockedTime: mockedDateAt11,
+      viewport: mobileViewport
+    })
+    await enduserLogin(citizenPage, testAdult, '/messages')
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
+    const longReply = Array.from(
+      { length: 40 },
+      (_, i) => `Vastauksen rivi ${i + 1}`
+    ).join('\n')
+    await citizenMessagesPage.replyToFirstThread(longReply)
+    await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
+
+    await citizenMessagesPage.threadMessages
+      .last()
+      .locator.scrollIntoViewIfNeeded()
+    await expect(citizenMessagesPage.headerBackButton).toHaveText(defaultTitle)
+    await expect(citizenMessagesPage.headerBackButton).toBeInViewport()
+
+    await citizenMessagesPage.headerBackButton.click()
+    await citizenMessagesPage.assertThreadListIsVisible()
+    await expect(citizenMessagesPage.headerBackButton).toBeHidden()
+  })
 
   test.describe('Session keepalive while typing', () => {
     test('Citizen session is kept alive as long as user keeps typing', async () => {
