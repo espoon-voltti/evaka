@@ -100,7 +100,7 @@ const fi: DeepPartial<Translations> = {
               <P>
                 Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden
                 alkamista. Esiopetus on maksutonta. Lukuvuoden 2027–2028
-                esiopetukseen ilmoittaudutaan 1.1-15.1.2027. Esiopetus alkaa
+                esiopetukseen ilmoittaudutaan 1.1.–15.1.2027. Esiopetus alkaa
                 11.8.2027. Ilmoittautumisen yhteydessä perustele muut lisätiedot
                 kohtaan hakuvaihtoehtosi.
               </P>
@@ -168,7 +168,7 @@ const fi: DeepPartial<Translations> = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden alkamista. Esiopetus on maksutonta. Lukuvuoden 2027–2028 esiopetukseen ilmoittaudutaan 1.1-15.1.2027. Esiopetus alkaa 11.8.2027. Ilmoittautumisen yhteydessä perustele muut lisätiedot kohtaan hakuvaihtoehtosi.'
+              'Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden alkamista. Esiopetus on maksutonta. Lukuvuoden 2027–2028 esiopetukseen ilmoittaudutaan 1.1.–15.1.2027. Esiopetus alkaa 11.8.2027. Ilmoittautumisen yhteydessä perustele muut lisätiedot kohtaan hakuvaihtoehtosi.'
             ],
             CLUB: [
               'Avoimen varhaiskasvatuksen kerhot ja leikkipuistotoiminta noudattavat pääsääntöisesti esiopetuksen työ- ja loma-aikoja. Lapsi voi osallistua yhteen avoimen varhaiskasvatuspalveluun kerralla, poissulkien perhekerhot.'
