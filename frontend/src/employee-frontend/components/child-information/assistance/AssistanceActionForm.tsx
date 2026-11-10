@@ -242,7 +242,6 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     const inverted = !required && isDateRangeInverted({ startDate, endDate })
     const conflict = isCreate(props) ? isHardConflict : isAnyConflict
 
-    // oxlint-disable-next-line react/set-state-in-effect
     setFormErrors({
       dateRange: required
         ? 'required'

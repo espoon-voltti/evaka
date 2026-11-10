@@ -88,7 +88,6 @@ export default React.memo(function UnitPage() {
   }, [queryParams])
 
   useEffect(() => {
-    // oxlint-disable-next-line react/set-state-in-effect, react/no-deriving-state-in-effects
     setOpenGroups(getOpenGroupsFromQueryParams())
   }, [getOpenGroupsFromQueryParams])
 
