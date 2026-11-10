@@ -34,7 +34,6 @@ import evaka.core.attachment.insertAttachment
 import evaka.core.attendance.StaffAttendanceType
 import evaka.core.attendance.getRealtimeStaffAttendances
 import evaka.core.attendance.occupancyCoefficientSeven
-import evaka.core.calendarevent.CalendarEventTime
 import evaka.core.calendarevent.CalendarEventType
 import evaka.core.caseprocess.CaseProcessMetadataService
 import evaka.core.caseprocess.DocumentConfidentiality
@@ -62,13 +61,8 @@ import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.childdocument.ChildDocumentDecisionStatus
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
-import evaka.core.emailclient.CalendarEventNotificationData
-import evaka.core.emailclient.DiscussionSurveyCreationNotificationData
-import evaka.core.emailclient.DiscussionSurveyReservationNotificationData
-import evaka.core.emailclient.DiscussionTimeReminderData
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.emailclient.MessageThreadData
 import evaka.core.emailclient.MockEmailClient
 import evaka.core.employee.Employee
 import evaka.core.employee.getEmployees
@@ -99,18 +93,14 @@ import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.FeeDecisionThresholds
 import evaka.core.invoicing.domain.FeeDecisionType
 import evaka.core.invoicing.domain.FeeThresholds
-import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.domain.PaymentStatus
 import evaka.core.invoicing.domain.VoucherValueDecision
 import evaka.core.invoicing.domain.VoucherValueDecisionDifference
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.invoicing.service.IncomeNotification
-import evaka.core.invoicing.service.IncomeNotificationType
 import evaka.core.invoicing.service.InvoiceGenerator
 import evaka.core.invoicing.service.createIncomeNotification
-import evaka.core.messaging.AccountType
-import evaka.core.messaging.MessageType
 import evaka.core.nekku.NekkuCustomer
 import evaka.core.nekku.NekkuProductMealTime
 import evaka.core.nekku.NekkuProductMealType
@@ -202,6 +192,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import org.unbescape.html.HtmlEscape
 import tools.jackson.databind.json.JsonMapper
 
 private val fakeAdmin =
@@ -1481,203 +1472,14 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
         db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
 
-    @Suppress("EmailMessageFilter", "ktlint:standard:enum-entry-name-case")
-    enum class EmailMessageFilter {
-        pendingDecisionNotification,
-        clubApplicationReceived,
-        daycareApplicationReceived,
-        preschoolApplicationReceived,
-        missingReservationsNotification,
-        messageNotification,
-        pedagogicalDocumentNotification,
-        outdatedIncomeNotification,
-        calendarEventNotification,
-        financeDecisionNotification,
-        discussionTimeReservation,
-        discussionTimeCancellation,
-        discussionSurveyCreation,
-        discussionTimeReservationReminder,
-        absenceApplicationAcceptedNotification,
-        absenceApplicationRejectedNotification,
-        serviceApplicationAcceptedNotification,
-        serviceApplicationRejectedNotification,
-    }
-
     @ExcludeCodeGen // used manually
     @GetMapping("/email-content", produces = [MediaType.TEXT_HTML_VALUE])
     fun getEmails(
         @RequestParam message: EmailMessageFilter = EmailMessageFilter.pendingDecisionNotification,
+        @RequestParam lang: Language = Language.fi,
         @RequestParam format: String = "html",
     ): ByteArray {
-        val emailContent =
-            when (message) {
-                EmailMessageFilter.pendingDecisionNotification -> {
-                    emailMessageProvider.pendingDecisionNotification(Language.fi)
-                }
-
-                EmailMessageFilter.clubApplicationReceived -> {
-                    emailMessageProvider.clubApplicationReceived(Language.fi)
-                }
-
-                EmailMessageFilter.daycareApplicationReceived -> {
-                    emailMessageProvider.daycareApplicationReceived(Language.fi)
-                }
-
-                EmailMessageFilter.preschoolApplicationReceived -> {
-                    emailMessageProvider.preschoolApplicationReceived(Language.fi, true)
-                }
-
-                EmailMessageFilter.missingReservationsNotification -> {
-                    emailMessageProvider.missingReservationsNotification(
-                        Language.fi,
-                        FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now()),
-                    )
-                }
-
-                EmailMessageFilter.messageNotification -> {
-                    emailMessageProvider.messageNotification(
-                        Language.fi,
-                        MessageThreadData(
-                            id = MessageThreadId(UUID.randomUUID()),
-                            type = MessageType.MESSAGE,
-                            title = HtmlSafe("Testiviesti"),
-                            urgent = false,
-                            sensitive = false,
-                            senderName = HtmlSafe("Testiryhmä"),
-                            senderType = AccountType.GROUP,
-                            isCopy = false,
-                        ),
-                    )
-                }
-
-                EmailMessageFilter.pedagogicalDocumentNotification -> {
-                    emailMessageProvider.pedagogicalDocumentNotification(
-                        Language.fi,
-                        ChildId(UUID.randomUUID()),
-                    )
-                }
-
-                EmailMessageFilter.outdatedIncomeNotification -> {
-                    emailMessageProvider.incomeNotification(
-                        IncomeNotificationType.INITIAL_EMAIL,
-                        Language.fi,
-                    )
-                }
-
-                EmailMessageFilter.calendarEventNotification -> {
-                    emailMessageProvider.calendarEventNotification(
-                        Language.fi,
-                        listOf(
-                            CalendarEventNotificationData(
-                                HtmlSafe("Esimerkki 1"),
-                                FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1)),
-                                listOf(HtmlSafe("Ryhmä A")),
-                            ),
-                            CalendarEventNotificationData(
-                                HtmlSafe("Esimerkki 2"),
-                                FiniteDateRange(
-                                    LocalDate.now().plusDays(7),
-                                    LocalDate.now().plusDays(7),
-                                ),
-                                listOf(HtmlSafe("Ryhmä B"), HtmlSafe("Ryhmä C")),
-                            ),
-                        ),
-                    )
-                }
-
-                EmailMessageFilter.financeDecisionNotification -> {
-                    emailMessageProvider.financeDecisionNotification(
-                        FinanceDecisionType.FEE_DECISION
-                    )
-                }
-
-                EmailMessageFilter.discussionTimeReservation -> {
-                    emailMessageProvider.discussionSurveyReservationNotification(
-                        Language.fi,
-                        DiscussionSurveyReservationNotificationData(
-                            calendarEventTime =
-                                CalendarEventTime(
-                                    id = CalendarEventTimeId(UUID.randomUUID()),
-                                    date = LocalDate.now(),
-                                    startTime = LocalTime.of(12, 20),
-                                    endTime = LocalTime.of(12, 50),
-                                    childId = null,
-                                )
-                        ),
-                    )
-                }
-
-                EmailMessageFilter.discussionTimeCancellation -> {
-                    emailMessageProvider.discussionSurveyReservationCancellationNotification(
-                        Language.fi,
-                        DiscussionSurveyReservationNotificationData(
-                            calendarEventTime =
-                                CalendarEventTime(
-                                    id = CalendarEventTimeId(UUID.randomUUID()),
-                                    date = LocalDate.now(),
-                                    startTime = LocalTime.of(12, 20),
-                                    endTime = LocalTime.of(12, 50),
-                                    childId = null,
-                                )
-                        ),
-                    )
-                }
-
-                EmailMessageFilter.discussionTimeReservationReminder -> {
-                    emailMessageProvider.discussionTimeReservationReminder(
-                        Language.fi,
-                        DiscussionTimeReminderData(
-                            date = LocalDate.now(),
-                            startTime = LocalTime.of(12, 20),
-                            endTime = LocalTime.of(12, 50),
-                        ),
-                    )
-                }
-
-                EmailMessageFilter.discussionSurveyCreation -> {
-                    emailMessageProvider.discussionSurveyCreationNotification(
-                        Language.fi,
-                        DiscussionSurveyCreationNotificationData(
-                            eventId = CalendarEventId(UUID.randomUUID()),
-                            eventTitle = HtmlSafe("VASU-keskustelut 2029 syksy"),
-                            eventDescription =
-                                HtmlSafe(
-                                    "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki."
-                                ),
-                        ),
-                    )
-                }
-
-                EmailMessageFilter.absenceApplicationAcceptedNotification -> {
-                    emailMessageProvider.absenceApplicationDecidedNotification(
-                        accepted = true,
-                        startDate = LocalDate.now(),
-                        endDate = LocalDate.now().plusWeeks(1),
-                    )
-                }
-
-                EmailMessageFilter.absenceApplicationRejectedNotification -> {
-                    emailMessageProvider.absenceApplicationDecidedNotification(
-                        accepted = false,
-                        startDate = LocalDate.now(),
-                        endDate = LocalDate.now().plusWeeks(1),
-                    )
-                }
-
-                EmailMessageFilter.serviceApplicationAcceptedNotification -> {
-                    emailMessageProvider.serviceApplicationDecidedNotification(
-                        accepted = true,
-                        startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
-                    )
-                }
-
-                EmailMessageFilter.serviceApplicationRejectedNotification -> {
-                    emailMessageProvider.serviceApplicationDecidedNotification(
-                        accepted = false,
-                        startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
-                    )
-                }
-            }
+        val emailContent = emailPreviewContent(emailMessageProvider, message, lang)
         val content =
             if (format == "html") emailContent.html
             else
@@ -1687,10 +1489,15 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
             EmailMessageFilter.entries.joinToString("") {
                 "<option value=\"$it\" ${if (it == message) "selected" else ""}>$it</option>"
             }
+        val langOptions =
+            Language.entries.joinToString("") {
+                "<option value=\"$it\" ${if (it == lang) "selected" else ""}>$it</option>"
+            }
         val form =
             """
 <form>
 <select name="message">$options</select>
+<select name="lang">$langOptions</select>
 <select name="format">
   <option value="html" ${if (format == "html") "selected" else ""}>html</option>
   <option value="text" ${if (format == "text") "selected" else ""}>text</option>
@@ -1705,6 +1512,8 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
 <html>
 <body>
 $form
+<hr>
+<p><strong>Subject:</strong> ${HtmlEscape.escapeHtml5(emailContent.subject)}</p>
 <hr>
 <div style="max-width: 900px">$content</div>
 </body>
