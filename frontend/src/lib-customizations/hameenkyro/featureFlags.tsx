@@ -21,7 +21,7 @@ const prod: FeatureFlags = {
   preschoolApplication: {
     connectedDaycarePreferredStartDate: true,
     serviceNeedOption: true,
-    siblingBasis: true
+    siblingBasis: false
   },
   decisionDraftMultipleUnits: true,
   urgencyAttachments: true,
