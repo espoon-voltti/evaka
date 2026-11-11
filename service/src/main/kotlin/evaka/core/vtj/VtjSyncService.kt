@@ -128,7 +128,7 @@ class VtjSyncService(
      * Unlike refreshPersons, this syncs the dependants also of a person who is not a dependant-sync
      * person, and then marks them synced.
      */
-    fun refreshPersonsAndDependants(
+    fun refreshPersonsGreedy(
         dbc: Database.Connection,
         requestingUserId: EvakaUserId,
         clock: EvakaClock,
