@@ -84,7 +84,8 @@ const fi: DeepPartial<Translations> = {
         serviceNeed: {
           connectedDaycare: {
             label: 'Esiopetusta täydentävä toiminta',
-            withConnectedDaycare: 'Haen esiopetusta täydentävää toimintaa.'
+            withConnectedDaycare:
+              'Haen esiopetusta täydentävää varhaiskasvatusta.'
           },
           startDate: {
             title: {
@@ -115,18 +116,22 @@ const fi: DeepPartial<Translations> = {
             PRESCHOOL: (
               <>
                 <P>
-                  Esiopetuspaikka määräytyy lapsen kotiosoitteen mukaan, tulevan
-                  koulupolun mukaisesti. Ilmoittautuessa lapsi ilmoitetaan
-                  koulupolun mukaiseen esiopetukseen tai painotettuun
-                  esiopetukseen. Mikäli lapsi tarvitsee säännöllisesti ilta- tai
-                  vuorohoitoa, hänet ilmoitetaan ilta- tai vuorohoidon
+                  Lapsen ensisijainen esiopetuspaikka määräytyy
+                  väestörekisteriin merkityn kotiosoitteen perusteella. Lapsi
+                  ilmoitetaan ensisijaisesti oman koulupolkunsa mukaiseen
                   esiopetukseen.
                 </P>
                 <P>
+                  Jos lapselle haetaan toissijaista esiopetuspaikkaa toisen
+                  koulupolun alueelta, tulee yksikkötoive ja perustelut esittää
+                  Hakuun liittyvät lisätiedot -kohdassa. Huoltaja vastaa
+                  esioppilaan kuljetuskustannuksista toissijaiseen
+                  esiopetusyksikköön. Lisätietoja toissijaiseen esiopetukseen
+                  hakemisen perusteista löytyy kaupungin verkkosivuilta.
+                </P>
+                <P>
                   Tieto tulevasta esiopetuspaikasta ilmoitetaan huoltajille
-                  sähköisesti Suomi.fi-viestit palvelun kautta. Mikäli huoltaja
-                  ei ole ottanut palvelua käyttöönsä, tieto lähetetään hänelle
-                  kirjeitse.
+                  Suomi.fi-viestit palvelun kautta.
                 </P>
               </>
             )
@@ -255,35 +260,27 @@ const fi: DeepPartial<Translations> = {
           }
         },
         shiftCare: {
+          label: 'Vuorohoito',
           instructions:
-            'Mikäli lapsi tarvitsee esiopetuksen lisäksi ilta-/vuorohoitoa, hänet pitää ilmoittaa ilta- tai vuorohoidon esiopetukseen. Lisäksi täydentäväksi toiminnaksi on lapselle valittava täydentävä varhaiskasvatus, yli 5h päivässä. Päiväkodit palvelevat normaalisti arkisin klo 6.00–18.00. Iltahoito on tarkoitettu lapsille, jotka vanhempien työn tai tutkintoon johtavan opiskelun vuoksi tarvitsevat säännöllisesti hoitoa klo 18.00 jälkeen. Iltahoitoa tarjoavat päiväkodit aukeavat tarvittaessa klo 5.30 ja menevät kiinni viimeistään klo 22.30. Osa iltahoitoa antavista päiväkodeista on auki myös viikonloppuisin. Vuorohoito on tarkoitettu niille lapsille, joiden vanhemmat tekevät vuorotyötä ja lapsen hoitoon sisältyy myös öitä.',
+            'Vuorohoito on tarkoitettu lapsille, jotka tarvitsevat varhaiskasvatusta iltaisin, öisin tai viikonloppuisin huoltajien työn tai opiskelun vuoksi. Huoltajan vuorotyön tai opiskelun tulee tapahtua jatkuvasti epäsäännöllisenä vuorokauden aikana.',
           attachmentsMessage: {
             DAYCARE: (
               <P>
-                Ilta- ja vuorohoito on tarkoitettu lapsille, jotka vanhempien
-                työn tai tutkintoon johtavan opiskelun vuoksi tarvitsevat ilta-
-                ja vuorohoitoa. Hakemuksen liitteeksi on toimitettava vanhempien
-                osalta työnantajan todistus vuorotyöstä tai opiskelusta
-                johtuvasta ilta- tai vuorohoidon tarpeesta.
+                Vuorohoito on tarkoitettu lapsille, jotka vanhempien työn tai
+                tutkintoon johtavan opiskelun vuoksi tarvitsevat vuorohoitoa.
+                Hakemuksen liitteeksi on toimitettava vanhempien osalta
+                työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta
+                vuorohoidon tarpeesta.
               </P>
             ),
             PRESCHOOL: (
-              <>
-                <P>
-                  Esiopetushakemukselle pyydämme liittämään samassa taloudessa
-                  asuvien huoltajien osalta todistukset työnantajalta
-                  säännöllisestä vuorotyöstä tai oppilaitoksen edustajalta
-                  päätoimisesta iltaopiskelusta. Dokumenttien tulee olla
-                  kirjattu sinä vuonna, kun hakemus esiopetukseen tehdään.
-                </P>
-                <P>
-                  Ilta- ja vuorohoito on tarkoitettu lapsille, jotka vanhempien
-                  työn tai tutkintoon johtavan opiskelun vuoksi tarvitsevat
-                  ilta- ja vuorohoitoa. Hakemuksen liitteeksi on toimitettava
-                  vanhempien osalta työnantajan todistus vuorotyöstä tai
-                  opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta.
-                </P>
-              </>
+              <P>
+                Esiopetushakemukselle pyydämme liittämään samassa taloudessa
+                asuvien huoltajien osalta todistukset työnantajalta
+                säännöllisestä vuorotyöstä tai oppilaitoksen edustajalta
+                päätoimisesta iltaopiskelusta. Dokumenttien tulee olla kirjattu
+                sinä vuonna, kun hakemus esiopetukseen tehdään.
+              </P>
             )
           }
         },
@@ -302,14 +299,12 @@ const fi: DeepPartial<Translations> = {
             DAYCARE: 'Palveluntarve',
             PRESCHOOL: 'Esiopetusta täydentävä toiminta'
           },
-          connectedDaycare: 'Haen esiopetusta täydentävää toimintaa.',
+          connectedDaycare: 'Haen esiopetusta täydentävää varhaiskasvatusta.',
           connectedDaycareInfo: (
             <P>
-              Esiopetusaika on neljä tuntia päivässä, pääsääntöisesti klo 9–13.
-              Esiopetuksen lisäksi lapsi voi osallistua maksulliseen
-              täydentävään toimintaan aamuisin ja iltapäivisin. Täydentävän
-              toiminnan vaihtoehtoina ovat päiväkodeissa annettava täydentävä
-              varhaiskasvatus ja kouluilla annettava esiopetuksen kerho.
+              Esiopetusaika on neljä tuntia päivässä. Esiopetuksen lisäksi lapsi
+              voi osallistua maksulliseen esiopetusta täydentävään
+              varhaiskasvatukseen.
             </P>
           )
         }
