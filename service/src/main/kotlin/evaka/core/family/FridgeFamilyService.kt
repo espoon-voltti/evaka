@@ -59,25 +59,6 @@ class FridgeFamilyService(
         guardianIds.forEach { addChildrenToFridgeFamily(db, clock, it) }
     }
 
-    fun addChildrenToFridgeFamilies(
-        db: Database.Connection,
-        clock: EvakaClock,
-        personId: PersonId,
-    ) {
-        val today = clock.today()
-        val person = db.read { it.getPersonById(personId) } ?: return
-        val guardianIds =
-            if (isMinor(person.dateOfBirth, today)) {
-                db.read { it.getDependantGuardians(personId) }.map { it.id }
-            } else {
-                emptyList()
-            }
-        val ids = listOf(personId) + guardianIds
-        val dependantSyncIds =
-            db.read { it.getVtjSyncPersons(ids, today) }.filter { it.dependantSync }.map { it.id }
-        ids.filter { it in dependantSyncIds }.forEach { addChildrenToFridgeFamily(db, clock, it) }
-    }
-
     fun addChildrenToFridgeFamily(
         db: Database.Connection,
         clock: EvakaClock,

@@ -8,7 +8,10 @@ import evaka.core.dvv.custodyCounts
 import evaka.core.dvv.startDate
 import evaka.core.family.FridgeFamilyService
 import evaka.core.identity.Ssn
+import evaka.core.person.getDependantGuardians
+import evaka.core.person.getPersonById
 import evaka.core.person.getPersonBySSN
+import evaka.core.person.isMinor
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -95,7 +98,7 @@ class UpdateFromVtjAsyncJobProcessor(
         msg: AsyncJob.SyncMissingVtjRelations,
     ) {
         vtjSyncService.syncMissingRelations(db, clock, msg.personIds).forEach {
-            fridgeFamilyService.addChildrenToFridgeFamilies(db, clock, it)
+            addChildrenToFridgeFamilies(db, clock, it)
         }
     }
 
@@ -110,6 +113,24 @@ class UpdateFromVtjAsyncJobProcessor(
             clock,
             listOf(personId),
         )
-        fridgeFamilyService.addChildrenToFridgeFamilies(db, clock, personId)
+        addChildrenToFridgeFamilies(db, clock, personId)
+    }
+
+    private fun addChildrenToFridgeFamilies(
+        db: Database.Connection,
+        clock: EvakaClock,
+        personId: PersonId,
+    ) {
+        val today = clock.today()
+        val person = db.read { it.getPersonById(personId) } ?: return
+        val guardianIds =
+            if (isMinor(person.dateOfBirth, today)) {
+                db.read { it.getDependantGuardians(personId) }.map { it.id }
+            } else {
+                emptyList()
+            }
+        db.read { it.getVtjSyncPersons(listOf(personId) + guardianIds, today) }
+            .filter { it.dependantSync }
+            .forEach { fridgeFamilyService.addChildrenToFridgeFamily(db, clock, it.id) }
     }
 }
