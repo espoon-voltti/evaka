@@ -22,8 +22,8 @@ const customizations: EmployeeCustomizations = {
       },
       application: {
         serviceNeed: {
-          connectedLabel: 'Täydentävä toiminta',
-          connectedValue: 'Haen myös täydentävää toimintaa',
+          connectedLabel: 'Täydentävä varhaiskasvatus',
+          connectedValue: 'Haen myös täydentävää varhaiskasvatusta',
           connectedDaycarePreferredStartDateLabel:
             'Täydentävän toivottu aloituspäivä'
         },
