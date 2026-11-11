@@ -47,7 +47,7 @@ class FridgeFamilyService(
             guardiansToRefresh + if (isDependantSync) listOf(personId) else emptyList()
         val partnerIds =
             guardianIds
-                .mapNotNull { id -> db.read { getPartnerId(it, clock, id) } }
+                .mapNotNull { id -> db.read { it.getPartnerId(today, id) } }
                 .filter { it !in guardianIds }
                 .distinct()
         vtjSyncService.refreshPersonsAndDependants(
@@ -88,7 +88,7 @@ class FridgeFamilyService(
         if (guardian.dateOfDeath != null) return
 
         val partnerAtSameAddress =
-            db.read { getPartnerId(it, clock, guardianId) }
+            db.read { it.getPartnerId(today, guardianId) }
                 ?.also { logger.info { "Person $guardianId has fridge partner $it" } }
                 ?.let { partnerId -> db.read { it.getPersonById(partnerId) } }
                 ?.takeIf { personsLiveInTheSameAddress(it, guardian) }
@@ -143,20 +143,6 @@ class FridgeFamilyService(
                 logger.warn(e) { "Problem while adding a child to fridge family:" }
             }
         }
-    }
-
-    fun getPartnerId(tx: Database.Read, clock: EvakaClock, personId: PersonId): PersonId? {
-        return tx.createQuery {
-                sql(
-                    """
-SELECT p2.person_id AS partner_id
-FROM fridge_partner p1
-LEFT OUTER JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.person_id != p2.person_id
-WHERE p1.person_id = ${bind(personId)} AND daterange(p1.start_date, p1.end_date, '[]') @> ${bind(clock.today())} AND p1.conflict = false AND p2.conflict = false
-"""
-                )
-            }
-            .exactlyOneOrNull<PersonId>()
     }
 
     private fun getCurrentFridgeChildren(
