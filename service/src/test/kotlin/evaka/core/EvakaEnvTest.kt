@@ -4,6 +4,10 @@
 
 package evaka.core
 
+import evaka.core.nekku.NekkuOrderFreeze
+import evaka.core.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -108,5 +112,33 @@ class EvakaEnvTest {
     fun `throws for missing list property`() {
         val e = env()
         assertFailsWith<IllegalStateException> { e.lookup<List<String>>("missing.key") }
+    }
+
+    @Test
+    fun `reads the Nekku order freeze from environment variables`() {
+        val e =
+            envVars(
+                "EVAKA_INTEGRATION_NEKKU_URL" to "https://example.com/nekku/",
+                "EVAKA_INTEGRATION_NEKKU_APIKEY" to "apikey",
+                "EVAKA_INTEGRATION_NEKKU_ORDER_FREEZE_STARTS_AT" to "2026-12-17T10:00",
+                "EVAKA_INTEGRATION_NEKKU_ORDER_FREEZE_DELIVERY_DATES_BEFORE" to "2027-01-01",
+            )
+        assertEquals(
+            NekkuOrderFreeze(
+                startsAt = HelsinkiDateTime.of(LocalDate.of(2026, 12, 17), LocalTime.of(10, 0)),
+                deliveryDatesBefore = LocalDate.of(2027, 1, 1),
+            ),
+            NekkuEnv.fromEnvironment(e).orderFreeze,
+        )
+    }
+
+    @Test
+    fun `Nekku orders are not frozen unless a freeze is configured`() {
+        val e =
+            envVars(
+                "EVAKA_INTEGRATION_NEKKU_URL" to "https://example.com/nekku/",
+                "EVAKA_INTEGRATION_NEKKU_APIKEY" to "apikey",
+            )
+        assertNull(NekkuEnv.fromEnvironment(e).orderFreeze)
     }
 }

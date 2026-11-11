@@ -5290,4 +5290,106 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             assertEquals(4, rows.size)
         }
     }
+
+    @Test
+    fun `an order for a frozen delivery date is not sent again once the freeze has started`() {
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientWithAnotherCustomerNumber,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val lastFrozenDate = LocalDate.of(2025, 4, 14)
+        val firstUnfrozenDate = LocalDate.of(2025, 4, 15)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+        createChildrenWithGroupPlacement(
+            db,
+            daycare.id,
+            group.id,
+            lastFrozenDate,
+            firstUnfrozenDate,
+            count = 2,
+        )
+
+        val beforeFreeze = HelsinkiDateTime.of(LocalDate.of(2025, 4, 8), LocalTime.of(9, 30))
+        val duringFreeze = HelsinkiDateTime.of(LocalDate.of(2025, 4, 8), LocalTime.of(10, 0))
+        val orderFreeze =
+            NekkuOrderFreeze(startsAt = duringFreeze, deliveryDatesBefore = firstUnfrozenDate)
+
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            lastFrozenDate,
+            asyncJobRunner,
+            beforeFreeze,
+            remainingAttempts = 3,
+            orderFreeze,
+        )
+
+        val reportBeforeFreeze = db.read { tx ->
+            tx.getNekkuOrderReport(daycare.id, group.id, lastFrozenDate)
+        }
+        assertEquals(listOf(lastFrozenDate.toString()), client.orders.deliveryDates())
+        assertNotEquals(emptyList(), reportBeforeFreeze)
+
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            lastFrozenDate,
+            asyncJobRunner,
+            duringFreeze,
+            remainingAttempts = 3,
+            orderFreeze,
+        )
+
+        assertEquals(listOf(lastFrozenDate.toString()), client.orders.deliveryDates())
+        assertEquals(
+            reportBeforeFreeze,
+            db.read { tx -> tx.getNekkuOrderReport(daycare.id, group.id, lastFrozenDate) },
+        )
+
+        // delivery dates from the cutoff on are still ordered during the freeze
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            firstUnfrozenDate,
+            asyncJobRunner,
+            duringFreeze,
+            remainingAttempts = 3,
+            orderFreeze,
+        )
+
+        assertEquals(
+            listOf(lastFrozenDate.toString(), firstUnfrozenDate.toString()),
+            client.orders.deliveryDates(),
+        )
+    }
+
+    private fun List<NekkuClient.NekkuOrders>.deliveryDates() = flatMap {
+        it.orders
+    }
+        .map { it.deliveryDate }
 }

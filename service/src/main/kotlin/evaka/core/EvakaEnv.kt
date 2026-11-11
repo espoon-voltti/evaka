@@ -7,8 +7,10 @@ package evaka.core
 import com.fasterxml.jackson.annotation.JsonValue
 import evaka.core.daycare.domain.Language
 import evaka.core.emailclient.FromAddress
+import evaka.core.nekku.NekkuOrderFreeze
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.async.AsyncJobPool
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.Rectangle
 import evaka.core.shared.job.JobSchedule
 import evaka.core.shared.job.Nightly
@@ -18,6 +20,7 @@ import java.net.URI
 import java.security.KeyStore
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.YearMonth
 import java.util.Locale
@@ -602,13 +605,30 @@ data class JamixEnv(val url: URI, val user: String, val password: Sensitive<Stri
     }
 }
 
-data class NekkuEnv(val url: URI, val apikey: Sensitive<String>) {
+data class NekkuEnv(
+    val url: URI,
+    val apikey: Sensitive<String>,
+    val orderFreeze: NekkuOrderFreeze? = null,
+) {
     companion object {
         fun fromEnvironment(env: Environment): NekkuEnv {
             return NekkuEnv(
                 // URL up to the operation name/
                 url = URI.create(env.lookup("evaka.integration.nekku.url")),
                 apikey = Sensitive(env.lookup("evaka.integration.nekku.apikey")),
+                orderFreeze =
+                    env.lookup<String?>("evaka.integration.nekku.order_freeze.starts_at")?.let {
+                        startsAt ->
+                        NekkuOrderFreeze(
+                            startsAt = HelsinkiDateTime.of(LocalDateTime.parse(startsAt)),
+                            deliveryDatesBefore =
+                                LocalDate.parse(
+                                    env.lookup<String>(
+                                        "evaka.integration.nekku.order_freeze.delivery_dates_before"
+                                    )
+                                ),
+                        )
+                    },
             )
         }
     }
