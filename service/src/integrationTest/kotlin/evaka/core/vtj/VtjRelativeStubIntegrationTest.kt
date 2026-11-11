@@ -105,7 +105,7 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun refreshGuardian() {
-        vtjSyncService.refreshPersonsAndDependants(db, user.evakaUserId, clock, listOf(guardian.id))
+        vtjSyncService.refreshPersonsGreedy(db, user.evakaUserId, clock, listOf(guardian.id))
     }
 }
 
