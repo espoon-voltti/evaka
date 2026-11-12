@@ -18,6 +18,7 @@ import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.service.IncomeNotificationType
 import evaka.core.messaging.AccountType
 import evaka.core.messaging.MessageType
+import evaka.core.shared.ApplicationId
 import evaka.core.shared.CalendarEventId
 import evaka.core.shared.CalendarEventTimeId
 import evaka.core.shared.ChildId
@@ -34,15 +35,27 @@ enum class EmailMessageFilter {
     clubApplicationReceived,
     daycareApplicationReceived,
     preschoolApplicationReceived,
+    preschoolApplicationReceivedOutsideApplicationPeriod,
     missingReservationsNotification,
     missingHolidayReservationsNotification,
     messageNotification,
+    urgentMessageNotification,
+    applicationMessageNotification,
+    bulletinNotification,
+    urgentBulletinNotification,
+    municipalBulletinNotification,
     childDocumentNotification,
+    editableChildDocumentNotification,
+    decisionChildDocumentNotification,
     pedagogicalDocumentNotification,
     outdatedIncomeNotification,
+    outdatedIncomeReminderNotification,
+    outdatedIncomeExpiredNotification,
+    newCustomerIncomeNotification,
     calendarEventNotification,
     decisionNotification,
-    financeDecisionNotification,
+    feeDecisionNotification,
+    voucherValueDecisionNotification,
     discussionTimeReservation,
     discussionTimeCancellation,
     discussionSurveyCreation,
@@ -82,6 +95,10 @@ fun emailPreviewContent(
             provider.preschoolApplicationReceived(language, true)
         }
 
+        EmailMessageFilter.preschoolApplicationReceivedOutsideApplicationPeriod -> {
+            provider.preschoolApplicationReceived(language, false)
+        }
+
         EmailMessageFilter.missingReservationsNotification -> {
             provider.missingReservationsNotification(
                 language,
@@ -94,26 +111,60 @@ fun emailPreviewContent(
         }
 
         EmailMessageFilter.messageNotification -> {
-            provider.messageNotification(
+            exampleMessageNotification(provider, language, MessageType.MESSAGE)
+        }
+
+        EmailMessageFilter.urgentMessageNotification -> {
+            exampleMessageNotification(provider, language, MessageType.MESSAGE, urgent = true)
+        }
+
+        EmailMessageFilter.applicationMessageNotification -> {
+            exampleMessageNotification(
+                provider,
                 language,
-                MessageThreadData(
-                    id = MessageThreadId(UUID.randomUUID()),
-                    type = MessageType.MESSAGE,
-                    title = HtmlSafe("Testiviesti"),
-                    urgent = false,
-                    sensitive = false,
-                    senderName = HtmlSafe("Testiryhmä"),
-                    senderType = AccountType.GROUP,
-                    isCopy = false,
-                ),
+                MessageType.MESSAGE,
+                applicationId = ApplicationId(UUID.randomUUID()),
+            )
+        }
+
+        EmailMessageFilter.bulletinNotification -> {
+            exampleMessageNotification(provider, language, MessageType.BULLETIN)
+        }
+
+        EmailMessageFilter.urgentBulletinNotification -> {
+            exampleMessageNotification(provider, language, MessageType.BULLETIN, urgent = true)
+        }
+
+        EmailMessageFilter.municipalBulletinNotification -> {
+            exampleMessageNotification(
+                provider,
+                language,
+                MessageType.BULLETIN,
+                isSenderMunicipalAccount = true,
             )
         }
 
         EmailMessageFilter.childDocumentNotification -> {
-            provider.childDocumentNotification(
+            exampleChildDocumentNotification(
+                provider,
                 language,
-                ChildId(UUID.randomUUID()),
                 ChildDocumentNotificationType.BASIC_DOCUMENT,
+            )
+        }
+
+        EmailMessageFilter.editableChildDocumentNotification -> {
+            exampleChildDocumentNotification(
+                provider,
+                language,
+                ChildDocumentNotificationType.EDITABLE_DOCUMENT,
+            )
+        }
+
+        EmailMessageFilter.decisionChildDocumentNotification -> {
+            exampleChildDocumentNotification(
+                provider,
+                language,
+                ChildDocumentNotificationType.DECISION_DOCUMENT,
             )
         }
 
@@ -123,6 +174,18 @@ fun emailPreviewContent(
 
         EmailMessageFilter.outdatedIncomeNotification -> {
             provider.incomeNotification(IncomeNotificationType.INITIAL_EMAIL, language)
+        }
+
+        EmailMessageFilter.outdatedIncomeReminderNotification -> {
+            provider.incomeNotification(IncomeNotificationType.REMINDER_EMAIL, language)
+        }
+
+        EmailMessageFilter.outdatedIncomeExpiredNotification -> {
+            provider.incomeNotification(IncomeNotificationType.EXPIRED_EMAIL, language)
+        }
+
+        EmailMessageFilter.newCustomerIncomeNotification -> {
+            provider.incomeNotification(IncomeNotificationType.NEW_CUSTOMER, language)
         }
 
         EmailMessageFilter.calendarEventNotification -> {
@@ -147,8 +210,12 @@ fun emailPreviewContent(
             provider.decisionNotification()
         }
 
-        EmailMessageFilter.financeDecisionNotification -> {
+        EmailMessageFilter.feeDecisionNotification -> {
             provider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
+        }
+
+        EmailMessageFilter.voucherValueDecisionNotification -> {
+            provider.financeDecisionNotification(FinanceDecisionType.VOUCHER_VALUE_DECISION)
         }
 
         EmailMessageFilter.discussionTimeReservation -> {
@@ -252,6 +319,36 @@ fun emailPreviewContent(
             provider.weakCredentialsRemoved()
         }
     }
+
+private fun exampleMessageNotification(
+    provider: IEmailMessageProvider,
+    language: Language,
+    type: MessageType,
+    urgent: Boolean = false,
+    isSenderMunicipalAccount: Boolean = false,
+    applicationId: ApplicationId? = null,
+) =
+    provider.messageNotification(
+        language,
+        MessageThreadData(
+            id = MessageThreadId(UUID.randomUUID()),
+            type = type,
+            title = HtmlSafe("Testiviesti"),
+            urgent = urgent,
+            sensitive = false,
+            senderName = HtmlSafe("Testiryhmä"),
+            senderType = AccountType.GROUP,
+            isCopy = false,
+        ),
+        isSenderMunicipalAccount,
+        applicationId,
+    )
+
+private fun exampleChildDocumentNotification(
+    provider: IEmailMessageProvider,
+    language: Language,
+    type: ChildDocumentNotificationType,
+) = provider.childDocumentNotification(language, ChildId(UUID.randomUUID()), type)
 
 private fun exampleCalendarEventTime() =
     CalendarEventTime(
