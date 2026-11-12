@@ -78,6 +78,9 @@ const fi: DeepPartial<Translations> = {
         )
       },
       verification: {
+        attachmentBox: {
+          shiftCare: 'Vuorohoito'
+        },
         serviceNeed: {
           connectedDaycare: {
             label: 'Esiopetusta täydentävä toiminta',
@@ -88,6 +91,11 @@ const fi: DeepPartial<Translations> = {
             title: {
               PRESCHOOL: 'Esiopetuksen aloitus'
             }
+          },
+          dailyTime: {
+            shiftCare: 'Vuorohoito',
+            withShiftCare: 'Tarvitaan vuorohoitoa',
+            withoutShiftCare: 'Ei tarvita vuorohoitoa'
           }
         },
         unitPreference: {
