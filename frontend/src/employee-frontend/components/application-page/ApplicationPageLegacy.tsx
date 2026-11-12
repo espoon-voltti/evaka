@@ -112,7 +112,6 @@ export default React.memo(function ApplicationPageLegacy() {
   useEffect(() => {
     if (application.isSuccess) {
       if (!editedApplicationInitialized) {
-        // oxlint-disable-next-line react/set-state-in-effect
         setEditedApplication(application.value.application)
       }
     }

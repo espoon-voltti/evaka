@@ -183,7 +183,6 @@ const PlacementDesktopValidated = React.memo(
     )
 
     useEffect(() => {
-      // oxlint-disable-next-line react/set-state-in-effect
       setPlacementDraftCache(
         applications.reduce(
           (acc, application) =>
@@ -202,7 +201,6 @@ const PlacementDesktopValidated = React.memo(
       // - one of the searched units, or
       // - a preferred unit of some result application, or
       // - already have a placement draft from some result application
-      // oxlint-disable-next-line react/set-state-in-effect
       setShownDaycares(
         orderBy(
           uniqBy(
@@ -411,7 +409,6 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
           unit
         )
       })
-      // oxlint-disable-next-line react/set-state-in-effect
       setInitialDataInsertedForArgs(queryArg)
     }
   }, [initialData, queryArg, queryClient])

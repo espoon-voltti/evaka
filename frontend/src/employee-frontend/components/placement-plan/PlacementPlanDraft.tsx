@@ -219,7 +219,6 @@ export default React.memo(function PlacementPlanDraft() {
       const preselectedUnit =
         withoutOldPlacements.value.placementDraft?.unit?.id ?? null
       if (withoutOldPlacements.value.preschoolDaycarePeriod !== null) {
-        // oxlint-disable-next-line react/set-state-in-effect
         setFormState({
           unitId: preselectedUnit,
           period: withoutOldPlacements.value.period,

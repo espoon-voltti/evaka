@@ -119,7 +119,6 @@ export default React.memo(function ApplicationPageShared() {
   const formDataInitialized = formData !== undefined
   useEffect(() => {
     if (application.isSuccess && !formDataInitialized) {
-      // oxlint-disable-next-line react/set-state-in-effect
       setFormData(apiDataToFormData(application.value.application, []))
       setDueDate(application.value.application.dueDate)
     }
