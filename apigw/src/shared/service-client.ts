@@ -135,10 +135,14 @@ export async function employeeSuomiFiLogin(
   return data
 }
 
+export type EmployeeDetailsResult =
+  | { status: 'found'; details: EmployeeAuthResponse }
+  | { status: 'inactive' | 'not-found' }
+
 export async function getEmployeeDetails(
   req: express.Request,
   employeeId: string
-): Promise<EmployeeAuthResponse | undefined> {
+): Promise<EmployeeDetailsResult> {
   try {
     const { data } = await client.get<EmployeeAuthResponse>(
       `/system/employee/${employeeId}`,
@@ -146,10 +150,18 @@ export async function getEmployeeDetails(
         headers: createServiceRequestHeaders(req, systemUserHeader)
       }
     )
-    return data
+    return { status: 'found', details: data }
   } catch (e: unknown) {
-    if (axios.isAxiosError(e) && e.response?.status === 404) {
-      return undefined
+    if (
+      axios.isAxiosError<{ errorCode?: string }>(e) &&
+      e.response?.status === 404
+    ) {
+      return {
+        status:
+          e.response.data?.errorCode === 'ACCOUNT_INACTIVE'
+            ? 'inactive'
+            : 'not-found'
+      }
     } else {
       throw e
     }

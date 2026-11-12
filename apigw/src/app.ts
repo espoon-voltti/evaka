@@ -22,6 +22,7 @@ import {
 } from './enduser/suomi-fi-saml.ts'
 import { createSamlAdIntegration } from './internal/ad-saml.ts'
 import { createDevAdRouter } from './internal/dev-ad-auth.ts'
+import { employeeRoleRefresh } from './internal/employee-session-refresh.ts'
 import {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -339,6 +340,10 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
 
   router.use('/employee/', employeeSessions.middleware)
   router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
+  router.use(
+    '/employee/',
+    employeeRoleRefresh(employeeSessions, config.employee)
+  )
   router.all('/employee/auth/{*rest}', (_, res) => res.redirect('/employee'))
   router.all('/employee/public/{*rest}', employeeProxy)
   router.all(
