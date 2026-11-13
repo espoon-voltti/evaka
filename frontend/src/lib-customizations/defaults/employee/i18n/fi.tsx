@@ -2613,7 +2613,7 @@ export const fi = {
         '. Kirjaus on päätettävä ennen uuden lisäystä.',
       attendancesInOtherUnits:
         'Tälle päivälle on tehty kirjauksia toisessa yksikössä',
-      overlappingAttendance: 'Päällekkäinen kirjaus',
+      overlappingAttendanceNextDay: 'Päällekkäinen kirjaus seuraavana päivänä',
       overlappingAttendanceSaveError:
         'Kirjaus on päällekkäinen toisen kirjauksen kanssa. Päivitä näkymä ja tarkista kirjaukset.',
       personCount: 'Läsnäolleiden yhteismäärä',

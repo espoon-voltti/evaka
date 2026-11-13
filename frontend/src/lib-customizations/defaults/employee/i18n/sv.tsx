@@ -2631,7 +2631,7 @@ export const sv: typeof fi = {
         '. Anteckningen måste avslutas innan en ny kan läggas till.',
       attendancesInOtherUnits:
         'För denna dag har det gjorts anteckningar i en annan enhet',
-      overlappingAttendance: 'Överlappande anteckning',
+      overlappingAttendanceNextDay: 'Överlappande anteckning följande dag',
       overlappingAttendanceSaveError:
         'Anteckningen överlappar en annan anteckning. Uppdatera vyn och kontrollera anteckningarna.',
       personCount: 'Närvarandes totala antal',

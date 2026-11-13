@@ -811,7 +811,7 @@ function StaffAttendanceDetailsModal<
                 data-qa="overlapping-attendance-warning"
                 message={
                   <>
-                    {i18n.unit.staffAttendance.overlappingAttendance}
+                    {i18n.unit.staffAttendance.overlappingAttendanceNextDay}
                     <OtherUnitAttendanceList
                       attendances={overlappingAttendancesOnOtherDates}
                       groups={groups}
