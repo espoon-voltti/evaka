@@ -184,6 +184,7 @@ class PartnersSection extends Section {
     await startDatePicker.fill(startDate)
 
     await modal.submit()
+    await expect(modal).toBeHidden()
   }
 }
 
@@ -205,6 +206,7 @@ class ChildrenSection extends Section {
     await startDatePicker.fill(startDate)
 
     await modal.submit()
+    await expect(modal).toBeHidden()
   }
 
   #childrenTableRow = this.findAllByDataQa('table-fridge-child-row')
@@ -247,6 +249,7 @@ class FosterChildrenSection extends Section {
       )
     }
     await modal.submit()
+    await expect(modal).toBeHidden()
   }
 
   async editFosterChild(

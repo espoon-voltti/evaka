@@ -1005,6 +1005,7 @@ export class PlacementsSection extends Section {
       await modal.placeGuarantee.check()
     }
     await modal.submit()
+    await expect(modal).toBeHidden()
   }
 
   async setShiftCareTypeOfNthServiceNeed(
