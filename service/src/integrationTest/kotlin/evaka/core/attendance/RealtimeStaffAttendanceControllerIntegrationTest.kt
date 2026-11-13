@@ -15,6 +15,7 @@ import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevStaffAttendance
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Forbidden
@@ -194,6 +195,301 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
+    fun `Attendances in other units are returned`() {
+        upsertDailyStaffAttendances(daycare2.id, group2.id, now.minusHours(5), now.minusHours(3))
+
+        val attendance = getAttendances(daycare.id).staff.single()
+        assertEquals(listOf(), attendance.attendances)
+        assertEquals(
+            listOf(
+                OtherUnitStaffAttendance(
+                    daycare2.id,
+                    daycare2.name,
+                    now.minusHours(5),
+                    now.minusHours(3),
+                ),
+            ),
+            attendance.otherUnitAttendances,
+        )
+        assertEquals(listOf(), getAttendances(daycare2.id).staff.single().otherUnitAttendances)
+    }
+
+    @Test
+    fun `Attendances in other units are returned only for employees the user can edit`() {
+        val otherStaff = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(otherStaff)
+            tx.insertDaycareAclRow(daycare.id, otherStaff.id, UserRole.STAFF)
+            tx.insertDaycareAclRow(daycare2.id, otherStaff.id, UserRole.STAFF)
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = otherStaff.id,
+                    groupId = group2.id,
+                    arrived = now.minusHours(5),
+                    departed = now.minusHours(3),
+                    modifiedAt = now,
+                    modifiedBy = supervisor.evakaUserId,
+                ),
+            )
+        }
+        upsertDailyStaffAttendances(daycare2.id, group2.id, now.minusHours(5), now.minusHours(3))
+
+        val staffUser = AuthenticatedUser.Employee(staff.id, setOf())
+        val response =
+            realtimeStaffAttendanceController.getRealtimeStaffAttendances(
+                dbInstance(),
+                staffUser,
+                MockEvakaClock(now),
+                daycare.id,
+                now.toLocalDate(),
+                now.toLocalDate(),
+            )
+
+        assertEquals(
+            1,
+            response.staff.single { it.employeeId == staff.id }.otherUnitAttendances.size,
+        )
+        assertEquals(
+            listOf(),
+            response.staff.single { it.employeeId == otherStaff.id }.otherUnitAttendances,
+        )
+        assertEquals(
+            1,
+            getAttendances(daycare.id)
+                .staff
+                .single { it.employeeId == otherStaff.id }
+                .otherUnitAttendances
+                .size,
+        )
+    }
+
+    @Test
+    fun `Attendances in other units are returned only for employees with an acl in the unit`() {
+        val formerStaff = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(formerStaff)
+            tx.insertDaycareAclRow(daycare2.id, formerStaff.id, UserRole.STAFF)
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = formerStaff.id,
+                    groupId = group1.id,
+                    arrived = now.minusHours(8),
+                    departed = now.minusHours(6),
+                    modifiedAt = now,
+                    modifiedBy = supervisor.evakaUserId,
+                ),
+            )
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = formerStaff.id,
+                    groupId = group2.id,
+                    arrived = now.minusHours(5),
+                    departed = now.minusHours(3),
+                    modifiedAt = now,
+                    modifiedBy = supervisor.evakaUserId,
+                ),
+            )
+        }
+
+        val attendance = getAttendances(daycare.id).staff.single { it.employeeId == formerStaff.id }
+        assertEquals(1, attendance.attendances.size)
+        assertEquals(listOf(), attendance.otherUnitAttendances)
+    }
+
+    @Test
+    fun `Attendances in other units are returned until the end of the day following the range`() {
+        val tomorrow = now.toLocalDate().plusDays(1)
+        val dayAfterTomorrow = now.toLocalDate().plusDays(2)
+        db.transaction { tx ->
+            listOf(tomorrow, dayAfterTomorrow).forEach { date ->
+                tx.insert(
+                    DevStaffAttendance(
+                        employeeId = staff.id,
+                        groupId = group2.id,
+                        arrived = HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
+                        departed = HelsinkiDateTime.of(date, LocalTime.of(2, 0)),
+                        modifiedAt = now,
+                        modifiedBy = supervisor.evakaUserId,
+                    ),
+                )
+            }
+        }
+
+        assertEquals(
+            listOf(HelsinkiDateTime.of(tomorrow, LocalTime.of(0, 0))),
+            getAttendances(daycare.id).staff.single().otherUnitAttendances.map { it.arrived },
+        )
+    }
+
+    @Test
+    fun `Attendances cannot be fetched for more than six weeks`() {
+        assertThrows<BadRequest> {
+            realtimeStaffAttendanceController.getRealtimeStaffAttendances(
+                dbInstance(),
+                unitSupervisor,
+                MockEvakaClock(now),
+                daycare.id,
+                now.toLocalDate().minusWeeks(6),
+                now.toLocalDate(),
+            )
+        }
+    }
+
+    @Test
+    fun `Overnight attendance cannot overlap with an attendance on the next day in the same unit`() {
+        val yesterday = now.toLocalDate().minusDays(1)
+        db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = staff.id,
+                    groupId = group1.id,
+                    arrived = HelsinkiDateTime.of(now.toLocalDate(), LocalTime.of(6, 0)),
+                    departed = HelsinkiDateTime.of(now.toLocalDate(), LocalTime.of(7, 0)),
+                    modifiedAt = now,
+                    modifiedBy = supervisor.evakaUserId,
+                ),
+            )
+        }
+
+        val exception =
+            assertThrows<BadRequest> {
+                upsertStaffAttendancesOnDate(
+                    yesterday,
+                    listOf(
+                        presentEntry(
+                            group1.id,
+                            HelsinkiDateTime.of(yesterday, LocalTime.of(23, 0)),
+                            HelsinkiDateTime.of(now.toLocalDate(), LocalTime.of(6, 30)),
+                        ),
+                    ),
+                )
+            }
+        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+
+        upsertStaffAttendancesOnDate(
+            yesterday,
+            listOf(
+                presentEntry(
+                    group1.id,
+                    HelsinkiDateTime.of(yesterday, LocalTime.of(23, 0)),
+                    HelsinkiDateTime.of(now.toLocalDate(), LocalTime.of(6, 0)),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `Adjacent entries in the same request are allowed`() {
+        upsertStaffAttendancesOnDate(
+            now.toLocalDate(),
+            listOf(
+                presentEntry(group1.id, now.minusHours(5), now.minusHours(3)),
+                presentEntry(group1.id, now.minusHours(3), null),
+            ),
+        )
+        assertEquals(2, getAttendances(daycare.id).staff.single().attendances.size)
+    }
+
+    @Test
+    fun `Open entry followed by another entry in the same request is rejected`() {
+        val exception =
+            assertThrows<BadRequest> {
+                upsertStaffAttendancesOnDate(
+                    now.toLocalDate(),
+                    listOf(
+                        presentEntry(group1.id, now.minusHours(5), null),
+                        presentEntry(group1.id, now.minusHours(3), now.minusHours(2)),
+                    ),
+                )
+            }
+        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+    }
+
+    @Test
+    fun `Attendance cannot overlap with an attendance in another unit`() {
+        upsertDailyStaffAttendances(daycare2.id, group2.id, now.minusHours(5), now.minusHours(3))
+
+        val exception =
+            assertThrows<BadRequest> {
+                upsertDailyStaffAttendances(
+                    daycare.id,
+                    group1.id,
+                    now.minusHours(4),
+                    now.minusHours(1),
+                )
+            }
+        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+
+        upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(3), now.minusHours(1))
+    }
+
+    @Test
+    fun `Attendance cannot overlap with an open attendance in another unit`() {
+        upsertDailyStaffAttendances(daycare2.id, group2.id, now.minusHours(5), null)
+
+        val exception =
+            assertThrows<BadRequest> {
+                upsertDailyStaffAttendances(
+                    daycare.id,
+                    group1.id,
+                    now.minusHours(2),
+                    now.minusHours(1),
+                )
+            }
+        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+    }
+
+    @Test
+    fun `Entries in the same request cannot overlap`() {
+        val exception =
+            assertThrows<BadRequest> {
+                realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
+                    dbInstance(),
+                    unitSupervisor,
+                    MockEvakaClock(now),
+                    RealtimeStaffAttendanceController.StaffAttendanceBody(
+                        unitId = daycare.id,
+                        date = now.toLocalDate(),
+                        employeeId = staff.id,
+                        entries =
+                            listOf(
+                                presentEntry(group1.id, now.minusHours(5), now.minusHours(3)),
+                                presentEntry(group1.id, now.minusHours(4), now.minusHours(2)),
+                            ),
+                    ),
+                )
+            }
+        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+    }
+
+    @Test
+    fun `Existing attendance can be modified without overlap error`() {
+        upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(5), now.minusHours(3))
+        val existing = getAttendances(daycare.id).staff.single().attendances.single()
+
+        realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
+            dbInstance(),
+            unitSupervisor,
+            MockEvakaClock(now),
+            RealtimeStaffAttendanceController.StaffAttendanceBody(
+                unitId = daycare.id,
+                date = now.toLocalDate(),
+                employeeId = staff.id,
+                entries =
+                    listOf(
+                        presentEntry(group1.id, now.minusHours(5), now.minusHours(2))
+                            .copy(id = existing.id),
+                    ),
+            ),
+        )
+
+        assertEquals(
+            now.minusHours(2),
+            getAttendances(daycare.id).staff.single().attendances.single().departed,
+        )
+    }
+
+    @Test
     fun `Attendances without group can be deleted`() {
         realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
             dbInstance(),
@@ -340,6 +636,37 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             ),
         )
     }
+
+    private fun upsertStaffAttendancesOnDate(
+        date: LocalDate,
+        entries: List<RealtimeStaffAttendanceController.StaffAttendanceUpsert>,
+    ) {
+        realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
+            dbInstance(),
+            unitSupervisor,
+            MockEvakaClock(now),
+            RealtimeStaffAttendanceController.StaffAttendanceBody(
+                unitId = daycare.id,
+                date = date,
+                employeeId = staff.id,
+                entries = entries,
+            ),
+        )
+    }
+
+    private fun presentEntry(
+        groupId: GroupId,
+        arrived: HelsinkiDateTime,
+        departed: HelsinkiDateTime?,
+    ) =
+        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+            id = null,
+            groupId = groupId,
+            arrived = arrived,
+            departed = departed,
+            type = StaffAttendanceType.PRESENT,
+            hasStaffOccupancyEffect = true,
+        )
 
     private fun upsertDailyExternalAttendances(
         unitId: DaycareId,

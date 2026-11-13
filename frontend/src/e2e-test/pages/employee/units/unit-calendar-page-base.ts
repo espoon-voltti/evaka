@@ -343,6 +343,14 @@ export class StaffAttendanceDetailsModal extends Element {
   )
   continuationAttendance = this.findByDataQa('continuation-attendance')
   newAttendanceButton = this.findByDataQa('new-attendance')
+  attendancesInOtherUnits = this.findByDataQa('attendances-in-other-units')
+  overlappingAttendanceWarning = this.findByDataQa(
+    'overlapping-attendance-warning'
+  )
+  saveButton = this.findByDataQa('save')
+  overlappingAttendanceSaveError = this.findByDataQa(
+    'overlapping-attendance-save-error'
+  )
 
   departedAutomaticallyTime(index: number) {
     return this.findAllByDataQa('departed-automatically-time').nth(index)

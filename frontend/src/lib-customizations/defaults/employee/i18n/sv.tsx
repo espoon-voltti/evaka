@@ -2629,6 +2629,11 @@ export const sv: typeof fi = {
       openAttendanceInAnotherUnitWarning: 'Öppen anteckning',
       openAttendanceInAnotherUnitWarningCont:
         '. Anteckningen måste avslutas innan en ny kan läggas till.',
+      attendancesInOtherUnits:
+        'För denna dag har det gjorts anteckningar i en annan enhet',
+      overlappingAttendance: 'Överlappande anteckning',
+      overlappingAttendanceSaveError:
+        'Anteckningen överlappar en annan anteckning. Uppdatera vyn och kontrollera anteckningarna.',
       personCount: 'Närvarandes totala antal',
       personCountAbbr: 'pers.',
       unlinkOvernight: 'Separera närvaro som går över natten',

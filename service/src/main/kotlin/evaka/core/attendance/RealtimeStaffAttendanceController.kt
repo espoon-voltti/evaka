@@ -14,14 +14,18 @@ import evaka.core.shared.StaffAttendanceExternalId
 import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.mapPSQLException
+import evaka.core.shared.db.psqlCause
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import java.math.BigDecimal
 import java.time.LocalDate
+import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -40,6 +44,13 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
     ): StaffAttendanceResponse {
+        if (start.isAfter(end)) {
+            throw BadRequest("Start must be before or equal to the end")
+        }
+        val range = FiniteDateRange(start, end)
+        if (range.durationInDays() > 6 * 7) {
+            throw BadRequest("Only 6 weeks of staff attendances may be fetched at once")
+        }
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -49,7 +60,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         Action.Unit.READ_STAFF_ATTENDANCES,
                         unitId,
                     )
-                    val range = FiniteDateRange(start, end)
                     val attendancesByEmployee =
                         tx.getStaffAttendancesForDateRange(unitId, range).groupBy { raw ->
                             raw.employeeId
@@ -79,6 +89,30 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             Action.Employee.UPDATE_STAFF_ATTENDANCES,
                             attendingEmployeeIds,
                         )
+
+                    val rangeIncludingFollowingDay =
+                        HelsinkiDateTimeRange(
+                            HelsinkiDateTime.atStartOfDay(start),
+                            HelsinkiDateTime.atStartOfDay(end.plusDays(2)),
+                        )
+                    val otherUnitAttendances =
+                        tx.getStaffAttendancesInOtherUnits(
+                                unitId,
+                                allowedToEdit.filterValues { it.isPermitted() }.keys,
+                                rangeIncludingFollowingDay,
+                                clock.today(),
+                            )
+                            .groupBy(
+                                { it.employeeId },
+                                {
+                                    OtherUnitStaffAttendance(
+                                        it.unitId,
+                                        it.unitName,
+                                        it.arrived,
+                                        it.departed,
+                                    )
+                                },
+                            )
 
                     val staffWithAttendance =
                         attendancesByEmployee.entries.map { (employeeId, data) ->
@@ -119,6 +153,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             )
                                         },
                                 plannedAttendances = plannedAttendances[employeeId] ?: emptyList(),
+                                otherUnitAttendances =
+                                    otherUnitAttendances[employeeId] ?: emptyList(),
                                 allowedToEdit = allowedToEdit[employeeId]?.isPermitted() ?: false,
                             )
                         }
@@ -154,6 +190,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             )
                                         },
                                     plannedAttendances = plannedAttendances[emp.id] ?: emptyList(),
+                                    otherUnitAttendances =
+                                        otherUnitAttendances[emp.id] ?: emptyList(),
                                     allowedToEdit = allowedToEdit[emp.id]?.isPermitted() ?: false,
                                 )
                             }
@@ -184,6 +222,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val hasStaffOccupancyEffect: Boolean,
     ) {
         fun departsAfterArrival(): Boolean = departed == null || departed > arrived
+
+        fun overlaps(other: StaffAttendanceUpsert): Boolean =
+            (departed == null || other.arrived < departed) &&
+                (other.departed == null || arrived < other.departed)
     }
 
     data class StaffAttendanceBody(
@@ -195,6 +237,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean = entries.any {
             it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
         }
+
+        fun anyEntriesOverlap(): Boolean =
+            entries.withIndex().any { (i, a) -> entries.drop(i + 1).any { b -> a.overlaps(b) } }
     }
 
     @PostMapping("/employee/staff-attendances/realtime/upsert")
@@ -213,54 +258,89 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         if (body.entries.any { !it.departsAfterArrival() }) {
             throw BadRequest("Departure time must be after arrival time")
         }
+        if (body.anyEntriesOverlap()) {
+            throw BadRequest("Attendances overlap", OVERLAPPING_ATTENDANCE)
+        }
 
         val (updates, changes) =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.UPDATE_STAFF_ATTENDANCES,
-                        body.unitId,
-                    )
-                    val deleted =
-                        tx.deleteStaffAttendancesOnDateExcept(
+            try {
+                db.connect { dbc ->
+                    dbc.transaction { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.UPDATE_STAFF_ATTENDANCES,
                             body.unitId,
+                        )
+                        val deleted =
+                            tx.deleteStaffAttendancesOnDateExcept(
+                                body.unitId,
+                                body.employeeId,
+                                body.date,
+                                body.entries.mapNotNull { it.id },
+                            )
+
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Employee.UPDATE_STAFF_ATTENDANCES,
                             body.employeeId,
-                            body.date,
-                            body.entries.mapNotNull { it.id },
                         )
 
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Employee.UPDATE_STAFF_ATTENDANCES,
-                        body.employeeId,
-                    )
-
-                    val updates =
-                        body.entries.mapNotNull { entry ->
-                            val occupancyCoefficient =
-                                if (entry.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                                else occupancyCoefficientZero
-                            tx.upsertStaffAttendance(
-                                entry.id,
-                                body.employeeId,
-                                entry.groupId,
-                                entry.arrived,
-                                entry.departed,
-                                occupancyCoefficient,
-                                entry.type,
-                                false,
-                                clock.now(),
-                                user.evakaUserId,
+                        val entryIds = body.entries.mapNotNull { it.id }.toSet()
+                        if (
+                            body.entries.any {
+                                tx.hasOverlappingStaffAttendance(
+                                    body.employeeId,
+                                    it.arrived,
+                                    it.departed,
+                                    entryIds,
+                                )
+                            }
+                        ) {
+                            throw BadRequest(
+                                "Attendance overlaps with an existing attendance",
+                                OVERLAPPING_ATTENDANCE,
                             )
-                        } + deleted.map { StaffAttendanceRealtimeChange(old = it) }
-                    updates to
-                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
+                        }
+
+                        val updates =
+                            body.entries.mapNotNull { entry ->
+                                val occupancyCoefficient =
+                                    if (entry.hasStaffOccupancyEffect) occupancyCoefficientSeven
+                                    else occupancyCoefficientZero
+                                tx.upsertStaffAttendance(
+                                    entry.id,
+                                    body.employeeId,
+                                    entry.groupId,
+                                    entry.arrived,
+                                    entry.departed,
+                                    occupancyCoefficient,
+                                    entry.type,
+                                    false,
+                                    clock.now(),
+                                    user.evakaUserId,
+                                )
+                            } + deleted.map { StaffAttendanceRealtimeChange(old = it) }
+                        updates to
+                            updates.map {
+                                changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields)
+                            }
+                    }
                 }
+            } catch (e: JdbiException) {
+                if (
+                    e.psqlCause()?.serverErrorMessage?.constraint == "staff_attendance_no_overlaps"
+                ) {
+                    throw BadRequest(
+                        "Attendance overlaps with an existing attendance",
+                        OVERLAPPING_ATTENDANCE,
+                        e,
+                    )
+                }
+                throw mapPSQLException(e)
             }
         Audit.StaffAttendanceUpdate.log(
             targetId = AuditId(body.unitId),
@@ -366,4 +446,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     data class OpenGroupAttendanceResponse(val openGroupAttendance: OpenGroupAttendance?)
+
+    companion object {
+        const val OVERLAPPING_ATTENDANCE = "overlappingAttendance"
+    }
 }

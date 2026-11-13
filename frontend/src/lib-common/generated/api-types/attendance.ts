@@ -180,6 +180,7 @@ export interface EmployeeAttendance {
   firstName: string
   groups: GroupId[]
   lastName: string
+  otherUnitAttendances: OtherUnitStaffAttendance[]
   plannedAttendances: PlannedStaffAttendance[]
 }
 
@@ -305,6 +306,16 @@ export interface OpenGroupAttendance {
 */
 export interface OpenGroupAttendanceResponse {
   openGroupAttendance: OpenGroupAttendance | null
+}
+
+/**
+* Generated from evaka.core.attendance.OtherUnitStaffAttendance
+*/
+export interface OtherUnitStaffAttendance {
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+  unitId: DaycareId
+  unitName: string
 }
 
 /**
@@ -564,6 +575,7 @@ export function deserializeJsonEmployeeAttendance(json: JsonOf<EmployeeAttendanc
   return {
     ...json,
     attendances: json.attendances.map(e => deserializeJsonAttendance(e)),
+    otherUnitAttendances: json.otherUnitAttendances.map(e => deserializeJsonOtherUnitStaffAttendance(e)),
     plannedAttendances: json.plannedAttendances.map(e => deserializeJsonPlannedStaffAttendance(e))
   }
 }
@@ -649,6 +661,15 @@ export function deserializeJsonOpenGroupAttendanceResponse(json: JsonOf<OpenGrou
   return {
     ...json,
     openGroupAttendance: (json.openGroupAttendance != null) ? deserializeJsonOpenGroupAttendance(json.openGroupAttendance) : null
+  }
+}
+
+
+export function deserializeJsonOtherUnitStaffAttendance(json: JsonOf<OtherUnitStaffAttendance>): OtherUnitStaffAttendance {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
   }
 }
 

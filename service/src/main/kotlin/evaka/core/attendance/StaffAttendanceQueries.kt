@@ -13,6 +13,7 @@ import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.domain.asHelsinkiDateTimeRange
 import evaka.core.user.EvakaUser
 import java.math.BigDecimal
@@ -556,6 +557,60 @@ WHERE sa.employee_id = ANY(${bind(employeeIds)}) AND sa.group_id IS NULL AND tst
     }
         .toList()
 }
+
+data class OtherUnitStaffAttendanceRow(
+    val employeeId: EmployeeId,
+    val unitId: DaycareId,
+    val unitName: String,
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?,
+)
+
+fun Database.Read.getStaffAttendancesInOtherUnits(
+    unitId: DaycareId,
+    employeeIds: Set<EmployeeId>,
+    range: HelsinkiDateTimeRange,
+    today: LocalDate,
+): List<OtherUnitStaffAttendanceRow> = createQuery {
+    sql(
+        """
+SELECT sa.employee_id, d.id AS unit_id, d.name AS unit_name, sa.arrived, sa.departed
+FROM staff_attendance_realtime sa
+JOIN daycare_group dg ON sa.group_id = dg.id
+JOIN daycare d ON dg.daycare_id = d.id
+WHERE sa.employee_id = ANY(${bind(employeeIds)})
+  AND d.id <> ${bind(unitId)}
+  AND tstzrange(sa.arrived, sa.departed) && ${bind(range)}
+  AND EXISTS (
+    SELECT FROM daycare_acl acl
+    WHERE acl.employee_id = sa.employee_id
+      AND acl.daycare_id = ${bind(unitId)}
+      AND (acl.end_date IS NULL OR acl.end_date >= ${bind(today)})
+  )
+ORDER BY sa.arrived
+""",
+    )
+}
+    .toList()
+
+fun Database.Read.hasOverlappingStaffAttendance(
+    employeeId: EmployeeId,
+    arrived: HelsinkiDateTime,
+    departed: HelsinkiDateTime?,
+    excludeIds: Set<StaffAttendanceRealtimeId>,
+): Boolean = createQuery {
+    sql(
+        """
+SELECT EXISTS (
+    SELECT FROM staff_attendance_realtime
+    WHERE employee_id = ${bind(employeeId)}
+      AND tstzrange(arrived, departed) && tstzrange(${bind(arrived)}, ${bind(departed)})
+      AND NOT id = ANY(${bind(excludeIds)})
+)
+""",
+    )
+}
+    .exactlyOne()
 
 data class RawAttendanceEmployee(
     val id: EmployeeId,
