@@ -508,6 +508,10 @@ export class StaffAttendanceEditPage {
     return this.page.findByDataQa('attendances-in-other-units')
   }
 
+  get rowsInfo() {
+    return this.page.findByDataQa('rows-info')
+  }
+
   get overlappingAttendanceWarning() {
     return this.page.findByDataQa('overlapping-attendance-warning')
   }

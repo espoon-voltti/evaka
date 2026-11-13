@@ -162,15 +162,18 @@ interface OtherAttendance {
 const staffAttendancesForm = (otherAttendances: OtherAttendance[]) =>
   object({
     rows: validated(array(staffAttendanceForm), (output) =>
-      output.some(
-        (row, index, array) =>
-          array.some(
-            (other, otherIndex) =>
-              index !== otherIndex && attendancesOverlap(row, other)
-          ) || otherAttendances.some((other) => attendancesOverlap(row, other))
+      output.some((row, index, array) =>
+        array.some(
+          (other, otherIndex) =>
+            index !== otherIndex && attendancesOverlap(row, other)
+        )
       )
         ? 'overlap'
-        : undefined
+        : output.some((row) =>
+              otherAttendances.some((other) => attendancesOverlap(row, other))
+            )
+          ? 'overlapWithOtherAttendance'
+          : undefined
     )
   })
 
@@ -646,12 +649,13 @@ const StaffAttendancesEditor = ({
             }
           />
         )}
-        {rowsInputInfo && (
-          <InputFieldUnderRow className={classNames(rowsInputInfo.status)}>
-            <span>{rowsInputInfo.text}</span>
-            <UnderRowStatusIcon status={rowsInputInfo.status} />
-          </InputFieldUnderRow>
-        )}
+        {rowsInputInfo &&
+          rows.validationError() !== 'overlapWithOtherAttendance' && (
+            <InputFieldUnderRow className={classNames(rowsInputInfo.status)}>
+              <span data-qa="rows-info">{rowsInputInfo.text}</span>
+              <UnderRowStatusIcon status={rowsInputInfo.status} />
+            </InputFieldUnderRow>
+          )}
         {rows.isValid() &&
           rows.state.every((attendance) => attendance.departedTime !== '') && (
             <Button

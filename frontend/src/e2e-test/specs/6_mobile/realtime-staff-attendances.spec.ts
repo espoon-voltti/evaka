@@ -1232,6 +1232,23 @@ test.describe('Realtime staff attendance edit page', () => {
       await expect(editPage.overlappingAttendanceWarning).toContainText(
         `${testDaycare.name}: 07:00 – 09:00`
       )
+      await expect(editPage.rowsInfo).toBeHidden()
+      await editPage.saveButton.assertDisabled(true)
+    })
+
+    test('Overlapping rows in the form are reported', async () => {
+      await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)))
+      await staffAttendancePage.openStaffPage(employeeName)
+      await staffAttendancePage.previousAttendancesButton.click()
+      await staffAttendancePage.previousAttendancesPage
+        .editAttendancesOfDateButton(date)
+        .click()
+
+      const editPage = new StaffAttendanceEditPage(page)
+      await editPage.addLink.click()
+      await editPage.fillArrived(1, '13:00')
+      await editPage.fillDeparted(1, '15:00')
+      await expect(editPage.rowsInfo).toHaveText('Päällekkäisiä merkintöjä')
       await editPage.saveButton.assertDisabled(true)
     })
   })

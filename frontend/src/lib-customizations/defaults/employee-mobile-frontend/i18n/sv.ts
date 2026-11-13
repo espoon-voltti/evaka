@@ -361,6 +361,7 @@ export const sv: typeof fi = {
         timeFormat: 'Kontrollera',
         future: 'Kommande',
         overlap: 'Överlappande markeringar',
+        overlapWithOtherAttendance: 'Överlappande anteckning',
         dateTooEarly: 'Kontrollera',
         dateTooLate: 'Kontrollera'
       },

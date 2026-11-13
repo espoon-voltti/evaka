@@ -351,6 +351,7 @@ export const fi = {
         timeFormat: 'Tarkista',
         future: 'Tulevaisuudessa',
         overlap: 'Päällekkäisiä merkintöjä',
+        overlapWithOtherAttendance: 'Päällekkäinen kirjaus',
         dateTooEarly: 'Tarkista',
         dateTooLate: 'Tarkista'
       },
