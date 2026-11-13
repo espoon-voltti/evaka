@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.primaryConstructor
 import org.unbescape.csv.CsvEscape
 
 val CSV_CHARSET = Charsets.UTF_8
@@ -42,6 +43,7 @@ fun <T : Any> toCsvRecords(
     config: BiExportConfig,
 ): Sequence<String> {
     check(clazz.isData)
+    val declarationOrder = clazz.primaryConstructor!!.parameters.map { it.name }
     val props =
         clazz.declaredMemberProperties
             .filter { prop ->
@@ -49,7 +51,7 @@ fun <T : Any> toCsvRecords(
                 val isLegacy = prop.annotations.any { it is LegacyColumn }
                 (!isPii || config.includePII) && (!isLegacy || config.includeLegacyColumns)
             }
-            .toList()
+            .sortedBy { declarationOrder.indexOf(it.name) }
     val header = props.joinToString(CSV_FIELD_SEPARATOR, postfix = CSV_RECORD_SEPARATOR) { it.name }
     return sequenceOf(header) +
         values.map { record ->

@@ -54,10 +54,11 @@ import java.time.LocalTime
 import java.time.Month
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.fail
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import org.springframework.core.io.ClassPathResource
 
 class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val clock =
@@ -70,28 +71,52 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
     }
 
     @TestFactory
-    fun `each BiTable exports a non-empty CSV with full export config`() =
-        exportTests(BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60))
-
-    @TestFactory
-    fun `each BiTable exports a non-empty CSV with PII and legacy columns stripped`() =
+    fun `each BiTable keeps its pinned columns at the start of the CSV with full export config`() =
         exportTests(
-            BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 60),
+            BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60),
+            "bi/pinned-columns-full.txt",
         )
 
-    private fun exportTests(config: BiExportConfig) =
-        BiTable.entries.map { table ->
+    @TestFactory
+    fun `each BiTable keeps its pinned columns at the start of the CSV with PII and legacy columns stripped`() =
+        exportTests(
+            BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 60),
+            "bi/pinned-columns-stripped.txt",
+        )
+
+    private fun exportTests(config: BiExportConfig, pinnedColumnsFile: String): List<DynamicTest> {
+        val pinnedColumns =
+            ClassPathResource(pinnedColumnsFile)
+                .inputStream
+                .bufferedReader()
+                .readLines()
+                .associate { it.substringBefore(": ") to it.substringAfter(": ").split(",") }
+        return BiTable.entries.map { table ->
             DynamicTest.dynamicTest("${table.name} export") {
+                val pinned =
+                    pinnedColumns[table.fileName]
+                        ?: fail("Add the columns of ${table.fileName} to $pinnedColumnsFile")
                 val client = CapturingBiExportClient()
                 BiExportJob(client, config).sendBiTable(db, clock, table)
                 assertEquals(listOf(table.fileName), client.captured.keys.toList())
-                val csv = client.captured.getValue(table.fileName).toString(CSV_CHARSET)
-                assertTrue(
-                    csv.lineSequence().first().isNotBlank(),
-                    "${table.fileName} produced an empty CSV header",
+                val columns =
+                    client.captured
+                        .getValue(table.fileName)
+                        .toString(CSV_CHARSET)
+                        .lineSequence()
+                        .first()
+                        .split(",")
+                assertEquals(
+                    pinned,
+                    columns,
+                    "The existing columns of ${table.fileName} changed. Add a new property only " +
+                        "to the end of its class and update $pinnedColumnsFile. To remove the data of a column, " +
+                        "keep the column with an empty value. Do not add @LegacyColumn or @Pii to an existing " +
+                        "column, because they remove the column from some exports.",
                 )
             }
         }
+    }
 
     private fun insertCriticalTestData() {
         db.transaction { tx ->
