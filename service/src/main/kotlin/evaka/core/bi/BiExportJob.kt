@@ -21,7 +21,7 @@ class BiExportJob(private val client: BiExportClient, private val config: BiExpo
         db.read { tx ->
             tx.setStatementTimeout(Duration.ofMinutes(10))
 
-            query(tx, config) { records ->
+            query(tx, clock, config) { records ->
                 val stream = CsvInputStream(CSV_CHARSET, records)
                 client.sendBiCsvFile(fileName, clock, stream)
             }

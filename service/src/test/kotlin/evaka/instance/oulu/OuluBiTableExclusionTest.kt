@@ -10,8 +10,16 @@ import kotlin.test.assertEquals
 
 class OuluBiTableExclusionTest {
     @Test
-    fun `Oulu BI export excludes only the full attendance reservation snapshot`() {
-        assertEquals(setOf(BiTable.AttendanceReservation), OuluConfig.excludedBiTables)
+    fun `Oulu BI export excludes the full attendance reservation snapshot and the term and holiday tables`() {
+        assertEquals(
+            setOf(
+                BiTable.AttendanceReservation,
+                BiTable.ClubTerm,
+                BiTable.Holiday,
+                BiTable.PreschoolTerm,
+            ),
+            OuluConfig.excludedBiTables,
+        )
     }
 
     @Test
