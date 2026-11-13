@@ -5,6 +5,7 @@
 package evaka.core.nekku
 
 import evaka.core.Audit
+import evaka.core.NekkuEnv
 import evaka.core.shared.GroupId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 class NekkuController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val nekkuEnv: NekkuEnv?,
 ) {
 
     @GetMapping("/employee/nekku/unit-numbers")
@@ -159,7 +161,14 @@ class NekkuController(
                         Action.Group.NEKKU_MANUAL_ORDER,
                         groupId,
                     )
-                    planNekkuManualOrderJob(tx, asyncJobRunner, clock.now(), groupId, date)
+                    planNekkuManualOrderJob(
+                        tx,
+                        asyncJobRunner,
+                        clock.now(),
+                        groupId,
+                        date,
+                        nekkuEnv?.orderFreeze,
+                    )
                 }
             }
             .also {

@@ -62,6 +62,7 @@ class NekkuService(
     private val emailClient: EmailClient,
 ) {
     private val client = env?.let { NekkuHttpClient(it, jsonMapper) }
+    private val orderFreeze = env?.orderFreeze
 
     init {
         asyncJobRunner.registerHandler(::syncNekkuCustomers)
@@ -190,6 +191,7 @@ class NekkuService(
             asyncJobRunner = asyncJobRunner,
             clock.now(),
             remainingAttempts,
+            orderFreeze,
         )
     }
 
@@ -410,10 +412,15 @@ fun planNekkuManualOrderJob(
     now: HelsinkiDateTime,
     groupId: GroupId,
     date: LocalDate,
+    orderFreeze: NekkuOrderFreeze? = null,
 ) {
     val today = now.toLocalDate()
     if (date.isOnOrBefore(today))
         throw BadRequest("Can only make a manual order beginning tomorrow")
+    if (orderFreeze?.isFrozen(now, date) == true)
+        throw BadRequest(
+            "Nekku orders for delivery dates before ${orderFreeze.deliveryDatesBefore} are frozen"
+        )
     // this week we have made the orders for up to the week after next
     if (date.isAfter(today.nextWeeksSunday().plusDays(14)))
         throw BadRequest(
@@ -497,7 +504,15 @@ fun createAndSendNekkuOrder(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     now: HelsinkiDateTime,
     remainingAttempts: Int,
+    orderFreeze: NekkuOrderFreeze? = null,
 ) {
+    if (orderFreeze?.isFrozen(now, date) == true) {
+        logger.info {
+            "Skipped Nekku order for date $date groupId=$groupId because orders for delivery dates before ${orderFreeze.deliveryDatesBefore} are frozen"
+        }
+        return
+    }
+
     try {
 
         val (preschoolTerm, children) =
@@ -907,6 +922,17 @@ fun perChildCalendarEventReductions(
     calendarEventReductions.groupWide.union(
         calendarEventReductions.childSpecific[childId] ?: setOf()
     )
+
+/**
+ * Nekku prices an order by the products on it, and the products are picked by the customer type
+ * that is current when the order is sent. When customers are switched to new customer types ahead
+ * of the date the new pricing takes effect, orders for earlier delivery dates must keep the
+ * products they already have, so they are no longer sent once [startsAt] has passed.
+ */
+data class NekkuOrderFreeze(val startsAt: HelsinkiDateTime, val deliveryDatesBefore: LocalDate) {
+    fun isFrozen(now: HelsinkiDateTime, deliveryDate: LocalDate): Boolean =
+        now >= startsAt && deliveryDate < deliveryDatesBefore
+}
 
 data class NekkuCustomer(
     val number: String,

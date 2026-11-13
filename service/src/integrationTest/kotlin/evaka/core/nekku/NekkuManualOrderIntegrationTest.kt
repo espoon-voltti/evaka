@@ -433,4 +433,77 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         assertEquals(1, getNekkuJobs(db).size)
     }
+
+    @Test
+    fun `should throw when manual order is attempted for a frozen delivery date`() {
+
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientWithAnotherCustomerNumber,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6090")
+
+        val freezeStart = HelsinkiDateTime.of(LocalDate.of(2025, 5, 7), LocalTime.of(10, 0))
+        val lastFrozenDate = LocalDate.of(2025, 5, 14)
+        val orderFreeze =
+            NekkuOrderFreeze(
+                startsAt = freezeStart,
+                deliveryDatesBefore = lastFrozenDate.plusDays(1),
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+
+            assertThrows<BadRequest> {
+                planNekkuManualOrderJob(
+                    tx,
+                    asyncJobRunner,
+                    freezeStart,
+                    group.id,
+                    lastFrozenDate,
+                    orderFreeze,
+                )
+            }
+        }
+        assertEquals(emptyList(), getNekkuJobs(db))
+
+        // the same date can still be ordered before the freeze starts, and later dates during it
+        db.transaction { tx ->
+            planNekkuManualOrderJob(
+                tx,
+                asyncJobRunner,
+                freezeStart.minusMinutes(1),
+                group.id,
+                lastFrozenDate,
+                orderFreeze,
+            )
+            planNekkuManualOrderJob(
+                tx,
+                asyncJobRunner,
+                freezeStart,
+                group.id,
+                lastFrozenDate.plusDays(1),
+                orderFreeze,
+            )
+        }
+        assertEquals(
+            listOf(lastFrozenDate, lastFrozenDate.plusDays(1)),
+            getNekkuJobs(db).map { it.date }.sorted(),
+        )
+    }
 }
