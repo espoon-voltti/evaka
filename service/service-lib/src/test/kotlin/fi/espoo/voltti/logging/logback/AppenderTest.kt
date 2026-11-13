@@ -89,6 +89,30 @@ class AppenderTest {
     }
 
     @Test
+    fun `generated id fields skip ssn masking only when the value is a hex id`() {
+        val fields = listOf("traceId", "spanId", "userIdHash", "secondaryUserIdHash")
+        withTestLoggers { loggers ->
+            fun assertLoggedAs(value: String, expected: String) {
+                fields.forEach { field -> MDC.put(field, value) }
+
+                logger.audit("Audit event", mapOf("eventCode" to "someEvent", "targetId" to "id"))
+                loggers.withLatestAudit { actual ->
+                    fields.forEach { field -> assertThat(actual[field]).isEqualTo(expected) }
+                }
+
+                logger.info { "Misc event" }
+                loggers.withLatestSanitized { actual ->
+                    fields.forEach { field -> assertThat(actual[field]).isEqualTo(expected) }
+                }
+            }
+
+            assertLoggedAs(hexIdWithSSN, hexIdWithSSN)
+
+            testSSNs.forEach { ssn -> assertLoggedAs(ssn, redactedSSN) }
+        }
+    }
+
+    @Test
     fun `default appender`() {
         withTestLoggers {
             MDC.put("userIdHash", userIdHash)

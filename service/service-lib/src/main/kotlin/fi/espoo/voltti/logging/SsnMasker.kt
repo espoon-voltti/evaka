@@ -9,11 +9,10 @@ import tools.jackson.core.TokenStreamContext
 
 class SsnMasker : ValueMasker {
     override fun mask(context: TokenStreamContext?, value: Any?): Any {
-        return if (value is String) {
-            value.replace(ssnRegex, "REDACTED-SSN")
-        } else {
-            value ?: "null"
-        }
+        if (value !is String) return value ?: "null"
+        val isGeneratedHexId =
+            context?.currentName() in generatedHexFields && generatedHexId.matches(value)
+        return if (isGeneratedHexId) value else value.replace(ssnRegex, "REDACTED-SSN")
     }
 
     companion object {
@@ -22,5 +21,17 @@ class SsnMasker : ValueMasker {
                 "(?<!-|[\\dA-z])(\\d{2})(\\d{2})(\\d{2})[-+ABCDEFUVWXY](\\d{3})[\\dA-Z](?!-)",
                 RegexOption.IGNORE_CASE,
             )
+
+        // Random IDs, hashes and commit SHAs never contain SSNs, but ~0.5% of them match the
+        // pattern.
+        private val generatedHexFields =
+            setOf(
+                MdcKey.TRACE_ID.key,
+                MdcKey.SPAN_ID.key,
+                MdcKey.USER_ID_HASH.key,
+                MdcKey.SECONDARY_USER_ID_HASH.key,
+                "appCommit",
+            )
+        private val generatedHexId = Regex("[0-9a-f]{16,64}")
     }
 }
