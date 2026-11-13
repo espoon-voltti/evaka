@@ -1236,6 +1236,34 @@ test.describe('Realtime staff attendance edit page', () => {
       await editPage.saveButton.assertDisabled(true)
     })
 
+    test('Entry overlapping with an attendance continuing from the previous day is warned about', async () => {
+      await Fixture.realtimeStaffAttendance({
+        employeeId: staffFixture.id,
+        groupId: testDaycareGroup.id,
+        arrived: HelsinkiDateTime.fromLocal(
+          date.subDays(1),
+          LocalTime.of(22, 0)
+        ),
+        departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(8, 0))
+      }).save()
+
+      await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)))
+      await staffAttendancePage.openStaffPage(employeeName)
+      await staffAttendancePage.previousAttendancesButton.click()
+      await staffAttendancePage.previousAttendancesPage
+        .editAttendancesOfDateButton(date)
+        .click()
+
+      const editPage = new StaffAttendanceEditPage(page)
+      await editPage.fillArrived(0, '07:00')
+      await expect(editPage.arrivedInfo(0)).toHaveText('Tarkista')
+      await expect(editPage.overlappingAttendanceWarning).toBeHidden()
+      await editPage.saveButton.assertDisabled(true)
+
+      await editPage.fillArrived(0, '08:00')
+      await editPage.saveButton.assertDisabled(false)
+    })
+
     test('Overlapping rows in the form are reported', async () => {
       await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)))
       await staffAttendancePage.openStaffPage(employeeName)

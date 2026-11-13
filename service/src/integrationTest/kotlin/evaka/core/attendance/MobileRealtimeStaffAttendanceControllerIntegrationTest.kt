@@ -1823,6 +1823,27 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         )
     }
 
+    @Test
+    fun `employee attendances can be fetched for at most six weeks`() {
+        val employeeId = addEmployee()
+        fun fetch(from: LocalDate, to: LocalDate = today) =
+            mobileRealtimeStaffAttendanceController.getEmployeeAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                daycare.id,
+                employeeId,
+                from,
+                to,
+            )
+
+        fetch(today.minusWeeks(6).plusDays(1))
+        val tooLong = assertThrows<BadRequest> { fetch(today.minusWeeks(6)) }
+        assertEquals("Only 6 weeks of staff attendances may be fetched at once", tooLong.message)
+        val reversed = assertThrows<BadRequest> { fetch(today, today.minusDays(1)) }
+        assertEquals("Start must be before or equal to the end", reversed.message)
+    }
+
     private fun fetchRealtimeStaffAttendances(
         unitId: DaycareId,
         user: AuthenticatedUser.MobileDevice,

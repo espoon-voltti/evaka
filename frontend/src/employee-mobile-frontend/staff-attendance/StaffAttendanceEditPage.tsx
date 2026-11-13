@@ -184,6 +184,7 @@ const getOtherAttendances = (
   attendances: StaffMemberAttendance[],
   otherUnitAttendances: OtherUnitStaffAttendance[]
 ): OtherAttendance[] => {
+  const dayStart = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
   const nextDayStart = HelsinkiDateTime.fromLocal(
     date.addDays(1),
     LocalTime.MIN
@@ -196,7 +197,10 @@ const getOtherAttendances = (
       departed
     })),
     ...attendances
-      .filter(({ arrived }) => !arrived.isBefore(nextDayStart))
+      .filter(
+        ({ arrived }) =>
+          arrived.isBefore(dayStart) || !arrived.isBefore(nextDayStart)
+      )
       .map(({ groupId, arrived, departed }) => ({
         unitName: null,
         groupId,
@@ -417,9 +421,13 @@ const StaffAttendancesEditor = ({
   const rowValues = boundRows.flatMap((row) =>
     row.isValid() ? [row.value()] : []
   )
+  const nextDayStart = HelsinkiDateTime.fromLocal(
+    date.addDays(1),
+    LocalTime.MIN
+  )
   const overlappingAttendancesOnNextDay = otherAttendances.filter(
     (other) =>
-      !otherUnitAttendancesOnDate.includes(other) &&
+      !other.arrived.isBefore(nextDayStart) &&
       rowValues.some((row) => attendancesOverlap(row, other))
   )
 
@@ -531,20 +539,24 @@ const StaffAttendancesEditor = ({
         </div>
         <H3>{i18n.attendances.staff.rows}</H3>
         {otherUnitAttendancesOnDate.length > 0 && (
-          <InfoBox
-            wide
-            data-qa="attendances-in-other-units"
-            message={
-              <>
-                {i18n.attendances.staff.attendancesInOtherUnits}
-                <OtherAttendanceList
-                  attendances={otherUnitAttendancesOnDate}
-                  groups={groups}
-                  date={date}
-                />
-              </>
-            }
-          />
+          <>
+            <InfoBox
+              wide
+              noMargin
+              data-qa="attendances-in-other-units"
+              message={
+                <>
+                  {i18n.attendances.staff.attendancesInOtherUnits}
+                  <OtherAttendanceList
+                    attendances={otherUnitAttendancesOnDate}
+                    groups={groups}
+                    date={date}
+                  />
+                </>
+              }
+            />
+            <Gap $size="s" />
+          </>
         )}
 
         {continuationAttendance && (
@@ -635,19 +647,23 @@ const StaffAttendancesEditor = ({
           </>
         )}
         {overlappingAttendancesOnNextDay.length > 0 && (
-          <AlertBox
-            wide
-            data-qa="overlapping-attendance-warning"
-            message={
-              <>
-                {i18n.attendances.staff.overlappingAttendanceNextDay}
-                <OtherAttendanceList
-                  attendances={overlappingAttendancesOnNextDay}
-                  groups={groups}
-                />
-              </>
-            }
-          />
+          <>
+            <AlertBox
+              wide
+              noMargin
+              data-qa="overlapping-attendance-warning"
+              message={
+                <>
+                  {i18n.attendances.staff.overlappingAttendanceNextDay}
+                  <OtherAttendanceList
+                    attendances={overlappingAttendancesOnNextDay}
+                    groups={groups}
+                  />
+                </>
+              }
+            />
+            <Gap $size="s" />
+          </>
         )}
         {rowsInputInfo &&
           rows.validationError() !== 'overlapWithOtherAttendance' && (

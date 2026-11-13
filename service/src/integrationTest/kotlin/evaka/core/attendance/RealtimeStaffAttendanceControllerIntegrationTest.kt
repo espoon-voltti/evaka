@@ -322,17 +322,62 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
-    fun `Attendances cannot be fetched for more than six weeks`() {
-        assertThrows<BadRequest> {
+    fun `Attendances can be fetched for at most six weeks`() {
+        fun fetch(start: LocalDate, end: LocalDate) =
             realtimeStaffAttendanceController.getRealtimeStaffAttendances(
                 dbInstance(),
                 unitSupervisor,
                 MockEvakaClock(now),
                 daycare.id,
-                now.toLocalDate().minusWeeks(6),
-                now.toLocalDate(),
+                start,
+                end,
+            )
+        val today = now.toLocalDate()
+
+        fetch(today.minusWeeks(6).plusDays(1), today)
+        val tooLong = assertThrows<BadRequest> { fetch(today.minusWeeks(6), today) }
+        assertEquals("Only 6 weeks of staff attendances may be fetched at once", tooLong.message)
+        val reversed = assertThrows<BadRequest> { fetch(today, today.minusDays(1)) }
+        assertEquals("Start must be before or equal to the end", reversed.message)
+    }
+
+    @Test
+    fun `Attendances in other units are not returned for employees whose acl in the unit has ended`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = staff.id,
+                    groupId = group1.id,
+                    arrived = now.minusHours(8),
+                    departed = now.minusHours(6),
+                    modifiedAt = now,
+                    modifiedBy = supervisor.evakaUserId,
+                ),
+            )
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = staff.id,
+                    groupId = group2.id,
+                    arrived = now.minusHours(5),
+                    departed = now.minusHours(3),
+                    modifiedAt = now,
+                    modifiedBy = supervisor.evakaUserId,
+                ),
             )
         }
+        fun otherUnitAttendanceCount(aclEndDate: LocalDate): Int {
+            db.transaction { tx ->
+                tx.insertDaycareAclRow(daycare.id, staff.id, UserRole.STAFF, aclEndDate)
+            }
+            return getAttendances(daycare.id)
+                .staff
+                .single { it.employeeId == staff.id }
+                .otherUnitAttendances
+                .size
+        }
+
+        assertEquals(1, otherUnitAttendanceCount(now.toLocalDate()))
+        assertEquals(0, otherUnitAttendanceCount(now.toLocalDate().minusDays(1)))
     }
 
     @Test

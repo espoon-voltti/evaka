@@ -99,6 +99,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         @RequestParam from: LocalDate,
         @RequestParam to: LocalDate,
     ): StaffMemberWithOperationalDays {
+        if (from.isAfter(to)) {
+            throw BadRequest("Start must be before or equal to the end")
+        }
+        if (FiniteDateRange(from, to).durationInDays() > 6 * 7) {
+            throw BadRequest("Only 6 weeks of staff attendances may be fetched at once")
+        }
         return db.connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
