@@ -79,16 +79,24 @@ const en: DeepPartial<Translations> = {
         )
       },
       verification: {
+        attachmentBox: {
+          shiftCare: 'Shift care'
+        },
         serviceNeed: {
           connectedDaycare: {
             label: 'Activities supplementing pre-primary education',
             withConnectedDaycare:
-              'I am applying for a supplementary activity to pre-school education.'
+              'I am applying for early childhood education and care supplementing pre-primary education.'
           },
           startDate: {
             title: {
               PRESCHOOL: 'Start of pre-primary education'
             }
+          },
+          dailyTime: {
+            shiftCare: 'Shift care',
+            withShiftCare: 'Need for shift care',
+            withoutShiftCare: 'No need for shift care'
           }
         },
         unitPreference: {
@@ -114,18 +122,25 @@ const en: DeepPartial<Translations> = {
             PRESCHOOL: (
               <>
                 <P>
-                  The pre-school place is determined by the child&apos;s home
-                  address, in accordance with the future school path. At the
-                  time of enrolment, the child is enrolled in a pre-school or
-                  weighted pre-school according to the school path. If the child
-                  needs regular evening or shift care, he or she is enrolled in
-                  evening or shift care in early childhood education.
+                  The child&apos;s primary pre-primary education place is
+                  determined by the home address recorded in the Population
+                  Information System. The child is primarily enrolled in
+                  pre-primary education according to their own growth and
+                  learning path.
                 </P>
                 <P>
-                  Information about the future pre-school place is communicated
-                  to the custodians electronically via the Suomi.fi message
-                  service. If the custodian has not registered for the service,
-                  the information will be sent to them by letter.
+                  If you are applying for a secondary pre-primary education
+                  place in another growth and learning path area, select the
+                  preferred unit from the menu and state the reasons for your
+                  preference in the “Additional information” field. The guardian
+                  is responsible for the pupil&apos;s transport costs to the
+                  secondary pre-primary education unit. More information on the
+                  grounds for applying for secondary pre-primary education is
+                  available on the city&apos;s website.
+                </P>
+                <P>
+                  Guardians will be informed of the future pre-primary education
+                  place via the Suomi.fi Messages service.
                 </P>
               </>
             )
@@ -262,36 +277,28 @@ const en: DeepPartial<Translations> = {
           }
         },
         shiftCare: {
+          label: 'Shift care',
           instructions:
-            "If a child needs evening or day care in addition to pre-school education, he or she must be enrolled in evening or day care pre-school education. In addition, the child must be enrolled in supplementary early childhood education and care, for more than 5 hours per day. The day care centres are open normally on weekdays, from 6 am to 6 pm. Evening care is for children who, due to their parents' work or studies leading to a degree, require regular care after 6 pm. Day care centres offering evening care open at 5.30 am if necessary and close at 10.30 pm at the latest. Some day care centres providing evening care are also open at weekends. Shift care is for children whose parents work shifts and whose care also includes nights.",
+            "Shift care is intended for children who need early childhood education and care in the evenings, at night or at weekends because of their guardians' work or studies. The guardian's shift work or studies must take place continuously at irregular times of the day.",
           attachmentsMessage: {
             DAYCARE: (
               <P>
-                Evening and shift care is intended for those children who, due
-                to the parents’ work or studies that lead to a qualification,
-                require evening and shift care. In the case of the parents, an
-                employer’s certificate of a need for evening or shift care due
-                to shift work or study must be attached to the application.
+                Shift care is intended for those children who, due to the
+                parents’ work or studies that lead to a qualification, require
+                shift care. In the case of the parents, an employer’s
+                certificate of a need for shift care due to shift work or study
+                must be attached to the application.
               </P>
             ),
             PRESCHOOL: (
-              <>
-                <P>
-                  If a guardian living in the same household does regular shift
-                  work or attends evening studies full-time, they must provide
-                  proof of this (a document issued by their employer or the
-                  educational institution) together with the application for
-                  pre-primary education. The documents must be dated in the year
-                  when the application for pre-primary education is submitted.
-                </P>
-                <P>
-                  Evening and shift care is intended for those children who, due
-                  to the parents’ work or studies that lead to a qualification,
-                  require evening and shift care. In the case of the parents, an
-                  employer’s certificate of a need for evening or shift care due
-                  to shift work or study must be attached to the application.
-                </P>
-              </>
+              <P>
+                If a guardian living in the same household does regular shift
+                work or attends evening studies full-time, they must provide
+                proof of this (a document issued by their employer or the
+                educational institution) together with the application for
+                pre-primary education. The documents must be dated in the year
+                when the application for pre-primary education is submitted.
+              </P>
             )
           }
         },
@@ -311,15 +318,12 @@ const en: DeepPartial<Translations> = {
             PRESCHOOL: 'Activities supplementing pre-primary education'
           },
           connectedDaycare:
-            'I am applying for a supplementary activity to pre-school education.',
+            'I am applying for early childhood education and care supplementing pre-primary education.',
           connectedDaycareInfo: (
             <P>
-              Pre-school education lasts for four hours a day, generally from 9
-              am to 1 pm. In addition, the child can participate in paid
-              supplementary activities in the mornings and in the afternoons.
-              Options for supplementary activities are supplementary early
-              childhood education in day care centres and pre-school clubs in
-              schools.
+              Pre-primary education lasts four hours a day. In addition to
+              pre-primary education, the child can participate in paid early
+              childhood education and care supplementing pre-primary education.
             </P>
           )
         }
