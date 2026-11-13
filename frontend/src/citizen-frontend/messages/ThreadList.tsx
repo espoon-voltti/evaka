@@ -14,7 +14,6 @@ import type {
 import { NotificationsContext } from 'lib-components/Notifications'
 import { OnEnterView } from 'lib-components/OnEnterView'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { buttonBounceAnimation } from 'lib-components/atoms/buttons/button-commons'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -47,7 +46,6 @@ interface Props {
   hasMoreThreads: boolean
   loadMoreThreads: () => void
   selectThread: (threadId: MessageThreadId) => void
-  closeThread: () => void
   setEditorVisible: (value: boolean) => void
   newMessageButtonEnabled: boolean
 }
@@ -59,7 +57,6 @@ export default React.memo(function ThreadList({
   hasMoreThreads,
   loadMoreThreads,
   selectThread,
-  closeThread,
   setEditorVisible,
   newMessageButtonEnabled
 }: Props) {
@@ -78,15 +75,6 @@ export default React.memo(function ThreadList({
 
   return (
     <>
-      {selectedThread && (
-        <MobileOnly>
-          <ReturnButton
-            label={t.common.return}
-            onClick={closeThread}
-            margin={defaultMargins.s}
-          />
-        </MobileOnly>
-      )}
       <Container className={selectedThread ? 'desktop-only' : undefined}>
         <Gap $size="s" $sizeOnMobile="m" />
         <HeaderContainer>

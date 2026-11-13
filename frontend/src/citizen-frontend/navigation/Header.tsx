@@ -2,19 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import styled, { css } from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { useQuery } from 'lib-common/query'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   desktopMin,
   desktopMinPx,
+  tabletMin,
   zoomedMobileMax
 } from 'lib-components/breakpoints'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faArrowLeft } from 'lib-icons'
 
 import { useUser } from '../auth/state'
+import { useTranslation } from '../localization'
 import { unreadMessagesCountQuery } from '../messages/queries'
 import { loginPageWidth } from '../page-widths'
 
@@ -22,6 +27,7 @@ import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'
 import EvakaLogo from './EvakaLogo'
 import { headerHeightDesktop, headerHeightMobile } from './const'
+import { MobileHeaderBackButtonContext } from './mobile-header-back-button'
 import { LanguageMenu } from './shared-components'
 import { useUnreadDecisions } from './utils'
 
@@ -37,11 +43,26 @@ export default React.memo(function Header() {
   const [path] = useLocation()
   const isLoginPage = path === '/login' || path === '/login/form'
 
+  const t = useTranslation()
+  const { backButton } = useContext(MobileHeaderBackButtonContext)
+
   return (
     <>
       <HeaderContainer $narrow={isLoginPage}>
-        <CityLogo />
-        <EvakaLogo />
+        {backButton && (
+          <MobileBackButton
+            appearance="inline"
+            icon={faArrowLeft}
+            text={backButton.text}
+            aria-label={`${t.common.return}: ${backButton.text}`}
+            onClick={backButton.onClick}
+            data-qa="mobile-header-back-button"
+          />
+        )}
+        <Logos $hiddenOnMobile={backButton !== undefined}>
+          <CityLogo />
+          <EvakaLogo />
+        </Logos>
         {isLoginPage && (
           <MobileOnly>
             <LanguageMenu useShortLanguageLabel alignRight />
@@ -114,4 +135,34 @@ const MobileOnly = styled.div`
     display: block;
     padding: 4px;
   }
+`
+
+const MobileBackButton = styled(Button)`
+  display: none;
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+  min-width: 0;
+  padding: 0 ${defaultMargins.s};
+
+  @media (max-width: ${tabletMin}) {
+    display: flex;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+`
+
+const Logos = styled.div<{ $hiddenOnMobile: boolean }>`
+  display: contents;
+
+  ${(p) =>
+    p.$hiddenOnMobile &&
+    css`
+      @media (max-width: ${tabletMin}) {
+        display: none;
+      }
+    `}
 `

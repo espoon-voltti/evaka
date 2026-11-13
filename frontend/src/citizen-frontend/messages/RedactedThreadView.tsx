@@ -16,6 +16,7 @@ import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
+import { useMobileHeaderBackButton } from '../navigation/mobile-header-back-button'
 
 import { ThreadTitleRow } from './ThreadView'
 
@@ -33,6 +34,7 @@ export default React.memo(function ThreadView({
   closeThread
 }: Props) {
   const i18n = useTranslation()
+  useMobileHeaderBackButton(i18n.messages.sensitive, closeThread)
 
   const returnUrl = `${location.pathname}${location.search}${location.hash}`
 

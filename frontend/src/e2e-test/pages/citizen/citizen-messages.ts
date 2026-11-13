@@ -36,6 +36,7 @@ export default class CitizenMessagesPage {
   #threadOutOfOfficeInfo: Element
   #financeReplyInfo: Element
   markUnreadButton: Element
+  headerBackButton: Element
   constructor(
     private readonly page: Page,
     env: EnvType
@@ -47,6 +48,7 @@ export default class CitizenMessagesPage {
       page.findByDataQa('message-reply-content')
     )
     this.#threadListItem = page.findByDataQa('thread-list-item')
+    this.headerBackButton = page.findByDataQa('mobile-header-back-button')
     this.#threadTitle = page.findByDataQa('thread-reader-title')
     this.#redactedThreadTitle = page.findByDataQa(
       'redacted-thread-reader-title'
@@ -96,6 +98,10 @@ export default class CitizenMessagesPage {
 
   async assertInboxIsEmpty() {
     await expect(this.#inboxEmpty).toBeVisible()
+  }
+
+  async assertThreadListIsVisible() {
+    await expect(this.#threadListItem).toBeVisible()
   }
 
   async assertTimedNotification(dataQa: string, content: string) {

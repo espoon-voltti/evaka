@@ -30,6 +30,7 @@ import { MessageDraftsProvider } from './messages/drafts'
 import Header from './navigation/Header'
 import MobileNav from './navigation/MobileNav'
 import { headerHeightMobile, mobileBottomNavHeight } from './navigation/const'
+import { MobileHeaderBackButtonProvider } from './navigation/mobile-header-back-button'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
@@ -75,7 +76,9 @@ export function App({ children }: { children: React.ReactNode }) {
               <OverlayContextProvider>
                 <NotificationsContextProvider>
                   <MessageDraftsProvider>
-                    <Content>{children}</Content>
+                    <MobileHeaderBackButtonProvider>
+                      <Content>{children}</Content>
+                    </MobileHeaderBackButtonProvider>
                     <GlobalDialog />
                     <LoginErrorModal />
                     <div id="modal-container" />

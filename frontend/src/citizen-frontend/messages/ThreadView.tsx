@@ -35,7 +35,7 @@ import Linkify from 'lib-components/atoms/Linkify'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
-import { desktopMin } from 'lib-components/breakpoints'
+import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
@@ -62,6 +62,7 @@ import { faTrash, faEnvelope } from 'lib-icons'
 import { getAttachmentUrl } from '../attachments/attachments'
 import type { Translations } from '../localization'
 import { useTranslation } from '../localization'
+import { useMobileHeaderBackButton } from '../navigation/mobile-header-back-button'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import { MessageDraftsContext } from './drafts'
@@ -100,6 +101,10 @@ export const ThreadTitleRow = styled.div`
   }
 
   margin: ${defaultMargins.xxs};
+
+  @media (max-width: ${tabletMin}) {
+    margin-top: ${defaultMargins.s};
+  }
 
   & + & {
     margin-top: ${defaultMargins.L};
@@ -257,6 +262,12 @@ export default React.memo(
   ) {
     const i18n = useTranslation()
     const [, navigate] = useLocation()
+
+    const displayedTitle = sensitive
+      ? `${title} (${i18n.messages.sensitive})`
+      : title
+    useMobileHeaderBackButton(displayedTitle, closeThread)
+
     const { setReplyContent, getReplyContent } =
       useContext(MessageDraftsContext)
     const { addTimedNotification } = useContext(NotificationsContext)
@@ -368,8 +379,7 @@ export default React.memo(
           </FixedSpaceFlexWrap>
           <H2 $noMargin data-qa="thread-reader-title">
             <ScreenReaderOnly>{i18n.messages.thread.title}:</ScreenReaderOnly>
-            {title}
-            {sensitive && ` (${i18n.messages.sensitive})`}
+            {displayedTitle}
           </H2>
           <ScreenReaderButton
             data-qa="jump-to-end"
