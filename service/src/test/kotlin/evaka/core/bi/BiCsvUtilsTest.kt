@@ -29,14 +29,15 @@ class BiCsvUtilsTest {
     private fun render(config: BiExportConfig): List<String> =
         toCsvRecords(::convertToCsv, Sample::class, rows, config).toList()
 
-    // Kotlin reflection returns declaredMemberProperties in alphabetical order
+    // Sample declares its properties in non-alphabetical order, so the headers also check that
+    // the columns come in declaration order
 
     @Test
     fun `includes all columns when includePII=true and includeLegacyColumns=true`() {
         val out =
             render(BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60))
-        assertEquals("id,keep,legacy,name\r\n", out[0])
-        assertEquals("1,K,,Alice\r\n", out[1])
+        assertEquals("id,name,legacy,keep\r\n", out[0])
+        assertEquals("1,Alice,,K\r\n", out[1])
     }
 
     @Test
@@ -49,8 +50,8 @@ class BiCsvUtilsTest {
                     windowDays = 60,
                 )
             )
-        assertEquals("id,keep,legacy\r\n", out[0])
-        assertEquals("1,K,\r\n", out[1])
+        assertEquals("id,legacy,keep\r\n", out[0])
+        assertEquals("1,,K\r\n", out[1])
     }
 
     @Test
@@ -63,8 +64,8 @@ class BiCsvUtilsTest {
                     windowDays = 60,
                 )
             )
-        assertEquals("id,keep,name\r\n", out[0])
-        assertEquals("1,K,Alice\r\n", out[1])
+        assertEquals("id,name,keep\r\n", out[0])
+        assertEquals("1,Alice,K\r\n", out[1])
     }
 
     @Test

@@ -55,9 +55,11 @@ import java.time.Month
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.fail
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import org.springframework.core.io.ClassPathResource
 
 class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val clock =
@@ -78,6 +80,37 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
         exportTests(
             BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 60)
         )
+
+    @TestFactory
+    fun `each BiTable keeps its pinned columns at the start of the CSV`(): List<DynamicTest> {
+        val pinnedColumns =
+            ClassPathResource(PINNED_COLUMNS).inputStream.bufferedReader().readLines().associate {
+                it.substringBefore(": ") to it.substringAfter(": ").split(",")
+            }
+        val config = BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60)
+        return BiTable.entries.map { table ->
+            DynamicTest.dynamicTest("${table.name} columns") {
+                val pinned =
+                    pinnedColumns[table.fileName]
+                        ?: fail("Add the columns of ${table.fileName} to $PINNED_COLUMNS")
+                val client = CapturingBiExportClient()
+                BiExportJob(client, config).sendBiTable(db, clock, table)
+                val columns =
+                    client.captured
+                        .getValue(table.fileName)
+                        .toString(CSV_CHARSET)
+                        .lineSequence()
+                        .first()
+                        .split(",")
+                assertEquals(
+                    pinned,
+                    columns.take(pinned.size),
+                    "The existing columns of ${table.fileName} changed. Add a new property to the " +
+                        "end of its class, and keep a removed column with @LegacyColumn.",
+                )
+            }
+        }
+    }
 
     private fun exportTests(config: BiExportConfig) =
         BiTable.entries.map { table ->
@@ -271,6 +304,8 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
         }
     }
 }
+
+private const val PINNED_COLUMNS = "bi/pinned-columns.txt"
 
 private class CapturingBiExportClient : BiExportClient {
     val captured = linkedMapOf<String, ByteArray>()
