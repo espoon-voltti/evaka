@@ -15,7 +15,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.vtj.VtjSyncService
-import evaka.core.vtj.isDependantSyncPerson
+import evaka.core.vtj.getVtjSyncPerson
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service
@@ -27,6 +27,7 @@ class FridgeFamilyService(
     private val vtjSyncService: VtjSyncService,
     private val parentshipService: ParentshipService,
 ) {
+    /** Implements the Update from VTJ button. [personId] can be a child or an adult. */
     fun refreshFamily(
         db: Database.Connection,
         requestingUserId: EvakaUserId,
@@ -37,41 +38,37 @@ class FridgeFamilyService(
         val person = db.read { it.getPersonById(personId) } ?: return
         val guardianIds =
             if (isMinor(person.dateOfBirth, today)) {
-                vtjSyncService.refreshPerson(db, requestingUserId, clock, personId)
-                val childGuardianIds = db.read { it.getDependantGuardians(personId) }.map { it.id }
-                childGuardianIds.forEach {
-                    vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, it)
+                val isDependantSync =
+                    db.read { it.getVtjSyncPerson(personId, today) }?.dependantSync == true
+                if (isDependantSync) {
+                    // The person is a minor but is a head of family, partner or has logged into
+                    // eVaka. Their own guardians are not of interest.
+                    listOf(personId)
+                } else {
+                    vtjSyncService.refreshPersons(db, requestingUserId, clock, listOf(personId))
+                    db.read { it.getDependantGuardians(personId) }.map { it.id }
                 }
-                val isDependantSync = db.read { tx -> tx.isDependantSyncPerson(personId, today) }
-                childGuardianIds + if (isDependantSync) listOf(personId) else emptyList()
             } else {
-                vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, personId)
                 listOf(personId)
             }
-        guardianIds
-            .mapNotNull { id -> db.read { getPartnerId(it, clock, id) } }
-            .filter { it !in guardianIds }
-            .distinct()
-            .forEach { vtjSyncService.refreshPersonAndDependants(db, requestingUserId, clock, it) }
-        guardianIds.forEach { addChildrenToFridgeFamily(db, clock, it) }
-    }
+        val partnerIds =
+            guardianIds
+                .mapNotNull { id -> db.read { it.getPartnerId(today, id) } }
+                .filter { it !in guardianIds }
+                .distinct()
 
-    fun addChildrenToFridgeFamilies(
-        db: Database.Connection,
-        clock: EvakaClock,
-        personId: PersonId,
-    ) {
-        val today = clock.today()
-        val person = db.read { it.getPersonById(personId) } ?: return
-        val guardianIds =
-            if (isMinor(person.dateOfBirth, today)) {
-                db.read { it.getDependantGuardians(personId) }.map { it.id }
-            } else {
-                emptyList()
-            }
-        (listOf(personId) + guardianIds)
-            .filter { id -> db.read { it.isDependantSyncPerson(id, today) } }
-            .forEach { addChildrenToFridgeFamily(db, clock, it) }
+        // Use greedy refresh to ensure that all dependants of the guardians and their partners are
+        // also refreshed, even if they are not marked as dependant-sync persons. This is just to be
+        // extra sure: The VTJ update button should work reliably and rather fetch too much data
+        // than too little.
+        vtjSyncService.refreshPersonsGreedy(
+            db,
+            requestingUserId,
+            clock,
+            guardianIds + partnerIds,
+        )
+
+        guardianIds.forEach { addChildrenToFridgeFamily(db, clock, it) }
     }
 
     fun addChildrenToFridgeFamily(
@@ -84,7 +81,7 @@ class FridgeFamilyService(
         if (guardian.dateOfDeath != null) return
 
         val partnerAtSameAddress =
-            db.read { getPartnerId(it, clock, guardianId) }
+            db.read { it.getPartnerId(today, guardianId) }
                 ?.also { logger.info { "Person $guardianId has fridge partner $it" } }
                 ?.let { partnerId -> db.read { it.getPersonById(partnerId) } }
                 ?.takeIf { personsLiveInTheSameAddress(it, guardian) }
@@ -139,20 +136,6 @@ class FridgeFamilyService(
                 logger.warn(e) { "Problem while adding a child to fridge family:" }
             }
         }
-    }
-
-    fun getPartnerId(tx: Database.Read, clock: EvakaClock, personId: PersonId): PersonId? {
-        return tx.createQuery {
-                sql(
-                    """
-SELECT p2.person_id AS partner_id
-FROM fridge_partner p1
-LEFT OUTER JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.person_id != p2.person_id
-WHERE p1.person_id = ${bind(personId)} AND daterange(p1.start_date, p1.end_date, '[]') @> ${bind(clock.today())} AND p1.conflict = false AND p2.conflict = false
-"""
-                )
-            }
-            .exactlyOneOrNull<PersonId>()
     }
 
     private fun getCurrentFridgeChildren(

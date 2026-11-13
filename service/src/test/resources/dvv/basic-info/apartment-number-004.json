@@ -1,0 +1,57 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "260582-9631",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Tõnu",
+          "sukunimi": "Tõuge",
+          "etunimiUTF8": "Tõnu",
+          "sukunimiUTF8": "Tõuge"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Kiisajärvi"
+          },
+          "katunumero": "1",
+          "huoneistonumero": "004",
+          "postinumero": "99950",
+          "postitoimipaikka": {
+            "fi": "KARIGASNIEMI",
+            "sv": "KARIGASNIEMI"
+          },
+          "rakennustunnus": "900000663E",
+          "osoitenumero": 3,
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2020-07-21",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-01-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000663E",
+          "osoitenumero": 3,
+          "huoneistonumero": "004",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2020-07-21",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000663E3 004 "
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

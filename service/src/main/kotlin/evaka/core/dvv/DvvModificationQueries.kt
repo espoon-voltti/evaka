@@ -4,6 +4,7 @@
 
 package evaka.core.dvv
 
+import evaka.core.identity.Ssn
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 
@@ -56,16 +57,16 @@ fun Database.Transaction.deleteDvvModificationToken(token: String) {
         .execute()
 }
 
-fun Database.Read.getSsnsOfPersons(ids: Collection<PersonId>): List<String> = createQuery {
+fun Database.Read.getSsnsOfPersons(ids: Collection<PersonId>): Map<PersonId, Ssn> = createQuery {
     sql(
         """
-SELECT social_security_number
+SELECT id, social_security_number
 FROM person
 WHERE id = ANY (${bind(ids)}) AND social_security_number IS NOT NULL
 """
     )
 }
-    .toList()
+    .toMap { column<PersonId>("id") to column<Ssn>("social_security_number") }
 
 data class DvvModificationToken(
     val token: String,

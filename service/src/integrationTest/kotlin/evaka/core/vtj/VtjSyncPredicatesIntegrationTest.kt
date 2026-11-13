@@ -103,7 +103,8 @@ class VtjSyncPredicatesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         assertTrue(isDependantSyncPerson())
     }
 
-    private fun isDependantSyncPerson() = db.read { it.isDependantSyncPerson(adult.id, today) }
+    private fun isDependantSyncPerson() =
+        db.read { it.getVtjSyncPersons(listOf(adult.id), today) }.single().dependantSync
 
     private fun insertParentship(startDate: LocalDate, endDate: LocalDate) {
         db.transaction {

@@ -5,7 +5,7 @@
 package evaka.core.vtj
 
 import evaka.core.identity.Ssn
-import evaka.core.identity.getDobFromSsn
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.buildHttpClient
 import evaka.core.shared.utils.get
 import evaka.core.shared.utils.headerInterceptor
@@ -13,6 +13,7 @@ import evaka.core.shared.utils.post
 import java.net.URI
 import java.time.LocalDate
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 
 data class DummyIdpVtjPerson(
     val firstNames: String,
@@ -39,19 +40,9 @@ data class DummyIdpVtjPerson(
             residenceCode = residenceCode,
             municipalityOfResidence = municipalityOfResidence,
         )
-
-    fun toVtjRelative(): VtjRelative {
-        val ssn = Ssn.from(socialSecurityNumber)
-        return VtjRelative(
-            ssn = ssn,
-            dateOfBirth = getDobFromSsn(ssn.value),
-            firstNames = firstNames,
-            lastName = lastName,
-        )
-    }
 }
 
-class DummyIdpVtjClient(baseUrl: String, jsonMapper: JsonMapper) : VtjClient {
+class DummyIdpVtjClient(baseUrl: String, private val jsonMapper: JsonMapper) : VtjClient {
     private val httpClient =
         buildHttpClient(
             rootUrl = URI(baseUrl),
@@ -59,21 +50,22 @@ class DummyIdpVtjClient(baseUrl: String, jsonMapper: JsonMapper) : VtjClient {
             interceptors = listOf(headerInterceptor("Accept", "application/json")),
         )
 
-    override fun fetchPerson(query: VtjClient.DetailsQuery): VtjPerson = fetch(query).toVtjPerson()
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        fetch(ssns) { it.toVtjPerson() }
 
-    override fun fetchWithDependants(query: VtjClient.DetailsQuery): VtjPersonAndDependants =
-        fetch(query).let { person ->
-            VtjPersonAndDependants(
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        fetch(ssns) { person ->
+            VtjPersonAndGuardians(
                 person.toVtjPerson(),
-                person.dependants.map { it.toVtjRelative() },
+                person.guardians.map { Ssn.from(it.socialSecurityNumber) },
             )
         }
 
-    override fun fetchWithGuardians(query: VtjClient.DetailsQuery): VtjPersonAndGuardians =
-        fetch(query).let { person ->
-            VtjPersonAndGuardians(
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+        fetch(ssns) { person ->
+            VtjPersonAndDependants(
                 person.toVtjPerson(),
-                person.guardians.map { it.toVtjRelative() },
+                person.dependants.map { Ssn.from(it.socialSecurityNumber) },
             )
         }
 
@@ -89,6 +81,20 @@ class DummyIdpVtjClient(baseUrl: String, jsonMapper: JsonMapper) : VtjClient {
         httpClient.post<Unit>("idp/test-mode/exit", jsonBody = emptyMap<String, String>())
     }
 
-    private fun fetch(query: VtjClient.DetailsQuery): DummyIdpVtjPerson =
-        httpClient.get<DummyIdpVtjPerson>("idp/users/${query.ssn.value}")
+    private fun <T> fetch(ssns: Collection<Ssn>, map: (DummyIdpVtjPerson) -> T): Map<Ssn, T> =
+        ssns
+            .distinct()
+            .mapNotNull { ssn ->
+                httpClient
+                    .get<DummyIdpVtjPerson?>("idp/users/${ssn.value}") { response ->
+                        when {
+                            response.code == 404 -> null
+                            !response.isSuccessful ->
+                                error("Dummy IdP returned status ${response.code}")
+                            else -> jsonMapper.readValue<DummyIdpVtjPerson>(response.body.string())
+                        }
+                    }
+                    ?.let { ssn to map(it) }
+            }
+            .toMap()
 }

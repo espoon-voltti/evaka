@@ -7,6 +7,7 @@ package evaka.core.dvv
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -46,7 +47,52 @@ class MockDvvModificationsService {
         """
             .toByteArray()
     }
+
+    @PostMapping("/v1/perustiedot")
+    fun getBasicInfo(@RequestBody body: DvvBasicInfoRequest): ResponseEntity<ByteArray> {
+        logger.info { "Mock dvv POST /perustiedot called, ${body.hetulista.size} SSNs" }
+        if (body.hetulista.contains(RATE_LIMITED_SSN)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build()
+        }
+        val rows =
+            body.hetulista.sorted().mapNotNull { ssn ->
+                basicInfo[ssn]?.let { groups ->
+                    """{"henkilotunnus": "$ssn", "tietoryhmat": [${groups.filter { it.first in body.tietoryhmat }.joinToString(",") { it.second }}]}"""
+                }
+            }
+        return ResponseEntity.ok(
+            """{"perustiedot": [${rows.joinToString(",")}], "ajanTasalla": true}""".toByteArray()
+        )
+    }
+
+    companion object {
+        /** The basic info query of this SSN fails with HTTP 429 */
+        const val RATE_LIMITED_SSN = "150385-9013"
+    }
 }
+
+/** Info groups of each SSN, as pairs of the group name and the group JSON */
+private val basicInfo: Map<String, List<Pair<String, String>>> =
+    mapOf(
+        "010192-912L" to
+            listOf(
+                "HENKILOTUNNUS_KORJAUS" to
+                    """{"tietoryhma": "HENKILOTUNNUS_KORJAUS", "aktiivinenHenkilotunnus": "010192-921W", "edellisetHenkilotunnukset": ["010192-912L"]}"""
+            ),
+        "010192-921W" to
+            listOf(
+                "HENKILOTUNNUS_KORJAUS" to
+                    """{"tietoryhma": "HENKILOTUNNUS_KORJAUS", "aktiivinenHenkilotunnus": "010192-921W", "edellisetHenkilotunnukset": []}""",
+                "HENKILON_NIMI" to
+                    """{"tietoryhma": "HENKILON_NIMI", "etunimi": "Hanna", "sukunimi": "Kolehmainen", "etunimiUTF8": "Hanna", "sukunimiUTF8": "Kolehmainen"}""",
+                "VAKINAINEN_KOTIMAINEN_OSOITE" to
+                    """{"tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE", "katunimi": {"fi": "Mikkolantie", "sv": "Mickelsvägen"}, "katunumero": "30", "huoneistokirjain": "F", "huoneistonumero": "028", "postinumero": "00640", "postitoimipaikka": {"fi": "HELSINKI", "sv": "HELSINGFORS"}, "alkupv": {"arvo": "1992-01-01", "tarkkuus": "PAIVA"}}""",
+                "KOTIKUNTA" to
+                    """{"tietoryhma": "KOTIKUNTA", "kuntakoodi": "091", "kuntaanMuuttopv": {"arvo": "1992-01-01", "tarkkuus": "PAIVA"}}""",
+                "HUOLLETTAVA_SUPPEA" to
+                    """{"tietoryhma": "HUOLLETTAVA_SUPPEA", "huollettava": {"henkilotunnus": "120514A9501"}, "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA", "huoltajanRooli": "ISA", "huoltosuhteenAlkupv": {"arvo": "2014-05-12", "tarkkuus": "PAIVA"}, "huoltosuhteenLoppupv": {"arvo": "2032-05-12", "tarkkuus": "PAIVA"}, "oikeudet": []}""",
+            ),
+    )
 
 fun getModifications(ssns: List<String>): String {
     return ssns
@@ -69,7 +115,9 @@ val modifications =
         "tarkkuus": "PAIVA"
       },
       "etunimi": "Etunimi5_muutos",
-      "sukunimi": "Sukunimi5"
+      "sukunimi": "Sukunimi5",
+      "etunimiUTF8": "Etunimi5_muutos",
+      "sukunimiUTF8": "Sukunimi5"
     },
     {
       "tietoryhma": "NIMENMUUTOS",
@@ -136,7 +184,9 @@ val modifications =
         "tarkkuus": "PAIVA"
       },
       "etunimi": "Uusinimi",
-      "sukunimi": "Urkki"
+      "sukunimi": "Urkki",
+      "etunimiUTF8": "Uusinimi",
+      "sukunimiUTF8": "Urkki"
     }
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"

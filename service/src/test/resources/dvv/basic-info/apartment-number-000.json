@@ -1,0 +1,126 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "031057-999X",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Eero",
+          "sukunimi": "Alaraudanjoki Tes",
+          "etunimiUTF8": "Eero",
+          "sukunimiUTF8": "Alaraudanjoki Tes",
+          "alkupv": {
+            "tarkkuus": "PAIVA",
+            "arvo": "2017-07-04"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Kristiinankatu",
+            "sv": "Kristinagatan"
+          },
+          "katunumero": "12",
+          "huoneistonumero": "000",
+          "postinumero": "64100",
+          "postitoimipaikka": {
+            "fi": "KRISTIINANKAUPUNKI",
+            "sv": "KRISTINESTAD"
+          },
+          "rakennustunnus": "900000242V",
+          "osoitenumero": 1,
+          "kuntakoodi": "287",
+          "alkupv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000242V",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "287",
+          "alkupv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000242V1 000 "
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "230989-9612",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "fi",
+          "kielikoodiISO6392": "fin",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Seppo Pekka",
+          "sukunimi": "Törrönen Tes",
+          "etunimiUTF8": "Seppo Pekka",
+          "sukunimiUTF8": "Törrönen Tes"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Pohjanpellonkuja",
+            "sv": "Norråkersgränd"
+          },
+          "katunumero": "2",
+          "huoneistokirjain": "C",
+          "huoneistonumero": "000",
+          "postinumero": "00780",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "900000955V",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1989-03-19",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1989-03-19",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000955V",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "huoneistokirjain": "C",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1989-03-19",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000955V1C000 "
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

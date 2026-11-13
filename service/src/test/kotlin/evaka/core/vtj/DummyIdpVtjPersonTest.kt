@@ -4,8 +4,6 @@
 
 package evaka.core.vtj
 
-import evaka.core.identity.Ssn
-import java.time.LocalDate
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -17,19 +15,6 @@ class DummyIdpVtjPersonTest {
             socialSecurityNumber = "050120A910J",
             address = PersonAddress("Kotikatu 1", "02100", "Espoo", null, null),
         )
-
-    @Test
-    fun `a relative is a stub with the SSN, the date of birth and the names`() {
-        assertEquals(
-            VtjRelative(
-                ssn = Ssn.parse("050120A910J")!!,
-                dateOfBirth = LocalDate.of(2020, 1, 5),
-                firstNames = "Child",
-                lastName = "A",
-            ),
-            child.toVtjRelative(),
-        )
-    }
 
     @Test
     fun `a person keeps the basic details`() {

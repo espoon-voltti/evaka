@@ -1,0 +1,69 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "300158-974J",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "muutosattribuutti": "MUUTETTU",
+          "alkupv": {
+            "arvo": "2019-05-08",
+            "tarkkuus": "PAIVA"
+          },
+          "etunimi": "Mathilda Helena Sophie",
+          "sukunimi": "Aslan Tes",
+          "etunimiUTF8": "Mathilda Helena Sophie",
+          "sukunimiUTF8": "Aslan Tes"
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "muutosattribuutti": "LISATTY",
+          "nimilaji": "NYKYINEN_ETUNIMI",
+          "nimi": "Mathilda Helena Sophie",
+          "alkupv": {
+            "arvo": "2019-05-08",
+            "tarkkuus": "PAIVA"
+          },
+          "nimiUTF8": "Mathilda Helena Sophie"
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS",
+          "muutosattribuutti": "MUUTETTU",
+          "nimilaji": "EDELLINEN_ETUNIMI",
+          "nimi": "Martha Helena Beate-Sophie",
+          "loppupv": {
+            "arvo": "2019-05-08",
+            "tarkkuus": "PAIVA"
+          },
+          "nimiUTF8": "Martha Helena Beate-Sophie"
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "muutosattribuutti": "LISATTY",
+          "nimilaji": "NYKYINEN_ETUNIMI",
+          "nimi": "Mathilda Helena Sophie",
+          "alkupv": {
+            "arvo": "2019-05-08",
+            "tarkkuus": "PAIVA"
+          },
+          "nimenmuutostapa": "ETUNIMEN_MUUTOS_HAKEMUKSELLA",
+          "nimiUTF8": "Mathilda Helena Sophie"
+        },
+        {
+          "tietoryhma": "NIMENMUUTOS_LAAJA",
+          "muutosattribuutti": "MUUTETTU",
+          "nimilaji": "EDELLINEN_ETUNIMI",
+          "nimi": "Martha Helena Beate-Sophie",
+          "loppupv": {
+            "arvo": "2019-05-08",
+            "tarkkuus": "PAIVA"
+          },
+          "nimiUTF8": "Martha Helena Beate-Sophie"
+        }
+      ],
+      "muutospv": "2019-05-09T11:21:02.534Z"
+    }
+  ],
+  "ajanTasalla": true
+}

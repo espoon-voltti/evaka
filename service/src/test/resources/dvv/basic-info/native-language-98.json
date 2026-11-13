@@ -1,0 +1,35 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "100349-988C",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "98",
+          "kielikoodiISO6392": "mis",
+          "nimi": "suomi",
+          "alkupv": {
+            "arvo": "2020-01-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Ville",
+          "sukunimi": "VW Tes",
+          "etunimiUTF8": "Ville",
+          "sukunimiUTF8": "VW Tes"
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "198",
+          "kuntaanMuuttopv": {
+            "arvo": "2012-03-16",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

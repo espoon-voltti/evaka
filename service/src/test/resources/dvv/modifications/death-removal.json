@@ -1,0 +1,26 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "160185-980N",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "muutosattribuutti": "KORJATTAVA",
+          "kuollut": true,
+          "kuolinpv": {
+            "arvo": "2018-05-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "muutosattribuutti": "KORJATTU",
+          "kuollut": false
+        }
+      ],
+      "muutospv": "2019-06-27T11:55:51.289Z"
+    }
+  ],
+  "ajanTasalla": true
+}

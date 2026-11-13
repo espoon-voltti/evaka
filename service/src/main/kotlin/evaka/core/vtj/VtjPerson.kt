@@ -23,16 +23,9 @@ data class VtjPerson(
     val municipalityOfResidenceSe: String? = null,
 )
 
-data class VtjRelative(
-    val ssn: Ssn,
-    val dateOfBirth: LocalDate,
-    val firstNames: String,
-    val lastName: String,
-)
+data class VtjPersonAndGuardians(val person: VtjPerson, val guardians: List<Ssn>)
 
-data class VtjPersonAndGuardians(val person: VtjPerson, val guardians: List<VtjRelative>)
-
-data class VtjPersonAndDependants(val person: VtjPerson, val dependants: List<VtjRelative>)
+data class VtjPersonAndDependants(val person: VtjPerson, val dependants: List<Ssn>)
 
 data class RestrictedDetails(val enabled: Boolean, val endDate: LocalDate? = null)
 

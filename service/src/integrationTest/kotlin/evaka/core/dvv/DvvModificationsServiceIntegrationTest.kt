@@ -4,6 +4,7 @@
 
 package evaka.core.dvv
 
+import evaka.core.VtjDvvMode
 import evaka.core.family.Creator
 import evaka.core.family.createParentship
 import evaka.core.family.getParentships
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 class DvvModificationsServiceIntegrationTest :
     DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
@@ -416,6 +418,38 @@ class DvvModificationsServiceIntegrationTest :
 
         updatePeopleFromDvv(listOf(SSN))
         val updatedPerson = db.read { it.getPersonBySSN(SSN) }!!
+        assertEquals("Urkki", updatedPerson.firstName)
+        assertEquals("Uusinimi", updatedPerson.lastName)
+    }
+
+    @Test
+    fun `in the compare mode, the refresh job gets the modifications of the person and saves the VTJ result as before`() {
+        whenever(evakaEnv.vtjDvvMode).thenReturn(VtjDvvMode.COMPARE)
+        val ssn = "010179-9992"
+        createTestPerson(testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = ssn))
+        MockVtjClient.addPersons(
+            testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = ssn)
+        )
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2020, 1, 1), LocalTime.of(3, 0)))
+
+        dvvModificationsService.updatePersonsFromDvv(db, clock, listOf(ssn))
+
+        val payloads = db.read { tx ->
+            tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'UpdateFromVtj'") }
+                .toList<String>()
+                .map { jsonMapper.readValue(it, AsyncJob.UpdateFromVtj::class.java) }
+        }
+        assertEquals(
+            listOf(listOf("HENKILON_NIMI")),
+            payloads.map { job ->
+                job.modifications!!.flatMap { it.tietoryhmat }.map { it.tietoryhma }
+            },
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val updatedPerson = db.read { it.getPersonBySSN(ssn) }!!
         assertEquals("Urkki", updatedPerson.firstName)
         assertEquals("Uusinimi", updatedPerson.lastName)
     }

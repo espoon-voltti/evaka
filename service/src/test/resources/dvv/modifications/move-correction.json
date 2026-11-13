@@ -1,0 +1,278 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "051096-9977",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "KORJATTAVA",
+          "alkupv": {
+            "arvo": "2013-03-06",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-06",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000046J",
+          "katunumero": "32",
+          "osoitenumero": 1,
+          "huoneistokirjain": "B",
+          "huoneistonumero": "020",
+          "kuntakoodi": "091",
+          "postinumero": "00200",
+          "katunimi": {
+            "fi": "Lauttasaarentie",
+            "sv": "Drumsövägen"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "KORJATTU",
+          "alkupv": {
+            "arvo": "2013-03-06",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-05-31",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000046J",
+          "katunumero": "32",
+          "osoitenumero": 1,
+          "huoneistokirjain": "B",
+          "huoneistonumero": "020",
+          "kuntakoodi": "091",
+          "postinumero": "00200",
+          "katunimi": {
+            "fi": "Lauttasaarentie",
+            "sv": "Drumsövägen"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "KORJATTAVA",
+          "alkupv": {
+            "arvo": "2019-06-07",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "9000002836",
+          "osoitenumero": 1,
+          "huoneistokirjain": "B",
+          "huoneistonumero": "002",
+          "kuntakoodi": "426",
+          "postinumero": "83100",
+          "katunimi": {
+            "fi": "Ristinsalmi"
+          },
+          "postitoimipaikka": {
+            "fi": "LIPERI",
+            "sv": "LIPERI"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "KORJATTU",
+          "alkupv": {
+            "arvo": "2019-06-01",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "9000002836",
+          "osoitenumero": 1,
+          "huoneistokirjain": "B",
+          "huoneistonumero": "002",
+          "kuntakoodi": "426",
+          "postinumero": "83100",
+          "katunimi": {
+            "fi": "Ristinsalmi"
+          },
+          "postitoimipaikka": {
+            "fi": "LIPERI",
+            "sv": "LIPERI"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "KORJATTAVA",
+          "kuntakoodi": "426",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-07",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "KORJATTU",
+          "kuntakoodi": "426",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "muutosattribuutti": "KORJATTAVA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1971-01-01",
+            "tarkkuus": "VUOSI"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-06-06",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "muutosattribuutti": "KORJATTU",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "1971-01-01",
+            "tarkkuus": "VUOSI"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-05-31",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "KORJATTAVA",
+          "kuntakoodi": "426",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-07",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "KORJATTU",
+          "kuntakoodi": "426",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-06-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "KORJATTAVA",
+          "rakennustunnus": "9000002836",
+          "osoitenumero": 1,
+          "huoneistonumero": "002",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "426",
+          "alkupv": {
+            "arvo": "2019-06-07",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000028361B002 "
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "KORJATTU",
+          "rakennustunnus": "9000002836",
+          "osoitenumero": 1,
+          "huoneistonumero": "002",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "426",
+          "alkupv": {
+            "arvo": "2019-06-01",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000028361B002 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "KORJATTAVA",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "020",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2013-03-06",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-06",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1B020 "
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "KORJATTU",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "020",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2013-03-06",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-05-31",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1B020 "
+        },
+        {
+          "tietoryhma": "USKONTOKUNTA",
+          "muutosattribuutti": "KORJATTAVA",
+          "uskontokunta": 378,
+          "alkupv": {
+            "arvo": "2019-06-07",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "USKONTOKUNTA",
+          "muutosattribuutti": "KORJATTU",
+          "uskontokunta": 378,
+          "alkupv": {
+            "arvo": "2019-06-01",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HISTORIAA_USKONTOKUNNASTA",
+          "muutosattribuutti": "KORJATTAVA",
+          "uskontokunta": 620,
+          "alkupv": {
+            "arvo": "2012-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-06",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HISTORIAA_USKONTOKUNNASTA",
+          "muutosattribuutti": "KORJATTU",
+          "uskontokunta": 620,
+          "alkupv": {
+            "arvo": "2012-03-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-05-31",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ],
+      "muutospv": "2019-06-27T10:43:10.697Z"
+    }
+  ],
+  "ajanTasalla": true
+}

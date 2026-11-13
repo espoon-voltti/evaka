@@ -5,7 +5,6 @@
 package evaka.core.vtj
 
 import evaka.core.identity.Ssn
-import evaka.core.identity.getDobFromSsn
 import evaka.core.shared.domain.DateRange
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo
@@ -121,32 +120,13 @@ fun Henkilo.mapToVtjPerson(): VtjPerson =
         municipalityOfResidenceSe = kotikunta?.kuntaR,
     )
 
-fun Henkilo.Huollettava.mapToRelative() =
-    toRelative(henkilotunnus, syntymaaika, nykyisetEtunimet.etunimet, nykyinenSukunimi.sukunimi)
+fun Henkilo.mapDependants(): List<Ssn> = huollettava.mapNotNull { relativeSsn(it.henkilotunnus) }
 
-fun Henkilo.Huoltaja.mapToRelative() =
-    toRelative(henkilotunnus, syntymaaika, nykyisetEtunimet.etunimet, nykyinenSukunimi.sukunimi)
+fun Henkilo.mapGuardians(): List<Ssn> = huoltaja.mapNotNull { relativeSsn(it.henkilotunnus) }
 
-private fun toRelative(
-    henkilotunnus: String,
-    syntymaaika: String?,
-    firstNames: String,
-    lastName: String,
-): VtjRelative {
-    val ssn = Ssn.parse(henkilotunnus) ?: error("VTJ returned an invalid SSN")
-    return VtjRelative(
-        ssn = ssn,
-        dateOfBirth = parseLocalDateFromString(syntymaaika) ?: getDobFromSsn(ssn.value),
-        firstNames = firstNames,
-        lastName = lastName,
-    )
-}
-
-fun Henkilo.mapDependants(): List<VtjRelative> =
-    huollettava.filter { !it.henkilotunnus.isNullOrEmpty() }.map { it.mapToRelative() }
-
-fun Henkilo.mapGuardians(): List<VtjRelative> =
-    huoltaja.filter { !it.henkilotunnus.isNullOrEmpty() }.map { it.mapToRelative() }
+private fun relativeSsn(henkilotunnus: String?): Ssn? =
+    if (henkilotunnus.isNullOrEmpty()) null
+    else Ssn.parse(henkilotunnus) ?: error("VTJ returned an invalid SSN")
 
 /*
    kieliS:     "Henkilon kielen nimi. Muoto 0-30 merkkia."

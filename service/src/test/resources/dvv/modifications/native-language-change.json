@@ -1,0 +1,49 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "301062-907N",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "98",
+          "kielikoodiISO6392": "fse",
+          "nimi": "suomalainen viittomakieli",
+          "alkupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATTY"
+        },
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "fi",
+          "kielikoodiISO6392": "fin",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2020-03-26",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "POISTETTU",
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "AIDINKIELI",
+              "kielikoodi": "98",
+              "kielikoodiISO6392": "fse",
+              "nimi": "suomalainen viittomakieli",
+              "alkupv": {
+                "arvo": "2020-03-26",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        }
+      ],
+      "muutospv": "2020-04-02T11:42:48.151Z"
+    }
+  ],
+  "ajanTasalla": true
+}

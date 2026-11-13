@@ -6,7 +6,6 @@ package evaka.core.vtj
 
 import evaka.core.identity.Ssn
 import evaka.core.shared.EvakaUserId
-import evaka.core.vtj.VtjClient.DetailsQuery
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -18,14 +17,15 @@ import org.mockito.junit.jupiter.MockitoExtension
 @ExtendWith(MockitoExtension::class)
 class MockDataServiceTest {
     private val mockDetailsService = MockVtjClient().also { MockVtjClient.add(testDataset()) }
+    private val requestingUser = EvakaUserId(UUID.randomUUID())
 
     @Test
     fun `check that second child is less than three years old (2)`() {
-        val kaarinaAnttola = mockDetailsService.fetchWithDependants(mapToQuery("270372-905L"))
+        val kaarinaAnttola = fetchWithDependants("270372-905L")
 
         val children = kaarinaAnttola.dependants
         val childTwo = children[1]
-        val year = childTwo.ssn.value.substring(4, 6).toInt()
+        val year = childTwo.value.substring(4, 6).toInt()
         val difference = 18 - year
 
         assertTrue(difference < 3)
@@ -33,11 +33,11 @@ class MockDataServiceTest {
 
     @Test
     fun `check that second child is less than three years old (1)`() {
-        val parent = mockDetailsService.fetchWithDependants(mapToQuery("060195-966B"))
+        val parent = fetchWithDependants("060195-966B")
 
         val children = parent.dependants
         val childTwo = children[1]
-        val year = childTwo.ssn.value.substring(4, 6).toInt()
+        val year = childTwo.value.substring(4, 6).toInt()
         val difference = 18 - year
 
         assertTrue(difference < 3)
@@ -45,11 +45,11 @@ class MockDataServiceTest {
 
     @Test
     fun `check that second child is less than three years old (0)`() {
-        val parent = mockDetailsService.fetchWithDependants(mapToQuery("081181-9984"))
+        val parent = fetchWithDependants("081181-9984")
 
         val children = parent.dependants
         val childTwo = children[1]
-        val year = childTwo.ssn.value.substring(4, 6).toInt()
+        val year = childTwo.value.substring(4, 6).toInt()
         val difference = 18 - year
 
         assertTrue(difference < 3)
@@ -57,7 +57,7 @@ class MockDataServiceTest {
 
     @Test
     fun `check that normal user and their children have addresses`() {
-        val parent = mockDetailsService.fetchWithDependants(mapToQuery("081181-9984"))
+        val parent = fetchWithDependants("081181-9984")
 
         val expectedAddress = "Raivaajantie 13"
 
@@ -78,7 +78,7 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with both them and their children having details restrictions`() {
-        val parent = mockDetailsService.fetchWithDependants(mapToQuery("150978-9025"))
+        val parent = fetchWithDependants("150978-9025")
 
         val expectedEmptyAddress = ""
 
@@ -96,7 +96,7 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with no restrictions but whose children have details restrictions`() {
-        val parent = mockDetailsService.fetchWithDependants(mapToQuery("300190-9257"))
+        val parent = fetchWithDependants("300190-9257")
 
         val expectedGuardianAddress = "Raivaajantie 18"
         val expectedEmptyAddress = ""
@@ -116,7 +116,7 @@ class MockDataServiceTest {
 
     @Test
     fun `there should be a user with details restriction but whose children don't have details restrictions`() {
-        val parent = mockDetailsService.fetchWithDependants(mapToQuery("031083-910S"))
+        val parent = fetchWithDependants("031083-910S")
 
         val expectedChildAddress = "Raivaajantie 19"
 
@@ -134,20 +134,19 @@ class MockDataServiceTest {
 
     @Test
     fun `mr Karhula has 3 children`() {
-        val parent = mockDetailsService.fetchWithDependants(mapToQuery("070644-937X"))
+        val parent = fetchWithDependants("070644-937X")
 
         assertEquals(3, parent.dependants.size)
     }
 
-    private fun fetchInFull(relatives: List<VtjRelative>) = relatives.map {
-        mockDetailsService.fetchPerson(mapToQuery(it.ssn.value))
+    private fun fetchInFull(relatives: List<Ssn>) = relatives.map {
+        mockDetailsService.fetchPersons(requestingUser, listOf(it)).getValue(it)
     }
 
-    private fun mapToQuery(ssn: String) =
-        DetailsQuery(
-            ssn = Ssn.parse(ssn)!!,
-            requestingUser = EvakaUserId(UUID.randomUUID()),
-        )
+    private fun fetchWithDependants(ssn: String): VtjPersonAndDependants {
+        val key = Ssn.from(ssn)
+        return mockDetailsService.fetchWithDependants(requestingUser, listOf(key)).getValue(key)
+    }
 
     private fun testDataset() =
         MockVtjDataset(

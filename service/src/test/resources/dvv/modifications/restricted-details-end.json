@@ -1,0 +1,58 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "180883-998N",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "TURVAKIELTO",
+          "muutosattribuutti": "MUUTETTU",
+          "turvaLoppuPv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "turvakieltoAktiivinen": false
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Lauttasaarentie",
+            "sv": "Drumsövägen"
+          },
+          "katunumero": "32",
+          "huoneistokirjain": "B",
+          "huoneistonumero": "018",
+          "postinumero": "00200",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2013-08-14",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "MUUTETTU"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "MUUTETTU",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "018",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2013-08-14",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1B018 "
+        }
+      ],
+      "muutospv": "2019-06-27T11:52:25.604Z"
+    }
+  ],
+  "ajanTasalla": true
+}
