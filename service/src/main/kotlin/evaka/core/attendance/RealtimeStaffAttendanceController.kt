@@ -14,8 +14,6 @@ import evaka.core.shared.StaffAttendanceExternalId
 import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
-import evaka.core.shared.db.mapPSQLException
-import evaka.core.shared.db.psqlCause
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
@@ -237,9 +235,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean = entries.any {
             it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
         }
-
-        fun anyEntriesOverlap(): Boolean =
-            entries.withIndex().any { (i, a) -> entries.drop(i + 1).any { b -> a.overlaps(b) } }
     }
 
     @PostMapping("/employee/staff-attendances/realtime/upsert")
@@ -257,9 +252,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         }
         if (body.entries.any { !it.departsAfterArrival() }) {
             throw BadRequest("Departure time must be after arrival time")
-        }
-        if (body.anyEntriesOverlap()) {
-            throw BadRequest("Attendances overlap", OVERLAPPING_ATTENDANCE)
         }
 
         val (updates, changes) =
@@ -289,22 +281,12 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             body.employeeId,
                         )
 
-                        val entryIds = body.entries.mapNotNull { it.id }.toSet()
-                        if (
-                            body.entries.any {
-                                tx.hasOverlappingStaffAttendance(
-                                    body.employeeId,
-                                    it.arrived,
-                                    it.departed,
-                                    entryIds,
-                                )
-                            }
-                        ) {
-                            throw BadRequest(
-                                "Attendance overlaps with an existing attendance",
-                                OVERLAPPING_ATTENDANCE,
-                            )
-                        }
+                        requireNoOverlapsBetween(body.entries)
+                        tx.requireNoOverlapsWithExistingStaffAttendances(
+                            body.employeeId,
+                            body.entries,
+                            body.entries.mapNotNull { it.id }.toSet(),
+                        )
 
                         val updates =
                             body.entries.mapNotNull { entry ->
@@ -331,16 +313,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     }
                 }
             } catch (e: JdbiException) {
-                if (
-                    e.psqlCause()?.serverErrorMessage?.constraint == "staff_attendance_no_overlaps"
-                ) {
-                    throw BadRequest(
-                        "Attendance overlaps with an existing attendance",
-                        OVERLAPPING_ATTENDANCE,
-                        e,
-                    )
-                }
-                throw mapPSQLException(e)
+                throw mapStaffAttendanceWriteException(e)
             }
         Audit.StaffAttendanceUpdate.log(
             targetId = AuditId(body.unitId),
@@ -446,8 +419,4 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     data class OpenGroupAttendanceResponse(val openGroupAttendance: OpenGroupAttendance?)
-
-    companion object {
-        const val OVERLAPPING_ATTENDANCE = "overlappingAttendance"
-    }
 }

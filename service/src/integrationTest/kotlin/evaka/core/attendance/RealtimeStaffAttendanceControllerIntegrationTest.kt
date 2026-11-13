@@ -364,7 +364,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                     ),
                 )
             }
-        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
 
         upsertStaffAttendancesOnDate(
             yesterday,
@@ -402,7 +402,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                     ),
                 )
             }
-        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
     }
 
     @Test
@@ -418,7 +418,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                     now.minusHours(1),
                 )
             }
-        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
 
         upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(3), now.minusHours(1))
     }
@@ -436,7 +436,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                     now.minusHours(1),
                 )
             }
-        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
     }
 
     @Test
@@ -459,7 +459,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                     ),
                 )
             }
-        assertEquals(RealtimeStaffAttendanceController.OVERLAPPING_ATTENDANCE, exception.errorCode)
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
     }
 
     @Test

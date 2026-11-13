@@ -92,6 +92,7 @@ data class StaffMember(
 data class StaffMemberWithOperationalDays(
     val staffMember: StaffMember,
     val operationalDays: List<LocalDate>,
+    val otherUnitAttendances: List<OtherUnitStaffAttendance>,
 )
 
 data class StaffMemberAttendance(

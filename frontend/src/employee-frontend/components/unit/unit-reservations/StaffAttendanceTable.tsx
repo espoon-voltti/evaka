@@ -39,7 +39,11 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { formatPersonName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
-import { presentInGroup } from 'lib-common/staff-attendance'
+import {
+  attendancesOverlap,
+  isDuringAttendance,
+  presentInGroup
+} from 'lib-common/staff-attendance'
 import type { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -1016,14 +1020,6 @@ type StaffValidatorConfig = ValidatorConfig & {
   otherAttendances: ModalOtherAttendance[]
 }
 
-const overlaps = (
-  arrived: HelsinkiDateTime,
-  departed: HelsinkiDateTime | null,
-  other: ModalOtherAttendance
-) =>
-  (departed === null || other.arrived.isBefore(departed)) &&
-  (other.departed === null || arrived.isBefore(other.departed))
-
 const staffAttendanceValidator =
   (config: StaffValidatorConfig) =>
   (
@@ -1060,14 +1056,11 @@ const staffAttendanceValidator =
       const overlappingAttendances =
         arrived !== undefined && departed !== undefined
           ? config.otherAttendances.filter((other) =>
-              overlaps(arrived, departed, other)
+              attendancesOverlap({ arrived, departed }, other)
             )
           : []
       const arrivalOverlaps = overlappingAttendances.some(
-        (other) =>
-          arrived &&
-          !arrived.isBefore(other.arrived) &&
-          (other.departed === null || arrived.isBefore(other.departed))
+        (other) => arrived && isDuringAttendance(arrived, other)
       )
 
       errors[i] = {

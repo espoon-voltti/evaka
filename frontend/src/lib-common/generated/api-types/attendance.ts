@@ -463,6 +463,7 @@ export interface StaffMemberAttendance {
 */
 export interface StaffMemberWithOperationalDays {
   operationalDays: LocalDate[]
+  otherUnitAttendances: OtherUnitStaffAttendance[]
   staffMember: StaffMember
 }
 
@@ -759,6 +760,7 @@ export function deserializeJsonStaffMemberWithOperationalDays(json: JsonOf<Staff
   return {
     ...json,
     operationalDays: json.operationalDays.map(e => LocalDate.parseIso(e)),
+    otherUnitAttendances: json.otherUnitAttendances.map(e => deserializeJsonOtherUnitStaffAttendance(e)),
     staffMember: deserializeJsonStaffMember(json.staffMember)
   }
 }

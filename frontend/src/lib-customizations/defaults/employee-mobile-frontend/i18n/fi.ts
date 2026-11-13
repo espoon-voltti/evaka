@@ -358,6 +358,11 @@ export const fi = {
       openAttendanceInAnotherUnitWarning: 'Avoin kirjaus ',
       openAttendanceInAnotherUnitWarningCont:
         '. Kirjaus on päätettävä ennen uuden lisäystä.',
+      attendancesInOtherUnits:
+        'Tälle päivälle on tehty kirjauksia toisessa yksikössä',
+      overlappingAttendanceNextDay: 'Päällekkäinen kirjaus seuraavana päivänä',
+      overlappingAttendanceSaveError:
+        'Kirjaus on päällekkäinen toisen kirjauksen kanssa. Palaa takaisin ja tarkista kirjaukset.',
       noPlan: 'Ei suunniteltua työvuoroa',
       planWarnings: {
         maybeInOtherUnit: 'Työvuoro voi olla toisessa yksikössä',

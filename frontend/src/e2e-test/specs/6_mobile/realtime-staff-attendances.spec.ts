@@ -1146,6 +1146,96 @@ test.describe('Realtime staff attendance edit page', () => {
     ])
   })
 
+  test.describe('Attendances in another unit', () => {
+    const today = LocalDate.of(2023, 1, 24)
+    const date = today.subDays(5)
+    const anotherGroupId = randomId<GroupId>()
+
+    test.beforeEach(async () => {
+      await Fixture.daycare({
+        ...testDaycare,
+        areaId: careArea.id,
+        enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+      }).save()
+      await Fixture.daycareGroup({
+        id: anotherGroupId,
+        daycareId: testDaycare.id,
+        name: 'Toiset testailijat'
+      }).save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: staffFixture.id,
+        groupId: testDaycareGroup.id,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(12, 0)),
+        departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(14, 0))
+      }).save()
+    })
+
+    test('Attendances in another unit are shown and overlapping entry cannot be saved', async () => {
+      await Fixture.realtimeStaffAttendance({
+        employeeId: staffFixture.id,
+        groupId: anotherGroupId,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(7, 0)),
+        departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(9, 0))
+      }).save()
+
+      await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)))
+      await staffAttendancePage.openStaffPage(employeeName)
+      await staffAttendancePage.previousAttendancesButton.click()
+      await staffAttendancePage.previousAttendancesPage
+        .editAttendancesOfDateButton(date)
+        .click()
+
+      const editPage = new StaffAttendanceEditPage(page)
+      await expect(editPage.attendancesInOtherUnits).toContainText(
+        `${testDaycare.name}: 07:00 – 09:00`
+      )
+      await editPage.fillArrived(0, '08:00')
+      await expect(editPage.arrivedInfo(0)).toHaveText('Tarkista')
+      await editPage.saveButton.assertDisabled(true)
+
+      await editPage.fillArrived(0, '09:00')
+      await editPage.submit(pin)
+
+      await staffAttendancePage.previousAttendancesButton.click()
+      await expect(
+        staffAttendancePage.previousAttendancesPage.attendanceOfDate(date, 0)
+          .times
+      ).toHaveText('09:00 - 14:00')
+    })
+
+    test('Overnight entry overlapping with next day attendance in another unit is warned about', async () => {
+      await Fixture.realtimeStaffAttendance({
+        employeeId: staffFixture.id,
+        groupId: anotherGroupId,
+        arrived: HelsinkiDateTime.fromLocal(
+          date.addDays(1),
+          LocalTime.of(7, 0)
+        ),
+        departed: HelsinkiDateTime.fromLocal(
+          date.addDays(1),
+          LocalTime.of(9, 0)
+        )
+      }).save()
+
+      await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)))
+      await staffAttendancePage.openStaffPage(employeeName)
+      await staffAttendancePage.previousAttendancesButton.click()
+      await staffAttendancePage.previousAttendancesPage
+        .editAttendancesOfDateButton(date)
+        .click()
+
+      const editPage = new StaffAttendanceEditPage(page)
+      await expect(editPage.attendancesInOtherUnits).toBeHidden()
+      await editPage.fillArrived(0, '22:00')
+      await editPage.fillDeparted(0, '08:00')
+      await expect(editPage.departedInfo(0)).toHaveText('Tarkista')
+      await expect(editPage.overlappingAttendanceWarning).toContainText(
+        `${testDaycare.name}: 07:00 – 09:00`
+      )
+      await editPage.saveButton.assertDisabled(true)
+    })
+  })
+
   test('staff attendance types can be customized', async () => {
     const date = LocalDate.of(2022, 5, 5)
     await Fixture.realtimeStaffAttendance({

@@ -8,7 +8,7 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation, useSearchParams } from 'wouter'
 
-import { combine } from 'lib-common/api'
+import { combine, Success } from 'lib-common/api'
 import { boolean, localDate, localTime, string } from 'lib-common/form/fields'
 import {
   array,
@@ -24,6 +24,7 @@ import { useForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
 import type {
   GroupInfo,
+  OtherUnitStaffAttendance,
   StaffAttendanceType,
   StaffAttendanceUpsert,
   StaffMember,
@@ -38,7 +39,11 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import { presentInGroup } from 'lib-common/staff-attendance'
+import {
+  attendancesOverlap,
+  isDuringAttendance,
+  presentInGroup
+} from 'lib-common/staff-attendance'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
@@ -53,6 +58,7 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -71,7 +77,11 @@ import type { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
-import { staffAttendanceMutation, staffAttendanceQuery } from './queries'
+import {
+  staffAttendanceMutation,
+  staffAttendanceQuery,
+  staffAttendancesByEmployeeQuery
+} from './queries'
 import { toStaff } from './utils'
 
 const typesWithoutGroup = new Set(
@@ -142,22 +152,56 @@ const staffAttendanceForm = mapped(
   })
 )
 
-const staffAttendancesForm = object({
-  rows: validated(array(staffAttendanceForm), (output) =>
-    output.some((row, index, array) =>
-      array.some(
-        (other, otherIndex) =>
-          index !== otherIndex &&
-          (row.departed === null ||
-            !row.departed.isEqualOrBefore(other.arrived)) &&
-          (other.departed === null ||
-            !other.departed.isEqualOrBefore(row.arrived))
+interface OtherAttendance {
+  unitName: string | null
+  groupId: GroupId | null
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+}
+
+const staffAttendancesForm = (otherAttendances: OtherAttendance[]) =>
+  object({
+    rows: validated(array(staffAttendanceForm), (output) =>
+      output.some(
+        (row, index, array) =>
+          array.some(
+            (other, otherIndex) =>
+              index !== otherIndex && attendancesOverlap(row, other)
+          ) || otherAttendances.some((other) => attendancesOverlap(row, other))
       )
+        ? 'overlap'
+        : undefined
     )
-      ? 'overlap'
-      : undefined
+  })
+
+type StaffAttendancesForm = ReturnType<typeof staffAttendancesForm>
+
+const getOtherAttendances = (
+  date: LocalDate,
+  attendances: StaffMemberAttendance[],
+  otherUnitAttendances: OtherUnitStaffAttendance[]
+): OtherAttendance[] => {
+  const nextDayStart = HelsinkiDateTime.fromLocal(
+    date.addDays(1),
+    LocalTime.MIN
   )
-})
+  return [
+    ...otherUnitAttendances.map(({ unitName, arrived, departed }) => ({
+      unitName,
+      groupId: null,
+      arrived,
+      departed
+    })),
+    ...attendances
+      .filter(({ arrived }) => !arrived.isBefore(nextDayStart))
+      .map(({ groupId, arrived, departed }) => ({
+        unitName: null,
+        groupId,
+        arrived,
+        departed
+      }))
+  ]
+}
 
 const pinForm = object({
   pinCode: validated(array(string()), (output) =>
@@ -170,7 +214,7 @@ const initialFormState = (
   date: LocalDate,
   groups: GroupInfo[],
   attendances: StaffMemberAttendance[]
-): StateOf<typeof staffAttendancesForm> => ({
+): StateOf<StaffAttendancesForm> => ({
   rows: sortBy(
     attendances.filter((a) => a.arrived.toLocalDate().isEqual(date)),
     (attendance) => attendance.arrived
@@ -246,21 +290,47 @@ export default React.memo(function StaffAttendanceEditPage({
   const staffAttendanceResponse = useQueryResult(
     staffAttendanceQuery({ unitId, startDate: date, endDate: date })
   )
+  const employeeAttendancesResponse = useQueryResult(
+    staffAttendancesByEmployeeQuery({
+      unitId,
+      employeeId,
+      from: date,
+      to: date.addDays(1)
+    })
+  )
   const combinedResult = useMemo(
     () =>
-      combine(unitInfoResponse, staffAttendanceResponse).map(
-        ([{ groups, staff }, { staff: staffMember }]) => ({
-          groups: sortBy(groups, (group) => group.name),
-          staff: staff.find((s) => s.id === employeeId),
-          staffMember: staffMember.find((s) => s.employeeId === employeeId)
-        })
-      ),
-    [employeeId, unitInfoResponse, staffAttendanceResponse]
+      combine(
+        unitInfoResponse,
+        staffAttendanceResponse,
+        employeeAttendancesResponse.isFailure &&
+          employeeAttendancesResponse.statusCode === 404
+          ? Success.of(null)
+          : employeeAttendancesResponse
+      ).map(([{ groups, staff }, { staff: staffMember }, withNextDay]) => ({
+        groups: sortBy(groups, (group) => group.name),
+        staff: staff.find((s) => s.id === employeeId),
+        staffMember: staffMember.find((s) => s.employeeId === employeeId),
+        otherAttendances: withNextDay
+          ? getOtherAttendances(
+              date,
+              withNextDay.staffMember.attendances,
+              withNextDay.otherUnitAttendances
+            )
+          : []
+      })),
+    [
+      date,
+      employeeId,
+      unitInfoResponse,
+      staffAttendanceResponse,
+      employeeAttendancesResponse
+    ]
   )
 
   return renderResult(
     combinedResult,
-    ({ groups, staff, staffMember }, isReloading) => {
+    ({ groups, staff, staffMember, otherAttendances }, isReloading) => {
       if (isReloading) return null
 
       return (
@@ -280,6 +350,7 @@ export default React.memo(function StaffAttendanceEditPage({
               employeeId={employeeId}
               groups={groups}
               staffMember={staffMember}
+              otherAttendances={otherAttendances}
             />
           )}
         </StaffMemberPageContainer>
@@ -293,21 +364,27 @@ const StaffAttendancesEditor = ({
   unitOrGroup,
   employeeId,
   groups,
-  staffMember
+  staffMember,
+  otherAttendances
 }: {
   date: LocalDate
   unitOrGroup: UnitOrGroup
   employeeId: EmployeeId
   groups: GroupInfo[]
   staffMember: StaffMember
+  otherAttendances: OtherAttendance[]
 }) => {
   const unitId = unitOrGroup.unitId
   const { i18n, lang } = useTranslation()
   const [, navigate] = useLocation()
 
   const [mode, setMode] = useState<'editor' | 'pin'>('editor')
+  const attendancesForm = useMemo(
+    () => staffAttendancesForm(otherAttendances),
+    [otherAttendances]
+  )
   const form = useForm(
-    staffAttendancesForm,
+    attendancesForm,
     () => initialFormState(i18n, date, groups, staffMember.attendances),
     i18n.attendances.staff.validationErrors
   )
@@ -322,6 +399,26 @@ const StaffAttendancesEditor = ({
   const [errorCode, setErrorCode] = useState<string>()
 
   const rowsInputInfo = rows.inputInfo()
+
+  const otherUnitAttendancesOnDate = useMemo(() => {
+    const startOfDay = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
+    const endOfDay = HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
+    return otherAttendances.filter(
+      (a) =>
+        a.unitName !== null &&
+        a.arrived.isBefore(endOfDay) &&
+        (a.departed === null || a.departed.isAfter(startOfDay))
+    )
+  }, [otherAttendances, date])
+
+  const rowValues = boundRows.flatMap((row) =>
+    row.isValid() ? [row.value()] : []
+  )
+  const overlappingAttendancesOnNextDay = otherAttendances.filter(
+    (other) =>
+      !otherUnitAttendancesOnDate.includes(other) &&
+      rowValues.some((row) => attendancesOverlap(row, other))
+  )
 
   const continuationAttendance = useMemo(
     () =>
@@ -341,6 +438,13 @@ const StaffAttendancesEditor = ({
             {i18n.pin.pinCode}
           </Title>
           <PinInputF bind={pinCode} invalid={errorCode === 'WRONG_PIN'} />
+          {errorCode === 'overlappingAttendance' && (
+            <AlertBox
+              wide
+              data-qa="overlapping-attendance-save-error"
+              message={i18n.attendances.staff.overlappingAttendanceSaveError}
+            />
+          )}
         </ContentArea>
         <ContentArea $opaque $paddingHorizontal="s">
           <FixedSpaceRow $justifyContent="space-between">
@@ -423,6 +527,22 @@ const StaffAttendancesEditor = ({
           </div>
         </div>
         <H3>{i18n.attendances.staff.rows}</H3>
+        {otherUnitAttendancesOnDate.length > 0 && (
+          <InfoBox
+            wide
+            data-qa="attendances-in-other-units"
+            message={
+              <>
+                {i18n.attendances.staff.attendancesInOtherUnits}
+                <OtherAttendanceList
+                  attendances={otherUnitAttendancesOnDate}
+                  groups={groups}
+                  date={date}
+                />
+              </>
+            }
+          />
+        )}
 
         {continuationAttendance && (
           <>
@@ -493,6 +613,7 @@ const StaffAttendancesEditor = ({
               <StaffAttendanceEditor
                 date={date}
                 groups={groups}
+                otherAttendances={otherAttendances}
                 form={row}
                 onDelete={() =>
                   rows.update((prev) => [
@@ -509,6 +630,21 @@ const StaffAttendancesEditor = ({
             <div>{i18n.attendances.staff.noRows}</div>
             <Gap $size="s" />
           </>
+        )}
+        {overlappingAttendancesOnNextDay.length > 0 && (
+          <AlertBox
+            wide
+            data-qa="overlapping-attendance-warning"
+            message={
+              <>
+                {i18n.attendances.staff.overlappingAttendanceNextDay}
+                <OtherAttendanceList
+                  attendances={overlappingAttendancesOnNextDay}
+                  groups={groups}
+                />
+              </>
+            }
+          />
         )}
         {rowsInputInfo && (
           <InputFieldUnderRow className={classNames(rowsInputInfo.status)}>
@@ -582,11 +718,13 @@ const StaffAttendancesEditor = ({
 const StaffAttendanceEditor = ({
   date,
   groups,
+  otherAttendances,
   form,
   onDelete
 }: {
   date: LocalDate
   groups: GroupInfo[]
+  otherAttendances: OtherAttendance[]
   form: BoundForm<typeof staffAttendanceForm>
   onDelete: () => void
 }) => {
@@ -610,6 +748,23 @@ const StaffAttendanceEditor = ({
       : null
   const dateLabelVisible =
     departed && !departed.toLocalDate().isEqual(arrivedDateValue)
+
+  const arrived =
+    arrivedTime.isValid() && departedTime.isValid()
+      ? HelsinkiDateTime.fromLocal(arrivedDateValue, arrivedTime.value())
+      : null
+  const overlapping = arrived
+    ? otherAttendances.filter((other) =>
+        attendancesOverlap({ arrived, departed }, other)
+      )
+    : []
+  const arrivalOverlaps =
+    arrived !== null &&
+    overlapping.some((other) => isDuringAttendance(arrived, other))
+  const overlapInfo = {
+    text: i18n.attendances.staff.validationErrors.timeFormat,
+    status: 'warning' as const
+  }
 
   return (
     <FlexColumn>
@@ -656,6 +811,7 @@ const StaffAttendanceEditor = ({
               bind={arrivedTime}
               readonly={!arrivedDateValue.isEqual(date)}
               data-qa="arrived"
+              {...(arrivalOverlaps ? { info: overlapInfo } : {})}
             />
           </div>
           <span>–</span>
@@ -666,9 +822,11 @@ const StaffAttendanceEditor = ({
             <TimeInputF
               bind={departedTime}
               info={
-                departedTime.state === ''
-                  ? { text: i18n.attendances.staff.open, status: 'warning' }
-                  : departedTime.inputInfo()
+                overlapping.length > 0 && !arrivalOverlaps
+                  ? overlapInfo
+                  : departedTime.state === ''
+                    ? { text: i18n.attendances.staff.open, status: 'warning' }
+                    : departedTime.inputInfo()
               }
               data-qa="departed"
             />
@@ -695,6 +853,49 @@ const StaffAttendanceEditor = ({
     </FlexColumn>
   )
 }
+
+const OtherAttendanceList = React.memo(function OtherAttendanceList({
+  attendances,
+  groups,
+  date
+}: {
+  attendances: OtherAttendance[]
+  groups: GroupInfo[]
+  date?: LocalDate
+}) {
+  const { i18n } = useTranslation()
+  return (
+    <OtherAttendanceUl>
+      {attendances.map(({ unitName, groupId, arrived, departed }, i) => {
+        const currentDate = date ?? arrived.toLocalDate()
+        return (
+          <li key={i}>
+            {unitName ??
+              groups.find((g) => g.id === groupId)?.name ??
+              i18n.attendances.noGroup}
+            :{' '}
+            <strong>
+              {arrived.toLocalDate().isBefore(currentDate)
+                ? LocalTime.MIN.format()
+                : arrived.toLocalTime().format()}{' '}
+              –{' '}
+              {departed
+                ? departed.toLocalDate().isEqual(currentDate)
+                  ? departed.toLocalTime().format()
+                  : '→'
+                : ''}
+            </strong>
+          </li>
+        )
+      })}
+    </OtherAttendanceUl>
+  )
+})
+
+const OtherAttendanceUl = styled.ul`
+  margin: ${defaultMargins.xs} 0 0;
+  padding-left: ${defaultMargins.m};
+`
 
 const DateLabel = styled.div`
   color: ${(p) => p.theme.colors.grayscale.g70};
