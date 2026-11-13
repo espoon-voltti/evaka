@@ -230,6 +230,15 @@ data class BiChildAttendance(
     val updated: String,
 )
 
+data class BiClubTerm(
+    val id: UUID,
+    val created: String,
+    val updated: String,
+    val term: String, // DateRange
+    val application_period: String, // DateRange
+    val term_breaks: String, // DateMultiRange
+)
+
 data class BiDaycare(
     val additional_info: String?,
     val backup_location: String?,
@@ -290,6 +299,8 @@ data class BiDaycare(
     val upload_to_koski: Boolean,
     val upload_to_varda: Boolean,
     val url: String?,
+    val shift_care_operation_days: List<Int>?,
+    val shift_care_open_on_holidays: Boolean,
 )
 
 data class BiDaycareAssistance(
@@ -511,6 +522,8 @@ data class BiGuardianBlocklist(
     val updated: String,
 )
 
+data class BiHoliday(val date: LocalDate)
+
 data class BiHolidayPeriod(
     val created: String,
     val id: UUID,
@@ -578,6 +591,17 @@ data class BiPreschoolAssistance(
     val modified_by: UUID,
     val updated: String,
     val valid_during: String, // DateRange
+)
+
+data class BiPreschoolTerm(
+    val id: UUID,
+    val created: String,
+    val updated: String,
+    val finnish_preschool: String, // DateRange
+    val swedish_preschool: String, // DateRange
+    val extended_term: String, // DateRange
+    val application_period: String, // DateRange
+    val term_breaks: String, // DateMultiRange
 )
 
 data class BiServiceNeed(

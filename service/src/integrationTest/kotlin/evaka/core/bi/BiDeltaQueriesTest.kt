@@ -26,6 +26,7 @@ import evaka.core.shared.dev.DevReservation
 import evaka.core.shared.dev.DevStaffAttendance
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.RealEvakaClock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -197,7 +198,7 @@ VALUES (
     )
 
     private fun runDelta(query: BiQueries.CsvQuery): String = db.read { tx ->
-        query(tx, config) { records -> records.joinToString("") }
+        query(tx, RealEvakaClock(), config) { records -> records.joinToString("") }
     }
 
     private fun Database.Transaction.insertTestArea(): AreaId = insert(DevCareArea())

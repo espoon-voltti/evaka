@@ -5,12 +5,14 @@
 package evaka.core.bi
 
 import evaka.core.PureJdbiTest
+import evaka.core.allDayTimeRange
 import evaka.core.application.ApplicationType
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.CareDetails
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.clubTerm2024
 import evaka.core.invoicing.data.upsertFeeDecisions
 import evaka.core.invoicing.data.upsertValueDecisions
 import evaka.core.invoicing.domain.ChildWithDateOfBirth
@@ -29,6 +31,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionServiceNeed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.placement.PlacementType
+import evaka.core.preschoolTerm2023
 import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.VoucherValueDecisionId
@@ -149,9 +152,13 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE),
+                        shiftCareOperationTimes = List(7) { allDayTimeRange },
+                        shiftCareOpenOnHolidays = true,
                     )
                 )
             tx.insert(DevDaycareGroup(daycareId = daycareId))
+            tx.insert(preschoolTerm2023)
+            tx.insert(clubTerm2024)
             val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
             val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(DevPlacement(childId = childId, unitId = daycareId))

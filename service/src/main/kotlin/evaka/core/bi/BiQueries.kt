@@ -6,6 +6,10 @@ package evaka.core.bi
 
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.QuerySql
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.getHolidays
+import java.time.LocalDate
 import kotlin.reflect.KClass
 
 object BiQueries {
@@ -124,11 +128,21 @@ object BiQueries {
             )
         }
 
+    val getClubTerms =
+        csvQuery<BiClubTerm> { _ ->
+            sql(
+                """
+            select id, created::text, updated::text, term::text, application_period::text, term_breaks::text
+            FROM club_term
+        """
+            )
+        }
+
     val getDaycares =
         csvQuery<BiDaycare> { _ ->
             sql(
                 """
-            select id, name, type, care_area_id, phone, url, created::text, updated::text, backup_location, NULL AS language_emphasis_id, opening_date, closing_date, email, schedule, additional_info, cost_center, upload_to_varda, capacity, decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address, street_address, postal_code, post_office, mailing_po_box, location::text, mailing_street_address, mailing_postal_code, mailing_post_office, invoiced_by_municipality, provider_type, language, upload_to_koski, oph_unit_oid, oph_organizer_oid, ghost_unit, daycare_apply_period, preschool_apply_period, club_apply_period, finance_decision_handler, provides_shift_care AS round_the_clock, enabled_pilot_features, upload_children_to_varda, business_id, iban, provider_id, operation_times, unit_manager_name, unit_manager_phone, unit_manager_email, dw_cost_center, mealtime_breakfast, mealtime_evening_snack, mealtime_lunch, mealtime_snack, mealtime_supper
+            select id, name, type, care_area_id, phone, url, created::text, updated::text, backup_location, NULL AS language_emphasis_id, opening_date, closing_date, email, schedule, additional_info, cost_center, upload_to_varda, capacity, decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address, street_address, postal_code, post_office, mailing_po_box, location::text, mailing_street_address, mailing_postal_code, mailing_post_office, invoiced_by_municipality, provider_type, language, upload_to_koski, oph_unit_oid, oph_organizer_oid, ghost_unit, daycare_apply_period, preschool_apply_period, club_apply_period, finance_decision_handler, provides_shift_care AS round_the_clock, enabled_pilot_features, upload_children_to_varda, business_id, iban, provider_id, operation_times, unit_manager_name, unit_manager_phone, unit_manager_email, dw_cost_center, mealtime_breakfast, mealtime_evening_snack, mealtime_lunch, mealtime_snack, mealtime_supper, shift_care_operation_days, shift_care_open_on_holidays
             FROM daycare
         """
             )
@@ -284,6 +298,33 @@ object BiQueries {
             )
         }
 
+    val getHolidayDates =
+        object : CsvQuery {
+            override fun <R> invoke(
+                tx: Database.Read,
+                clock: EvakaClock,
+                config: BiExportConfig,
+                useResults: (records: Sequence<String>) -> R,
+            ): R {
+                val holidays =
+                    getHolidays(
+                        FiniteDateRange(
+                            // The oldest eVaka production deployment started in 2019
+                            LocalDate.of(2019, 1, 1),
+                            LocalDate.of(clock.today().year + 1, 12, 31),
+                        )
+                    )
+                return useResults(
+                    toCsvRecords(
+                        ::convertToCsv,
+                        BiHoliday::class,
+                        holidays.sorted().asSequence().map(::BiHoliday),
+                        config,
+                    )
+                )
+            }
+        }
+
     val getHolidayPeriods =
         csvQuery<BiHolidayPeriod> { _ ->
             sql(
@@ -340,6 +381,16 @@ object BiQueries {
                 """
             select id, created::text, updated::text, child_id, modified::text, modified_by, valid_during::text, level
             FROM preschool_assistance
+        """
+            )
+        }
+
+    val getPreschoolTerms =
+        csvQuery<BiPreschoolTerm> { _ ->
+            sql(
+                """
+            select id, created::text, updated::text, finnish_preschool::text, swedish_preschool::text, extended_term::text, application_period::text, term_breaks::text
+            FROM preschool_term
         """
             )
         }
@@ -495,6 +546,7 @@ object BiQueries {
     interface CsvQuery {
         operator fun <R> invoke(
             tx: Database.Read,
+            clock: EvakaClock,
             config: BiExportConfig,
             useResults: (records: Sequence<String>) -> R,
         ): R
@@ -506,6 +558,7 @@ object BiQueries {
     ) : CsvQuery {
         override operator fun <R> invoke(
             tx: Database.Read,
+            clock: EvakaClock,
             config: BiExportConfig,
             useResults: (records: Sequence<String>) -> R,
         ): R =
