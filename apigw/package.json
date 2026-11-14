@@ -58,7 +58,7 @@
     "concurrently": "10.0.7",
     "nock": "15.0.5",
     "node-forge": "1.4.3",
-    "oxfmt": "0.76.0",
+    "oxfmt": "0.77.0",
     "oxlint": "1.91.0",
     "oxlint-tsgolint": "7.0.2006",
     "tough-cookie": "6.0.2",
