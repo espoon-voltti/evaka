@@ -28,6 +28,7 @@ enum class BiTable(val fileName: String, val query: BiQueries.CsvQuery) {
     CareArea("care_area", BiQueries.getAreas),
     Child("child", BiQueries.getChildren),
     ChildAttendance("child_attendance_DELTA", BiQueries.getChildAttendanceDelta),
+    ClubTerm("club_term", BiQueries.getClubTerms),
     Daycare("daycare", BiQueries.getDaycares),
     DaycareAssistance("daycare_assistance", BiQueries.getDaycareAssistances),
     DaycareCaretaker("daycare_caretaker", BiQueries.getDaycareCaretakers),
@@ -44,6 +45,7 @@ enum class BiTable(val fileName: String, val query: BiQueries.CsvQuery) {
     FridgePartner("fridge_partner", BiQueries.getFridgePartners),
     Guardian("guardian", BiQueries.getGuardians),
     GuardianBlocklist("guardian_blocklist", BiQueries.getGuardianBlockLists),
+    Holiday("holidays", BiQueries.getHolidayDates),
     HolidayPeriod("holiday_period", BiQueries.getHolidayPeriods),
     HolidayPeriodQuestionnaireAnswer(
         "holiday_period_questionnaire_answer",
@@ -54,6 +56,7 @@ enum class BiTable(val fileName: String, val query: BiQueries.CsvQuery) {
     Person("person", BiQueries.getPersons),
     Placement("placement", BiQueries.getPlacements),
     PreschoolAssistance("preschool_assistance", BiQueries.getPreschoolAssistances),
+    PreschoolTerm("preschool_term", BiQueries.getPreschoolTerms),
     ServiceNeed("service_need", BiQueries.getServiceNeeds),
     ServiceNeedOption("service_need_option", BiQueries.getServiceNeedOptions),
     ServiceNeedOptionVoucherValue(

@@ -76,7 +76,13 @@ import software.amazon.awssdk.services.s3.S3Client
 @Import(OuluAsyncJobRegistration::class)
 class OuluConfig {
     companion object {
-        val excludedBiTables: Set<BiTable> = setOf(BiTable.AttendanceReservation)
+        val excludedBiTables: Set<BiTable> =
+            setOf(
+                BiTable.AttendanceReservation,
+                BiTable.ClubTerm,
+                BiTable.Holiday,
+                BiTable.PreschoolTerm,
+            )
     }
 
     @Bean fun ouluEnv(env: Environment): OuluEnv = OuluEnv.fromEnvironment(env)

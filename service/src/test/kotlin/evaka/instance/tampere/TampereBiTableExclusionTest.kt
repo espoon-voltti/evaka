@@ -10,9 +10,15 @@ import kotlin.test.assertEquals
 
 class TampereBiTableExclusionTest {
     @Test
-    fun `Tampere BI export excludes only the realtime and delta variants`() {
+    fun `Tampere BI export excludes the realtime and delta variants and the term and holiday tables`() {
         assertEquals(
-            setOf(BiTable.StaffAttendanceRealtime, BiTable.AttendanceReservationDelta),
+            setOf(
+                BiTable.StaffAttendanceRealtime,
+                BiTable.AttendanceReservationDelta,
+                BiTable.ClubTerm,
+                BiTable.Holiday,
+                BiTable.PreschoolTerm,
+            ),
             TampereConfig.excludedBiTables,
         )
     }

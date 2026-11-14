@@ -69,7 +69,13 @@ internal val PAYMENT_SOAP_PACKAGES =
 class TampereConfig {
     companion object {
         val excludedBiTables: Set<BiTable> =
-            setOf(BiTable.StaffAttendanceRealtime, BiTable.AttendanceReservationDelta)
+            setOf(
+                BiTable.StaffAttendanceRealtime,
+                BiTable.AttendanceReservationDelta,
+                BiTable.ClubTerm,
+                BiTable.Holiday,
+                BiTable.PreschoolTerm,
+            )
     }
 
     @Bean
