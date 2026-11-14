@@ -179,7 +179,7 @@ dependencies {
     implementation("org.apache.commons:commons-imaging")
     implementation("org.jsoup:jsoup")
     implementation("org.apache.commons:commons-csv")
-    implementation("org.unbescape:unbescape:1.1.6.RELEASE")
+    implementation("org.unbescape:unbescape:1.1.8.RELEASE")
     implementation("com.yubico:webauthn-server-core")
     implementation("com.github.ua-parser:uap-java")
 
