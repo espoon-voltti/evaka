@@ -59,7 +59,7 @@
     "nock": "15.0.6",
     "node-forge": "1.4.3",
     "oxfmt": "0.77.0",
-    "oxlint": "1.91.0",
+    "oxlint": "1.92.0",
     "oxlint-tsgolint": "7.0.2006",
     "tough-cookie": "6.0.2",
     "typescript": "7.0.2",
