@@ -58,10 +58,10 @@ dependencies {
         api("org.apache.logging.log4j:log4j-api:2.26.1")
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.27")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.27")
-        api("com.fasterxml.jackson.core:jackson-databind:2.22.4")
+        api("com.fasterxml.jackson.core:jackson-databind:2.23.0")
     }
 
-    api(platform("tools.jackson:jackson-bom:3.2.4"))
+    api(platform("tools.jackson:jackson-bom:3.3.0"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.5.1"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.67.0"))
     api(platform("io.netty:netty-bom:4.2.20.Final"))
