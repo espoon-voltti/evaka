@@ -2104,7 +2104,7 @@ __metadata:
     query-string: "npm:10.0.0"
     redis: "npm:6.3.1"
     split2: "npm:4.2.0"
-    tough-cookie: "npm:6.0.2"
+    tough-cookie: "npm:6.1.0"
     typescript: "npm:7.0.2"
     vitest: "npm:4.1.12"
     xml-crypto: "npm:6.4.0"
@@ -4430,12 +4430,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tough-cookie@npm:6.0.2":
-  version: 6.0.2
-  resolution: "tough-cookie@npm:6.0.2"
+"tough-cookie@npm:6.1.0":
+  version: 6.1.0
+  resolution: "tough-cookie@npm:6.1.0"
   dependencies:
     tldts: "npm:^7.0.5"
-  checksum: 10/b231eb744709ce2369ea063f7a3d3816c0c7801a22ccd30a7ab46e90a5bbc531fcbbcc26520f79cfd8516de4340eb9f3568616beb93302548fc989ccb6a974b8
+  checksum: 10/d31b67987b16b5439a995a8ee310876f73c90fa58b036089f86e35996e8b775ec6c418f0aadf91adcccaabd62ac1bffc01b8b1ff546cb570290794edb1c7bfcf
   languageName: node
   linkType: hard
 

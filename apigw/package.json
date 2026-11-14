@@ -61,7 +61,7 @@
     "oxfmt": "0.77.0",
     "oxlint": "1.92.0",
     "oxlint-tsgolint": "7.0.2006",
-    "tough-cookie": "6.0.2",
+    "tough-cookie": "6.1.0",
     "typescript": "7.0.2",
     "vitest": "4.1.12",
     "xml-crypto": "6.4.0",
