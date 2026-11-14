@@ -134,17 +134,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mswjs/interceptors@npm:^0.44.0":
-  version: 0.44.0
-  resolution: "@mswjs/interceptors@npm:0.44.0"
+"@mswjs/interceptors@npm:^0.45.11":
+  version: 0.45.12
+  resolution: "@mswjs/interceptors@npm:0.45.12"
   dependencies:
     "@open-draft/until": "npm:^3.0.1"
     "@types/debug": "npm:^4.1.13"
     debug: "npm:^4.4.3"
     is-node-process: "npm:^1.2.0"
     outvariant: "npm:^1.4.3"
-    rettime: "npm:^0.11.11"
-  checksum: 10/af37f7d5434333d9b60150868c2e6827373e94afdb7fddbe7529dd74cc756b9b8ca7cb319731a097fdbe2aa05401e907fc9d99d8678345a37bfa9bc2b0b4d708
+    rettime: "npm:^0.11.12"
+  checksum: 10/4f96940fd89595438902dd91ef89f00a61af23869d3e0cc023fd16229f94c422946fbffa09f421feb91ea9a3982cf9270f25f27dfa3dd9e32281350a09ce2b40
   languageName: node
   linkType: hard
 
@@ -2092,7 +2092,7 @@ __metadata:
     lodash: "npm:4.18.1"
     make-error-cause: "npm:2.3.0"
     nocache: "npm:4.0.0"
-    nock: "npm:15.0.5"
+    nock: "npm:15.0.6"
     node-forge: "npm:1.4.3"
     oxfmt: "npm:0.77.0"
     oxlint: "npm:1.91.0"
@@ -3192,12 +3192,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nock@npm:15.0.5":
-  version: 15.0.5
-  resolution: "nock@npm:15.0.5"
+"nock@npm:15.0.6":
+  version: 15.0.6
+  resolution: "nock@npm:15.0.6"
   dependencies:
-    "@mswjs/interceptors": "npm:^0.44.0"
-  checksum: 10/dd3a64adc6424c3cd7521f0a5fcecc8ea1b3dd8f419e231e347e425500ccd6b0685790cd760314c87c3410415880ecbd4cf89d24b8c4432061101b2385d38b11
+    "@mswjs/interceptors": "npm:^0.45.11"
+  checksum: 10/785c23ea89a38ca2ba99aff26c552dcca5c4c2c60ddbcf38b69881c239ce907f60a98fb7c6dadadd5bd60035ed4a400f7abfc38681a6732f7f721dc680cead34
   languageName: node
   linkType: hard
 
@@ -3899,7 +3899,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rettime@npm:^0.11.11":
+"rettime@npm:^0.11.12":
   version: 0.11.12
   resolution: "rettime@npm:0.11.12"
   checksum: 10/a85faa82ca460c43f216df1b8db71747c54bc3c269fb99d8bddb9bed5bfd600da4c1ad2ea9368b68f98692d6d1014ff767e40576e024a1b5d8b7abb2e46e58bf
