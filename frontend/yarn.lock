@@ -5035,7 +5035,7 @@ __metadata:
     ts-node: "npm:10.9.2"
     tsx: "npm:4.23.15"
     typescript: "npm:7.0.2"
-    vite: "npm:8.3.6"
+    vite: "npm:8.3.7"
     vitest: "npm:4.1.12"
     wouter: "npm:3.13.0"
   peerDependencies:
@@ -7268,7 +7268,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rolldown@npm:~1.2.16":
+"rolldown@npm:~1.2.18":
   version: 1.2.19
   resolution: "rolldown@npm:1.2.19"
   dependencies:
@@ -8201,15 +8201,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:8.3.6, vite@npm:^6.0.0 || ^7.0.0 || ^8.0.0":
-  version: 8.3.6
-  resolution: "vite@npm:8.3.6"
+"vite@npm:8.3.7, vite@npm:^6.0.0 || ^7.0.0 || ^8.0.0":
+  version: 8.3.7
+  resolution: "vite@npm:8.3.7"
   dependencies:
     fsevents: "npm:~2.3.3"
     lightningcss: "npm:^1.33.0"
     picomatch: "npm:^4.0.7"
     postcss: "npm:^8.5.32"
-    rolldown: "npm:~1.2.16"
+    rolldown: "npm:~1.2.18"
     tinyglobby: "npm:^0.2.17"
   peerDependencies:
     "@types/node": ^20.19.0 || >=22.12.0
@@ -8254,7 +8254,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/94d44b037ede5510d7f9732a9f1748df6994d1530b8a0160ecbdd555fb5e2181dd4d9a702c6143da67abfc816d87b27f507062e030fa0be166bc21232455ad1f
+  checksum: 10/18803d5c9977dd179a17cffef22bf5365f23f815f5bab78e461b3a7d9f213cbf2ccaa5995d4bc01d7bf408c48114e61932ddfd3fab539cbf47444817626b000e
   languageName: node
   linkType: hard
 
