@@ -33,7 +33,7 @@ class MockVtjSoapTransport : VtjSoapTransport {
             this.failingQueries.clear()
         }
 
-        /** The query of [person] throws, like a SOAP error of the VTJ service */
+        /** Makes every [type] query of [person] fail with an exception */
         fun addFailingRequest(person: DevPerson, type: VtjSoapTransport.RequestType) {
             failingQueries += Pair(person.ssn!!, type)
         }
