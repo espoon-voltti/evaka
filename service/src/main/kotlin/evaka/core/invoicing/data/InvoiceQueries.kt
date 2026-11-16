@@ -155,7 +155,7 @@ fun invoiceDetailedQuery(where: Predicate) = QuerySql {
     LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
     LEFT JOIN evaka_user as sent_by ON invoice.sent_by = sent_by.id
     WHERE ${predicate(where.forTable("invoice"))}
-    """
+    """,
     )
 }
 
@@ -175,7 +175,7 @@ fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyId: PersonId): List<Invoic
             """
 ${subquery(invoiceDetailedQuery(Predicate { where("$it.head_of_family = ${bind(headOfFamilyId)}") }))}
 ORDER BY invoice.period_start DESC, invoice.revision_number DESC NULLS LAST
-"""
+""",
         )
     }
         .toList()
@@ -215,9 +215,9 @@ fun Database.Read.getSentInvoicesOfMonth(
                             $it.period_end = ${bind(periodEnd)} AND
                             $it.status = ANY (${bind(statuses)}) AND
                             ${predicate(headOfFamilyFilter)}
-                            """
+                            """,
                 )
-            }
+            },
         )
     }
         .toList()
@@ -235,7 +235,7 @@ fun Database.Read.getInvoiceIdsByDatesAndStatus(
                 WHERE between_start_and_end(${bind(range)}, invoice_date)
                 AND area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))
                 AND status = ${bind(status)}
-                """
+                """,
         )
     }
         .toList<InvoiceId>()
@@ -276,7 +276,7 @@ fun Database.Read.paginatedSearch(
             if (areas.isNotEmpty())
                 PredicateSql {
                     where(
-                        "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))"
+                        "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))",
                     )
                 }
             else null,
@@ -284,7 +284,7 @@ fun Database.Read.paginatedSearch(
             if (withMissingAddress)
                 PredicateSql {
                     where(
-                        "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.mailing_street_address, '')) IS NULL"
+                        "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.mailing_street_address, '')) IS NULL",
                     )
                 }
             else null,
@@ -355,7 +355,7 @@ JOIN LATERAL (
     WHERE row.invoice_id = invoice.id
 ) AS rows_summary ON true
 ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
-"""
+""",
             )
         }
         .mapToPaged(::PagedInvoiceSummaries, pageSize)
@@ -372,11 +372,11 @@ fun Database.Read.searchInvoices(
                 if (period != null)
                     Predicate {
                         where(
-                            "$it.period_start = ${bind(period.start)} AND $it.period_end = ${bind(period.end)}"
+                            "$it.period_start = ${bind(period.start)} AND $it.period_end = ${bind(period.end)}",
                         )
                     }
                 else null,
-            )
+            ),
         )
 
     return createQuery {
@@ -384,7 +384,7 @@ fun Database.Read.searchInvoices(
             """
 ${subquery(invoiceDetailedQuery(predicate))}
 ORDER BY status DESC, due_date, invoice.id
-"""
+""",
         )
     }
         .toList()
@@ -399,7 +399,7 @@ fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
 
     createUpdate {
         sql(
-            "DELETE FROM invoice WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status AND id = ANY(${bind(draftIds)})"
+            "DELETE FROM invoice WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status AND id = ANY(${bind(draftIds)})",
         )
     }
         .execute()
@@ -424,7 +424,7 @@ SET
     sent_by = ${bind(sentBy)},
     status = ${bind(InvoiceStatus.SENT)}
 WHERE id = ${bind { it.id }}
-"""
+""",
         )
     }
 }
@@ -437,7 +437,7 @@ SET saved_cost_center = daycare.cost_center, saved_sub_cost_center = care_area.s
 FROM daycare, care_area WHERE invoice_row.unit_id = daycare.id
 AND daycare.care_area_id = care_area.id
 AND invoice_id = ANY(${bind(invoiceIds)})
-"""
+""",
     )
 }
     .execute()
@@ -455,7 +455,7 @@ SET
     invoice_date = ${bind { it.invoiceDate }},
     due_date = ${bind { it.dueDate }}
 WHERE id = ${bind { it.id }}
-"""
+""",
         )
     }
 }
@@ -474,7 +474,7 @@ fun Database.Transaction.deleteDraftInvoices(
         }
     execute {
         sql(
-            "DELETE FROM invoice WHERE status = ${bind(status)} AND period_start = ${bind(month)} AND ${predicate(headOfFamilyFilter)}"
+            "DELETE FROM invoice WHERE status = ${bind(status)} AND period_start = ${bind(month)} AND ${predicate(headOfFamilyFilter)}",
         )
     }
 }
@@ -496,14 +496,14 @@ fun Database.Transaction.insertDraftInvoices(
     check(invoiceIds.size == invoices.size)
 
     insertInvoiceRows(
-        invoices.zip(invoiceIds).map { (invoice, invoiceId) -> invoiceId to invoice.rows }
+        invoices.zip(invoiceIds).map { (invoice, invoiceId) -> invoiceId to invoice.rows },
     )
     insertInvoicedFeeDecisions(
         invoices.zip(invoiceIds).flatMap { (invoice, invoiceId) ->
             (relatedFeeDecisions[invoice.headOfFamily] ?: emptyList()).map { feeDecisionId ->
                 invoiceId to feeDecisionId
             }
-        }
+        },
     )
     return invoiceIds
 }
@@ -538,14 +538,14 @@ INSERT INTO invoice (
     ${bind { it.revisionNumber }},
     ${bind { it.replacedInvoiceId }}
 ) RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
         .toList()
 
 private fun Database.Transaction.insertInvoiceRows(
-    invoiceRows: List<Pair<InvoiceId, List<DraftInvoiceRow>>>
+    invoiceRows: List<Pair<InvoiceId, List<DraftInvoiceRow>>>,
 ) {
     val batchRows: Sequence<Triple<InvoiceId, Int, DraftInvoiceRow>> =
         invoiceRows.asSequence().flatMap { (invoiceId, rows) ->
@@ -579,13 +579,13 @@ INSERT INTO invoice_row (
     ${bind { (_, _, row) -> row.description }},
     ${bind { (_, _, row) -> row.correctionId }}
 )
-"""
+""",
         )
     }
 }
 
 private fun Database.Transaction.insertInvoicedFeeDecisions(
-    relations: List<Pair<InvoiceId, FeeDecisionId>>
+    relations: List<Pair<InvoiceId, FeeDecisionId>>,
 ) {
     if (relations.isEmpty()) return
 
@@ -594,7 +594,7 @@ private fun Database.Transaction.insertInvoicedFeeDecisions(
             """
         INSERT INTO invoiced_fee_decision (invoice_id, fee_decision_id) 
         VALUES (${bind { pair -> pair.first }}, ${bind { pair -> pair.second }})
-    """
+    """,
         )
     }
 }
@@ -617,7 +617,7 @@ SET status = 'SENT',
     sent_by = ${bind(sentBy)}
 WHERE id = ${bind(invoiceId)} AND status = 'REPLACEMENT_DRAFT'
 RETURNING replaced_invoice_id
-"""
+""",
         )
     }
         .exactlyOne<InvoiceId?>()
@@ -628,7 +628,7 @@ RETURNING replaced_invoice_id
 UPDATE invoice
 SET status = ${bind(InvoiceStatus.REPLACED)}
 WHERE id = ${bind(replacedInvoiceId)}
-"""
+""",
             )
         }
             .updateExactlyOne()
@@ -639,5 +639,5 @@ fun Database.Read.getLastInvoicedMonth(): YearMonth? = createQuery {
     sql("SELECT MAX(invoice_date) AS month FROM invoice WHERE status = 'SENT'")
 }
     .exactlyOneOrNull<YearMonth>()
-    // Invoices of month M are sent in month M+1
-    ?.minusMonths(1)
+// Invoices of month M are sent in month M+1
+?.minusMonths(1)

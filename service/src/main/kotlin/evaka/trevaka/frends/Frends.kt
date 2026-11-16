@@ -41,6 +41,6 @@ fun basicAuthInterceptor(properties: FrendsArchivalProperties) = Interceptor { c
                 "Authorization",
                 Credentials.basic(properties.username, properties.password, Charsets.UTF_8),
             )
-            .build()
+            .build(),
     )
 }

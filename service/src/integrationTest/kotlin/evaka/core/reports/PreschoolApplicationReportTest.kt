@@ -55,7 +55,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
                         extendedTerm = it,
                         applicationPeriod = it,
                         termBreaks = DateSet.empty(),
-                    )
+                    ),
                 )
             }
             val nextTermStart = LocalDate.of(2025, 8, 6)
@@ -67,7 +67,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
                         extendedTerm = it,
                         applicationPeriod = it,
                         termBreaks = DateSet.empty(),
-                    )
+                    ),
                 )
             }
             tx.insert(area)

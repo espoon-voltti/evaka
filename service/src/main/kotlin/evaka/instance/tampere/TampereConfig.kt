@@ -234,7 +234,7 @@ class TampereConfig {
                 minUppers = 1,
                 minDigits = 1,
                 minSymbols = 0,
-            )
+            ),
         )
 
     @Bean
@@ -251,8 +251,8 @@ class TampereConfig {
                     .addInterceptor(
                         basicAuthInterceptor(
                             properties.frends
-                                ?: error("Frends properties not set (TAMPERE_FRENDS_*)")
-                        )
+                                ?: error("Frends properties not set (TAMPERE_FRENDS_*)"),
+                        ),
                     )
                     .build()
             TampereArchivalClient(

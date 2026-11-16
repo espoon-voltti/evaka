@@ -38,11 +38,11 @@ class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     conditions =
                         QuestionnaireConditions(
                             continuousPlacement =
-                                FiniteDateRange(LocalDate.of(2020, 9, 1), summerRange.end)
+                                FiniteDateRange(LocalDate.of(2020, 9, 1), summerRange.end),
                         ),
                     absenceType = AbsenceType.FREE_ABSENCE,
                     requiresStrongAuth = false,
-                )
+                ),
             )
 
         assertEquals("8 vko maksuton", summerQuestionnaire.title.fi)
@@ -66,11 +66,11 @@ class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     conditions =
                         QuestionnaireConditions(
                             continuousPlacement =
-                                FiniteDateRange(LocalDate.of(2020, 9, 1), summerRange.end)
+                                FiniteDateRange(LocalDate.of(2020, 9, 1), summerRange.end),
                         ),
                     absenceType = AbsenceType.FREE_ABSENCE,
                     requiresStrongAuth = false,
-                )
+                ),
             )
 
         assertEquals("avoin maksuton", summerQuestionnaire.title.fi)
@@ -79,7 +79,7 @@ class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest(resetDbBeforeEach
     }
 
     private fun createFixedPeriodQuestionnaire(
-        body: QuestionnaireBody.FixedPeriodQuestionnaireBody
+        body: QuestionnaireBody.FixedPeriodQuestionnaireBody,
     ) = db.transaction {
         it.createFixedPeriodQuestionnaire(body).let { id -> it.getFixedPeriodQuestionnaire(id)!! }
     }

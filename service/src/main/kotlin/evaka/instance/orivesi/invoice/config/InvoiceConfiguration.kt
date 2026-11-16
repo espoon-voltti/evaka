@@ -146,7 +146,7 @@ class OrivesiInvoiceProductProvider : InvoiceProductProvider {
 
                 else ->
                     error(
-                        "No product mapping found for product + fee alteration type combo ($productKey + $feeAlterationType)"
+                        "No product mapping found for product + fee alteration type combo ($productKey + $feeAlterationType)",
                     )
             }
         return product.key
@@ -176,7 +176,7 @@ class OrivesiInvoiceNumberProvider : InvoiceNumberProvider {
     override fun getNextInvoiceNumber(tx: Database.Read): Long =
         tx.createQuery {
                 sql(
-                    "SELECT max(number) FROM invoice WHERE number >= 30000001 AND number < 54000001"
+                    "SELECT max(number) FROM invoice WHERE number >= 30000001 AND number < 54000001",
                 )
             }
             .exactlyOneOrNull<Long>()

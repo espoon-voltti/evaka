@@ -88,7 +88,7 @@ private fun Database.Read.getChildrenInDifferentAddressRows(
             lower(ch.street_address) <> 'poste restante'
         ORDER BY u.name, p.last_name, p.first_name, ch.last_name, ch.first_name;
         """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .toList<ChildrenInDifferentAddressReportRow>()

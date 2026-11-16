@@ -48,14 +48,14 @@ fun personFreeTextSearchPredicate(
         PredicateSql.all(
             ssnPredicates.map { predicate ->
                 PredicateSql.any(tables.map { table -> predicate.forTable(table) })
-            }
+            },
         )
 
     val datePredicateSql =
         PredicateSql.all(
             datePredicates.map { predicate ->
                 PredicateSql.any(tables.map { table -> predicate.forTable(table) })
-            }
+            },
         )
 
     return PredicateSql.all(freeTextPredicateSql, ssnPredicateSql, datePredicateSql)
@@ -104,7 +104,7 @@ fun employeeFreeTextSearchPredicate(searchText: String): Predicate {
         Predicate.all(
             findSsnParams(searchText).map { ssn ->
                 Predicate { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
-            }
+            },
         )
     val freeTextPredicate =
         searchText
@@ -125,7 +125,7 @@ fun employeeFreeTextSearchPredicate(searchText: String): Predicate {
 
 fun disjointNumberPredicate(table: String, column: String, params: Collection<String>) =
     PredicateSql.any(
-        params.map { param -> PredicateSql { where("$table.$column::text = ${bind(param)}") } }
+        params.map { param -> PredicateSql { where("$table.$column::text = ${bind(param)}") } },
     )
 
 private fun freeTextColumn(matchAddresses: Boolean) =
@@ -135,7 +135,7 @@ private fun freeTextComputedColumnPredicate(tables: List<String>, column: String
     PredicateSql.any(
         tables.map { table ->
             PredicateSql { where("$table.$column @@ to_tsquery('simple', ${bind(query)})") }
-        }
+        },
     )
 
 private fun findSsnParams(str: String) =
@@ -153,9 +153,9 @@ private fun ssnPredicate(tablePrefixes: List<String>, params: Collection<String>
                     PredicateSql {
                         where("lower($table.social_security_number) = lower(${bind(ssnParam)})")
                     }
-                }
+                },
             )
-        }
+        },
     )
 
 private val dateRegex = "^\\d{6}$".toRegex()
@@ -172,9 +172,9 @@ private fun datePredicate(tables: List<String>, params: Collection<String>) =
                     PredicateSql {
                         where("to_char($table.date_of_birth, 'DDMMYY') = ${bind(param)}")
                     }
-                }
+                },
             )
-        }
+        },
     )
 
 fun freeTextParamsToTsQuery(searchText: String): String =

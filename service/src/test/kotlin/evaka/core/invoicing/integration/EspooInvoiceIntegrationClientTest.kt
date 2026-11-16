@@ -208,7 +208,7 @@ class EspooInvoiceIntegrationClientTest {
                         invoicingStreetAddress = invoicingStreetAddress,
                         invoicingPostalCode = invoicingPostalCode,
                         invoicingPostOffice = invoicingPostOffice,
-                    )
+                    ),
             )
         val batch =
             EspooInvoiceIntegrationClient.createBatchExports(
@@ -244,7 +244,7 @@ class EspooInvoiceIntegrationClientTest {
                         testInvoiceRow(child = firstChild),
                         testInvoiceRow(child = secondChild),
                         testInvoiceRow(child = firstChild),
-                    )
+                    ),
             )
         val batch =
             EspooInvoiceIntegrationClient.createBatchExports(

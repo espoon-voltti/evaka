@@ -68,7 +68,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     value = "FINNISH_ONLY_OPTION",
                     nameFi = "Pienennetty ryhmä",
                     descriptionFi = "Ryhmän rakenne",
-                )
+                ),
             )
         }
 
@@ -91,7 +91,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     nameSv = "Förminskad grupp",
                     descriptionFi = "Ryhmän rakenne",
                     descriptionSv = "Gruppens sammansättning",
-                )
+                ),
             )
         }
 
@@ -179,10 +179,10 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val assistanceActions = db.read { it.getAssistanceActionsByChild(child.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
-            assistanceActions.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
+            assistanceActions.any { it.startDate == testDate(1) && it.endDate == testDate(15) },
         )
         assertTrue(
-            assistanceActions.any { it.startDate == testDate(16) && it.endDate == testDate(30) }
+            assistanceActions.any { it.startDate == testDate(16) && it.endDate == testDate(30) },
         )
     }
 
@@ -234,10 +234,10 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val assistanceActions = db.read { it.getAssistanceActionsByChild(child.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
-            assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(19) }
+            assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(19) },
         )
         assertTrue(
-            assistanceActions.any { it.startDate == testDate(20) && it.endDate == testDate(30) }
+            assistanceActions.any { it.startDate == testDate(20) && it.endDate == testDate(30) },
         )
     }
 
@@ -253,10 +253,10 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val assistanceActions = db.read { it.getAssistanceActionsByChild(child.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
-            assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(10) }
+            assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(10) },
         )
         assertTrue(
-            assistanceActions.any { it.startDate == testDate(11) && it.endDate == testDate(15) }
+            assistanceActions.any { it.startDate == testDate(11) && it.endDate == testDate(15) },
         )
     }
 
@@ -391,14 +391,14 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 it.id == id1 &&
                     it.startDate == placementStartDate &&
                     it.endDate == placementStartDate.plusDays(5)
-            }
+            },
         )
         assertTrue(
             fetched.any {
                 it.id == id2 &&
                     it.startDate == placementStartDate.plusDays(9) &&
                     it.endDate == placementStartDate.plusDays(22)
-            }
+            },
         )
     }
 
@@ -567,7 +567,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = startDate,
                     endDate = endDate,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
         }
     }
@@ -586,7 +586,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     endDate = endDate,
                     type = type,
                     unitId = daycare.id,
-                )
+                ),
             )
         }
     }

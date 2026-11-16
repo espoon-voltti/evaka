@@ -15,7 +15,7 @@ object EspooBi {
                 """
 SELECT id, created, updated, name
 FROM care_area
-"""
+""",
             )
         }
 
@@ -32,7 +32,7 @@ SELECT
      END) AS daycare,
      opening_date, closing_date, language, unit_manager_name, provides_shift_care AS round_the_clock
 FROM daycare
-"""
+""",
             )
         }
 
@@ -42,7 +42,7 @@ FROM daycare
                 """
 SELECT id, daycare_id AS unit, name, start_date, end_date
 FROM daycare_group
-"""
+""",
             )
         }
 
@@ -55,7 +55,7 @@ SELECT
     restricted_details_enabled AS vtj_non_disclosure, postal_code, post_office
 FROM child
 JOIN person USING (id)
-"""
+""",
             )
         }
 
@@ -70,7 +70,7 @@ UNION ALL
 
 SELECT id, created_at as created, modified_at as updated, child_id AS child, unit_id AS unit, start_date, end_date, TRUE AS is_backup, NULL AS type
 FROM backup_care
-"""
+""",
             )
         }
 
@@ -86,7 +86,7 @@ UNION ALL
 SELECT id, created_at as created, modified_at as updated, id AS placement, group_id AS "group", start_date, end_date
 FROM backup_care
 WHERE group_id IS NOT NULL
-"""
+""",
             )
         }
 
@@ -96,7 +96,7 @@ WHERE group_id IS NOT NULL
                 """
 SELECT id, modified_at AS updated, child_id AS child, date, category
 FROM absence
-"""
+""",
             )
         }
 
@@ -106,7 +106,7 @@ FROM absence
                 """
 SELECT id, created, updated, group_id AS "group", amount, start_date, end_date
 FROM daycare_caretaker
-"""
+""",
             )
         }
 
@@ -126,7 +126,7 @@ SELECT
     (document ->> 'extendedCare') :: boolean AS shift_care
 FROM application a
 WHERE status != 'CREATED'
-"""
+""",
             )
         }
 
@@ -136,7 +136,7 @@ WHERE status != 'CREATED'
                 """
 SELECT id, created, updated, application_id AS application, unit_id AS unit, sent_date, status, type, start_date, end_date
 FROM decision
-"""
+""",
             )
         }
 
@@ -146,7 +146,7 @@ FROM decision
                 """
 SELECT id, created, updated, name_fi AS name, valid_placement_type, default_option, occupancy_coefficient, occupancy_coefficient_under_3y
 FROM service_need_option
-"""
+""",
             )
         }
 
@@ -156,7 +156,7 @@ FROM service_need_option
                 """
 SELECT id, created, updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care = 'FULL' as shift_care
 FROM service_need
-"""
+""",
             )
         }
 
@@ -169,7 +169,7 @@ SELECT
   lower(valid_during) AS valid_from, upper(valid_during) - 1 AS valid_to
 FROM fee_decision
 WHERE status NOT IN ('DRAFT', 'IGNORED')
-"""
+""",
             )
         }
 
@@ -182,7 +182,7 @@ SELECT
   service_need_option_id AS service_need_option,
   service_need_description_fi AS service_need_description, final_fee
 FROM fee_decision_child
-"""
+""",
             )
         }
 
@@ -197,7 +197,7 @@ SELECT
     final_co_payment
 FROM voucher_value_decision
 WHERE status NOT IN ('DRAFT', 'IGNORED')
-"""
+""",
             )
         }
 
@@ -208,7 +208,7 @@ WHERE status NOT IN ('DRAFT', 'IGNORED')
 SELECT
     id, created_at AS created, updated_at AS updated, child_id AS child
 FROM pedagogical_document
-"""
+""",
             )
         }
 
@@ -220,7 +220,7 @@ SELECT
     id, created_at as created, modified_at as updated, child_id AS child, capacity_factor,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM assistance_factor
-"""
+""",
             )
         }
 
@@ -232,7 +232,7 @@ SELECT
     id, created_at AS created, updated_at AS updated, child_id AS child, level,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM daycare_assistance
-"""
+""",
             )
         }
 
@@ -244,7 +244,7 @@ SELECT
     id, created_at AS created, updated_at AS updated, child_id AS child, level,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM preschool_assistance
-"""
+""",
             )
         }
 
@@ -256,7 +256,7 @@ SELECT
     id, created_at AS created, updated_at AS updated, child_id AS child, type,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM other_assistance_measure
-"""
+""",
             )
         }
 
@@ -268,7 +268,7 @@ SELECT
     id, created_at as created, updated_at as updated, child_id AS child, coefficient,
     lower(validity_period) AS start_date, upper(validity_period) - 1 AS end_date
 FROM assistance_need_voucher_coefficient
-"""
+""",
             )
         }
 
@@ -280,7 +280,7 @@ SELECT
     id, created_at as created, modified_at as updated, child_id AS child, start_date, end_date,
     other_action != '' AS has_other_action
 FROM assistance_action
-"""
+""",
             )
         }
 
@@ -292,7 +292,7 @@ SELECT
     action_id AS action, option.value AS option
 FROM assistance_action_option_ref
 JOIN assistance_action_option option ON option.id = option_id
-"""
+""",
             )
         }
 
@@ -330,7 +330,7 @@ class StreamingCsvQuery<T : Any>(
 private const val QUERY_STREAM_CHUNK_SIZE = 10_000
 
 private inline fun <reified T : Any> csvQuery(
-    crossinline f: QuerySql.Builder.() -> QuerySql
+    crossinline f: QuerySql.Builder.() -> QuerySql,
 ): CsvQuery =
     StreamingCsvQuery(T::class) { tx ->
         tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>()

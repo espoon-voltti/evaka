@@ -115,14 +115,14 @@ fun OkHttpClient.executeWithRetries(
             ?: run {
                 response.close()
                 throw IllegalStateException(
-                    "Failed to find a valid Retry-After header with throttle response"
+                    "Failed to find a valid Retry-After header with throttle response",
                 )
             }
 
     if (retryAfter > maxRetryAfterWaitSeconds) {
         response.close()
         throw IllegalStateException(
-            "Aborting request after too big Retry-After value: $retryAfter > $maxRetryAfterWaitSeconds seconds"
+            "Aborting request after too big Retry-After value: $retryAfter > $maxRetryAfterWaitSeconds seconds",
         )
     }
 

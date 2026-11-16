@@ -280,7 +280,7 @@ fun createReservationsAndAbsences(
                         // reservations OR with absences on closed holiday periods
                         val hasReservation =
                             (childReservationDates[request.childId] ?: setOf()).contains(
-                                request.date
+                                request.date,
                             )
                         val hasAbsence =
                             (childAbsenceDates[request.childId] ?: setOf()).contains(request.date)
@@ -359,7 +359,7 @@ fun createReservationsAndAbsences(
         tx.clearOldReservations(
             absenceRequests
                 .filter { reservableRange.includes(it.date) }
-                .map { it.childId to it.date } + otherRequests.map { it.childId to it.date }
+                .map { it.childId to it.date } + otherRequests.map { it.childId to it.date },
         )
 
     val upsertedReservations =
@@ -480,7 +480,7 @@ fun upsertChildDatePresence(
                 is Reservation.NoTimes -> "start_time IS NULL AND end_time IS NULL"
                 is Reservation.Times -> "start_time = ${bind(reservation.range.start)} AND end_time = ${bind(reservation.range.end)}"
             }}
-        """
+        """,
                         )
                     }
                     .exactlyOneOrNull<AttendanceReservationId>()
@@ -581,7 +581,7 @@ private fun Database.Transaction.deleteReservations(
         DELETE FROM attendance_reservation
         WHERE date = ${bind(date)} AND child_id = ${bind(childId)} AND NOT (id = ANY (${bind(skip)}))
         RETURNING id
-    """
+    """,
         )
     }
         .toList<AttendanceReservationId>()
@@ -600,7 +600,7 @@ private fun Database.Transaction.insertReservation(
         INSERT INTO attendance_reservation (child_id, created_at, created_by, date, start_time, end_time) 
         VALUES (${bind(childId)}, ${bind(now)}, ${bind(userId)}, ${bind(date)}, ${bind(reservation.asTimeRange()?.start)}, ${bind(reservation.asTimeRange()?.end)})
         RETURNING id
-    """
+    """,
         )
     }
         .exactlyOne<AttendanceReservationId>()
@@ -638,7 +638,7 @@ fun computeUsedService(
             absenceCategories == placementType.absenceCategories()
     val isRefundedAbsence =
         absenceTypes.intersect(
-            setOf(AbsenceType.FORCE_MAJEURE, AbsenceType.FREE_ABSENCE, AbsenceType.PARENTLEAVE)
+            setOf(AbsenceType.FORCE_MAJEURE, AbsenceType.FREE_ABSENCE, AbsenceType.PARENTLEAVE),
         ) == absenceTypes && absenceCategories == placementType.absenceCategories()
 
     // days used in average calc
@@ -688,7 +688,7 @@ fun computeUsedService(
             placementType.fixedScheduleRange(
                 dailyPreschoolTime = preschoolTime,
                 dailyPreparatoryTime = preparatoryTime,
-            )
+            ),
         )
     val effectiveReservations = TimeSet.of(reservations).removeAll(fixedScheduleTimes)
 
@@ -709,7 +709,7 @@ fun computeUsedService(
         (absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
             absenceCategories == placementType.absenceCategories()) ||
             (absenceCategoriesByType[AbsenceType.PLANNED_ABSENCE]?.contains(
-                AbsenceCategory.BILLABLE
+                AbsenceCategory.BILLABLE,
             ) == true)
 
     if (endedAttendances.isEmpty() && isPlannedAbsence) {

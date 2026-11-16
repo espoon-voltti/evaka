@@ -93,7 +93,7 @@ class DecisionReasoningExemptTypesIntegrationTest : FullApplicationTest(resetDbB
                 ready = ready,
                 createdAt = now,
                 modifiedAt = now,
-            )
+            ),
         )
     }
 
@@ -106,7 +106,7 @@ class DecisionReasoningExemptTypesIntegrationTest : FullApplicationTest(resetDbB
                 text = "fi-text",
                 createdAt = now,
                 modifiedAt = now,
-            )
+            ),
         )
     }
 
@@ -126,7 +126,7 @@ class DecisionReasoningExemptTypesIntegrationTest : FullApplicationTest(resetDbB
                         areaId = areaId,
                         type = setOf(CareType.CENTRE, CareType.CLUB),
                         clubApplyPeriod = DateRange(LocalDate.of(2020, 1, 1), null),
-                    )
+                    ),
                 )
 
             val applicationId =
@@ -219,7 +219,7 @@ class DecisionReasoningExemptTypesIntegrationTest : FullApplicationTest(resetDbB
      * bypassing the placement plan flow.
      */
     private fun insertPlannedDraftDecision(
-        type: DecisionType
+        type: DecisionType,
     ): Triple<DecisionId, ApplicationId, DaycareId> = db.transaction { tx ->
         val guardianId = tx.insert(DevPerson(), DevPersonType.ADULT)
         val childId = tx.insert(DevPerson(dateOfBirth = today.minusYears(3)), DevPersonType.CHILD)
@@ -260,7 +260,7 @@ class DecisionReasoningExemptTypesIntegrationTest : FullApplicationTest(resetDbB
 INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
 VALUES (${bind(admin.evakaUserId)}, ${bind(unitId)}, ${bind(applicationId)}, ${bind(type)}, ${bind(startDate)}, ${bind(startDate.plusYears(1))}, true)
 RETURNING id
-"""
+""",
                     )
                 }
                 .executeAndReturnGeneratedKeys()
@@ -294,7 +294,7 @@ RETURNING id
         val row = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT generic_reasoning_id, document_key FROM decision WHERE id = ${bind(decisionId)}"
+                        "SELECT generic_reasoning_id, document_key FROM decision WHERE id = ${bind(decisionId)}",
                     )
                 }
                 .exactlyOne<DecisionRow>()
@@ -403,7 +403,7 @@ RETURNING id
                         endDate = startDate.plusYears(1),
                         planned = true,
                         individualReasoningIds = setOf(individualReasoningId),
-                    )
+                    ),
                 ),
             )
         }
@@ -422,7 +422,7 @@ RETURNING id
                         endDate = startDate.plusYears(1),
                         planned = true,
                         individualReasoningIds = emptySet(),
-                    )
+                    ),
                 ),
             )
         }

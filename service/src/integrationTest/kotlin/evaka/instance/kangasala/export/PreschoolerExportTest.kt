@@ -91,7 +91,7 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
         }
 
@@ -141,7 +141,7 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             val child2 =
                 tx.insert(DevPerson(dateOfBirth = LocalDate.of(2020, 1, 1)), DevPersonType.CHILD)
@@ -152,7 +152,7 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
         }
 
@@ -179,7 +179,7 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
         }
 
@@ -196,7 +196,7 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
     @ParameterizedTest
     @EnumSource(PreschoolAssistanceLevel::class)
     fun `6-year-old with extended compulsory education is not included`(
-        level: PreschoolAssistanceLevel
+        level: PreschoolAssistanceLevel,
     ) {
         db.transaction { tx ->
             val unitId = tx.insert(DevDaycare(areaId = areaId))
@@ -209,14 +209,14 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevPreschoolAssistance(
                     childId = childId,
                     validDuring = FiniteDateRange(date, date),
                     level = level,
-                )
+                ),
             )
         }
 
@@ -249,14 +249,14 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevPreschoolAssistance(
                     childId = childId,
                     validDuring = FiniteDateRange(date, date),
                     level = level,
-                )
+                ),
             )
         }
 

@@ -98,7 +98,7 @@ import tools.jackson.dataformat.csv.CsvMapper
             "staff",
             "specialEducationTeacher",
             "earlyChildhoodEducationSecretary",
-        ]
+        ],
 )
 private data class CsvRow(
     @get:JsonProperty("Tyyppi") val typeName: String,
@@ -244,14 +244,14 @@ private fun permissions(action: UnscopedAction) =
     permissions(
         actionRuleMappings.mapValues { (_, actionRuleMapping) ->
             actionRuleMapping.rulesOf(action).toList().flatMap { roles(it) }.toSet()
-        }
+        },
     )
 
 private fun permissions(action: ScopedAction<*>) =
     permissions(
         actionRuleMappings.mapValues { (_, actionRuleMapping) ->
             actionRuleMapping.rulesOf(action).toList().flatMap { roles(it) }.toSet()
-        }
+        },
     )
 
 private fun permissions(rolesByMunicipality: Map<String, Set<UserRole>>) =

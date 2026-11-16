@@ -50,7 +50,7 @@ class RequestToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
                         // Make the roles easily queryable (pipes separate e.g. ADMIN from
                         // FINANCE_ADMIN)
                         MdcKey.USER_ROLES.set(
-                            roles.map { it.name }.sorted().joinToString("|", "|", "|")
+                            roles.map { it.name }.sorted().joinToString("|", "|", "|"),
                         )
                     }
             }

@@ -60,13 +60,13 @@ class SpringMvcConfig(
         resolvers.add(asArgumentResolver<AuthenticatedUser.Citizen?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver<AuthenticatedUser.Employee?>(::resolveAuthenticatedUser))
         resolvers.add(
-            asArgumentResolver<AuthenticatedUser.Integration?>(::resolveAuthenticatedUser)
+            asArgumentResolver<AuthenticatedUser.Integration?>(::resolveAuthenticatedUser),
         )
         resolvers.add(
-            asArgumentResolver<AuthenticatedUser.MobileDevice?>(::resolveAuthenticatedUser)
+            asArgumentResolver<AuthenticatedUser.MobileDevice?>(::resolveAuthenticatedUser),
         )
         resolvers.add(
-            asArgumentResolver<AuthenticatedUser.SystemInternalUser?>(::resolveAuthenticatedUser)
+            asArgumentResolver<AuthenticatedUser.SystemInternalUser?>(::resolveAuthenticatedUser),
         )
         resolvers.add(asArgumentResolver<AuthenticatedUser?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getDatabaseInstance() })
@@ -92,7 +92,7 @@ class SpringMvcConfig(
         builder.withStringConverter(
             StringHttpMessageConverter().apply {
                 supportedMediaTypes = listOf(MediaType.TEXT_PLAIN)
-            }
+            },
         )
         // Spring registers Jackson 2 converters for data formats (e.g. CBOR) that libraries bring
         // in as transitive dependencies. Jackson 2 ignores our Jackson 3 annotations, so it must

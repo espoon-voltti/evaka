@@ -74,7 +74,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
                     unitId = daycare.id,
                     startDate = originalRange.start,
                     endDate = originalRange.end!!,
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -82,7 +82,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
                     headOfChildId = adult.id,
                     startDate = originalRange.start.minusYears(1),
                     endDate = originalRange.end!!.plusYears(1),
-                )
+                ),
             )
             feeThresholdId =
                 tx.insert(testFeeThresholds.copy(validDuring = originalFeeThresholdRange))
@@ -107,7 +107,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
                 testFeeThresholds.copy(
                     validDuring = newFeeThresholdRange,
                     maxFee = 2 * testFeeThresholds.maxFee,
-                )
+                ),
             )
         }
         generate()

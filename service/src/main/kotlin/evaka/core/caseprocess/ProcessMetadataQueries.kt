@@ -91,7 +91,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
         JOIN document_template dt ON dt.id = cd.template_id
         LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
         WHERE cd.id = ${bind(documentId)}
-    """
+    """,
         )
     }
     .map {
@@ -150,7 +150,7 @@ fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): 
         FROM application a
         LEFT JOIN evaka_user e ON e.id = a.created_by
         WHERE a.id = ${bind(applicationId)}
-    """
+    """,
         )
     }
     .map {
@@ -195,7 +195,7 @@ fun Database.Read.getSentDecisionIdsByApplication(applicationId: ApplicationId):
         FROM application a
         JOIN decision d ON a.id = d.application_id
         WHERE a.id = ${bind(applicationId)} AND d.sent_date IS NOT NULL   
-    """
+    """,
         )
     }
     .toList()
@@ -233,7 +233,7 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
         FROM decision d
         LEFT JOIN evaka_user e ON e.id = d.created_by
         WHERE d.id = ${bind(decisionId)}
-    """
+    """,
     )
 }
     .map {
@@ -284,7 +284,7 @@ fun Database.Read.getFeeDecisionDocumentMetadata(
         FROM fee_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
         WHERE d.id = ${bind(decisionId)}
-    """
+    """,
     )
 }
     .map {
@@ -334,7 +334,7 @@ fun Database.Read.getVoucherValueDecisionDocumentMetadata(
         FROM voucher_value_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by
         WHERE d.id = ${bind(voucherValueDecisionId)}
-    """
+    """,
     )
 }
     .map {

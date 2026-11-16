@@ -102,8 +102,8 @@ class UnitAclController(
                                     it.copy(
                                         employee =
                                             it.employee.copy(
-                                                lastName = "${it.employee.lastName} (deaktivoitu)"
-                                            )
+                                                lastName = "${it.employee.lastName} (deaktivoitu)",
+                                            ),
                                     )
                             }
 
@@ -393,7 +393,7 @@ class UnitAclController(
                                 unitId = unitId,
                                 employeeId = employeeId,
                                 coefficient = parseCoefficientValue(it),
-                            )
+                            ),
                         )
                     }
                 occupancyCoefficientId
@@ -460,7 +460,7 @@ class UnitAclController(
                                 unitId = unitId,
                                 employeeId = employeeId,
                                 coefficient = parseCoefficientValue(it),
-                            )
+                            ),
                         )
                     }
                 occupancyCoefficientId
@@ -525,7 +525,7 @@ class UnitAclController(
                             employeeNumber = null,
                             temporaryInUnitId = unitId,
                             active = true,
-                        )
+                        ),
                     )
                 setTemporaryEmployeeDetails(tx, unitId, employee.id, input, clock.now())
                 employee.id
@@ -723,7 +723,7 @@ class UnitAclController(
                 unitId,
                 employeeId,
                 parseCoefficientValue(input.hasStaffOccupancyEffect),
-            )
+            ),
         )
         if (input.pinCode != null) {
             tx.upsertPinCode(employeeId, input.pinCode)

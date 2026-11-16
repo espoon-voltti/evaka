@@ -112,7 +112,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     role = UserRole.UNIT_SUPERVISOR,
                     groupIds = emptyList(),
                     endDate = null,
-                )
+                ),
             ),
             getAclRows(),
         )
@@ -153,7 +153,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     role = UserRole.STAFF,
                     groupIds = emptyList(),
                     endDate = endDate,
-                )
+                ),
             ),
             getAclRows(),
         )
@@ -195,7 +195,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     role = UserRole.UNIT_SUPERVISOR,
                     groupIds = listOf(daycareGroup.id),
                     endDate = null,
-                )
+                ),
             ),
             getAclRows(),
         )
@@ -234,7 +234,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     role = UserRole.UNIT_SUPERVISOR,
                     groupIds = emptyList(),
                     endDate = null,
-                )
+                ),
             ),
             getAclRows(),
         )
@@ -283,7 +283,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     role = UserRole.UNIT_SUPERVISOR,
                     groupIds = emptyList(),
                     endDate = endDate1,
-                )
+                ),
             ),
             getAclRows(),
         )
@@ -305,7 +305,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     role = UserRole.UNIT_SUPERVISOR,
                     groupIds = listOf(daycareGroup.id),
                     endDate = endDate2,
-                )
+                ),
             ),
             getAclRows(),
         )
@@ -1056,7 +1056,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.read {
                 it.createQuery {
                         sql(
-                            "SELECT active FROM message_account WHERE employee_id = ${bind(employee.id)}"
+                            "SELECT active FROM message_account WHERE employee_id = ${bind(employee.id)}",
                         )
                     }
                     .toList<Boolean>()

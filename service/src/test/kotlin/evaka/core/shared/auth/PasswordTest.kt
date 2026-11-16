@@ -41,7 +41,7 @@ class PasswordTest {
     @ParameterizedTest
     @MethodSource("algorithms")
     fun `no validation error is thrown when a placeholder password is generated`(
-        algorithm: PasswordHashAlgorithm
+        algorithm: PasswordHashAlgorithm,
     ) {
         assertDoesNotThrow { algorithm.placeholder() }
     }
@@ -49,7 +49,7 @@ class PasswordTest {
     @ParameterizedTest
     @MethodSource("algorithms")
     fun `encoding the same raw password twice gives passwords that match the original but have different salt and hash values`(
-        algorithm: PasswordHashAlgorithm
+        algorithm: PasswordHashAlgorithm,
     ) {
         val raw = Sensitive("password")
 
@@ -68,7 +68,7 @@ class PasswordTest {
     @ParameterizedTest
     @MethodSource("algorithms")
     fun `an encoded password does not match a different raw password`(
-        algorithm: PasswordHashAlgorithm
+        algorithm: PasswordHashAlgorithm,
     ) {
         val password = algorithm.encode(Sensitive("password"))
         assertFalse(password.isMatch(Sensitive("wontmatch")))
@@ -77,7 +77,7 @@ class PasswordTest {
     @ParameterizedTest
     @MethodSource("algorithms")
     fun `an encoded password can be formatted to a string and parsed back to its original form`(
-        algorithm: PasswordHashAlgorithm
+        algorithm: PasswordHashAlgorithm,
     ) {
         val password = algorithm.encode(Sensitive("password"))
         val parsed = jsonMapper.readValue<EncodedPassword>(jsonMapper.writeValueAsString(password))
@@ -122,7 +122,7 @@ class PasswordTest {
                 ),
                 EncodedPassword.Salt.parse("VUBELKb6poajPUjlaK1zCQ=="),
                 EncodedPassword.Hash.parse(
-                    "9yUI9up7DA09THuasmN5Z9pN+X5GUvJZY3lnXZYNB/gsGBtL8PjHANnR/H1G3IhhipUr27sBNJ4eek7AMP5UBw=="
+                    "9yUI9up7DA09THuasmN5Z9pN+X5GUvJZY3lnXZYNB/gsGBtL8PjHANnR/H1G3IhhipUr27sBNJ4eek7AMP5UBw==",
                 ),
             )
         assertTrue(password.isMatch(Sensitive("test123")))
@@ -164,7 +164,7 @@ class PasswordTest {
                 ),
                 EncodedPassword.Salt.parse("IQU7tTvDbMtynBAFmSOrpA=="),
                 EncodedPassword.Hash.parse(
-                    "x4QqNb57CHVDsuIM+UMaOeryY7WsOGhxPFzjhEQgoisZ2hrviOSvuokCIXFXHkvBF47BLXDj2MA/g4vUBMuJcw=="
+                    "x4QqNb57CHVDsuIM+UMaOeryY7WsOGhxPFzjhEQgoisZ2hrviOSvuokCIXFXHkvBF47BLXDj2MA/g4vUBMuJcw==",
                 ),
             )
         assertTrue(password.isMatch(Sensitive("testpassword")))

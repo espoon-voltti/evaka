@@ -287,6 +287,6 @@ fun createDocumentMetadata(
                 creation = creation.copy(created = caseFinishDate),
                 policies = createPolicies(documentMetadata, document.template.type),
                 caseFile = createCaseFile(documentMetadata, caseProcess, document),
-            )
+            ),
     )
 }

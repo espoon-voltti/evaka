@@ -76,8 +76,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 Question.TextQuestion(id = "q1", label = "kysymys 1"),
                                 Question.CheckboxQuestion(id = "q2", label = "kysymys 2"),
                             ),
-                    )
-                )
+                    ),
+                ),
         )
 
     val testCreationRequest =
@@ -109,7 +109,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = now.today(),
                     endDate = now.today().plusDays(5),
-                )
+                ),
             )
         }
     }
@@ -141,7 +141,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     validity = created.validity,
                     documentCount = 0,
                     published = false,
-                )
+                ),
             ),
             summaries,
         )
@@ -253,7 +253,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = now.today(),
                     endDate = now.today().plusDays(5),
-                )
+                ),
             )
         }
 
@@ -303,7 +303,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = now.today(),
                     endDate = now.today().plusDays(5),
-                )
+                ),
             )
         }
 
@@ -439,7 +439,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = withinWindowStart,
                     endDate = withinWindowStart.plusDays(5),
-                )
+                ),
             )
             tx.insert(childBeyondWindow, DevPersonType.CHILD)
             tx.insert(
@@ -448,7 +448,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = beyondWindowStart,
                     endDate = beyondWindowStart.plusDays(5),
-                )
+                ),
             )
         }
         publishCitizenBasicTemplate(UiLanguage.SV)
@@ -562,7 +562,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     UPDATE daycare
     SET enabled_pilot_features = array_remove(enabled_pilot_features, '${pilotFeature.name.uppercase()}')
     WHERE id = ${bind(daycare.id)}
-    """
+    """,
                     )
                 }
             }
@@ -795,7 +795,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 PilotFeature.OTHER_DECISION,
                                 PilotFeature.CITIZEN_BASIC_DOCUMENT,
                             ),
-                    )
+                    ),
                 )
             val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
             tx.insert(
@@ -804,7 +804,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycareId,
                     startDate = now.today(),
                     endDate = now.today().plusDays(5),
-                )
+                ),
             )
             childId
         }
@@ -816,7 +816,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     ) = db.transaction { tx ->
         val areaId =
             tx.insert(
-                DevCareArea(name = "Area for $name", shortName = "area_group_${language.name}")
+                DevCareArea(name = "Area for $name", shortName = "area_group_${language.name}"),
             )
         val daycareId =
             tx.insert(
@@ -825,7 +825,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     name = name,
                     language = language,
                     enabledPilotFeatures = enabledPilotFeatures,
-                )
+                ),
             )
         tx.insert(DevDaycareGroup(daycareId = daycareId))
     }
@@ -894,7 +894,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         name = "Finnish Daycare",
                         language = Language.fi,
                         enabledPilotFeatures = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
-                    )
+                    ),
                 )
             val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
             tx.insert(
@@ -904,7 +904,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = now.today().minusMonths(2),
                     endDate = now.today().plusDays(5),
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -913,7 +913,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = now.today().plusDays(6),
                     endDate = now.today().plusMonths(3),
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
             childId
         }
@@ -952,7 +952,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         listOf(
                             Section(id = "s1", label = "foo", questions = emptyList()),
                             Section(id = "s1", label = "bar", questions = emptyList()),
-                        )
+                        ),
                 ),
             )
         }
@@ -980,8 +980,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                         Question.TextQuestion(id = "q1", label = "foo"),
                                         Question.CheckboxQuestion(id = "q1", label = "bar"),
                                     ),
-                            )
-                        )
+                            ),
+                        ),
                 ),
             )
         }

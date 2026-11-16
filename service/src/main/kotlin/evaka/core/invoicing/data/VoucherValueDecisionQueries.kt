@@ -141,7 +141,7 @@ INSERT INTO voucher_value_decision (
     voucher_value = ${bind(decision.voucherValue)},
     difference = ${bind(decision.difference)},
     created = ${bind(decision.created)}
-"""
+""",
             )
         }
             .execute()
@@ -149,7 +149,7 @@ INSERT INTO voucher_value_decision (
 }
 
 fun Database.Read.getValueDecisionsByIds(
-    ids: List<VoucherValueDecisionId>
+    ids: List<VoucherValueDecisionId>,
 ): List<VoucherValueDecision> {
     return createQuery {
         sql(
@@ -195,7 +195,7 @@ SELECT
     created
 FROM voucher_value_decision
 WHERE id = ANY(${bind(ids)})
-        """
+        """,
         )
     }
         .toList<VoucherValueDecision>()
@@ -254,7 +254,7 @@ WHERE child_id = ${bind(childId)}
 AND (${bind(period)}::daterange IS NULL OR daterange(valid_from, valid_to, '[]') && ${bind(period)})
 AND (${bind(statuses)}::text[] IS NULL OR status = ANY(${bind(statuses)}::voucher_value_decision_status[]))
 ${if (lockForUpdate) "FOR UPDATE" else ""}
-"""
+""",
         )
     }
         .toList<VoucherValueDecision>()
@@ -345,7 +345,7 @@ NOT EXISTS (
     WHERE p.start_date >= ${bind(today.withDayOfMonth(1))} AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         AND vvd.id = decision.id
 )
-        """
+        """,
         )
     }
 
@@ -360,7 +360,7 @@ NOT EXISTS (
             if ((startDate != null || endDate != null) && !searchByStartDate)
                 PredicateSql {
                     where(
-                        "daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && daterange(valid_from, valid_to, '[]')"
+                        "daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && daterange(valid_from, valid_to, '[]')",
                     )
                 }
             else null,
@@ -372,7 +372,7 @@ NOT EXISTS (
             if (financeDecisionHandlerId != null)
                 PredicateSql {
                     where(
-                        "placement_unit.finance_decision_handler = ${bind(financeDecisionHandlerId)}"
+                        "placement_unit.finance_decision_handler = ${bind(financeDecisionHandlerId)}",
                     )
                 }
             else null,
@@ -383,14 +383,14 @@ NOT EXISTS (
             if (havingExternalChildren)
                 PredicateSql {
                     where(
-                        "child.post_office <> '' AND child.post_office NOT ILIKE ${bind(postOffice)}"
+                        "child.post_office <> '' AND child.post_office NOT ILIKE ${bind(postOffice)}",
                     )
                 }
             else null,
             if (retroactiveOnly)
                 PredicateSql {
                     where(
-                        "decision.valid_from < date_trunc('month', COALESCE(decision.approved_at, ${bind(now)}))"
+                        "decision.valid_from < date_trunc('month', COALESCE(decision.approved_at, ${bind(now)}))",
                     )
                 }
             else null,
@@ -398,7 +398,7 @@ NOT EXISTS (
             if (maxFeeAccepted)
                 PredicateSql {
                     where(
-                        "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
+                        "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')",
                     )
                 }
             else null,
@@ -412,7 +412,7 @@ NOT EXISTS (
                         daterange(income_statement.start_date, income_statement.end_date, '[]') && daterange((decision.valid_from - interval '14 months')::date, decision.valid_to, '[]') AND
                         income_statement.status = ANY('{SENT,HANDLING}'::income_statement_status[])
                     )
-                """
+                """,
                     )
                 }
             else null,
@@ -456,14 +456,14 @@ WHERE
     ${predicate(conditions)}
 ORDER BY $sortColumn $sortDirection, decision.id $sortDirection
 LIMIT ${bind(pageSize)} OFFSET ${bind(pageSize)} * ${bind(page)}
-"""
+""",
             )
         }
         .mapToPaged(::PagedVoucherValueDecisionSummaries, pageSize)
 }
 
 fun Database.Read.getVoucherValueDecision(
-    id: VoucherValueDecisionId
+    id: VoucherValueDecisionId,
 ): VoucherValueDecisionDetailed? {
     return createQuery {
         sql(
@@ -524,7 +524,7 @@ JOIN care_area ON daycare.care_area_id = care_area.id
 LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
 WHERE decision.id = ${bind(id)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<VoucherValueDecisionDetailed>()
@@ -537,13 +537,13 @@ WHERE decision.id = ${bind(id)}
                             it.partner?.id,
                             listOf(it.child.id),
                             FiniteDateRange(it.validFrom, it.validTo),
-                        )
+                        ),
             )
         }
 }
 
 fun Database.Read.getHeadOfFamilyVoucherValueDecisions(
-    headOfFamilyId: PersonId
+    headOfFamilyId: PersonId,
 ): List<VoucherValueDecisionSummary> {
     return createQuery {
         sql(
@@ -576,7 +576,7 @@ FROM voucher_value_decision decision
 JOIN person head ON decision.head_of_family_id = head.id
 JOIN person child ON decision.child_id = child.id
 WHERE decision.head_of_family_id = ${bind(headOfFamilyId)}
-"""
+""",
         )
     }
         .toList<VoucherValueDecisionSummary>()
@@ -606,13 +606,13 @@ UPDATE voucher_value_decision SET
 FROM voucher_value_decision AS vd
 JOIN daycare ON vd.placement_unit_id = daycare.id
 WHERE vd.id = ${bind { id -> id }} AND voucher_value_decision.id = vd.id
-"""
+""",
         )
     }
 }
 
 fun Database.Read.getVoucherValueDecisionByLiableCitizen(
-    citizenId: PersonId
+    citizenId: PersonId,
 ): List<VoucherValueDecisionCitizenInfoRow> {
     return createQuery {
         sql(
@@ -633,7 +633,7 @@ WHERE
         vvd.head_of_family_id = ${bind(citizenId)} OR
         (vvd.partner_id = ${bind(citizenId)} AND vvd.partner_is_codebtor IS NOT FALSE)
     )
-"""
+""",
         )
     }
         .toList<VoucherValueDecisionCitizenInfoRow>()
@@ -656,7 +656,7 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
 ) {
     createUpdate {
         sql(
-            "UPDATE voucher_value_decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(id)}"
+            "UPDATE voucher_value_decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(id)}",
         )
     }
         .execute()
@@ -668,7 +668,7 @@ fun Database.Transaction.setVoucherValueDecisionPartnerIsCodebtor(
 ) {
     createUpdate {
         sql(
-            "UPDATE voucher_value_decision SET partner_is_codebtor = ${bind(partnerIsCodebtor)} WHERE id = ${bind(id)}"
+            "UPDATE voucher_value_decision SET partner_is_codebtor = ${bind(partnerIsCodebtor)} WHERE id = ${bind(id)}",
         )
     }
         .execute()
@@ -680,7 +680,7 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(
 ) {
     createUpdate {
         sql(
-            "UPDATE voucher_value_decision SET status = ${bind(status)}::voucher_value_decision_status WHERE id = ANY(${bind(ids)})"
+            "UPDATE voucher_value_decision SET status = ${bind(status)}::voucher_value_decision_status WHERE id = ANY(${bind(ids)})",
         )
     }
         .execute()
@@ -697,7 +697,7 @@ UPDATE voucher_value_decision
 SET decision_type = ${bind(type.toString())}::voucher_value_decision_type
 WHERE id = ${bind(id)}
   AND status = ${bind(VoucherValueDecisionStatus.DRAFT.toString())}::voucher_value_decision_status
-"""
+""",
         )
     }
         .execute()
@@ -709,7 +709,7 @@ fun Database.Transaction.markVoucherValueDecisionsSent(
 ) {
     createUpdate {
         sql(
-            "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.SENT)}::voucher_value_decision_status, sent_at = ${bind(now)} WHERE id = ANY(${bind(ids)})"
+            "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.SENT)}::voucher_value_decision_status, sent_at = ${bind(now)} WHERE id = ANY(${bind(ids)})",
         )
     }
         .execute()
@@ -727,7 +727,7 @@ SET
     valid_to = ${bind { it.validTo }},
     validity_updated_at = ${bind(now)}
 WHERE id = ${bind { it.id }}
-"""
+""",
         )
     }
 }
@@ -740,7 +740,7 @@ fun Database.Transaction.annulVoucherValueDecisions(
 
     createUpdate {
         sql(
-            "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.ANNULLED)}, annulled_at = ${bind(now)} WHERE id = ANY(${bind(ids)})"
+            "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.ANNULLED)}, annulled_at = ${bind(now)} WHERE id = ANY(${bind(ids)})",
         )
     }
         .execute()
@@ -749,7 +749,7 @@ fun Database.Transaction.annulVoucherValueDecisions(
 fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisionId) {
     createUpdate {
         sql(
-            "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'"
+            "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'",
         )
     }
         .updateExactlyOne()
@@ -761,7 +761,7 @@ fun Database.Transaction.setVoucherValueDecisionProcessId(
 ) {
     createUpdate {
         sql(
-            "UPDATE voucher_value_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL"
+            "UPDATE voucher_value_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL",
         )
     }
         .updateExactlyOne()

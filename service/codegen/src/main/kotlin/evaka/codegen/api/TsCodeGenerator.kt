@@ -64,7 +64,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
                         metadata[clazz] ?: error("No TS type found for $type"),
                         type.isMarkedNullable,
                         type.arguments,
-                    )
+                    ),
                 )
             }
 

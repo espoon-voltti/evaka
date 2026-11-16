@@ -266,7 +266,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             targetId = AuditId(body.unitId),
             objectId =
                 AuditId(
-                    (updates.mapNotNull { it.new.id } + updates.mapNotNull { it.old.id }).distinct()
+                    (updates.mapNotNull { it.new.id } + updates.mapNotNull { it.old.id })
+                        .distinct(),
                 ),
             meta = mapOf("date" to body.date, "changes" to changes),
         )

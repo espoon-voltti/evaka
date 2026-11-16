@@ -36,7 +36,7 @@ class EspooBiJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     url = "http://localhost:$httpPort/public/mock-espoo-bi",
                     username = "user",
                     password = Sensitive("password"),
-                )
+                ),
             )
         job = EspooBiJob(client)
     }

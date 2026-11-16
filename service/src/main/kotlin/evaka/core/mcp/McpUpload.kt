@@ -93,7 +93,7 @@ private fun Database.Transaction.insertMcpUpload(
 WITH expired AS (DELETE FROM mcp_upload WHERE expires_at < ${bind(now)})
 INSERT INTO mcp_upload (created_at, authorization_id, token_hash, expires_at)
 VALUES (${bind(now)}, ${bind(authorizationId)}, ${bind(tokenHash)}, ${bind(expiresAt)})
-"""
+""",
         )
     }
 }
@@ -107,7 +107,7 @@ private fun Database.Transaction.useMcpUpload(
 UPDATE mcp_upload SET used_at = ${bind(now)}
 WHERE token_hash = ${bind(tokenHash)} AND used_at IS NULL AND expires_at > ${bind(now)}
 RETURNING authorization_id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()

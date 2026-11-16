@@ -264,7 +264,7 @@ class FeeDecisionController(
                     }
                 if (feeDecisions.size != feeDecisionIds.size) {
                     throw NotFound(
-                        "Some fee decisions not found: ${feeDecisionIds - feeDecisions.map { it.id }}"
+                        "Some fee decisions not found: ${feeDecisionIds - feeDecisions.map { it.id }}",
                     )
                 }
 
@@ -310,7 +310,7 @@ class FeeDecisionController(
                         restrictedDetails && decision.documentContainsContactInfo && !user.isAdmin
                     ) {
                         throw Forbidden(
-                            "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
+                            "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.",
                         )
                     }
                 }

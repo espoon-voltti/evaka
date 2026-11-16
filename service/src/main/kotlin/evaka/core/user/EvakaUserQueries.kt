@@ -13,7 +13,7 @@ fun Database.Read.getEvakaUser(evakaUserId: EvakaUserId): EvakaUser? = createQue
 SELECT id, name, type
 FROM evaka_user
 WHERE id = ${bind(evakaUserId)}
-"""
+""",
     )
 }
     .exactlyOneOrNull<EvakaUser>()

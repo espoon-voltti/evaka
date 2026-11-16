@@ -25,7 +25,7 @@ private typealias FilterByEmployee =
 
 data object IsEmployee : DatabaseActionRule.Params {
     private fun <T : Id<*>> rule(
-        filter: FilterByEmployee
+        filter: FilterByEmployee,
     ): DatabaseActionRule.Scoped<T, IsEmployee> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
@@ -52,7 +52,7 @@ data object IsEmployee : DatabaseActionRule.Params {
                     FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
                     WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
-                                    .trimIndent()
+                                    .trimIndent(),
                             )
                         }
                         .toSet<Id<DatabaseTable>>()
@@ -135,7 +135,7 @@ data object IsEmployee : DatabaseActionRule.Params {
                     Pair(user, now)
 
                 override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
+                    ctx: DatabaseActionRule.QueryContext,
                 ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee -> {
@@ -149,7 +149,7 @@ SELECT EXISTS (
     WHERE employee_id = ${bind(ctx.user.id)}
 )
                                 """
-                                            .trimIndent()
+                                            .trimIndent(),
                                     )
                                 }
                                 .exactlyOne<Boolean>()
@@ -174,7 +174,7 @@ SELECT id
 FROM mobile_device
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -186,7 +186,7 @@ SELECT id
 FROM mcp_authorization
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -198,7 +198,7 @@ SELECT id
 FROM pairing
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -210,7 +210,7 @@ SELECT id
 FROM application_note
 WHERE created_by = ${bind(user.id)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -222,7 +222,7 @@ SELECT id
 FROM finance_note
 WHERE created_by = ${bind(user.id)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -235,7 +235,7 @@ FROM message_account acc
 JOIN employee ON acc.employee_id = employee.id
 WHERE employee.id = ${bind(user.id)} AND acc.active = TRUE
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -248,7 +248,7 @@ FROM message_account acc
 JOIN daycare_group_acl gacl ON gacl.daycare_group_id = acc.daycare_group_id
 WHERE gacl.employee_id = ${bind(user.id)} AND acc.active = TRUE
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -261,7 +261,7 @@ FROM employee e
 JOIN message_account acc ON acc.type = 'MUNICIPAL'
 WHERE e.id = ${bind(user.id)} AND e.roles && '{ADMIN, MESSAGING}'::user_role[]
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -274,7 +274,7 @@ FROM employee e
 JOIN message_account acc ON acc.type = 'SERVICE_WORKER'
 WHERE e.id = ${bind(user.id)} AND e.roles && '{SERVICE_WORKER}'::user_role[]
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -287,7 +287,7 @@ FROM employee e
 JOIN message_account acc ON acc.type = 'FINANCE'
 WHERE e.id = ${bind(user.id)} AND e.roles && '{FINANCE_ADMIN}'::user_role[]
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -299,7 +299,7 @@ SELECT id
 FROM child_document
 WHERE decision_maker = ${bind(employee.id)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -311,7 +311,7 @@ WHERE decision_maker = ${bind(employee.id)}
                     Pair(user, now)
 
                 override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
+                    ctx: DatabaseActionRule.QueryContext,
                 ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee -> {
@@ -323,7 +323,7 @@ SELECT EXISTS (
     SELECT FROM child_document
     WHERE decision_maker = ${bind(ctx.user.id)}
 )
-                                """
+                                """,
                                     )
                                 }
                                 .exactlyOne<Boolean>()
@@ -348,7 +348,7 @@ SELECT EXISTS (
     FROM daycare_acl useracl
     JOIN daycare_acl targetacl ON useracl.daycare_id = targetacl.daycare_id
     WHERE useracl.employee_id = ${bind(user.id)}
-"""
+""",
             )
         }
 
@@ -359,7 +359,7 @@ SELECT EXISTS (
 SELECT id
 FROM attachment
 WHERE uploaded_by = ${bind(employee.evakaUserId)}
-            """
+            """,
             )
         }
 }

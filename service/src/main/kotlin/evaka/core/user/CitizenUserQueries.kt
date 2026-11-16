@@ -17,7 +17,7 @@ fun Database.Transaction.updateLastStrongLogin(now: HelsinkiDateTime, id: Person
 INSERT INTO citizen_user (id, last_strong_login)
 VALUES (${bind(id)}, ${bind(now)})
 ON CONFLICT (id) DO UPDATE SET last_strong_login = excluded.last_strong_login
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -35,7 +35,7 @@ fun Database.Read.getCitizenWeakLoginDetails(username: String): CitizenWeakLogin
 SELECT id, username, password
 FROM citizen_user
 WHERE username = ${bind(username)}
-"""
+""",
         )
     }
     .exactlyOneOrNull()
@@ -45,7 +45,7 @@ fun Database.Transaction.updateLastWeakLogin(now: HelsinkiDateTime, id: PersonId
         """
 UPDATE citizen_user SET last_weak_login = ${bind(now)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -57,7 +57,7 @@ fun Database.Transaction.updatePasswordWithoutTimestamp(id: PersonId, password: 
 UPDATE citizen_user
 SET password = ${bindJson(password)}
 WHERE id = ${bind(id)}
-"""
+""",
         )
     }
     .updateExactlyOne()
@@ -92,7 +92,7 @@ FROM old
 WHERE id = ${bind(id)}
 RETURNING (old_username IS NOT NULL AND old_username != username) AS username_changed,
           (old_password IS NOT NULL AND old_password != password) AS password_changed
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -105,7 +105,7 @@ fun Database.Transaction.deleteWeakLoginCredentials(id: PersonId) = createUpdate
 UPDATE citizen_user
 SET username = NULL, username_updated_at = NULL, password = NULL, password_updated_at = NULL
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .execute()
@@ -122,14 +122,14 @@ fun Database.Transaction.updatePreferredUiLanguage(id: PersonId, language: UiLan
 UPDATE citizen_user
 SET preferred_ui_language = ${bind(language)}
 WHERE id = ${bind(id)}
-"""
+""",
         )
     }
     .updateExactlyOne()
 
 fun Database.Transaction.hasWeakCredentials(person: PersonId): Boolean = createQuery {
     sql(
-        "SELECT EXISTS(SELECT FROM citizen_user WHERE id = ${bind(person)} AND username IS NOT NULL)"
+        "SELECT EXISTS(SELECT FROM citizen_user WHERE id = ${bind(person)} AND username IS NOT NULL)",
     )
 }
     .exactlyOne()

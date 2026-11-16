@@ -47,7 +47,7 @@ class DocumentMetadataUtilsTest {
     private val userId = UUID.fromString("d71daacc-18e1-4605-8847-677469203e27")
 
     private fun createTestDocument(
-        documentType: ChildDocumentType = ChildDocumentType.VASU
+        documentType: ChildDocumentType = ChildDocumentType.VASU,
     ): ChildDocumentDetails {
         return ChildDocumentDetails(
             id = documentId,
@@ -122,7 +122,7 @@ class DocumentMetadataUtilsTest {
                             name = "Testi Testaaja",
                             type = EvakaUserType.EMPLOYEE,
                         ),
-                )
+                ),
             )
 
         val completeHistory =
@@ -295,8 +295,8 @@ class DocumentMetadataUtilsTest {
                                     DateRange(
                                         start = LocalDate.parse("2022-08-01"),
                                         end = LocalDate.parse("2023-07-31"),
-                                    )
-                            )
+                                    ),
+                            ),
                 )
 
         val documentMetadata = createTestDocumentMetadata()
@@ -320,8 +320,8 @@ class DocumentMetadataUtilsTest {
                             .template
                             .copy(
                                 validity =
-                                    DateRange(start = LocalDate.parse("2022-08-01"), end = null)
-                            )
+                                    DateRange(start = LocalDate.parse("2022-08-01"), end = null),
+                            ),
                 )
 
         val createdDate = LocalDateTime.parse("2023-02-01T12:10:00")
@@ -541,7 +541,7 @@ class DocumentMetadataUtilsTest {
                                         type = EvakaUserType.EMPLOYEE,
                                     ),
                             ),
-                        )
+                        ),
                 )
 
         val result = createCreation(documentMetadata, caseProcess)
@@ -587,8 +587,8 @@ class DocumentMetadataUtilsTest {
                                         name = "Testi Testaaja",
                                         type = EvakaUserType.EMPLOYEE,
                                     ),
-                            )
-                        )
+                            ),
+                        ),
                 )
 
         val result = createCaseFile(documentMetadata, caseProcess, document)
@@ -618,8 +618,8 @@ class DocumentMetadataUtilsTest {
                             .template
                             .copy(
                                 validity =
-                                    DateRange(start = LocalDate.parse("2022-08-01"), end = null)
-                            )
+                                    DateRange(start = LocalDate.parse("2022-08-01"), end = null),
+                            ),
                 )
 
         val documentMetadata =
@@ -646,8 +646,8 @@ class DocumentMetadataUtilsTest {
                                         name = "Testi Testaaja",
                                         type = EvakaUserType.EMPLOYEE,
                                     ),
-                            )
-                        )
+                            ),
+                        ),
                 )
 
         val result = createCaseFile(documentMetadata, caseProcess, document)

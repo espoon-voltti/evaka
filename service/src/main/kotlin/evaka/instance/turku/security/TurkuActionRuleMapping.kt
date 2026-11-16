@@ -42,7 +42,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR)) +
                     sequenceOf(
-                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
                     )
             }
 
@@ -58,10 +58,10 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                                 ProviderType.MUNICIPAL_SCHOOL,
                                 ProviderType.EXTERNAL_PURCHASED,
                             )
-                            .inAnyUnit()
+                            .inAnyUnit(),
                     ) +
                     sequenceOf(
-                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
                     )
             }
 
@@ -75,7 +75,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                                 ProviderType.MUNICIPAL_SCHOOL,
                             )
                             .withUnitFeatures(PilotFeature.MOBILE)
-                            .inAnyUnit()
+                            .inAnyUnit(),
                     )
             }
 
@@ -99,7 +99,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
             Action.Global.READ_PLACEMENT_COUNT_REPORT -> {
                 action.defaultRules.asSequence() +
                     sequenceOf(
-                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
                     )
             }
 
@@ -119,13 +119,13 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 ) +
                     sequenceOf(
                         HasUnitRole(UserRole.UNIT_SUPERVISOR)
                             .inPlacementPlanUnitOfApplication(
-                                onlyAllowDeletedForTypes = setOf(ApplicationType.PRESCHOOL)
-                            ) as ScopedActionRule<in T>
+                                onlyAllowDeletedForTypes = setOf(ApplicationType.PRESCHOOL),
+                            ) as ScopedActionRule<in T>,
                     )
             }
 
@@ -143,7 +143,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.DIRECTOR, UserRole.FINANCE_ADMIN)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -162,7 +162,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.STAFF).inPlacementUnitOfChildOfBackupCare()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -173,7 +173,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
@@ -182,7 +182,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
@@ -192,11 +192,11 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.STAFF).inPlacementUnitOfChild()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(
                         HasGlobalRole(UserRole.DIRECTOR, UserRole.FINANCE_ADMIN)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -205,7 +205,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
@@ -232,7 +232,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementUnitOfChild()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -242,7 +242,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.DIRECTOR, UserRole.FINANCE_ADMIN)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -260,7 +260,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
@@ -307,7 +307,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -324,7 +324,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -333,7 +333,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -382,7 +382,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 action.defaultRules.asSequence() +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -391,7 +391,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(HasGlobalRole(UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -411,7 +411,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                                 UserRole.SPECIAL_EDUCATION_TEACHER,
                                 UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                             )
-                            .inUnit() as ScopedActionRule<in T>
+                            .inUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -420,7 +420,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -434,7 +434,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -447,7 +447,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                                 ProviderType.MUNICIPAL,
                                 ProviderType.MUNICIPAL_SCHOOL,
                             )
-                            .inUnit() as ScopedActionRule<in T>
+                            .inUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -463,12 +463,12 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                            .inPlacementUnitOfChildOfChildDocument() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChildOfChildDocument() as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .inActiveBackupCareUnitOfChildOfChildDocument()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -487,12 +487,12 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                                 deletable = true,
                                 publishable = true,
                                 canGoToPrevStatus = true,
-                            ) as ScopedActionRule<in T>
+                            ) as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .inActiveBackupCareUnitOfChildOfChildDocument()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -516,7 +516,7 @@ class TurkuActionRuleMapping : ActionRuleMapping {
                                 deletable = true,
                                 publishable = true,
                                 canGoToPrevStatus = true,
-                            ) as ScopedActionRule<in T>
+                            ) as ScopedActionRule<in T>,
                     )
             }
 

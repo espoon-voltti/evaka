@@ -70,7 +70,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     HelsinkiDateTime.of(LocalDate.of(2011, 1, 3), LocalTime.of(7, 0)),
                     HelsinkiDateTime.of(LocalDate.of(2011, 1, 3), LocalTime.of(23, 59)),
                     description = null,
-                )
+                ),
             )
 
         val response2 = db.transaction { tx ->
@@ -154,7 +154,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                         beginTime = "0000",
                                                                         endTime = "0800",
                                                                     ),
-                                                                )
+                                                                ),
                                                         ),
                                                 ),
                                                 TitaniaPerson(
@@ -194,13 +194,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                         beginTime = "2300",
                                                                         endTime = "2358",
                                                                     ),
-                                                                )
+                                                                ),
                                                         ),
                                                 ),
                                             ),
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     ),
             )
 
@@ -252,7 +252,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 // muut koodit (aina PRESENT)
                 "X, PRESENT",
                 "a, PRESENT",
-            ]
+            ],
     )
     fun `event code is mapped to attendance type correctly`(
         givenEventCode: String,
@@ -299,14 +299,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             code = givenEventCode,
                                                                             beginTime = "0942",
                                                                             endTime = "0944",
-                                                                        )
-                                                                    )
+                                                                        ),
+                                                                    ),
                                                             ),
-                                                    )
+                                                    ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -321,7 +321,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 42)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 44)),
                     description = null,
-                )
+                ),
             )
     }
 
@@ -380,13 +380,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                 beginTime = "0800",
                                                                                 endTime = "0900",
                                                                             ),
-                                                                        )
+                                                                        ),
                                                                 ),
-                                                        )
+                                                        ),
                                                     ),
-                                            )
+                                            ),
                                         ),
-                                )
+                                ),
                             ),
                     ),
                 )
@@ -403,7 +403,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(8, 0)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 0)),
                     description = null,
-                )
+                ),
             )
     }
 
@@ -439,14 +439,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             ),
                                                                         beginTime = "0906",
                                                                         endTime = "1522",
-                                                                    )
-                                                                )
+                                                                    ),
+                                                                ),
                                                         ),
-                                                )
+                                                ),
                                             ),
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     ),
             )
 
@@ -491,14 +491,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             ),
                                                                         beginTime = "0906",
                                                                         endTime = "1522",
-                                                                    )
-                                                                )
+                                                                    ),
+                                                                ),
                                                         ),
-                                                )
+                                                ),
                                             ),
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     ),
             )
 
@@ -586,7 +586,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                 beginTime = "1400",
                                                                                 endTime = "1530",
                                                                             ),
-                                                                        )
+                                                                        ),
                                                                 ),
                                                         ),
                                                         TitaniaPerson(
@@ -636,13 +636,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                 beginTime = "1045",
                                                                                 endTime = "1300",
                                                                             ),
-                                                                        )
+                                                                        ),
                                                                 ),
                                                         ),
                                                     ),
-                                            )
+                                            ),
                                         ),
-                                )
+                                ),
                             ),
                     ),
                 )
@@ -740,7 +740,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             beginTime = "1400",
                                                                             endTime = "1530",
                                                                         ),
-                                                                    )
+                                                                    ),
                                                             ),
                                                     ),
                                                     TitaniaPerson(
@@ -790,13 +790,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             beginTime = "1045",
                                                                             endTime = "1300",
                                                                         ),
-                                                                    )
+                                                                    ),
                                                             ),
                                                     ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -871,8 +871,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                 ),
                                                                             beginTime = "0800",
                                                                             endTime = "1600",
-                                                                        )
-                                                                    )
+                                                                        ),
+                                                                    ),
                                                             ),
                                                     ),
                                                     TitaniaPerson(
@@ -891,14 +891,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                 ),
                                                                             beginTime = "0800",
                                                                             endTime = "1600",
-                                                                        )
-                                                                    )
+                                                                        ),
+                                                                    ),
                                                             ),
                                                     ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -944,7 +944,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     null,
                     null,
                     TitaniaErrorType.ZERO_LENGTH_SHIFT,
-                )
+                ),
             )
     }
 
@@ -974,7 +974,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     null,
                     null,
                     TitaniaErrorType.REVERSED_SHIFT,
-                )
+                ),
             )
     }
 
@@ -1036,7 +1036,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             titaniaService.updateWorkingTimeEventsInternal(
                 tx,
                 zeroLengthUnit.copy(
-                    schedulingUnit = zeroLengthUnit.schedulingUnit + enclosingUnit.schedulingUnit
+                    schedulingUnit = zeroLengthUnit.schedulingUnit + enclosingUnit.schedulingUnit,
                 ),
             )
         }
@@ -1100,13 +1100,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                 name = "",
                                                 actualWorkingTimeEvents =
                                                     TitaniaWorkingTimeEvents(
-                                                        event = events.toList()
+                                                        event = events.toList(),
                                                     ),
-                                            )
+                                            ),
                                         ),
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 ),
         )
 
@@ -1202,10 +1202,10 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         response.schedulingUnit.map { unit ->
                             unit.copy(
                                 person =
-                                    unit.person.sortedByDescending { person -> person.employeeId }
+                                    unit.person.sortedByDescending { person -> person.employeeId },
                             )
-                        }
-                )
+                        },
+                ),
             )
             .isEqualTo(titaniaGetResponseValidExampleData)
     }
@@ -1248,7 +1248,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1276,14 +1276,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginReasonCode = "TA",
                                                                 endTime = "1539",
                                                                 endReasonCode = null,
-                                                            )
-                                                        )
+                                                            ),
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -1309,7 +1309,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                     LocalTime.of(16, 0),
                                 ),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1355,7 +1355,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1391,13 +1391,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 endTime = "1611",
                                                                 endReasonCode = "YT",
                                                             ),
-                                                        )
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -1423,7 +1423,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                     LocalTime.of(16, 0),
                                 ),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1468,7 +1468,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1504,13 +1504,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 endTime = null,
                                                                 endReasonCode = null,
                                                             ),
-                                                        )
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -1536,7 +1536,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                     LocalTime.of(16, 0),
                                 ),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1595,7 +1595,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1638,13 +1638,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 endTime = "1521",
                                                                 endReasonCode = "PM",
                                                             ),
-                                                        )
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -1670,7 +1670,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                     LocalTime.of(16, 0),
                                 ),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1729,7 +1729,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1772,13 +1772,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 endTime = "1639",
                                                                 endReasonCode = "PM",
                                                             ),
-                                                        )
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -1804,7 +1804,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                     LocalTime.of(16, 0),
                                 ),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1836,7 +1836,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1864,14 +1864,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginReasonCode = "PM",
                                                                 endTime = null,
                                                                 endReasonCode = null,
-                                                            )
-                                                        )
+                                                            ),
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -1897,7 +1897,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             endTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(8, 0)),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1930,7 +1930,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1958,14 +1958,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginReasonCode = null,
                                                                 endTime = "2400",
                                                                 endReasonCode = null,
-                                                            )
-                                                        )
+                                                            ),
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -1991,7 +1991,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             endTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(8, 0)),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -2050,7 +2050,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -2116,7 +2116,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                     LocalTime.of(16, 0),
                                 ),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -2149,7 +2149,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -2177,14 +2177,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginReasonCode = null,
                                                                 endTime = "1606",
                                                                 endReasonCode = null,
-                                                            )
-                                                        )
+                                                            ),
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -2206,7 +2206,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             startTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
                             endTime = HelsinkiDateTime.of(date, LocalTime.of(13, 0)),
                             description = null,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevStaffAttendancePlan(
@@ -2215,7 +2215,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             startTime = HelsinkiDateTime.of(date, LocalTime.of(13, 0)),
                             endTime = HelsinkiDateTime.of(date, LocalTime.of(14, 0)),
                             description = null,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevStaffAttendancePlan(
@@ -2224,7 +2224,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             startTime = HelsinkiDateTime.of(date, LocalTime.of(14, 0)),
                             endTime = HelsinkiDateTime.of(date, LocalTime.of(14, 9)),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -2251,7 +2251,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -2279,14 +2279,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginReasonCode = null,
                                                                 endTime = "1409",
                                                                 endReasonCode = null,
-                                                            )
-                                                        )
+                                                            ),
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 
@@ -2309,7 +2309,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             startTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
                             endTime = HelsinkiDateTime.of(date, LocalTime.of(13, 0)),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -2344,7 +2344,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             startTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
                             endTime = HelsinkiDateTime.of(date, LocalTime.of(13, 0)),
                             description = null,
-                        )
+                        ),
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -2382,7 +2382,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                 code = "from titania",
                                 person =
                                     listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -2398,7 +2398,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             TitaniaStampedUnitRequest(
                                 code = "from titania",
                                 person = listOf(TitaniaStampedPersonRequest(employeeId = "255145")),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -2434,13 +2434,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 endTime = null,
                                                                 endReasonCode = null,
                                                             ),
-                                                        )
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
 
         assertThat(responseHessu)
@@ -2465,14 +2465,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginReasonCode = null,
                                                                 endTime = "1026",
                                                                 endReasonCode = "LS",
-                                                            )
-                                                        )
+                                                            ),
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
-                        )
-                )
+                            ),
+                        ),
+                ),
             )
     }
 }
@@ -2482,7 +2482,7 @@ fun Database.Read.fetchReportRows(): List<TitaniaTestDbRow> = createQuery {
         """
                 SELECT request_time, employee_id, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends, error_type
                 FROM titania_errors
-            """
+            """,
     )
 }
     .toList<TitaniaTestDbRow>()

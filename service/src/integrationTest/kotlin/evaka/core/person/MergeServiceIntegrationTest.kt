@@ -151,7 +151,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 UPDATE child
 SET allergies = ${bind(allergies)}, diet = ${bind(diet)}, additionalinfo = ${bind(additionalInfo)}
 WHERE id = ${bind(childId)}
-"""
+""",
             )
         }
     }
@@ -159,7 +159,7 @@ WHERE id = ${bind(childId)}
     private fun childDetails(childId: PersonId): ChildDetails = db.read { tx ->
         tx.createQuery {
                 sql(
-                    "SELECT allergies, diet, additionalinfo AS additional_info FROM child WHERE id = ${bind(childId)}"
+                    "SELECT allergies, diet, additionalinfo AS additional_info FROM child WHERE id = ${bind(childId)}",
                 )
             }
             .exactlyOne<ChildDetails>()
@@ -213,7 +213,7 @@ WHERE id = ${bind(childId)}
                     headOfChildId = adultId,
                     startDate = LocalDate.of(2015, 1, 1),
                     endDate = LocalDate.of(2030, 1, 1),
-                )
+                ),
             )
             it.insert(
                 DevIncome(
@@ -221,7 +221,7 @@ WHERE id = ${bind(childId)}
                     validFrom = validFrom,
                     validTo = validTo,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -249,8 +249,8 @@ WHERE id = ${bind(childId)}
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             adultId,
                             DateRange(validFrom, validTo),
-                        )
-                    )
+                        ),
+                    ),
                 ),
                 any(),
                 any(),
@@ -275,7 +275,7 @@ WHERE id = ${bind(childId)}
                     unitId = unit.id,
                     startDate = from,
                     endDate = to,
-                )
+                ),
             )
         }
 
@@ -517,7 +517,7 @@ WHERE id = ${bind(childId)}
                     headOfChildId = adultId,
                     startDate = LocalDate.of(2015, 1, 1),
                     endDate = LocalDate.of(2030, 1, 1),
-                )
+                ),
             )
         }
         val placementStart = LocalDate.of(2017, 1, 1)
@@ -529,7 +529,7 @@ WHERE id = ${bind(childId)}
                     unitId = unit.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -543,8 +543,8 @@ WHERE id = ${bind(childId)}
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             adultId,
                             DateRange(placementStart, placementEnd),
-                        )
-                    )
+                        ),
+                    ),
                 ),
                 any(),
                 any(),
@@ -564,7 +564,7 @@ WHERE id = ${bind(childId)}
             val (citizenId, name) =
                 it.createQuery {
                         sql(
-                            "SELECT citizen_id, name FROM evaka_user WHERE id = ${bind(duplicate.id)}"
+                            "SELECT citizen_id, name FROM evaka_user WHERE id = ${bind(duplicate.id)}",
                         )
                     }
                     .exactlyOne { column<PersonId?>("citizen_id") to column<String>("name") }
@@ -581,7 +581,7 @@ WHERE id = ${bind(childId)}
             val (citizenId, name) =
                 it.createQuery {
                         sql(
-                            "SELECT citizen_id, name FROM evaka_user WHERE id = ${bind(duplicate.id)}"
+                            "SELECT citizen_id, name FROM evaka_user WHERE id = ${bind(duplicate.id)}",
                         )
                     }
                     .exactlyOne { column<PersonId?>("citizen_id") to column<String>("name") }
@@ -604,7 +604,7 @@ WHERE id = ${bind(childId)}
                     childId = childIdDuplicate,
                     startDate = clock.today(),
                     endDate = clock.today().plusMonths(1),
-                )
+                ),
             )
         }
 

@@ -139,7 +139,7 @@ kept_through_guardians AS (
 DELETE FROM person p
 WHERE p.id IN (SELECT id FROM people_to_delete EXCEPT SELECT id FROM kept_through_guardians)
 RETURNING id
-"""
+""",
                 )
             }
             .executeAndReturnGeneratedKeys()

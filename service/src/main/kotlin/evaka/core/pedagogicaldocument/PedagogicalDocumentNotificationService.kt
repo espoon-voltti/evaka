@@ -53,7 +53,7 @@ JOIN guardian g ON doc.child_id = g.child_id
 JOIN person p on g.guardian_id = p.id
 WHERE doc.id = ${bind(id)}
 AND (p.email IS NOT NULL OR EXISTS (SELECT FROM citizen_push_subscription cps WHERE cps.person_id = p.id))
-"""
+""",
                 )
             }
             .toList {
@@ -71,14 +71,14 @@ AND (p.email IS NOT NULL OR EXISTS (SELECT FROM citizen_push_subscription cps WH
     ) {
         createUpdate {
             sql(
-                "UPDATE pedagogical_document SET email_job_created_at = ${bind(date)} WHERE id = ${bind(id)}"
+                "UPDATE pedagogical_document SET email_job_created_at = ${bind(date)} WHERE id = ${bind(id)}",
             )
         }
             .updateExactlyOne()
     }
 
     private fun Database.Read.shouldCreateNotificationJobForDocument(
-        id: PedagogicalDocumentId
+        id: PedagogicalDocumentId,
     ): Boolean {
         // notification job should be created only if description is set or an attachment is
         // uploaded
@@ -94,7 +94,7 @@ SELECT EXISTS(
         doc.email_job_created_at IS NULL AND 
         (LENGTH(doc.description) > 0 OR a.id IS NOT NULL)
 )
-            """
+            """,
             )
         }
             .exactlyOne<Boolean>()
@@ -170,7 +170,7 @@ SELECT EXISTS(
 }
 
 private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
-    id: PedagogicalDocumentId
+    id: PedagogicalDocumentId,
 ) {
     createUpdate {
         sql(
@@ -178,7 +178,7 @@ private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
                 UPDATE pedagogical_document
                 SET email_sent = TRUE 
                 WHERE id = ${bind(id)}
-                """
+                """,
         )
     }
         .updateExactlyOne()

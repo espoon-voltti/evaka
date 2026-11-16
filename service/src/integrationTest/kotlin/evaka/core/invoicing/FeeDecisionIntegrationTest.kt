@@ -263,7 +263,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
             createFeeDecisionFixture(
@@ -279,7 +279,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
             createFeeDecisionFixture(
@@ -295,7 +295,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
             createFeeDecisionFixture(
@@ -311,7 +311,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
             createFeeDecisionFixture(
@@ -327,7 +327,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
             createFeeDecisionFixture(
@@ -343,7 +343,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
             createFeeDecisionFixture(
@@ -359,7 +359,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
         )
@@ -487,7 +487,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result =
             searchDecisions(
-                SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT))
+                SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT)),
             )
 
         assertEqualEnough(drafts.map(::toSummary), result.data)
@@ -500,7 +500,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result =
             searchDecisions(
-                SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT))
+                SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT)),
             )
 
         assertEqualEnough(sent.map(::toSummary), result.data)
@@ -515,7 +515,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     statuses = listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT),
-                )
+                ),
             )
 
         assertEqualEnough(testDecisions.map(::toSummary), result.data)
@@ -542,7 +542,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.UNCONFIRMED_HOURS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(testDecisionMissingServiceNeed)), result.data)
@@ -554,7 +554,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(
-                listOf(testDecisions[0], testDecisions[3], testDecisionWithExtChild)
+                listOf(testDecisions[0], testDecisions[3], testDecisionWithExtChild),
             )
         }
 
@@ -563,7 +563,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.EXTERNAL_CHILD),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(testDecisionWithExtChild)), result.data)
@@ -574,11 +574,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val now = LocalDate.now()
         val oldDecision =
             testDecisions[0].copy(
-                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1)),
             )
         val futureDecision =
             testDecisions[1].copy(
-                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2)),
             )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
@@ -588,7 +588,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.RETROACTIVE),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(oldDecision)), result.data)
@@ -605,7 +605,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     unitId = firstPlacementStartingThisMonthChild.placement.unitId,
                     startDate = LocalDate.now(),
                     endDate = LocalDate.now(),
-                )
+                ),
             )
         }
 
@@ -618,13 +618,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     unitId = previousPlacementChild.placement.unitId,
                     startDate = LocalDate.now().minusMonths(1),
                     endDate = LocalDate.now(),
-                )
+                ),
             )
         }
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(
-                listOf(testDecisionWithOneStartingChild, testDecisionWithNoStartingChild)
+                listOf(testDecisionWithOneStartingChild, testDecisionWithNoStartingChild),
             )
         }
 
@@ -633,7 +633,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_STARTING_PLACEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(testDecisionWithNoStartingChild)), result.data)
@@ -647,7 +647,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.PRESCHOOL_CLUB),
-                )
+                ),
             )
 
         assertEquals(2, result.data.size)
@@ -693,7 +693,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     decisionWithOpenAdultStatement,
                     decisionWithFarAwayAndFutureOpenStatements,
                     decisionWithOpenChildStatement,
-                )
+                ),
             )
 
             tx.insert(
@@ -707,7 +707,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker1.id,
-                )
+                ),
             )
 
             // adult2 statement not submitted
@@ -721,7 +721,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         ),
                     status = IncomeStatementStatus.DRAFT,
                     sentAt = null,
-                )
+                ),
             )
 
             tx.insert(
@@ -735,7 +735,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker1.id,
-                )
+                ),
             )
 
             // adult4 statement not handled
@@ -750,7 +750,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
 
             // adult5 statement not handled
@@ -765,7 +765,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
 
             // adult6 statement not handled
@@ -780,7 +780,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
 
             tx.insert(
@@ -794,7 +794,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker1.id,
-                )
+                ),
             )
 
             // child4 statement being handled
@@ -809,7 +809,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.HANDLING,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -818,7 +818,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(
@@ -861,7 +861,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker1.id,
-                )
+                ),
             )
             // adult2 statement not submitted
             tx.insert(
@@ -874,7 +874,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         ),
                     status = IncomeStatementStatus.DRAFT,
                     sentAt = null,
-                )
+                ),
             )
             tx.insert(
                 DevIncomeStatement(
@@ -887,7 +887,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker1.id,
-                )
+                ),
             )
             // adult4 statement not handled
             tx.insert(
@@ -901,7 +901,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -910,7 +910,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(decisionWithHandledStatements)), result.data)
@@ -937,7 +937,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(
-                listOf(decisionWithMidPeriodOpenStatement, decisionWithNoOpenStatements)
+                listOf(decisionWithMidPeriodOpenStatement, decisionWithNoOpenStatements),
             )
 
             tx.insert(
@@ -951,7 +951,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -960,7 +960,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(decisionWithNoOpenStatements)), result.data)
@@ -991,7 +991,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1000,7 +1000,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(), result.data)
@@ -1032,7 +1032,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1041,7 +1041,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(), result.data)
@@ -1073,7 +1073,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1082,7 +1082,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(), result.data)
@@ -1114,7 +1114,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1123,7 +1123,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(), result.data)
@@ -1155,7 +1155,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker1.id,
-                )
+                ),
             )
         }
 
@@ -1164,7 +1164,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(decision)), result.data)
@@ -1199,7 +1199,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1208,7 +1208,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(decision)), result.data)
@@ -1234,7 +1234,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     area = listOf(area1.shortName),
                     statuses = listOf(FeeDecisionStatus.DRAFT),
-                )
+                ),
             )
 
         assertEqualEnough(testDecisions.take(1).map(::toSummary), result.data)
@@ -1308,7 +1308,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     searchTerms = "${adult1.lastName.substring(0, 2)} ${adult1.firstName}",
-                )
+                ),
             )
 
         assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
@@ -1323,7 +1323,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     searchTerms = "${adult1.lastName} ${adult1.streetAddress} nomatch",
-                )
+                ),
             )
 
         assertEqualEnough(listOf(), result.data)
@@ -1340,7 +1340,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     searchTerms = child2.firstName,
                     sortBy = FeeDecisionSortParam.STATUS,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             )
 
         assertEqualEnough(
@@ -1378,7 +1378,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result =
             searchDecisions(
-                SearchFeeDecisionRequest(page = 0, searchTerms = adult1.ssn!!.substring(0, 6))
+                SearchFeeDecisionRequest(page = 0, searchTerms = adult1.ssn!!.substring(0, 6)),
             )
 
         assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
@@ -1562,7 +1562,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         FiniteDateRange(
                             LocalDate.now().withDayOfMonth(1),
                             LocalDate.now().plusMonths(1),
-                        )
+                        ),
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft)) }
         db.transaction {
@@ -1572,7 +1572,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     UPDATE daycare
                     SET finance_decision_handler = ${bind(decisionMaker2.id)}
                     WHERE id = ${bind(draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
-                """
+                """,
                 )
             }
         }
@@ -1605,7 +1605,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     UPDATE daycare
                     SET finance_decision_handler = ${bind(decisionMaker2.id)}
                     WHERE id = ${bind(draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
-                    """
+                    """,
                 )
             }
         }
@@ -1644,7 +1644,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     UPDATE daycare
                     SET finance_decision_handler = ${bind(decisionMaker2.id)}
                     WHERE id = ${bind(oldDecision.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
-                """
+                """,
                 )
             }
         }
@@ -1707,7 +1707,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 .find { it.status == FeeDecisionStatus.DRAFT }!!
                 .copy(
                     validDuring =
-                        FiniteDateRange(LocalDate.now().plusDays(2), LocalDate.now().plusYears(1))
+                        FiniteDateRange(LocalDate.now().plusDays(2), LocalDate.now().plusYears(1)),
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
@@ -1726,7 +1726,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         FiniteDateRange(
                             now.toLocalDate().plusDays(1),
                             now.toLocalDate().plusYears(1),
-                        )
+                        ),
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
@@ -1765,7 +1765,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val updatedConflict =
             conflict.copy(
-                validDuring = conflict.validDuring.copy(end = draft.validFrom.minusDays(1))
+                validDuring = conflict.validDuring.copy(end = draft.validFrom.minusDays(1)),
             )
         assertEqualEnough(toDetailed(updatedConflict), result)
     }
@@ -1922,7 +1922,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val draftDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT))
+                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT)),
                 )
                 .data
 
@@ -1948,7 +1948,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val draftDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT))
+                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT)),
                 )
                 .data
 
@@ -1987,7 +1987,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getDecision(conflict.id).let { result ->
             val updatedConflict =
                 conflict.copy(
-                    validDuring = conflict.validDuring.copy(end = draft.validFrom.minusDays(1))
+                    validDuring = conflict.validDuring.copy(end = draft.validFrom.minusDays(1)),
                 )
             assertEqualEnough(toDetailed(updatedConflict), result)
         }
@@ -1996,7 +1996,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             val updatedConflict =
                 secondConflict.copy(
                     validDuring =
-                        secondConflict.validDuring.copy(end = secondDraft.validFrom.minusDays(1))
+                        secondConflict.validDuring.copy(end = secondDraft.validFrom.minusDays(1)),
                 )
             assertEqualEnough(toDetailed(updatedConflict), result)
         }
@@ -2026,7 +2026,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                                 baseFee = 28900,
                                 siblingDiscount = 0,
                                 fee = 28900,
-                            )
+                            ),
                         ),
                 ),
                 createFeeDecisionFixture(
@@ -2048,7 +2048,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                                 baseFee = 28900,
                                 siblingDiscount = 50,
                                 fee = 14500,
-                            )
+                            ),
                         ),
                 ),
             )
@@ -2093,7 +2093,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val newSentDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT))
+                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT)),
                 )
                 .data
 
@@ -2105,7 +2105,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     SearchFeeDecisionRequest(
                         page = 0,
                         statuses = listOf(FeeDecisionStatus.ANNULLED),
-                    )
+                    ),
                 )
                 .data
 
@@ -2137,7 +2137,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                                 baseFee = 28900,
                                 siblingDiscount = 0,
                                 fee = 28900,
-                            )
+                            ),
                         ),
                 ),
                 createFeeDecisionFixture(
@@ -2159,7 +2159,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                                 baseFee = 28900,
                                 siblingDiscount = 50,
                                 fee = 14500,
-                            )
+                            ),
                         ),
                 ),
             )
@@ -2204,7 +2204,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val decisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT))
+                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT)),
                 )
                 .data
 
@@ -2229,11 +2229,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val now = LocalDate.now()
         val oldDecision =
             testDecisions[0].copy(
-                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1)),
             )
         val futureDecision =
             testDecisions[1].copy(
-                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2)),
             )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
@@ -2244,7 +2244,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     startDate = LocalDate.of(1900, 1, 1),
                     endDate = LocalDate.of(1901, 1, 1),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(), result.data)
@@ -2255,11 +2255,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val now = LocalDate.now()
         val oldDecision =
             testDecisions[0].copy(
-                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1)),
             )
         val futureDecision =
             testDecisions[1].copy(
-                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2)),
             )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
@@ -2270,7 +2270,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     startDate = now.minusMonths(3),
                     endDate = now.minusDays(1),
-                )
+                ),
             )
         assertEqualEnough(listOf(toSummary(oldDecision)), result.data)
     }
@@ -2280,11 +2280,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val now = LocalDate.now()
         val oldDecision =
             testDecisions[0].copy(
-                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1)),
             )
         val futureDecision =
             testDecisions[1].copy(
-                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2)),
             )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
@@ -2295,7 +2295,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     startDate = now.plusDays(1),
                     endDate = now.plusMonths(8),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(futureDecision)), result.data)
@@ -2306,11 +2306,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val now = LocalDate.now()
         val oldDecision =
             testDecisions[0].copy(
-                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1)),
             )
         val futureDecision =
             testDecisions[1].copy(
-                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2)),
             )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
@@ -2321,7 +2321,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     startDate = now.minusMonths(6),
                     endDate = now.minusMonths(1),
-                )
+                ),
             )
 
         val resultFuture =
@@ -2330,7 +2330,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     startDate = now.plusMonths(2),
                     endDate = now.plusMonths(8),
-                )
+                ),
             )
 
         assertEqualEnough(listOf(toSummary(oldDecision)), resultPast.data)
@@ -2343,11 +2343,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val now = LocalDate.now()
         val oldDecision =
             testDecisions[0].copy(
-                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1)),
             )
         val futureDecision =
             testDecisions[1].copy(
-                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2)),
             )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
@@ -2362,11 +2362,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val now = LocalDate.now()
         val oldDecision =
             testDecisions[0].copy(
-                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1))
+                validDuring = FiniteDateRange(now.minusMonths(2), now.minusMonths(1)),
             )
         val futureDecision =
             testDecisions[1].copy(
-                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2))
+                validDuring = FiniteDateRange(now.plusMonths(1), now.plusMonths(2)),
             )
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
@@ -2400,7 +2400,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     sortBy = FeeDecisionSortParam.STATUS,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             )
 
         assertEqualEnough(
@@ -2417,7 +2417,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     sortBy = FeeDecisionSortParam.STATUS,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             )
 
         assertEqualEnough(
@@ -2434,7 +2434,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             )
 
         assertEqualEnough(
@@ -2451,7 +2451,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             )
 
         assertEqualEnough(
@@ -2468,7 +2468,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     sortBy = FeeDecisionSortParam.VALIDITY,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             )
 
         assertEqualEnough(
@@ -2485,7 +2485,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     page = 0,
                     sortBy = FeeDecisionSortParam.VALIDITY,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             )
 
         assertEqualEnough(
@@ -2509,7 +2509,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE person SET force_manual_fee_decisions = true WHERE id = ${bind(decision.headOfFamilyId)}"
+                    "UPDATE person SET force_manual_fee_decisions = true WHERE id = ${bind(decision.headOfFamilyId)}",
                 )
             }
         }
@@ -2768,7 +2768,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     child2.dateOfBirth,
                     child2.dateOfBirth.plusYears(18).minusDays(1),
                     HelsinkiDateTime.now(),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = headOfFamily.id, adult2 = adult7.id)
             it.insertTestCitizenPushSubscription(headOfFamily.id, mockWebPushEndpoint(httpPort))
@@ -2782,7 +2782,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 CitizenPushNotification.FeeDecision(
                     decisionId = decision.id,
                     childNames = listOf("${child2.firstName} ${child2.lastName}"),
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -2808,7 +2808,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     child2.dateOfBirth,
                     child2.dateOfBirth.plusYears(18).minusDays(1),
                     HelsinkiDateTime.now(),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = optInAdult.id, adult2 = adult7.id)
         }
@@ -2843,7 +2843,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     child2.dateOfBirth,
                     child2.dateOfBirth.plusYears(18).minusDays(1),
                     HelsinkiDateTime.now(),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = adult3.id, adult2 = adult4.id)
         }
@@ -2899,7 +2899,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     child2.dateOfBirth,
                     child2.dateOfBirth.plusYears(18).minusDays(1),
                     HelsinkiDateTime.now(),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = optOutAdult.id, adult2 = adult7.id)
         }
@@ -3091,7 +3091,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         """
                     UPDATE fee_decision SET document_contains_contact_info = TRUE
                     WHERE id = ${bind(decision.id)}
-                """
+                """,
                     )
                 }
             }

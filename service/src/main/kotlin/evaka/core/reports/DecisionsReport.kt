@@ -52,7 +52,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.DecisionsReportRead.log(
-                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size),
                 )
             }
     }
@@ -64,7 +64,7 @@ private fun Database.Read.getDecisionsRows(
 ): List<DecisionsReportRow> {
     val applicationPredicates =
         Predicate.allNotNull(
-            applicationType?.let { Predicate { table -> where("$table.type = ${bind(it)}") } }
+            applicationType?.let { Predicate { table -> where("$table.type = ${bind(it)}") } },
         )
     val queryResult = createQuery {
         sql(
@@ -89,7 +89,7 @@ JOIN care_area ca ON ca.id = u.care_area_id
 JOIN person ch ON ch.id = a.child_id
 WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND ${bind(range.end)}
   AND ${predicate(applicationPredicates.forTable("a"))}
-"""
+""",
         )
     }
         .toList<DecisionsReportQueryRow>()

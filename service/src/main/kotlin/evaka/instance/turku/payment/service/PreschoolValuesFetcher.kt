@@ -25,7 +25,7 @@ class PreschoolValuesFetcher(val tx: Database.Read) {
             AND voucher_value_decision.placement_type in ('PRESCHOOL','PRESCHOOL_DAYCARE')
             AND voucher_value_report_decision.type='ORIGINAL'
             GROUP BY voucher_value_decision.placement_unit_id;
-        """
+        """,
             )
         }
         .bind("ids", payments.map { it.unit.id })
@@ -42,7 +42,7 @@ class PreschoolValuesFetcher(val tx: Database.Read) {
             SELECT id as unitId,language
             FROM daycare
             WHERE daycare.id = ANY(:ids)
-        """
+        """,
             )
         }
         .bind("ids", payments.map { it.unit.id })
@@ -62,11 +62,11 @@ class PreschoolValuesFetcher(val tx: Database.Read) {
                 WHERE default_option=true
                 AND valid_placement_type='PRESCHOOL')
             AND validity @> :date;
-        """
+        """,
         )
     }
         .bind("date", period.start)
         .mapTo<Int>()
-        // this should only ever return one row with one value
-        .exactlyOne()
+    // this should only ever return one row with one value
+    .exactlyOne()
 }

@@ -183,8 +183,8 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         assertEqualEnough(
             listOf(
                 testFeeAlteration.copy(
-                    attachments = listOf(Attachment(attachmentId, "evaka-logo.png", "image/png"))
-                )
+                    attachments = listOf(Attachment(attachmentId, "evaka-logo.png", "image/png")),
+                ),
             ),
             result.map { it.data },
         )
@@ -199,8 +199,8 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         assertEqualEnough(
             listOf(
                 testFeeAlteration.copy(
-                    attachments = listOf(Attachment(attachmentId, "evaka-logo.png", "image/png"))
-                )
+                    attachments = listOf(Attachment(attachmentId, "evaka-logo.png", "image/png")),
+                ),
             ),
             result.map { it.data },
         )
@@ -219,7 +219,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     }
 
     private fun getFeeAlterations(
-        personId: PersonId
+        personId: PersonId,
     ): List<FeeAlterationController.FeeAlterationWithPermittedActions> {
         return feeAlterationController.getFeeAlterations(dbInstance(), user, clock, personId)
     }

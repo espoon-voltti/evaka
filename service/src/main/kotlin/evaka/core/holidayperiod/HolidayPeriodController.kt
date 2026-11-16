@@ -95,7 +95,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         }
                         if (body.reservationsOpenOn > body.period.start) {
                             throw BadRequest(
-                                "Reservations open must be before holiday period starts"
+                                "Reservations open must be before holiday period starts",
                             )
                         }
                         if (
@@ -103,7 +103,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                                 body.reservationDeadline <= body.period.start)
                         ) {
                             throw BadRequest(
-                                "Reservation deadline must be between reservations open and holiday period start"
+                                "Reservation deadline must be between reservations open and holiday period start",
                             )
                         }
 

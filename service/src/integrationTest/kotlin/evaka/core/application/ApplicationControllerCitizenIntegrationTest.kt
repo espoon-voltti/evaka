@@ -290,7 +290,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 type = ApplicationType.DAYCARE,
                 document =
                     DaycareFormV0.fromApplication2(
-                        createTestApplicationDetails(nonGuardian, nonGuardianChild)
+                        createTestApplicationDetails(nonGuardian, nonGuardianChild),
                     ),
             )
         }
@@ -325,7 +325,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 type = ApplicationType.DAYCARE,
                 document =
                     DaycareFormV0.fromApplication2(
-                        createTestApplicationDetails(guardian, guardianChild)
+                        createTestApplicationDetails(guardian, guardianChild),
                     ),
             )
 
@@ -340,7 +340,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     endDate = clock.today().plusYears(1),
                     resolvedBy = decisionMaker.id.raw,
                     sentDate = clock.today(),
-                )
+                ),
             )
         }
 
@@ -373,7 +373,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 type = ApplicationType.DAYCARE,
                 document =
                     DaycareFormV0.fromApplication2(
-                        createTestApplicationDetails(nonGuardian, nonGuardianChild)
+                        createTestApplicationDetails(nonGuardian, nonGuardianChild),
                     ),
             )
 
@@ -388,7 +388,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     endDate = clock.today().plusYears(1),
                     resolvedBy = decisionMaker.id.raw,
                     sentDate = clock.today(),
-                )
+                ),
             )
         }
 
@@ -430,7 +430,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     endDate = clock.today().plusYears(1),
                     resolvedBy = decisionMaker.id.raw,
                     sentDate = clock.today(),
-                )
+                ),
             )
             // Rejected application and related decision should not be returned
             tx.insertTestApplication(
@@ -455,7 +455,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     endDate = clock.today().plusYears(1),
                     resolvedBy = decisionMaker.id.raw,
                     sentDate = clock.today(),
-                )
+                ),
             )
         }
 
@@ -505,7 +505,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
                     modifiedAt = clock.now(),
                     modifiedBy = EvakaUserId(decisionMaker.id.raw),
-                )
+                ),
             )
 
             tx.insertTestApplication(
@@ -517,7 +517,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 type = ApplicationType.DAYCARE,
                 document =
                     DaycareFormV0.fromApplication2(
-                        createTestApplicationDetails(fosterParent, fosterChild)
+                        createTestApplicationDetails(fosterParent, fosterChild),
                     ),
             )
 
@@ -532,7 +532,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     endDate = clock.today().plusYears(1),
                     resolvedBy = decisionMaker.id.raw,
                     sentDate = clock.today(),
-                )
+                ),
             )
         }
 

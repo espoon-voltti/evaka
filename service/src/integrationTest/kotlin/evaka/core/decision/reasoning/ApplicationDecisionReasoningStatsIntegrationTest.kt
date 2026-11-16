@@ -79,7 +79,7 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
                 ready = ready,
                 createdAt = now,
                 modifiedAt = now,
-            )
+            ),
         )
     }
 
@@ -92,12 +92,12 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
                 text = "fi-text",
                 createdAt = now,
                 modifiedAt = now,
-            )
+            ),
         )
     }
 
     private fun createPlannedDecision(
-        type: DecisionType = DAYCARE
+        type: DecisionType = DAYCARE,
     ): Pair<DecisionId, ApplicationId> = db.transaction { tx ->
         val guardianId = tx.insert(DevPerson(), DevPersonType.ADULT)
         val childId = tx.insert(DevPerson(dateOfBirth = today.minusYears(3)), DevPersonType.CHILD)
@@ -225,7 +225,7 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
                     createdAt = HelsinkiDateTime.of(LocalDate.of(2026, 5, 10), LocalTime.of(12, 0)),
                     modifiedAt =
                         HelsinkiDateTime.of(LocalDate.of(2026, 5, 10), LocalTime.of(12, 0)),
-                )
+                ),
             )
         }
         db.transaction { tx ->
@@ -238,7 +238,7 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
                     ready = false,
                     createdAt = now,
                     modifiedAt = now,
-                )
+                ),
             )
         }
         val (_, applicationId) = createPlannedDecision()
@@ -260,7 +260,7 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
                     ready = true,
                     createdAt = HelsinkiDateTime.of(LocalDate.of(2025, 1, 1), LocalTime.of(12, 0)),
                     modifiedAt = HelsinkiDateTime.of(LocalDate.of(2025, 1, 1), LocalTime.of(12, 0)),
-                )
+                ),
             )
         }
         db.transaction { tx ->
@@ -273,7 +273,7 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
                     ready = false,
                     createdAt = HelsinkiDateTime.of(LocalDate.of(2026, 6, 1), LocalTime.of(12, 0)),
                     modifiedAt = HelsinkiDateTime.of(LocalDate.of(2026, 6, 1), LocalTime.of(12, 0)),
-                )
+                ),
             )
         }
         val (_, applicationId) = createPlannedDecision()

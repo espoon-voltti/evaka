@@ -84,7 +84,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     period = holidayPeriod,
                     reservationsOpenOn = clockToday.today(),
                     reservationDeadline = clockToday.today().plusDays(2),
-                )
+                ),
             )
         }
     }
@@ -99,7 +99,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
         }
 
@@ -113,7 +113,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -127,7 +127,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     date = holidayPeriod.end,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -147,7 +147,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
         }
 
@@ -157,7 +157,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                 CitizenPushNotification.MissingHolidayReservations(
                     holidayPeriod = holidayPeriod,
                     deadline = clockToday.today().plusDays(2),
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -172,7 +172,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                         areaId = area.id,
                         // enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         providerType = ProviderType.MUNICIPAL,
-                    )
+                    ),
                 )
 
             it.insert(
@@ -182,7 +182,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
         }
 
@@ -198,7 +198,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                         areaId = area.id,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         providerType = ProviderType.MUNICIPAL,
-                    )
+                    ),
                 )
 
             it.insert(
@@ -208,7 +208,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
 
             it.insert(employee)
@@ -222,7 +222,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     validDuring = DateRange(clockToday.today(), clockToday.today()),
                     modifiedAt = clockToday.now(),
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             it.blockGuardian(childId = child.id, guardianId = guardian.id)
         }
@@ -237,7 +237,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     period = independenceDay,
                     reservationsOpenOn = clockBeforeIndependenceDay.today(),
                     reservationDeadline = clockBeforeIndependenceDay.today().plusDays(2),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -246,7 +246,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     startDate = independenceDay.start,
                     endDate = independenceDay.end,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
         }
 
@@ -264,7 +264,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                         shiftCareOperationTimes =
                             List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
                         shiftCareOpenOnHolidays = true,
-                    )
+                    ),
                 )
             it.insert(employee)
             it.insert(
@@ -272,7 +272,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     period = independenceDay,
                     reservationsOpenOn = clockBeforeIndependenceDay.today(),
                     reservationDeadline = clockBeforeIndependenceDay.today().plusDays(2),
-                )
+                ),
             )
             val placementId =
                 it.insert(
@@ -282,7 +282,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                         startDate = independenceDay.start,
                         endDate = independenceDay.end,
                         type = PlacementType.DAYCARE,
-                    )
+                    ),
                 )
             it.insert(
                 DevServiceNeed(
@@ -292,7 +292,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 

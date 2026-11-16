@@ -211,7 +211,7 @@ class MessageService(
         tx.insertMessageThreadChildren(
             recipientGroupsWithMessageIds.map { (ids, recipients) ->
                 ids.first to recipients.second
-            }
+            },
         )
         tx.upsertSenderThreadParticipants(
             senderId = sender,
@@ -222,7 +222,7 @@ class MessageService(
         tx.insertRecipients(
             recipientGroupsWithMessageIds.map { (ids, recipients) ->
                 ids.second to recipients.first
-            }
+            },
         )
 
         val staffCopyRecipients =
@@ -302,7 +302,7 @@ class MessageService(
         if (user is AuthenticatedUser.Citizen) {
             if (thread.sensitive && user.authLevel == CitizenAuthLevel.WEAK)
                 throw Forbidden(
-                    "Weak authentication insufficient for replying to sensitive messages"
+                    "Weak authentication insufficient for replying to sensitive messages",
                 )
             val isApplication = thread.applicationId != null
             if (
@@ -314,7 +314,7 @@ class MessageService(
                     )
             )
                 throw Forbidden(
-                    "Cannot reply to application message in status ${thread.applicationStatus}"
+                    "Cannot reply to application message in status ${thread.applicationStatus}",
                 )
             val financeAccountId = db.read { it.getFinanceAccountId() }
             val validRecipients =
@@ -400,7 +400,7 @@ class MessageService(
         val now = clock.now()
         val windowEnd =
             HelsinkiDateTime.atStartOfDay(
-                target.sentAt.toLocalDate().plusDays(DELETION_WINDOW_DAYS)
+                target.sentAt.toLocalDate().plusDays(DELETION_WINDOW_DAYS),
             )
         if (!now.isBefore(windowEnd)) throw Forbidden("The deletion window has ended")
 
@@ -414,7 +414,7 @@ class MessageService(
                         WHERE content_id = ${bind(contentId)}
                           AND sender_id = ${bind(accountId)}
                           AND content_deleted_at IS NULL
-                    """
+                    """,
                     )
                 }
                 .executeAndReturnCount()

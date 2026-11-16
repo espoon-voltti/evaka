@@ -43,7 +43,7 @@ fun Database.Transaction.insertMcpClient(
 INSERT INTO mcp_client (id, created_at, client_name, client_uri, software_id, software_version, redirect_uris, token_endpoint_auth_method, client_secret_hash, registration_ip)
 VALUES (${bind(id)}, ${bind(now)}, ${bind(clientName)}, ${bind(clientUri)}, ${bind(softwareId)}, ${bind(softwareVersion)}, ${bind(redirectUris)}, ${bind(tokenEndpointAuthMethod)}, ${bind(clientSecretHash)}, ${bind(registrationIp)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -55,7 +55,7 @@ fun Database.Read.getMcpClient(id: McpClientId): McpClient? = createQuery {
 SELECT id, created_at, client_name, client_uri, software_id, software_version, redirect_uris, token_endpoint_auth_method, client_secret_hash
 FROM mcp_client
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -103,7 +103,7 @@ fun Database.Transaction.insertMcpAuthorization(
 INSERT INTO mcp_authorization (created_at, client_id, employee_id, scope, expires_at, code_hash, code_expires_at, code_challenge, redirect_uri, resource)
 VALUES (${bind(now)}, ${bind(clientId)}, ${bind(employeeId)}, ${bind(scope)}, ${bind(expiresAt)}, ${bind(codeHash)}, ${bind(codeExpiresAt)}, ${bind(codeChallenge)}, ${bind(redirectUri)}, ${bind(resource)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -117,7 +117,7 @@ fun Database.Read.getMcpAuthorizationByCodeHash(codeHash: String): McpAuthorizat
 fun Database.Read.getMcpAuthorizationByAccessTokenHash(tokenHash: String): McpAuthorization? =
     createQuery {
         sql(
-            "SELECT $AUTHORIZATION_COLUMNS FROM mcp_authorization WHERE access_token_hash = ${bind(tokenHash)}"
+            "SELECT $AUTHORIZATION_COLUMNS FROM mcp_authorization WHERE access_token_hash = ${bind(tokenHash)}",
         )
     }
     .exactlyOneOrNull()
@@ -138,7 +138,7 @@ fun Database.Transaction.issueMcpAccessToken(
 UPDATE mcp_authorization
 SET code_hash = NULL, code_expires_at = NULL, access_token_hash = ${bind(accessTokenHash)}, token_issued_at = ${bind(now)}
 WHERE id = ${bind(id)} AND code_hash IS NOT NULL
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -161,7 +161,7 @@ fun Database.Transaction.revokeMcpAuthorization(
 UPDATE mcp_authorization
 SET revoked_at = ${bind(now)}
 WHERE id = ${bind(id)} AND employee_id = ${bind(employeeId)} AND revoked_at IS NULL
-"""
+""",
         )
     }
         .executeAndReturnCount() > 0
@@ -194,7 +194,7 @@ FROM mcp_authorization a
 JOIN mcp_client c ON c.id = a.client_id
 WHERE a.employee_id = ${bind(employeeId)}
 ORDER BY a.created_at DESC
-"""
+""",
     )
 }
     .toList()
@@ -205,7 +205,7 @@ fun Database.Transaction.deleteStaleMcpAuthorizations(now: HelsinkiDateTime) = e
         """
 DELETE FROM mcp_authorization
 WHERE access_token_hash IS NULL AND code_expires_at < ${bind(now.minusDays(1))}
-"""
+""",
     )
 }
 
@@ -229,7 +229,7 @@ LEFT JOIN mcp_authorization a ON a.id = b.authorization_id
 LEFT JOIN mcp_client c ON c.id = a.client_id
 WHERE ${predicate(where.forTable("b"))}
 ORDER BY b.created_at DESC
-"""
+""",
     )
 }
     .toList()
@@ -242,7 +242,7 @@ fun Database.Read.getMcpTestDataBatchByName(
     createdBy: EvakaUserId,
 ): McpTestDataBatch? =
     getMcpTestDataBatches(
-            Predicate { where("$it.name = ${bind(name)} AND $it.created_by = ${bind(createdBy)}") }
+            Predicate { where("$it.name = ${bind(name)} AND $it.created_by = ${bind(createdBy)}") },
         )
         .singleOrNull()
 
@@ -259,7 +259,7 @@ INSERT INTO mcp_test_data_batch (created_at, created_by, authorization_id, name,
 VALUES (${bind(now)}, ${bind(createdBy)}, ${bind(authorizationId)}, ${bind(name)}, ${bind(description)})
 ON CONFLICT (created_by, name) DO UPDATE SET name = EXCLUDED.name
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -270,7 +270,7 @@ fun Database.Read.getMcpTestDataEntityBatch(
     entityId: UUID,
 ): McpTestDataBatchId? = createQuery {
     sql(
-        "SELECT batch_id FROM mcp_test_data_entity WHERE table_name = ${bind(tableName)} AND entity_id = ${bind(entityId)}"
+        "SELECT batch_id FROM mcp_test_data_entity WHERE table_name = ${bind(tableName)} AND entity_id = ${bind(entityId)}",
     )
 }
     .exactlyOneOrNull<McpTestDataBatchId>()
@@ -287,7 +287,7 @@ fun Database.Transaction.insertMcpTestDataEntities(
 INSERT INTO mcp_test_data_entity (created_at, batch_id, table_name, entity_id, description)
 SELECT ${bind(now)}, ${bind(batchId)}, ${bind(tableName)}, unnest(${bind(entityIds.toList())}), ${bind(description)}
 ON CONFLICT (table_name, entity_id) DO NOTHING
-"""
+""",
     )
 }
 
@@ -307,7 +307,7 @@ SELECT batch_id, created_at, table_name, entity_id, description
 FROM mcp_test_data_entity
 WHERE batch_id = ${bind(batchId)}
 ORDER BY created_at, table_name
-"""
+""",
         )
     }
     .toList()
@@ -325,7 +325,7 @@ SELECT batch_id, table_name, count(*) AS count
 FROM mcp_test_data_entity
 GROUP BY batch_id, table_name
 ORDER BY table_name
-"""
+""",
     )
 }
     .toList()

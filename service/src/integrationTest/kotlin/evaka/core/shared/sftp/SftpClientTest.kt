@@ -66,7 +66,7 @@ class SftpClientTest {
                     hostKeys = listOf(wrongKey),
                     password = Sensitive(password),
                     privateKey = null,
-                )
+                ),
             )
         val exception =
             assertThrows<JSchException> {
@@ -84,7 +84,7 @@ class SftpClientTest {
                     password = Sensitive(password),
                     privateKey = null,
                     skipHostKeyVerification = true,
-                )
+                ),
             )
         "hello world".byteInputStream(Charsets.UTF_8).use { client.put(it, "upload/test.txt") }
         assertEquals("hello world", client.getAsString("upload/test.txt", Charsets.UTF_8))

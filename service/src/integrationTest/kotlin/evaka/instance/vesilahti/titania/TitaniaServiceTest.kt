@@ -54,8 +54,8 @@ class TitaniaServiceTest : AbstractVesilahtiIntegrationTest() {
                                         date = LocalDate.of(2024, 3, 4),
                                         beginTime = "0800",
                                         endTime = "1600",
-                                    )
-                                )
+                                    ),
+                                ),
                         ),
                 ),
             )
@@ -82,8 +82,8 @@ class TitaniaServiceTest : AbstractVesilahtiIntegrationTest() {
                                         date = LocalDate.of(2024, 3, 4),
                                         beginTime = "0800",
                                         endTime = "1600",
-                                    )
-                                )
+                                    ),
+                                ),
                         ),
                 ),
             )
@@ -112,8 +112,8 @@ class TitaniaServiceTest : AbstractVesilahtiIntegrationTest() {
                                         date = LocalDate.of(2024, 3, 4),
                                         beginTime = "0800",
                                         endTime = "1600",
-                                    )
-                                )
+                                    ),
+                                ),
                         ),
                 ),
             )
@@ -142,8 +142,8 @@ class TitaniaServiceTest : AbstractVesilahtiIntegrationTest() {
                                         date = LocalDate.of(2024, 3, 4),
                                         beginTime = "0800",
                                         endTime = "1600",
-                                    )
-                                )
+                                    ),
+                                ),
                         ),
                 ),
             )
@@ -167,7 +167,7 @@ class TitaniaServiceTest : AbstractVesilahtiIntegrationTest() {
                     type = StaffAttendanceType.TRAINING,
                     modifiedAt = null,
                     modifiedBy = null,
-                )
+                ),
             )
         }
 
@@ -195,11 +195,11 @@ class TitaniaServiceTest : AbstractVesilahtiIntegrationTest() {
                                             beginReasonCode = "KO",
                                             endTime = "1600",
                                             endReasonCode = null,
-                                        )
-                                    )
+                                        ),
+                                    ),
                             ),
-                    )
-                )
+                    ),
+                ),
             )
     }
 }
@@ -213,7 +213,7 @@ private fun newUpdateRequest(period: TitaniaPeriod, vararg person: TitaniaPerson
                     code = "x",
                     occupation =
                         listOf(TitaniaOccupation(code = "y", name = "y", person = person.toList())),
-                )
+                ),
             ),
     )
 
@@ -225,7 +225,7 @@ private fun newGetRequest(period: TitaniaPeriod, vararg person: TitaniaStampedPe
 
 private fun newGetResponse(vararg person: TitaniaStampedPersonResponse) =
     GetStampedWorkingTimeEventsResponse(
-        schedulingUnit = listOf(TitaniaStampedUnitResponse(code = "x", person = person.toList()))
+        schedulingUnit = listOf(TitaniaStampedUnitResponse(code = "x", person = person.toList())),
     )
 
 private fun Database.Read.getDevEmployees(): List<DevEmployee> = createQuery {

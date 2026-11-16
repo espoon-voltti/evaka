@@ -57,7 +57,7 @@ sealed class FixedLengthField(val length: Int) {
                 .fold(StringBuilder("")) { acc, row ->
                     acc.append(
                         row.fold(StringBuilder("")) { acc, field -> acc.append(field.render()) }
-                            .append(LINE_BREAK)
+                            .append(LINE_BREAK),
                     )
                 }
                 .toString()

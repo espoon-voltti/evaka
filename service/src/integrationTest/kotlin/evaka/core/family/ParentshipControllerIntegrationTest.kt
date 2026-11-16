@@ -56,7 +56,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 role = UserRole.UNIT_SUPERVISOR,
             )
             tx.insert(
-                DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now())
+                DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now()),
             )
         }
     }

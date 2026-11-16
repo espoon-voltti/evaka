@@ -99,7 +99,7 @@ class PersonGraphEvaluationTest {
                         overrides = DataRetentionOverrides.NONE,
                     )
                     .handled("voucher_value_report_decision")
-                    .financeFreeze
+                    .financeFreeze,
             )
         fun heldIn(month: YearMonth) =
             row(
@@ -296,7 +296,7 @@ class PersonGraphEvaluationTest {
                     schema.ownNode(
                         "application",
                         row("child_id" to target, "guardian_id" to UUID.randomUUID()),
-                    )
+                    ),
                 )
                 .evaluate(today)
         assertEquals(listOf(whole("application"), child, person), plan.deleted())
@@ -436,7 +436,7 @@ class PersonGraphEvaluationTest {
                                 "source_application_id",
                                 referencedTable = "application",
                                 alsoNull = listOf("source"),
-                            )
+                            ),
                         ),
                     expirationRule = Never,
                 ),
@@ -457,7 +457,7 @@ class PersonGraphEvaluationTest {
                     "source_application_id",
                     listOf("source"),
                     listOf(application),
-                )
+                ),
             ),
             plan.ownNodeDeletions.single().referenceClearings,
         )
@@ -486,7 +486,7 @@ class PersonGraphEvaluationTest {
         IntegrationFacts(today.minusYears(5), sentToKoski = false, sentToVarda = true)
 
     private fun SchemaDefinition.integrationGraph(
-        integrationFactsByPerson: Map<PersonId, IntegrationFacts>
+        integrationFactsByPerson: Map<PersonId, IntegrationFacts>,
     ): PersonGraph {
         val decision = UUID.randomUUID()
         return graph(
@@ -535,7 +535,7 @@ class PersonGraphEvaluationTest {
                         "child_id" to "child",
                         expirationRule = rule,
                         financeFreeze = financeFreeze,
-                    )
+                    ),
                 )
             val plan = schema.graph(schema.ownNode("a", row("child_id" to target))).evaluate(today)
             return whole("a") in plan.deleted()
@@ -564,7 +564,7 @@ class PersonGraphEvaluationTest {
                         "child_id" to "child",
                         expirationRule = rule,
                         safeForIntegrations = safeFor,
-                    )
+                    ),
                 )
             val graph =
                 schema.graph(
@@ -619,11 +619,11 @@ class PersonGraphEvaluationTest {
                 .deleted()
         assert(
             whole("fee_decision") in
-                deleted(mapOf(targetChildId to neverSent, otherChild to neverSent))
+                deleted(mapOf(targetChildId to neverSent, otherChild to neverSent)),
         )
         assert(
             whole("fee_decision") !in
-                deleted(mapOf(targetChildId to neverSent, otherChild to sentToVarda))
+                deleted(mapOf(targetChildId to neverSent, otherChild to sentToVarda)),
         )
         val error =
             assertFailsWith<IllegalStateException> { deleted(mapOf(targetChildId to neverSent)) }
@@ -700,7 +700,7 @@ class PersonGraphEvaluationTest {
                                 AsyncJob.DeleteDecisionPdf(it)
                             }
                         },
-                )
+                ),
             )
         val plan =
             schema
@@ -715,7 +715,7 @@ class PersonGraphEvaluationTest {
                             "child_id" to target,
                             valueForJobByColumn = mapOf("document_key" to null),
                         ),
-                    )
+                    ),
                 )
                 .evaluate(today)
         assertEquals(listOf(AsyncJob.DeleteDecisionPdf("key-1")), plan.asyncJobs)
@@ -743,7 +743,7 @@ class PersonGraphEvaluationTest {
                                 "key",
                             ),
                         ),
-                )
+                ),
             )
         val decisionId = UUID.randomUUID()
         val processId = UUID.randomUUID()
@@ -762,7 +762,7 @@ class PersonGraphEvaluationTest {
                             orphanIdByReferenceColumn =
                                 mapOf("decision_id" to null, "process_id" to null),
                         ),
-                    )
+                    ),
                 )
                 .evaluate(today)
         val deletion = plan.ownNodeDeletions.single { it.node.id == whole("document") }
@@ -794,7 +794,7 @@ class PersonGraphEvaluationTest {
                     "person_id" to "person",
                     independentRows = true,
                     expirationRule = After(oneYear, endDate),
-                )
+                ),
             )
         val old =
             row("person_id" to target, dateByColumn = mapOf("end_date" to today.minusYears(2)))

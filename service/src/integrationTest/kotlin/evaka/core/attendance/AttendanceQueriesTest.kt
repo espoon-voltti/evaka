@@ -67,8 +67,8 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             departed = null,
                             modifiedAt = now,
                             modifiedBy = employee.evakaUser,
-                        )
-                    )
+                        ),
+                    ),
             ),
             attendances,
         )
@@ -96,8 +96,8 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             departed = now,
                             modifiedAt = now,
                             modifiedBy = employee.evakaUser,
-                        )
-                    )
+                        ),
+                    ),
             ),
             attendances,
         )
@@ -133,7 +133,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             departed = now,
                             modifiedAt = now,
                             modifiedBy = employee.evakaUser,
-                        )
+                        ),
                     ),
                 child2.id to
                     listOf(
@@ -142,7 +142,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             departed = null,
                             modifiedAt = now,
                             modifiedBy = employee.evakaUser,
-                        )
+                        ),
                     ),
             ),
             attendances,
@@ -254,8 +254,8 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             departed = null,
                             modifiedAt = now,
                             modifiedBy = employee.evakaUser,
-                        )
-                    )
+                        ),
+                    ),
             ),
             attendances,
         )
@@ -291,8 +291,8 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             departed = now.minusMinutes(45),
                             modifiedAt = now,
                             modifiedBy = employee.evakaUser,
-                        )
-                    )
+                        ),
+                    ),
             ),
             attendances,
         )

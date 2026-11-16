@@ -263,7 +263,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     endDate = LocalDate.now(),
                     status = DecisionStatus.ACCEPTED,
                     documentKey = "test-document-key",
-                )
+                ),
             )
             tx.insert(
                 DevFeeDecision(
@@ -273,7 +273,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     headOfFamilyId = guardian.id,
                     documentKey = "test-document-key",
                     processId = process.id,
-                )
+                ),
             )
             tx.insert(
                 DevVoucherValueDecision(
@@ -286,7 +286,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     placementUnitId = unit.id,
                     documentKey = "test-document-key",
                     processId = process.id,
-                )
+                ),
             )
 
             val childDocument =
@@ -311,7 +311,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                                 createdBy = employee.evakaUserId,
                                 publishedContent = emptyContent,
                                 documentKey = "test-document-key",
-                            )
+                            ),
                         ),
                 )
             tx.insert(childDocument)
@@ -620,7 +620,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                                 documentKey = "latest-version-key",
                             ),
                         ),
-                )
+                ),
             )
         }
 
@@ -688,7 +688,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                                 documentKey = null, // PDF not generated yet for latest version
                             ),
                         ),
-                )
+                ),
             )
         }
 

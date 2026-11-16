@@ -111,7 +111,7 @@ private fun planChildren(): List<ChildSpec> {
                 assistanceNeeded = i % SeedApplicationsConfig.ASSISTANCE_NEED_EVERY == 0,
                 preparatory =
                     isPreschool && preschoolCount++ % SeedApplicationsConfig.PREPARATORY_EVERY == 0,
-            )
+            ),
         )
     }
     return specs
@@ -303,7 +303,7 @@ fun generateFamilies(): List<GeneratedFamily> {
                     ssn = generateSsn(spec.dateOfBirth, serial++),
                     streetAddress = streetAddress,
                     email = seedEmail(childFirstName, lastName),
-                )
+                ),
             )
             childSpecs.add(spec)
             childIndex++
@@ -314,7 +314,7 @@ fun generateFamilies(): List<GeneratedFamily> {
             GeneratedFamily(
                 family = SeededFamily(guardian, otherGuardian, familyChildren),
                 childSpecs = childSpecs,
-            )
+            ),
         )
         familyIndex++
     }
@@ -328,7 +328,7 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
             id = SeedApplicationsConfig.SEED_AREA_ID,
             name = "${SeedApplicationsConfig.SEED_LABEL}-alue",
             shortName = "${SeedApplicationsConfig.SEED_LABEL}-alue",
-        )
+        ),
     )
 
     val unitIds =
@@ -409,14 +409,14 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
             extendedTerm = SeedApplicationsConfig.PRESCHOOL_TERM_EXTENDED,
             applicationPeriod = SeedApplicationsConfig.PRESCHOOL_TERM_APPLICATION_PERIOD,
             termBreaks = DateSet.of(SeedApplicationsConfig.TERM_BREAKS),
-        )
+        ),
     )
     insert(
         DevClubTerm(
             term = SeedApplicationsConfig.CLUB_TERM,
             applicationPeriod = SeedApplicationsConfig.CLUB_TERM_APPLICATION_PERIOD,
             termBreaks = DateSet.of(SeedApplicationsConfig.TERM_BREAKS),
-        )
+        ),
     )
 
     for (r in SeedApplicationsConfig.GENERIC_REASONINGS) {
@@ -427,7 +427,7 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
                 ready = true,
                 textFi = r.textFi,
                 textSv = r.textSv,
-            )
+            ),
         )
     }
     for (r in SeedApplicationsConfig.INDIVIDUAL_REASONINGS) {
@@ -437,7 +437,7 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
                 language = OfficialLanguage.FI,
                 title = r.titleFi,
                 text = r.textFi,
-            )
+            ),
         )
         insert(
             DevDecisionReasoningIndividual(
@@ -445,7 +445,7 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
                 language = OfficialLanguage.SV,
                 title = r.titleSv,
                 text = r.textSv,
-            )
+            ),
         )
     }
 
@@ -476,7 +476,7 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
             application.otherGuardians.forEach { otherGuardianId ->
                 createUpdate {
                     sql(
-                        "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(application.id)}, ${bind(otherGuardianId)})"
+                        "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(application.id)}, ${bind(otherGuardianId)})",
                     )
                 }
                     .execute()

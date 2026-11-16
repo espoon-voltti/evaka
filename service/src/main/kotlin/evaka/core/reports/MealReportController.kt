@@ -93,7 +93,7 @@ class MealReportController(
                                 "unitName" to it.reportName,
                                 "date" to date,
                                 "count" to it.meals.size,
-                            )
+                            ),
                     )
                 }
         }

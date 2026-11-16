@@ -68,7 +68,7 @@ class SärmäChildDocumentClient(
         val classId =
             childDocumentDetails.template.processDefinitionNumber
                 ?: throw IllegalStateException(
-                    "No class ID found in document template ${childDocumentDetails.template.id}"
+                    "No class ID found in document template ${childDocumentDetails.template.id}",
                 )
 
         val metadata =

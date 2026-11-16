@@ -88,7 +88,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -96,7 +96,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                     daycareGroupId = group.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             testPersons.forEach { tx.insert(it, DevPersonType.RAW_ROW) }
@@ -150,7 +150,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                 CitizenPushNotification.InformalDocument(
                     child.id,
                     childName = "${child.firstName} ${child.lastName}",
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -165,7 +165,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE placement SET end_date = ${bind(LocalDate.now().minusDays(1))} WHERE child_id = ${bind(child.id)}"
+                    "UPDATE placement SET end_date = ${bind(LocalDate.now().minusDays(1))} WHERE child_id = ${bind(child.id)}",
                 )
             }
         }
@@ -182,12 +182,12 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
             val emailJobCreatedAt =
                 it.createQuery {
                         sql(
-                            "SELECT email_job_created_at FROM pedagogical_document WHERE id = ${bind(doc.id)}"
+                            "SELECT email_job_created_at FROM pedagogical_document WHERE id = ${bind(doc.id)}",
                         )
                     }
                     .exactlyOne<HelsinkiDateTime>()
             assertTrue(
-                HelsinkiDateTime.now().durationSince(emailJobCreatedAt) < Duration.ofSeconds(1)
+                HelsinkiDateTime.now().durationSince(emailJobCreatedAt) < Duration.ofSeconds(1),
             )
         }
         assertEmailSent(doc.id, false)

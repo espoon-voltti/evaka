@@ -106,7 +106,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     modifiedAt = clock.now(),
                     modifiedBy = serviceWorker.evakaUser,
                     serviceWorkerNote = "",
-                )
+                ),
             ),
             getPlacementDesktopDaycare(daycare1.id).placementDrafts,
         )
@@ -138,7 +138,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     modifiedAt = clock.now(),
                     modifiedBy = serviceWorker.evakaUser,
                     serviceWorkerNote = "",
-                )
+                ),
             ),
             getPlacementDesktopDaycare(daycare2.id).placementDrafts,
         )
@@ -168,7 +168,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 modifiedAt = clock.now(),
                                 modifiedBy = serviceWorker.evakaUser,
                                 serviceWorkerNote = "",
-                            )
+                            ),
                         ),
                     occupancyConfirmed = null,
                     occupancyPlanned = null,

@@ -87,7 +87,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // 9
@@ -98,7 +98,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -106,7 +106,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     date = LocalDate.of(2021, 12, 1),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
 
             // 10
@@ -117,7 +117,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare2.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Round the clock -> 15
@@ -128,7 +128,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         unitId = roundTheClockDaycare.id,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -139,7 +139,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                             optionId = snDaycareFullDay35.id,
                             shiftCare = ShiftCareType.FULL,
                             confirmedBy = employee.evakaUserId,
-                        )
+                        ),
                     )
                 }
 
@@ -153,7 +153,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             // Does not affect because only half day off
             tx.insert(
@@ -162,7 +162,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     date = LocalDate.of(2021, 12, 1),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             // Affects because both halves off
             tx.insert(
@@ -171,7 +171,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     date = LocalDate.of(2021, 12, 2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -179,7 +179,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     date = LocalDate.of(2021, 12, 2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
 
             // 5 to daycare 1
@@ -190,7 +190,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             // 5 to daycare 2 (backup care)
             tx.insert(
@@ -199,7 +199,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare2.id,
                     groupId = null,
                     period = FiniteDateRange(startDate, midDate),
-                )
+                ),
             )
 
             // 10 to daycare 1 (same unit in backup care)
@@ -210,7 +210,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
@@ -218,7 +218,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     groupId = null,
                     period = FiniteDateRange(startDate, midDate),
-                )
+                ),
             )
         }
 
@@ -283,7 +283,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycare.name,
                     PlacementType.PRESCHOOL_DAYCARE,
                     9 + 5 + 10,
-                )
+                ),
             ),
             report3,
         )

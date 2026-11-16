@@ -140,7 +140,7 @@ EXISTS(
     SELECT FROM backup_care bc
     WHERE bc.group_id = ANY (${bind(groupIds)}) AND bc.child_id = ca.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> ca.date
 )            
-"""
+""",
                 )
             }
 
@@ -168,7 +168,7 @@ WHERE
     ca.unit_id = ${bind(unitId)} AND
     tstzrange(ca.arrived, ca.departed) && ${bind(timeRange)} AND
     ${predicate(groupFilter)}
-"""
+""",
         )
     }
         .toList<ChildOccupancyAttendance>()
@@ -202,7 +202,7 @@ WHERE
     dg.daycare_id = ${bind(unitId)} AND
     tstzrange(sae.arrived, sae.departed) && ${bind(timeRange)} AND
     ${predicate(groupFilter.forTable("sae"))}
-"""
+""",
         )
     }
         .toList<StaffOccupancyAttendance>()

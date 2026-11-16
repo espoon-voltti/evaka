@@ -45,7 +45,7 @@ private fun Database.Read.createDecisionQuery(
         LEFT JOIN evaka_user eu on d.resolved_by = eu.id
         WHERE ${predicate(decision.forTable("d"))}
         AND ${predicate(application.forTable("ap"))}
-    """
+    """,
     )
 }
 
@@ -94,7 +94,7 @@ fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
 fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(
             decision =
-                Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") }
+                Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") },
         )
         .exactlyOneOrNull(Row::decisionFromResultSet)
 
@@ -119,9 +119,9 @@ fun Database.Read.getDecisionsByApplication(
             decision =
                 Predicate {
                     where(
-                        "$it.application_id = ${bind(applicationId)} AND ${predicate(filter.forTable(it))}"
+                        "$it.application_id = ${bind(applicationId)} AND ${predicate(filter.forTable(it))}",
                     )
-                }
+                },
         )
         .toList(Row::decisionFromResultSet)
 
@@ -137,9 +137,9 @@ fun Database.Read.getSentDecisionsByApplication(
                             $it.application_id = ${bind(applicationId)}
                             AND $it.sent_date IS NOT NULL
                             AND ${predicate(filter.forTable(it))}
-                        """
+                        """,
                     )
-                }
+                },
         )
         .toList(Row::decisionFromResultSet)
 
@@ -162,7 +162,7 @@ fun Database.Read.getDecisionsByGuardian(
                     WHERE aog.application_id = $it.id
                     AND aog.guardian_id = ${bind(guardianId)}
                 ))
-"""
+""",
                     )
                 },
         )
@@ -207,7 +207,7 @@ fun Database.Read.getOwnDecisions(
         AND ${predicate(filter.forTable("d"))}
         AND d.sent_date IS NOT NULL
         AND a.status IN ('WAITING_CONFIRMATION', 'ACTIVE', 'REJECTED')
-        """
+        """,
     )
 }
     .toList()
@@ -228,7 +228,7 @@ SELECT
      WHERE s.decision_id = d.id) AS individual_reasoning_ids
 FROM decision d
 WHERE d.application_id = ${bind(applicationId)} AND d.sent_date IS NULL
-"""
+""",
         )
     }
     .toList()
@@ -240,13 +240,13 @@ fun Database.Transaction.finalizeDecisions(
     // discard unplanned drafts
     execute {
         sql(
-            "DELETE FROM decision WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned = false"
+            "DELETE FROM decision WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned = false",
         )
     }
 
     return createQuery {
         sql(
-            "UPDATE decision SET sent_date = ${bind(sentAt.toLocalDate())}, sent_time = ${bind(sentAt.toLocalTime())} WHERE application_id = ${bind(applicationId)} RETURNING id"
+            "UPDATE decision SET sent_date = ${bind(sentAt.toLocalDate())}, sent_time = ${bind(sentAt.toLocalTime())} WHERE application_id = ${bind(applicationId)} RETURNING id",
         )
     }
         .toList<DecisionId>()
@@ -261,7 +261,7 @@ fun Database.Transaction.markApplicationDecisionsSent(
             """
 UPDATE decision SET sent_date = ${bind(sentAt.toLocalDate())}, sent_time = ${bind(sentAt.toLocalTime())}
 WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned = true
-"""
+""",
         )
     }
 }
@@ -272,7 +272,7 @@ fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentAt: Helsin
             """
 UPDATE decision SET sent_date = ${bind(sentAt.toLocalDate())}, sent_time = ${bind(sentAt.toLocalTime())}
 WHERE sent_date IS NULL AND id = ${bind(decisionId)} AND planned = true
-"""
+""",
         )
     }
 }
@@ -286,7 +286,7 @@ fun Database.Transaction.setDecisionDecidedBy(
             """
 UPDATE decision SET decided_by = ${bind(decidedBy)}
 WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned = true
-"""
+""",
         )
     }
 }
@@ -297,7 +297,7 @@ fun Database.Transaction.clearDecisionDecidedBy(applicationId: ApplicationId) {
             """
 UPDATE decision SET decided_by = NULL
 WHERE sent_date IS NULL AND application_id = ${bind(applicationId)}
-"""
+""",
         )
     }
 }
@@ -308,7 +308,7 @@ fun Database.Transaction.updateDecisionGuardianDocumentKey(
 ) {
     execute {
         sql(
-            "UPDATE decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(decisionId)}"
+            "UPDATE decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(decisionId)}",
         )
     }
 }
@@ -320,7 +320,7 @@ SELECT count(*) > 0 AS blocked
 FROM decision
 WHERE status = 'PENDING' AND type = 'PRESCHOOL' AND id != ${bind(decisionId)}
 AND application_id = (SELECT application_id FROM decision WHERE id = ${bind(decisionId)})
-"""
+""",
     )
 }
     .exactlyOne()
@@ -336,7 +336,7 @@ fun Database.Read.getDecisionLanguage(decisionId: DecisionId): OfficialLanguage 
             FROM decision
                 INNER JOIN daycare ON unit_id = daycare.id
             WHERE decision.id = ${bind(decisionId)}
-        """
+        """,
     )
 }
     .exactlyOne<OfficialLanguage>()
@@ -361,7 +361,7 @@ SET
   resolved = ${bind(clock.now())}
 WHERE id = ${bind(decisionId)}
 AND status = 'PENDING'
-"""
+""",
         )
     }
 }
@@ -384,7 +384,7 @@ SET
   resolved = ${bind(clock.now())}
 WHERE id = ${bind(decisionId)}
 AND status = 'PENDING'
-    """
+    """,
         )
     }
 }

@@ -49,7 +49,7 @@ internal class ProEInvoiceGeneratorTest {
                                 invoicingStreetAddress = "Laskutuskatu 1",
                                 invoicingPostalCode = "90200",
                                 invoicingPostOffice = "OULU",
-                            )
+                            ),
                 )
 
         val header = proEInvoiceGenerator.gatherInvoiceData(invoice).invoiceHeader

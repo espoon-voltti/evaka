@@ -34,8 +34,8 @@ class TamperePaymentClientIntegrationTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/soap+xml")
-                        .withBodyFile("payment-client/payable-accounting-response-ok.xml")
-                )
+                        .withBodyFile("payment-client/payable-accounting-response-ok.xml"),
+                ),
         )
 
         assertThat(db.read { tx -> client.send(listOf(payment1), tx) })
@@ -49,18 +49,18 @@ class TamperePaymentClientIntegrationTest : AbstractTampereIntegrationTest() {
                 .withHeader(
                     "Content-Type",
                     equalTo(
-                        "application/soap+xml; charset=utf-8; action=\"http://www.tampere.fi/services/sapfico/payableaccounting/v1.0/SendPayableAccounting\""
+                        "application/soap+xml; charset=utf-8; action=\"http://www.tampere.fi/services/sapfico/payableaccounting/v1.0/SendPayableAccounting\"",
                     ),
                 )
                 .withoutHeader("SOAPAction")
                 .withRequestBody(
                     equalToXml(
                         ClassPathResource(
-                                "wiremock/__files/payment-client/payable-accounting-request.xml"
+                                "wiremock/__files/payment-client/payable-accounting-request.xml",
                             )
-                            .getContentAsString(Charsets.UTF_8)
-                    )
-                )
+                            .getContentAsString(Charsets.UTF_8),
+                    ),
+                ),
         )
     }
 
@@ -74,9 +74,9 @@ class TamperePaymentClientIntegrationTest : AbstractTampereIntegrationTest() {
                         .withStatus(400)
                         .withHeader("Content-Type", "application/soap+xml")
                         .withBodyFile(
-                            "payment-client/payable-accounting-response-application-fault.xml"
-                        )
-                )
+                            "payment-client/payable-accounting-response-application-fault.xml",
+                        ),
+                ),
         )
 
         val thrown = catchThrowable { db.read { tx -> client.send(listOf(payment1), tx) } }
@@ -89,10 +89,10 @@ class TamperePaymentClientIntegrationTest : AbstractTampereIntegrationTest() {
                 .withHeader(
                     "Content-Type",
                     equalTo(
-                        "application/soap+xml; charset=utf-8; action=\"http://www.tampere.fi/services/sapfico/payableaccounting/v1.0/SendPayableAccounting\""
+                        "application/soap+xml; charset=utf-8; action=\"http://www.tampere.fi/services/sapfico/payableaccounting/v1.0/SendPayableAccounting\"",
                     ),
                 )
-                .withoutHeader("SOAPAction")
+                .withoutHeader("SOAPAction"),
         )
     }
 
@@ -105,8 +105,10 @@ class TamperePaymentClientIntegrationTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(500)
                         .withHeader("Content-Type", "application/soap+xml")
-                        .withBodyFile("payment-client/payable-accounting-response-system-fault.xml")
-                )
+                        .withBodyFile(
+                            "payment-client/payable-accounting-response-system-fault.xml",
+                        ),
+                ),
         )
 
         val thrown = catchThrowable { db.read { tx -> client.send(listOf(payment1), tx) } }
@@ -119,10 +121,10 @@ class TamperePaymentClientIntegrationTest : AbstractTampereIntegrationTest() {
                 .withHeader(
                     "Content-Type",
                     equalTo(
-                        "application/soap+xml; charset=utf-8; action=\"http://www.tampere.fi/services/sapfico/payableaccounting/v1.0/SendPayableAccounting\""
+                        "application/soap+xml; charset=utf-8; action=\"http://www.tampere.fi/services/sapfico/payableaccounting/v1.0/SendPayableAccounting\"",
                     ),
                 )
-                .withoutHeader("SOAPAction")
+                .withoutHeader("SOAPAction"),
         )
     }
 }

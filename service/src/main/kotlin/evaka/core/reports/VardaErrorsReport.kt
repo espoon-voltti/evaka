@@ -77,7 +77,7 @@ LEFT JOIN child c ON c.id = vs.child_id
 WHERE vs.errored_at IS NOT NULL
 AND c.varda_data_first_removed_at IS NULL
 ORDER BY vs.errored_at DESC
-    """
+    """,
     )
 }
     .toList<VardaChildErrorReportRow>()
@@ -102,7 +102,7 @@ private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> = 
                 FROM varda_unit vu
                 JOIN daycare u ON u.id = vu.evaka_daycare_id
                 WHERE vu.errored_at IS NOT NULL
-                """
+                """,
     )
 }
     .toList<VardaUnitErrorReportRow>()

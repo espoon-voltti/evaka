@@ -110,7 +110,7 @@ class CitizenWebPushController(
 
     data class PushSubscriptionCheckResponse(
         /** Null when the browser's subscription is not the caller's and must be unsubscribed */
-        val deviceId: CitizenPushSubscriptionId?
+        val deviceId: CitizenPushSubscriptionId?,
     )
 
     @PostMapping("/citizen/push-subscription/check")
@@ -136,7 +136,7 @@ class CitizenWebPushController(
                     PushSubscriptionCheckResponse(
                         tx.getCitizenPushSubscriptionId(user.id, body.endpoint)?.also {
                             audit.add(it)
-                        }
+                        },
                     )
                 }
             }

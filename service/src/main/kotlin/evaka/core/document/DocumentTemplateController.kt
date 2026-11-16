@@ -236,7 +236,7 @@ class DocumentTemplateController(
                                         Charsets.UTF_8,
                                     )
                                     .build()
-                        }
+                        },
                     )
                     .body(template)
             }

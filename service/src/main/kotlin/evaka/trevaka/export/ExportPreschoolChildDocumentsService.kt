@@ -129,7 +129,7 @@ WHERE name ILIKE ${bind(templateNamePattern)}
 ORDER BY validity DESC
 LIMIT 1
         """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .exactlyOne<DocumentTemplateId>()
@@ -187,7 +187,7 @@ WITH question AS (SELECT question
 SELECT coalesce(jsonb_agg(child_and_document.data), '[]') AS data
 FROM child_and_document
         """
-                .trimIndent()
+                .trimIndent(),
         )
     }
     .exactlyOne<String>()

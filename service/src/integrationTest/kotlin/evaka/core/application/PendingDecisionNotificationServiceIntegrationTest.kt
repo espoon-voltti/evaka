@@ -143,9 +143,9 @@ class PendingDecisionNotificationServiceIntegrationTest :
                             "${child.firstName} ${child.lastName}",
                             DecisionType.DAYCARE,
                             daycare.name,
-                        )
-                    )
-                )
+                        ),
+                    ),
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -294,7 +294,7 @@ class PendingDecisionNotificationServiceIntegrationTest :
                     resolved = resolved,
                     pendingDecisionEmailSent = pendingDecisionEmailSent,
                     pendingDecisionEmailsSentCount = pendingDecisionEmailsSentCount,
-                )
+                ),
             )
         }
     }
@@ -326,7 +326,7 @@ class PendingDecisionNotificationServiceIntegrationTest :
                         validDuring = fosterParentValidDuring,
                         modifiedAt = clock.now(),
                         modifiedBy = decisionMaker.evakaUserId,
-                    )
+                    ),
                 )
             }
 
@@ -360,7 +360,7 @@ class PendingDecisionNotificationServiceIntegrationTest :
                     resolved = null,
                     pendingDecisionEmailSent = null,
                     pendingDecisionEmailsSentCount = 0,
-                )
+                ),
             )
         }
     }

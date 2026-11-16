@@ -107,7 +107,7 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                     UPDATE child_document
                     SET archived_at = ${bind(now)}
                     WHERE id = ${bind(documentId)}
-                    """
+                    """,
                 )
             }
         }
@@ -136,7 +136,7 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                     archiveExternally = true,
                     processDefinitionNumber = "12.06.01",
                     archiveDurationMonths = 120,
-                )
+                ),
             )
 
             documentIds.forEach { docId ->
@@ -158,9 +158,9 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                                     createdAt = now,
                                     createdBy = userId,
                                     publishedContent = emptyContent,
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 )
             }
         }
@@ -185,7 +185,7 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                     archiveExternally = archiveExternally,
                     processDefinitionNumber = if (archiveExternally) "12.06.01" else null,
                     archiveDurationMonths = if (archiveExternally) 120 else null,
-                )
+                ),
             )
 
             tx.insert(
@@ -206,9 +206,9 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                                 createdAt = now,
                                 createdBy = userId,
                                 publishedContent = emptyContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
     }
@@ -222,7 +222,7 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                         FROM async_job
                         WHERE type = 'ArchiveChildDocument'
                         ORDER BY id
-                        """
+                        """,
                     )
                 }
                 .toList<String>()

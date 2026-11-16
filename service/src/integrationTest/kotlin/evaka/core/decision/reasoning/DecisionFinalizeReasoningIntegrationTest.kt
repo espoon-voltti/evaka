@@ -82,7 +82,7 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
                 ready = ready,
                 createdAt = createdAt,
                 modifiedAt = createdAt,
-            )
+            ),
         )
     }
 
@@ -95,7 +95,7 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
                 text = "text",
                 createdAt = now,
                 modifiedAt = now,
-            )
+            ),
         )
     }
 
@@ -252,7 +252,7 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
         val storedReasoningId = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT generic_reasoning_id FROM decision WHERE id = ${bind(decisionId)} AND generic_reasoning_id IS NOT NULL"
+                        "SELECT generic_reasoning_id FROM decision WHERE id = ${bind(decisionId)} AND generic_reasoning_id IS NOT NULL",
                     )
                 }
                 .toList<DecisionGenericReasoningId>()

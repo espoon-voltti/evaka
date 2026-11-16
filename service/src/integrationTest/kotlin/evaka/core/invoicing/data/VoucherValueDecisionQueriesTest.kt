@@ -171,7 +171,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                     worksAtECHA = false,
                                 ),
                         ),
-                )
+                ),
             )
             val ids =
                 tx.createQuery { sql("SELECT id FROM voucher_value_decision") }
@@ -260,7 +260,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                             headOfFamilyId = adult4.id,
                             difference = setOf(VoucherValueDecisionDifference.PLACEMENT),
                         ),
-                )
+                ),
             )
         }
 
@@ -346,7 +346,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                             headOfFamilyId = adult4.id,
                             serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                         ),
-                )
+                ),
             )
         }
 
@@ -401,7 +401,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     baseDecision(child2).copy(headOfFamilyId = adult2.id),
                     baseDecision(child3).copy(headOfFamilyId = adult3.id),
                     baseDecision(child4).copy(headOfFamilyId = adult4.id),
-                )
+                ),
             )
         }
 
@@ -475,7 +475,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                             validFrom = testPeriod2.start,
                             validTo = testPeriod2.end,
                         ),
-                )
+                ),
             )
         }
 
@@ -530,7 +530,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         .copy(
                             id =
                                 VoucherValueDecisionId(
-                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
+                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c"),
                                 ),
                             headOfFamilyId = adult1.id,
                         ),
@@ -538,13 +538,13 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         .copy(
                             id =
                                 VoucherValueDecisionId(
-                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
+                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f"),
                                 ),
                             headOfFamilyId = adult2.id,
                         ),
                     baseDecision(child3).copy(headOfFamilyId = adult3.id),
                     baseDecision(child4).copy(headOfFamilyId = adult4.id),
-                )
+                ),
             )
         }
 
@@ -619,7 +619,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         .copy(
                             id =
                                 VoucherValueDecisionId(
-                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
+                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c"),
                                 ),
                             headOfFamilyId = adult3.id,
                             validFrom = LocalDate.of(2022, 8, 22),
@@ -629,13 +629,13 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         .copy(
                             id =
                                 VoucherValueDecisionId(
-                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
+                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f"),
                                 ),
                             headOfFamilyId = adult4.id,
                             validFrom = LocalDate.of(2022, 8, 22),
                             validTo = LocalDate.of(2022, 12, 31),
                         ),
-                )
+                ),
             )
         }
 
@@ -707,7 +707,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         .copy(
                             id =
                                 VoucherValueDecisionId(
-                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
+                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c"),
                                 ),
                             headOfFamilyId = adult3.id,
                             voucherValue = 64400,
@@ -716,12 +716,12 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         .copy(
                             id =
                                 VoucherValueDecisionId(
-                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
+                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f"),
                                 ),
                             headOfFamilyId = adult4.id,
                             voucherValue = 64400,
                         ),
-                )
+                ),
             )
         }
 
@@ -786,7 +786,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         .copy(
                             id =
                                 VoucherValueDecisionId(
-                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
+                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c"),
                                 ),
                             headOfFamilyId = adult3.id,
                             finalCoPayment = 55500,
@@ -795,12 +795,12 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         .copy(
                             id =
                                 VoucherValueDecisionId(
-                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
+                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f"),
                                 ),
                             headOfFamilyId = adult4.id,
                             finalCoPayment = 55500,
                         ),
-                )
+                ),
             )
         }
 
@@ -863,7 +863,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     baseDecision(child2).copy(headOfFamilyId = adult2.id, decisionNumber = 202201),
                     baseDecision(child3).copy(headOfFamilyId = adult3.id, decisionNumber = 202312),
                     baseDecision(child4).copy(headOfFamilyId = adult4.id, decisionNumber = 202204),
-                )
+                ),
             )
         }
 
@@ -988,7 +988,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     baseDecision(child1).copy(headOfFamilyId = adult1.id),
                     baseDecision(child2).copy(headOfFamilyId = adult1.id),
                     baseDecision(child3).copy(headOfFamilyId = adult2.id),
-                )
+                ),
             )
         }
 
@@ -1023,8 +1023,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         unitId = daycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
-                    )
-                )
+                    ),
+                ),
             )
 
             assertEquals(
@@ -1058,7 +1058,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     unitId = daycare.id,
                     startDate = now.today(),
                     endDate = now.today(),
-                )
+                ),
             )
 
             assertEquals(
@@ -1119,7 +1119,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     decisionWithOpenAdultStatement,
                     decisionWithFarAwayAndFutureOpenStatements,
                     decisionWithOpenChildStatement,
-                )
+                ),
             )
             tx.insert(decisionMaker)
             tx.insert(
@@ -1133,7 +1133,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker.id,
-                )
+                ),
             )
 
             // adult2 statement not submitted
@@ -1147,7 +1147,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         ),
                     status = IncomeStatementStatus.DRAFT,
                     sentAt = null,
-                )
+                ),
             )
 
             tx.insert(
@@ -1161,7 +1161,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker.id,
-                )
+                ),
             )
 
             // adult4 statement not handled
@@ -1176,7 +1176,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
 
             // adult5 statement not handled
@@ -1191,7 +1191,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
 
             // adult6 statement not handled
@@ -1206,7 +1206,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
 
             tx.insert(
@@ -1220,7 +1220,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker.id,
-                )
+                ),
             )
 
             // child4 statement being handled
@@ -1235,7 +1235,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.HANDLING,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
 
             val result =
@@ -1297,7 +1297,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
         db.transaction { tx ->
             tx.upsertValueDecisions(
-                listOf(decisionWithMidPeriodOpenStatement, decisionWithNoOpenStatements)
+                listOf(decisionWithMidPeriodOpenStatement, decisionWithNoOpenStatements),
             )
 
             tx.insert(
@@ -1311,7 +1311,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1370,7 +1370,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1430,7 +1430,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1490,7 +1490,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1550,7 +1550,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1611,7 +1611,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
                     handlerId = decisionMaker.id,
-                )
+                ),
             )
         }
 
@@ -1674,7 +1674,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -1732,7 +1732,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                             headOfFamilyId = adult3.id,
                             status = VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
                         ),
-                )
+                ),
             )
         }
 
@@ -1740,7 +1740,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         assertEquals(
             2,
             searchWithStatuses(
-                    listOf(VoucherValueDecisionStatus.DRAFT, VoucherValueDecisionStatus.SENT)
+                    listOf(VoucherValueDecisionStatus.DRAFT, VoucherValueDecisionStatus.SENT),
                 )
                 .size,
         )
@@ -1751,7 +1751,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
     }
 
     private fun searchWithStatuses(
-        statuses: List<VoucherValueDecisionStatus>
+        statuses: List<VoucherValueDecisionStatus>,
     ): List<VoucherValueDecisionSummary> {
         return db.read { tx ->
             tx.searchValueDecisions(

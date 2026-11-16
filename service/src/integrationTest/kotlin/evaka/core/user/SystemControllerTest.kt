@@ -147,7 +147,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     externalId = externalId,
                     roles = setOf(UserRole.FINANCE_ADMIN),
                     preferredFirstName = "Kutsumanimi",
-                )
+                ),
             )
         }
 
@@ -186,7 +186,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     employeeNumber = "666666",
                     roles = setOf(UserRole.FINANCE_ADMIN),
                     preferredFirstName = "Kutsumanimi",
-                )
+                ),
             )
         }
 

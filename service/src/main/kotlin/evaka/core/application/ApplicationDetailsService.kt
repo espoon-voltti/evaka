@@ -36,7 +36,7 @@ fun Database.Read.applicationFlags(
                 isTransferApplication =
                     getPlacementsForChildDuring(childId, startDate, null).any {
                         it.type == PlacementType.CLUB
-                    }
+                    },
             )
         }
 
@@ -51,7 +51,7 @@ fun Database.Read.applicationFlags(
                                 PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
                             )
                             .contains(it.type)
-                    }
+                    },
             )
         }
 

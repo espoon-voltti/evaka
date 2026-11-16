@@ -120,7 +120,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 SELECT EXISTS(
     SELECT * FROM message_account WHERE person_id = ${bind(personId)} AND active = true
 )
-"""
+""",
                     )
                 }
                 .exactlyOne<Boolean>()

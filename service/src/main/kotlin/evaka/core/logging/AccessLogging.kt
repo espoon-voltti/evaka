@@ -87,7 +87,7 @@ fun Context.createConsoleAppender(encoder: Encoder<IAccessEvent>) =
             AccessLoggingFilter().apply {
                 this.context = this@createConsoleAppender
                 start()
-            }
+            },
         )
         this.context = this@createConsoleAppender
         start()
@@ -101,7 +101,7 @@ fun Context.createPatternLayoutEncoder(pattern: String) =
     }
 
 fun Context.createJsonEncoder(
-    collectFields: (event: IAccessEvent) -> Sequence<Pair<String, Any?>>
+    collectFields: (event: IAccessEvent) -> Sequence<Pair<String, Any?>>,
 ) =
     AccessEventCompositeJsonEncoder().apply {
         this.providers =
@@ -113,7 +113,7 @@ fun Context.createJsonEncoder(
                                 generator.writePOJOProperty(name, value)
                             }
                         }
-                    }
+                    },
                 )
                 this.setContext(this@createJsonEncoder)
                 start()

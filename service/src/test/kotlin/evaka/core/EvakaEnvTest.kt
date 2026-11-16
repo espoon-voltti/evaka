@@ -18,7 +18,7 @@ class EvakaEnvTest {
     private fun envVars(vararg pairs: Pair<String, String>) =
         MockEnvironment().apply {
             propertySources.addFirst(
-                SystemEnvironmentPropertySource("systemEnvironment", pairs.toMap())
+                SystemEnvironmentPropertySource("systemEnvironment", pairs.toMap()),
             )
         }
 

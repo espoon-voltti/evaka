@@ -186,7 +186,7 @@ class ChildControllerCitizen(
                         }
 
                     AttendanceSummary(
-                        attendanceDays = operationalDates.count() - plannedAbsences.count()
+                        attendanceDays = operationalDates.count() - plannedAbsences.count(),
                     )
                 }
             }
@@ -235,7 +235,7 @@ private fun Database.Read.getChildrenWithServiceApplicationPossibleOnSomeDate(
             pl.child_id = ANY (${bind(childIds)}) AND
             daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today)}, null, '[]') AND
             'SERVICE_APPLICATIONS' = ANY(d.enabled_pilot_features)
-    """
+    """,
     )
 }
     .toSet()

@@ -85,7 +85,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         startDate = childRange.start,
                         endDate = childRange.end,
                         createdAt = createdAt,
-                    )
+                    ),
                 )
 
             // outside range is ignored
@@ -96,7 +96,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     startDate = range.start.minusYears(2),
                     endDate = range.start.minusYears(1),
                     createdAt = createdAt,
-                )
+                ),
             )
 
             tx.insert(
@@ -107,7 +107,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     validTo = childRange.end,
                     effect = IncomeEffect.INCOME,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -136,7 +136,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                         incomeId,
                                         childRange.asDateRange(),
                                         IncomeEffect.INCOME,
-                                    )
+                                    ),
                                 ),
                             placements = emptyList(),
                             serviceNeeds = emptyList(),
@@ -144,7 +144,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                             creationModificationMetadata =
                                 CreationModificationMetadata.empty().copy(createdAt = createdAt),
                             originApplicationAccessible = false,
-                        )
+                        ),
                     ),
             ),
             timeline,
@@ -172,7 +172,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     headOfChildId = adult.id,
                     startDate = childRange.start,
                     endDate = childRange.end,
-                )
+                ),
             )
             val placementId =
                 tx.insert(
@@ -181,7 +181,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = daycare.id,
                         startDate = childRange.start,
                         endDate = childRange.end,
-                    )
+                    ),
                 )
             tx.insert(
                 DevServiceNeed(
@@ -190,7 +190,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     endDate = childRange.end,
                     optionId = option.id,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 

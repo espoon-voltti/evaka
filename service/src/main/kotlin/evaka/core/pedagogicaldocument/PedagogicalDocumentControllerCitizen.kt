@@ -106,7 +106,7 @@ private fun Database.Transaction.markDocumentReadByGuardian(
 INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
 VALUES (${bind(documentId)}, ${bind(guardianId)}, ${bind(clock.now())})
 ON CONFLICT (pedagogical_document_id, person_id) DO NOTHING
-"""
+""",
     )
 }
     .execute()

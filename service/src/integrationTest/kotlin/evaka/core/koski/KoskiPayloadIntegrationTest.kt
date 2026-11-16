@@ -92,7 +92,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     startDate = preschoolTerm2019.start,
                     endDate = preschoolTerm2019.end,
                     type = PlacementType.PRESCHOOL,
-                )
+                ),
             )
         }
 
@@ -200,7 +200,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     startDate = preschoolTerm2019.start,
                     endDate = preschoolTerm2019.end,
                     type = PlacementType.PRESCHOOL,
-                )
+                ),
             )
         }
 
@@ -299,7 +299,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     startDate = LocalDate.of(2018, 8, 1),
                     endDate = LocalDate.of(2018, 12, 31),
                     type = PlacementType.PRESCHOOL,
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -308,7 +308,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 5, 31),
                     type = PlacementType.PRESCHOOL,
-                )
+                ),
             )
         }
 
@@ -754,7 +754,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     startDate = preschoolTerm2019.start,
                     endDate = preschoolTerm2019.end,
                     type = PlacementType.PREPARATORY,
-                )
+                ),
             )
         }
 
@@ -897,7 +897,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     startDate = preschoolTerm2019.start,
                     endDate = preschoolTerm2019.end,
                     type = PlacementType.PRESCHOOL,
-                )
+                ),
             )
         }
 

@@ -240,5 +240,5 @@ val defaultMetadata =
                         serializeRequestParam = { value, _ -> value },
                         Imports.action,
                     )
-                }
+                },
         )

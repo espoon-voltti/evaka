@@ -14,7 +14,7 @@ import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
 fun Database.Read.getPedagogicalDocumentAttachments(
-    pedagogicalDocumentId: PedagogicalDocumentId
+    pedagogicalDocumentId: PedagogicalDocumentId,
 ): List<Attachment> {
     return createQuery {
         sql(
@@ -26,7 +26,7 @@ fun Database.Read.getPedagogicalDocumentAttachments(
                 FROM attachment a
                 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
                 WHERE pd.id = ${bind(pedagogicalDocumentId)}
-                """
+                """,
         )
     }
         .toList<Attachment>()
@@ -69,7 +69,7 @@ FROM pedagogical_document pd
 LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = ${bind(userId)}
 WHERE pd.child_id = ${bind(childId)}
 ORDER BY pd.created_at DESC
-"""
+""",
         )
     }
         .toList<PedagogicalDocumentCitizen>()
@@ -77,7 +77,7 @@ ORDER BY pd.created_at DESC
 }
 
 fun Database.Read.getPedagogicalDocumentChild(
-    pedagogicalDocumentId: PedagogicalDocumentId
+    pedagogicalDocumentId: PedagogicalDocumentId,
 ): ChildId? {
     return createQuery {
         sql("SELECT child_id FROM pedagogical_document WHERE id = ${bind(pedagogicalDocumentId)}")
@@ -108,7 +108,7 @@ WHERE NOT EXISTS (
     WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = ${bind(userId)}
 )
 GROUP BY d.child_id
-"""
+""",
     )
 }
     .toMap { columnPair("child_id", "unread_count") }

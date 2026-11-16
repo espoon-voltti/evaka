@@ -45,7 +45,7 @@ class LempaalaInvoiceNumberTest : AbstractLempaalaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("e23ed34d-1b35-48f0-b9a5-252d633be5b9")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -82,7 +82,7 @@ class LempaalaInvoiceNumberTest : AbstractLempaalaIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 11, 30),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("e23ed34d-1b35-48f0-b9a5-252d633be5b9")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -95,7 +95,7 @@ class LempaalaInvoiceNumberTest : AbstractLempaalaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("e23ed34d-1b35-48f0-b9a5-252d633be5b9")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -132,7 +132,7 @@ class LempaalaInvoiceNumberTest : AbstractLempaalaIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 10, 31),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("e23ed34d-1b35-48f0-b9a5-252d633be5b9")),
-                )
+                ),
             )
             tx.insert(
                 DevInvoice(
@@ -144,7 +144,7 @@ class LempaalaInvoiceNumberTest : AbstractLempaalaIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 11, 30),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("e23ed34d-1b35-48f0-b9a5-252d633be5b9")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -157,7 +157,7 @@ class LempaalaInvoiceNumberTest : AbstractLempaalaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("e23ed34d-1b35-48f0-b9a5-252d633be5b9")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)

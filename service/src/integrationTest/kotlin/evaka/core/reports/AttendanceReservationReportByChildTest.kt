@@ -76,7 +76,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             FiniteDateRange(startDate, endDate).dates().forEach { date ->
                 tx.insert(
@@ -86,7 +86,7 @@ internal class AttendanceReservationReportByChildTest :
                         startTime = LocalTime.of(8, 15),
                         endTime = LocalTime.of(15, 48),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
             }
         }
@@ -97,7 +97,7 @@ internal class AttendanceReservationReportByChildTest :
                     groupId = null,
                     groupName = null,
                     items = weekDays.map { reportItem(child, it) },
-                )
+                ),
             ),
             getReport(startDate, endDate),
         )
@@ -113,7 +113,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -122,7 +122,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -132,7 +132,7 @@ internal class AttendanceReservationReportByChildTest :
                     groupId = null,
                     groupName = null,
                     items = listOf(reportItem(child, date)),
-                )
+                ),
             ),
             getReport(date, date),
         )
@@ -148,7 +148,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -157,7 +157,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = null,
                     endTime = null,
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -167,7 +167,7 @@ internal class AttendanceReservationReportByChildTest :
                     groupId = null,
                     groupName = null,
                     items = listOf(reportItem(child, date, reservation = null)),
-                )
+                ),
             ),
             getReport(date, date),
         )
@@ -184,7 +184,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -194,7 +194,7 @@ internal class AttendanceReservationReportByChildTest :
                     groupId = null,
                     groupName = null,
                     items = emptyList(),
-                )
+                ),
             ),
             getReport(date, date),
         )
@@ -212,7 +212,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare2.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -221,7 +221,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -231,7 +231,7 @@ internal class AttendanceReservationReportByChildTest :
                     groupId = null,
                     groupName = null,
                     items = emptyList(),
-                )
+                ),
             ),
             getReport(date, date),
         )
@@ -256,12 +256,12 @@ internal class AttendanceReservationReportByChildTest :
                                 unitId = daycare2.id,
                                 startDate = date,
                                 endDate = date,
-                            )
+                            ),
                         ),
                     daycareGroupId = group.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
@@ -269,7 +269,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     groupId = null,
                     period = FiniteDateRange(date, date),
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -278,7 +278,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -286,7 +286,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -295,7 +295,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -310,7 +310,7 @@ internal class AttendanceReservationReportByChildTest :
                                 reportItem(child2, date, backupCare = false),
                             )
                             .sortedWith(compareBy({ it.childLastName }, { it.childFirstName })),
-                )
+                ),
             ),
             getReport(date, date),
         )
@@ -329,7 +329,7 @@ internal class AttendanceReservationReportByChildTest :
                         unitId = daycare.id,
                         startDate = date,
                         endDate = date,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevReservation(
@@ -338,7 +338,7 @@ internal class AttendanceReservationReportByChildTest :
                         startTime = LocalTime.of(8, 15),
                         endTime = LocalTime.of(15, 48),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
             }
         }
@@ -352,7 +352,7 @@ internal class AttendanceReservationReportByChildTest :
                         children
                             .map { reportItem(it, date) }
                             .sortedWith(compareBy({ it.childLastName }, { it.childFirstName })),
-                )
+                ),
             ),
             getReport(date, date),
         )
@@ -381,12 +381,12 @@ internal class AttendanceReservationReportByChildTest :
                                 unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
-                            )
+                            ),
                         ),
                     daycareGroupId = group1.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -395,7 +395,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -406,12 +406,12 @@ internal class AttendanceReservationReportByChildTest :
                                 unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
-                            )
+                            ),
                         ),
                     daycareGroupId = group1.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -420,7 +420,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -431,12 +431,12 @@ internal class AttendanceReservationReportByChildTest :
                                 unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
-                            )
+                            ),
                         ),
                     daycareGroupId = group2.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -445,7 +445,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -453,7 +453,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -462,7 +462,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -498,7 +498,7 @@ internal class AttendanceReservationReportByChildTest :
                         unitId = daycare.id,
                         startDate = date,
                         endDate = date,
-                    )
+                    ),
                 )
             tx.insert(group)
             tx.insert(
@@ -507,7 +507,7 @@ internal class AttendanceReservationReportByChildTest :
                     daycareGroupId = group.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -516,7 +516,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -526,7 +526,7 @@ internal class AttendanceReservationReportByChildTest :
                     groupId = null,
                     groupName = null,
                     items = listOf(reportItem(child, date)),
-                )
+                ),
             ),
             getReport(date, date),
         )
@@ -542,7 +542,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -551,7 +551,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(12, 0),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -560,7 +560,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(19, 0),
                     endTime = LocalTime.of(23, 59),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -582,7 +582,7 @@ internal class AttendanceReservationReportByChildTest :
                                 reservation = TimeRange(LocalTime.of(19, 0), LocalTime.of(23, 59)),
                             ),
                         ),
-                )
+                ),
             ),
             getReport(date, date),
         )
@@ -599,7 +599,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             FiniteDateRange(startDate, endDate).dates().forEach { date ->
                 tx.insert(
@@ -609,7 +609,7 @@ internal class AttendanceReservationReportByChildTest :
                         startTime = LocalTime.of(8, 15),
                         endTime = LocalTime.of(15, 48),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
             }
             tx.insert(
@@ -618,7 +618,7 @@ internal class AttendanceReservationReportByChildTest :
                     date = LocalDate.of(2022, 10, 27),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -626,7 +626,7 @@ internal class AttendanceReservationReportByChildTest :
                     date = LocalDate.of(2022, 10, 28),
                     absenceType = AbsenceType.PARENTLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -653,7 +653,7 @@ internal class AttendanceReservationReportByChildTest :
                                 fullDayAbsence = true,
                             ),
                         ),
-                )
+                ),
             ),
             getReport(startDate, endDate),
         )
@@ -671,7 +671,7 @@ internal class AttendanceReservationReportByChildTest :
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // full-day absence
@@ -681,7 +681,7 @@ internal class AttendanceReservationReportByChildTest :
                     date = startDate,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -689,7 +689,7 @@ internal class AttendanceReservationReportByChildTest :
                     date = startDate,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
 
             // not a full-day absence
@@ -699,7 +699,7 @@ internal class AttendanceReservationReportByChildTest :
                     date = endDate,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -713,7 +713,7 @@ internal class AttendanceReservationReportByChildTest :
                             reportItem(child, startDate, reservation = null, fullDayAbsence = true),
                             reportItem(child, endDate, reservation = null, fullDayAbsence = false),
                         ),
-                )
+                ),
             ),
             getReport(startDate, endDate),
         )
@@ -730,7 +730,7 @@ internal class AttendanceReservationReportByChildTest :
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // 8-16 every day
@@ -738,7 +738,7 @@ internal class AttendanceReservationReportByChildTest :
                 DevDailyServiceTimes(
                     childId = child.id,
                     validityPeriod = DateRange(startDate, endDate),
-                )
+                ),
             )
 
             // Reservation on the second day 9:00 - 15:00
@@ -749,7 +749,7 @@ internal class AttendanceReservationReportByChildTest :
                     startTime = LocalTime.of(9, 0),
                     endTime = LocalTime.of(15, 0),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
 
             // Absence on the third day
@@ -759,7 +759,7 @@ internal class AttendanceReservationReportByChildTest :
                     date = endDate,
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -787,7 +787,7 @@ internal class AttendanceReservationReportByChildTest :
                                 fullDayAbsence = true,
                             ),
                         ),
-                )
+                ),
             ),
             getReport(startDate, endDate),
         )
@@ -805,7 +805,7 @@ internal class AttendanceReservationReportByChildTest :
                         unitId = daycare.id,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -816,7 +816,7 @@ internal class AttendanceReservationReportByChildTest :
                     optionId = snDaycareFullDay35.id,
                     confirmedBy = admin.evakaUserId,
                     shiftCare = ShiftCareType.FULL,
-                )
+                ),
             )
 
             tx.insert(
@@ -827,7 +827,7 @@ internal class AttendanceReservationReportByChildTest :
                     optionId = snDaycareFullDay35.id,
                     confirmedBy = admin.evakaUserId,
                     shiftCare = ShiftCareType.NONE,
-                )
+                ),
             )
 
             tx.insert(
@@ -838,7 +838,7 @@ internal class AttendanceReservationReportByChildTest :
                     optionId = snDaycareFullDay35.id,
                     confirmedBy = admin.evakaUserId,
                     shiftCare = ShiftCareType.INTERMITTENT,
-                )
+                ),
             )
         }
 
@@ -869,7 +869,7 @@ internal class AttendanceReservationReportByChildTest :
                                 shiftCare = false,
                             ),
                         ),
-                )
+                ),
             ),
             getReport(startDate, endDate),
         )

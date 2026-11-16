@@ -191,7 +191,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
 }
 
 fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(
-    dailyOccupancies: List<DailyOccupancyValues<K>>
+    dailyOccupancies: List<DailyOccupancyValues<K>>,
 ): Map<K, List<OccupancyPeriod>> {
     return dailyOccupancies.associateByTo(
         destination = mutableMapOf(),
@@ -201,7 +201,7 @@ fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(
 }
 
 fun reduceDailyOccupancyValues(
-    dailyOccupancies: Map<LocalDate, OccupancyValues>
+    dailyOccupancies: Map<LocalDate, OccupancyValues>,
 ): List<OccupancyPeriod> {
     return dailyOccupancies.entries
         .sortedBy { it.key }
@@ -247,7 +247,7 @@ private fun getAndValidatePeriod(
 
     if (period.start.plusDays(maxLength.toLong()) < period.end) {
         throw BadRequest(
-            "Date range ${period.start} - ${period.end} is too long. Maximum range is $maxLength days."
+            "Date range ${period.start} - ${period.end} is too long. Maximum range is $maxLength days.",
         )
     }
 
@@ -321,7 +321,7 @@ FROM staff_attendance_external
 WHERE departed IS NOT NULL
 AND group_id = ANY(${bind(groups)})
 AND tstzrange(arrived, departed) && ${bind(range)}
-"""
+""",
         )
     }
         .mapTo<StaffAttendance>()
@@ -353,7 +353,7 @@ SELECT group_id, date, count
 FROM staff_attendance
 WHERE group_id = ANY(${bind(groups)})
 AND between_start_and_end(${bind(range)}, date)
-"""
+""",
         )
     }
         .mapTo<StaffCount>()
@@ -401,7 +401,7 @@ private fun Database.Read.getRealizedCaretakersForGroups(
                         val count =
                             occupancyBasedSum ?: staffCounts.getValue(date) ?: BigDecimal.ZERO
                         date.toFiniteDateRange() to count
-                    }
+                    },
                 )
             group to data
         }
@@ -462,7 +462,7 @@ FROM daycare_group g
 JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') && ${bind(period)}
 JOIN care_area a ON a.id = u.care_area_id
 WHERE ${predicate(unitPredicate.forTable("u").and(groupPredicate.forTable("g")))}
-"""
+""",
         )
     }
         .toList<OccupancyGroup>()
@@ -488,7 +488,7 @@ WHERE ${predicate(unitPredicate.forTable("u").and(groupPredicate.forTable("g")))
         .map { group ->
             val nonOperational =
                 DateSet.of(
-                    period.dates().filterNot(group::isOperational).map { it.toFiniteDateRange() }
+                    period.dates().filterNot(group::isOperational).map { it.toFiniteDateRange() },
                 )
             group.key to
                 // start with all zeroes so we have *some value* for every date
@@ -525,7 +525,7 @@ private fun Database.Read.getPlacementDrafts(
         JOIN application a ON pd.application_id = a.id
         JOIN daycare u ON pd.unit_id = u.id
         WHERE a.status = 'WAITING_PLACEMENT' AND pd.unit_id = ANY(${bind(unitIds)}) 
-    """
+    """,
         )
     }
         .toList<QueryResult>()
@@ -584,7 +584,7 @@ FROM placement p
 JOIN daycare u ON p.unit_id = u.id
 $additionalJoin
 WHERE $daterange && ${bind(period)} AND $groupingId = ANY(${bind(keys.map { it.groupingId })})
-"""
+""",
             )
         }
         .toList<Placement>()
@@ -621,7 +621,7 @@ private fun Database.Read.getPeriodsAwayInBackupCareByChildId(
 SELECT bc.child_id, bc.start_date, bc.end_date
 FROM backup_care bc
 WHERE daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)} AND bc.child_id = ANY(${bind(childIds)})
-"""
+""",
             )
         }
         .toList<QueryResult>()
@@ -655,7 +655,7 @@ FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
 JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
 WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') && ${bind(period)} AND $groupingId = ANY(${bind(keys.map { it.groupingId })})
-"""
+""",
             )
         }
         .toList<Placement>()
@@ -735,7 +735,7 @@ JOIN service_need_option sno ON sn.option_id = sno.id
 JOIN person ch ON ch.id = pl.child_id
 JOIN daycare u ON pl.unit_id = u.id
 WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
-"""
+""",
                     )
                 }
                 .toList<ServiceNeed>()
@@ -755,7 +755,7 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
                         realized_occupancy_coefficient_under_3y, 
                         valid_placement_type
                     FROM service_need_option WHERE default_option
-                    """
+                    """,
                 )
             }
             .toMap {
@@ -764,7 +764,7 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
 
     val assistanceFactors = createQuery {
         sql(
-            "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})"
+            "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})",
         )
     }
         .toList<AssistanceFactor>()
@@ -774,7 +774,7 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
         if (type == OccupancyType.REALIZED) {
             this.createQuery {
                     sql(
-                        "SELECT child_id, date, category FROM absence WHERE child_id = ANY(${bind(childIds)}) AND between_start_and_end(${bind(range)}, date)"
+                        "SELECT child_id, date, category FROM absence WHERE child_id = ANY(${bind(childIds)}) AND between_start_and_end(${bind(range)}, date)",
                     )
                 }
                 .toList<Absence>()
@@ -991,7 +991,7 @@ WHERE NOT pp.deleted AND (
         AND daterange(preschool_daycare_start_date, preschool_daycare_end_date, '[]') && ${bind(period)}
     )
 )
-"""
+""",
                 )
             }
             .toList<PlacementPlanRow>()

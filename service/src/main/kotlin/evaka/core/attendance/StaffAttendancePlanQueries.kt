@@ -16,7 +16,7 @@ fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Dat
             SELECT id, employee_number
             FROM employee
             WHERE employee_number = ANY (${bind(employeeNumbers)})
-            """
+            """,
         )
     }
 }
@@ -38,7 +38,7 @@ fun Database.Read.findStaffAttendancePlansBy(
             FROM staff_attendance_plan
             WHERE ${predicate(employeeIdFilter.forTable("staff_attendance_plan"))}
             AND ${predicate(daterangeFilter.forTable("staff_attendance_plan"))}
-        """
+        """,
     )
 }
     .toList<StaffAttendancePlan>()
@@ -53,7 +53,7 @@ fun Database.Transaction.insertStaffAttendancePlans(plans: List<StaffAttendanceP
             """
 INSERT INTO staff_attendance_plan (employee_id, type, start_time, end_time, description)
 VALUES (${bind { it.employeeId }}, ${bind { it.type }}, ${bind { it.startTime }}, ${bind { it.endTime }}, ${bind { it.description }})
-"""
+""",
         )
     }
 }
@@ -76,7 +76,7 @@ fun Database.Transaction.deleteStaffAttendancePlansBy(
             WHERE ${predicate(employeeIdFilter.forTable("staff_attendance_plan"))}
             AND ${predicate(daterangeFilter.forTable("staff_attendance_plan"))}
             RETURNING employee_id, type, start_time, end_time, description
-        """
+        """,
     )
 }
     .toList<StaffAttendancePlan>()

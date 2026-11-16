@@ -124,7 +124,7 @@ class AbsenceService(
                         dates
                             .filter { operationalDates[childId]?.contains(it) ?: false }
                             .map { date -> childId to date }
-                    }
+                    },
                 )
             }
 
@@ -242,7 +242,7 @@ fun getGroupMonthCalendar(
                     daycare.operationDays.contains(date.dayOfWeek.value) && !holidays.contains(date)
                 val isShiftCareOperationDay =
                     (daycare.shiftCareOperationDays ?: daycare.operationDays).contains(
-                        date.dayOfWeek.value
+                        date.dayOfWeek.value,
                     ) && (daycare.shiftCareOpenOnHolidays || !holidays.contains(date))
                 val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
                 val isQuestionnaireDate = questionnaires.any {
@@ -338,7 +338,7 @@ fun getGroupMonthCalendar(
                                     shiftCare = shiftCare,
                                     missingHolidayReservation =
                                         daycare.enabledPilotFeatures.contains(
-                                            PilotFeature.RESERVATIONS
+                                            PilotFeature.RESERVATIONS,
                                         ) &&
                                             scheduleType == ScheduleType.RESERVATION_REQUIRED &&
                                             isHolidayPeriodDate &&
@@ -623,7 +623,7 @@ private fun supplementReservationsWithDailyServiceTimes(
                         }
                     }
                 }
-            }
+            },
         )
 
     val reservedDates = reservationRanges.ranges().map { it.start.toLocalDate() }.toSet()
@@ -664,7 +664,7 @@ private fun dailyServiceTimesToPerDateTimeRanges(
                     null
                 }
             }
-        }
+        },
     )
 }
 

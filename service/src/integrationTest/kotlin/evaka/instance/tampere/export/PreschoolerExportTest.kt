@@ -54,7 +54,7 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
         }
 
@@ -82,14 +82,14 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
         db.transaction { tx ->
             val unitId =
                 tx.insert(
-                    DevDaycare(areaId = areaId, name = expected.`esioppilaan esiopetuspaikka`)
+                    DevDaycare(areaId = areaId, name = expected.`esioppilaan esiopetuspaikka`),
                 )
             val groupId =
                 tx.insert(
                     DevDaycareGroup(
                         daycareId = unitId,
                         name = expected.`esioppilaan esiopetusryhmä`!!,
-                    )
+                    ),
                 )
             val childId =
                 tx.insert(
@@ -110,7 +110,7 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
                         unitId = unitId,
                         startDate = date,
                         endDate = date,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -118,14 +118,14 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
                     daycareGroupId = groupId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevPreschoolAssistance(
                     childId = childId,
                     validDuring = FiniteDateRange(date, date),
                     level = PreschoolAssistanceLevel.INTENSIFIED_SUPPORT,
-                )
+                ),
             )
         }
 
@@ -150,7 +150,7 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             val child2 =
                 tx.insert(DevPerson(dateOfBirth = LocalDate.of(2020, 1, 1)), DevPersonType.CHILD)
@@ -161,7 +161,7 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
         }
 
@@ -186,7 +186,7 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
         }
 
@@ -201,7 +201,7 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
     @ParameterizedTest
     @EnumSource(PreschoolAssistanceLevel::class)
     fun `6-year-old with extended compulsory education is not included`(
-        level: PreschoolAssistanceLevel
+        level: PreschoolAssistanceLevel,
     ) {
         db.transaction { tx ->
             val unitId = tx.insert(DevDaycare(areaId = areaId))
@@ -214,14 +214,14 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevPreschoolAssistance(
                     childId = childId,
                     validDuring = FiniteDateRange(date, date),
                     level = level,
-                )
+                ),
             )
         }
 
@@ -258,14 +258,14 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
                     unitId = unitId,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevPreschoolAssistance(
                     childId = childId,
                     validDuring = FiniteDateRange(date, date),
                     level = level,
-                )
+                ),
             )
         }
 

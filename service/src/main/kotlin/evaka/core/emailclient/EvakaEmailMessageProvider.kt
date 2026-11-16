@@ -247,7 +247,7 @@ $unsubscribeEn
         val start =
             checkedRange.start.format(
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-                    .withLocale(Locale.of("fi", "FI"))
+                    .withLocale(Locale.of("fi", "FI")),
             )
         return EmailContent.fromHtml(
             subject =

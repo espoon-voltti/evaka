@@ -127,7 +127,7 @@ class McpTools(
         @McpDoc("If true, only reports what would be deleted without deleting anything")
         val dryRun: Boolean = false,
         @McpDoc(
-            "Rows that depend on the batch but were not created by the MCP tools (e.g. placements a tester made in the UI for a test child) are reported as untrackedRowCounts and are only deleted if this is true. Use dryRun first and ask the user before setting this."
+            "Rows that depend on the batch but were not created by the MCP tools (e.g. placements a tester made in the UI for a test child) are reported as untrackedRowCounts and are only deleted if this is true. Use dryRun first and ask the user before setting this.",
         )
         val allowUntrackedRows: Boolean = false,
     )
@@ -191,7 +191,7 @@ class McpTools(
 SELECT ca.id, ca.name, ca.short_name, (SELECT count(*) FROM daycare d WHERE d.care_area_id = ca.id) AS unit_count
 FROM care_area ca
 ORDER BY ca.name
-"""
+""",
                     )
                 }
                 .toList<CareAreaInfo>()
@@ -287,7 +287,7 @@ ORDER BY ca.name
             }
         if (batch.createdBy != ctx.user.evakaUserId)
             throw Forbidden(
-                "Batch '${batch.name}' was created by ${batch.createdByName}. Only its creator can delete it via MCP; admins can delete any batch in the employee UI."
+                "Batch '${batch.name}' was created by ${batch.createdByName}. Only its creator can delete it via MCP; admins can delete any batch in the employee UI.",
             )
         val result =
             if (input.dryRun) McpTestDataService.previewDeletion(ctx.tx, batch.id)

@@ -79,7 +79,7 @@ class AssistanceNeedsAndActionsReportController(
             }
             .also {
                 Audit.AssistanceNeedsReportRead.log(
-                    meta = mapOf("date" to date, "count" to it.rows.size)
+                    meta = mapOf("date" to date, "count" to it.rows.size),
                 )
             }
     }
@@ -358,7 +358,7 @@ LEFT JOIN document_decision_counts ddc ON g.id = ddc.daycare_group_id"""
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
         """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
@@ -544,7 +544,7 @@ WHERE ${predicate(unitFilter.forTable("u"))}
 AND ${predicate(placementPredicate.forTable("p"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
         """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild>()

@@ -22,7 +22,7 @@ fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: Local
                 FROM income
                 WHERE daterange(valid_from, valid_to, '[]') @> ${bind(theDate)}
                     AND person_id = ${bind(personId)}
-                """
+                """,
         )
     }
         .toList<Int>()
@@ -96,7 +96,7 @@ ${if (checkForExistingRecentIncomeNotificationType != null) """AND NOT EXISTS (
     AND created > ${bind(today)} - INTERVAL '1 month'
 )""" else ""}                
 ${if (aPersonId != null) " AND person_id = ${bind(aPersonId)}" else ""}
-"""
+""",
         )
     }
         .toList<PersonIncomeExpirationDate>()
@@ -112,7 +112,7 @@ fun Database.Read.newCustomerIdsForIncomeNotifications(
         if (guardianId != null) {
             PredicateSql {
                 where(
-                    "fc_head.head_of_child = ${bind(guardianId)} OR fp_spouse.person_id = ${bind(guardianId)}"
+                    "fc_head.head_of_child = ${bind(guardianId)} OR fp_spouse.person_id = ${bind(guardianId)}",
                 )
             }
         } else {
@@ -195,7 +195,7 @@ AND NOT EXISTS (
       AND notification_type = 'NEW_CUSTOMER'::income_notification_type
       AND created > ${bind(today)} - INTERVAL '1 month'
 )
-"""
+""",
         )
     }
         .toList<PersonId>()
@@ -218,7 +218,7 @@ fun Database.Transaction.createIncomeNotification(
 INSERT INTO income_notification(receiver_id, notification_type)
 VALUES (${bind(receiverId)}, ${bind(notificationType)})
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -228,7 +228,7 @@ RETURNING id
 fun Database.Read.getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
     createQuery {
         sql(
-            "SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = ${bind(receiverId)}"
+            "SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = ${bind(receiverId)}",
         )
     }
     .toList<IncomeNotification>()

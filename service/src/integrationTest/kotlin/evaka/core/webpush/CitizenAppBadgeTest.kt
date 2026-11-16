@@ -111,7 +111,7 @@ class CitizenAppBadgeTest : PureJdbiTest(resetDbBeforeEach = true) {
                         id = PedagogicalDocumentId(UUID.randomUUID()),
                         childId = child.id,
                         description = "description",
-                    )
+                    ),
                 )
             repeat(2) {
                 tx.insertAttachment(
@@ -128,7 +128,7 @@ class CitizenAppBadgeTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevDocumentTemplate(
                         validity = DateRange(today, today),
                         content = DocumentTemplateContent(sections = emptyList()),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -147,9 +147,9 @@ class CitizenAppBadgeTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 createdAt = now,
                                 createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                                 publishedContent = DocumentContent(answers = emptyList()),
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
 

@@ -205,7 +205,7 @@ fun createAddressPagePdf(
                     font-size: 10pt;
                     line-height: 1.4;
                 }
-                """
+                """,
         ) {
             listOf(
                 div(className = "address") {
@@ -221,7 +221,7 @@ fun createAddressPagePdf(
                             }
                         },
                     )
-                }
+                },
             )
         }
 

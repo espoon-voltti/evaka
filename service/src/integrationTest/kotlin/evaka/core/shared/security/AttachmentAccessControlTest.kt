@@ -64,7 +64,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     clock,
                     action,
                     employeeAttachmentId,
-                )
+                ),
             )
             assertFalse(
                 accessControl.hasPermissionFor(
@@ -73,7 +73,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     clock,
                     action,
                     employeeAttachmentId,
-                )
+                ),
             )
         }
 
@@ -87,7 +87,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     clock,
                     action,
                     citizenAttachmentId,
-                )
+                ),
             )
         }
     }
@@ -102,10 +102,10 @@ class AttachmentAccessControlTest : AccessControlTest() {
         val attachmentId = insertApplicationAttachment(uploaderCitizen)
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, uploaderCitizen, clock, action, attachmentId)
+                accessControl.hasPermissionFor(tx, uploaderCitizen, clock, action, attachmentId),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherCitizen, clock, action, attachmentId)
+                accessControl.hasPermissionFor(tx, otherCitizen, clock, action, attachmentId),
             )
             assertFalse(
                 accessControl.hasPermissionFor(
@@ -114,7 +114,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     clock,
                     action,
                     attachmentId,
-                )
+                ),
             )
         }
     }

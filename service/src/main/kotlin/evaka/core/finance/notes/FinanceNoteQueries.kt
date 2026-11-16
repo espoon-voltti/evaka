@@ -27,7 +27,7 @@ LEFT JOIN evaka_user c ON n.created_by = c.id
 LEFT JOIN evaka_user m ON n.modified_by = m.id
 WHERE n.person_id = ${bind(personId)}
 ORDER BY n.created_at DESC
-"""
+""",
     )
 }
     .toList()
@@ -58,7 +58,7 @@ fun Database.Transaction.createFinanceNote(
         ${bind(user.evakaUserId)},
         ${bind(now)}
     ) RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -77,7 +77,7 @@ fun Database.Transaction.updateFinanceNote(
         modified_at = ${bind(now)},
         modified_by = ${bind(user.evakaUserId)}
     WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .execute()

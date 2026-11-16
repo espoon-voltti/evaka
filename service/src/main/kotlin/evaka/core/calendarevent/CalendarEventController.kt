@@ -706,8 +706,8 @@ class CalendarEventController(
                                                                 isEditable =
                                                                     !it.eventTimeDate.isBefore(
                                                                         getManipulationWindowStart(
-                                                                            today
-                                                                        )
+                                                                            today,
+                                                                        ),
                                                                     ),
                                                             )
                                                         }
@@ -755,7 +755,7 @@ class CalendarEventController(
                             rows.firstOrNull { it.period.includes(date) }
                                 ?: rows.firstOrNull()
                                 ?: throw NotFound(
-                                    "Calendar event $eventId not found for child $childId"
+                                    "Calendar event $eventId not found for child $childId",
                                 )
                         val ics =
                             buildIcsCalendar(
@@ -814,7 +814,7 @@ class CalendarEventController(
                             rows.firstOrNull { it.period.includes(date) }
                                 ?: rows.firstOrNull()
                                 ?: throw NotFound(
-                                    "Calendar event time $eventTimeId not found for guardian"
+                                    "Calendar event time $eventTimeId not found for guardian",
                                 )
                         val ics =
                             buildIcsCalendar(

@@ -70,7 +70,7 @@ private fun Database.Read.getChildAttendanceRows(
         FROM attendance_reservation
         WHERE child_id = ${bind(childId)} AND between_start_and_end(${bind(range)}, date) 
             AND start_time IS NOT NULL AND end_time IS NOT NULL
-    """
+    """,
         )
     }
         .toList<SimpleReservation>()
@@ -90,7 +90,7 @@ private fun Database.Read.getChildAttendanceRows(
         SELECT date, start_time, end_time
         FROM child_attendance
         WHERE child_id = ${bind(childId)} AND between_start_and_end(${bind(range)}, date)
-    """
+    """,
         )
     }
         .toList<SimpleAttendance>()
@@ -110,7 +110,7 @@ private fun Database.Read.getChildAttendanceRows(
         SELECT date, absence_type, category
         FROM absence
         WHERE child_id = ${bind(childId)} AND between_start_and_end(${bind(range)}, date)
-    """
+    """,
         )
     }
         .toList<SimpleAbsence>()

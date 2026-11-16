@@ -84,7 +84,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     default.rulesOf(action)
 
                 override fun <T> rulesOf(
-                    action: Action.ScopedAction<in T>
+                    action: Action.ScopedAction<in T>,
                 ): Sequence<ScopedActionRule<in T>> =
                     if (action == Action.Child.READ_SERVICE_NEEDS) emptySequence()
                     else default.rulesOf(action)
@@ -148,7 +148,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(daycareGroup)
             testPlacement = tx.getDaycarePlacements(daycare.id, null, null, null).first()
@@ -986,7 +986,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycareId,
                     startDate = LocalDate.now(),
                     endDate = LocalDate.now().plusDays(1),
-                )
+                ),
             )
         }
 
@@ -997,7 +997,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare2.id,
                     startDate = LocalDate.now().minusDays(2),
                     endDate = LocalDate.now().minusDays(1),
-                )
+                ),
             )
         }
 
@@ -1023,7 +1023,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare2.id,
                     startDate = placementEnd.plusDays(1),
                     endDate = placementEnd.plusMonths(2),
-                )
+                ),
             )
         }
         val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
@@ -1049,7 +1049,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare2.id,
                     startDate = newEnd,
                     endDate = newEnd.plusMonths(2),
-                )
+                ),
             )
         }
         val body =
@@ -1071,7 +1071,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         unitId = daycare2.id,
                         startDate = newEnd,
                         endDate = newEnd.plusMonths(2),
-                    )
+                    ),
                 )
                 .also {
                     tx.updateDaycareAclWithEmployee(
@@ -1126,7 +1126,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = childId,
                     unitId = daycare2.id,
                     period = FiniteDateRange(placementEnd.minusDays(5), placementEnd.minusDays(1)),
-                )
+                ),
             )
         }
 
@@ -1148,7 +1148,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = childId,
                     unitId = daycare2.id,
                     period = FiniteDateRange(placementStart, placementStart.plusDays(4)),
-                )
+                ),
             )
         }
 
@@ -1171,7 +1171,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycareId,
                     startDate = placementStart.minusDays(10),
                     endDate = placementStart.minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
@@ -1179,7 +1179,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare2.id,
                     period =
                         FiniteDateRange(placementStart.minusDays(8), placementStart.plusDays(4)),
-                )
+                ),
             )
         }
 
@@ -1202,7 +1202,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare2.id,
                     period =
                         FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(5)),
-                )
+                ),
             )
         }
 
@@ -1351,7 +1351,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     extendedTerm = term,
                     applicationPeriod = term,
                     termBreaks = DateSet.empty(),
-                )
+                ),
             )
         }
     }
@@ -1419,7 +1419,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycareId,
                     startDate = placementStartDate,
                     endDate = placementEndDate,
-                )
+                ),
             )
         }
         val placement = db.read { r ->
@@ -1456,7 +1456,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     headOfChild = headOfChild.id,
                     startDate = fridgeChildStart,
                     endDate = fridgeChildEnd,
-                )
+                ),
             )
         }
 

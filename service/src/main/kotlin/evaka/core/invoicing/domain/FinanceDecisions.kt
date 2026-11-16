@@ -89,7 +89,7 @@ fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecis
                                     FiniteDateRange(
                                         conflict.validFrom,
                                         newDecision.validFrom.minusDays(1),
-                                    )
+                                    ),
                                 )
                             }
                         }

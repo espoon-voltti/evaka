@@ -15,7 +15,7 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateBasicsRequest)
 INSERT INTO document_template (name, type, placement_types,  language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, deletion_retention_days, deletion_retention_basis, content)
 VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, ${bind(template.deletionRetentionDays)}, ${bind(template.deletionRetentionBasis)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
 RETURNING *
-"""
+""",
         )
     }
         .exactlyOne<DocumentTemplate>()
@@ -28,7 +28,7 @@ fun Database.Transaction.importTemplate(template: ExportedDocumentTemplate): Doc
 INSERT INTO document_template (name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, deletion_retention_days, deletion_retention_basis, content)
 VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, ${bind(template.deletionRetentionDays)}, ${bind(template.deletionRetentionBasis)}, ${bind(template.content)})
 RETURNING *
-"""
+""",
         )
     }
     .exactlyOne<DocumentTemplate>()
@@ -43,7 +43,7 @@ fun Database.Transaction.duplicateTemplate(
 INSERT INTO document_template (name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, deletion_retention_days, deletion_retention_basis, content)
 SELECT ${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, ${bind(template.deletionRetentionDays)}, ${bind(template.deletionRetentionBasis)}, content FROM document_template WHERE id = ${bind(id)}
 RETURNING *
-"""
+""",
         )
     }
         .exactlyOne<DocumentTemplate>()
@@ -63,7 +63,7 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
                     published,
                     (SELECT count(*) FROM child_document WHERE template_id = dt.id) AS document_count
                 FROM document_template dt
-                """
+                """,
         )
     }
         .toList<DocumentTemplateSummary>()
@@ -75,7 +75,7 @@ fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {
             """
                 SELECT *
                 FROM document_template WHERE id = ${bind(id)}
-                """
+                """,
         )
     }
         .exactlyOneOrNull<DocumentTemplate>()
@@ -87,7 +87,7 @@ fun Database.Read.exportTemplate(id: DocumentTemplateId): ExportedDocumentTempla
             """
                 SELECT *
                 FROM document_template WHERE id = ${bind(id)}
-                """
+                """,
         )
     }
         .exactlyOneOrNull<ExportedDocumentTemplate>()
@@ -118,7 +118,7 @@ fun Database.Transaction.updateDraftTemplateBasics(
                     deletion_retention_days = ${bind(basics.deletionRetentionDays)},
                     deletion_retention_basis = ${bind(basics.deletionRetentionBasis)}
                 WHERE id = ${bind(id)} AND published = false
-                """
+                """,
         )
     }
         .updateExactlyOne()
@@ -134,7 +134,7 @@ fun Database.Transaction.updateDraftTemplateContent(
                 UPDATE document_template
                 SET content = ${bind(content)}
                 WHERE id = ${bind(id)} AND published = false
-                """
+                """,
         )
     }
         .updateExactlyOne()
@@ -147,7 +147,7 @@ fun Database.Transaction.updateTemplateValidity(id: DocumentTemplateId, validity
                 UPDATE document_template
                 SET validity = ${bind(validity)}
                 WHERE id = ${bind(id)}
-                """
+                """,
         )
     }
         .updateExactlyOne()
@@ -160,7 +160,7 @@ fun Database.Transaction.publishTemplate(id: DocumentTemplateId) {
                 UPDATE document_template
                 SET published = true
                 WHERE id = ${bind(id)}
-                """
+                """,
         )
     }
         .updateExactlyOne()
@@ -178,7 +178,7 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
             WHERE dt.id = ${bind(id)} 
             AND dt.archive_externally = true 
             AND EXISTS(SELECT 1 FROM child_document cd WHERE cd.template_id = dt.id)
-        """
+        """,
             )
         }
             .exactlyOneOrNull<Boolean>() ?: false
@@ -192,7 +192,7 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
                 UPDATE document_template
                 SET archive_externally = false
                 WHERE id = ${bind(id)}
-                """
+                """,
             )
         }
             .updateExactlyOne()
@@ -225,7 +225,7 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
         UPDATE document_template
         SET published = false
         WHERE id = ${bind(id)}
-    """
+    """,
         )
     }
 
@@ -237,7 +237,7 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
                 UPDATE document_template
                 SET archive_externally = true
                 WHERE id = ${bind(id)}
-                """
+                """,
             )
         }
             .updateExactlyOne()
@@ -256,7 +256,7 @@ fun Database.Transaction.deleteUnusedTemplate(id: DocumentTemplateId) {
                 DELETE FROM document_template
                 WHERE id = ${bind(id)}
                   AND NOT EXISTS (SELECT 1 FROM child_document WHERE template_id = ${bind(id)})
-                """
+                """,
         )
     }
         .updateExactlyOne()

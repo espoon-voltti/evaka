@@ -53,7 +53,7 @@ fun Database.Transaction.upsertFeeAlteration(
                 notes = ${bind(feeAlteration.notes)},
                 modified_by = ${bind(modifiedBy)},
                 modified_at = ${bind(now)}
-            """
+            """,
         )
     }
 
@@ -90,7 +90,7 @@ SELECT
 FROM fee_alteration fa
 LEFT JOIN evaka_user e ON fa.modified_by = e.id
 WHERE fa.id = ${bind(id)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<FeeAlteration>()
@@ -127,7 +127,7 @@ FROM fee_alteration fa
 LEFT JOIN evaka_user e ON fa.modified_by = e.id
 WHERE fa.person_id = ${bind(personId)}
 ORDER BY fa.valid_from DESC, fa.valid_to DESC
-"""
+""",
         )
     }
         .toList<FeeAlteration>()
@@ -161,7 +161,7 @@ LEFT JOIN evaka_user e ON fa.modified_by = e.id
 WHERE
     fa.person_id = ANY(${bind(personIds)})
     AND (fa.valid_to IS NULL OR fa.valid_to >= ${bind(from)})
-"""
+""",
         )
     }
         .toList<FeeAlteration>()

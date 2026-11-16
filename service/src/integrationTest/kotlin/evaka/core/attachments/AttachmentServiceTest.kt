@@ -84,7 +84,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
                 MockDocumentService(
                     uploadFn = { error(errorMessage) },
                     deleteFn = { error("Unexpected delete") },
-                )
+                ),
             )
         assertThrows<Exception>(errorMessage) {
             attachmentService.saveOrphanAttachment(
@@ -108,7 +108,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
                 MockDocumentService(
                     uploadFn = { error("Unexpected upload") },
                     deleteFn = { error(errorMessage) },
-                )
+                ),
             )
         val (attachment, parent) =
             db.transaction {
@@ -124,7 +124,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
         val clock = MockEvakaClock(2023, 1, 1, 12, 0)
         val attachmentService =
             createAttachmentService(
-                MockDocumentService(uploadFn = { error("Unexpected upload") }, deleteFn = {})
+                MockDocumentService(uploadFn = { error("Unexpected upload") }, deleteFn = {}),
             )
         val (incomeAttachment, orphanAttachment) =
             db.transaction {
@@ -148,8 +148,8 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevIncome(
                     personId = insert(DevPerson(), DevPersonType.ADULT),
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
-            )
+                ),
+            ),
         )
 
     private fun Database.Transaction.insertTestAttachment(

@@ -57,7 +57,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     unitId = daycare.id,
                     startDate = today,
                     endDate = today.plusYears(1),
-                )
+                ),
             )
         }
     }
@@ -95,7 +95,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         holidayPeriodStart.plusDays(1),
                         AbsenceType.OTHER_ABSENCE,
                         AbsenceType.OTHER_ABSENCE,
-                    )
+                    ),
                 ),
             )
 
@@ -152,7 +152,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     period = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
                     reservationsOpenOn = holidayPeriodDeadline,
                     reservationDeadline = holidayPeriodDeadline,
-                )
+                ),
             ),
             holidayPeriods,
         )

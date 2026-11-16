@@ -144,7 +144,7 @@ class HameenkyroInvoiceProductProvider : InvoiceProductProvider {
 
                 else ->
                     error(
-                        "No product mapping found for product + fee alteration type combo ($productKey + $feeAlterationType)"
+                        "No product mapping found for product + fee alteration type combo ($productKey + $feeAlterationType)",
                     )
             }
         return product.key

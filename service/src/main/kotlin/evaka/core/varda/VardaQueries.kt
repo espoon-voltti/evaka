@@ -40,7 +40,7 @@ EXISTS (
     SELECT FROM varda_state vs
     WHERE vs.child_id = $it.id AND vs.last_success_at IS NOT NULL
 )
-"""
+""",
     )
 }
 
@@ -61,7 +61,7 @@ WHERE id = ANY(${bind(childIds)})
 AND varda_data_first_removed_at IS NULL
 AND ${predicate(childSentToVarda.forTable("child"))}
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -145,7 +145,7 @@ WHERE
     u.oph_organizer_oid IS NOT NULL AND
     u.oph_unit_oid IS NOT NULL
 ORDER BY 1, 2
-"""
+""",
         )
     }
         .mapTo<VardaServiceNeed>()
@@ -214,7 +214,7 @@ WHERE
     u.oph_organizer_oid IS NOT NULL
 
 ORDER BY 1, 2
-"""
+""",
     )
 }
     .mapTo<VardaFeeData>()
@@ -250,7 +250,7 @@ WHERE
     sno.fee_coefficient = 0 AND
     u.oph_organizer_oid IS NOT NULL
 ORDER BY 1, 2
-"""
+""",
     )
 }
     .mapTo<VardaFreeServiceNeed>()
@@ -278,7 +278,7 @@ fun Database.Read.getVardaChildren(childIds: List<ChildId>): Map<ChildId, VardaC
                 LEFT JOIN child c ON c.id = p.id
                 WHERE p.id = ANY(${bind(childIds)})
                 AND c.varda_data_first_removed_at IS NULL
-                """
+                """,
         )
     }
     .mapTo<VardaChild>()
@@ -307,7 +307,7 @@ fun Database.Read.getVardaGuardians(childIds: List<ChildId>): Map<ChildId, List<
                 FROM guardian g 
                 JOIN person p ON p.id = g.guardian_id
                 WHERE g.child_id = ANY(${bind(childIds)})
-                """
+                """,
         )
     }
     .mapTo<VardaGuardian>()
@@ -332,7 +332,7 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(today: LocalDate): Int {
                         p.date_of_birth > ${bind(today.minusYears(SAFE_DATA_REMOVAL_AGE))} AND
                         NOT EXISTS (SELECT FROM varda_state vs WHERE vs.child_id = pl.child_id)
                     ON CONFLICT (child_id) DO NOTHING
-                    """
+                    """,
         )
     }
 }
@@ -349,7 +349,7 @@ fun Database.Read.getVardaUpdateChildIds(): List<ChildId> = createQuery {
  * performed in this case.
  */
 inline fun <reified T> Database.Read.getVardaUpdateState(
-    childIds: List<ChildId>
+    childIds: List<ChildId>,
 ): Map<ChildId, T?> = createQuery {
     sql("SELECT child_id, state FROM varda_state WHERE child_id = ANY (${bind(childIds)})")
 }
@@ -383,7 +383,7 @@ fun Database.Transaction.setVardaUpdateSuccess(
                     errored_since = NULL,
                     error = NULL
                 WHERE child_id = ${bind(childId)}
-                """
+                """,
         )
     }
         .execute()
@@ -403,7 +403,7 @@ fun Database.Transaction.setVardaUpdateError(
                     errored_since = coalesce(errored_since, ${bind(now)}),
                     error = ${bind(error)}
                 WHERE child_id = ${bind(childId)}
-                """
+                """,
         )
     }
         .execute()

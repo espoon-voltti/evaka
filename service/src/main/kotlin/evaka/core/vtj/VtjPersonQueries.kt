@@ -90,7 +90,7 @@ ON CONFLICT (social_security_number) DO UPDATE SET
     restricted_details_end_date = excluded.restricted_details_end_date,
     updated_from_vtj = excluded.updated_from_vtj
 RETURNING id, old.id IS NULL AS inserted
-"""
+""",
             )
         }
             .exactlyOne { PersonId(column("id")) to column<Boolean>("inserted") }
@@ -139,7 +139,7 @@ UPDATE person SET
     updated_from_vtj = ${bind(now)}
 WHERE id = ${bind(personId)} AND social_security_number IS NULL
 RETURNING id
-"""
+""",
             )
         }
             .exactlyOneOrNull<PersonId>() ?: throw Conflict("Person $personId already has an SSN")
@@ -182,7 +182,7 @@ fun Database.Transaction.applyDependants(
     val changes = replaceGuardianChildren(guardianId, allowed)
     execute {
         sql(
-            "UPDATE person SET vtj_dependants_queried = ${bind(now)} WHERE id = ${bind(guardianId)}"
+            "UPDATE person SET vtj_dependants_queried = ${bind(now)} WHERE id = ${bind(guardianId)}",
         )
     }
     logger.info {
@@ -208,7 +208,7 @@ private fun dependantSyncPerson(today: LocalDate, since: HelsinkiDateTime? = nul
         else
             Predicate {
                 where(
-                    "($it.updated >= ${bind(since)} OR $it.start_date >= ${bind(since.toLocalDate())})"
+                    "($it.updated >= ${bind(since)} OR $it.start_date >= ${bind(since.toLocalDate())})",
                 )
             }
     return Predicate {
@@ -232,7 +232,7 @@ OR EXISTS (
         ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity') AND
         ${predicate(fridgeRowSince.forTable("fp"))}
 )
-"""
+""",
         )
     }
 }
@@ -254,7 +254,7 @@ AND (
           AND a.status NOT IN ('ACTIVE', 'REJECTED', 'CANCELLED', 'TERMINATED', 'DEPRECATED')
     )
 )
-"""
+""",
     )
 }
 
@@ -266,7 +266,7 @@ SELECT EXISTS (
     SELECT FROM person p
     WHERE p.id = ${bind(personId)} AND ${predicate(dependantSyncPerson(today).forTable("p"))}
 )
-"""
+""",
         )
     }
     .exactlyOne()
@@ -281,7 +281,7 @@ fun Database.Transaction.clearStaleDependantsSynced(
 UPDATE person p SET vtj_dependants_queried = NULL
 WHERE p.vtj_dependants_queried < ${bind(olderThan)}
   AND NOT (${predicate(dependantSyncPerson(today).forTable("p"))})
-"""
+""",
     )
 }
     .executeAndReturnCount()
@@ -323,7 +323,7 @@ FROM (
 GROUP BY id
 ORDER BY min(priority), id
 LIMIT ${bind(limit)}
-"""
+""",
         )
     }
         .toList()
@@ -358,7 +358,7 @@ SELECT
         SELECT count(*) FROM person p
         WHERE ${predicate(dependantsNotSynced(today, since = null).forTable("p"))}
     ) AS dependant_sync_backlog
-"""
+""",
         )
     }
         .exactlyOne()

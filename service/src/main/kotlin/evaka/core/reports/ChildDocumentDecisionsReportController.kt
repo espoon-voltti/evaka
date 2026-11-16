@@ -90,7 +90,7 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
                     FROM child_document
                     WHERE status = ${bind(DocumentStatus.DECISION_PROPOSAL)} 
                         AND decision_maker = ${bind(user.id)}
-                """
+                """,
                             )
                         }
                         .exactlyOne<Int>()

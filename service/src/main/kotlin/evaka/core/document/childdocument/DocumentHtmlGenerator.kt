@@ -138,7 +138,7 @@ private fun generateHeader(document: ChildDocumentDetails): HtmlElement {
                 listOfNotNull(
                     document.decision?.createdAt?.let {
                         div(
-                            "${getTranslations(document.template).decisionCreated } ${it.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}"
+                            "${getTranslations(document.template).decisionCreated } ${it.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}",
                         )
                     },
                     document.decision?.decisionNumber?.let {

@@ -25,7 +25,7 @@ enum class VesilahtiScheduledJob(
             enabled = false,
             schedule = JobSchedule.annualOnIsoWeek(isoWeek = 17, dayOfWeek = DayOfWeek.WEDNESDAY),
         ),
-    )
+    ),
 }
 
 class VesilahtiScheduledJobs(

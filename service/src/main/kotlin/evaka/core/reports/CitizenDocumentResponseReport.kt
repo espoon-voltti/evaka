@@ -111,7 +111,7 @@ class CitizenDocumentResponseReport(private val accessControl: AccessControl) {
                       -- only show templates that have checkbox or radio button group type questions
                       AND (dt.content @> '{"sections": [{"questions": [{"type": "CHECKBOX"}]}]}' ::jsonb
                         OR dt.content @> '{"sections": [{"questions": [{"type": "RADIO_BUTTON_GROUP"}]}]}' ::jsonb)
-                """
+                """,
                             )
                         }
                         .toList<CitizenDocumentResponseReportTemplate>()
@@ -213,7 +213,7 @@ LEFT JOIN LATERAL (
     LIMIT 1) latest_doc ON true
 WHERE rp.group_id = ANY (${bind(groupIds)})
         """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
         .toList<CitizenDocumentResponseReportRow>()

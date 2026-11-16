@@ -22,7 +22,7 @@ SELECT pev.id, pev.email, pev.expires_at, pev.sent_at
 FROM person p
 JOIN person_email_verification pev ON p.id = pev.person_id AND p.email = pev.email
 WHERE p.id = ${bind(person)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -49,7 +49,7 @@ ON CONFLICT (person_id) DO UPDATE SET
     verification_code = CASE WHEN pev.expires_at < ${bind(now)} OR pev.email != excluded.email THEN excluded.verification_code ELSE pev.verification_code END,
     sent_at = CASE WHEN pev.expires_at < ${bind(now)} OR pev.email != excluded.email THEN NULL ELSE pev.sent_at END
 RETURNING id, email, expires_at, sent_at
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -78,7 +78,7 @@ AND person_id = ${bind(personId)}
 AND expires_at > ${bind(now)}
 AND verification_code = ${bind(verificationCode)}
 RETURNING email
-"""
+""",
             )
         }
             .executeAndReturnGeneratedKeys()
@@ -89,7 +89,7 @@ RETURNING email
 UPDATE person
 SET email = ${bind(email)}, verified_email = ${bind(email)}
 WHERE id = ${bind(personId)}
-"""
+""",
         )
     }
     syncWeakLoginUsername(now, personId)
@@ -107,7 +107,7 @@ UPDATE citizen_user
 SET username = new_username, username_updated_at = ${bind(now)}
 FROM (SELECT id, lower(verified_email) AS new_username FROM person WHERE id = ${bind(personId)}) target
 WHERE citizen_user.id = target.id AND new_username IS NOT NULL AND new_username != username
-"""
+""",
         )
     }
 }

@@ -58,7 +58,11 @@ class MessageDeletionEmailService(
             add(AsyncJob.SendMessageDeletionSenderEmail(contentId))
             supervisorEmails.forEach {
                 add(
-                    AsyncJob.SendMessageDeletionNotificationEmail(contentId, it, "Yksikön johtajat")
+                    AsyncJob.SendMessageDeletionNotificationEmail(
+                        contentId,
+                        it,
+                        "Yksikön johtajat",
+                    ),
                 )
             }
             adminNotificationRecipients.forEach {
@@ -67,7 +71,7 @@ class MessageDeletionEmailService(
                         contentId,
                         it,
                         "Kunnan eVaka-pääkäyttäjä",
-                    )
+                    ),
                 )
             }
         }

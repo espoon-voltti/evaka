@@ -76,15 +76,15 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         id = "s1",
                         label = "Eka",
                         questions = listOf(Question.TextQuestion(id = "q1", label = "kysymys 1")),
-                    )
-                )
+                    ),
+                ),
         )
 
     val documentId = ChildDocumentId(UUID.randomUUID())
 
     val documentContent =
         DocumentContent(
-            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "foobar"))
+            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "foobar")),
         )
 
     @BeforeEach
@@ -102,7 +102,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
@@ -112,7 +112,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     validity = DateRange(clock.today(), clock.today()),
                     content = templateContent,
                     confidentiality = DocumentConfidentiality(100, "JulkL 24.1 § 25 ja 30 kohdat"),
-                )
+                ),
             )
             tx.insert(
                 DevChildDocument(
@@ -127,7 +127,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     contentLockedBy = employeeUser.id,
                     answeredAt = null,
                     answeredBy = null,
-                )
+                ),
             )
         }
     }
@@ -168,7 +168,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         ),
                     answeredAt = null,
                     answeredBy = null,
-                )
+                ),
             ),
             getDocumentsByChild(child.id),
         )
@@ -210,7 +210,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
         val updatedContent =
             DocumentContent(
-                answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "updated"))
+                answers =
+                    listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "updated")),
             )
         updateDocumentContent(documentId, updatedContent)
 
@@ -254,9 +255,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
                                 createdAt = clock.now(),
                                 createdBy = employeeUser.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
         assertEquals(
@@ -277,7 +278,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         ),
                     answeredAt = null,
                     answeredBy = null,
-                )
+                ),
             ),
             getUnansweredChildDocuments(),
         )
@@ -288,8 +289,11 @@ class ChildDocumentControllerCitizenIntegrationTest :
             DocumentContent(
                 answers =
                     listOf(
-                        AnsweredQuestion.TextAnswer(questionId = "q1", answer = "huoltajan vastaus")
-                    )
+                        AnsweredQuestion.TextAnswer(
+                            questionId = "q1",
+                            answer = "huoltajan vastaus",
+                        ),
+                    ),
             )
         updateDocument(
             documentId,
@@ -320,7 +324,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         ),
                     answeredAt = clock.now(),
                     answeredBy = adult.evakaUser(),
-                )
+                ),
             ),
             documents.filter { it.type == ChildDocumentType.CITIZEN_BASIC },
         )
@@ -382,7 +386,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     validDuring = DateRange(clock.today(), null),
                     modifiedAt = clock.now(),
                     modifiedBy = employeeUser.evakaUserId,
-                )
+                ),
             )
         }
         val fosterParentUser = AuthenticatedUser.Citizen(fosterParent.id, CitizenAuthLevel.STRONG)
@@ -436,9 +440,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
                                 createdAt = clock.now(),
                                 createdBy = employeeUser.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
 
@@ -481,9 +485,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
                                 createdAt = clock.now(),
                                 createdBy = employeeUser.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
         val child2DocumentId = db.transaction { tx ->
@@ -496,7 +500,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
             tx.insert(
                 DevChildDocument(
@@ -517,9 +521,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
                                 createdAt = clock.now(),
                                 createdBy = employeeUser.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
 
@@ -635,9 +639,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
                                 createdAt = clock.now(),
                                 createdBy = employeeUser.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
 
             tx.insert(
@@ -646,7 +650,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = clock.today().minusDays(1),
                     endDate = clock.today().minusDays(1),
-                )
+                ),
             )
         }
 
@@ -684,7 +688,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                             createdAt = now,
                             createdBy = employeeUser.evakaUserId,
                             publishedContent = documentContent,
-                        )
+                        ),
                     ),
             )
         val answeredByCitizenId = db.transaction { tx ->
@@ -692,7 +696,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 childDocumentBase.copy(
                     id = ChildDocumentId(UUID.randomUUID()),
                     answeredBy = citizen.evakaUserId,
-                )
+                ),
             )
         }
         val answeredByEmployeeId = db.transaction { tx ->
@@ -700,7 +704,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 childDocumentBase.copy(
                     id = ChildDocumentId(UUID.randomUUID()),
                     answeredBy = employeeUser.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -749,9 +753,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
                                 createdAt = clock.now(),
                                 createdBy = employeeUser.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
 

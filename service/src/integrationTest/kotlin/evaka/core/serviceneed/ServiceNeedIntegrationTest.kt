@@ -104,7 +104,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     baseValueUnder3y = 147095,
                     coefficientUnder3y = BigDecimal("0.80"),
                     valueUnder3y = 117676,
-                )
+                ),
             )
             placementId =
                 tx.insert(
@@ -113,7 +113,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         unitId = daycare.id,
                         startDate = testDate(1),
                         endDate = testDate(30),
-                    )
+                    ),
                 )
         }
     }
@@ -192,7 +192,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         """
                 UPDATE service_need_option SET valid_from = ${bind(testDate(2))}
                 WHERE id = ${bind(snDefaultDaycare.id)}
-            """
+            """,
                     )
                 }
                 .execute()
@@ -254,10 +254,10 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) }
+                serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) },
             )
         }
     }
@@ -313,10 +313,10 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) }
+                serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) },
             )
         }
     }
@@ -342,10 +342,10 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(20) }
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(20) },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(21) && it.endDate == testDate(30) }
+                serviceNeeds.any { it.startDate == testDate(21) && it.endDate == testDate(30) },
             )
         }
     }
@@ -371,13 +371,13 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) }
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(20) }
+                serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(20) },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(21) && it.endDate == testDate(30) }
+                serviceNeeds.any { it.startDate == testDate(21) && it.endDate == testDate(30) },
             )
         }
     }
@@ -405,13 +405,13 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) }
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(5) && it.endDate == testDate(25) }
+                serviceNeeds.any { it.startDate == testDate(5) && it.endDate == testDate(25) },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) }
+                serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) },
             )
         }
     }
@@ -427,10 +427,10 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) }
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) }
+                serviceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) },
             )
         }
     }
@@ -458,7 +458,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) }
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) },
             )
             assertTrue(
                 serviceNeeds.any {
@@ -467,10 +467,10 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         it.shiftCare == ShiftCareType.FULL &&
                         it.partWeek == false &&
                         it.option.id == snDaycareFullDay25to35.id
-                }
+                },
             )
             assertTrue(
-                serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) }
+                serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) },
             )
         }
     }
@@ -649,7 +649,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     optionId = optionId,
                     confirmedBy = unitSupervisor.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
     }
@@ -668,7 +668,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     partWeek = false,
                     confirmedBy = unitSupervisor.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
         val currentServiceNeedId = db.transaction { tx ->
@@ -682,7 +682,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     partWeek = false,
                     confirmedBy = unitSupervisor.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
         val futureServiceNeedId = db.transaction { tx ->
@@ -696,7 +696,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     partWeek = true,
                     confirmedBy = unitSupervisor.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
 
@@ -729,7 +729,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     partWeek = false,
                     confirmedBy = unitSupervisor.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -741,7 +741,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     partWeek = false,
                     confirmedBy = unitSupervisor.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
 
@@ -762,7 +762,12 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     private fun givenPlacement(unit: DevDaycare, start: LocalDate, end: LocalDate): PlacementId =
         db.transaction { tx ->
             tx.insert(
-                DevPlacement(childId = child.id, unitId = unit.id, startDate = start, endDate = end)
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = start,
+                    endDate = end,
+                ),
             )
         }
 

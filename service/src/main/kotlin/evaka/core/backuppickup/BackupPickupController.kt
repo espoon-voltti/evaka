@@ -49,7 +49,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
                         targetId = AuditId(childId),
                         objectId = AuditId(backupPickupId),
                     )
-                }
+                },
         )
     }
 
@@ -88,7 +88,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
                         targetId = AuditId(childId),
                         meta = mapOf("count" to it.size),
                     )
-                }
+                },
         )
     }
 
@@ -135,7 +135,7 @@ fun Database.Transaction.createBackupPickup(
 INSERT INTO backup_pickup (child_id, name, phone)
 VALUES (${bind(childId)}, ${bind(data.name)}, ${bind(data.phone)})
 RETURNING id
-"""
+""",
     )
 }
     .exactlyOne()
@@ -153,7 +153,7 @@ fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBacku
 UPDATE backup_pickup
 SET name = ${bind(data.name)}, phone = ${bind(data.phone)}
 WHERE id  = ${bind(id)}
-"""
+""",
         )
     }
     .updateExactlyOne()

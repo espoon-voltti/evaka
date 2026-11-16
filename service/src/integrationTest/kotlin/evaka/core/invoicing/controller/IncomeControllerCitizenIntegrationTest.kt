@@ -73,7 +73,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                         unitId = daycareId,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insertServiceNeedOptions()
             tx.insertServiceNeed(
@@ -101,7 +101,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                     modifiedBy = employee.evakaUserId,
                     validFrom = clock.today().minusMonths(6),
                     validTo = expirationDate,
-                )
+                ),
             )
             it.insert(
                 DevFridgeChild(
@@ -109,7 +109,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                     childId = testChild.id,
                     startDate = clock.today().minusMonths(6),
                     endDate = expirationDate.plusMonths(6),
-                )
+                ),
             )
         }
 

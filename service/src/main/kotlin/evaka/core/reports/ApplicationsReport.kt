@@ -94,7 +94,7 @@ private fun Database.Read.getApplicationsRows(
         GROUP BY care_area_name, unit_id, unit_name, unit_provider_type
         ORDER BY care_area_name, unit_name;
         """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .toList<ApplicationsReportRow>()

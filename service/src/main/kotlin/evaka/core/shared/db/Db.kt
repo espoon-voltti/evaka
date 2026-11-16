@@ -52,14 +52,14 @@ private inline fun <reified T> Jdbi.register(
     registerColumnMapper(
         ColumnMapperFactory { type, _ ->
             Optional.ofNullable(columnMapper.takeIf { isSupported(type) })
-        }
+        },
     )
     // Support mapping a single column result.
     // We need an explicit row mapper for T, or JDBI KotlinMapper will try to map it field-by-field,
     // even in the single column case
     val rowMapper = SingleColumnMapper(columnMapper)
     registerRowMapper(
-        RowMapperFactory { type, _ -> Optional.ofNullable(rowMapper.takeIf { isSupported(type) }) }
+        RowMapperFactory { type, _ -> Optional.ofNullable(rowMapper.takeIf { isSupported(type) }) },
     )
 }
 
@@ -130,13 +130,15 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
                 } else {
                     null
                 }
-            }
+            },
         )
     }
     jdbi.registerArrayType { elementType, _ ->
         Optional.ofNullable(
             SqlArrayType.of<Id<*>>("uuid") { it.raw }
-                .takeIf { Id::class.java.isAssignableFrom(GenericTypes.getErasedType(elementType)) }
+                .takeIf {
+                    Id::class.java.isAssignableFrom(GenericTypes.getErasedType(elementType))
+                },
         )
     }
     return jdbi

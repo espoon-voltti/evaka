@@ -148,14 +148,20 @@ class IncomeController(
                     asyncJobRunner.plan(
                         tx,
                         listOf(
-                            AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)
+                            AsyncJob.GenerateFinanceDecisions.forAdult(
+                                validIncome.personId,
+                                period,
+                            ),
                         ),
                         runAt = clock.now(),
                     )
                     asyncJobRunner.plan(
                         tx,
                         listOf(
-                            AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                validIncome.personId,
+                                period,
+                            ),
                         ),
                         runAt = clock.now(),
                     )
@@ -199,7 +205,7 @@ class IncomeController(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             validIncome.personId,
                             expandedPeriod,
-                        )
+                        ),
                     ),
                     runAt = clock.now(),
                 )
@@ -209,7 +215,7 @@ class IncomeController(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             validIncome.personId,
                             expandedPeriod,
-                        )
+                        ),
                     ),
                     runAt = clock.now(),
                 )
@@ -363,7 +369,7 @@ fun validateIncome(income: IncomeRequest, incomeTypes: Map<String, IncomeType>):
                             coefficient = IncomeCoefficient.default(),
                         )
                     }
-                }
+                },
         )
     } else {
         income.copy(data = mapOf())

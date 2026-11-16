@@ -77,9 +77,9 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     application.form.copy(
                         preferences =
                             application.form.preferences.copy(
-                                preferredStartDate = sentDate.plusDays(1)
-                            )
-                    )
+                                preferredStartDate = sentDate.plusDays(1),
+                            ),
+                    ),
             )
         applicationControllerV2.updateApplication(
             dbInstance(),
@@ -104,8 +104,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             application.copy(
                 form =
                     application.form.copy(
-                        preferences = application.form.preferences.copy(urgent = false)
-                    )
+                        preferences = application.form.preferences.copy(urgent = false),
+                    ),
             )
         applicationControllerV2.updateApplication(
             dbInstance(),
@@ -131,8 +131,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             application.copy(
                 form =
                     application.form.copy(
-                        preferences = application.form.preferences.copy(urgent = true)
-                    )
+                        preferences = application.form.preferences.copy(urgent = true),
+                    ),
             )
         applicationControllerV2.updateApplication(
             dbInstance(),
@@ -173,7 +173,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE attachment SET received_at = ${bind(sentDate)} WHERE application_id = ${bind(application.id)}"
+                    "UPDATE attachment SET received_at = ${bind(sentDate)} WHERE application_id = ${bind(application.id)}",
                 )
             }
         }
@@ -219,7 +219,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             HelsinkiDateTime.now()
                 .durationSince(
                     beforeSendingAttachment.dueDateSetManuallyAt
-                        ?: throw Error("dueDateSetManuallyAt should have been set")
+                        ?: throw Error("dueDateSetManuallyAt should have been set"),
                 )
                 .seconds <= 5,
             "dueDateSetManuallyAt should have been about now",
@@ -265,8 +265,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             application.copy(
                 form =
                     application.form.copy(
-                        preferences = application.form.preferences.copy(urgent = false)
-                    )
+                        preferences = application.form.preferences.copy(urgent = false),
+                    ),
             )
 
         applicationControllerCitizen.updateApplication(
@@ -323,8 +323,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             application.copy(
                 form =
                     application.form.copy(
-                        preferences = application.form.preferences.copy(urgent = false)
-                    )
+                        preferences = application.form.preferences.copy(urgent = false),
+                    ),
             )
         applicationControllerV2.updateApplication(
             dbInstance(),
@@ -384,10 +384,10 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             application.form.preferences.copy(
                                 serviceNeed =
                                     application.form.preferences.serviceNeed!!.copy(
-                                        shiftCare = false
-                                    )
-                            )
-                    )
+                                        shiftCare = false,
+                                    ),
+                            ),
+                    ),
             )
         applicationControllerCitizen.updateApplication(
             dbInstance(),
@@ -447,10 +447,10 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             application.form.preferences.copy(
                                 serviceNeed =
                                     application.form.preferences.serviceNeed!!.copy(
-                                        shiftCare = false
-                                    )
-                            )
-                    )
+                                        shiftCare = false,
+                                    ),
+                            ),
+                    ),
             )
         applicationControllerV2.updateApplication(
             dbInstance(),

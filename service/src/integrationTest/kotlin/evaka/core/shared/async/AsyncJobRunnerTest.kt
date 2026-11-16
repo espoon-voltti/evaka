@@ -55,7 +55,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                         AsyncJobPool.Id(TestJob::class, "default"),
                         AsyncJobPool.Config(),
                         setOf(TestJob::class),
-                    )
+                    ),
                 ),
                 jdbi,
                 noopTracer,
@@ -194,7 +194,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `permanent failure wrapped in another exception skips the remaining attempts`() {
         assertFailsPermanentlyOnFirstAttempt(
-            RuntimeException("wrapper", PermanentAsyncJobFailure("invalid data"))
+            RuntimeException("wrapper", PermanentAsyncJobFailure("invalid data")),
         )
     }
 
@@ -257,7 +257,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                         AsyncJobPool.Id(TestJob::class, "throttled"),
                         AsyncJobPool.Config(throttleInterval = Duration.ofMillis(100)),
                         setOf(TestJob::class),
-                    )
+                    ),
                 ),
                 jdbi,
                 noopTracer,

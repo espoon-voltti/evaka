@@ -66,7 +66,7 @@ fun insertCustomerNumbers(db: Database.Connection) = db.transaction { tx ->
             sql(
                 "INSERT INTO nekku_customer VALUES" +
                     "('1234', 'Lönnrotinkadun päiväkoti', 'Varhaiskasvatus')," +
-                    "('5678', 'Rubeberginkadun päiväkoti', 'Varhaiskasvatus')"
+                    "('5678', 'Rubeberginkadun päiväkoti', 'Varhaiskasvatus')",
             )
         }
         .execute()
@@ -81,7 +81,7 @@ fun insertSpecialDiets(db: Database.Connection) {
                 sql(
                     "INSERT INTO nekku_special_diet_field VALUES" +
                         "('12345678-9ABC-DEF0-1234-56789ABCDEF0', 'Erityisruokavaliot', 'CHECKBOXLIST', '2')," +
-                        "('56789ABC-DEF0-1234-5678-9ABCDEF01234', 'Muu erityisruokavalio', 'TEXT', '2')"
+                        "('56789ABC-DEF0-1234-5678-9ABCDEF01234', 'Muu erityisruokavalio', 'TEXT', '2')",
                 )
             }
             .execute()
@@ -90,7 +90,7 @@ fun insertSpecialDiets(db: Database.Connection) {
                 sql(
                     "INSERT INTO nekku_special_diet_option VALUES" +
                         "(1, 'Kananmunaton', 'Kananmunaton', '12345678-9ABC-DEF0-1234-56789ABCDEF0')," +
-                        "(2, 'Sianlihaton', 'Sianlihaton', '12345678-9ABC-DEF0-1234-56789ABCDEF0')"
+                        "(2, 'Sianlihaton', 'Sianlihaton', '12345678-9ABC-DEF0-1234-56789ABCDEF0')",
                 )
             }
             .execute()
@@ -115,7 +115,7 @@ fun insertNekkuSpecialDietChoice(
                         ${bind(dietField)},
                         ${bind(dietValue)}
                     )
-                    """
+                    """,
                 )
             }
             .execute()
@@ -151,7 +151,7 @@ fun createChildrenWithGroupPlacement(
                     unitId = daycareId,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             .also { placementId ->
                 tx.insert(
@@ -160,7 +160,7 @@ fun createChildrenWithGroupPlacement(
                         daycareGroupId = groupId,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
             }
         child

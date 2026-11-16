@@ -49,7 +49,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                     startDate = date.minusDays(1),
                     endDate = date.minusDays(1),
                     placeGuarantee = false,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -58,7 +58,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                     startDate = date.plusDays(1),
                     endDate = date.plusDays(1),
                     placeGuarantee = true,
-                )
+                ),
             )
             childId
         }
@@ -108,7 +108,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                     startDate = date.minusDays(1),
                     endDate = date.minusDays(1),
                     placeGuarantee = false,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -117,7 +117,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                     startDate = date.plusDays(1),
                     endDate = date.plusDays(1),
                     placeGuarantee = true,
-                )
+                ),
             )
             val childId2 = tx.insert(DevPerson(), DevPersonType.CHILD)
             tx.insert(
@@ -127,7 +127,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                     startDate = date.minusDays(1),
                     endDate = date.minusDays(1),
                     placeGuarantee = false,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -136,7 +136,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                     startDate = date.plusDays(1),
                     endDate = date.plusDays(1),
                     placeGuarantee = true,
-                )
+                ),
             )
             childId1
         }

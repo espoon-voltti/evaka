@@ -313,7 +313,7 @@ class McpOAuthController(private val config: McpServerConfig) {
                             "token_type" to "Bearer",
                             "expires_in" to expiresIn,
                             "scope" to result.authorization.scope,
-                        )
+                        ),
                     )
             }
         }

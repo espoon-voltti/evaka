@@ -26,7 +26,7 @@ class RuleCacheTest : AccessControlTest() {
                     Triple(user, now, cacheKey)
 
                 override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
+                    ctx: DatabaseActionRule.QueryContext,
                 ): DatabaseActionRule.Deferred<P> = deferred()
             },
         )

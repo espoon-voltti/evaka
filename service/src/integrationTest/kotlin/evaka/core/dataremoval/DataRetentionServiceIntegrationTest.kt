@@ -78,7 +78,7 @@ class DataRetentionServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(recent, DevPersonType.CHILD)
             tx.execute {
                 sql(
-                    "UPDATE person SET created = ${bind(HelsinkiDateTime.of(today.minusYears(13), LocalTime.NOON))} WHERE id = ${bind(longGone.id)}"
+                    "UPDATE person SET created = ${bind(HelsinkiDateTime.of(today.minusYears(13), LocalTime.NOON))} WHERE id = ${bind(longGone.id)}",
                 )
             }
             tx.insert(
@@ -87,7 +87,7 @@ class DataRetentionServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     startDate = today.minusYears(12),
                     endDate = today.minusYears(11),
-                )
+                ),
             )
             tx.insertChildImage(longGone.id)
             tx.insert(
@@ -96,7 +96,7 @@ class DataRetentionServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     startDate = today.minusYears(2),
                     endDate = today.minusYears(1),
-                )
+                ),
             )
         }
     }
@@ -109,7 +109,7 @@ SELECT 'person' AS t FROM person WHERE id = ${bind(id)}
 UNION ALL SELECT 'child' FROM child WHERE id = ${bind(id)}
 UNION ALL SELECT DISTINCT 'placement' FROM placement WHERE child_id = ${bind(id)}
 UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bind(id)}
-"""
+""",
                 )
             }
             .toSet<String>()
@@ -293,7 +293,7 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
                     unitId = daycare.id,
                     startDate = duplicatePlacementEnd.minusYears(1),
                     endDate = duplicatePlacementEnd,
-                )
+                ),
             )
         }
 
@@ -307,7 +307,7 @@ UNION ALL SELECT DISTINCT 'child_images' FROM child_images WHERE child_id = ${bi
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE placement SET end_date = end_date - 1 WHERE child_id = ${bind(duplicate.id)}"
+                    "UPDATE placement SET end_date = end_date - 1 WHERE child_id = ${bind(duplicate.id)}",
                 )
             }
         }
@@ -330,7 +330,7 @@ INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_v
 VALUES
     (${bind(longGone.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1),
     (${bind(duplicate.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
-"""
+""",
                 )
             }
         }
@@ -380,7 +380,7 @@ VALUES
         fun Database.Transaction.setApplicationSent(date: LocalDate) {
             execute {
                 sql(
-                    "UPDATE application SET status = 'SENT', sentdate = ${bind(date)} WHERE id = ${bind(applicationId)}"
+                    "UPDATE application SET status = 'SENT', sentdate = ${bind(date)} WHERE id = ${bind(applicationId)}",
                 )
             }
         }

@@ -56,7 +56,7 @@ class DvvModificationsServiceClient(
                                 val builder = chain.request().newBuilder()
                                 customizers.forEach { it.customize(builder) }
                                 chain.proceed(builder.build())
-                            }
+                            },
                         )
                     }
                 },
@@ -64,7 +64,7 @@ class DvvModificationsServiceClient(
         )
 
     fun getFirstModificationToken(
-        date: LocalDate
+        date: LocalDate,
     ): DvvModificationServiceModificationTokenResponse? {
         logger.info {
             "Fetching the first modification token of $date from DVV modification service from $serviceUrl/kirjausavain/$date"
@@ -72,7 +72,7 @@ class DvvModificationsServiceClient(
         return try {
             val response =
                 httpClient.get<DvvModificationServiceModificationTokenResponse>(
-                    "kirjausavain/$date"
+                    "kirjausavain/$date",
                 )
             logger.info {
                 "Fetching the first modification token of $date from DVV modification service succeeded"
@@ -151,7 +151,7 @@ private fun configureCertificateCheck(
 }
 
 data class DvvModificationServiceModificationTokenResponse(
-    @JsonProperty("viimeisinKirjausavain") var latestModificationToken: Long
+    @JsonProperty("viimeisinKirjausavain") var latestModificationToken: Long,
 )
 
 /** Callback interface that can be implemented by beans wishing to customize the HTTP requests. */

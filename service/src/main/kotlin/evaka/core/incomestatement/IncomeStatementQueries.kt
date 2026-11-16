@@ -123,7 +123,7 @@ JOIN person p ON p.id = ist.person_id
 WHERE ${predicate(statusVisibility.forTable("ist"))}
 AND ${predicate(extraPredicate.forTable("ist"))}
 ${subquery(ordering)}
-"""
+""",
     )
 }
 
@@ -521,7 +521,7 @@ INSERT INTO income_statement (
     ${bind(if (draft) null else now)}
 )
 RETURNING id
-        """
+        """,
         )
     }
         .exactlyOne()
@@ -573,7 +573,7 @@ UPDATE income_statement SET
     alimony_payer = ${bind(bindings.alimonyPayer)},
     other_info = ${bind(bindings.otherInfo)}
 WHERE id = ${bind(incomeStatementId)}
-        """
+        """,
         )
     }
         .updateExactlyOne()
@@ -594,7 +594,7 @@ SET modified_at = ${bind(now)},
     other_info = ${bind(otherInfo)},
     citizen_modified_at = ${bind(now)}
 WHERE id = ${bind(incomeStatementId)}
-"""
+""",
         )
     }
 }
@@ -618,7 +618,7 @@ SET modified_at = ${bind(now)},
     status = ${bind(status)}
 WHERE id = ${bind(incomeStatementId)}
 RETURNING person_id, start_date
-"""
+""",
     )
 }
     .exactlyOneOrNull { column<PersonId>("person_id") to column<LocalDate>("start_date") }
@@ -633,7 +633,7 @@ UPDATE attachment
 SET income_statement_id = NULL
 WHERE income_statement_id = ${bind(id)}
 RETURNING id
-"""
+""",
         )
     }
         .toList<AttachmentId>()
@@ -675,7 +675,7 @@ private fun awaitingHandlerQuery(
                 .takeIf { providerTypes.isNotEmpty() },
             PredicateSql {
                 where(
-                    "family_unit.start_date IS NOT NULL AND family_unit.end_date IS NOT NULL AND daterange(family_unit.start_date, family_unit.end_date, '[]') @> ${bind(placementValidDate)}"
+                    "family_unit.start_date IS NOT NULL AND family_unit.end_date IS NOT NULL AND daterange(family_unit.start_date, family_unit.end_date, '[]') @> ${bind(placementValidDate)}",
                 )
             }
                 .takeIf { placementValidDate != null },
@@ -683,7 +683,7 @@ private fun awaitingHandlerQuery(
                 .takeIf { status.isNotEmpty() },
             PredicateSql {
                 where(
-                    "i.status = 'SENT'::income_statement_status OR i.status = 'HANDLING'::income_statement_status"
+                    "i.status = 'SENT'::income_statement_status OR i.status = 'HANDLING'::income_statement_status",
                 )
             }
                 .takeIf { status.isEmpty() },
@@ -782,7 +782,7 @@ WHERE
     between_start_and_end(tstzrange(${bind(sentStart)}, ${bind(sentEnd)}, '[)'), i.sent_at) AND
     ${predicate(filters)}
 GROUP BY i.id, person.id
-"""
+""",
     )
 }
 
@@ -849,7 +849,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
 SELECT * FROM (${subquery(query)}) q
 ORDER BY $sortExpression, id
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
-"""
+""",
         )
     }
         .toList<IncomeStatementAwaitingHandler>()
@@ -876,7 +876,7 @@ fun Database.Read.unhandledIncomeStatementExistsForStartDate(
                     SELECT FROM income_statement 
                     WHERE person_id = ${bind(personId)} AND start_date = ${bind(startDate)} AND status != 'HANDLED'
                 )
-            """
+            """,
     )
 }
     .exactlyOne()
@@ -888,7 +888,7 @@ fun Database.Read.citizenHasUnhandledIncomeStatements(personId: PersonId): Boole
                     SELECT FROM income_statement
                     WHERE person_id = ${bind(personId)} AND status = ANY(${bind(listOf(IncomeStatementStatus.SENT, IncomeStatementStatus.HANDLING))})
                 )
-            """
+            """,
     )
 }
     .exactlyOne()
@@ -910,7 +910,7 @@ FROM guardian g
 WHERE g.guardian_id = ${bind(guardianId)}
     AND pl.type = ANY(${bind(PlacementType.invoiced)})
 ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
-        """
+        """,
             )
         }
         .toList()
@@ -945,7 +945,7 @@ fun Database.Read.getPartnerIncomeStatementStatus(
     WHERE fp.person_id = ${bind(personId)} 
         AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
         AND NOT fp.conflict
-"""
+""",
     )
 }
     .exactlyOneOrNull {

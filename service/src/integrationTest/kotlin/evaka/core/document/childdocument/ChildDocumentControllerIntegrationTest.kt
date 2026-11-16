@@ -161,8 +161,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                     allowMultipleRows = true,
                                 ),
                             ),
-                    )
-                )
+                    ),
+                ),
         )
 
     val devTemplatePed =
@@ -257,7 +257,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 unitId = unitId,
                 startDate = startDate,
                 endDate = endDate,
-            )
+            ),
         )
     }
 
@@ -277,7 +277,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     daycareGroupId = groupId,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             groupId
         }
@@ -365,7 +365,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     publishedBy = null,
                     answeredAt = null,
                     answeredBy = null,
-                )
+                ),
             ),
             summaries.map { it.data },
         )
@@ -493,7 +493,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertFalse(
             templateController
                 .getTemplate(dbInstance(), employeeUser.user, clock, templateIdAssistanceDecision)
-                .published
+                .published,
         )
         assertEquals(0, getDocuments(child.id).size)
     }
@@ -505,7 +505,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 DevDocumentTemplate(
                     validity = DateRange(clock.today().minusDays(9), clock.today().minusDays(1)),
                     content = templateContent,
-                )
+                ),
             )
         }
         assertThrows<BadRequest> { createDocument(templateId = template2) }
@@ -519,7 +519,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     validity = DateRange(clock.today(), clock.today()),
                     published = false,
                     content = templateContent,
-                )
+                ),
             )
         }
         assertThrows<BadRequest> { createDocument(templateId = template2) }
@@ -597,7 +597,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     (child_document_id, version_number, created_at, created_by, published_content)
                     SELECT ${bind(documentId)}, 1, ${bind(clock.now())}, ${bind(employeeUser.evakaUserId)}, content
                     FROM child_document WHERE id = ${bind(documentId)}
-                """
+                """,
                     )
                 }
                 .execute()
@@ -623,7 +623,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val versionsAfter = db.read { it.getChildDocumentPublishedVersions(documentId) }
         assertEquals(1, versionsAfter.size)
         assertNotNull(
-            versionsAfter[0].documentKey
+            versionsAfter[0].documentKey,
         ) // PDF should be generated (defaults to version 1)
     }
 
@@ -691,7 +691,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         """
                     INSERT INTO child_document_read (document_id, person_id, read_at)
                     VALUES (${bind(documentId)}, ${bind(adult.id)}, ${bind(clock.now())})
-                """
+                """,
                     )
                 }
                 .execute()
@@ -701,7 +701,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val readMarkersAfterReading = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}",
                     )
                 }
                 .exactlyOne<Int>()
@@ -721,7 +721,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val readMarkersAfterRepublish = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}",
                     )
                 }
                 .exactlyOne<Int>()
@@ -743,7 +743,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val readMarkersAfterPdf = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}",
                     )
                 }
                 .exactlyOne<Int>()
@@ -863,7 +863,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val scheduledDeleteKeys = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT payload::json->>'key' as key FROM async_job WHERE type = 'DeleteChildDocumentPdf'"
+                        "SELECT payload::json->>'key' as key FROM async_job WHERE type = 'DeleteChildDocumentPdf'",
                     )
                 }
                 .toList<String>()
@@ -899,7 +899,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                             "q8",
                             listOf(listOf("donald", "duck"), listOf("mickey", "mouse")),
                         ),
-                    )
+                    ),
             )
         updateDocumentContent(documentId, content)
         assertEquals(
@@ -1067,7 +1067,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             dayAfter,
             documentId,
             ChildDocumentController.UpdateChildDocumentDecisionValidityRequest(
-                DateRange(clock.today(), clock.today().plusDays(3))
+                DateRange(clock.today(), clock.today().plusDays(3)),
             ),
         )
         annulChildDocumentDecision(
@@ -1108,8 +1108,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                 CheckboxGroupAnswerContent("a"),
                                 CheckboxGroupAnswerContent("d"),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
         assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
     }
@@ -1250,13 +1250,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     messageId = MockSfiMessagesClient.getMessages().first().messageId,
                     eventType = EventType.ELECTRONIC_MESSAGE_CREATED,
                     eventTime = sentAt,
-                )
+                ),
             )
         }
         assertThat(getChildDocumentMetadata(documentId).data!!.primaryDocument.sfiDeliveries)
             .extracting({ it.recipientName }, { it.method }, { it.time }, { it.readAt })
             .containsExactly(
-                Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC, sentAt, null)
+                Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC, sentAt, null),
             )
 
         val readAt = HelsinkiDateTime.of(LocalDate.of(2026, 3, 13), LocalTime.of(9, 12))
@@ -1266,13 +1266,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     messageId = MockSfiMessagesClient.getMessages().first().messageId,
                     eventType = EventType.ELECTRONIC_MESSAGE_READ,
                     eventTime = readAt,
-                )
+                ),
             )
         }
         assertThat(getChildDocumentMetadata(documentId).data!!.primaryDocument.sfiDeliveries)
             .extracting({ it.recipientName }, { it.method }, { it.time }, { it.readAt })
             .containsExactly(
-                Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC, sentAt, readAt)
+                Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC, sentAt, readAt),
             )
     }
 
@@ -1482,7 +1482,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     DevDaycare(
                         areaId = area.id,
                         enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
-                    )
+                    ),
                 )
             val childId = tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
             tx.insert(
@@ -1491,7 +1491,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     unitId = unitId,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
             childId
         }
@@ -1512,7 +1512,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     unitId = unitId,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
             childId
         }
@@ -1596,7 +1596,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         // Staff employee should NOT be able to update the decision document
         val decisionContent =
             DocumentContent(
-                answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit decision"))
+                answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit decision")),
             )
         assertThrows<Forbidden> {
             updateDocumentContent(
@@ -1925,7 +1925,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
             val content =
                 DocumentContent(
-                    answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit $typeName"))
+                    answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit $typeName")),
                 )
             updateDocumentContent(documentId, content, now = staffClock, user = staffUser)
 
@@ -1990,7 +1990,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `staff and unit supervisor can read documents during an active backup care, but only read`() {
         val backupGroupId =
             insertBackupCare(
-                period = FiniteDateRange(clock.today().minusDays(2), clock.today().plusDays(2))
+                period = FiniteDateRange(clock.today().minusDays(2), clock.today().plusDays(2)),
             )
 
         val staffUser = db.transaction { tx ->
@@ -2014,7 +2014,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `backup care access does not allow updating or publishing documents`() {
         val backupGroupId =
             insertBackupCare(
-                period = FiniteDateRange(clock.today().minusDays(2), clock.today().plusDays(2))
+                period = FiniteDateRange(clock.today().minusDays(2), clock.today().plusDays(2)),
             )
 
         val staffUser = db.transaction { tx ->
@@ -2039,7 +2039,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `staff and unit supervisor cannot access documents outside the backup care period`() {
         val backupGroupId =
             insertBackupCare(
-                period = FiniteDateRange(clock.today().plusDays(5), clock.today().plusDays(10))
+                period = FiniteDateRange(clock.today().plusDays(5), clock.today().plusDays(10)),
             )
 
         val staffUser = db.transaction { tx ->
@@ -2067,7 +2067,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 unitId = daycare.id,
                 groupId = groupId,
                 period = period,
-            )
+            ),
         )
         groupId
     }
@@ -2092,7 +2092,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val templateId = DocumentTemplateId(UUID.randomUUID())
         db.transaction { tx ->
             tx.insert(
-                devTemplatePed.copy(id = templateId, placementTypes = setOf(PlacementType.CLUB))
+                devTemplatePed.copy(id = templateId, placementTypes = setOf(PlacementType.CLUB)),
             )
         }
         // the helper creates a DAYCARE placement, which the template does not allow
@@ -2120,7 +2120,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     unitId = unitId,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
             childId
         }
@@ -2198,7 +2198,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 unitId = daycare.id,
                 startDate = clock.today().plusDays(30),
                 endDate = clock.today().plusDays(90),
-            )
+            ),
         )
         childId
     }
@@ -2282,7 +2282,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 modifiedBy = employeeUser.evakaUserId,
                 contentLockedAt = clock.now(),
                 contentLockedBy = null,
-            )
+            ),
         )
     }
 

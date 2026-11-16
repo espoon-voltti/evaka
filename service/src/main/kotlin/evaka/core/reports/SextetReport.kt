@@ -53,7 +53,7 @@ class SextetReportController(private val accessControl: AccessControl) {
             .also {
                 Audit.SextetReportRead.log(
                     meta =
-                        mapOf("year" to year, "placementType" to placementType, "count" to it.size)
+                        mapOf("year" to year, "placementType" to placementType, "count" to it.size),
                 )
             }
     }
@@ -71,7 +71,7 @@ fun Database.Read.sextetReport(
         if (placementType.absenceCategories().size == 1) {
             Predicate {
                 where(
-                    "NOT EXISTS (SELECT FROM absence WHERE child_id = $it.child_id AND date = $it.date)"
+                    "NOT EXISTS (SELECT FROM absence WHERE child_id = $it.child_id AND date = $it.date)",
                 )
             }
         } else {
@@ -80,7 +80,7 @@ fun Database.Read.sextetReport(
                     """
             NOT EXISTS (SELECT FROM absence WHERE child_id = $it.child_id AND date = $it.date AND category = 'BILLABLE') OR 
             NOT EXISTS (SELECT FROM absence WHERE child_id = $it.child_id AND date = $it.date AND category = 'NONBILLABLE')
-        """
+        """,
                 )
             }
         }
@@ -89,7 +89,7 @@ fun Database.Read.sextetReport(
         Predicate.allNotNull(
             unitProviderTypes?.let {
                 Predicate { table -> where("$table.provider_type = ANY (${bind(it)})") }
-            }
+            },
         )
 
     return createQuery {
@@ -144,7 +144,7 @@ AND ep.placement_type = ${bind(placementType)}
 AND ${predicate(unitPredicates.forTable("d"))}
 GROUP BY ep.unit_id, d.name
 ORDER BY d.name
-    """
+    """,
         )
     }
         .toList<SextetReportRow>()

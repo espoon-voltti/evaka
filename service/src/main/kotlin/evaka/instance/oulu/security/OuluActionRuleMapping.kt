@@ -35,7 +35,7 @@ class OuluActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.STAFF).inPlacementUnitOfChildOfBackupCare()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -45,7 +45,7 @@ class OuluActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.STAFF).inPlacementUnitOfChild()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -91,7 +91,7 @@ class OuluActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 action.defaultRules.asSequence() +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 

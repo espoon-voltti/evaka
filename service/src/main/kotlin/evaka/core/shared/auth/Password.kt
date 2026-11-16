@@ -117,7 +117,7 @@ sealed class PasswordHashAlgorithm {
         val parallelism: Int,
     ) : PasswordHashAlgorithm() {
         enum class Version(val rawValue: Int) {
-            VERSION_13(Argon2Parameters.ARGON2_VERSION_13)
+            VERSION_13(Argon2Parameters.ARGON2_VERSION_13),
         }
 
         override fun hashLength(): Int = hashLength
@@ -135,7 +135,7 @@ sealed class PasswordHashAlgorithm {
                     .withIterations(this.iterations)
                     .withParallelism(this.parallelism)
                     .withSalt(salt.value)
-                    .build()
+                    .build(),
             )
             generator.generateBytes(password.value.toByteArray(Charsets.UTF_8), output)
             return EncodedPassword.Hash(output)
@@ -167,7 +167,7 @@ sealed class PasswordHashAlgorithm {
                     when (hashType) {
                         HashType.SHA256 -> DigestFactory.createSHA256()
                         HashType.SHA512 -> DigestFactory.createSHA512()
-                    }
+                    },
                 )
             gen.init(password.value.toByteArray(Charsets.UTF_8), salt.value, iterationCount)
             val parameters = gen.generateDerivedParameters(keySize)

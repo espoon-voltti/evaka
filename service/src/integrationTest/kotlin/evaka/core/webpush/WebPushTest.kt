@@ -24,7 +24,7 @@ class WebPushTest : PureJdbiTest(resetDbBeforeEach = true) {
             WebPushEnv(
                 vapidPrivateKey = Sensitive("eCCqlmasgp3hG9TB1W-mbDp_kEyXCxzxv6vwyRXK7y4"),
                 allowInsecureEndpoints = true,
-            )
+            ),
         )
 
     @BeforeEach

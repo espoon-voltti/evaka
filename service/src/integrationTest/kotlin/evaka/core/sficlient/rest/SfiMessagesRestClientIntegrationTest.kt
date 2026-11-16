@@ -81,7 +81,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 },
                 passwordStore =
                     MockPasswordStore(
-                        initialPassword = MockSfiMessagesRestEndpoint.DEFAULT_PASSWORD
+                        initialPassword = MockSfiMessagesRestEndpoint.DEFAULT_PASSWORD,
                     ),
             )
     }
@@ -117,7 +117,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                         SenderDetailsInNotifications.ORGANIZATION_AND_SERVICE_NAME,
                                     unreadMessageNotification =
                                         UnreadMessageNotification(
-                                            reminder = Reminder.DEFAULT_REMINDER
+                                            reminder = Reminder.DEFAULT_REMINDER,
                                         ),
                                 ),
                             replyAllowedBy = ReplyAllowedBy.NO_ONE,
@@ -134,7 +134,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                             ContactDetails(sfiEnv.contactPerson.email!!),
                                         username = sfiEnv.printing.billingId,
                                         password = sfiEnv.printing.billingPassword!!.value,
-                                    )
+                                    ),
                                 ),
                             recipient =
                                 NewPaperMailRecipient(
@@ -143,7 +143,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                         streetAddress = message.streetAddress,
                                         zipCode = message.postalCode,
                                         city = message.postOffice,
-                                    )
+                                    ),
                                 ),
                             sender =
                                 NewPaperMailSender(
@@ -152,7 +152,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                         streetAddress = sfiEnv.contactOrganization.streetAddress!!,
                                         zipCode = sfiEnv.contactOrganization.postalCode!!,
                                         city = sfiEnv.contactOrganization.postOffice!!,
-                                    )
+                                    ),
                                 ),
                             colorPrinting = true,
                             messageServiceType = MessageServiceType.NORMAL,
@@ -182,7 +182,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 },
                 passwordStore =
                     MockPasswordStore(
-                        initialPassword = MockSfiMessagesRestEndpoint.DEFAULT_PASSWORD
+                        initialPassword = MockSfiMessagesRestEndpoint.DEFAULT_PASSWORD,
                     ),
             )
 

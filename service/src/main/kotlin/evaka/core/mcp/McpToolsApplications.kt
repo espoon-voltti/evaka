@@ -56,19 +56,19 @@ class McpToolsApplications(
     data class AdvanceApplicationInput(
         @McpDoc("Application created via MCP") val applicationId: ApplicationId,
         @McpDoc(
-            "Lifecycle step. Typical daycare flow: MOVE_TO_WAITING_PLACEMENT -> CREATE_PLACEMENT_PLAN -> SEND_DECISIONS_WITHOUT_PROPOSAL (or SEND_PLACEMENT_PROPOSAL -> ACCEPT_PLACEMENT_PROPOSAL) -> CONFIRM_DECISION_MAILED -> ACCEPT_DECISIONS. Every step is done as the authorized admin, like an employee in the UI; ACCEPT_DECISIONS / REJECT_DECISIONS are recorded as done by the admin on the guardian's behalf. ACCEPT_PLACEMENT_PROPOSAL confirms all pending proposals of the unit, like the UI, and refuses if any of them belong to applications not created via MCP."
+            "Lifecycle step. Typical daycare flow: MOVE_TO_WAITING_PLACEMENT -> CREATE_PLACEMENT_PLAN -> SEND_DECISIONS_WITHOUT_PROPOSAL (or SEND_PLACEMENT_PROPOSAL -> ACCEPT_PLACEMENT_PROPOSAL) -> CONFIRM_DECISION_MAILED -> ACCEPT_DECISIONS. Every step is done as the authorized admin, like an employee in the UI; ACCEPT_DECISIONS / REJECT_DECISIONS are recorded as done by the admin on the guardian's behalf. ACCEPT_PLACEMENT_PROPOSAL confirms all pending proposals of the unit, like the UI, and refuses if any of them belong to applications not created via MCP.",
         )
         val action: ApplicationAction,
         @McpDoc(
-            "CREATE_PLACEMENT_PLAN: unit to place the child in. Defaults to the first preferred unit."
+            "CREATE_PLACEMENT_PLAN: unit to place the child in. Defaults to the first preferred unit.",
         )
         val unitId: DaycareId? = null,
         @McpDoc(
-            "CREATE_PLACEMENT_PLAN: placement start. Defaults to the preferred start date. ACCEPT_DECISIONS: requested start date."
+            "CREATE_PLACEMENT_PLAN: placement start. Defaults to the preferred start date. ACCEPT_DECISIONS: requested start date.",
         )
         val startDate: LocalDate? = null,
         @McpDoc(
-            "CREATE_PLACEMENT_PLAN: placement end. Defaults to ~1 year after start (end of July)."
+            "CREATE_PLACEMENT_PLAN: placement end. Defaults to ~1 year after start (end of July).",
         )
         val endDate: LocalDate? = null,
     )
@@ -76,7 +76,7 @@ class McpToolsApplications(
     data class SendMessageInput(
         @McpDoc(BATCH_DOC) val batch: String,
         @McpDoc(
-            "Employee (created via MCP) whose personal message account sends the message. The employee must have a unit role (e.g. UNIT_SUPERVISOR) in the children's unit."
+            "Employee (created via MCP) whose personal message account sends the message. The employee must have a unit role (e.g. UNIT_SUPERVISOR) in the children's unit.",
         )
         val senderEmployeeId: EmployeeId,
         @McpDoc("Children whose guardians receive the message") val childIds: List<ChildId>,
@@ -135,13 +135,13 @@ WHERE pp.unit_id = ${bind(unitId)}
   AND NOT EXISTS (
     SELECT FROM mcp_test_data_entity e WHERE e.table_name = 'application' AND e.entity_id = a.id
   )
-"""
+""",
                     )
                 }
                 .toList<ApplicationId>()
         if (foreignApplicationIds.isNotEmpty())
             throw Conflict(
-                "Confirming the placement proposal would also finalize ${foreignApplicationIds.size} other pending proposal(s) in the same unit that were not created via MCP (applications ${foreignApplicationIds.joinToString()}). Handle them in the employee UI first, or use a unit with no other pending proposals."
+                "Confirming the placement proposal would also finalize ${foreignApplicationIds.size} other pending proposal(s) in the same unit that were not created via MCP (applications ${foreignApplicationIds.joinToString()}). Handle them in the employee UI first, or use a unit with no other pending proposals.",
             )
     }
 
@@ -249,7 +249,7 @@ WHERE pp.unit_id = ${bind(unitId)}
                     )
                 } catch (e: Conflict) {
                     throw BadRequest(
-                        "Could not send decisions: ${e.message}. If decision reasoning texts are missing in this environment, an admin must add them under 'Päätösten perustelut' in the employee UI first."
+                        "Could not send decisions: ${e.message}. If decision reasoning texts are missing in this environment, an admin must add them under 'Päätösten perustelut' in the employee UI first.",
                     )
                 }
             ApplicationAction.SEND_PLACEMENT_PROPOSAL ->
@@ -273,7 +273,7 @@ WHERE pp.unit_id = ${bind(unitId)}
             ApplicationAction.CREATE_PLACEMENT_PLAN -> {
                 if (application.status != ApplicationStatus.WAITING_PLACEMENT)
                     throw BadRequest(
-                        "Application must be in WAITING_PLACEMENT status (now ${application.status})"
+                        "Application must be in WAITING_PLACEMENT status (now ${application.status})",
                     )
                 if (!application.checkedByAdmin || application.confidential == null) {
                     // Same as the service worker ticking "checked" and setting confidentiality in
@@ -295,7 +295,7 @@ WHERE pp.unit_id = ${bind(unitId)}
                     input.startDate
                         ?: application.form.preferences.preferredStartDate
                         ?: throw BadRequest(
-                            "Application has no preferred start date; give startDate"
+                            "Application has no preferred start date; give startDate",
                         )
                 val end =
                     input.endDate
@@ -327,7 +327,7 @@ WHERE pp.unit_id = ${bind(unitId)}
                     ctx.tx
                         .createQuery {
                             sql(
-                                "SELECT unit_id FROM placement_plan WHERE application_id = ${bind(application.id)} AND deleted = false"
+                                "SELECT unit_id FROM placement_plan WHERE application_id = ${bind(application.id)} AND deleted = false",
                             )
                         }
                         .exactlyOneOrNull<DaycareId>()
@@ -439,13 +439,13 @@ WHERE pp.unit_id = ${bind(unitId)}
             )
         if (contentId == null || recipientCount == 0)
             throw BadRequest(
-                "No recipients found. The sender ($senderName) must have a unit role in the children's placement unit, and the children must have active placements."
+                "No recipients found. The sender ($senderName) must have a unit role in the children's placement unit, and the children must have active placements.",
             )
         val threadIds =
             ctx.tx
                 .createQuery {
                     sql(
-                        "SELECT DISTINCT thread_id FROM message WHERE content_id = ${bind(contentId)}"
+                        "SELECT DISTINCT thread_id FROM message WHERE content_id = ${bind(contentId)}",
                     )
                 }
                 .toList<MessageThreadId>()
@@ -506,7 +506,7 @@ JOIN mcp_test_data_entity e ON e.batch_id = ${bind(batchId)}
   AND ((e.table_name = 'person' AND e.entity_id = ma.person_id)
     OR (e.table_name = 'employee' AND e.entity_id = ma.employee_id))
 WHERE p.thread_id = ANY(${bind(threadIdsRaw)})
-"""
+""",
                     )
                 }
                 .toList<UUID>()

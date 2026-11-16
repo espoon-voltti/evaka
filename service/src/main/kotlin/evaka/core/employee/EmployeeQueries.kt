@@ -98,7 +98,7 @@ fun Database.Transaction.createEmployee(employee: NewEmployee): Employee = creat
 INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, temporary_in_unit_id, active)
 VALUES (${bind(employee.firstName)}, ${bind(employee.lastName)}, ${bind(employee.email)}, ${bind(employee.externalId)}, ${bind(employee.employeeNumber)}, ${bind(employee.roles)}::user_role[], ${bind(employee.temporaryInUnitId)}, ${bind(employee.active)})
 RETURNING id, first_name, last_name, email, external_id, created, updated, roles, temporary_in_unit_id, active, (social_security_number IS NOT NULL) AS has_ssn, last_login
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -110,7 +110,7 @@ fun Database.Transaction.updateExternalIdByEmployeeNumber(
     externalId: ExternalId,
 ) = createUpdate {
     sql(
-        "UPDATE employee SET external_id = ${bind(externalId)} WHERE employee_number = ${bind(employeeNumber)} AND (external_id != ${bind(externalId)} OR external_id IS NULL)"
+        "UPDATE employee SET external_id = ${bind(externalId)} WHERE employee_number = ${bind(employeeNumber)} AND (external_id != ${bind(externalId)} OR external_id IS NULL)",
     )
 }
     .updateNoneOrOne()
@@ -123,13 +123,13 @@ fun Database.Transaction.loginEmployee(clock: EvakaClock, employee: NewEmployee)
 INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, active, last_login)
 VALUES (${bind(employee.firstName)}, ${bind(employee.lastName)}, ${bind(employee.email)}, ${bind(employee.externalId)}, ${
                 bind(
-                    employee.employeeNumber
+                    employee.employeeNumber,
                 )
             }, ${bind(employee.roles)}::user_role[], ${bind(employee.active)}, ${bind(now)})
 ON CONFLICT (external_id) DO UPDATE
 SET last_login = ${bind(now)}, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number, active = TRUE
 RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles, active, (social_security_number IS NOT NULL) AS has_ssn, last_login
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -152,7 +152,7 @@ UPDATE employee
 SET last_login = ${bind(now)}, first_name = ${bind(request.firstName)}, last_name = ${bind(request.lastName)}
 WHERE social_security_number = ${bind(request.ssn.value)}
 RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, temporary_in_unit_id, active, (social_security_number IS NOT NULL) AS has_ssn, last_login
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -168,7 +168,7 @@ SELECT employee.roles AS global_roles, (
 ) AS all_scoped_roles
 FROM employee
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOne<EmployeeRoles>()
@@ -179,7 +179,7 @@ fun Database.Read.getEmployeeNumber(id: EmployeeId): String? = createQuery {
 SELECT employee_number
 FROM employee
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull<String>()
@@ -195,7 +195,7 @@ SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.
 FROM employee e
 WHERE (${bind(id)}::uuid IS NULL OR e.id = ${bind(id)}) AND (${bind(externalId)}::text IS NULL OR e.external_id = ${bind(externalId)})
   AND (${bind(temporaryInUnitId)} IS NULL OR e.temporary_in_unit_id = ${bind(temporaryInUnitId)})
-"""
+""",
     )
 }
     .mapTo<Employee>()
@@ -207,7 +207,7 @@ SELECT DISTINCT e.id, e.preferred_first_name, e.first_name, e.last_name, e.email
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
 WHERE (${bind(id)}::uuid IS NULL OR e.id = ${bind(id)})
-    """
+    """,
     )
 }
     .mapTo<Employee>()
@@ -236,7 +236,7 @@ SELECT id, preferred_first_name, first_name, last_name, email, active, employee.
 ) AS all_scoped_roles
 FROM employee
 WHERE ${predicate(where.forTable("employee"))}
-"""
+""",
     )
 }
 
@@ -246,7 +246,7 @@ fun Database.Transaction.markEmployeeLastLogin(clock: EvakaClock, id: EmployeeId
 UPDATE employee 
 SET last_login = ${bind(clock.now())}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .execute()
@@ -300,7 +300,7 @@ SELECT
 FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
 WHERE employee.id = ${bind(id)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<EmployeeWithDaycareRoles>()
@@ -309,7 +309,7 @@ WHERE employee.id = ${bind(id)}
 fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastName: String) =
     createUpdate {
         sql(
-            "UPDATE employee SET first_name = ${bind(firstName)}, last_name = ${bind(lastName)} WHERE id = ${bind(id)}"
+            "UPDATE employee SET first_name = ${bind(firstName)}, last_name = ${bind(lastName)} WHERE id = ${bind(id)}",
         )
     }
     .updateExactlyOne()
@@ -331,7 +331,7 @@ fun Database.Transaction.upsertEmployeeDaycareRoles(
 INSERT INTO daycare_acl (daycare_id, employee_id, role, end_date) 
 VALUES (${bind { daycareId -> daycareId }}, ${bind(id)}, ${bind(role)}, ${bind(endDate)})
 ON CONFLICT (employee_id, daycare_id) DO UPDATE SET role = ${bind(role)}, end_date = ${bind(endDate)}
-"""
+""",
         )
     }
 }
@@ -343,7 +343,7 @@ fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: 
         UPDATE employee
         SET roles = ${bind(globalRoles.distinct())}
         WHERE id = ${bind(id)}
-    """
+    """,
         )
     }
         .executeAndReturnCount()
@@ -370,7 +370,7 @@ fun Database.Transaction.deleteEmployeeDaycareRoles(
             employee_id = ${bind(id)}
             ${if (daycareId != null) "AND daycare_id = ${bind(daycareId)}" else ""}
         RETURNING daycare_id, role, end_date
-    """
+    """,
         )
     }
         .toList<DeletedDaycareAclRow>()
@@ -386,7 +386,7 @@ fun Database.Transaction.deleteEmployeeDaycareRoles(
                     SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}
                 )
             """ else ""}
-    """
+    """,
         )
     }
         .execute()
@@ -420,7 +420,7 @@ fun getEmployees(
                                             WHERE daycare.id = daycare_acl.daycare_id
                                               AND daycare.provider_type = ANY (${bind(unitProviderTypes)}))"""
                         else ""})"""
-                            .trimIndent()
+                            .trimIndent(),
                     )
                 }
             else null,
@@ -466,7 +466,7 @@ FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
 WHERE ${predicate(conditions.forTable("employee"))}
 ORDER BY last_name, first_name DESC
-"""
+""",
             )
         }
         .toList<EmployeeWithDaycareRoles>()
@@ -490,7 +490,7 @@ ON CONFLICT (user_id) DO UPDATE SET
     pin = ${bind(pinCode.pin)},
     locked = false,
     failure_count = 0
-"""
+""",
                 )
             }
             .executeAndReturnCount()
@@ -512,7 +512,7 @@ SELECT EXISTS (
     AND pin = ${bind(pin)}
     AND locked = false
 )
-"""
+""",
     )
 }
     .exactlyOne<Boolean>()
@@ -523,13 +523,13 @@ fun Database.Transaction.resetEmployeePinFailureCount(employeeId: EmployeeId) = 
 UPDATE employee_pin
 SET failure_count = 0
 WHERE user_id = ${bind(employeeId)}
-"""
+""",
     )
 }
     .execute()
 
 fun Database.Transaction.updateEmployeePinFailureCountAndCheckIfLocked(
-    employeeId: EmployeeId
+    employeeId: EmployeeId,
 ): Boolean =
     createQuery {
         sql(
@@ -545,7 +545,7 @@ SET
 WHERE 
     user_id = ${bind(employeeId)}
 RETURNING locked
-"""
+""",
         )
     }
         .exactlyOneOrNull<Boolean>() ?: false
@@ -567,7 +567,7 @@ fun Database.Transaction.deactivateInactiveEmployees(now: HelsinkiDateTime): Lis
         FROM unnest(ARRAY[coalesce(e.last_login, e.created), d.updated, dg.updated]) ts
     ) < ${bind(now)} - interval '56 days'
     AND e.active = true
-"""
+""",
         )
     }
         .toList<EmployeeId>()
@@ -593,7 +593,7 @@ fun Database.Transaction.deleteNeverLoggedInSsnEmployees(now: HelsinkiDateTime):
     AND last_login IS NULL
     AND created < ${bind(now)} - interval '5 days'
     FOR UPDATE
-"""
+""",
         )
     }
         .toList<EmployeeId>()
@@ -606,7 +606,7 @@ fun Database.Transaction.setEmployeePreferredFirstName(
     preferredFirstName: String?,
 ) = createUpdate {
     sql(
-        "UPDATE employee SET preferred_first_name = ${bind(preferredFirstName)} WHERE id = ${bind(employeeId)}"
+        "UPDATE employee SET preferred_first_name = ${bind(preferredFirstName)} WHERE id = ${bind(employeeId)}",
     )
 }
     .execute()
@@ -622,7 +622,7 @@ SELECT id, first_name, last_name, email, external_id, created, updated, active, 
 FROM employee
 WHERE roles && ${bind(globalRoles)}::user_role[]
 ORDER BY last_name, first_name
-        """
+        """,
             )
         }
             .toList<Employee>()
@@ -638,7 +638,7 @@ WHERE roles && ${bind(globalRoles)}::user_role[] OR id IN (
     WHERE daycare_id = ${bind(unitId)} AND role = ANY(${bind(unitScopedRoles)}::user_role[])
 )
 ORDER BY last_name, first_name
-        """
+        """,
             )
         }
             .toList<Employee>()
@@ -662,14 +662,14 @@ fun Database.Transaction.createEmployeeWithSsn(request: NewSsnEmployee): Employe
 INSERT INTO employee (social_security_number, first_name, last_name, email, active)
 VALUES (${bind(request.ssn.value)}, ${bind(request.firstName)}, ${bind(request.lastName)}, ${bind(request.email)}, true)
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
 private fun Database.Read.employeeNumbersQuery(
-    employeeNumbers: Collection<String>
+    employeeNumbers: Collection<String>,
 ): Database.Query {
     return createQuery {
         sql(
@@ -677,19 +677,19 @@ private fun Database.Read.employeeNumbersQuery(
             SELECT id, employee_number
             FROM employee
             WHERE employee_number = ANY (${bind(employeeNumbers)})
-            """
+            """,
         )
     }
 }
 
 fun Database.Read.getEmployeeIdsByNumbers(
-    employeeNumbers: Collection<String>
+    employeeNumbers: Collection<String>,
 ): Map<String, EmployeeId> {
     return employeeNumbersQuery(employeeNumbers).toMap { columnPair("employee_number", "id") }
 }
 
 fun Database.Read.getEmployeeIdsByNumbersMapById(
-    employeeNumbers: Collection<String>
+    employeeNumbers: Collection<String>,
 ): Map<EmployeeId, String> {
     return employeeNumbersQuery(employeeNumbers).toMap { columnPair("id", "employee_number") }
 }

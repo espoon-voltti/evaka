@@ -77,8 +77,8 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
                                 KoskiClient.Error(
                                     key = "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia",
                                     message = "Not found",
-                                )
-                            )
+                                ),
+                            ),
                         )
                 }
             }
@@ -149,7 +149,7 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
                                     }
                                 }
                             }
-                        }
+                        },
                     )
                 }
             }

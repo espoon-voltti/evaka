@@ -54,9 +54,9 @@ class SfiAsyncJobsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                                     externalId = unknownMessageId.raw.toString(),
                                     serviceId = "espoo_ws_vaka",
                                 ),
-                        )
+                        ),
                     ),
-            )
+            ),
         )
 
         sfiAsyncJobs.getEvents(db, clock)
@@ -85,9 +85,9 @@ class SfiAsyncJobsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                                     externalId = legacyExternalId,
                                     serviceId = "espoo_ws_vaka",
                                 ),
-                        )
+                        ),
                     ),
-            )
+            ),
         )
 
         sfiAsyncJobs.getEvents(db, clock)
@@ -107,7 +107,7 @@ class SfiAsyncJobsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 "token-1",
                 event(messageId, EventType.ELECTRONIC_MESSAGE_CREATED, sentAt),
                 event(messageId, EventType.ELECTRONIC_MESSAGE_READ, readAt),
-            )
+            ),
         )
 
         sfiAsyncJobs.getEvents(db, clock)
@@ -136,7 +136,7 @@ class SfiAsyncJobsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 "token-1",
                 event(messageId, EventType.ELECTRONIC_MESSAGE_READ, secondRead),
                 event(messageId, EventType.ELECTRONIC_MESSAGE_READ, firstRead),
-            )
+            ),
         )
 
         sfiAsyncJobs.getEvents(db, clock)
@@ -158,10 +158,10 @@ class SfiAsyncJobsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             eventsResponse(
                 "token-1",
                 event(messageId, EventType.ELECTRONIC_MESSAGE_CREATED, sentAt),
-            )
+            ),
         )
         MockSfiMessagesClient.addEventsResponse(
-            eventsResponse("token-2", event(messageId, EventType.ELECTRONIC_MESSAGE_READ, readAt))
+            eventsResponse("token-2", event(messageId, EventType.ELECTRONIC_MESSAGE_READ, readAt)),
         )
 
         sfiAsyncJobs.getEvents(db, clock)
@@ -185,10 +185,10 @@ class SfiAsyncJobsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         validDuring =
                             FiniteDateRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)),
                         headOfFamilyId = guardian.id,
-                    )
+                    ),
                 )
             tx.storeSentSfiMessage(
-                SentSfiMessage(guardianId = guardian.id, feeDecisionId = feeDecisionId)
+                SentSfiMessage(guardianId = guardian.id, feeDecisionId = feeDecisionId),
             )
         }
     }

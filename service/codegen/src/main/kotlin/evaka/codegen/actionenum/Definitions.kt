@@ -59,7 +59,7 @@ val generatedFiles =
                     generateEnum<Action.Citizen.ServiceApplication>(),
                 ),
             ),
-        )
+        ),
     )
 
 class FileDefinition(val name: String, private val generators: Array<out Generator>) {

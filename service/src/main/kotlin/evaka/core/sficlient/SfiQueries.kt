@@ -24,7 +24,7 @@ fun Database.Transaction.storeSfiGetEventsContinuationToken(continuationToken: S
 INSERT INTO sfi_get_events_continuation_token (continuation_token)
 VALUES (${bind(continuationToken)})
 ON CONFLICT DO NOTHING
-"""
+""",
         )
     }
         .execute()
@@ -36,7 +36,7 @@ fun Database.Read.getLatestSfiGetEventsContinuationToken(): String? = createQuer
 SELECT continuation_token, created_at
 FROM sfi_get_events_continuation_token
 ORDER BY created_at DESC limit 1;
-"""
+""",
     )
 }
     .mapTo<String>()
@@ -65,7 +65,7 @@ SELECT EXISTS (
     FROM sfi_message
     WHERE ${predicate(fullPredicate.forTable("sfi_message"))}
 )
-"""
+""",
         )
     }
         .exactlyOne()
@@ -118,7 +118,7 @@ INSERT INTO sfi_message (
     ${bind(message.voucherValueDecisionId)}
 )
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -137,7 +137,7 @@ data class SentSfiMessage(
 )
 
 fun Database.Transaction.upsertSfiMessageEventIfSfiMessageExists(
-    event: SfiMessageEvent
+    event: SfiMessageEvent,
 ): SfiMessageEventId? = createUpdate {
     sql(
         """
@@ -152,7 +152,7 @@ DO UPDATE SET
     updated_at = now(),
     event_time = least(sfi_message_event.event_time, EXCLUDED.event_time)
 RETURNING id
-            """
+            """,
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -165,7 +165,7 @@ fun Database.Read.getSfiMessageEventsByMessageId(messageId: SfiMessageId): List<
 SELECT id, created_at, updated_at, message_id, event_type, event_time
 FROM sfi_message_event
 WHERE message_id = ${bind(messageId)}
-                """
+                """,
         )
     }
     .mapTo<SfiMessageEvent>()

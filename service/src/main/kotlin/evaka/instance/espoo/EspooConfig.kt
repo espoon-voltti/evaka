@@ -345,7 +345,7 @@ class EspooConfig {
                 minUppers = 1,
                 minDigits = 1,
                 minSymbols = 1,
-            )
+            ),
         )
 
     @Bean
@@ -413,7 +413,7 @@ data class EspooInvoiceIntegrationEnv(
                         env.lookup(
                             "espoo.integration.invoice.password",
                             "fi.espoo.integration.invoice.password",
-                        )
+                        ),
                     ),
                 sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor") ?: false,
             )

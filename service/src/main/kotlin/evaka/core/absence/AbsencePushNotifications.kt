@@ -72,7 +72,7 @@ AND CASE
         )
     )
 END
-"""
+""",
         )
     }
 
@@ -87,7 +87,7 @@ END
 SELECT absence_id, device
 FROM (${subquery(getPendingPushNotifications(today))}) notification
 WHERE notification.absence_id = ANY(${bind(absenceIds)})
-"""
+""",
                 )
             }
             .toList<AsyncJob.SendAbsencePushNotification>()
@@ -110,7 +110,7 @@ FROM (${subquery(getPendingPushNotifications(today))}) notification
 JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
 WHERE notification.absence_id = ${bind(absenceId)}
 AND notification.device = ${bind(device)}
-"""
+""",
         )
     }
         .exactlyOneOrNull {
@@ -162,9 +162,9 @@ AND notification.device = ${bind(device)}
                         WebPushMessage.Versioned(
                             listOf(
                                 WebPushPayload.NotificationV1(
-                                    title = "${notification.groupName}: Uusi poissaolomerkintä"
-                                )
-                            )
+                                    title = "${notification.groupName}: Uusi poissaolomerkintä",
+                                ),
+                            ),
                         ),
                 ),
             )

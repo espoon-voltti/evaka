@@ -82,27 +82,27 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.ASSISTANCE_NEEDS_AND_ACTIONS.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT
+                        Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT,
                     )
                 },
                 Report.ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD
+                        Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD,
                     )
                 },
                 Report.ATTENDANCE_RESERVATION.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT
+                        Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
                     )
                 },
                 Report.CHILD_AGE_LANGUAGE.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_CHILD_AGE_AND_LANGUAGE_REPORT
+                        Action.Unit.READ_CHILD_AGE_AND_LANGUAGE_REPORT,
                     )
                 },
                 Report.CHILD_DOCUMENT_DECISIONS.takeIf {
                     permittedGlobalActions.contains(
-                        Action.Global.READ_CHILD_DOCUMENT_DECISIONS_REPORT
+                        Action.Global.READ_CHILD_DOCUMENT_DECISIONS_REPORT,
                     )
                 },
                 Report.CHILD_DOCUMENTS.takeIf {
@@ -110,7 +110,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.CHILDREN_IN_DIFFERENT_ADDRESS.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT
+                        Action.Unit.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT,
                     )
                 },
                 Report.CUSTOMER_FEES.takeIf {
@@ -127,7 +127,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.EXCEEDED_SERVICE_NEEDS.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_EXCEEDED_SERVICE_NEEDS_REPORT
+                        Action.Unit.READ_EXCEEDED_SERVICE_NEEDS_REPORT,
                     )
                 },
                 Report.FAMILY_CONFLICT.takeIf {
@@ -138,7 +138,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.FAMILY_DAYCARE_MEAL_REPORT.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_FAMILY_DAYCARE_MEAL_REPORT
+                        Action.Unit.READ_FAMILY_DAYCARE_MEAL_REPORT,
                     )
                 },
                 Report.INCOMPLETE_INCOMES.takeIf {
@@ -152,12 +152,12 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.MISSING_HEAD_OF_FAMILY.takeIf {
                     permittedGlobalActions.contains(
-                        Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT
+                        Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT,
                     )
                 },
                 Report.MISSING_SERVICE_NEED.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_MISSING_SERVICE_NEED_REPORT
+                        Action.Unit.READ_MISSING_SERVICE_NEED_REPORT,
                     )
                 },
                 Report.NON_SSN_CHILDREN.takeIf {
@@ -168,7 +168,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.PARTNERS_IN_DIFFERENT_ADDRESS.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
+                        Action.Unit.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT,
                     )
                 },
                 Report.PLACEMENT_COUNT.takeIf {
@@ -176,7 +176,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.PLACEMENT_GUARANTEE.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT
+                        Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT,
                     )
                 },
                 Report.PLACEMENT_SKETCHING.takeIf {
@@ -196,7 +196,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.STARTING_PLACEMENTS.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_STARTING_PLACEMENTS_REPORT
+                        Action.Unit.READ_STARTING_PLACEMENTS_REPORT,
                     )
                 },
                 Report.TITANIA_ERRORS.takeIf {
@@ -216,30 +216,30 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.CHILD_ABSENCES.takeIf {
                     permittedGlobalActions.contains(
-                        Action.Global.READ_CHILD_ABSENCE_REPORT_FOR_AREA
+                        Action.Global.READ_CHILD_ABSENCE_REPORT_FOR_AREA,
                     ) ||
                         permittedActionsForSomeUnit.contains(
-                            Action.Unit.READ_CHILD_ABSENCE_REPORT_FOR_UNIT
+                            Action.Unit.READ_CHILD_ABSENCE_REPORT_FOR_UNIT,
                         )
                 },
                 Report.PRESCHOOL_ABSENCES.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT
+                        Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT,
                     )
                 },
                 Report.PRESCHOOL_APPLICATIONS.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_PRESCHOOL_APPLICATION_REPORT
+                        Action.Unit.READ_PRESCHOOL_APPLICATION_REPORT,
                     )
                 },
                 Report.HOLIDAY_PERIOD_ATTENDANCE.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT
+                        Action.Unit.READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT,
                     )
                 },
                 Report.HOLIDAY_QUESTIONNAIRE.takeIf {
                     permittedActionsForSomeUnit.contains(
-                        Action.Unit.READ_HOLIDAY_QUESTIONNAIRE_REPORT
+                        Action.Unit.READ_HOLIDAY_QUESTIONNAIRE_REPORT,
                     )
                 },
                 Report.NEKKU_ORDERS.takeIf {
@@ -247,12 +247,12 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.TAMPERE_REGIONAL_SURVEY.takeIf {
                     permittedGlobalActions.contains(
-                        Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT
+                        Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT,
                     )
                 },
                 Report.CITIZEN_DOCUMENT_RESPONSE.takeIf {
                     permittedActionsForSomeGroup.contains(
-                        Action.Group.READ_CITIZEN_DOCUMENT_RESPONSE_REPORT
+                        Action.Group.READ_CITIZEN_DOCUMENT_RESPONSE_REPORT,
                     )
                 },
             )

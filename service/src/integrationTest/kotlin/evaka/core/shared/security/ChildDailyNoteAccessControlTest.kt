@@ -45,7 +45,7 @@ class ChildDailyNoteAccessControlTest : AccessControlTest() {
                     childId = placedChild,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(30),
-                )
+                ),
             )
         }
         val placedChildNote = db.transaction { it.createChildDailyNote(placedChild, dummyNote) }
@@ -71,16 +71,16 @@ class ChildDailyNoteAccessControlTest : AccessControlTest() {
 
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, placedChildNote)
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, placedChildNote),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, otherChildNote)
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, otherChildNote),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherSupervisor, clock, action, placedChildNote)
+                accessControl.hasPermissionFor(tx, otherSupervisor, clock, action, placedChildNote),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherSupervisor, clock, action, otherChildNote)
+                accessControl.hasPermissionFor(tx, otherSupervisor, clock, action, otherChildNote),
             )
         }
     }

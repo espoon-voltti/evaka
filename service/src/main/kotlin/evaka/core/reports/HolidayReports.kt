@@ -47,9 +47,9 @@ fun Database.Read.getAbsencesForChildrenOverRange(childIds: Set<PersonId>, range
     getAbsences(
             Predicate {
                 where(
-                    "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY (${bind(childIds)})"
+                    "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY (${bind(childIds)})",
                 )
-            }
+            },
         )
         .groupBy { r -> r.date }
 
@@ -60,9 +60,9 @@ fun Database.Read.getReservationsForChildrenOverRange(
     getReservations(
             Predicate {
                 where(
-                    "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY (${bind(childIds)})"
+                    "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY (${bind(childIds)})",
                 )
-            }
+            },
         )
         .groupBy { Pair(it.date, it.childId) }
 
@@ -147,7 +147,7 @@ FROM placement pl
 WHERE ${predicate(placementPred.forTable("pl"))}
   AND ${predicate(groupsPred.forTable("dgp"))}
   AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(period)}
-        """
+        """,
     )
 }
     .toList<ChildServiceNeedOccupancyInfo>()
@@ -178,7 +178,7 @@ UNION ALL
 SELECT p.child_id, p.valid_during * ${bind(period)} as valid_during
 FROM preschool_assistance p
 WHERE child_id = ANY(${bind(childIds)}) AND p.valid_during && ${bind(period)}
-"""
+""",
             )
         }
             .toList<AssistanceRange>()
@@ -202,7 +202,7 @@ FROM backup_care bc
 WHERE ${predicate(where.forTable("bc"))}
 AND bc.unit_id = ${bind(unitId)}
 AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)}
-"""
+""",
         )
     }
         .toList<BackupPlacementRange>()

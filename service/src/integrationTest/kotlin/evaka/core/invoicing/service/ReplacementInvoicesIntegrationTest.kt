@@ -99,7 +99,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     date = previousMonth.atDay(1),
                     absenceCategory = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.FORCE_MAJEURE,
-                )
+                ),
             )
         }
 
@@ -136,7 +136,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     date = previousMonth.atDay(1),
                     absenceCategory = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
-                )
+                ),
             )
         }
 
@@ -160,7 +160,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             date = date,
                             absenceCategory = AbsenceCategory.BILLABLE,
                             absenceType = AbsenceType.SICKLEAVE,
-                        )
+                        ),
                     )
                 }
         }
@@ -190,7 +190,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             date = date,
                             absenceCategory = AbsenceCategory.BILLABLE,
                             absenceType = AbsenceType.FORCE_MAJEURE,
-                        )
+                        ),
                     )
                 }
         }
@@ -263,7 +263,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val currentMonth = endMonth.plusMonths(1)
 
         insertPlacementAndFeeDecision(
-            range = FiniteDateRange(startMonth.atDay(1), endMonth.atEndOfMonth())
+            range = FiniteDateRange(startMonth.atDay(1), endMonth.atEndOfMonth()),
         )
 
         val replacements =
@@ -296,7 +296,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         date = previousMonth.atDay(1),
                         absenceCategory = AbsenceCategory.BILLABLE,
                         absenceType = AbsenceType.FORCE_MAJEURE,
-                    )
+                    ),
                 )
             }
         }
@@ -333,7 +333,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         date = previousMonth.atDay(1),
                         absenceCategory = AbsenceCategory.BILLABLE,
                         absenceType = AbsenceType.FORCE_MAJEURE,
-                    )
+                    ),
                 )
             }
         }
@@ -368,7 +368,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     date = previousMonth.atDay(1),
                     absenceCategory = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.FORCE_MAJEURE,
-                )
+                ),
             )
             tx.insert(
                 DevInvoiceCorrection(
@@ -382,7 +382,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitPrice = 1000,
                     description = "",
                     note = "",
-                )
+                ),
             )
         }
 
@@ -407,7 +407,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     date = previousMonth.atDay(1),
                     absenceCategory = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.FORCE_MAJEURE,
-                )
+                ),
             )
         }
         val replacement = generateReplacementDrafts().single()
@@ -470,7 +470,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
             insertPlacementAndFeeDecision(
                 range =
                     // 2 months
-                    FiniteDateRange(month1.atDay(1), month2.atEndOfMonth())
+                    FiniteDateRange(month1.atDay(1), month2.atEndOfMonth()),
             )
 
         generateAndSendInvoices(month1)
@@ -487,7 +487,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     UPDATE placement
                     SET end_date = ${bind(month1.atEndOfMonth())}
                     WHERE id = ${bind(placementId)}
-                    """
+                    """,
                 )
             }
             tx.execute {
@@ -496,7 +496,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     UPDATE fee_decision
                     SET valid_during = ${bind(FiniteDateRange.ofMonth(month1))}
                     WHERE id = ${bind(feeDecisionId)}
-                    """
+                    """,
                 )
             }
         }
@@ -533,7 +533,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     private fun generateReplacementDraftsForHeadOfFamily(
-        headOfFamilyId: PersonId
+        headOfFamilyId: PersonId,
     ): List<InvoiceDetailed> {
         invoiceGenerator.generateReplacementDraftInvoicesForHeadOfFamily(db, today, headOfFamilyId)
         return db.read { tx -> tx.searchInvoices(InvoiceStatus.REPLACEMENT_DRAFT) }
@@ -571,7 +571,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     baseFee = fee,
                     fee = fee,
                     finalFee = fee,
-                )
+                ),
             )
         }
         return placement.id to feeDecision.id

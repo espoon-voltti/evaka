@@ -73,7 +73,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                         unitId = voucherDaycare.id,
                         startDate = today,
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val period = FiniteDateRange(today, today.plusDays(30))
             tx.insert(
@@ -84,7 +84,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     optionId = snDefaultDaycare.id,
                     confirmedBy = employee.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -92,7 +92,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     headOfChildId = adult.id,
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
         }
     }
@@ -104,7 +104,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                 AssistanceNeedVoucherCoefficientRequest(
                     coefficient = 2.0,
                     validityPeriod = FiniteDateRange(today, today.plusDays(30)),
-                )
+                ),
             )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -146,7 +146,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                 AssistanceNeedVoucherCoefficientRequest(
                     coefficient = 1.5234,
                     validityPeriod = FiniteDateRange(today, today.plusDays(30)),
-                )
+                ),
             )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -174,7 +174,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                 AssistanceNeedVoucherCoefficientRequest(
                     coefficient = 1.2345,
                     validityPeriod = FiniteDateRange(today, today.plusDays(30)),
-                )
+                ),
             )
 
         val coefficients =
@@ -190,7 +190,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
     }
 
     private fun createAssistanceNeedVoucherCoefficient(
-        body: AssistanceNeedVoucherCoefficientRequest
+        body: AssistanceNeedVoucherCoefficientRequest,
     ): AssistanceNeedVoucherCoefficient {
         return assistanceNeedVoucherCoefficientController.createAssistanceNeedVoucherCoefficient(
             dbInstance(),
@@ -227,7 +227,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         return db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT assistance_need_coefficient FROM voucher_value_decision ORDER BY valid_from"
+                        "SELECT assistance_need_coefficient FROM voucher_value_decision ORDER BY valid_from",
                     )
                 }
                 .toList<BigDecimal>()

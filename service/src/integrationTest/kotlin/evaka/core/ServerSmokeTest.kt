@@ -47,7 +47,7 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
                     Request.Builder()
                         .url("http://localhost:$httpPort/health")
                         .header("Accept-Language", acceptLanguage)
-                        .build()
+                        .build(),
                 )
                 .execute()
         assertEquals(200, response.code)
@@ -58,7 +58,7 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
         val response =
             http
                 .newCall(
-                    Request.Builder().url("http://localhost:$httpPort/employee/daycares").build()
+                    Request.Builder().url("http://localhost:$httpPort/employee/daycares").build(),
                 )
                 .execute()
         assertEquals(401, response.code)
@@ -74,7 +74,7 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
                     Request.Builder()
                         .url("http://localhost:$httpPort/employee/daycares")
                         .asUser(user)
-                        .build()
+                        .build(),
                 )
                 .execute()
         assertEquals(200, response2.code)

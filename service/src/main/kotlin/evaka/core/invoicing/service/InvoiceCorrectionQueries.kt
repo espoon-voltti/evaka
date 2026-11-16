@@ -53,7 +53,7 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) invoice ON true
 WHERE ${predicate(where.forTable("invoice_correction"))}
-"""
+""",
         )
     }
     .toList()
@@ -72,22 +72,22 @@ fun Database.Read.getInvoiceCorrectionsForMonth(
             Predicate.alwaysTrue()
         }
     return getInvoiceCorrections(
-        Predicate { where("$it.target_month = ${bind(month)}") }.and(headOfFamilyFilter)
+        Predicate { where("$it.target_month = ${bind(month)}") }.and(headOfFamilyFilter),
     )
 }
 
 fun Database.Read.getInvoiceCorrectionsByIds(
-    ids: Set<InvoiceCorrectionId>
+    ids: Set<InvoiceCorrectionId>,
 ): List<InvoiceCorrection> =
     getInvoiceCorrections(Predicate { where("$it.id = ANY(${bind(ids)})") })
 
 fun Database.Read.getInvoiceCorrectionsForHeadOfFamily(
-    personId: PersonId
+    personId: PersonId,
 ): List<InvoiceCorrection> =
     getInvoiceCorrections(where = Predicate { where("$it.head_of_family_id = ${bind(personId)}") })
         .sortedWith(
             compareByDescending<InvoiceCorrection> { it.targetMonth }
-                .thenByDescending { abs(it.amount * it.unitPrice) }
+                .thenByDescending { abs(it.amount * it.unitPrice) },
         )
 
 data class InvoiceCorrectionInsert(
@@ -134,7 +134,7 @@ VALUES (
     ${bind(now)}
 )
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
@@ -161,6 +161,6 @@ UPDATE invoice_correction
 SET target_month = ${bind { it.targetMonth }}, amount = ${bind { it.amount }}, unit_price = ${bind { it.unitPrice }}
 ${if (modified != null) ", modified_by = ${bind(modified.userId)}, modified_at = ${bind(modified.now)}" else ""}
 WHERE id = ${bind { it.id }}
-"""
+""",
         )
     }

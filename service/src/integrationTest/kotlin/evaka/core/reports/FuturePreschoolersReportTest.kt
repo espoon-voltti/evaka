@@ -89,7 +89,11 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             children.forEachIndexed { i, child ->
                 tx.insert(child, DevPersonType.CHILD)
                 tx.insert(
-                    DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now())
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        endDate = LocalDate.now(),
+                    ),
                 )
                 tx.insert(DevGuardian(guardianId = adult1.id, childId = child.id))
                 if (i % 2 == 1) tx.insert(DevGuardian(guardianId = adult2.id, childId = child.id))
@@ -119,7 +123,11 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(child2017, child2018).forEach { child ->
                 tx.insert(child, DevPersonType.CHILD)
                 tx.insert(
-                    DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now())
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        endDate = LocalDate.now(),
+                    ),
                 )
             }
         }

@@ -136,7 +136,7 @@ class DraftInvoiceGenerator(
                                             child,
                                             placement,
                                             siblingIndex + 1,
-                                        )
+                                        ),
                                 )
                             }
 
@@ -260,7 +260,7 @@ class DraftInvoiceGenerator(
                     unitPrice = rowInput.priceBeforeFeeAlterations,
                     unitId = rowInput.placementUnitId,
                     product = productProvider.mapToProduct(rowInput.placementType),
-                )
+                ),
             )
         }
     }
@@ -307,7 +307,7 @@ class DraftInvoiceGenerator(
                     unitPrice = unitPrice(rowInput.priceBeforeFeeAlterations),
                     unitId = rowInput.placementUnitId,
                     product = product,
-                )
+                ),
             ) +
                 rowInput.feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
                     DraftInvoiceRow(
@@ -445,7 +445,7 @@ class DraftInvoiceGenerator(
                         unitId = rowInput.placementUnitId,
                         amount = amount,
                         unitPrice = unitPrice,
-                    )
+                    ),
                 )
             } else {
                 listOf()
@@ -661,7 +661,7 @@ class DraftInvoiceGenerator(
                 val feeCoefficient =
                     invoiceInput.defaultServiceNeedOptions[placementType]?.feeCoefficient
                         ?: throw Exception(
-                            "No default service need option found for placement type $placementType"
+                            "No default service need option found for placement type $placementType",
                         )
                 (feeCoefficient * BigDecimal(discountedFee)).toInt()
             }
@@ -741,7 +741,7 @@ class DraftInvoiceGenerator(
     ) {
         private val operationalDays: DateSet =
             (invoiceInput.operationalDaysByChild[child.id] ?: DateSet.empty()).intersection(
-                headInput.placementRangesByChild[child.id] ?: DateSet.empty()
+                headInput.placementRangesByChild[child.id] ?: DateSet.empty(),
             )
         private val absences: DateMap<AbsenceType> =
             (invoiceInput.absences[child.id] ?: emptyList()).fold(DateMap.empty()) {

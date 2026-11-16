@@ -63,7 +63,7 @@ class JamixSerializationTest {
                     jsonMapper.createObjectNode().apply {
                         put("orderAmount", 7)
                         put("mealTypeID", 3)
-                    }
+                    },
                 )
                 rows.add(
                     jsonMapper.createObjectNode().apply {
@@ -72,7 +72,7 @@ class JamixSerializationTest {
                         put("dietID", 123)
                         put("additionalInfo", "Erkki Esimerkki")
                         put("textureID", 1234)
-                    }
+                    },
                 )
                 set("mealOrderRows", rows)
             }

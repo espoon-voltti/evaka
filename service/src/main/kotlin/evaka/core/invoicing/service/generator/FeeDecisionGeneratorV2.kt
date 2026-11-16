@@ -126,7 +126,7 @@ fun generateFeeDecisionsDrafts(
                         newDrafts = newDrafts,
                         existingActiveDecisions = activeDecisions,
                         getDifferences = FeeDecisionDifference::getDifference,
-                    )
+                    ),
             )
         }
 }
@@ -194,7 +194,7 @@ private fun getFeeBases(
         val feeThresholds =
             allFeeThresholds.find { it.range.contains(range) }?.thresholds
                 ?: error(
-                    "Missing price or multiple prices for period ${range.start} - ${range.end}, cannot generate fee decision"
+                    "Missing price or multiple prices for period ${range.start} - ${range.end}, cannot generate fee decision",
                 )
 
         val headOfFamilyIncome =
@@ -218,7 +218,7 @@ private fun getFeeBases(
                     .sortedWith(
                         compareByDescending<Child> { it.dateOfBirth }
                             .thenByDescending { it.ssn }
-                            .thenBy { it.id }
+                            .thenBy { it.id },
                     )
                     .mapNotNull { child ->
                         placementDetailsByChild[child.id]

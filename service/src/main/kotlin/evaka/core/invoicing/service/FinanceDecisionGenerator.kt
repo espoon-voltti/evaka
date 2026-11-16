@@ -67,7 +67,7 @@ SELECT 'GenerateFinanceDecisions',
        3,
        interval '5 minutes'
 FROM ids
-"""
+""",
                     )
                 }
                 .execute()
@@ -229,7 +229,7 @@ private fun Database.Read.getPartnersFromFinanceDecisions(personId: PersonId) = 
         SELECT partner_id FROM voucher_value_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED') AND partner_id IS NOT NULL 
         UNION ALL 
         SELECT head_of_family_id FROM voucher_value_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED')
-        """
+        """,
     )
 }
     .toSet<PersonId>()
@@ -247,7 +247,7 @@ private fun Database.Read.getChildrenFromFinanceDecisions(personId: PersonId) = 
         SELECT vvd.child_id 
         FROM voucher_value_decision vvd
         WHERE (vvd.head_of_family_id = ${bind(personId)} OR vvd.partner_id = ${bind(personId)}) AND vvd.status NOT IN ('DRAFT', 'IGNORED')
-        """
+        """,
     )
 }
     .toSet<PersonId>()
@@ -267,7 +267,7 @@ private fun Database.Read.getParentsFromFinanceDecisions(personId: PersonId) = c
         SELECT vvd.head_of_family_id, vvd.partner_id
         FROM voucher_value_decision vvd 
         WHERE vvd.child_id = ${bind(personId)} AND vvd.status NOT IN ('DRAFT', 'IGNORED')
-        """
+        """,
     )
 }
     .toList<FeeDecisionParents>()
@@ -282,7 +282,7 @@ private fun Database.Read.getChildrenOfHeadOfFamily(personId: PersonId, range: D
         FROM fridge_child
         WHERE head_of_child = ${bind(personId)} AND NOT conflict 
         ${if (range != null) "AND daterange(start_date, end_date, '[]') && ${bind(range)}" else ""}
-        """
+        """,
         )
     }
     .toSet<ChildId>()

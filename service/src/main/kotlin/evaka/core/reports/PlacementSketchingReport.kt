@@ -86,7 +86,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                             "placementStartDate" to placementStartDate,
                             "earliestPreferredStartDate" to earliestPreferredStartDate,
                             "count" to it.size,
-                        )
+                        ),
                 )
             }
     }
@@ -170,7 +170,7 @@ WHERE
     AND daterange(${bind(earliestApplicationSentDate)}, ${bind(latestApplicationSentDate)}, '[]') @> application.sentdate
 ORDER BY
     area_name, requested_unit_name, application.childlastname, application.childfirstname
-        """
+        """,
         )
     }
         .toList<PlacementSketchingReportRow>()

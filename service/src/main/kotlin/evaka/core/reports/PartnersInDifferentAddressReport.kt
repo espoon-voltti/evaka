@@ -87,7 +87,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(
             lower(p2.street_address) <> 'poste restante'
         ORDER BY u.name, p1.last_name, p1.first_name, p2.last_name, p2.first_name;
         """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .toList<PartnersInDifferentAddressReportRow>()

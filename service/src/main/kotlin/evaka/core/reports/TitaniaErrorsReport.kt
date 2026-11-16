@@ -72,7 +72,7 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
 }
 
 fun Database.Read.getTitaniaErrors(
-    filter: AccessControlFilter<DaycareId>
+    filter: AccessControlFilter<DaycareId>,
 ): List<TitaniaErrorReportRow> {
     val dbRows = createQuery {
         sql(
@@ -107,7 +107,7 @@ fun Database.Read.getTitaniaErrors(
                     GROUP BY employee_id
             ) emp_units ON te.employee_id = emp_units.employee_id
             ORDER BY request_time, unit_names, last_name, first_name, shift_date, shift_begins;
-            """
+            """,
         )
     }
         .toList<TitaniaDbRow>()
@@ -158,7 +158,7 @@ fun Database.Transaction.deleteTitaniaError(id: TitaniaErrorId) {
             """
                 DELETE FROM titania_errors 
                 WHERE id = ${bind(id)}
-            """
+            """,
         )
     }
         .execute()

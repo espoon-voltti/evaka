@@ -64,7 +64,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                     SELECT id
                     FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
                     WHERE ${predicate(targetCheck.forTable("fragment"))}
-                    """
+                    """,
                             )
                         }
                         .toSet<Id<DatabaseTable>>()
@@ -117,7 +117,7 @@ SELECT attachment.id
 FROM attachment
 JOIN evaka_user ON uploaded_by = evaka_user.id
 WHERE evaka_user.type = 'EMPLOYEE'
-            """
+            """,
             )
         }
 
@@ -129,7 +129,7 @@ SELECT p.child_id AS id
 FROM placement p
 JOIN daycare pd ON pd.id = p.unit_id
 WHERE pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
-            """
+            """,
             )
         }
 
@@ -147,7 +147,7 @@ ${
     if (careTypes.isNotEmpty()) "AND (${bind(careTypes)} && daycare.type)"
     else ""
 }
-            """
+            """,
             )
         }
 }

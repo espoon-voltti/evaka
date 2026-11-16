@@ -54,7 +54,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                             text = ${bind(body.text)}, 
                             text_sv = ${bind(body.textSv)},
                             text_en = ${bind(body.textEn)}
-                """
+                """,
                     )
                 }
             }
@@ -90,7 +90,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                         SET 
                             valid_to = ${bind(body.validTo)},
                             text = ${bind(body.text)}
-                """
+                """,
                     )
                 }
             }
@@ -118,7 +118,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                         """
                     DELETE FROM system_notification
                     WHERE target_group = ${bind(targetGroup)}
-                """
+                """,
                     )
                 }
             }
@@ -152,7 +152,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                                         """
                             SELECT * FROM system_notification 
                             WHERE target_group = ${bind(SystemNotificationTargetGroup.CITIZENS)}
-                        """
+                        """,
                                     )
                                 }
                                 .exactlyOneOrNull<SystemNotificationCitizens>(),
@@ -162,7 +162,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                                         """
                             SELECT * FROM system_notification 
                             WHERE target_group = ${bind(SystemNotificationTargetGroup.EMPLOYEES)}
-                        """
+                        """,
                                     )
                                 }
                                 .exactlyOneOrNull<SystemNotificationEmployees>(),
@@ -219,7 +219,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                     """
             SELECT * FROM system_notification
             WHERE target_group = ${bind(SystemNotificationTargetGroup.CITIZENS)} AND valid_to > ${bind(now)}
-        """
+        """,
                 )
             }
             .exactlyOneOrNull<SystemNotificationCitizens>()
@@ -235,7 +235,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                     """
             SELECT * FROM system_notification
             WHERE target_group = ${bind(SystemNotificationTargetGroup.EMPLOYEES)} AND valid_to > ${bind(now)}
-        """
+        """,
                 )
             }
             .exactlyOneOrNull<SystemNotificationEmployees>()

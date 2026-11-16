@@ -29,7 +29,7 @@ private fun parseValidity(from: String?, to: String?): DateRange? {
 }
 
 fun parseMailAddress(
-    mailAddress: VTJHenkiloVastaussanoma.Henkilo.KotimainenPostiosoite
+    mailAddress: VTJHenkiloVastaussanoma.Henkilo.KotimainenPostiosoite,
 ): MailingAddressPeriod? =
     with(mailAddress) {
         val validDuring = parseValidity(postiosoiteAlkupvm, postiosoiteLoppupvm) ?: return null
@@ -58,7 +58,7 @@ fun parseMailAddress(
     }
 
 fun parseTemporaryAddress(
-    temporaryAddress: VTJHenkiloVastaussanoma.Henkilo.TilapainenKotimainenLahiosoite
+    temporaryAddress: VTJHenkiloVastaussanoma.Henkilo.TilapainenKotimainenLahiosoite,
 ): MailingAddressPeriod? =
     with(temporaryAddress) {
         val validDuring = parseValidity(asuminenAlkupvm, asuminenLoppupvm) ?: return null
@@ -87,7 +87,7 @@ fun parseTemporaryAddress(
     }
 
 fun parseRegularAddress(
-    regularAddress: VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite
+    regularAddress: VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite,
 ): PersonAddress? =
     with(regularAddress) {
         if (

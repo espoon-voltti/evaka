@@ -34,7 +34,7 @@ WHERE pl.child_id = ${bind(childId)}
     AND pl.end_date >= ${bind(date)}
 ORDER BY pl.start_date
 LIMIT 1
-"""
+""",
     )
 }
     .exactlyOneOrNull<DocumentPlacementInfo>()

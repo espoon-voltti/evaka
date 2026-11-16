@@ -55,7 +55,7 @@ JOIN person c ON fp.child_id = c.id
 JOIN person p ON fp.parent_id = p.id
 JOIN evaka_user e ON e.id = fp.modified_by
 WHERE fp.parent_id = ${bind(parentId)} OR fp.child_id = ${bind(childId)}
-"""
+""",
         )
     }
         .toList<FosterParentRelationship>()
@@ -72,7 +72,7 @@ INSERT INTO foster_parent (child_id, parent_id, valid_during, created_by, create
 VALUES
     (${bind(data.childId)}, ${bind(data.parentId)}, ${bind(data.validDuring)}, ${bind(user.evakaUserId)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(now)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -91,7 +91,7 @@ UPDATE foster_parent SET
     modified_by = ${bind(user.evakaUserId)},
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .executeAndReturnCount()

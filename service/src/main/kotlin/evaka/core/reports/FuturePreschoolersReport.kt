@@ -114,7 +114,7 @@ WHERE CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN
 ELSE
     extract(year from p.date_of_birth) = ${bind(preschoolStartYear - 6)}
 END
-            """
+            """,
         )
     }
         .toList<FuturePreschoolersReportRow>()
@@ -146,7 +146,7 @@ SELECT d.id,
 FROM daycare d
 WHERE d.type && '{PRESCHOOL}'::care_types[] AND
 d.opening_date <= ${bind(today)} AND (d.closing_date IS NULL OR d.closing_date >= ${bind(today)})
-            """
+            """,
         )
     }
     .toList<PreschoolUnitsReportRow>()
@@ -161,7 +161,7 @@ SELECT d.id,
     d.post_office as post_office
 FROM daycare d
 WHERE d.opening_date <= ${bind(today)} AND (d.closing_date IS NULL OR d.closing_date >= ${bind(today)})
-            """
+            """,
     )
 }
     .toList<SourceUnitsReportRow>()

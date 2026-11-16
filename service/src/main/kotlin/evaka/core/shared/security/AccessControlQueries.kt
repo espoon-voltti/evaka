@@ -57,7 +57,7 @@ FROM placement pl
 JOIN daycare_acl ON pl.unit_id = daycare_acl.daycare_id
 WHERE ${bind(now.toLocalDate())} < pl.end_date + INTERVAL '1 month'
 AND daycare_acl.employee_id = ${bind(employee)}
-"""
+""",
     )
 }
 
@@ -69,7 +69,7 @@ FROM backup_care bc
 JOIN daycare_acl ON unit_id = daycare_acl.daycare_id
 WHERE ${bind(now.toLocalDate())} < bc.end_date + INTERVAL '1 month'
 AND daycare_acl.employee_id = ${bind(employee)}
-"""
+""",
     )
 }
 
@@ -83,7 +83,7 @@ JOIN daycare_acl ON pp.unit_id = daycare_acl.daycare_id
 WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
 AND NOT (role = 'SPECIAL_EDUCATION_TEACHER' AND coalesce((a.document -> 'careDetails' ->> 'assistanceNeeded')::boolean, FALSE) IS FALSE)
 AND daycare_acl.employee_id = ${bind(employee)}
-"""
+""",
     )
 }
 
@@ -98,7 +98,7 @@ AND EXISTS (
     LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
     WHERE md.id = ${bind(mobileDevice)} AND (md.unit_id = pl.unit_id OR acl.daycare_id = pl.unit_id)
 )
-"""
+""",
     )
 }
 
@@ -113,7 +113,7 @@ AND EXISTS (
     LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
     WHERE md.id = ${bind(mobileDevice)} AND (md.unit_id = bc.unit_id OR acl.daycare_id = bc.unit_id)
 )
-"""
+""",
     )
 }
 
@@ -129,6 +129,6 @@ AND EXISTS (
     LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
     WHERE md.id = ${bind(mobileDevice)} AND (md.unit_id = pp.unit_id OR acl.daycare_id = pp.unit_id)
 )
-"""
+""",
     )
 }

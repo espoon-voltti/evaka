@@ -96,10 +96,10 @@ class UnitAccessControlTest : AccessControlTest() {
             )
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycare.id)
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycare.id),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycare.id)
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycare.id),
             )
         }
     }
@@ -128,16 +128,22 @@ class UnitAccessControlTest : AccessControlTest() {
             )
         db.read { tx ->
             assertFalse(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycare.id)
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycare.id),
             )
             assertTrue(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, featureDaycare.id)
+                accessControl.hasPermissionFor(
+                    tx,
+                    unitSupervisor,
+                    clock,
+                    action,
+                    featureDaycare.id,
+                ),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycare.id)
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycare.id),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, featureDaycare.id)
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, featureDaycare.id),
             )
         }
     }
@@ -168,7 +174,7 @@ class UnitAccessControlTest : AccessControlTest() {
                     SELECT id FROM daycare
                     WHERE ${predicate(filter.forTable("daycare"))}
                     """
-                            .trimIndent()
+                            .trimIndent(),
                     )
                 }
                 .toSet<DaycareId>()
@@ -203,8 +209,8 @@ class UnitAccessControlTest : AccessControlTest() {
         assertEquals(AccessControlFilter.PermitAll, getFilter(serviceWorker))
         assertNull(
             getFilter(
-                AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-            )
+                AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG),
+            ),
         )
     }
 }

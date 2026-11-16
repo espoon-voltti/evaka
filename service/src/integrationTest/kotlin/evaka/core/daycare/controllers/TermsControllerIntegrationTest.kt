@@ -116,7 +116,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         assertNull(
             terms.find { preschoolTerm ->
                 preschoolTerm.finnishPreschool == preschoolTerm2025.finnishPreschool
-            }
+            },
         )
     }
 
@@ -147,7 +147,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         assertNull(
             terms.find { preschoolTerm ->
                 preschoolTerm.finnishPreschool == preschoolTerm2025.finnishPreschool
-            }
+            },
         )
     }
 
@@ -177,7 +177,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         assertNull(
             terms.find { preschoolTerm ->
                 preschoolTerm.extendedTerm == preschoolTerm2025.extendedTerm
-            }
+            },
         )
     }
 
@@ -235,7 +235,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             terms.find { preschoolTerm ->
                 preschoolTerm.finnishPreschool == firstPreschoolTerm2025.finnishPreschool ||
                     preschoolTerm.finnishPreschool == secondPreschoolTerm2025.finnishPreschool
-            }
+            },
         )
     }
 

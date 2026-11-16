@@ -217,7 +217,7 @@ data class HelsinkiDateTimeRange(
         tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
 
     override fun subtract(
-        other: HelsinkiDateTimeRange
+        other: HelsinkiDateTimeRange,
     ): BoundedRange.SubtractResult<HelsinkiDateTimeRange> =
         if (this.overlaps(other)) {
             val left = tryCreate(this.start, other.start)
@@ -244,7 +244,7 @@ data class HelsinkiDateTimeRange(
         this.start <= point && point < this.end
 
     override fun relationTo(
-        other: HelsinkiDateTimeRange
+        other: HelsinkiDateTimeRange,
     ): BoundedRange.Relation<HelsinkiDateTimeRange> =
         when {
             this.end <= other.start -> {

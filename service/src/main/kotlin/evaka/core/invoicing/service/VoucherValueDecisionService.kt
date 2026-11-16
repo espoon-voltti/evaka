@@ -83,7 +83,7 @@ class VoucherValueDecisionService(
         val decision = getDecision(tx, decisionId)
         if (!decision.documentKey.isNullOrBlank()) {
             throw PermanentAsyncJobFailure(
-                "Voucher value decision $decisionId has document key already!"
+                "Voucher value decision $decisionId has document key already!",
             )
         }
 
@@ -135,7 +135,7 @@ class VoucherValueDecisionService(
         val decision = getDecision(tx, decisionId)
         if (decision.status != VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
             throw PermanentAsyncJobFailure(
-                "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
+                "Cannot send voucher value decision ${decision.id} - has status ${decision.status}",
             )
         }
         checkNotNull(decision.documentKey) {
@@ -197,7 +197,7 @@ class VoucherValueDecisionService(
 
         val messageId =
             tx.storeSentSfiMessage(
-                SentSfiMessage(guardianId = recipient.id, voucherValueDecisionId = decision.id)
+                SentSfiMessage(guardianId = recipient.id, voucherValueDecisionId = decision.id),
             )
 
         asyncJobRunner.plan(
@@ -220,8 +220,8 @@ class VoucherValueDecisionService(
                         ssn = recipient.ssn!!,
                         messageHeader = messageProvider.getVoucherValueDecisionHeader(lang),
                         messageContent = messageProvider.getVoucherValueDecisionContent(lang),
-                    )
-                )
+                    ),
+                ),
             ),
             runAt = clock.now(),
         )
@@ -238,12 +238,12 @@ class VoucherValueDecisionService(
             .map { decision ->
                 if (decision.status != VoucherValueDecisionStatus.DRAFT) {
                     throw BadRequest(
-                        "Error with decision ${decision.id}: Only drafts can be ignored"
+                        "Error with decision ${decision.id}: Only drafts can be ignored",
                     )
                 }
                 if (decision.validFrom > today) {
                     throw BadRequest(
-                        "Error with decision ${decision.id}: Must not ignore future drafts, data should be fixed instead"
+                        "Error with decision ${decision.id}: Must not ignore future drafts, data should be fixed instead",
                     )
                 }
                 decision
@@ -287,7 +287,7 @@ class VoucherValueDecisionService(
             else OfficialLanguage.FI
 
         return pdfGenerator.generateVoucherValueDecisionPdf(
-            VoucherValueDecisionPdfData(decision, settings, lang)
+            VoucherValueDecisionPdfData(decision, settings, lang),
         )
     }
 
@@ -374,7 +374,7 @@ class VoucherValueDecisionService(
         val fromAddress = emailEnv.sender(Language.fi)
         val content =
             emailMessageProvider.financeDecisionNotification(
-                FinanceDecisionType.VOUCHER_VALUE_DECISION
+                FinanceDecisionType.VOUCHER_VALUE_DECISION,
             )
         Email.create(
                 db,

@@ -27,7 +27,7 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')"
+                    "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')",
                 )
             }
             tx.createChild(
@@ -62,7 +62,7 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         allergies = "Retiisi",
                         diet = "Vähäglugoosinen",
                         additionalInfo = "Hankala luonne",
-                    )
+                    ),
             )
 
         db.transaction { it.updateChild(updated, HelsinkiDateTime.now()) }

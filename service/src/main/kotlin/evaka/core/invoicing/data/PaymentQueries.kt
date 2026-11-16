@@ -31,7 +31,7 @@ INSERT INTO payment (unit_id, unit_name, period, amount, status)
 SELECT ${bind { it.unitId }}, d.name, ${bind { it.period }}, ${bind { it.amount }}, 'DRAFT'
 FROM daycare d
 WHERE d.id = ${bind { it.unitId }}
-"""
+""",
         )
     }
 }
@@ -47,7 +47,7 @@ SELECT
 FROM payment p
 JOIN daycare d ON d.id = p.unit_id
 WHERE p.id = ANY(${bind(ids)})
-"""
+""",
         )
     }
         .toList<Payment>()
@@ -65,7 +65,7 @@ SELECT
 FROM payment p
 JOIN daycare d ON d.id = p.unit_id
 ORDER BY period DESC, unit_name
-"""
+""",
         )
     }
         .toList<Payment>()
@@ -81,7 +81,7 @@ SELECT DISTINCT unit_id
 FROM payment
 WHERE period = ${bind(period)}
   AND status = ANY (${bind(status)})
-    """
+    """,
     )
 }
     .toList<DaycareId>()
@@ -131,7 +131,7 @@ WHERE
     )
 ORDER BY $orderBy $ascDesc
 LIMIT ${bind(pageSize)} OFFSET ${bind(pageSize)} * (${bind(params.page)} - 1)
-"""
+""",
             )
         }
         .mapToPaged(::PagedPayments, pageSize)
@@ -150,7 +150,7 @@ fun Database.Transaction.deleteDraftPayments(draftIds: List<PaymentId>) {
                 DELETE FROM payment
                 WHERE status = ${bind(PaymentStatus.DRAFT)}::payment_status
                 AND id = ANY (${bind(draftIds)})
-                """
+                """,
         )
     }
         .execute()
@@ -176,7 +176,7 @@ UPDATE payment SET
     unit_provider_id = ${bind { it.unit.providerId }},
     unit_partner_code = ${bind { it.unit.partnerCode }}
 WHERE id = ${bind { it.id }}
-"""
+""",
         )
     }
 }
@@ -190,7 +190,7 @@ fun Database.Transaction.confirmDraftPayments(draftIds: List<PaymentId>) {
                 UPDATE payment set status = ${bind(PaymentStatus.CONFIRMED)} 
                 WHERE status = ${bind(PaymentStatus.DRAFT)}
                 AND id = ANY (${bind(draftIds)})
-                """
+                """,
         )
     }
 }
@@ -204,7 +204,7 @@ fun Database.Transaction.revertPaymentsToDrafts(paymentIds: List<PaymentId>) {
                 UPDATE payment set status = ${bind(PaymentStatus.DRAFT)} 
                 WHERE status = ${bind(PaymentStatus.CONFIRMED)}
                 AND id = ANY (${bind(paymentIds)})
-                """
+                """,
         )
     }
 }

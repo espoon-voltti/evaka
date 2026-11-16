@@ -162,7 +162,7 @@ class NokiaEmailMessageProvider : IEmailMessageProvider {
         val start =
             checkedRange.start.format(
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-                    .withLocale(Locale.of("fi", "FI"))
+                    .withLocale(Locale.of("fi", "FI")),
             )
         return EmailContent.fromHtml(
             subject = "Läsnäolovarauksia puuttuu / There are missing attendance reservations",
@@ -587,7 +587,7 @@ $unsubscribeEn
 <p>${reminderData.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${reminderData.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${
             reminderData.endTime.format(
-                DateTimeFormatter.ofPattern("HH:mm")
+                DateTimeFormatter.ofPattern("HH:mm"),
             )
         }</p>
 <p>Varauksen voi peruuttaa 2 arkipäivää ennen varattua aikaa suoraan eVakan kalenterinäkymästä. Myöhempää peruutusta varten ota yhteyttä henkilökuntaan.</p>
@@ -597,7 +597,7 @@ $unsubscribeFi
 <p>${reminderData.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${reminderData.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${
             reminderData.endTime.format(
-                DateTimeFormatter.ofPattern("HH:mm")
+                DateTimeFormatter.ofPattern("HH:mm"),
             )
         }</p>
 <p>Reservation can be cancelled 2 business days before the reserved time using the eVaka calendar view. For later cancellations contact the daycare staff.</p>

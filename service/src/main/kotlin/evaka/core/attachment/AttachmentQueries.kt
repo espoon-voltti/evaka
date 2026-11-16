@@ -34,7 +34,7 @@ data class AttachmentForeignKeys(
     val pedagogicalDocumentId: PedagogicalDocumentId?,
 ) {
     constructor(
-        parent: AttachmentParent
+        parent: AttachmentParent,
     ) : this(
         applicationId = (parent as? AttachmentParent.Application)?.applicationId,
         feeAlterationId = (parent as? AttachmentParent.FeeAlteration)?.feeAlterationId,
@@ -163,7 +163,7 @@ VALUES (
     ${bind(type?.name ?: "")}
 )
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturnGeneratedKeys()
@@ -189,7 +189,7 @@ fun Database.Read.getAttachment(id: AttachmentId): Pair<Attachment, AttachmentPa
             pedagogical_document_id
         FROM attachment
         WHERE id = ${bind(id)}
-        """
+        """,
         )
     }
     .exactlyOneOrNull {
@@ -217,7 +217,7 @@ WHERE application_id = ${bind(applicationId)}
 AND type = ${bind(type)} 
 AND uploaded_by = ${bind(userId)}
 RETURNING id
-"""
+""",
     )
 }
     .toList()
@@ -244,7 +244,7 @@ SET
     message_draft_id = ${bind(fks.messageDraftId)},
     pedagogical_document_id = ${bind(fks.pedagogicalDocumentId)}
 WHERE ${predicate(predicate.forTable("attachment"))}
-"""
+""",
     )
 }
     .executeAndReturnCount()
@@ -266,7 +266,7 @@ fun Database.Transaction.associateOrphanAttachments(
             newParent = newParent,
             Predicate {
                     where(
-                        "$it.uploaded_by = ${bind(uploadedBy)} AND $it.id = ANY(${bind(attachments)})"
+                        "$it.uploaded_by = ${bind(uploadedBy)} AND $it.id = ANY(${bind(attachments)})",
                     )
                 }
                 .and(isOrphan),
@@ -335,7 +335,7 @@ AND $it.invoice_id IS NULL
 AND $it.message_content_id IS NULL
 AND $it.message_draft_id IS NULL
 AND $it.pedagogical_document_id IS NULL
-"""
+""",
             )
         }
     }
@@ -349,7 +349,7 @@ SELECT count(*)
 FROM attachment
 WHERE uploaded_by = ${bind(userId)}
 AND ${predicate(parent.toPredicate().forTable("attachment"))}
-"""
+""",
         )
     }
     .exactlyOne<Int>()
@@ -362,7 +362,7 @@ SELECT id
 FROM attachment
 WHERE created_at < ${bind(olderThan)}
 AND ${predicate(AttachmentParent.None.toPredicate().forTable("attachment"))}
-"""
+""",
         )
     }
     .toList()

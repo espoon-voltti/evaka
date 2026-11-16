@@ -351,7 +351,7 @@ class ApplicationStateService(
         if (!application.hideFromGuardian && application.type == ApplicationType.DAYCARE) {
             val preferredUnit =
                 tx.getDaycare(
-                    application.form.preferences.preferredUnits.first().id
+                    application.form.preferences.preferredUnits.first().id,
                 )!! // should never be null after validation
 
             asyncJobRunner.plan(
@@ -361,7 +361,7 @@ class ApplicationStateService(
                         application.guardianId,
                         preferredUnit.language,
                         ApplicationType.DAYCARE,
-                    )
+                    ),
                 ),
                 runAt = now,
             )
@@ -375,7 +375,7 @@ class ApplicationStateService(
                         application.guardianId,
                         Language.fi,
                         ApplicationType.CLUB,
-                    )
+                    ),
                 ),
                 runAt = now,
             )
@@ -392,7 +392,7 @@ class ApplicationStateService(
                         Language.fi,
                         ApplicationType.PRESCHOOL,
                         sentWithinPreschoolApplicationPeriod,
-                    )
+                    ),
                 ),
                 runAt = now,
             )
@@ -460,7 +460,7 @@ class ApplicationStateService(
                     listOf(
                         tx.getPersonById(application.guardianId)?.let {
                             "${it.firstName} ${it.lastName}"
-                        } ?: ""
+                        } ?: "",
                     ),
                 attachments = setOf(),
                 relatedApplication = application.id,
@@ -505,7 +505,7 @@ class ApplicationStateService(
                         allergies = application.form.child.allergies,
                         diet = application.form.child.diet,
                     ),
-            )
+            ),
         )
 
         asyncJobRunner.plan(
@@ -885,7 +885,7 @@ class ApplicationStateService(
                     unit_id = ${bind(unitId)} AND
                     unit_confirmation_status = 'REJECTED_NOT_CONFIRMED'
                 RETURNING application_id, unit_reject_reason, unit_reject_other_reason
-                """
+                """,
                 )
             }
             .executeAndReturnGeneratedKeys()
@@ -932,7 +932,7 @@ class ApplicationStateService(
                             a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type AND 
                             pp.unit_id = ${bind(unitId)} AND
                             pp.unit_confirmation_status = 'ACCEPTED'
-                        """
+                        """,
                     )
                 }
                 .toList<ApplicationId>()
@@ -1047,20 +1047,20 @@ class ApplicationStateService(
                     DecisionType.PRESCHOOL,
                     DecisionType.PREPARATORY_EDUCATION -> {
                         PlacementPlanExtent.OnlyPreschool(
-                            plan.period.copy(start = requestedStartDate)
+                            plan.period.copy(start = requestedStartDate),
                         )
                     }
 
                     DecisionType.PRESCHOOL_DAYCARE,
                     DecisionType.PRESCHOOL_CLUB -> {
                         PlacementPlanExtent.OnlyPreschoolDaycare(
-                            plan.preschoolDaycarePeriod!!.copy(start = requestedStartDate)
+                            plan.preschoolDaycarePeriod!!.copy(start = requestedStartDate),
                         )
                     }
 
                     else -> {
                         throw IllegalStateException(
-                            "Placement plan ${plan.id} has type ${plan.type} but decision ${decision.id} has type ${decision.type}"
+                            "Placement plan ${plan.id} has type ${plan.type} but decision ${decision.id} has type ${decision.type}",
                         )
                     }
                 }
@@ -1266,7 +1266,7 @@ class ApplicationStateService(
                     updatedForm.preferences.preferredStartDate?.let { newStartDate ->
                         if (previousStartDate.isAfter(newStartDate)) {
                             throw BadRequest(
-                                "Moving start date $previousStartDate earlier to $newStartDate is not allowed"
+                                "Moving start date $previousStartDate earlier to $newStartDate is not allowed",
                             )
                         }
                     }
@@ -1405,7 +1405,7 @@ class ApplicationStateService(
                     duedate = ${bind(manuallySetDueDate)},
                     duedate_set_manually_at = ${bind(HelsinkiDateTime.now())}
                 WHERE id = ${bind(applicationId)}
-                """
+                """,
             )
         }
     }
@@ -1435,7 +1435,7 @@ class ApplicationStateService(
 
         execute {
             sql(
-                "UPDATE application SET duedate = ${bind(newDueDate)} WHERE id = ${bind(original.id)}"
+                "UPDATE application SET duedate = ${bind(newDueDate)} WHERE id = ${bind(original.id)}",
             )
         }
     }
@@ -1506,7 +1506,7 @@ class ApplicationStateService(
     private fun verifyStatus(application: ApplicationDetails, statuses: Set<ApplicationStatus>) {
         if (!statuses.contains(application.status)) {
             throw BadRequest(
-                "Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}"
+                "Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}",
             )
         }
     }
@@ -1537,7 +1537,7 @@ class ApplicationStateService(
                 val connectedPreschoolTerm = tx.getPreschoolTerm(connectedDaycarePreferredStartDate)
                 if (connectedPreschoolTerm != activePreschoolTerm) {
                     throw BadRequest(
-                        "Cannot apply to different preschool term for connected daycare"
+                        "Cannot apply to different preschool term for connected daycare",
                     )
                 }
                 if (
@@ -1550,7 +1550,7 @@ class ApplicationStateService(
                             activePreschoolTerm.finnishPreschool.start ||
                             activePreschoolTerm.finnishPreschool.start != preferredStartDate ||
                             !activePreschoolTerm.extendedTerm.includes(
-                                connectedDaycarePreferredStartDate
+                                connectedDaycarePreferredStartDate,
                             ))
                 ) {
                     throw BadRequest("Cannot apply to connected daycare before preschool")
@@ -1579,7 +1579,7 @@ class ApplicationStateService(
                     ?.also {
                         if (!DateRange(it.validFrom, it.validTo).includes(serviceNeedStartDate)) {
                             throw BadRequest(
-                                "Service need option $serviceNeedOptionId is not valid at $serviceNeedStartDate"
+                                "Service need option $serviceNeedOptionId is not valid at $serviceNeedStartDate",
                             )
                         }
                     }
@@ -1629,7 +1629,7 @@ class ApplicationStateService(
                                     !daycare.daycareApplyPeriod.includes(preferredStartDate))
                         ) {
                             throw BadRequest(
-                                "Cannot apply for daycare in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})"
+                                "Cannot apply for daycare in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})",
                             )
                         }
                         if (
@@ -1638,7 +1638,7 @@ class ApplicationStateService(
                                     !daycare.preschoolApplyPeriod.includes(preferredStartDate))
                         ) {
                             throw BadRequest(
-                                "Cannot apply for preschool in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.preschoolApplyPeriod})"
+                                "Cannot apply for preschool in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.preschoolApplyPeriod})",
                             )
                         }
                         if (
@@ -1647,7 +1647,7 @@ class ApplicationStateService(
                                     !daycare.clubApplyPeriod.includes(preferredStartDate))
                         ) {
                             throw BadRequest(
-                                "Cannot apply for club in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.clubApplyPeriod})"
+                                "Cannot apply for club in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.clubApplyPeriod})",
                             )
                         }
                     }

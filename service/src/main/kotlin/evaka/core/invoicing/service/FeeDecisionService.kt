@@ -237,12 +237,12 @@ class FeeDecisionService(
             .map { decision ->
                 if (decision.status != DRAFT) {
                     throw BadRequest(
-                        "Error with decision ${decision.id}: Only drafts can be ignored"
+                        "Error with decision ${decision.id}: Only drafts can be ignored",
                     )
                 }
                 if (decision.validFrom > today) {
                     throw BadRequest(
-                        "Error with decision ${decision.id}: Must not ignore future drafts, data should be fixed instead"
+                        "Error with decision ${decision.id}: Must not ignore future drafts, data should be fixed instead",
                     )
                 }
                 decision
@@ -310,7 +310,7 @@ class FeeDecisionService(
 
         if (decision.status != WAITING_FOR_SENDING) {
             throw PermanentAsyncJobFailure(
-                "Cannot send fee decision ${decision.id} - has status ${decision.status}"
+                "Cannot send fee decision ${decision.id} - has status ${decision.status}",
             )
         }
 
@@ -366,7 +366,7 @@ class FeeDecisionService(
 
         val messageId =
             tx.storeSentSfiMessage(
-                SentSfiMessage(guardianId = recipient.id, feeDecisionId = decision.id)
+                SentSfiMessage(guardianId = recipient.id, feeDecisionId = decision.id),
             )
 
         val message =
@@ -478,7 +478,7 @@ class FeeDecisionService(
     ) {
         val childNames =
             tx.getPushChildNames(
-                decisions.flatMap { decision -> decision.children.map { it.child.id } }
+                decisions.flatMap { decision -> decision.children.map { it.child.id } },
             )
 
         decisions.forEach { decision ->

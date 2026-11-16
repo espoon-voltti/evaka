@@ -87,7 +87,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 path = "upload",
                                 username = Sensitive("foo"),
                                 password = Sensitive("pass"),
-                            )
+                            ),
                     ),
             )
 
@@ -98,7 +98,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val exportClient =
             FileDWExportClient(
-                SftpClient(turkuEnv.dwExport.sftp.toSftpEnv(), turkuEnv.dwExport.sftp.path)
+                SftpClient(turkuEnv.dwExport.sftp.toSftpEnv(), turkuEnv.dwExport.sftp.path),
             )
         job = DwExportJob(exportClient)
     }
@@ -148,10 +148,13 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = daycareId,
                         createdBy = employee.evakaUserId,
                         modifiedBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             tx.insert(
-                DevDaycareGroupPlacement(daycarePlacementId = placementId, daycareGroupId = groupId)
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId,
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -159,7 +162,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     date = LocalDate.of(2019, 7, 15),
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevVoucherValueDecision(
@@ -168,14 +171,14 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     placementUnitId = daycareId,
                     validFrom = LocalDate.of(2019, 1, 1),
                     validTo = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(
                 DevFeeDecision(
                     validDuring =
                         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31)),
                     headOfFamilyId = guardianId,
-                )
+                ),
             )
             tx.insert(DevAssistanceAction(childId = childId, modifiedBy = employee.evakaUserId))
             tx.insert(
@@ -185,7 +188,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevChildAttendance(
@@ -195,7 +198,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     arrived = LocalTime.of(8, 15),
                     departed = LocalTime.of(15, 45),
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
     }

@@ -71,10 +71,10 @@ class ApplicationAccessControlTest : AccessControlTest() {
 
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, creatorCitizen, clock, action, applicationId)
+                accessControl.hasPermissionFor(tx, creatorCitizen, clock, action, applicationId),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherCitizen, clock, action, applicationId)
+                accessControl.hasPermissionFor(tx, otherCitizen, clock, action, applicationId),
             )
         }
     }
@@ -95,10 +95,10 @@ class ApplicationAccessControlTest : AccessControlTest() {
             )
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, applicationId)
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, applicationId),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, applicationId)
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, applicationId),
             )
         }
     }
@@ -110,7 +110,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
         val daycareId = db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET status = 'ACTIVE', confidential = TRUE WHERE id = ${bind(applicationId)}"
+                    "UPDATE application SET status = 'ACTIVE', confidential = TRUE WHERE id = ${bind(applicationId)}",
                 )
             }
             tx.insert(DevPlacementPlan(applicationId = applicationId, unitId = daycare.id))
@@ -128,10 +128,10 @@ class ApplicationAccessControlTest : AccessControlTest() {
             )
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, applicationId)
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, applicationId),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, applicationId)
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, applicationId),
             )
         }
     }

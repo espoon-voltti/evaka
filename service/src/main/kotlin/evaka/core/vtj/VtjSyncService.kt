@@ -183,7 +183,7 @@ class VtjSyncService(
                     today = now.toLocalDate(),
                 )
             tx.removeUnclaimedJobs(
-                setOf(AsyncJobType(AsyncJob.SyncMissingVtjRelationsOfPerson::class))
+                setOf(AsyncJobType(AsyncJob.SyncMissingVtjRelationsOfPerson::class)),
             )
             val counts = tx.countPersonsToSync(now)
             val ids = tx.getPersonsToSync(now, limit)
@@ -200,7 +200,7 @@ class VtjSyncService(
                     "guardianSyncChildren" to counts.guardianSyncChildren,
                     "dependantSyncBacklog" to counts.dependantSyncBacklog,
                     "clearedDependantsMarkers" to cleared,
-                )
+                ),
             ) {
                 "Planned VTJ syncs for ${ids.size} persons (newly dependant-sync persons ${counts.newlyDependantSync}, guardian-sync children ${counts.guardianSyncChildren}, dependant-sync backlog ${counts.dependantSyncBacklog}), cleared $cleared stale dependants markers"
             }

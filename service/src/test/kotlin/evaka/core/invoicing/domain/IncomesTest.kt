@@ -82,7 +82,7 @@ class IncomesTest {
                             10000,
                             coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS),
                         ),
-                    )
+                    ),
             )
 
         val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)
@@ -132,7 +132,7 @@ class IncomesTest {
                             100000,
                             coefficientMultiplierProvider.multiplier(YEARLY),
                         ),
-                    )
+                    ),
             )
 
         val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)

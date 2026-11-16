@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
     if (password == null) {
         println("Expected exactly one argument: a password")
         println(
-            "If you are running via gradle, try passing your password using --args: ./gradlew encodePassword --args=\"mypassword\""
+            "If you are running via gradle, try passing your password using --args: ./gradlew encodePassword --args=\"mypassword\"",
         )
         exitProcess(1)
     }

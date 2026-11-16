@@ -74,7 +74,7 @@ class DvvModificationsServiceIntegrationTest :
         val ssn = "010179-9992"
         createTestPerson(testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = ssn))
         MockVtjClient.addPersons(
-            testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = ssn)
+            testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = ssn),
         )
 
         assertEquals(1, updatePeopleFromDvv(listOf(ssn)))
@@ -168,14 +168,14 @@ class DvvModificationsServiceIntegrationTest :
                     headOfChildId = dead.id,
                     startDate = LocalDate.of(2018, 1, 1),
                     endDate = LocalDate.of(2035, 5, 31),
-                )
+                ),
             )
             tx.insert(
                 DevFridgePartnership(
                     first = dead.id,
                     second = partner.id,
                     startDate = LocalDate.of(2018, 1, 1),
-                )
+                ),
             )
         }
 
@@ -207,7 +207,7 @@ class DvvModificationsServiceIntegrationTest :
                         "PL 10",
                         "02231",
                         "Espoo",
-                    )
+                    ),
                 ),
             )
         }
@@ -220,7 +220,7 @@ class DvvModificationsServiceIntegrationTest :
                 municipalityOfResidence = "",
                 restrictedDetailsEnabled = true,
                 restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
-            )
+            ),
         )
         updatePeopleFromDvv(listOf("020180-999Y"))
         // The mailing address period must not come back on the next nightly update
@@ -246,7 +246,7 @@ class DvvModificationsServiceIntegrationTest :
                 postalCode = "",
                 postOffice = "",
                 municipalityOfResidence = "",
-            )
+            ),
         )
         MockVtjClient.addPersons(
             testPerson.copy(
@@ -256,7 +256,7 @@ class DvvModificationsServiceIntegrationTest :
                 postOffice = "ESPOO",
                 municipalityOfResidence = "Espoo",
                 restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
-            )
+            ),
         )
         updatePeopleFromDvv(listOf("030180-999L"))
         val modifiedPerson = db.read { it.getPersonBySSN("030180-999L") }!!
@@ -279,7 +279,7 @@ class DvvModificationsServiceIntegrationTest :
                 postOffice = "ESPOO",
                 residenceCode = "abc123",
                 municipalityOfResidence = "Helsinki",
-            )
+            ),
         )
         updatePeopleFromDvv(listOf("040180-9998"))
         val modifiedPerson = db.read { it.getPersonBySSN("040180-9998") }!!
@@ -333,7 +333,7 @@ class DvvModificationsServiceIntegrationTest :
                 tx.getChildGuardians(dvvCustodian.id)
                     .mapNotNull { tx.getPersonById(it) }
                     .any { guardian -> guardian.ssn!!.value == caretaker.ssn }
-            }
+            },
         )
     }
 
@@ -358,7 +358,7 @@ class DvvModificationsServiceIntegrationTest :
                 tx.getGuardianChildIds(dvvCaretaker.id)
                     .mapNotNull { tx.getPersonById(it) }
                     .any { child -> child.ssn!!.value == custodian.ssn }
-            }
+            },
         )
     }
 
@@ -388,7 +388,7 @@ class DvvModificationsServiceIntegrationTest :
                 tx.getGuardianChildIds(dvvCaretaker.id)
                     .mapNotNull { tx.getPersonById(it) }
                     .any { child -> child.ssn!!.value == custodian.ssn }
-            }
+            },
         )
     }
 

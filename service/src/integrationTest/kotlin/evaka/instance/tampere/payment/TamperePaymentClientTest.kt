@@ -73,13 +73,13 @@ class TamperePaymentClientTest {
             testPayment.copy(unit = testPayment.unit.copy(partnerCode = "  ", costCenter = " "))
         val payment3 =
             testPayment.copy(
-                unit = testPayment.unit.copy(partnerCode = " 5810  ", costCenter = " 131000  ")
+                unit = testPayment.unit.copy(partnerCode = " 5810  ", costCenter = " 131000  "),
             )
         server
             .expect(connectionTo("http://localhost:8080/payableAccounting"))
             .andExpect(payload(ClassPathResource("payment-client/payable-accounting.xml")))
             .andRespond(
-                withPayload(ClassPathResource("payment-client/payable-accounting-response-ok.xml"))
+                withPayload(ClassPathResource("payment-client/payable-accounting-response-ok.xml")),
             )
 
         val result = client.send(listOf(payment1, payment2, payment3), tx)

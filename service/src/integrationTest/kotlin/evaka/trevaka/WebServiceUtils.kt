@@ -15,7 +15,7 @@ private val schemaPath = Paths.get("src", "main", "schema").toAbsolutePath()
 fun newPayloadValidatingInterceptor(vararg filenames: String) =
     PayloadValidatingInterceptor().apply {
         setSchemas(
-            *filenames.map { filename -> UrlResource("file:$schemaPath/$filename") }.toTypedArray()
+            *filenames.map { filename -> UrlResource("file:$schemaPath/$filename") }.toTypedArray(),
         )
         setValidateRequest(true)
         setValidateResponse(true)
@@ -27,6 +27,6 @@ fun addClientInterceptors(
     vararg clientInterceptor: ClientInterceptor,
 ) {
     webServiceTemplate.setInterceptors(
-        (webServiceTemplate.interceptors ?: emptyArray<ClientInterceptor>()) + clientInterceptor
+        (webServiceTemplate.interceptors ?: emptyArray<ClientInterceptor>()) + clientInterceptor,
     )
 }

@@ -83,7 +83,7 @@ data class DaycareFields(
             operationTimes.zip(shiftCareOperationTimes).forEach { (normal, shiftCare) ->
                 if (normal != null && shiftCare == null) {
                     throw BadRequest(
-                        "Shift care operation days must include all normal operation days"
+                        "Shift care operation days must include all normal operation days",
                     )
                 }
                 if (normal != null && shiftCare != null && !shiftCare.contains(normal)) {
@@ -184,7 +184,7 @@ FROM daycare
 LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
 JOIN care_area ca ON daycare.care_area_id = ca.id
 WHERE ${predicate(predicate.forTable("daycare"))}
-        """
+        """,
     )
 }
 
@@ -223,7 +223,7 @@ fun Database.Read.getUnitApplyPeriods(ids: Collection<DaycareId>): List<UnitAppl
 SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
 FROM daycare
 WHERE id = ANY(${bind(ids)})
-"""
+""",
         )
     }
     .toList()
@@ -244,7 +244,7 @@ fun Database.Read.getOphUnitOIDs(): Map<DaycareId, String> = createQuery {
 SELECT id, oph_unit_oid AS oph_unit_oid
 FROM daycare
 WHERE oph_unit_oid IS NOT NULL
-"""
+""",
     )
 }
     .toMap { columnPair("id", "oph_unit_oid") }
@@ -256,7 +256,7 @@ SELECT GREATEST(
     (SELECT MAX(end_date) FROM placement WHERE unit_id = ${bind(daycareId)}),
     (SELECT MAX(end_date) FROM backup_care WHERE unit_id = ${bind(daycareId)})
 )
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -272,7 +272,7 @@ fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? = createQuery 
 SELECT id, name, type as care_types, closing_date
 FROM daycare
 WHERE id = ${bind(daycareId)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -282,7 +282,7 @@ fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId 
         """
 INSERT INTO daycare (name, care_area_id)
 SELECT ${bind(name)}, ${bind(areaId)}
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -354,7 +354,7 @@ SET
   nekku_order_reduction_percentage = ${bind(fields.nekkuOrderReductionPercentage)},
   nekku_no_weekend_meal_orders = ${bind(fields.nekkuNoWeekendMealOrders)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
 
@@ -399,7 +399,7 @@ WHERE ${bind(date)} <= COALESCE(closing_date, 'infinity'::date)
         OR (${bind(type == ApplicationUnitType.PREPARATORY)} AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (preschool_apply_period @> ${bind(date)})))
     )
 ORDER BY name
-"""
+""",
     )
 }
     .toList()
@@ -440,7 +440,7 @@ FROM daycare
 WHERE daterange(null, closing_date, '[]') @> ${bind(today)} AND
     ($applyPeriod && daterange(${bind(today)}, null, '[]') OR provider_type = 'PRIVATE')
 ORDER BY name
-    """
+    """,
         )
     }
         .toList()
@@ -453,7 +453,7 @@ fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGr
 SELECT id, name, end_date
 FROM daycare_group
 WHERE daycare_id = ${bind(daycareId)}
-"""
+""",
         )
     }
     .toList()
@@ -465,7 +465,7 @@ SELECT id, name, enabled_pilot_features AS features, provider_type, type
 FROM daycare
 WHERE closing_date IS NULL OR closing_date >= ${bind(today)}
 ORDER BY name
-"""
+""",
     )
 }
     .toList()
@@ -480,7 +480,7 @@ fun Database.Transaction.addUnitFeatures(
 UPDATE daycare
 SET enabled_pilot_features = enabled_pilot_features || (${bind(features)})::pilot_feature[]
 WHERE id = ANY(${bind(daycareIds)})
-"""
+""",
         )
     }
 }
@@ -499,7 +499,7 @@ SET enabled_pilot_features = array(
     SELECT unnest((${bind(features)})::pilot_feature[])
 )::pilot_feature[]
 WHERE id = ANY(${bind(daycareIds)})
-"""
+""",
         )
     }
 }
@@ -510,7 +510,7 @@ fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? = createQuery {
 SELECT id, name, enabled_pilot_features AS features, provider_type, type
 FROM daycare
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -525,7 +525,7 @@ SELECT EXISTS(
     WHERE id = ANY(${bind(ids)})
     AND ${bind(feature)} = ANY(enabled_pilot_features)
 )
-"""
+""",
         )
     }
     .exactlyOne<Boolean>()
@@ -539,7 +539,7 @@ fun Database.Read.getUnitOperationPeriods(
 SELECT id, opening_date, closing_date
 FROM daycare unit
 WHERE id = ANY(${bind(unitIds)}) AND ${predicate(filter.forTable("unit"))}
-"""
+""",
     )
 }
     .toMap {
@@ -556,7 +556,7 @@ SELECT EXISTS (
     WHERE id = ${bind(id)}
     AND daterange(opening_date, closing_date, '[]') @> daterange(${bind(period.start)}, ${bind(period.end)}, '[]')
 )
-"""
+""",
         )
     }
     .exactlyOne<Boolean>()

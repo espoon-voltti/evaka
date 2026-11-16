@@ -86,7 +86,7 @@ class ChildDocumentController(
                     val template = getTemplate(tx, body, clock)
                     if (template.type.decision) {
                         throw BadRequest(
-                            "Cannot create document. Template ${body.templateId} is for decision"
+                            "Cannot create document. Template ${body.templateId} is for decision",
                         )
                     }
                     createChildDocument(tx, user, clock, body.childId, template).also {
@@ -118,7 +118,7 @@ class ChildDocumentController(
                     val template = getTemplate(tx, body, clock)
                     if (!template.type.decision) {
                         throw BadRequest(
-                            "Cannot create decision. Template ${body.templateId} is not for decision"
+                            "Cannot create decision. Template ${body.templateId} is not for decision",
                         )
                     }
                     createChildDocument(tx, user, clock, body.childId, template).also {
@@ -198,7 +198,7 @@ class ChildDocumentController(
                         tx.getNonCompletedChildDocumentChildIds(template.id, body.childIds)
                     if (sameTemplateAlreadyStarted.isNotEmpty()) {
                         throw Conflict(
-                            "Children $sameTemplateAlreadyStarted already has incomplete document of the same template"
+                            "Children $sameTemplateAlreadyStarted already has incomplete document of the same template",
                         )
                     }
                     body.childIds.map { childId ->
@@ -261,7 +261,7 @@ class ChildDocumentController(
                             audit
                                 .add(it.data.id)
                                 .observeDate(
-                                    (it.data.publishedAt ?: it.data.modifiedAt).toLocalDate()
+                                    (it.data.publishedAt ?: it.data.modifiedAt).toLocalDate(),
                                 )
                         }
                 }
@@ -473,7 +473,7 @@ class ChildDocumentController(
 
     data class StatusChangeRequest(
         // needed to ensure idempotency
-        val newStatus: DocumentStatus
+        val newStatus: DocumentStatus,
     )
 
     @PutMapping("/{documentId}/next-status")
@@ -1196,16 +1196,16 @@ fun validateStatusTransition(
     if (document.template.type.decision) {
         if (goingForward && newStatus == DocumentStatus.DECISION_PROPOSAL)
             throw BadRequest(
-                "Decision document cannot be moved to DECISION_PROPOSAL using normal status transitions. Please use the separate propose-decision endpoint."
+                "Decision document cannot be moved to DECISION_PROPOSAL using normal status transitions. Please use the separate propose-decision endpoint.",
             )
         if (goingForward && newStatus == DocumentStatus.COMPLETED)
             throw BadRequest(
-                "Decision document cannot be marked as completed using normal status transitions. Please use the separate accept/reject endpoints."
+                "Decision document cannot be marked as completed using normal status transitions. Please use the separate accept/reject endpoints.",
             )
 
         if (!goingForward && document.status == DocumentStatus.COMPLETED)
             throw BadRequest(
-                "Decision can not be reverted using normal status transitions. Please use the separate annul endpoint."
+                "Decision can not be reverted using normal status transitions. Please use the separate annul endpoint.",
             )
     }
 

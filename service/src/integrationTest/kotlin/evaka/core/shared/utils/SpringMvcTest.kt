@@ -25,7 +25,7 @@ class SpringMvcTest : FullApplicationTest(resetDbBeforeEach = false) {
                 Request.Builder()
                     .url("http://localhost:$httpPort/integration-test/require-auth")
                     .asUser(AuthenticatedUser.SystemInternalUser)
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response -> assertThat(response.isSuccessful).isTrue() }
@@ -35,7 +35,7 @@ class SpringMvcTest : FullApplicationTest(resetDbBeforeEach = false) {
                 Request.Builder()
                     .url("http://localhost:$httpPort/integration-test/require-auth-employee")
                     .asUser(AuthenticatedUser.SystemInternalUser)
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response -> assertThat(response.code).isEqualTo(401) }
@@ -45,7 +45,7 @@ class SpringMvcTest : FullApplicationTest(resetDbBeforeEach = false) {
                 Request.Builder()
                     .url("http://localhost:$httpPort/integration-test/require-auth")
                     .asUser(employee)
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response -> assertThat(response.isSuccessful).isTrue() }
@@ -55,7 +55,7 @@ class SpringMvcTest : FullApplicationTest(resetDbBeforeEach = false) {
                 Request.Builder()
                     .url("http://localhost:$httpPort/integration-test/require-auth-employee")
                     .asUser(employee)
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response -> assertThat(response.isSuccessful).isTrue() }

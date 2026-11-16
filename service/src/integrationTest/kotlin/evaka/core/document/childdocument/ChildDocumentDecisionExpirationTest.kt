@@ -80,7 +80,7 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     startDate = placementStart,
                     endDate = placementEnd,
                     unitId = placementUnit,
-                )
+                ),
             )
             tx.insert(
                 DevChildDocument(
@@ -114,9 +114,9 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                                 createdAt = now.minusDays(5),
                                 createdBy = admin.evakaUserId,
                                 publishedContent = DocumentContent(emptyList()),
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
     }
@@ -144,7 +144,7 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     type = PlacementType.DAYCARE_PART_TIME,
                     startDate = today,
                     endDate = today.plusMonths(6),
-                )
+                ),
             )
         }
         runJobAndExpect(false)
@@ -161,7 +161,7 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     type = PlacementType.PRESCHOOL,
                     startDate = today,
                     endDate = today.plusMonths(6),
-                )
+                ),
             )
         }
         runJobAndExpect(true)
@@ -178,7 +178,7 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     type = PlacementType.DAYCARE,
                     startDate = today,
                     endDate = today.plusMonths(6),
-                )
+                ),
             )
         }
         runJobAndExpect(true)
@@ -195,7 +195,7 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     type = PlacementType.DAYCARE,
                     startDate = yesterday,
                     endDate = today.plusMonths(6),
-                )
+                ),
             )
         }
         runJobAndExpect(false)
@@ -212,7 +212,7 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     type = PlacementType.DAYCARE,
                     startDate = today,
                     endDate = today.plusMonths(6),
-                )
+                ),
             )
         }
         runJobAndExpect(false)
@@ -231,7 +231,7 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     type = PlacementType.DAYCARE,
                     startDate = today,
                     endDate = today.plusMonths(6),
-                )
+                ),
             )
         }
         runJobAndExpect(false)

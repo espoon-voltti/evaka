@@ -257,7 +257,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             PersonalDataControllerCitizen.EmailVerificationRequest(
                 verification.id,
                 verificationCode,
-            )
+            ),
         )
 
         val identity = citizenWeakLogin(username = newEmail, password = password)
@@ -391,7 +391,7 @@ SELECT username IS NULL AND password IS NULL
     AND username_updated_at IS NULL AND password_updated_at IS NULL
 FROM citizen_user
 WHERE id = ${bind(person.id)}
-"""
+""",
                     )
                 }
                 .exactlyOne<Boolean>()

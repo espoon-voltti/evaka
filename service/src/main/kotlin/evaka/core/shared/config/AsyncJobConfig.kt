@@ -32,14 +32,14 @@ class AsyncJobConfig {
                 AsyncJob.main,
                 // this is a reasonable default but should probably be configurable
                 AsyncJob.email.withThrottleInterval(
-                    emailThrottleInterval(maxEmailsPerSecondRate = 14)
+                    emailThrottleInterval(maxEmailsPerSecondRate = 14),
                 ),
                 AsyncJob.urgent,
                 AsyncJob.citizenPush,
                 AsyncJob.varda,
                 AsyncJob.dataRetention,
                 AsyncJob.suomiFi.withThrottleInterval(
-                    Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
+                    Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") },
                 ),
                 AsyncJob.nightly,
                 AsyncJob.archival.withConfig(ArchivalPoolEnv.fromEnvironment(env).toPoolConfig()),

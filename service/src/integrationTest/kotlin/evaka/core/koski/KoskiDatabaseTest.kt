@@ -24,11 +24,11 @@ class KoskiDatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 sql(
                                     """
 SELECT ${bind(placementType)}::koski_study_right_type
-"""
+""",
                                 )
                             }
                             .exactlyOne<KoskiStudyRightType>()
-                    }
+                    },
                 )
             }
     }

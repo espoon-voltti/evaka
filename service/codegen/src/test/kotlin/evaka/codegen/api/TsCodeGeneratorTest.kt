@@ -49,7 +49,7 @@ class TsCodeGeneratorTest {
         val generator =
             singleFileGenerator(
                 metadata(typeOf<PlainObject>(), typeOf<SealedInterface>()) +
-                    TypeMetadata(ObjectLiteral::class to TsObjectLiteral(ObjectLiteral::class))
+                    TypeMetadata(ObjectLiteral::class to TsObjectLiteral(ObjectLiteral::class)),
             )
         fun assertTsCode(
             text: String,

@@ -122,7 +122,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     PartnerIncomeStatementStatusResponse(
                         tx.getPartnerIncomeStatementStatus(user.id, clock.today())
                             ?.also { audit.add(it.partnerId) }
-                            ?.status
+                            ?.status,
                     )
                 }
             }
@@ -376,7 +376,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                             original.status != IncomeStatementStatus.HANDLING)
                 ) {
                     throw Forbidden(
-                        "Only income statements with status SENT or HANDLING can be updated"
+                        "Only income statements with status SENT or HANDLING can be updated",
                     )
                 }
 

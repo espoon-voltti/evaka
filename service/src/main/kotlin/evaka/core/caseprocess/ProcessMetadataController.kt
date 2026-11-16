@@ -205,7 +205,7 @@ class ProcessMetadataController(
                                         },
                                 ),
                             secondaryDocuments = emptyList(),
-                        )
+                        ),
                     )
                 }
             }
@@ -291,7 +291,7 @@ class ProcessMetadataController(
                             primaryDocument = decisionDocument,
                             secondaryDocuments = emptyList(),
                             businessId = featureConfig.metadataBusinessId,
-                        )
+                        ),
                     )
                 }
             }
@@ -342,7 +342,7 @@ class ProcessMetadataController(
                             primaryDocument = decisionDocument,
                             secondaryDocuments = emptyList(),
                             businessId = featureConfig.metadataBusinessId,
-                        )
+                        ),
                     )
                 }
             }

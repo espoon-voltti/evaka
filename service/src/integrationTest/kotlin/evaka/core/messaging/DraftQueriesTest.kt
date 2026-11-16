@@ -26,7 +26,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val employeeId = tx.insert(DevEmployee(firstName = "Firstname", lastName = "Employee"))
             tx.execute {
                 sql(
-                    "INSERT INTO message_account (id, employee_id, type) VALUES (${bind(accountId)}, ${bind(employeeId)}, 'PERSONAL')"
+                    "INSERT INTO message_account (id, employee_id, type) VALUES (${bind(accountId)}, ${bind(employeeId)}, 'PERSONAL')",
                 )
             }
         }

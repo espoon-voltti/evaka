@@ -132,7 +132,7 @@ WITH deleted_invoice_row AS (
 )
 DELETE FROM invoice_correction
 WHERE id = ${bind(id)}
-"""
+""",
                         )
                     }
                 } catch (e: JdbiException) {
@@ -175,7 +175,7 @@ WHERE id = ${bind(id)}
                 )
                 tx.createUpdate {
                         sql(
-                            "UPDATE invoice_correction SET note = ${bind(body.note)} WHERE id = ${bind(id)}"
+                            "UPDATE invoice_correction SET note = ${bind(body.note)} WHERE id = ${bind(id)}",
                         )
                     }
                     .execute()

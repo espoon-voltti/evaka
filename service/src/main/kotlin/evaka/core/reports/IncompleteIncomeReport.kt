@@ -88,7 +88,7 @@ fun Database.Read.getIncompleteReport(today: LocalDate): List<IncompleteIncomeDb
                 )
                 ORDER BY ie.valid_from;
             """
-                .trimIndent()
+                .trimIndent(),
         )
     }
         .toList<IncompleteIncomeDbRow>()

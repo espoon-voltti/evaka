@@ -52,7 +52,7 @@ class NokiaInvoiceClient(
 
         val data =
             FixedLengthField.render(
-                ssnInvoices.flatMap { invoice -> toInvoiceData(invoice, now, properties) }
+                ssnInvoices.flatMap { invoice -> toInvoiceData(invoice, now, properties) },
             )
         val timestamp = now.toLocalDateTime().format(FILENAME_DATE_TIME_FORMATTER)
         val filename =

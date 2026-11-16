@@ -30,7 +30,7 @@ class McpConfig {
         val volttiEnv = env.getProperty("VOLTTI_ENV")?.lowercase()
         if (volttiEnv == "prod" || volttiEnv == "production") {
             error(
-                "The MCP server (spring profile 'enable_mcp') must never be enabled in a production environment"
+                "The MCP server (spring profile 'enable_mcp') must never be enabled in a production environment",
             )
         }
         val config = McpServerConfig(baseUrl = evakaEnv.frontendBaseUrlFi.trimEnd('/'))

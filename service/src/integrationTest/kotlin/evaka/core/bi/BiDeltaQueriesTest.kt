@@ -52,7 +52,7 @@ class BiDeltaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             date = LocalDate.of(2024, 1, 1),
                             absenceCategory = AbsenceCategory.BILLABLE,
                             modifiedAt = now,
-                        )
+                        ),
                     )
                 val excluded =
                     tx.insert(
@@ -61,7 +61,7 @@ class BiDeltaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             date = LocalDate.of(2024, 1, 2),
                             absenceCategory = AbsenceCategory.BILLABLE,
                             modifiedAt = past,
-                        )
+                        ),
                     )
                 included to excluded
             }
@@ -87,7 +87,7 @@ class BiDeltaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         arrived = LocalTime.of(8, 0),
                         departed = LocalTime.of(16, 0),
                         modifiedAt = now,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevChildAttendance(
@@ -97,7 +97,7 @@ class BiDeltaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         arrived = LocalTime.of(8, 0),
                         departed = LocalTime.of(16, 0),
                         modifiedAt = past,
-                    )
+                    ),
                 )
                 ChildAttendanceFixture(included, excluded, child, unit)
             }
@@ -122,7 +122,7 @@ class BiDeltaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = systemUser,
-                        )
+                        ),
                     )
                 val excluded = AttendanceReservationId(UUID.randomUUID())
                 tx.createUpdate {
@@ -130,7 +130,7 @@ class BiDeltaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             """
 INSERT INTO attendance_reservation (id, child_id, date, start_time, end_time, created_at, created_by, updated_at)
 VALUES (${bind(excluded)}, ${bind(childId)}, ${bind(LocalDate.of(2024, 1, 2))}, ${bind(LocalTime.of(8, 0))}, ${bind(LocalTime.of(16, 0))}, ${bind(past)}, ${bind(systemUser)}, ${bind(past)})
-"""
+""",
                         )
                     }
                     .execute()
@@ -158,7 +158,7 @@ VALUES (${bind(excluded)}, ${bind(childId)}, ${bind(LocalDate.of(2024, 1, 2))}, 
                             departed = now.minusHours(1),
                             modifiedAt = now,
                             modifiedBy = systemUser,
-                        )
+                        ),
                     )
                 val excluded = StaffAttendanceRealtimeId(UUID.randomUUID())
                 tx.createUpdate {
@@ -177,7 +177,7 @@ VALUES (
     ${bind(past)}, ${bind(systemUser)}, ${bind(past)}, ${bind(systemUser)},
     ${bind(past)}
 )
-"""
+""",
                         )
                     }
                     .execute()

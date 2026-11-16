@@ -63,7 +63,7 @@ FROM daycare_acl
                     GROUP BY daycare_id, employee_id) groups USING (daycare_id, employee_id)
          LEFT JOIN staff_occupancy_coefficient soc USING (daycare_id, employee_id)
 WHERE daycare_id = ${bind(daycareId)} ${if (role != null) "AND role = ${bind(role)}" else ""}
-    """
+    """,
     )
 }
     .toList<DaycareAclRow>()
@@ -75,7 +75,7 @@ fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean = createQ
             SELECT 1 FROM daycare_acl
             WHERE employee_id = ${bind(employeeId)}
         )
-    """
+    """,
     )
 }
     .exactlyOne<Boolean>()
@@ -91,7 +91,7 @@ fun Database.Transaction.insertDaycareAclRow(
 INSERT INTO daycare_acl (daycare_id, employee_id, role, end_date)
 VALUES (${bind(daycareId)}, ${bind(employeeId)}, ${bind(role)}, ${bind(endDate)})
 ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role, end_date = excluded.end_date
-    """
+    """,
     )
 }
 
@@ -105,7 +105,7 @@ fun Database.Transaction.updateAclRowEndDate(
 UPDATE daycare_acl
 SET end_date = ${bind(endDate)}
 WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
-    """
+    """,
     )
 }
 
@@ -115,7 +115,7 @@ fun Database.Read.getDaycareAclRole(daycareId: DaycareId, employeeId: EmployeeId
             """
 SELECT role FROM daycare_acl
 WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
-    """
+    """,
         )
     }
     .exactlyOneOrNull<UserRole>()
@@ -126,7 +126,7 @@ fun Database.Read.getDaycareAclEndDate(daycareId: DaycareId, employeeId: Employe
             """
 SELECT end_date FROM daycare_acl
 WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
-    """
+    """,
         )
     }
     .exactlyOneOrNull<LocalDate>()
@@ -142,7 +142,7 @@ DELETE FROM daycare_acl
 WHERE daycare_id = ${bind(daycareId)}
 AND employee_id = ${bind(employeeId)}
 AND role = ${bind(role)}
-    """
+    """,
     )
 }
 
@@ -159,7 +159,7 @@ fun Database.Read.getEndedDaycareAclRows(today: LocalDate) = createQuery {
 SELECT daycare_id, employee_id, role, end_date
 FROM daycare_acl
 WHERE end_date IS NOT NULL AND end_date < ${bind(today)}
-    """
+    """,
     )
 }
     .toList<EndedDaycareAclRow>()
@@ -180,7 +180,7 @@ AND daycare_group_id IN (
     SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}
 )
 AND daycare_group_id <> ALL (${bind(groupIds)})
-"""
+""",
         )
     }
         .execute()
@@ -194,7 +194,7 @@ SELECT id, ${bind(employeeId)}, ${bind(now)}, ${bind(now)}
 FROM daycare_group
 WHERE id = ${bind { it }} AND daycare_id = ${bind(daycareId)}
 ON CONFLICT (daycare_group_id, employee_id) DO NOTHING
-"""
+""",
         )
     }
 }
@@ -230,7 +230,7 @@ SELECT e.id,
 FROM daycare_acl_schedule das
 JOIN employee e on das.employee_id = e.id
 WHERE das.daycare_id = ${bind(daycareId)}
-    """
+    """,
     )
 }
     .toList<ScheduledDaycareAclRow>()
@@ -249,19 +249,19 @@ INSERT INTO daycare_acl_schedule (daycare_id, employee_id, role, start_date, end
 VALUES (${bind { it }}, ${bind(employeeId)}, ${bind(role)}, ${bind(startDate)}, ${bind(endDate)})
 ON CONFLICT (daycare_id, employee_id) DO UPDATE 
     SET role = excluded.role, start_date = excluded.start_date, end_date = excluded.end_date
-    """
+    """,
         )
     }
 
 fun Database.Transaction.deleteScheduledDaycareAclRows(
-    employeeId: EmployeeId
+    employeeId: EmployeeId,
 ): List<ScheduledAclRowSummary> = createQuery {
     sql(
         """
 DELETE FROM daycare_acl_schedule
 WHERE employee_id = ${bind(employeeId)}
 RETURNING daycare_id, employee_id, role, start_date, end_date
-    """
+    """,
     )
 }
     .toList<ScheduledAclRowSummary>()
@@ -284,13 +284,13 @@ fun Database.Transaction.deleteScheduledDaycareAclRow(
 DELETE FROM daycare_acl_schedule
 WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
 RETURNING daycare_id, employee_id, role, start_date, end_date
-    """
+    """,
     )
 }
     .exactlyOneOrNull<ScheduledAclRowSummary>()
 
 fun Database.Transaction.upsertAclRowsFromScheduled(
-    today: LocalDate
+    today: LocalDate,
 ): List<ScheduledAclRowSummary> = createQuery {
     sql(
         """
@@ -304,7 +304,7 @@ WITH rows_to_activate AS (
     ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role, end_date = excluded.end_date
 )
 SELECT daycare_id, employee_id, role, start_date, end_date FROM rows_to_activate
-    """
+    """,
     )
 }
     .toList<ScheduledAclRowSummary>()

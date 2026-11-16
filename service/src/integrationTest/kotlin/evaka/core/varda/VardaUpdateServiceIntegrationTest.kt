@@ -57,7 +57,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
                     endDate = LocalDate.of(2021, 2, 28),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -65,7 +65,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
                     endDate = LocalDate.of(2021, 2, 28),
-                )
+                ),
             )
         }
 
@@ -106,7 +106,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2021, 1, 1),
                         endDate = LocalDate.of(2021, 2, 28),
-                    )
+                    ),
                 )
             }
 
@@ -136,7 +136,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
                     endDate = LocalDate.of(2021, 2, 28),
-                )
+                ),
             )
 
             tx.addNewChildrenForVardaUpdate(clock.today())
@@ -165,7 +165,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2021, 1, 1),
                         endDate = LocalDate.of(2021, 2, 28),
-                    )
+                    ),
                 )
                 .let { placementId ->
                     val period =
@@ -178,7 +178,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                             optionId = snDaycareFullDay35.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
 
@@ -192,7 +192,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     .getEvakaState(tx, LocalDate.of(2024, 1, 1), child.id)
             tx.execute {
                 sql(
-                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, ${bindJson(state)})"
+                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, ${bindJson(state)})",
                 )
             }
         }
@@ -218,11 +218,11 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
                     endDate = LocalDate.of(2021, 2, 28),
-                )
+                ),
             )
             tx.execute {
                 sql(
-                    "UPDATE child SET varda_data_first_removed_at = ${bind(now)} WHERE id = ${bind(child.id)}"
+                    "UPDATE child SET varda_data_first_removed_at = ${bind(now)} WHERE id = ${bind(child.id)}",
                 )
             }
         }
@@ -249,14 +249,14 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
                     endDate = LocalDate.of(2021, 2, 28),
-                )
+                ),
             )
             tx.execute {
                 sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
             }
             tx.execute {
                 sql(
-                    "UPDATE child SET varda_data_first_removed_at = ${bind(now)} WHERE id = ${bind(child.id)}"
+                    "UPDATE child SET varda_data_first_removed_at = ${bind(now)} WHERE id = ${bind(child.id)}",
                 )
             }
         }

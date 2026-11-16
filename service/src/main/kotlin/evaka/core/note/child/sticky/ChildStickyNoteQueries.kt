@@ -19,7 +19,7 @@ private fun Database.Read.getChildStickyNotes(predicate: Predicate = Predicate.a
 SELECT id, child_id, note, modified_at, expires
 FROM child_sticky_note csn
 WHERE ${predicate(predicate.forTable("csn"))}
-"""
+""",
         )
     }
     .mapTo<ChildStickyNote>()
@@ -28,7 +28,7 @@ fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStick
     getChildStickyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).toList()
 
 fun Database.Read.getChildStickyNotesForChildren(
-    children: Collection<ChildId>
+    children: Collection<ChildId>,
 ): List<ChildStickyNote> =
     getChildStickyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).toList()
 
@@ -45,9 +45,9 @@ $it.child_id IN (
     FROM realized_placement_all(${bind(today)})
     WHERE group_id = ${bind(groupId)}
 )
-"""
+""",
                 )
-            }
+            },
         )
         .toList()
 
@@ -61,7 +61,7 @@ fun Database.Transaction.createChildStickyNote(
 INSERT INTO child_sticky_note (child_id, note, expires)
 VALUES (${bind(childId)}, ${bind(note.note)}, ${bind(note.expires)})
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -83,7 +83,7 @@ UPDATE child_sticky_note SET
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
 RETURNING *
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()

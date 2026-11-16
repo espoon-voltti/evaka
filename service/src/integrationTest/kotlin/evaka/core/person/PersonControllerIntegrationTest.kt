@@ -277,7 +277,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 tx.blockGuardian(childId = childId, guardianId = blockedGuardian.id)
                 tx.execute {
                     sql(
-                        "UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL"
+                        "UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL",
                     )
                 }
             }

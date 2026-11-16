@@ -260,7 +260,7 @@ private fun getUnitOccupancies(
                         OccupancyType.DRAFT,
                         unitFilter,
                         groupId,
-                    )
+                    ),
                 )
             else null,
         planned =
@@ -272,7 +272,7 @@ private fun getUnitOccupancies(
                     OccupancyType.PLANNED,
                     unitFilter,
                     groupId,
-                )
+                ),
             ),
         confirmed =
             getOccupancyResponse(
@@ -283,7 +283,7 @@ private fun getUnitOccupancies(
                     OccupancyType.CONFIRMED,
                     unitFilter,
                     groupId,
-                )
+                ),
             ),
         realized =
             getOccupancyResponse(
@@ -294,7 +294,7 @@ private fun getUnitOccupancies(
                     OccupancyType.REALIZED,
                     unitFilter,
                     groupId,
-                )
+                ),
             ),
         caretakers = tx.getUnitStats(unitId, period),
     )
@@ -339,7 +339,7 @@ fun Database.Read.calculateOccupancyPeriods(
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest(
-            "Date range ${period.start} - ${period.end} is too long. Maximum range is two years."
+            "Date range ${period.start} - ${period.end} is too long. Maximum range is two years.",
         )
     }
 
@@ -351,7 +351,7 @@ fun Database.Read.calculateOccupancyPeriods(
                     type,
                     unitFilter,
                     unitIds = setOf(unitId),
-                )
+                ),
             )
             .flatMap { (_, values) -> values }
     } else {
@@ -364,7 +364,7 @@ fun Database.Read.calculateOccupancyPeriods(
                     unitFilter,
                     unitIds = setOf(unitId),
                     groupId = groupId,
-                )
+                ),
             )
         val key = valueMap.keys.find { it.groupId == groupId } ?: return emptyList()
         return valueMap.getOrDefault(key, emptyList())
@@ -380,7 +380,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
 ): List<OccupancyPeriodGroupLevel> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest(
-            "Date range ${period.start} - ${period.end} is too long. Maximum range is two years."
+            "Date range ${period.start} - ${period.end} is too long. Maximum range is two years.",
         )
     }
 
@@ -391,7 +391,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
                 type,
                 unitFilter,
                 unitIds = setOf(unitId),
-            )
+            ),
         )
         .flatMap { (groupKey, values) ->
             values.map { value ->

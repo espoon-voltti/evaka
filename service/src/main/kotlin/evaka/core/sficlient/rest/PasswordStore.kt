@@ -55,7 +55,7 @@ class AwsSsmPasswordStore(private val client: SsmClient, env: SfiEnv) : Password
                     GetParameterRequest.builder()
                         .name("$ssmName:$label")
                         .withDecryption(true)
-                        .build()
+                        .build(),
                 )
                 .let { response ->
                     PasswordStore.VersionedPassword(
@@ -77,7 +77,7 @@ class AwsSsmPasswordStore(private val client: SsmClient, env: SfiEnv) : Password
                     .type(ParameterType.SECURE_STRING)
                     .overwrite(true)
                     .value(password.value)
-                    .build()
+                    .build(),
             )
             .let { response ->
                 logger.info { "Saved a new password with version ${response.version()}" }
@@ -91,7 +91,7 @@ class AwsSsmPasswordStore(private val client: SsmClient, env: SfiEnv) : Password
                 .name(ssmName)
                 .labels(label.toString())
                 .parameterVersion(version.value)
-                .build()
+                .build(),
         )
     }
 }

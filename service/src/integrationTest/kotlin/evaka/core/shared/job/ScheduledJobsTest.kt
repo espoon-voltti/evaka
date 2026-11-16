@@ -184,7 +184,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         created: LocalDate,
     ) = tx.execute {
         sql(
-            "UPDATE application SET created_at = ${bind(created)} WHERE id = ${bind(applicationId)}"
+            "UPDATE application SET created_at = ${bind(created)} WHERE id = ${bind(applicationId)}",
         )
     }
 
@@ -461,7 +461,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             for (child in listOf(adultChild, minorChild)) {
                 tx.createUpdate {
                         sql(
-                            "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(child.id)}, NULL, ${bind(now)})"
+                            "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(child.id)}, NULL, ${bind(now)})",
                         )
                     }
                     .updateExactlyOne()
@@ -523,7 +523,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = LocalDate.now().minusDays(100),
                     endDate = LocalDate.now().plusDays(100),
-                )
+                ),
             )
             it.createChildDailyNote(
                 child2.id,
@@ -689,7 +689,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             assertTrue(
                 tx.getDaycareAclRows(daycare3.id, false, includeStaffEmployeeNumber = false)
-                    .isEmpty()
+                    .isEmpty(),
             )
         }
 
@@ -756,7 +756,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .let { id ->
                     it.createUpdate {
                             sql(
-                                "UPDATE child_daily_note SET modified_at = ${bind(sixteenHoursAgo)} WHERE id = ${bind(id)}"
+                                "UPDATE child_daily_note SET modified_at = ${bind(sixteenHoursAgo)} WHERE id = ${bind(id)}",
                             )
                         }
                         .updateExactlyOne()
@@ -776,7 +776,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = LocalDate.now().minusDays(150),
                     endDate = LocalDate.now().plusDays(150),
-                )
+                ),
             )
             it.insert(
                 DevBackupCare(
@@ -788,7 +788,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                             LocalDate.now().minusDays(100),
                             LocalDate.now().plusDays(100),
                         ),
-                )
+                ),
             )
             it.createChildDailyNote(
                 child2.id,
@@ -870,7 +870,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     shiftCare = ShiftCareType.FULL,
                     optionId = snDefaultDaycare.id,
                     confirmedBy = serviceWorker.evakaUserId,
-                )
+                ),
             )
 
             // child 2 has no shift care and only mon-sat service need coverage
@@ -882,7 +882,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     shiftCare = ShiftCareType.NONE,
                     optionId = snDefaultDaycare.id,
                     confirmedBy = serviceWorker.evakaUserId,
-                )
+                ),
             )
 
             // add same reservations for both children
@@ -892,7 +892,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     shiftCareReservation.copy(
                         id = AttendanceReservationId(UUID.randomUUID()),
                         childId = it.id,
-                    )
+                    ),
                 )
 
                 // thursday an empty reservation
@@ -903,7 +903,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startTime = null,
                         endTime = null,
                         childId = it.id,
-                    )
+                    ),
                 )
 
                 // friday is a holiday, shift care reservation
@@ -912,7 +912,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         id = AttendanceReservationId(UUID.randomUUID()),
                         date = monday.plusDays(4),
                         childId = it.id,
-                    )
+                    ),
                 )
 
                 // saturday not a standard operation day, shift care reservation
@@ -921,7 +921,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         id = AttendanceReservationId(UUID.randomUUID()),
                         date = monday.plusDays(5),
                         childId = it.id,
-                    )
+                    ),
                 )
 
                 // sunday not a standard operation day, shift care reservation
@@ -930,7 +930,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         id = AttendanceReservationId(UUID.randomUUID()),
                         date = monday.plusDays(6),
                         childId = it.id,
-                    )
+                    ),
                 )
             }
         }
@@ -957,7 +957,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                             Triple(it.id, monday.plusDays(6), shiftCareDay),
                         )
                     }
-                    .flatten()
+                    .flatten(),
             )
 
         scheduledJobs.removeInvalidatedShiftCareReservations(db, mockClock)
@@ -983,7 +983,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     Triple(child1.id, monday.plusDays(6), shiftCareDay),
                     Triple(child2.id, monday.plusDays(2), shiftCareDay),
                     Triple(child2.id, monday.plusDays(3), null),
-                )
+                ),
             )
     }
 
@@ -1062,7 +1062,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = dateRange.start,
                     endDate = dateRange.end,
-                )
+                ),
             )
         }
     }

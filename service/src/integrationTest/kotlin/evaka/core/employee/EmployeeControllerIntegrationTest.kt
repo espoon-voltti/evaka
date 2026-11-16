@@ -101,7 +101,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     firstName = "First",
                     lastName = "Last",
                     email = "test@example.com",
-                )
+                ),
             )
 
         deleteEmployee(employee.id)
@@ -125,7 +125,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val adEmployee =
             DevEmployee(
                 externalId =
-                    ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString())
+                    ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
             )
         val sfiEmployee = DevEmployee(ssn = "010107A9917")
         db.transaction { tx ->
@@ -150,7 +150,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val adEmployee =
             DevEmployee(
                 externalId =
-                    ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString())
+                    ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
             )
         val sfiEmployee = DevEmployee(ssn = "010107A9917")
         db.transaction { tx ->
@@ -352,7 +352,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         )
         assertEquals(
             listOf(
-                DaycareGroupRole(daycare2.id, daycare2.name, daycare2Group.id, daycare2Group.name)
+                DaycareGroupRole(daycare2.id, daycare2.name, daycare2Group.id, daycare2Group.name),
             ),
             updated.daycareGroupRoles,
         )
@@ -496,7 +496,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     firstName = "First",
                     lastName = "Last",
                     email = "test@example.com",
-                )
+                ),
             )
 
         updateEmployeeEmail(employee.id, "updated@example.com")
@@ -601,7 +601,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         sql(
             """
         SELECT EXISTS (SELECT 1 FROM message_account WHERE employee_id = ${bind(employeeId)} AND active)
-    """
+    """,
         )
     }
         .exactlyOne<Boolean>()

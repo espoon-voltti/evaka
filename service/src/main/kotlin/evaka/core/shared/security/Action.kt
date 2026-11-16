@@ -188,7 +188,7 @@ sealed interface Action {
                 .inAnyUnit(),
         ),
         SEARCH_PEOPLE_UNRESTRICTED(
-            HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF, SERVICE_WORKER)
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF, SERVICE_WORKER),
         ),
         SEARCH_PEOPLE_BY_ADDRESS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_FEE_THRESHOLDS(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
@@ -204,7 +204,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
         ),
         READ_SELECTABLE_FINANCE_DECISION_HANDLERS(
-            HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)
+            HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF),
         ),
         READ_PERSONAL_MOBILE_DEVICES(IsEmployee.any()),
         CREATE_PERSONAL_MOBILE_DEVICE_PAIRING(
@@ -356,7 +356,7 @@ sealed interface Action {
 
     sealed interface Citizen : Action {
         enum class AbsenceApplication(
-            override vararg val defaultRules: ScopedActionRule<in AbsenceApplicationId>
+            override vararg val defaultRules: ScopedActionRule<in AbsenceApplicationId>,
         ) : ScopedAction<AbsenceApplicationId> {
             DELETE(IsCitizen(allowWeakLogin = true).absenceApplicationCreatedBy());
 
@@ -364,7 +364,7 @@ sealed interface Action {
         }
 
         enum class Application(
-            override vararg val defaultRules: ScopedActionRule<in ApplicationId>
+            override vararg val defaultRules: ScopedActionRule<in ApplicationId>,
         ) : ScopedAction<ApplicationId> {
             READ(
                 IsCitizen(allowWeakLogin = false).ownerOfApplication(),
@@ -382,14 +382,14 @@ sealed interface Action {
         }
 
         enum class FeeDecision(
-            override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>
+            override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>,
         ) : ScopedAction<FeeDecisionId> {
             DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
             READ(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
         }
 
         enum class VoucherValueDecision(
-            override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>
+            override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>,
         ) : ScopedAction<VoucherValueDecisionId> {
             DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment()),
             READ(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment()),
@@ -471,7 +471,7 @@ sealed interface Action {
         }
 
         enum class ChildDocument(
-            override vararg val defaultRules: ScopedActionRule<in ChildDocumentId>
+            override vararg val defaultRules: ScopedActionRule<in ChildDocumentId>,
         ) : ScopedAction<ChildDocumentId> {
             READ(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfPublishedChildDocument(),
@@ -498,9 +498,9 @@ sealed interface Action {
         }
 
         enum class DailyServiceTimeNotification(
-            override vararg val defaultRules: ScopedActionRule<in DailyServiceTimeNotificationId>
+            override vararg val defaultRules: ScopedActionRule<in DailyServiceTimeNotificationId>,
         ) : ScopedAction<DailyServiceTimeNotificationId> {
-            DISMISS(IsCitizen(allowWeakLogin = true).recipientOfDailyServiceTimeNotification())
+            DISMISS(IsCitizen(allowWeakLogin = true).recipientOfDailyServiceTimeNotification()),
         }
 
         enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) :
@@ -517,7 +517,7 @@ sealed interface Action {
         }
 
         enum class IncomeStatement(
-            override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>
+            override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>,
         ) : ScopedAction<IncomeStatementId> {
             READ(
                 IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(),
@@ -540,7 +540,7 @@ sealed interface Action {
         }
 
         enum class PedagogicalDocument(
-            override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>
+            override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>,
         ) : ScopedAction<PedagogicalDocumentId> {
             READ(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument(),
@@ -598,7 +598,7 @@ sealed interface Action {
         }
 
         enum class ServiceApplication(
-            override vararg val defaultRules: ScopedActionRule<in ServiceApplicationId>
+            override vararg val defaultRules: ScopedActionRule<in ServiceApplicationId>,
         ) : ScopedAction<ServiceApplicationId> {
             DELETE(IsCitizen(allowWeakLogin = false).ownerOfServiceApplication());
 
@@ -606,18 +606,18 @@ sealed interface Action {
         }
 
         enum class CalendarEventTime(
-            override vararg val defaultRules: ScopedActionRule<in CalendarEventTimeId>
+            override vararg val defaultRules: ScopedActionRule<in CalendarEventTimeId>,
         ) : ScopedAction<CalendarEventTimeId> {
             CANCEL_RESERVATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChildOfCalendarEventTimeReservation(),
                 IsCitizen(allowWeakLogin = true)
                     .fosterParentOfChildOfCalendarEventTimeReservation(),
-            )
+            ),
         }
     }
 
     enum class AbsenceApplication(
-        override vararg val defaultRules: ScopedActionRule<in AbsenceApplicationId>
+        override vararg val defaultRules: ScopedActionRule<in AbsenceApplicationId>,
     ) : ScopedAction<AbsenceApplicationId> {
         READ(
             HasGlobalRole(ADMIN),
@@ -710,7 +710,7 @@ sealed interface Action {
     }
 
     enum class ApplicationNote(
-        override vararg val defaultRules: ScopedActionRule<in ApplicationNoteId>
+        override vararg val defaultRules: ScopedActionRule<in ApplicationNoteId>,
     ) : ScopedAction<ApplicationNoteId> {
         UPDATE(HasGlobalRole(ADMIN, SERVICE_WORKER), IsEmployee.authorOfApplicationNote()),
         DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER), IsEmployee.authorOfApplicationNote());
@@ -733,7 +733,7 @@ sealed interface Action {
     }
 
     enum class AssistanceAction(
-        override vararg val defaultRules: ScopedActionRule<in AssistanceActionId>
+        override vararg val defaultRules: ScopedActionRule<in AssistanceActionId>,
     ) : ScopedAction<AssistanceActionId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -755,7 +755,7 @@ sealed interface Action {
     }
 
     enum class AssistanceFactor(
-        override vararg val defaultRules: ScopedActionRule<in AssistanceFactorId>
+        override vararg val defaultRules: ScopedActionRule<in AssistanceFactorId>,
     ) : ScopedAction<AssistanceFactorId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -777,7 +777,7 @@ sealed interface Action {
     }
 
     enum class AssistanceNeedVoucherCoefficient(
-        override vararg val defaultRules: ScopedActionRule<in AssistanceNeedVoucherCoefficientId>
+        override vararg val defaultRules: ScopedActionRule<in AssistanceNeedVoucherCoefficientId>,
     ) : ScopedAction<AssistanceNeedVoucherCoefficientId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -878,7 +878,7 @@ sealed interface Action {
     }
 
     enum class CalendarEvent(
-        override vararg val defaultRules: ScopedActionRule<in CalendarEventId>
+        override vararg val defaultRules: ScopedActionRule<in CalendarEventId>,
     ) : ScopedAction<CalendarEventId> {
         READ(
             HasGlobalRole(ADMIN),
@@ -897,7 +897,7 @@ sealed interface Action {
     }
 
     enum class CalendarEventTime(
-        override vararg val defaultRules: ScopedActionRule<in CalendarEventTimeId>
+        override vararg val defaultRules: ScopedActionRule<in CalendarEventTimeId>,
     ) : ScopedAction<CalendarEventTimeId> {
         DELETE(
             HasGlobalRole(ADMIN),
@@ -957,10 +957,10 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         READ_NON_RESERVABLE_RESERVATIONS(
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         UPDATE_NON_RESERVABLE_RESERVATIONS(
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         DELETE_HOLIDAY_RESERVATIONS(
             HasGlobalRole(ADMIN),
@@ -1183,7 +1183,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
             HasGroupRole(STAFF)
                 .inPlacementGroupOfChildWithFutureAccess(
-                    CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
+                    CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT,
                 ),
         ),
         CREATE_CHILD_DECISION_DOCUMENT(
@@ -1195,7 +1195,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
             HasGroupRole(STAFF)
                 .inPlacementGroupOfChildWithFutureAccess(
-                    CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
+                    CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT,
                 ),
         ),
         CREATE_PEDAGOGICAL_DOCUMENT(
@@ -1247,7 +1247,7 @@ sealed interface Action {
     }
 
     enum class ChildDailyNote(
-        override vararg val defaultRules: ScopedActionRule<in ChildDailyNoteId>
+        override vararg val defaultRules: ScopedActionRule<in ChildDailyNoteId>,
     ) : ScopedAction<ChildDailyNoteId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -1285,7 +1285,7 @@ sealed interface Action {
     }
 
     enum class ChildStickyNote(
-        override vararg val defaultRules: ScopedActionRule<in ChildStickyNoteId>
+        override vararg val defaultRules: ScopedActionRule<in ChildStickyNoteId>,
     ) : ScopedAction<ChildStickyNoteId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -1312,7 +1312,7 @@ sealed interface Action {
     }
 
     enum class DailyServiceTime(
-        override vararg val defaultRules: ScopedActionRule<in DailyServiceTimesId>
+        override vararg val defaultRules: ScopedActionRule<in DailyServiceTimesId>,
     ) : ScopedAction<DailyServiceTimesId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -1329,7 +1329,7 @@ sealed interface Action {
     }
 
     enum class DaycareAssistance(
-        override vararg val defaultRules: ScopedActionRule<in DaycareAssistanceId>
+        override vararg val defaultRules: ScopedActionRule<in DaycareAssistanceId>,
     ) : ScopedAction<DaycareAssistanceId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -1367,7 +1367,7 @@ sealed interface Action {
     }
 
     enum class DocumentTemplate(
-        override vararg val defaultRules: ScopedActionRule<in DocumentTemplateId>
+        override vararg val defaultRules: ScopedActionRule<in DocumentTemplateId>,
     ) : ScopedAction<DocumentTemplateId> {
         READ(HasGlobalRole(ADMIN)),
         COPY(HasGlobalRole(ADMIN)),
@@ -1405,7 +1405,7 @@ sealed interface Action {
     }
 
     enum class FeeAlteration(
-        override vararg val defaultRules: ScopedActionRule<in FeeAlterationId>
+        override vararg val defaultRules: ScopedActionRule<in FeeAlterationId>,
     ) : ScopedAction<FeeAlterationId> {
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -1427,7 +1427,7 @@ sealed interface Action {
     }
 
     enum class FeeThresholds(
-        override vararg val defaultRules: ScopedActionRule<in FeeThresholdsId>
+        override vararg val defaultRules: ScopedActionRule<in FeeThresholdsId>,
     ) : ScopedAction<FeeThresholdsId> {
         UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
@@ -1553,7 +1553,7 @@ sealed interface Action {
     }
 
     enum class GroupPlacement(
-        override vararg val defaultRules: ScopedActionRule<in GroupPlacementId>
+        override vararg val defaultRules: ScopedActionRule<in GroupPlacementId>,
     ) : ScopedAction<GroupPlacementId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -1579,7 +1579,7 @@ sealed interface Action {
     }
 
     enum class IncomeStatement(
-        override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>
+        override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>,
     ) : ScopedAction<IncomeStatementId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         UPDATE_HANDLED(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -1601,7 +1601,7 @@ sealed interface Action {
     }
 
     enum class InvoiceCorrection(
-        override vararg val defaultRules: ScopedActionRule<in InvoiceCorrectionId>
+        override vararg val defaultRules: ScopedActionRule<in InvoiceCorrectionId>,
     ) : ScopedAction<InvoiceCorrectionId> {
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         UPDATE_NOTE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF));
@@ -1610,7 +1610,7 @@ sealed interface Action {
     }
 
     enum class McpAuthorization(
-        override vararg val defaultRules: ScopedActionRule<in McpAuthorizationId>
+        override vararg val defaultRules: ScopedActionRule<in McpAuthorizationId>,
     ) : ScopedAction<McpAuthorizationId> {
         REVOKE(IsEmployee.ownerOfMcpAuthorization());
 
@@ -1618,7 +1618,7 @@ sealed interface Action {
     }
 
     enum class MessageAccount(
-        override vararg val defaultRules: ScopedActionRule<in MessageAccountId>
+        override vararg val defaultRules: ScopedActionRule<in MessageAccountId>,
     ) : ScopedAction<MessageAccountId> {
         ACCESS(
             IsEmployee.hasPersonalMessageAccount(),
@@ -1655,7 +1655,7 @@ sealed interface Action {
     }
 
     enum class OtherAssistanceMeasure(
-        override vararg val defaultRules: ScopedActionRule<in OtherAssistanceMeasureId>
+        override vararg val defaultRules: ScopedActionRule<in OtherAssistanceMeasureId>,
     ) : ScopedAction<OtherAssistanceMeasureId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -1735,7 +1735,7 @@ sealed interface Action {
     }
 
     enum class PedagogicalDocument(
-        override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>
+        override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>,
     ) : ScopedAction<PedagogicalDocumentId> {
         CREATE_ATTACHMENT(
             HasGlobalRole(ADMIN),
@@ -1783,7 +1783,7 @@ sealed interface Action {
         GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         MERGE(HasGlobalRole(ADMIN)),
         READ_APPLICATIONS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER)
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
         ), // Applications summary on person page
         READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         READ_DECISIONS(
@@ -1883,7 +1883,7 @@ sealed interface Action {
     }
 
     enum class PreschoolAssistance(
-        override vararg val defaultRules: ScopedActionRule<in PreschoolAssistanceId>
+        override vararg val defaultRules: ScopedActionRule<in PreschoolAssistanceId>,
     ) : ScopedAction<PreschoolAssistanceId> {
         UPDATE(
             HasGlobalRole(ADMIN),
@@ -1908,7 +1908,7 @@ sealed interface Action {
     }
 
     enum class PreschoolTerm(
-        override vararg val defaultRules: ScopedActionRule<in PreschoolTermId>
+        override vararg val defaultRules: ScopedActionRule<in PreschoolTermId>,
     ) : ScopedAction<PreschoolTermId> {
         UPDATE(HasGlobalRole(ADMIN)),
         DELETE(HasGlobalRole(ADMIN));
@@ -1932,7 +1932,7 @@ sealed interface Action {
     }
 
     enum class ServiceApplication(
-        override vararg val defaultRules: ScopedActionRule<in ServiceApplicationId>
+        override vararg val defaultRules: ScopedActionRule<in ServiceApplicationId>,
     ) : ScopedAction<ServiceApplicationId> {
         ACCEPT(
             HasGlobalRole(ADMIN),
@@ -2188,7 +2188,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
         ),
         READ_SERVICE_NEED_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
@@ -2261,7 +2261,7 @@ sealed interface Action {
     }
 
     enum class ChildDocument(
-        override vararg val defaultRules: ScopedActionRule<in ChildDocumentId>
+        override vararg val defaultRules: ScopedActionRule<in ChildDocumentId>,
     ) : ScopedAction<ChildDocumentId> {
         READ(
             HasGlobalRole(ADMIN),
@@ -2354,7 +2354,7 @@ sealed interface Action {
     }
 
     enum class VoucherValueDecision(
-        override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>
+        override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>,
     ) : ScopedAction<VoucherValueDecisionId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_METADATA(HasGlobalRole(ADMIN)),

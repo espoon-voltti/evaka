@@ -152,7 +152,7 @@ data class TimeRange(
             val start = this.start.inner
             val end = this.end.inner
             return Duration.ofHours(
-                ((if (this.end.isMidnight()) 24 else end.hour) - start.hour).toLong()
+                ((if (this.end.isMidnight()) 24 else end.hour) - start.hour).toLong(),
             ) +
                 Duration.ofMinutes((end.minute - start.minute).toLong()) +
                 Duration.ofSeconds((end.second - start.second).toLong()) +

@@ -102,7 +102,7 @@ LEFT JOIN guardian g2 ON ch.id = g2.child_id AND g2.guardian_id = (SELECT max(gu
 LEFT JOIN person gu1 ON gu1.id = g1.guardian_id
 LEFT JOIN person gu2 ON gu2.id = g2.guardian_id
 ORDER BY dg.name, ch.last_name, ch.first_name
-"""
+""",
         )
     }
         .toList<FamilyContactReportRow>()

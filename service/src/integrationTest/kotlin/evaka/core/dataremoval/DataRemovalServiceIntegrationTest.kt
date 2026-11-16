@@ -210,7 +210,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT payload::json->>'key' FROM async_job WHERE type = 'DeleteChildDocumentPdf'"
+                            "SELECT payload::json->>'key' FROM async_job WHERE type = 'DeleteChildDocumentPdf'",
                         )
                     }
                     .toList<String>()
@@ -495,7 +495,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         dietId = 1,
                         mealTextureId = 2,
                         nekkuDiet = NekkuProductMealType.VEGAN,
-                    )
+                    ),
                 )
             }
         }
@@ -1691,7 +1691,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 childId = childId,
                 startDate = today,
                 serviceNeedOptionId = snDefaultDaycare.id,
-            )
+            ),
         )
     }
 
@@ -1708,18 +1708,18 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = endDate,
                 source = PlacementSource.SERVICE_APPLICATION,
                 sourceServiceApplicationId = serviceApplicationId,
-            )
+            ),
         )
     }
 
     private fun serviceApplicationCount(): Int = rowCount("service_application")
 
     private fun readPlacementProvenance(
-        id: PlacementId
+        id: PlacementId,
     ): Pair<PlacementSource?, ServiceApplicationId?> = db.read { tx ->
         tx.createQuery {
                 sql(
-                    "SELECT source, source_service_application_id FROM placement WHERE id = ${bind(id)}"
+                    "SELECT source, source_service_application_id FROM placement WHERE id = ${bind(id)}",
                 )
             }
             .exactlyOne {
@@ -1753,7 +1753,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     startDate = startDate,
                     endDate = endDate,
                     conflict = conflict,
-                )
+                ),
             )
         }
     }
@@ -1774,7 +1774,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     endDate = endDate,
                     createdAt = now,
                     conflict = conflict,
-                )
+                ),
             )
         }
     }
@@ -1813,7 +1813,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     validDuring = validDuring,
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
         }
     }
@@ -1860,7 +1860,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 DevOtherAssistanceMeasure(
                     childId = childId,
                     type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
-                )
+                ),
             )
         }
     }
@@ -1884,7 +1884,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = childId,
                     type = DailyServiceTimesType.REGULAR,
                     validityPeriod = DateRange(date, null),
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1893,14 +1893,14 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = admin.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
                     childId = childId,
                     unitId = daycare.id,
                     period = FiniteDateRange(date, date),
-                )
+                ),
             )
             tx.insert(
                 DevChildAttendance(
@@ -1909,7 +1909,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     date = date,
                     arrived = LocalTime.of(8, 0),
                     departed = LocalTime.of(16, 0),
-                )
+                ),
             )
             tx.insert(
                 AbsenceApplication(
@@ -1926,7 +1926,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     decidedAt = null,
                     decidedBy = null,
                     rejectedReason = null,
-                )
+                ),
             )
             tx.insert(
                 DevBackupPickup(
@@ -1934,7 +1934,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = childId,
                     name = "Pickup Person",
                     phone = "0401234567",
-                )
+                ),
             )
             val questionnaire =
                 DevHolidayQuestionnaire(
@@ -1951,7 +1951,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     questionnaireId = questionnaire.id,
                     childId = childId,
                     fixedPeriod = FiniteDateRange(date, date),
-                )
+                ),
             )
         }
     }
@@ -1980,7 +1980,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     FiniteDateRange(leafExpireDate.minusYears(1), leafExpireDate.minusDays(1)),
                 level = PreschoolAssistanceLevel.SPECIAL_SUPPORT,
                 modifiedBy = admin.evakaUser,
-            )
+            ),
         )
     }
 
@@ -1992,7 +1992,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     FiniteDateRange(leafExpireDate.minusYears(1), leafExpireDate.minusDays(1)),
                 type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
                 modifiedBy = admin.evakaUser,
-            )
+            ),
         )
     }
 
@@ -2018,7 +2018,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     unitId = unitId,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
         }
     }
@@ -2032,12 +2032,12 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     description = "desc",
                     createdAt = now,
                     modifiedAt = now,
-                )
+                ),
             )
         }
 
     private fun insertPedagogicalDocumentAttachment(
-        documentId: PedagogicalDocumentId
+        documentId: PedagogicalDocumentId,
     ): AttachmentId = db.transaction { tx ->
         tx.insertAttachment(
             admin.user,
@@ -2059,7 +2059,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         """
 INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
 VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
-"""
+""",
                     )
                 }
                 .execute()
@@ -2083,7 +2083,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                 sentAt = if (status == IncomeStatementStatus.DRAFT) null else sentAt,
                 handlerId = if (status == IncomeStatementStatus.HANDLED) admin.id else null,
                 handledAt = if (status == IncomeStatementStatus.HANDLED) sentAt else null,
-            )
+            ),
         )
     }
 
@@ -2106,7 +2106,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
         val id = tx.createIncomeNotification(receiverId, IncomeNotificationType.INITIAL_EMAIL)
         tx.execute {
             sql(
-                "UPDATE income_notification SET created = ${bind(createdAt)} WHERE id = ${bind(id)}"
+                "UPDATE income_notification SET created = ${bind(createdAt)} WHERE id = ${bind(id)}",
             )
         }
         id
@@ -2135,7 +2135,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                     unitId = daycare.id,
                     groupId = daycareGroup.id,
                     childId = childId,
-                )
+                ),
             )
         }
     }
@@ -2152,7 +2152,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                     childId = childId,
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
         }
     }
@@ -2176,7 +2176,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                     childId = childId,
                     contactPersonId = contactPerson.id,
                     priority = 1,
-                )
+                ),
             )
         }
     }
@@ -2188,7 +2188,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                     """
                     INSERT INTO nekku_special_diet (id, name) VALUES ('test-diet', 'Test Diet')
                     ON CONFLICT DO NOTHING
-                    """
+                    """,
                 )
             }
             tx.execute {
@@ -2197,7 +2197,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                     INSERT INTO nekku_special_diet_field (id, name, type, diet_id)
                     VALUES ('test-field', 'Test Field', 'TEXT'::nekku_special_diet_type, 'test-diet')
                     ON CONFLICT DO NOTHING
-                    """
+                    """,
                 )
             }
             tx.execute {
@@ -2205,7 +2205,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                     """
                     INSERT INTO nekku_special_diet_choices (child_id, diet_id, field_id, value, created_at)
                     VALUES (${bind(childId)}, 'test-diet', 'test-field', 'val', ${bind(now)})
-                    """
+                    """,
                 )
             }
         }
@@ -2221,7 +2221,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                     dietId = 1,
                     mealTextureId = 2,
                     nekkuDiet = NekkuProductMealType.VEGAN,
-                )
+                ),
             )
         }
     }
@@ -2251,7 +2251,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                 """
 INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_version)
 VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
-"""
+""",
             )
         }
     }
@@ -2259,7 +2259,7 @@ VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
     private fun markSentToVarda(childId: ChildId) = db.transaction { tx ->
         tx.execute {
             sql(
-                "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(childId)}, NULL, ${bind(now)})"
+                "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(childId)}, NULL, ${bind(now)})",
             )
         }
     }
@@ -2277,7 +2277,7 @@ VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
     private fun readChildDietColumns(childId: ChildId): ChildDietColumns = db.read { tx ->
         tx.createQuery {
                 sql(
-                    "SELECT diet_id, meal_texture_id, nekku_diet::text AS nekku_diet FROM child WHERE id = ${bind(childId)}"
+                    "SELECT diet_id, meal_texture_id, nekku_diet::text AS nekku_diet FROM child WHERE id = ${bind(childId)}",
                 )
             }
             .exactlyOne<ChildDietColumns>()
@@ -2287,7 +2287,7 @@ VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
         db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT payload::json->>'imageId' FROM async_job WHERE type = 'DeleteChildImage'"
+                            "SELECT payload::json->>'imageId' FROM async_job WHERE type = 'DeleteChildImage'",
                         )
                     }
                     .toList<String>()
@@ -2462,7 +2462,7 @@ VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     endDate = today.plusMonths(1),
                     source = PlacementSource.APPLICATION,
                     sourceApplicationId = tree.applicationId,
-                )
+                ),
             )
         }
         attachApplicationProvenance(tree.applicationId)
@@ -2494,7 +2494,7 @@ VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
         db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT source, source_application_id FROM placement WHERE id = ${bind(id)}"
+                        "SELECT source, source_application_id FROM placement WHERE id = ${bind(id)}",
                     )
                 }
                 .exactlyOne {
@@ -2517,7 +2517,7 @@ VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     """
 INSERT INTO income (person_id, data, valid_from, application_id, modified_by, modified_at, created_at, created_by)
 VALUES (${bind(head.id)}, '{}'::jsonb, ${bind(today)}, ${bind(applicationId)}, ${bind(admin.evakaUserId)}, ${bind(now)}, ${bind(now)}, ${bind(admin.evakaUserId)})
-"""
+""",
                 )
             }
 
@@ -2531,7 +2531,7 @@ VALUES (${bind(head.id)}, '{}'::jsonb, ${bind(today)}, ${bind(applicationId)}, $
             tx.insert(fridgeChild)
             tx.execute {
                 sql(
-                    "UPDATE fridge_child SET create_source = 'APPLICATION', created_by_application = ${bind(applicationId)} WHERE id = ${bind(fridgeChild.id)}"
+                    "UPDATE fridge_child SET create_source = 'APPLICATION', created_by_application = ${bind(applicationId)} WHERE id = ${bind(fridgeChild.id)}",
                 )
             }
 
@@ -2545,7 +2545,7 @@ VALUES (${bind(head.id)}, '{}'::jsonb, ${bind(today)}, ${bind(applicationId)}, $
             tx.insert(partnership)
             tx.execute {
                 sql(
-                    "UPDATE fridge_partner SET create_source = 'APPLICATION', created_from_application = ${bind(applicationId)} WHERE partnership_id = ${bind(partnership.id)}"
+                    "UPDATE fridge_partner SET create_source = 'APPLICATION', created_from_application = ${bind(applicationId)} WHERE partnership_id = ${bind(partnership.id)}",
                 )
             }
 
@@ -2554,7 +2554,7 @@ VALUES (${bind(head.id)}, '{}'::jsonb, ${bind(today)}, ${bind(applicationId)}, $
                     """
 INSERT INTO message_thread (message_type, title, is_copy, sensitive, application_id)
 VALUES ('MESSAGE'::message_type, 'title', false, false, ${bind(applicationId)})
-"""
+""",
                 )
             }
         }
@@ -2611,7 +2611,7 @@ VALUES ('MESSAGE'::message_type, 'title', false, false, ${bind(applicationId)})
                 unitId = daycare.id,
                 startDate = placementEnd.minusYears(1),
                 endDate = placementEnd,
-            )
+            ),
         )
         val process =
             tx.insertCaseProcess(
@@ -2640,7 +2640,7 @@ VALUES ('MESSAGE'::message_type, 'title', false, false, ${bind(applicationId)})
                     """
 INSERT INTO application_note (application_id, content, created_by, modified_by, modified_at)
 VALUES (${bind(applicationId)}, 'note', ${bind(admin.evakaUserId)}, ${bind(admin.evakaUserId)}, ${bind(now)})
-"""
+""",
                 )
             }
             .execute()
@@ -2649,7 +2649,7 @@ VALUES (${bind(applicationId)}, 'note', ${bind(admin.evakaUserId)}, ${bind(admin
                     """
 INSERT INTO case_process_history (process_id, row_index, state, entered_at, entered_by)
 VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)}, ${bind(admin.evakaUserId)})
-"""
+""",
                 )
             }
             .execute()
@@ -2665,25 +2665,25 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
                     endDate = placementEnd,
                     status = DecisionStatus.ACCEPTED,
                     documentKey = decisionKey,
-                )
+                ),
             )
         if (otherGuardianKey != null) {
             tx.createUpdate {
                     sql(
-                        "UPDATE decision SET other_guardian_document_key = ${bind(otherGuardianKey)} WHERE id = ${bind(decisionId)}"
+                        "UPDATE decision SET other_guardian_document_key = ${bind(otherGuardianKey)} WHERE id = ${bind(decisionId)}",
                     )
                 }
                 .execute()
         }
         val sfiMessageId =
             tx.storeSentSfiMessage(
-                SentSfiMessage(guardianId = guardian.id, decisionId = decisionId)
+                SentSfiMessage(guardianId = guardian.id, decisionId = decisionId),
             )
         tx.insert(
             DevSfiMessageEvent(
                 messageId = sfiMessageId,
                 eventType = EventType.ELECTRONIC_MESSAGE_CREATED,
-            )
+            ),
         )
         tx.insert(DevPlacementPlan(applicationId = applicationId, unitId = daycare.id))
         tx.insert(
@@ -2693,7 +2693,7 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
                 startDate = placementEnd.minusYears(1),
                 createdBy = admin.evakaUserId,
                 modifiedBy = admin.evakaUserId,
-            )
+            ),
         )
         val attachmentId =
             tx.insertAttachment(
@@ -2711,7 +2711,7 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT payload::json->>'key' FROM async_job WHERE type = 'DeleteDecisionPdf'"
+                            "SELECT payload::json->>'key' FROM async_job WHERE type = 'DeleteDecisionPdf'",
                         )
                     }
                     .toList<String>()
@@ -2722,7 +2722,7 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT payload::json->>'attachmentId' FROM async_job WHERE type = 'DeleteAttachment'"
+                            "SELECT payload::json->>'attachmentId' FROM async_job WHERE type = 'DeleteAttachment'",
                         )
                     }
                     .toList<String>()

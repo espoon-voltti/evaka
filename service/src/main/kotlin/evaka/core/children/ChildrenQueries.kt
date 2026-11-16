@@ -56,7 +56,7 @@ LEFT JOIN LATERAL (
 ) upcoming_pl ON true
 LEFT JOIN daycare upcoming_unit ON upcoming_pl.unit_id = upcoming_unit.id
 ORDER BY p.date_of_birth, p.last_name, p.first_name, p.duplicate_of
-"""
+""",
     )
 }
     .bind("id", id)
@@ -71,7 +71,7 @@ fun Database.Read.getCitizenChildIds(today: LocalDate, userId: PersonId): List<C
 SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
 UNION ALL
 SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
-"""
+""",
         )
     }
     .toList()
@@ -83,7 +83,7 @@ fun Database.Read.getChildIdsByGuardians(guardianIds: Set<PersonId>): Map<Person
 SELECT guardian_id, child_id
 FROM guardian
 WHERE guardian_id = ANY (${bind(guardianIds)})
-"""
+""",
         )
     }
     .map { columnPair<PersonId, ChildId>("guardian_id", "child_id") }
@@ -103,7 +103,7 @@ WHERE
     NOT conflict AND
     head_of_child = ANY (${bind(headOfFamilyIds)}) AND
     daterange(start_date, end_date, '[]') && ${bind(range)}
-"""
+""",
     )
 }
     .map {

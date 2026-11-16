@@ -53,7 +53,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                         unitId = unitId,
                         startDate = mockToday.today().minusMonths(1),
                         endDate = mockToday.today().plusMonths(1),
-                    )
+                    ),
                 )
             val period =
                 FiniteDateRange(mockToday.today().minusMonths(1), mockToday.today().plusMonths(1))
@@ -65,7 +65,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                     optionId = snDefaultPreschool.id,
                     confirmedBy = EvakaUserId(admin.id.raw),
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
 
             val daycareU3yChildId =
@@ -81,7 +81,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                         unitId = unitId,
                         startDate = mockToday.today().minusMonths(1),
                         endDate = mockToday.today().plusMonths(1),
-                    )
+                    ),
                 )
             val period1 =
                 FiniteDateRange(mockToday.today().minusMonths(1), mockToday.today().plusMonths(1))
@@ -93,7 +93,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                     optionId = snDefaultDaycare.id,
                     confirmedBy = EvakaUserId(admin.id.raw),
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
         val reportAll =

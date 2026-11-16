@@ -26,19 +26,19 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
     // unit (daycare) predicates
     private val municipalNonSchoolDaycareUnitPredicate = Predicate {
         where(
-            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{MUNICIPAL}') AND $it.type && '{CENTRE}'"
+            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{MUNICIPAL}') AND $it.type && '{CENTRE}'",
         )
     }
 
     private val municipalNonSchoolFamilyAndUnitDaycarePredicate = Predicate {
         where(
-            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{MUNICIPAL}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'"
+            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{MUNICIPAL}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'",
         )
     }
 
     private val voucherNonSchoolFamilyAndUnitDaycarePredicate = Predicate {
         where(
-            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'"
+            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{PRIVATE_SERVICE_VOUCHER}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'",
         )
     }
 
@@ -63,7 +63,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
 
     private val purchasedNonSchoolFamilyAndUnitDaycarePredicate = Predicate {
         where(
-            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{PURCHASED,EXTERNAL_PURCHASED}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'"
+            "$it.with_school IS FALSE AND $it.provider_type = ANY ('{PURCHASED,EXTERNAL_PURCHASED}') AND $it.type && '{CENTRE,FAMILY,GROUP_FAMILY}'",
         )
     }
 
@@ -196,7 +196,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                                 $it.language IS NOT NULL
                                     AND $it.duplicate_of IS NULL
                                     AND NOT ($it.language ilike ANY ('{FI,SV,RI,SE,VK}'))
-                                    """
+                                    """,
                                     )
                                 },
                             daycarePred = nonSchoolFamilyAndUnitDaycarePredicate,
@@ -237,7 +237,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                                         familyCareDayCounts.under3Count,
                                     effectiveFamilyDaycareDaysOver3Count =
                                         familyCareDayCounts.over3Count,
-                                )
+                                ),
                             ),
                     )
                 }
@@ -314,7 +314,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                             placementPred =
                                 Predicate {
                                     where(
-                                        "$it.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')"
+                                        "$it.type = ANY ('{DAYCARE,PRESCHOOL_DAYCARE,PRESCHOOL_DAYCARE_ONLY}')",
                                     )
                                 },
                         )
@@ -408,7 +408,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                                         preschoolDaycareUnitShiftCare.placementCount,
                                     preschoolDaycareSchoolShiftCareCount =
                                         preschoolDaycareSchoolShiftCare.placementCount,
-                                )
+                                ),
                             ),
                     )
                 }
@@ -475,13 +475,13 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.TampereRegionalSurveyMunicipalVoucherDistribution.log(
-                    meta = mapOf("year" to year)
+                    meta = mapOf("year" to year),
                 )
             }
     }
 
     private fun Database.Read.getVoucherCountPerDaycareMunicipality(
-        statDay: LocalDate
+        statDay: LocalDate,
     ): List<MunicipalVoucherCount> {
         return createQuery {
             sql(
@@ -498,7 +498,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                 AND d.type && '{CENTRE}'
                 AND d.provider_type = 'PRIVATE_SERVICE_VOUCHER'
                 GROUP BY upper(d.post_office) 
-                """
+                """,
             )
         }
             .toList<MunicipalVoucherCount>()
@@ -516,7 +516,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
     )
 
     private fun Database.Read.getMunicipalAssistanceMonthlyResults(
-        reportingDays: List<LocalDate>
+        reportingDays: List<LocalDate>,
     ): List<MonthlyAssistanceResult> {
         val data =
             getMonthlyMunicipalAssistanceCountRows(reportingDays = reportingDays).associateBy {
@@ -667,7 +667,7 @@ SELECT extract(MONTH FROM day)                                            AS mon
 FROM unnest(${bind(statDays)}::date[]) day
          LEFT JOIN child_rows row on validity @> day
 GROUP BY month 
-                """
+                """,
             )
         }
             .toList<MonthlyMunicipalDaycareResult>()
@@ -696,14 +696,14 @@ SELECT extract(MONTH FROM day)      AS month,
 FROM unnest(${bind(statDays)}::date[]) day
          LEFT JOIN child_rows row on validity @> day
 GROUP BY month
-                """
+                """,
             )
         }
             .toList<MonthlyMunicipalShiftCareResult>()
     }
 
     private fun Database.Read.getMonthlyMunicipalAssistanceCountRows(
-        reportingDays: List<LocalDate>
+        reportingDays: List<LocalDate>,
     ): List<MonthlyAssistanceResult> {
         return createQuery {
             sql(
@@ -725,7 +725,7 @@ WHERE pl.type = ANY ('{DAYCARE}')
                WHERE aao.value = ANY ('{10,40}')
                  AND an.child_id = pl.child_id))
 GROUP BY day
-                """
+                """,
             )
         }
             .toList<MonthlyAssistanceResult>()
@@ -751,7 +751,7 @@ WHERE ${predicate(daycarePred.forTable("d"))}
                         JOIN assistance_action_option aao ON anor.option_id = aao.id
                WHERE aao.value = ANY ('{10,40}')
                  AND an.child_id = pl.child_id))
-                """
+                """,
             )
         }
             .exactlyOne<SingularCount>()
@@ -782,7 +782,7 @@ SELECT extract(MONTH FROM day)                                             AS mo
 FROM unnest(${bind(statDays)}::date[]) day
          LEFT JOIN child_rows row on validity @> day
 GROUP BY month
-                """
+                """,
             )
         }
             .toList<MonthlyFamilyDaycareResult>()
@@ -811,7 +811,7 @@ SELECT count(row.child_id)
        count(row.child_id)
        FILTER ( WHERE row.age >= 3) AS over_3_count
 FROM child_rows row
-                """
+                """,
             )
         }
             .exactlyOne<AgeDivisionCount>()
@@ -883,7 +883,7 @@ WHERE NOT EXISTS (SELECT 1
   AND (
     (ep.has_shift_care AND d.shift_care_open_on_holidays) OR ep.date != ALL (${bind(holidays)})
     )
-    """
+    """,
             )
         }
             .exactlyOne<AgeDivisionCount>()
@@ -906,7 +906,7 @@ WHERE ${predicate(placementPred.forTable("pl"))}
   AND ${predicate(daycarePred.forTable("d"))}
   AND ${predicate(personPred.forTable("p"))}
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
-                """
+                """,
             )
         }
             .exactlyOne<SingularCount>()
@@ -935,7 +935,7 @@ WHERE ${predicate(placementPred.forTable("pl"))}
   AND ${predicate(personPred.forTable("p"))}
   AND ${predicate(serviceNeedPred.forTable("sn"))}
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
-                """
+                """,
             )
         }
             .exactlyOne<SingularCount>()
@@ -959,7 +959,7 @@ FROM placement pl
 WHERE ${predicate(daycarePred.forTable("d"))}
   AND pl.type = ANY ('{DAYCARE}')
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
-                """
+                """,
             )
         }
             .exactlyOne<DaycareAssistanceLevelCounts>()

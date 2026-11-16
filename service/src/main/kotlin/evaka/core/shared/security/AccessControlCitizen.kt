@@ -67,7 +67,7 @@ SELECT EXISTS (
     JOIN message m ON mr.message_id = m.id
     WHERE p.id = ${bind(userId)} AND m.sent_at IS NOT NULL
 )
-"""
+""",
             )
         }
             .exactlyOne<Boolean>()
@@ -92,7 +92,7 @@ SELECT EXISTS (
     JOIN placement pl ON c.child_id = pl.child_id
     WHERE daterange((pl.start_date - interval '2 weeks')::date, pl.end_date, '[]') @> ${bind(today)}
 )
-"""
+""",
             )
         }
             .exactlyOne<Boolean>()
@@ -119,7 +119,7 @@ SELECT EXISTS (
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
-"""
+""",
             )
         }
             .exactlyOne<Boolean>()
@@ -155,7 +155,7 @@ SELECT EXISTS (
         AND daterange((pl.start_date - ${bind(citizenDocumentCreationDaysBeforePlacement)}), pl.end_date, '[]') @> ${bind(today)}
     )
 )
-"""
+""",
             )
         }
             .exactlyOne<Boolean>()

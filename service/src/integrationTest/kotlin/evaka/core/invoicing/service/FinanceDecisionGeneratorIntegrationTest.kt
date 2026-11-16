@@ -158,7 +158,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
                     unitId = daycareId,
                     startDate = period.start,
                     endDate = period.end!!,
-                )
+                ),
             )
         }
     }
@@ -176,7 +176,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
                         headOfChildId = headOfFamilyId,
                         startDate = period.start,
                         endDate = period.end!!,
-                    )
+                    ),
                 )
             }
         }
@@ -188,7 +188,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
                     rows
                         .map { row ->
                             row.copy(
-                                children = row.children.sortedByDescending { it.child.dateOfBirth }
+                                children = row.children.sortedByDescending { it.child.dateOfBirth },
                             )
                         }
                         .toList()

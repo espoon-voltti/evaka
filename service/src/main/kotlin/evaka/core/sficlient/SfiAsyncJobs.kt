@@ -72,7 +72,7 @@ class SfiAsyncJobs(
                             messageId = SfiMessageId(externalId),
                             eventType = event.type,
                             eventTime = event.eventTime,
-                        )
+                        ),
                     )
                 if (id != null) {
                     logger.info { "SfiAsyncJobs: successfully processed event $event with id $id" }

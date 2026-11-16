@@ -125,7 +125,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         asyncJobRunner.plan(
             this,
             listOf(
-                AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))
+                AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate)),
             ),
             runAt = clock.now(),
         )

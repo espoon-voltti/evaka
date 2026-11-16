@@ -113,7 +113,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         ),
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     modifiedAt = mockToday.now(),
-                )
+                ),
             )
         }
 
@@ -406,7 +406,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private fun Database.Read.getGuardianCreated(guardianId: PersonId, childId: PersonId) =
         createQuery {
             sql(
-                "SELECT created FROM guardian WHERE guardian_id = ${bind(guardianId)} AND child_id = ${bind(childId)}"
+                "SELECT created FROM guardian WHERE guardian_id = ${bind(guardianId)} AND child_id = ${bind(childId)}",
             )
         }
         .exactlyOne<HelsinkiDateTime>()

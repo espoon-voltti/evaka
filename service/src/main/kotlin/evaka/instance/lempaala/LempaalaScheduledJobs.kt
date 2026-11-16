@@ -25,7 +25,7 @@ enum class LempaalaScheduledJob(
             enabled = false,
             schedule = JobSchedule.annualOnIsoWeek(isoWeek = 16, dayOfWeek = DayOfWeek.WEDNESDAY),
         ),
-    )
+    ),
 }
 
 class LempaalaScheduledJobs(

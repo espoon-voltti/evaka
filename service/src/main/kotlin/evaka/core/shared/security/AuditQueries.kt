@@ -17,7 +17,7 @@ SELECT id, 'CITIZEN', id, last_name || ' ' || first_name
 FROM person
 WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
-"""
+""",
     )
 }
     .execute()
@@ -30,7 +30,7 @@ SELECT id, 'EMPLOYEE', id, last_name || ' ' || coalesce(preferred_first_name, fi
 FROM employee
 WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
-"""
+""",
     )
 }
     .execute()
@@ -43,7 +43,7 @@ SELECT id, 'MOBILE_DEVICE', id, name
 FROM mobile_device
 WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
-"""
+""",
     )
 }
     .execute()

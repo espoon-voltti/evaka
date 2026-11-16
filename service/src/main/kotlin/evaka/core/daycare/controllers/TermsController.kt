@@ -261,18 +261,18 @@ class TermsController(private val accessControl: AccessControl) {
         allTermsToCompare.forEach { term ->
             if (termReq.finnishPreschool.overlaps(term.finnishPreschool)) {
                 throw BadRequest(
-                    "Finnish term period ${termReq.finnishPreschool} overlaps with existing one"
+                    "Finnish term period ${termReq.finnishPreschool} overlaps with existing one",
                 )
             }
             if (termReq.swedishPreschool.overlaps(term.swedishPreschool)) {
                 throw BadRequest(
-                    "Swedish term period ${termReq.swedishPreschool} overlaps with existing one"
+                    "Swedish term period ${termReq.swedishPreschool} overlaps with existing one",
                 )
             }
 
             if (termReq.extendedTerm.overlaps(term.extendedTerm)) {
                 throw BadRequest(
-                    "Extended term period ${termReq.extendedTerm} overlaps with existing one"
+                    "Extended term period ${termReq.extendedTerm} overlaps with existing one",
                 )
             }
         }
@@ -282,7 +282,7 @@ class TermsController(private val accessControl: AccessControl) {
                 !termReq.extendedTerm.contains(termReq.swedishPreschool)
         ) {
             throw BadRequest(
-                "Extended term ${termReq.extendedTerm} has to include the finnish and swedish term periods"
+                "Extended term ${termReq.extendedTerm} has to include the finnish and swedish term periods",
             )
         }
     }

@@ -149,7 +149,7 @@ SELECT p2.person_id AS partner_id
 FROM fridge_partner p1
 LEFT OUTER JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.person_id != p2.person_id
 WHERE p1.person_id = ${bind(personId)} AND daterange(p1.start_date, p1.end_date, '[]') @> ${bind(clock.today())} AND p1.conflict = false AND p2.conflict = false
-"""
+""",
                 )
             }
             .exactlyOneOrNull<PersonId>()
@@ -165,7 +165,7 @@ WHERE p1.person_id = ${bind(personId)} AND daterange(p1.start_date, p1.end_date,
                     """
 SELECT child_id FROM fridge_child
 WHERE head_of_child = ${bind(personId)} AND daterange(start_date, end_date, '[]') @> ${bind(clock.today())} AND conflict = false
-"""
+""",
                 )
             }
             .toSet<ChildId>()

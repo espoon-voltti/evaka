@@ -154,7 +154,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = daycare.id,
                         startDate = mon,
                         endDate = fri,
-                    )
+                    ),
                 )
             it.insertServiceNeed(
                 placementId = child1PlacementId,
@@ -182,7 +182,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycareGroupId = testGroup1.id,
                     startDate = mon,
                     endDate = thu,
-                )
+                ),
             )
             it.insert(
                 DevDaycareGroupPlacement(
@@ -190,7 +190,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycareGroupId = testGroup2.id,
                     startDate = fri,
                     endDate = fri,
-                )
+                ),
             )
             it.insert(
                 DevReservation(
@@ -200,7 +200,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(16, 0),
                     createdAt = now,
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
             it.insertTestChildAttendance(
                 childId = child1.id,
@@ -218,7 +218,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     modifiedAt = now,
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             // Reservation with no times
             it.insert(
@@ -229,7 +229,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = null,
                     createdAt = now,
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
 
             // No group placement -> ungrouped
@@ -240,7 +240,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare.id,
                     startDate = wed,
                     endDate = thu,
-                )
+                ),
             )
 
             // Placement in other unit, backup in this unit's group 2
@@ -252,7 +252,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = daycare2.id,
                         startDate = mon,
                         endDate = fri,
-                    )
+                    ),
                 )
             it.insert(
                 DevDaycareGroupPlacement(
@@ -260,7 +260,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycareGroupId = testGroupInDaycare2.id,
                     startDate = mon,
                     endDate = fri,
-                )
+                ),
             )
             it.insert(
                 DevBackupCare(
@@ -268,7 +268,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare.id,
                     groupId = testGroup2.id,
                     period = FiniteDateRange(fri, fri),
-                )
+                ),
             )
             it.insertServiceNeed(
                 placementId = testChild5PlacementId,
@@ -286,7 +286,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     validityPeriod = monFri.asDateRange(),
                     type = DailyServiceTimesType.REGULAR,
                     regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                )
+                ),
             )
 
             // Placed to this unit's group 1...
@@ -297,7 +297,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = daycare.id,
                         startDate = wed,
                         endDate = fri,
-                    )
+                    ),
                 )
             it.insert(
                 DevDaycareGroupPlacement(
@@ -305,7 +305,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycareGroupId = testGroup1.id,
                     startDate = wed,
                     endDate = fri,
-                )
+                ),
             )
             // ... and has a backup in another group in this unit
             it.insert(
@@ -314,7 +314,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare.id,
                     groupId = testGroup2.id,
                     period = FiniteDateRange(thu, thu),
-                )
+                ),
             )
             // ... and has a backup in another unit
             it.insert(
@@ -323,7 +323,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare2.id,
                     groupId = testGroupInDaycare2.id,
                     period = FiniteDateRange(fri, fri),
-                )
+                ),
             )
             // Reservation is shown in the result because the child is in this unit
             it.insert(
@@ -334,7 +334,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(15, 0),
                     createdAt = now,
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
             // Reservation is NOT shown in the result because the child is in another unit
             it.insert(
@@ -345,7 +345,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(17, 0),
                     createdAt = now,
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -405,7 +405,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             validDuring = monFri,
                             shiftCare = ShiftCareType.NONE,
                             partWeek = false,
-                        )
+                        ),
                     ),
                     child5.serviceNeeds,
                 )
@@ -434,7 +434,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         isHoliday = false,
                         isInHolidayPeriod = false,
                     )
-            }
+            },
         )
 
         response.days
@@ -452,7 +452,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                         true,
                                         now,
                                         employee.evakaUser,
-                                    )
+                                    ),
                                 ),
                             attendances =
                                 listOf(
@@ -465,7 +465,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                             ),
                                         modifiedAt = now,
                                         modifiedBy = employee.evakaUser,
-                                    )
+                                    ),
                                 ),
                             absenceBillable = null,
                             absenceNonbillable = null,
@@ -477,7 +477,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             inOtherUnit = false,
                             scheduleType = ScheduleType.RESERVATION_REQUIRED,
                             occupancy = BigDecimal("1.00"),
-                        )
+                        ),
                     ),
                     monChildren,
                 )
@@ -509,7 +509,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             inOtherUnit = false,
                             scheduleType = ScheduleType.RESERVATION_REQUIRED,
                             occupancy = BigDecimal("1.00"),
-                        )
+                        ),
                     ),
                     tueChildren,
                 )
@@ -628,7 +628,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                     true,
                                     now,
                                     employee.evakaUser,
-                                )
+                                ),
                             ),
                         attendances = emptyList(),
                         absenceBillable = null,
@@ -729,7 +729,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = daycare.id,
                         startDate = mon,
                         endDate = fri,
-                    )
+                    ),
                 )
             tx.insert(
                 DevServiceNeed(
@@ -738,7 +738,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endDate = fri,
                     optionId = option.id,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -756,7 +756,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare.id,
                     startDate = mon,
                     endDate = fri,
-                )
+                ),
             )
             listOf(
                     DevReservation(
@@ -830,7 +830,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 true,
                                 now,
                                 employee.evakaUser,
-                            )
+                            ),
                         ),
                     attendances =
                         listOf(
@@ -839,7 +839,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59)),
                                 now,
                                 employee.evakaUser,
-                            )
+                            ),
                         ),
                     absenceBillable = null,
                     absenceNonbillable = null,
@@ -851,7 +851,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     inOtherUnit = false,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     occupancy = BigDecimal("1.00"),
-                )
+                ),
             ),
             response.days.first { it.date == mon }.children,
         )
@@ -900,7 +900,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     inOtherUnit = false,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     occupancy = BigDecimal("1.00"),
-                )
+                ),
             ),
             response.days.first { it.date == tue }.children,
         )
@@ -916,7 +916,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 true,
                                 now,
                                 employee.evakaUser,
-                            )
+                            ),
                         ),
                     attendances = emptyList(),
                     absenceBillable = null,
@@ -929,7 +929,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     inOtherUnit = false,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     occupancy = BigDecimal("1.00"),
-                )
+                ),
             ),
             response.days.first { it.date == wed }.children,
         )
@@ -961,7 +961,7 @@ class AttendanceReservationsControllerIntegrationTest :
 
         val result =
             getAttendanceReservations(
-                clock = MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(10, 0)))
+                clock = MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(10, 0))),
             )
         assertEquals(5, result.days.size)
         result.days.forEach { day ->
@@ -1008,7 +1008,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     startDate = mon,
                     endDate = fri,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1018,14 +1018,14 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(11, 0),
                     createdBy = employee.evakaUserId,
                     createdAt = clock.now(),
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
                     childId = child1.id,
                     date = tue,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(DevMobileDevice(unitId = daycare.id))
         }
@@ -1048,7 +1048,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 true,
                                 modifiedBy = employee.evakaUser,
                                 modifiedAt = clock.now(),
-                            )
+                            ),
                         ),
                     absenceType = null,
                     dailyServiceTimes = null,
@@ -1089,7 +1089,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare.id,
                     startDate = mon,
                     endDate = fri,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -1099,7 +1099,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     modifiedAt = now,
                     modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -1136,7 +1136,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     startDate = mon,
                     endDate = fri,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1146,7 +1146,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(11, 0),
                     createdBy = parent.evakaUserId(),
                     createdAt = initialCreatedAt,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1156,7 +1156,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(16, 0),
                     createdBy = employee.evakaUserId,
                     createdAt = initialCreatedAt,
-                )
+                ),
             )
             tx.insert(mobileDevice)
         }
@@ -1173,7 +1173,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = wed,
                     reservations =
                         listOf(
-                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)))
+                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0))),
                         ),
                     absenceType = null,
                 ),
@@ -1181,7 +1181,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = thu,
                     reservations =
                         listOf(
-                            Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
+                            Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
                         ),
                     absenceType = null,
                 ),
@@ -1207,7 +1207,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 false,
                                 modifiedBy = parent.evakaUser(),
                                 modifiedAt = initialCreatedAt,
-                            )
+                            ),
                         ),
                     absenceType = null,
                     dailyServiceTimes = null,
@@ -1222,7 +1222,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 true,
                                 modifiedBy = employee.evakaUser,
                                 modifiedAt = initialCreatedAt,
-                            )
+                            ),
                         ),
                     absenceType = null,
                     dailyServiceTimes = null,
@@ -1255,7 +1255,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     startDate = mon,
                     endDate = fri,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1265,7 +1265,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(11, 0),
                     createdBy = parent.evakaUserId(),
                     createdAt = initialCreatedAt,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1275,7 +1275,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(16, 0),
                     createdBy = employee.evakaUserId,
                     createdAt = initialCreatedAt,
-                )
+                ),
             )
             tx.insert(mobileDevice)
         }
@@ -1292,7 +1292,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = wed,
                     reservations =
                         listOf(
-                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)))
+                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0))),
                         ),
                     absenceType = null,
                 ),
@@ -1300,7 +1300,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = thu,
                     reservations =
                         listOf(
-                            Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
+                            Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
                         ),
                     absenceType = null,
                 ),
@@ -1308,7 +1308,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = fri,
                     reservations =
                         listOf(
-                            Reservation.Times(TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 0)))
+                            Reservation.Times(TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 0))),
                         ),
                     absenceType = null,
                 ),
@@ -1334,7 +1334,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 false,
                                 modifiedBy = parent.evakaUser(),
                                 modifiedAt = initialCreatedAt,
-                            )
+                            ),
                         ),
                     absenceType = null,
                     dailyServiceTimes = null,
@@ -1349,7 +1349,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 true,
                                 modifiedBy = employee.evakaUser,
                                 modifiedAt = initialCreatedAt,
-                            )
+                            ),
                         ),
                     absenceType = null,
                     dailyServiceTimes = null,
@@ -1364,7 +1364,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 true,
                                 modifiedBy = mobileDeviceEvakaUser,
                                 modifiedAt = clock.now(),
-                            )
+                            ),
                         ),
                     absenceType = null,
                     dailyServiceTimes = null,
@@ -1390,7 +1390,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     startDate = mon,
                     endDate = fri,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1400,7 +1400,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(11, 0),
                     createdBy = parent.evakaUserId(),
                     createdAt = initialCreatedAt,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1410,7 +1410,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(12, 0),
                     createdBy = employee.evakaUserId,
                     createdAt = initialCreatedAt,
-                )
+                ),
             )
             tx.insert(mobileDevice)
         }
@@ -1427,7 +1427,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = wed,
                     reservations =
                         listOf(
-                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)))
+                            Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0))),
                         ),
                     absenceType = null,
                 ),
@@ -1462,7 +1462,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 false,
                                 modifiedBy = parent.evakaUser(),
                                 modifiedAt = initialCreatedAt,
-                            )
+                            ),
                         ),
                     absenceType = null,
                     dailyServiceTimes = null,
@@ -1509,7 +1509,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     period = FiniteDateRange(wed, thu),
                     reservationsOpenOn = mon,
                     reservationDeadline = mon,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1518,7 +1518,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     startDate = mon,
                     endDate = fri,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                )
+                ),
             )
             tx.insert(mobileDevice)
         }
@@ -1533,7 +1533,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = wed,
                     reservations = listOf(Reservation.NoTimes),
                     absenceType = null,
-                )
+                ),
             ),
         )
 
@@ -1550,7 +1550,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     staffCreated = true,
                     modifiedBy = mobileDevice.evakaUser,
                     modifiedAt = clock.now(),
-                )
+                ),
             ),
             reservations.single { it.date == wed }.reservations,
         )
@@ -1564,7 +1564,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     period = FiniteDateRange(wed, thu),
                     reservationsOpenOn = mon,
                     reservationDeadline = mon,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1573,7 +1573,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     startDate = mon,
                     endDate = fri,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                )
+                ),
             )
             tx.insert(DevMobileDevice(unitId = daycare.id))
         }
@@ -1593,11 +1593,11 @@ class AttendanceReservationsControllerIntegrationTest :
                             listOf(
                                 Reservation.NoTimes,
                                 Reservation.Times(
-                                    TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0))
+                                    TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
                                 ),
                             ),
                         absenceType = null,
-                    )
+                    ),
                 ),
             )
         }
@@ -1614,7 +1614,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         date = fri,
                         reservations = listOf(Reservation.NoTimes),
                         absenceType = null,
-                    )
+                    ),
                 ),
             )
         }
@@ -1633,7 +1633,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare.id,
                     startDate = mon,
                     endDate = fri,
-                )
+                ),
             )
         }
 
@@ -1681,7 +1681,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             TimeInterval(start = LocalTime.of(12, 30), end = null),
                             testNow,
                             employee.evakaUser,
-                        )
+                        ),
                     ),
                 absenceBillable =
                     AbsenceTypeResponse(
@@ -1757,7 +1757,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             TimeInterval(start = LocalTime.of(12, 30), end = LocalTime.of(17, 0)),
                             testNow,
                             employee2.evakaUser,
-                        )
+                        ),
                     ),
                 absenceBillable =
                     AbsenceTypeResponse(
@@ -1858,7 +1858,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare2.id,
                     startDate = mon,
                     endDate = fri,
-                )
+                ),
             )
             tx.insert(DevMobileDevice(unitId = daycare.id))
         }
@@ -1881,7 +1881,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare.id,
                     startDate = mon,
                     endDate = fri,
-                )
+                ),
             )
             tx.insert(DevMobileDevice(unitId = daycare.id))
         }
@@ -1895,7 +1895,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     clock.today().plusDays(1),
                     reservations = emptyList(),
                     absenceType = null,
-                )
+                ),
             ),
         )
     }
@@ -1921,7 +1921,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 presentCount = 0,
                                 absentCount = 0,
                                 groupId = null,
-                            )
+                            ),
                         ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
@@ -1933,7 +1933,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 presentCount = 0,
                                 absentCount = 0,
                                 groupId = null,
-                            )
+                            ),
                         ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
@@ -1999,7 +1999,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 presentCount = 2,
                                 absentCount = 0,
                                 groupId = testGroup2.id,
-                            )
+                            ),
                         ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
@@ -2179,7 +2179,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         // mon-sat
                         shiftCareOperationTimes =
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null),
-                    )
+                    ),
                 )
             tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
             daycareId
@@ -2243,7 +2243,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
                         shiftCareOperationTimes =
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null),
-                    )
+                    ),
                 )
             tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
             daycareId
@@ -2266,7 +2266,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = daycareId,
                         startDate = range.start,
                         endDate = range.end,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -2275,7 +2275,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             daycareGroupId = groupId,
                             startDate = range.start,
                             endDate = range.end,
-                        )
+                        ),
                     )
                 }
         }
@@ -2302,7 +2302,7 @@ class AttendanceReservationsControllerIntegrationTest :
     @ParameterizedTest
     @EnumSource(names = ["TEMPORARY_DAYCARE", "TEMPORARY_DAYCARE_PART_DAY"])
     fun `confirmed day statistics count temporary daycare children as present`(
-        placementType: PlacementType
+        placementType: PlacementType,
     ) {
         val daycareId = db.transaction { tx ->
             val areaId = tx.insert(DevCareArea(name = "Temporary Stats Area", shortName = "area"))
@@ -2312,7 +2312,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         areaId = areaId,
                         operationTimes =
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
-                    )
+                    ),
                 )
             tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
             daycareId
@@ -2351,7 +2351,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     modifiedAt = HelsinkiDateTime.atStartOfDay(range.start),
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -2376,7 +2376,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
                         shiftCareOperationTimes =
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null),
-                    )
+                    ),
                 )
             tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
             daycareId
@@ -2400,7 +2400,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = daycareId,
                         startDate = range.start,
                         endDate = range.end,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -2409,7 +2409,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             daycareGroupId = groupId,
                             startDate = range.start,
                             endDate = range.end,
-                        )
+                        ),
                     )
                 }
             childId
@@ -2462,7 +2462,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         // mon-sat
                         shiftCareOperationTimes =
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null),
-                    )
+                    ),
                 )
             tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
             daycareId
@@ -2538,7 +2538,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = daycare.id,
                         startDate = previousFriday,
                         endDate = baseFri,
-                    )
+                    ),
                 )
 
             it.insertServiceNeed(
@@ -2567,7 +2567,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycareGroupId = testGroup1.id,
                     startDate = previousFriday,
                     endDate = baseFri,
-                )
+                ),
             )
 
             val child2PlacementId =
@@ -2578,7 +2578,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         unitId = daycare.id,
                         startDate = previousFriday,
                         endDate = baseFri,
-                    )
+                    ),
                 )
             it.insertServiceNeed(
                 placementId = child2PlacementId,
@@ -2596,7 +2596,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycareGroupId = testGroup2.id,
                     startDate = previousFriday,
                     endDate = baseFri,
-                )
+                ),
             )
 
             it.insert(
@@ -2607,7 +2607,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(12, 0),
                     createdAt = baseNow,
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
             it.insert(
                 DevReservation(
@@ -2617,7 +2617,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     endTime = LocalTime.of(16, 0),
                     createdAt = baseNow,
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
             it.insert(
                 DevAbsence(
@@ -2627,7 +2627,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     modifiedAt = baseNow,
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             it.insert(
                 DevAbsence(
@@ -2637,7 +2637,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     modifiedAt = baseNow,
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
             it.insert(
                 DevAbsence(
@@ -2647,7 +2647,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     modifiedAt = baseNow,
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
             it.insert(
                 DevAbsence(
@@ -2657,7 +2657,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     modifiedAt = baseNow,
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             it.insert(
                 DevBackupCare(
@@ -2665,7 +2665,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare2.id,
                     groupId = null,
                     period = FiniteDateRange(baseWed, baseWed),
-                )
+                ),
             )
             it.insert(
                 DevBackupCare(
@@ -2673,14 +2673,14 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycare.id,
                     groupId = testGroup2.id,
                     period = FiniteDateRange(baseThu, baseThu),
-                )
+                ),
             )
             it.insert(
                 DevDailyServiceTimes(
                     childId = child1.id,
                     validityPeriod = DateRange(baseFri, baseFri),
                     regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0)),
-                )
+                ),
             )
             it.insertAssistanceFactor(
                 child = child1.id,
@@ -2755,7 +2755,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycareId,
                     startDate = range.start,
                     endDate = range.end,
-                )
+                ),
             )
             .also { placementId ->
                 tx.insert(
@@ -2764,7 +2764,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         daycareGroupId = groupId,
                         startDate = range.start,
                         endDate = range.end,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevServiceNeed(
@@ -2774,7 +2774,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         optionId = snDaycareFullDay35.id,
                         shiftCare = shiftCareType,
                         confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    )
+                    ),
                 )
             }
         return childId
@@ -2795,7 +2795,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     unitId = daycareId,
                     startDate = range.start,
                     endDate = range.end,
-                )
+                ),
             )
             .also { placementId ->
                 tx.insert(
@@ -2804,7 +2804,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         daycareGroupId = groupId,
                         startDate = range.start,
                         endDate = range.end,
-                    )
+                    ),
                 )
             }
         return childId

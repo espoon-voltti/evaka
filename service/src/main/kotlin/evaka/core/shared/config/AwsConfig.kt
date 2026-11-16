@@ -35,7 +35,7 @@ class AwsConfig {
             AwsBasicCredentials.create(
                 bucketEnv.localS3AccessKeyId,
                 bucketEnv.localS3SecretAccessKey,
-            )
+            ),
         )
 
     @Bean
@@ -50,7 +50,7 @@ class AwsConfig {
                 .httpClient(DefaultSdkHttpClientBuilder().buildWithDefaults(attrs))
                 .region(Region.US_EAST_1)
                 .serviceConfiguration(
-                    S3Configuration.builder().pathStyleAccessEnabled(true).build()
+                    S3Configuration.builder().pathStyleAccessEnabled(true).build(),
                 )
                 .endpointOverride(env.localS3Url)
                 .credentialsProvider(credentialsProvider)

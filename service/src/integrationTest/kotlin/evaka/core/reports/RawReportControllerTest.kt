@@ -55,7 +55,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = unitId,
                             startDate = clock.today(),
                             endDate = clock.today(),
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -64,7 +64,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startDate = clock.today(),
                         endDate = clock.today(),
                         confirmedBy = user.evakaUserId,
-                    )
+                    ),
                 )
             }
 
@@ -75,7 +75,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = unitId,
                         startDate = clock.today(),
                         endDate = clock.today(),
-                    )
+                    ),
                 )
             }
         }
@@ -127,7 +127,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = unitId,
                             startDate = clock.today(),
                             endDate = clock.today(),
-                        )
+                        ),
                     )
                 }
 
@@ -142,7 +142,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = unitId,
                             startDate = clock.today(),
                             endDate = clock.today(),
-                        )
+                        ),
                     )
                 }
         }
@@ -200,7 +200,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = testUnit.id,
                             startDate = clock.today().minusYears(1),
                             endDate = clock.today().plusYears(1),
-                        )
+                        ),
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -208,7 +208,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = aromiGroup.id,
                         startDate = clock.today().minusYears(1),
                         endDate = clock.today().plusYears(1),
-                    )
+                    ),
                 )
             }
 
@@ -220,7 +220,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = testUnit.id,
                             startDate = clock.today().minusYears(1),
                             endDate = clock.today().plusYears(1),
-                        )
+                        ),
                     )
 
                 tx.insert(
@@ -229,7 +229,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = nonAromiGroupId,
                         startDate = clock.today().minusYears(1),
                         endDate = clock.today().plusYears(1),
-                    )
+                    ),
                 )
             }
         }

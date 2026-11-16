@@ -29,5 +29,5 @@ val espooDataRetentionOverrides =
                     expirationRule = voucherValueDecisionRetentionBeforeArchival,
                     deletedWithParent = false,
                 ),
-        )
+        ),
     )

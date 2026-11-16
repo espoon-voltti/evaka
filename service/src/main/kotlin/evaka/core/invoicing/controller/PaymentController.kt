@@ -190,5 +190,5 @@ enum class PaymentSortParam {
 }
 
 enum class PaymentDistinctiveParams {
-    MISSING_PAYMENT_DETAILS
+    MISSING_PAYMENT_DETAILS,
 }

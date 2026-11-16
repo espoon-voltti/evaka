@@ -138,7 +138,7 @@ fun Database.Read.getVardaUnits(): List<VardaUnit> = createQuery {
                     daycare.language
                 FROM daycare
                 WHERE daycare.upload_to_varda IS TRUE AND daycare.provider_type = ANY(${bind(unitTypesToUpload)})
-                """
+                """,
     )
 }
     .toList()
@@ -157,14 +157,14 @@ fun setUnitUploaded(
                 VALUES (${bind(unitId)}, ${bindJson(state)}, ${bind(now)}, NULL, NULL, NULL)
                 ON CONFLICT (evaka_daycare_id)
                 DO UPDATE SET state = ${bindJson(state)}, last_success_at = ${bind(now)}, errored_at = NULL, errored_since = NULL, error = NULL
-                """
+                """,
             )
         }
         .execute()
 
     tx.createUpdate {
             sql(
-                "UPDATE daycare SET oph_unit_oid = ${bind(ophUnitOid)} WHERE daycare.id = ${bind(unitId)}"
+                "UPDATE daycare SET oph_unit_oid = ${bind(ophUnitOid)} WHERE daycare.id = ${bind(unitId)}",
             )
         }
         .execute()
@@ -183,7 +183,7 @@ fun setUnitUploadFailed(
                 VALUES (${bind(unitId)}, NULL, ${bind(now)}, ${bind(now)}, ${bind(error)})
                 ON CONFLICT (evaka_daycare_id)
                 DO UPDATE SET errored_at = ${bind(now)}, errored_since = coalesce(varda_unit.errored_since, ${bind(now)}), error = ${bind(error)}
-                """
+                """,
             )
         }
         .execute()

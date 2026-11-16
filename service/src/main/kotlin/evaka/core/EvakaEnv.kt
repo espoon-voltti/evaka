@@ -71,7 +71,7 @@ data class EvakaEnv(
         fun fromEnvironment(env: Environment): EvakaEnv {
             Nightly.configureNightlyTime(
                 env.lookup<String?>("evaka.nightly_job_run_time")?.let { LocalTime.parse(it) }
-                    ?: LocalTime.of(0, 10)
+                    ?: LocalTime.of(0, 10),
             )
             return EvakaEnv(
                 koskiEnabled = env.lookup("evaka.integration.koski.enabled") ?: false,
@@ -125,7 +125,7 @@ data class EvakaEnv(
                 webAuthnOrigin = env.lookup("evaka.webauthn.origin"),
                 staffAttendanceDriftMinutes =
                     Duration.ofMinutes(
-                        env.lookup("evaka.integration.staff_attendance_drift_minutes") ?: 5
+                        env.lookup("evaka.integration.staff_attendance_drift_minutes") ?: 5,
                     ),
                 decisionReasoningGenericRemovalEnabled =
                     env.lookup("evaka.decision_reasoning.generic_removal_enabled") ?: false,
@@ -364,7 +364,7 @@ data class VtjXroadEnv(
                             password =
                                 Sensitive(
                                     env.lookup("evaka.integration.vtj.xroad.trust_store.password")
-                                        ?: ""
+                                        ?: "",
                                 ),
                         )
                     },
@@ -379,7 +379,7 @@ data class VtjXroadEnv(
                             password =
                                 Sensitive(
                                     env.lookup("evaka.integration.vtj.xroad.key_store.password")
-                                        ?: ""
+                                        ?: "",
                                 ),
                         )
                     },
@@ -561,7 +561,7 @@ data class ScheduledJobsEnv<T : Enum<T>>(val jobs: Map<T, ScheduledJobSettings>)
                                 ?: default.schedule,
                         retryCount = env.lookup("$envPrefix.retry_count") ?: default.retryCount,
                     )
-                }
+                },
             )
     }
 }
@@ -583,7 +583,7 @@ data class CitizenCalendarEnv(val calendarOpenBeforePlacementDays: Int) {
         fun fromEnvironment(env: Environment): CitizenCalendarEnv {
             return CitizenCalendarEnv(
                 calendarOpenBeforePlacementDays =
-                    env.lookup("evaka.citizen.calendar.calendar_open_before_placement_days") ?: 30
+                    env.lookup("evaka.citizen.calendar.calendar_open_before_placement_days") ?: 30,
             )
         }
     }
@@ -748,7 +748,7 @@ data class ChildDocumentArchivalEnv(val delayDays: Int, val limit: Int) {
 
 data class DataRemovalEnv(
     /** Maximum number of entries to delete *per data type*. */
-    val limit: Int
+    val limit: Int,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -758,7 +758,7 @@ data class DataRemovalEnv(
 
 data class VtjSyncEnv(
     /** Maximum number of persons that the nightly sync job plans a VTJ sync for. */
-    val limit: Int
+    val limit: Int,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -773,7 +773,7 @@ data class DataRetentionEnv(val personsPerNight: Int, val maxDurationPerNight: D
                 personsPerNight = env.lookup("evaka.data_retention.persons_per_night") ?: 0,
                 maxDurationPerNight =
                     Duration.ofMinutes(
-                        env.lookup("evaka.data_retention.max_minutes_per_night") ?: 60
+                        env.lookup("evaka.data_retention.max_minutes_per_night") ?: 60,
                     ),
             )
     }

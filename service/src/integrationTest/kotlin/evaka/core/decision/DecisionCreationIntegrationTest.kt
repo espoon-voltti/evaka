@@ -130,7 +130,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 postOffice = "Test post office",
                             ),
                         phone = "Test phone",
-                    )
+                    ),
                 )
             tx.getDaycare(unitId)!!
         }
@@ -549,7 +549,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             status = DecisionStatus.PENDING,
                             sentDate = clock.today(),
                             resolved = null,
-                        )
+                        ),
                     ),
                 permittedActions =
                     mapOf(
@@ -557,7 +557,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             setOf(
                                 Action.Citizen.Decision.READ,
                                 Action.Citizen.Decision.DOWNLOAD_PDF,
-                            )
+                            ),
                     ),
                 decidableApplications = setOf(applicationId),
             ),
@@ -716,7 +716,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             status = DecisionStatus.PENDING,
                             sentDate = clock.today(),
                             resolved = null,
-                        )
+                        ),
                     ),
                 permittedActions =
                     mapOf(
@@ -724,7 +724,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             setOf(
                                 Action.Citizen.Decision.READ,
                                 Action.Citizen.Decision.DOWNLOAD_PDF,
-                            )
+                            ),
                     ),
                 decidableApplications = emptySet(),
             ),
@@ -792,7 +792,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             status = DecisionStatus.PENDING,
                             sentDate = clock.today(),
                             resolved = null,
-                        )
+                        ),
                     ),
                 permittedActions =
                     mapOf(
@@ -800,7 +800,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             setOf(
                                 Action.Citizen.Decision.READ,
                                 Action.Citizen.Decision.DOWNLOAD_PDF,
-                            )
+                            ),
                     ),
                 decidableApplications = emptySet(),
             ),
@@ -870,7 +870,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             status = DecisionStatus.PENDING,
                             sentDate = clock.today(),
                             resolved = null,
-                        )
+                        ),
                     ),
                 permittedActions =
                     mapOf(
@@ -878,7 +878,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             setOf(
                                 Action.Citizen.Decision.READ,
                                 Action.Citizen.Decision.DOWNLOAD_PDF,
-                            )
+                            ),
                     ),
                 decidableApplications = setOf(applicationId),
             ),
@@ -944,7 +944,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             status = DecisionStatus.PENDING,
                             sentDate = clock.today(),
                             resolved = null,
-                        )
+                        ),
                     ),
                 permittedActions =
                     mapOf(
@@ -952,7 +952,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             setOf(
                                 Action.Citizen.Decision.READ,
                                 Action.Citizen.Decision.DOWNLOAD_PDF,
-                            )
+                            ),
                     ),
                 decidableApplications = setOf(applicationId),
             ),
@@ -1096,7 +1096,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @ParameterizedTest
     @EnumSource(Language::class)
     fun `getDecisionLanguage returns SV for Swedish units and FI for Finnish or English units`(
-        unitLanguage: Language
+        unitLanguage: Language,
     ) {
         val expected =
             when (unitLanguage) {
@@ -1139,7 +1139,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     type = DecisionType.DAYCARE,
                     startDate = period.start,
                     endDate = period.end,
-                )
+                ),
             )
         }
 
@@ -1191,7 +1191,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     endDate = draft.endDate,
                     planned = draft.planned,
                     individualReasoningIds = setOf(reasoningId),
-                )
+                ),
             ),
         )
 

@@ -96,7 +96,7 @@ class PdfGenerator(
     )
 
     private fun getVoucherValueDecisionPdfVariables(
-        data: VoucherValueDecisionPdfData
+        data: VoucherValueDecisionPdfData,
     ): Map<String, Any?> {
         val (decision, settings, lang) = data
 

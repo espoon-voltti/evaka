@@ -442,7 +442,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                     daycareGroupId = group.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
     }
@@ -496,7 +496,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                         date = LocalDate.now(),
                         absenceType = absenceType,
                         absenceCategory = category,
-                    )
+                    ),
                 )
             }
         }
@@ -582,7 +582,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                             childId = childId,
                             absenceTypeNonbillable = absenceTypeNonbillable,
                             absenceTypeBillable = absenceTypeBillable,
-                        )
+                        ),
                     ),
             ),
         )

@@ -654,7 +654,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             createdBy = employee.evakaUserId,
                             publishedContent = DocumentContent(emptyList()),
                             documentKey = "foobar123",
-                        )
+                        ),
                     ),
             )
 
@@ -746,13 +746,13 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         migrateProcessMetadata(db, clock, featureConfig, batchSize = 2)
 
         assertNotNull(
-            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision1.id) }
+            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision1.id) },
         )
         assertNotNull(
-            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision2.id) }
+            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision2.id) },
         )
         assertNotNull(
-            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision3.id) }
+            db.read { it.getCaseProcessByVoucherValueDecisionId(voucherValueDecision3.id) },
         )
     }
 

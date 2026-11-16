@@ -78,7 +78,7 @@ class DecisionDecidedByIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     ready = true,
                     createdAt = now,
                     modifiedAt = now,
-                )
+                ),
             )
             val areaId = tx.insert(DevCareArea())
             unitId = tx.insert(DevDaycare(areaId = areaId))

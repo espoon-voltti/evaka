@@ -66,7 +66,7 @@ fun Database.Read.getPreschoolTerms(range: FiniteDateRange?): List<PreschoolTerm
         FROM preschool_term
         ${if (range != null) "WHERE extended_term && ${bind(range)}" else ""}
         ORDER BY extended_term
-        """
+        """,
         )
     }
         .toList()
@@ -84,7 +84,7 @@ fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? = create
             term_breaks
         FROM preschool_term 
         WHERE id = ${bind(id)}
-        """
+        """,
     )
 }
     .exactlyOneOrNull()
@@ -117,7 +117,7 @@ fun Database.Transaction.insertPreschoolTerm(
             ${bind(termBreaks)}
         )
         RETURNING id
-        """
+        """,
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -142,7 +142,7 @@ fun Database.Transaction.updatePreschoolTerm(
             application_period = ${bind(applicationPeriod)},
             term_breaks =  ${bind(termBreaks)}
         WHERE id = ${bind(id)}
-        """
+        """,
     )
 }
     .updateExactlyOne()
@@ -153,7 +153,7 @@ fun Database.Transaction.deleteFuturePreschoolTerm(clock: EvakaClock, termId: Pr
             """
            DELETE FROM preschool_term
            WHERE id = ${bind(termId)} AND (lower(finnish_preschool) > ${bind(clock.today())} AND lower(swedish_preschool) > ${bind(clock.today())})
-        """
+        """,
         )
     }
         .updateExactlyOne()

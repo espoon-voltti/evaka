@@ -69,7 +69,7 @@ class PartnershipsController(
                                 AsyncJob.GenerateFinanceDecisions.forAdult(
                                     body.person1Id,
                                     DateRange(body.startDate, body.endDate),
-                                )
+                                ),
                             ),
                             runAt = clock.now(),
                         )
@@ -162,7 +162,7 @@ class PartnershipsController(
                                 minOf(oldPartnership.startDate, body.startDate),
                                 maxEndDate(oldPartnership.endDate, body.endDate),
                             ),
-                        )
+                        ),
                     ),
                     runAt = clock.now(),
                 )
@@ -199,7 +199,7 @@ class PartnershipsController(
                                 AsyncJob.GenerateFinanceDecisions.forAdult(
                                     it.partners.first().id,
                                     DateRange(it.startDate, it.endDate),
-                                )
+                                ),
                             ),
                             runAt = clock.now(),
                         )

@@ -65,7 +65,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     date = today.minusDays(1),
                     arrived = LocalTime.of(9, 0),
                     departed = LocalTime.of(14, 0),
-                )
+                ),
             )
             tx.insert(
                 DevChildAttendance(
@@ -74,7 +74,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     date = today.minusDays(1),
                     arrived = LocalTime.of(15, 0),
                     departed = LocalTime.of(18, 0),
-                )
+                ),
             )
             tx.insert(
                 DevChildAttendance(
@@ -83,7 +83,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     date = today,
                     arrived = LocalTime.of(9, 0),
                     departed = null,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -92,7 +92,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     startTime = LocalTime.of(9, 0),
                     endTime = LocalTime.of(18, 0),
                     createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -101,7 +101,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     startTime = null,
                     endTime = null,
                     createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -109,7 +109,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     date = today.minusDays(2),
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -117,7 +117,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     date = today.minusDays(2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
         }
 

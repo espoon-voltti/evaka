@@ -473,7 +473,7 @@ WHERE t.table_schema = 'public'
 AND t.table_name != 'flyway_schema_history'
 AND t.table_type != 'VIEW'
 AND is_generated = 'NEVER'
-"""
+""",
                         )
                     }
                     .toList<Column>()
@@ -507,7 +507,7 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 AND t.table_schema = 'public'
 AND t.table_name != 'flyway_schema_history'
 AND t.table_type != 'VIEW'
-"""
+""",
                         )
                     }
                     .toList<ForeignKey>()
@@ -538,7 +538,7 @@ JOIN LATERAL (
 ) attrs ON true
 WHERE tbl_cls.relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
 AND tbl_cls.relname != 'flyway_schema_history'
-"""
+""",
                         )
                     }
                     .toList<Index>()
@@ -554,7 +554,7 @@ SELECT
 FROM pg_constraint con
 JOIN pg_attribute a ON a.attnum = ANY(con.conkey) AND a.attrelid = con.conrelid
 WHERE con.contype = 'c'
-"""
+""",
                         )
                     }
                     .toList<CheckConstraint>()
@@ -565,7 +565,7 @@ WHERE con.contype = 'c'
 SELECT event_object_table AS table_name, action_condition, action_statement, action_orientation, action_timing
 FROM information_schema.triggers
 WHERE event_object_schema = 'public'
-"""
+""",
                         )
                     }
                     .toList<Trigger>()

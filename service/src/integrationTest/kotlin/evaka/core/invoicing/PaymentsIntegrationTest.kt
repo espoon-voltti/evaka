@@ -146,8 +146,8 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val result =
             searchPayments(
                 defaultSearchParams.copy(
-                    distinctions = listOf(PaymentDistinctiveParams.MISSING_PAYMENT_DETAILS)
-                )
+                    distinctions = listOf(PaymentDistinctiveParams.MISSING_PAYMENT_DETAILS),
+                ),
             )
         assertEquals(1, result.total)
         assertEquals(listOf(draftId3), result.data.map { it.id })
@@ -159,7 +159,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             searchPayments(
-                defaultSearchParams.copy(status = PaymentStatus.SENT, searchTerms = "9000000000")
+                defaultSearchParams.copy(status = PaymentStatus.SENT, searchTerms = "9000000000"),
             )
         assertEquals(1, result.total)
         assertNotNull(result.data.find { it.number == 9000000000 })
@@ -171,7 +171,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             searchPayments(
-                defaultSearchParams.copy(unit = voucherDaycare1.id, status = PaymentStatus.SENT)
+                defaultSearchParams.copy(unit = voucherDaycare1.id, status = PaymentStatus.SENT),
             )
         assertEquals(1, result.total)
         assertEquals(listOf(sentId1), result.data.map { it.id })

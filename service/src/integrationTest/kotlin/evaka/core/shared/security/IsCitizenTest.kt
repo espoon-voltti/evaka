@@ -66,13 +66,13 @@ class IsCitizenTest : AccessControlTest() {
         rules.add(action, IsCitizen(allowWeakLogin = false).self())
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, strongCitizen, clock, action, strongCitizen.id)
+                accessControl.hasPermissionFor(tx, strongCitizen, clock, action, strongCitizen.id),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, strongCitizen, clock, action, weakCitizen.id)
+                accessControl.hasPermissionFor(tx, strongCitizen, clock, action, weakCitizen.id),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, weakCitizen, clock, action, weakCitizen.id)
+                accessControl.hasPermissionFor(tx, weakCitizen, clock, action, weakCitizen.id),
             )
         }
     }

@@ -72,8 +72,8 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                         firstName = child.firstName,
                         lastName = child.lastName,
                         defaultOption = ServiceNeedOption.fromFullServiceNeed(snDefaultDaycare),
-                    )
-                )
+                    ),
+                ),
             )
     }
 
@@ -101,8 +101,8 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                         firstName = child.firstName,
                         lastName = child.lastName,
                         defaultOption = ServiceNeedOption.fromFullServiceNeed(snDefaultDaycare),
-                    )
-                )
+                    ),
+                ),
             )
     }
 
@@ -118,7 +118,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                 unitId = daycare.id,
                 startDate = startDate,
                 endDate = endDate,
-            )
+            ),
         )
     }
 }

@@ -89,7 +89,7 @@ class SeedApplicationsGeneratorTest {
                 app.form.preferences.preferredUnits.all {
                     it.id == units.daycareUnitId || it.id == units.preschoolUnitId
                 }
-            }
+            },
         )
 
         // a connected daycare (PRESCHOOL_DAYCARE) application carries the connected start

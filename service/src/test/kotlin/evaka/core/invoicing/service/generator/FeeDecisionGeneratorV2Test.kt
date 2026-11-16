@@ -107,7 +107,7 @@ class FeeDecisionGeneratorV2Test {
                             feeAlterations = emptyList(),
                             finalFee = 5800,
                             childIncome = null,
-                        )
+                        ),
                     ),
                 headOfFamilyId = feeBasis.headOfFamilyId,
                 validDuring = feeBasis.range.asFiniteDateRange()!!,
@@ -154,7 +154,7 @@ private val feeDecision =
                             "foo",
                             false,
                         ),
-                )
+                ),
             ),
         headOfFamilyId = PersonId(UUID.randomUUID()),
     )

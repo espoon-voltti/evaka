@@ -44,9 +44,9 @@ class TemplateDbManager(dataSource: DataSource, private val env: DatabaseEnv) {
                         password = env.flywayPassword.value
                         maximumPoolSize = 2
                         poolName = "evaka-template-db-manager"
-                    }
-                )
-            )
+                    },
+                ),
+            ),
         )
 
     // Separate Database instance for management operations
@@ -96,7 +96,7 @@ SELECT datname FROM pg_database
 WHERE
     datname LIKE ${bind("${baseDbName}_%")} AND
     datname != ${bind(templateDbName)}
-"""
+""",
                         )
                     }
                     .toList<String>()
@@ -128,7 +128,7 @@ WHERE
                         password = env.flywayPassword.value
                         maximumPoolSize = 1
                         poolName = "evaka-template-reset"
-                    }
+                    },
                 )
             templatePool.use {
                 val templateJdbi = configureJdbi(Jdbi.create(it))

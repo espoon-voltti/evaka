@@ -37,7 +37,7 @@ fun Database.Transaction.insertTestCitizenPushSubscription(
 fun Database.Read.getPlannedCitizenPushNotifications(): List<CitizenPushNotification> =
     createQuery {
         sql(
-            "SELECT payload FROM async_job WHERE type = 'SendCitizenPushNotification' ORDER BY submitted_at, id"
+            "SELECT payload FROM async_job WHERE type = 'SendCitizenPushNotification' ORDER BY submitted_at, id",
         )
     }
     .map { jsonColumn<AsyncJob.SendCitizenPushNotification>("payload").notification }

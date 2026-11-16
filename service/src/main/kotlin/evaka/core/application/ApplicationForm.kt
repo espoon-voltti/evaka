@@ -175,11 +175,11 @@ data class ApplicationForm(
                                     ServiceNeed(
                                             startTime =
                                                 v0.serviceStart?.format(
-                                                    DateTimeFormatter.ofPattern("HH:mm")
+                                                    DateTimeFormatter.ofPattern("HH:mm"),
                                                 ) ?: "",
                                             endTime =
                                                 v0.serviceEnd?.format(
-                                                    DateTimeFormatter.ofPattern("HH:mm")
+                                                    DateTimeFormatter.ofPattern("HH:mm"),
                                                 ) ?: "",
                                             shiftCare = v0.extendedCare,
                                             partTime = v0.partTime,

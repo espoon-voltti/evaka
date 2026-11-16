@@ -46,7 +46,7 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
                 FeeDecisionStatus.SENT,
                 FeeDecisionStatus.WAITING_FOR_SENDING,
                 FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            )
+            ),
         ),
     )
     logResult(
@@ -72,7 +72,7 @@ fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): List<ChildAt
         SELECT id
         FROM child_attendance 
         WHERE date > ${bind(today)}
-    """
+    """,
         )
     }
         .toList()
@@ -86,7 +86,7 @@ fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): List<ServiceNeedId> 
         FROM (SELECT * FROM service_need WHERE start_date >= ${bind(checkStart)}) sn
         JOIN placement pl on pl.id = sn.placement_id
         WHERE sn.start_date < pl.start_date OR sn.end_date > pl.end_date
-    """
+    """,
         )
     }
         .toList()
@@ -100,7 +100,7 @@ fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): List<GroupPlaceme
         FROM (SELECT * FROM daycare_group_placement WHERE start_date >= ${bind(checkStart)}) gpl
         JOIN placement pl on pl.id = gpl.daycare_placement_id
         WHERE gpl.start_date < pl.start_date OR gpl.end_date > pl.end_date
-    """
+    """,
         )
     }
         .toList()
@@ -119,14 +119,14 @@ fun Database.Read.sanityCheckBackupCareOutsidePlacement(): List<BackupCareId> {
                 WHERE p.child_id = bc.child_id
             )
         )
-    """
+    """,
         )
     }
         .toList()
 }
 
 fun Database.Read.sanityCheckReservationsOutsidePlacements(
-    today: LocalDate
+    today: LocalDate,
 ): List<AttendanceReservationId> {
     return createQuery {
         sql(
@@ -139,14 +139,14 @@ fun Database.Read.sanityCheckReservationsOutsidePlacements(
                 SELECT FROM placement p
                 WHERE p.child_id = ar.child_id AND daterange(p.start_date, p.end_date, '[]') @> ar.date
             )
-    """
+    """,
         )
     }
         .toList()
 }
 
 fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements(
-    today: LocalDate
+    today: LocalDate,
 ): List<AttendanceReservationId> {
     return createQuery {
         sql(
@@ -155,14 +155,14 @@ fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements(
         FROM attendance_reservation ar
         JOIN placement pl ON pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
         WHERE ar.date >= ${bind(today)} AND pl.type IN ('PRESCHOOL', 'PREPARATORY')
-    """
+    """,
         )
     }
         .toList()
 }
 
 fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
-    statuses: List<FeeDecisionStatus>
+    statuses: List<FeeDecisionStatus>,
 ): List<ChildId> {
     return createQuery {
         sql(
@@ -181,7 +181,7 @@ fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
                     fdc_overlapping.child_id = fdc.child_id AND
                     fd_overlapping.status = ANY(${bind(statuses)})
             )
-    """
+    """,
         )
     }
         .toList()
@@ -202,7 +202,7 @@ fun Database.Read.sanityCheckChildDocumentPublishingByStatus(): List<ChildDocume
                 ELSE
                     cd.status != 'DRAFT' AND v.id IS NULL
             END
-    """
+    """,
         )
     }
         .toList()

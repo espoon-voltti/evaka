@@ -411,7 +411,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         HelsinkiDateTime.of(
                             preschoolTerm.applicationPeriod.start.minusDays(1),
                             LocalTime.of(8, 0),
-                        )
+                        ),
                     ),
                 daycare1.id,
             )
@@ -440,7 +440,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         HelsinkiDateTime.of(
                             preschoolTerm.applicationPeriod.start,
                             LocalTime.of(8, 0),
-                        )
+                        ),
                     ),
                 daycare1.id,
             )
@@ -469,7 +469,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         HelsinkiDateTime.of(
                             preschoolTerm.applicationPeriod.start.plusDays(1),
                             LocalTime.of(8, 0),
-                        )
+                        ),
                     ),
                 daycare1.id,
             )
@@ -498,7 +498,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         HelsinkiDateTime.of(
                             preschoolTerm.applicationPeriod.start.minusDays(1),
                             LocalTime.of(8, 0),
-                        )
+                        ),
                     ),
                 daycare1.id,
             )
@@ -527,7 +527,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         HelsinkiDateTime.of(
                             preschoolTerm.applicationPeriod.start,
                             LocalTime.of(8, 0),
-                        )
+                        ),
                     ),
                 daycare1.id,
             )
@@ -556,7 +556,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         HelsinkiDateTime.of(
                             preschoolTerm.applicationPeriod.start.plusDays(1),
                             LocalTime.of(8, 0),
-                        )
+                        ),
                     ),
                 daycare1.id,
             )
@@ -582,7 +582,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 serviceWorker,
                 clock =
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2020, 8, 10), LocalTime.of(8, 0))
+                        HelsinkiDateTime.of(LocalDate.of(2020, 8, 10), LocalTime.of(8, 0)),
                     ),
                 daycare1.id,
             )

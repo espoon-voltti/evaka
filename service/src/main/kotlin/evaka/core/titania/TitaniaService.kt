@@ -100,7 +100,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                         errorcode = TitaniaError.EVENT_DATE_OUT_OF_PERIOD,
                                         message =
                                             "Event date ${event.date} is out of period (${period.start} - ${period.end})",
-                                    )
+                                    ),
                                 )
                             }
                             val previous = plans.lastOrNull()
@@ -128,7 +128,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                                     LocalTime.parse(
                                                         it,
                                                         DateTimeFormatter.ofPattern(
-                                                            TITANIA_TIME_FORMAT
+                                                            TITANIA_TIME_FORMAT,
                                                         ),
                                                     )
                                                 }
@@ -165,7 +165,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                         shiftEnds = next.endTime.toLocalTime(),
                                         overlappingShiftBegins = null,
                                         overlappingShiftEnds = null,
-                                    )
+                                    ),
                                 )
                                 return@fold plans
                             }
@@ -237,7 +237,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                         employeeId =
                             convertedEmployeeNumbers[convertedEmployeeNumber]
                                 ?: throw RuntimeException(
-                                    "Cannot find original employee number for converted: $convertedEmployeeNumber"
+                                    "Cannot find original employee number for converted: $convertedEmployeeNumber",
                                 ),
                         name = "${employee.lastName} ${employee.firstName}".uppercase(),
                         stampedWorkingTimeEvents =
@@ -277,8 +277,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                                     .toLocalTime()
                                                     .format(
                                                         DateTimeFormatter.ofPattern(
-                                                            TITANIA_TIME_FORMAT
-                                                        )
+                                                            TITANIA_TIME_FORMAT,
+                                                        ),
                                                     ),
                                             beginReasonCode =
                                                 when (attendance.type) {
@@ -330,7 +330,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                                     }
 
                                                     LocalTime.MAX.truncatedTo(
-                                                        ChronoUnit.MICROS
+                                                        ChronoUnit.MICROS,
                                                     ) -> {
                                                         "2400"
                                                     }
@@ -340,8 +340,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                                             .toLocalTime()
                                                             .format(
                                                                 DateTimeFormatter.ofPattern(
-                                                                    TITANIA_TIME_FORMAT
-                                                                )
+                                                                    TITANIA_TIME_FORMAT,
+                                                                ),
                                                             )
                                                     }
                                                 },
@@ -396,7 +396,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                                     }
                                                 },
                                         )
-                                    }
+                                    },
                             ),
                     )
                 }
@@ -416,7 +416,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                     } != null
                                 },
                         )
-                    }
+                    },
             )
         logger.debug { "Titania response: $response" }
         return response
@@ -450,7 +450,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                         plans?.find { plan ->
                             HelsinkiDateTimeRange(plan.startTime, plan.endTime)
                                 .contains(HelsinkiDateTimeRange(event, event))
-                        }
+                        },
                 )
             }
     }

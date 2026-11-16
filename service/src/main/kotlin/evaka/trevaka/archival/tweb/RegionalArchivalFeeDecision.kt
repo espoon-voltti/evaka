@@ -40,7 +40,7 @@ internal fun transformFeeDecision(
                         val mimeType = mimeTypes.forName(document.contentType)
                         name = "$originalId${mimeType.extension}"
                         this.originalId = originalId
-                    }
+                    },
                 )
             }
     } to mapOf(originalId to document)

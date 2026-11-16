@@ -87,7 +87,7 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group.id,
                     startDate = placement.startDate,
                     endDate = placement.endDate,
-                )
+                ),
             )
             tx.insert(employee)
             employeeAccount = tx.upsertEmployeeMessageAccount(employee.id)
@@ -259,7 +259,7 @@ SELECT mr.id
 FROM message_recipients mr
 JOIN message_account ma ON ma.id = mr.recipient_id
 WHERE ma.person_id = ${bind(citizen.id)}
-"""
+""",
                 )
             }
             .toList<MessageRecipientId>()

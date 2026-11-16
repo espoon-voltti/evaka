@@ -50,7 +50,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
 
             // Before placement starts
@@ -61,7 +61,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = adult.evakaUserId(),
-                )
+                ),
             )
             // After placement ends
             tx.insert(
@@ -71,7 +71,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = adult.evakaUserId(),
-                )
+                ),
             )
             // After placement ends, has no times
             tx.insert(
@@ -81,7 +81,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startTime = null,
                     endTime = null,
                     createdBy = adult.evakaUserId(),
-                )
+                ),
             )
             // No placement at all
             tx.insert(
@@ -91,7 +91,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = adult.evakaUserId(),
-                )
+                ),
             )
 
             // Valid - will be kept
@@ -102,7 +102,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = adult.evakaUserId(),
-                )
+                ),
             )
         }
 

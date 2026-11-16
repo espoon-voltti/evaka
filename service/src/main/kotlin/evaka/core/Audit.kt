@@ -724,7 +724,7 @@ enum class Audit(
                 "objectId" to objectId?.value,
                 "securityLevel" to securityLevel,
                 "securityEvent" to securityEvent,
-            ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
+            ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap(),
         ) {
             eventCode
         }
@@ -746,7 +746,7 @@ enum class Audit(
                 "daysIntoHistory" to daysIntoHistory(minDate, today),
                 "securityLevel" to securityLevel,
                 "securityEvent" to securityEvent,
-            ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
+            ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap(),
         ) {
             eventCode
         }

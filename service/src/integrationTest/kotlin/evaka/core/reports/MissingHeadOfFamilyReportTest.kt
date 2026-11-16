@@ -69,7 +69,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -77,7 +77,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
-                )
+                ),
             )
         }
 
@@ -111,7 +111,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -119,7 +119,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
-                )
+                ),
             )
         }
 
@@ -157,7 +157,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -165,7 +165,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
-                )
+                ),
             )
         }
 
@@ -199,7 +199,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -207,7 +207,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
-                )
+                ),
             )
         }
 
@@ -245,7 +245,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -253,7 +253,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
-                )
+                ),
             )
         }
 
@@ -325,7 +325,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                         headOfChild = adult.id,
                         startDate = startDate.plusDays(start.toLong()),
                         endDate = startDate.plusDays(end.toLong()),
-                    )
+                    ),
                 )
             }
         }
@@ -342,7 +342,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                             ),
                         modifiedAt = clock.now(),
                         modifiedBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             }
         }
@@ -358,7 +358,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                                 startDate.plusDays(end.toLong()),
                             )
                         },
-                    )
+                    ),
                 ),
             getReport(startDate.minusDays(10), startDate.plusDays(10)),
         )
@@ -377,7 +377,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate,
-                )
+                ),
             )
         }
 
@@ -396,7 +396,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate,
-                )
+                ),
             )
             it.execute { sql("UPDATE person set date_of_death = ${bind(startDate.minusDays(1))}") }
         }
@@ -413,7 +413,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate,
-                )
+                ),
             )
             it.insert(
                 DevFridgeChild(
@@ -421,7 +421,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     startDate = startDate,
                     endDate = startDate,
                     headOfChild = adult.id,
-                )
+                ),
             )
         }
 
@@ -437,7 +437,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate,
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -445,7 +445,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     unitId = daycare2.id,
                     startDate = startDate,
                     endDate = startDate,
-                )
+                ),
             )
         }
 

@@ -53,7 +53,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
             httpClient.newCall(req).execute().use { response ->
                 if (!response.isSuccessful) {
                     throw IllegalStateException(
-                        "Failed to fetch shifts from Linkity. Status: ${response.code}"
+                        "Failed to fetch shifts from Linkity. Status: ${response.code}",
                     )
                 }
 
@@ -81,7 +81,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                 .post(
                     jsonMapper
                         .writeValueAsString(batch)
-                        .toRequestBody("application/json".toMediaType())
+                        .toRequestBody("application/json".toMediaType()),
                 )
                 .header("x-api-key", env.apikey.value)
                 .build()
@@ -89,7 +89,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
         return httpClient.newCall(req).execute().use { response ->
             if (!response.isSuccessful) {
                 throw IllegalStateException(
-                    "Failed to send stampings to Linkity. Status: ${response.code}"
+                    "Failed to send stampings to Linkity. Status: ${response.code}",
                 )
             }
         }

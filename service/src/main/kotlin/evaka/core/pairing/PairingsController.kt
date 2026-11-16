@@ -237,7 +237,7 @@ class PairingsController(
             [
                 "/employee/public/pairings/{id}/status",
                 "/employee-mobile/public/pairings/{id}/status",
-            ]
+            ],
     )
     fun getPairingStatus(
         db: Database,
@@ -251,7 +251,7 @@ class PairingsController(
                         targetId = AuditId(id),
                         meta = mapOf("status" to it),
                     )
-                }
+                },
         )
     }
 }

@@ -82,7 +82,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
                 ready = ready,
                 createdAt = createdAt,
                 modifiedAt = createdAt,
-            )
+            ),
         )
     }
 
@@ -104,7 +104,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
                 DevCareArea(
                     name = "Test Care Area $areaSuffix",
                     shortName = "test_area_$areaSuffix",
-                )
+                ),
             )
         val unitId = tx.insert(DevDaycare(areaId = areaId, language = unitLanguage))
 
@@ -184,7 +184,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
         db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT generic_reasoning_id FROM decision WHERE id = ${bind(decisionId)} AND generic_reasoning_id IS NOT NULL"
+                        "SELECT generic_reasoning_id FROM decision WHERE id = ${bind(decisionId)} AND generic_reasoning_id IS NOT NULL",
                     )
                 }
                 .toList<DecisionGenericReasoningId>()

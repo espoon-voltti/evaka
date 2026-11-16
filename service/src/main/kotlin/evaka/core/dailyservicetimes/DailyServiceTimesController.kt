@@ -81,7 +81,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
         if (body.validityPeriod.start <= today) {
             throw BadRequest(
-                "New daily service times cannot be added if their validity starts on or before today"
+                "New daily service times cannot be added if their validity starts on or before today",
             )
         }
 
@@ -127,12 +127,12 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if (old.validityPeriod.start <= today) {
                     throw BadRequest(
-                        "Daily service times end cannot be updated if their validity has started"
+                        "Daily service times end cannot be updated if their validity has started",
                     )
                 }
                 if (body.validityPeriod.start <= today) {
                     throw BadRequest(
-                        "Daily service times start cannot be updated to start on or before today"
+                        "Daily service times start cannot be updated to start on or before today",
                     )
                 }
                 val overlapping =
@@ -140,7 +140,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                         .filter { it.id != id }
                 if (overlapping.isNotEmpty()) {
                     throw BadRequest(
-                        "Daily service times cannot be updated because they overlap with other daily service times"
+                        "Daily service times cannot be updated because they overlap with other daily service times",
                     )
                 }
 
@@ -181,7 +181,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if ((old.validityPeriod.end ?: LocalDate.MAX) < today) {
                     throw BadRequest(
-                        "Daily service times end cannot be updated if their validity has ended"
+                        "Daily service times end cannot be updated if their validity has ended",
                     )
                 }
                 val newValidity = old.validityPeriod.copy(end = body.endDate)
@@ -192,7 +192,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     }
                 if (overlapping.isNotEmpty()) {
                     throw BadRequest(
-                        "Daily service times cannot be updated because they overlap with other daily service times"
+                        "Daily service times cannot be updated because they overlap with other daily service times",
                     )
                 }
 
@@ -250,7 +250,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if (old.validityPeriod.start <= today) {
                     throw BadRequest(
-                        "Daily service times end cannot be deleted if their validity has started"
+                        "Daily service times end cannot be deleted if their validity has started",
                     )
                 }
                 tx.deleteChildDailyServiceTimes(id)

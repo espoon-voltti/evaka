@@ -382,17 +382,17 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         /** Runs the query and maps the results automatically to a list */
         inline fun <reified T> toList(
-            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>(),
         ): List<T> = mapTo(createQualifiedType<T>(*qualifiers)).toList()
 
         /** Runs the query and maps the results automatically to a set */
         inline fun <reified T> toSet(
-            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>(),
         ): Set<T> = mapTo(createQualifiedType<T>(*qualifiers)).toSet()
 
         /** Runs the query, checks that it returns exactly one row, and maps it automatically */
         inline fun <reified T> exactlyOne(
-            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>(),
         ): T = mapTo(createQualifiedType<T>(*qualifiers)).exactlyOne()
 
         /**
@@ -400,11 +400,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          * exists
          */
         inline fun <reified T> exactlyOneOrNull(
-            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>(),
         ): T? = mapTo(createQualifiedType<T>(*qualifiers)).exactlyOneOrNull()
 
         inline fun <reified T> mapTo(
-            qualifiers: Array<KClass<out Annotation>> = defaultQualifiers<T>()
+            qualifiers: Array<KClass<out Annotation>> = defaultQualifiers<T>(),
         ): Result<T> = mapTo(createQualifiedType(*qualifiers))
 
         override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
@@ -416,7 +416,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     @JvmInline
     value class Result<T> private constructor(private val rows: ResultSequence<T>) {
         internal constructor(
-            inner: org.jdbi.v3.core.result.ResultIterable<T>
+            inner: org.jdbi.v3.core.result.ResultIterable<T>,
         ) : this(ResultSequence(inner))
 
         /**
@@ -570,17 +570,17 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         ResultBearing {
         /** Runs the query and maps the results automatically to a list */
         inline fun <reified T : Any> toList(
-            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>(),
         ): List<T> = mapTo(createQualifiedType<T>(*qualifiers)).toList()
 
         /** Runs the query and maps the results automatically to a set */
         inline fun <reified T : Any> toSet(
-            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>(),
         ): Set<T> = mapTo(createQualifiedType<T>(*qualifiers)).toSet()
 
         /** Runs the query, checks that it returns exactly one row, and maps it automatically */
         inline fun <reified T : Any> exactlyOne(
-            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>(),
         ): T = mapTo(createQualifiedType<T>(*qualifiers)).exactlyOne()
 
         /**
@@ -588,11 +588,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          * exists
          */
         inline fun <reified T : Any> exactlyOneOrNull(
-            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>(),
         ): T? = mapTo(createQualifiedType<T>(*qualifiers)).exactlyOneOrNull()
 
         inline fun <reified T> mapTo(
-            qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()
+            qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>(),
         ): Result<T> = mapTo(createQualifiedType(*qualifiers))
 
         override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
@@ -709,7 +709,7 @@ abstract class SqlBuilder {
                     QualifiedType.of(value.javaClass).with(Json::class.java)
                 // Use compile-time type information for other values, including nulls
                 else createQualifiedType(Json::class),
-            )
+            ),
         )
 
     fun bind(binding: ValueBinding<*>): Binding {
@@ -843,7 +843,7 @@ data class BatchSql<R>(val sql: QuerySqlString, val bindings: List<BatchBinding<
                         QualifiedType.of(value.javaClass).with(Json::class.java)
                     // Use compile-time type information for other values, including nulls
                     else createQualifiedType(Json::class)
-                }
+                },
             )
 
         fun sql(@Language("sql") sql: String): BatchSql<R> {

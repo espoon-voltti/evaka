@@ -143,7 +143,7 @@ fun Database.Transaction.resetDatabase() {
     execute { sql("SELECT reset_database()") }
     execute {
         sql(
-            "INSERT INTO evaka_user (id, type, name) VALUES ('00000000-0000-0000-0000-000000000000', 'SYSTEM', 'eVaka')"
+            "INSERT INTO evaka_user (id, type, name) VALUES ('00000000-0000-0000-0000-000000000000', 'SYSTEM', 'eVaka')",
         )
     }
 }
@@ -199,7 +199,7 @@ INSERT INTO absence_application (
     ${bind(row.decidedBy)},
     ${bind(row.rejectedReason)}
 )
-        """
+        """,
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -212,7 +212,7 @@ fun Database.Transaction.insert(row: DevCareArea): AreaId = createUpdate {
 INSERT INTO care_area (id, name, short_name, area_code, sub_cost_center)
 VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.shortName)}, ${bind(row.areaCode)}, ${bind(row.subCostCenter)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -220,14 +220,14 @@ RETURNING id
 
 @IgnorableReturnValue
 fun Database.Transaction.insert(
-    row: DevDailyServiceTimeNotification
+    row: DevDailyServiceTimeNotification,
 ): DailyServiceTimeNotificationId = createUpdate {
     sql(
         """
 INSERT INTO daily_service_time_notification (id, guardian_id, created_at)
 VALUES (${bind(row.id)}, ${bind(row.guardianId)}, ${bind(row.createdAt)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -244,7 +244,7 @@ VALUES (
     ${bind(holidayPeriod.reservationsOpenOn)},
     ${bind(holidayPeriod.reservationDeadline)}
 )
-"""
+""",
         )
     }
         .execute()
@@ -283,7 +283,7 @@ INSERT INTO daycare (
     ${bind(row.mealtimeSupper)}, ${bind(row.mealtimeEveningSnack)}, ${bind(row.withSchool)}, ${bind(row.nekkuOrderReductionPercentage)}, ${bind(row.nekkuNoWeekendMealOrders)},
     ${bind(row.serviceWorkerNote)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -296,7 +296,7 @@ fun Database.Transaction.updateDaycareAcl(
 ) {
     createUpdate {
         sql(
-            "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = ${bind(externalId)}), ${bind(daycareId)}, ${bind(role)})"
+            "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = ${bind(externalId)}), ${bind(daycareId)}, ${bind(role)})",
         )
     }
         .execute()
@@ -309,7 +309,7 @@ fun Database.Transaction.updateDaycareAclWithEmployee(
 ) {
     createUpdate {
         sql(
-            "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (${bind(employeeId)}, ${bind(daycareId)}, ${bind(role)})"
+            "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (${bind(employeeId)}, ${bind(daycareId)}, ${bind(role)})",
         )
     }
         .execute()
@@ -318,7 +318,7 @@ fun Database.Transaction.updateDaycareAclWithEmployee(
 fun Database.Transaction.insertEmployeeToDaycareGroupAcl(groupId: GroupId, employeeId: EmployeeId) {
     createUpdate {
         sql(
-            "INSERT INTO daycare_group_acl (employee_id, daycare_group_id) VALUES (${bind(employeeId)}, ${bind(groupId)})"
+            "INSERT INTO daycare_group_acl (employee_id, daycare_group_id) VALUES (${bind(employeeId)}, ${bind(groupId)})",
         )
     }
         .execute()
@@ -334,7 +334,7 @@ fun Database.Transaction.createMobileDeviceToUnit(
             """
 INSERT INTO mobile_device (id, unit_id, name) VALUES (${bind(id)}, ${bind(unitId)}, ${bind(name)});
 INSERT INTO evaka_user (id, type, mobile_device_id, name) VALUES (${bind(id)}, 'MOBILE_DEVICE', ${bind(id)}, ${bind(name)});
-"""
+""",
         )
     }
         .execute()
@@ -347,7 +347,7 @@ fun Database.Transaction.insert(row: DevEmployee) = createUpdate {
 INSERT INTO employee (id, created, preferred_first_name, first_name, last_name, email, external_id, employee_number, roles, last_login, active, social_security_number)
 VALUES (${bind(row.id)}, ${bind(row.created)}, ${bind(row.preferredFirstName)}, ${bind(row.firstName)}, ${bind(row.lastName)}, ${bind(row.email)}, ${bind(row.externalId)}, ${bind(row.employeeNumber)}, ${bind(row.roles)}::user_role[], ${bind(row.lastLogin)}, ${bind(row.active)}, ${bind(row.ssn)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -367,7 +367,7 @@ fun Database.Transaction.insert(
 INSERT INTO employee (id, preferred_first_name, first_name, last_name, email, external_id, employee_number, roles, last_login, active)
 VALUES (${bind(row.id)}, ${bind(row.preferredFirstName)}, ${bind(row.firstName)}, ${bind(row.lastName)}, ${bind(row.email)}, ${bind(row.externalId)}, ${bind(row.employeeNumber)}, ${bind(row.roles)}::user_role[], ${bind(row.lastLogin)}, ${bind(row.active)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -389,7 +389,7 @@ fun Database.Transaction.insert(row: DevMobileDevice) = createUpdate {
 INSERT INTO mobile_device (id, unit_id, name, long_term_token, push_notification_categories)
 VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.name)}, ${bind(row.longTermToken)}, ${bind(row.pushNotificationCategories)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -403,7 +403,7 @@ fun Database.Transaction.insert(row: DevPersonalMobileDevice) = createUpdate {
 INSERT INTO mobile_device (id, employee_id, name, long_term_token)
 VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.name)}, ${bind(row.longTermToken)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -439,7 +439,7 @@ INSERT INTO person (
     ${bind(p.disabledEmailTypes)}, ${bind(p.municipalityOfResidence)}
 )
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -466,7 +466,7 @@ fun Database.Transaction.insert(row: DevParentship): ParentshipId = createUpdate
         """
 INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date, created_at, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at)
 VALUES (${bind(row.id)}, ${bind(row.headOfChildId)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.createdAt)}, NULL, NULL, NULL, NULL, NULL, NULL)
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -491,7 +491,7 @@ fun Database.Transaction.insertTestPartnership(
             startDate = startDate,
             endDate = endDate,
             createdAt = createdAt,
-        )
+        ),
     )
     insert(
         DevFridgePartner(
@@ -502,7 +502,7 @@ fun Database.Transaction.insertTestPartnership(
             startDate = startDate,
             endDate = endDate,
             createdAt = createdAt,
-        )
+        ),
     )
     return id
 }
@@ -532,7 +532,7 @@ fun Database.Transaction.insertTestApplication(
             """
 INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access, document, modified_at, modified_by, created_at, created_by, confidential, process_id)
 VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, ${bind(modifiedAt)}, ${bind(modifiedBy)}, ${bind(confidential)}, ${bind(processId)})
-"""
+""",
         )
     }
         .execute()
@@ -543,7 +543,7 @@ VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(
                 """
 INSERT INTO application_other_guardian (application_id, guardian_id) 
 VALUES (${bind(id)}, ${bind(otherGuardianId)})
-"""
+""",
             )
         }
             .execute()
@@ -561,7 +561,7 @@ VALUES (${bind(row.id)}, ${bind(row.allergies)}, ${bind(row.diet)}, ${bind(row.m
 ON CONFLICT(id) DO UPDATE
 SET id = ${bind(row.id)}, allergies = ${bind(row.allergies)}, diet = ${bind(row.diet)}, medication = ${bind(row.medication)}, additionalInfo = ${bind(row.additionalInfo)}, language_at_home = ${bind(row.languageAtHome)}, language_at_home_details = ${bind(row.languageAtHomeDetails)}, diet_id = ${bind(row.dietId)}, meal_texture_id = ${bind(row.mealTextureId)}, nekku_diet= ${bind(row.nekkuDiet)}, participates_in_breakfast= ${bind(row.participatesInBreakfast)}
 RETURNING id
-    """
+    """,
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -574,7 +574,7 @@ fun Database.Transaction.insert(row: DevPlacement): PlacementId = createUpdate {
 INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by, place_guarantee, created_at, created_by, source, source_application_id, source_service_application_id, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.type)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.terminationRequestedDate)}, ${bind(row.terminatedBy)}, ${bind(row.placeGuarantee)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.source)}, ${bind(row.sourceApplicationId)}, ${bind(row.sourceServiceApplicationId)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -586,7 +586,7 @@ fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
             """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to, updated)
 VALUES (${bind(option.id)}, ${bind(option.nameFi)}, ${bind(option.nameSv)}, ${bind(option.nameEn)}, ${bind(option.validPlacementType)}, ${bind(option.defaultOption)}, ${bind(option.feeCoefficient)}, ${bind(option.occupancyCoefficient)}, ${bind(option.occupancyCoefficientUnder3y)}, ${bind(option.realizedOccupancyCoefficient)}, ${bind(option.realizedOccupancyCoefficientUnder3y)}, ${bind(option.daycareHoursPerWeek)}, ${bind(option.contractDaysPerMonth)}, ${bind(option.daycareHoursPerMonth)}, ${bind(option.partDay)}, ${bind(option.partWeek)}, ${bind(option.feeDescriptionFi)}, ${bind(option.feeDescriptionSv)}, ${bind(option.voucherValueDescriptionFi)}, ${bind(option.voucherValueDescriptionSv)}, ${bind(option.validFrom)}, ${bind(option.validTo)}, ${bind(option.updated)})
-"""
+""",
         )
     }
         .execute()
@@ -601,7 +601,7 @@ INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_
 VALUES (${bind(option.id)}, ${bind(option.nameFi)}, ${bind(option.nameSv)}, ${bind(option.nameEn)}, ${bind(option.validPlacementType)}, ${bind(option.defaultOption)}, ${bind(option.feeCoefficient)}, ${bind(option.occupancyCoefficient)}, ${bind(option.occupancyCoefficientUnder3y)}, ${bind(option.realizedOccupancyCoefficient)}, ${bind(option.realizedOccupancyCoefficientUnder3y)}, ${bind(option.daycareHoursPerWeek)}, ${bind(option.contractDaysPerMonth)}, ${bind(option.daycareHoursPerMonth)}, ${bind(option.partDay)}, ${bind(option.partWeek)}, ${bind(option.feeDescriptionFi)}, ${bind(option.feeDescriptionSv)}, ${bind(option.voucherValueDescriptionFi)}, ${bind(option.voucherValueDescriptionSv)}, ${bind(option.validFrom)}, ${bind(option.validTo)}, ${bind(option.updated)})
 ON CONFLICT (id) DO UPDATE SET updated = ${bind(option.updated)}, daycare_hours_per_week = ${bind(option.daycareHoursPerWeek)};
 ALTER TABLE service_need_option ENABLE TRIGGER set_timestamp;
-"""
+""",
         )
     }
         .execute()
@@ -626,7 +626,7 @@ fun Database.Transaction.insert(row: DevIncome): IncomeId = createUpdate {
         """
 INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, created_at, created_by, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bindJson(row.data)}, ${bind(row.effect)}::income_effect, ${bind(row.isEntrepreneur)}, ${bind(row.worksAtEcha)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -670,7 +670,7 @@ fun Database.Transaction.insert(row: DevIncomeStatement): IncomeStatementId {
             handler_id = ${bind(row.handlerId)},
             handled_at = ${bind(row.handledAt)}
         WHERE id = ${bind(databaseGeneratedId)}
-    """
+    """,
         )
     }
     return row.id
@@ -695,7 +695,7 @@ fun Database.Transaction.insert(row: DevFeeAlteration): FeeAlterationId = create
         """
 INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.type)}::fee_alteration_type, ${bind(row.amount)}, ${bind(row.isAbsolute)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bind(row.notes)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -708,7 +708,7 @@ fun Database.Transaction.insert(row: FeeThresholds): FeeThresholdsId = createUpd
 INSERT INTO fee_thresholds (valid_during, min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6, income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6, max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6, income_threshold_increase_6_plus, sibling_discount_2, sibling_discount_2_plus, max_fee, min_fee, temporary_fee, temporary_fee_part_day, temporary_fee_sibling, temporary_fee_sibling_part_day)
 VALUES (${bind(row.validDuring)}, ${bind(row.minIncomeThreshold2)}, ${bind(row.minIncomeThreshold3)}, ${bind(row.minIncomeThreshold4)}, ${bind(row.minIncomeThreshold5)}, ${bind(row.minIncomeThreshold6)}, ${bind(row.incomeMultiplier2)}, ${bind(row.incomeMultiplier3)}, ${bind(row.incomeMultiplier4)}, ${bind(row.incomeMultiplier5)}, ${bind(row.incomeMultiplier6)}, ${bind(row.maxIncomeThreshold2)}, ${bind(row.maxIncomeThreshold3)}, ${bind(row.maxIncomeThreshold4)}, ${bind(row.maxIncomeThreshold5)}, ${bind(row.maxIncomeThreshold6)}, ${bind(row.incomeThresholdIncrease6Plus)}, ${bind(row.siblingDiscount2)}, ${bind(row.siblingDiscount2Plus)}, ${bind(row.maxFee)}, ${bind(row.minFee)}, ${bind(row.temporaryFee)}, ${bind(row.temporaryFeePartDay)}, ${bind(row.temporaryFeeSibling)}, ${bind(row.temporaryFeeSiblingPartDay)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -720,7 +720,7 @@ fun Database.Transaction.insert(row: DevDaycareGroup): GroupId = createUpdate {
         """
 INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date, jamix_customer_number, aromi_customer_id, nekku_customer_number)
 VALUES (${bind(row.id)}, ${bind(row.daycareId)}, ${bind(row.name)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.jamixCustomerNumber)}, ${bind(row.aromiCustomerId)}, ${bind(row.nekkuCustomerNumber)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -732,7 +732,7 @@ fun Database.Transaction.insert(row: DevDaycareGroupPlacement): GroupPlacementId
         """
 INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
 VALUES (${bind(row.id)}, ${bind(row.daycarePlacementId)}, ${bind(row.daycareGroupId)}, ${bind(row.startDate)}, ${bind(row.endDate)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -754,7 +754,7 @@ fun Database.Transaction.insertPlacementWithGroup(
                 unitId = unitId,
                 startDate = period.start,
                 endDate = period.end,
-            )
+            ),
         )
     insert(
         DevDaycareGroupPlacement(
@@ -762,7 +762,7 @@ fun Database.Transaction.insertPlacementWithGroup(
             daycareGroupId = groupId,
             startDate = groupPeriod.start,
             endDate = groupPeriod.end,
-        )
+        ),
     )
     return placementId
 }
@@ -786,7 +786,7 @@ fun Database.Transaction.insert(row: DevPlacementPlan): PlacementPlanId = create
         """
 INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated, deleted)
 VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.applicationId)}, ${bind(row.type)}::placement_type, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.preschoolDaycareStartDate)}, ${bind(row.preschoolDaycareEndDate)}, ${bind(row.updated)}, ${bind(row.deleted)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -807,7 +807,7 @@ fun Database.Transaction.insert(row: DevPlacementDraft) = createUpdate {
         """
 INSERT INTO placement_draft (application_id, unit_id, start_date, created_at, created_by, modified_at, modified_by)
 VALUES (${bind(row.applicationId)}, ${bind(row.unitId)}, ${bind(row.startDate)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -840,7 +840,7 @@ fun Database.Transaction.insertTestDecision(decision: TestDecision): DecisionId 
 INSERT INTO decision (id, created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by, pending_decision_emails_sent_count, pending_decision_email_sent, document_key, generic_reasoning_id)
 VALUES (${bind(decision.id)}, ${bind(decision.createdBy)}, ${bind(decision.sentDate)}, ${bind(decision.unitId)}, ${bind(decision.applicationId)}, ${bind(decision.type)}, ${bind(decision.startDate)}, ${bind(decision.endDate)}, ${bind(decision.status)}, ${bind(decision.requestedStartDate)}, ${bind(decision.resolved)}, ${bind(decision.resolvedBy)}, ${bind(decision.pendingDecisionEmailsSentCount)}, ${bind(decision.pendingDecisionEmailSent)}, ${bind(decision.documentKey)}, ${bind(decision.genericReasoningId)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -853,7 +853,7 @@ fun Database.Transaction.insert(row: DevAssistanceAction): AssistanceActionId = 
 INSERT INTO assistance_action (id, created_at, modified_at, modified_by, child_id, start_date, end_date, other_action)
 VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.otherAction)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -874,7 +874,7 @@ fun Database.Transaction.insertTestStaffAttendance(
             """
 INSERT INTO staff_attendance (id, group_id, date, count)
 VALUES (${bind(id)}, ${bind(groupId)}, ${bind(date)}, ${bind(count)})
-"""
+""",
         )
     }
         .execute()
@@ -895,7 +895,7 @@ fun Database.Transaction.insert(row: DevStaffAttendancePlan): StaffAttendancePla
         """
 INSERT INTO staff_attendance_plan (id, employee_id, type, start_time, end_time, description)
 VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.type)}, ${bind(row.startTime)}, ${bind(row.endTime)}, ${bind(row.description)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -925,7 +925,7 @@ VALUES (
     ${bind(row.modifiedBy.takeIf { row.departed != null })}
 )
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -962,7 +962,7 @@ fun Database.Transaction.insertTestChildAttendance(
             """
 INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
 VALUES (${bind(childId)}, ${bind(unitId)}, ${bind { (date, _, _) -> date }}, ${bind { (_, startTime, _) -> startTime.withSecond(0).withNano(0) }}, ${bind { (_, _, endTime) -> endTime?.withSecond(0)?.withNano(0) }}, ${bind(modifiedAt)}, ${bind(modifiedBy)})
-"""
+""",
         )
     }
 }
@@ -974,7 +974,7 @@ fun Database.Transaction.insert(row: DevBackupCare): BackupCareId = createUpdate
 INSERT INTO backup_care (id, created_at, created_by, modified_at, modified_by, child_id, unit_id, group_id, start_date, end_date)
 VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.groupId)}, ${bind(row.period.start)}, ${bind(row.period.end)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1031,7 +1031,7 @@ VALUES (
     ${bind(application.modifiedAt)},
     ${bind(application.modifiedBy)}
 )
-"""
+""",
                 )
             }
                 .execute()
@@ -1054,7 +1054,7 @@ fun Database.Transaction.insert(row: DevFamilyContact): FamilyContactId = create
 INSERT INTO family_contact (id, child_id, contact_person_id, priority)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.contactPersonId)}, ${bind(row.priority)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1074,7 +1074,7 @@ fun Database.Transaction.insert(row: DevBackupPickup): BackupPickupId = createUp
 INSERT INTO backup_pickup (id, child_id, name, phone)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.name)}, ${bind(row.phone)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1096,7 +1096,7 @@ fun Database.Transaction.insert(row: DevFridgeChild): ParentshipId = createUpdat
 INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date, conflict, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.headOfChild)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.conflict)}, NULL, NULL, NULL, NULL, NULL, NULL)
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1120,7 +1120,7 @@ fun Database.Transaction.insert(row: DevFridgePartner): PartnershipId = createUp
 INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, created_at, conflict)
 VALUES (${bind(row.partnershipId)}, ${bind(row.indx)}, ${bind(row.otherIndx)}, ${bind(row.personId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.createdAt)}, ${bind(row.conflict)})
 RETURNING partnership_id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1148,7 +1148,7 @@ fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipI
                 endDate = partnership.endDate,
                 createdAt = partnership.createdAt,
                 conflict = partnership.conflict,
-            )
+            ),
         )
         .also {
             insert(
@@ -1161,7 +1161,7 @@ fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipI
                     endDate = partnership.endDate,
                     createdAt = partnership.createdAt,
                     conflict = partnership.conflict,
-                )
+                ),
             )
         }
 
@@ -1189,7 +1189,7 @@ fun Database.Transaction.insert(row: DevFosterParent): FosterParentId = createUp
 INSERT INTO foster_parent (id, child_id, parent_id, valid_during, created_at, created_by, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.parentId)}, ${bind(row.validDuring)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1202,7 +1202,7 @@ fun Database.Transaction.insert(row: DevEmployeePin): EmployeePinId = createUpda
 INSERT INTO employee_pin (id, user_id, pin, locked)
 VALUES (${bind(row.id)}, ${bind(row.userId)}, ${bind(row.pin)}, ${bind(row.locked)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1219,7 +1219,7 @@ fun Database.Transaction.insert(row: DevDaycareGroupAcl) {
             """
 INSERT INTO daycare_group_acl (daycare_group_id, employee_id, created, updated)
 VALUES (${bind(row.groupId)}, ${bind(row.employeeId)}, ${bind(row.created)}, ${bind(row.updated)})
-"""
+""",
         )
     }
         .execute()
@@ -1242,7 +1242,7 @@ fun Database.Transaction.insert(row: DevPedagogicalDocument): PedagogicalDocumen
 INSERT INTO pedagogical_document (id, child_id, description, created_at, created_by, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.description)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1265,7 +1265,7 @@ fun Database.Transaction.insert(row: DevReservation): AttendanceReservationId = 
 INSERT INTO attendance_reservation (id, child_id, date, start_time, end_time, created_at, created_by)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.date)}, ${bind(row.startTime)}, ${bind(row.endTime)}, ${bind(row.createdAt)}, ${bind(row.createdBy)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1313,7 +1313,7 @@ fun Database.Transaction.insert(invoice: DevInvoice): InvoiceId {
             """
 INSERT INTO invoice (id, status, revision_number, number, invoice_date, due_date, print_date, period_start, period_end, head_of_family, sent_at, sent_by, created_at, codebtor, area_id, replaced_invoice_id) 
 VALUES (${bind(invoice.id)}, ${bind(invoice.status)}, ${bind(invoice.revisionNumber)}, ${bind(invoice.number)}, ${bind(invoice.invoiceDate)}, ${bind(invoice.dueDate)}, NULL, ${bind(invoice.periodStart)}, ${bind(invoice.periodEnd)}, ${bind(invoice.headOfFamilyId)}, ${bind(invoice.sentAt)}, ${bind(invoice.sentBy)}, ${bind(invoice.createdAt)}, ${bind(invoice.codebtor)}, ${bind(invoice.areaId)}, ${bind(invoice.replacedInvoiceId)})
-"""
+""",
         )
     }
     invoice.rows.forEachIndexed { idx, row ->
@@ -1322,7 +1322,7 @@ VALUES (${bind(invoice.id)}, ${bind(invoice.status)}, ${bind(invoice.revisionNum
                 """
 INSERT INTO invoice_row (id, invoice_id, child, amount, unit_price, price, period_start, period_end, product, saved_cost_center, saved_sub_cost_center, description, unit_id, correction_id, idx) 
 VALUES (${bind(row.id)}, ${bind(invoice.id)}, ${bind(row.childId)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.amount * row.unitPrice)}, ${bind(row.periodStart)}, ${bind(row.periodEnd)}, ${bind(row.product)}, NULL, NULL, ${bind(row.description)}, ${bind(row.unitId)}, ${bind(row.correctionId)}, ${bind(row.idx ?: idx)})
-"""
+""",
             )
         }
     }
@@ -1343,7 +1343,7 @@ fun Database.Transaction.insert(row: DevInvoicedFeeDecision) {
             """
 INSERT INTO invoiced_fee_decision (invoice_id, fee_decision_id)
 VALUES (${bind(row.invoiceId)}, ${bind(row.feeDecisionId)})
-"""
+""",
         )
     }
 }
@@ -1373,7 +1373,7 @@ fun Database.Transaction.insert(row: DevInvoiceCorrection): InvoiceCorrectionId 
 INSERT INTO invoice_correction (id, target_month, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note, created_at, created_by, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.targetMonth)}, ${bind(row.headOfFamilyId)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.product)}, ${bind(row.period)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.description)}, ${bind(row.note)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1386,7 +1386,7 @@ fun Database.Transaction.insert(row: DevPayment): PaymentId = createUpdate {
 INSERT INTO payment (id, unit_id, unit_name, unit_business_id, unit_iban, unit_provider_id, unit_partner_code, period, number, amount, status, payment_date, due_date, sent_at, sent_by)
 VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.unitName)}, ${bind(row.unitBusinessId)}, ${bind(row.unitIban)}, ${bind(row.unitProviderId)}, ${bind(row.unitPartnerCode)}, ${bind(row.period)}, ${bind(row.number)}, ${bind(row.amount)}, ${bind(row.status)}, ${bind(row.paymentDate)}, ${bind(row.dueDate)}, ${bind(row.sentAt)}, ${bind(row.sentBy)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1399,7 +1399,7 @@ fun Database.Transaction.insert(row: DevCalendarEvent): CalendarEventId = create
 INSERT INTO calendar_event (id, title, description, period, created_at, created_by, modified_at, modified_by, content_modified_at, content_modified_by, event_type, nekku_unordered_meals)
 VALUES (${bind(row.id)}, ${bind(row.title)}, ${bind(row.description)}, ${bind(row.period)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.eventType)}, ${bind(row.nekkuUnorderedMeals)}::nekku_product_meal_time[])
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1413,7 +1413,7 @@ fun Database.Transaction.insert(row: DevCalendarEventAttendee): CalendarEventAtt
 INSERT INTO calendar_event_attendee (id, calendar_event_id, unit_id, group_id, child_id)
 VALUES (${bind(row.id)}, ${bind(row.calendarEventId)}, ${bind(row.unitId)}, ${bind(row.groupId)}, ${bind(row.childId)})
 RETURNING id
-"""
+""",
         )
     }
     .executeAndReturnGeneratedKeys()
@@ -1428,7 +1428,7 @@ VALUES (${bind(row.id)}, ${bind(row.date)}, ${bind(row.calendarEventId)}, ${bind
 ${bind(row.childId)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)},
 ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1441,7 +1441,7 @@ fun Database.Transaction.insert(row: DevDailyServiceTimes): DailyServiceTimesId 
 INSERT INTO daily_service_time (id, child_id, type, validity_period, regular_times, monday_times, tuesday_times, wednesday_times, thursday_times, friday_times, saturday_times, sunday_times)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.type)}, ${bind(row.validityPeriod)}, ${bind(row.regularTimes)}, ${bind(row.mondayTimes)}, ${bind(row.tuesdayTimes)}, ${bind(row.wednesdayTimes)}, ${bind(row.thursdayTimes)}, ${bind(row.fridayTimes)}, ${bind(row.saturdayTimes)}, ${bind(row.sundayTimes)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1454,7 +1454,7 @@ fun Database.Transaction.insert(row: DevGuardian) {
 INSERT INTO guardian (guardian_id, child_id)
 VALUES (${bind(row.guardianId)}, ${bind(row.childId)})
 ON CONFLICT (guardian_id, child_id) DO NOTHING
-"""
+""",
         )
     }
         .execute()
@@ -1467,7 +1467,7 @@ fun Database.Transaction.insert(row: DevAbsence): AbsenceId = createUpdate {
 INSERT INTO absence (id, child_id, date, absence_type, modified_at, modified_by, category, questionnaire_id)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.date)}, ${bind(row.absenceType)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.absenceCategory)}, ${bind(row.questionnaireId)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1479,7 +1479,7 @@ fun Database.Transaction.insert(row: DevDaycareCaretaker): DaycareCaretakerId = 
         """
 INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
 VALUES (${bind(row.id)}, ${bind(row.groupId)}, ${bind(row.amount)}, ${bind(row.startDate)}, ${bind(row.endDate)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1491,7 +1491,7 @@ fun Database.Transaction.insert(row: DevDocumentTemplate): DocumentTemplateId = 
         """
 INSERT INTO document_template (id, name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, published, archive_externally, end_decision_when_unit_changes, deletion_retention_days, deletion_retention_basis, content)
 VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.placementTypes)}, ${bind(row.language)}, ${bind(row.confidentiality != null)}, ${bind(row.confidentiality?.durationYears)}, ${bind(row.confidentiality?.basis)}, ${bind(row.legalBasis)}, ${bind(row.validity)}, ${bind(row.processDefinitionNumber)}, ${bind(row.archiveDurationMonths)}, ${bind(row.published)}, ${bind(row.archiveExternally)}, ${bind(row.endDecisionWhenUnitChanges)}, ${bind(row.deletionRetentionDays)}, ${bind(row.deletionRetentionBasis)}, ${bind(row.content)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1511,7 +1511,7 @@ fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
             """
 INSERT INTO child_document (id, created_at, created_by, type, status, child_id, template_id, content, modified_at, modified_by, status_modified_at, content_locked_at, content_locked_by, answered_at, answered_by, process_id, decision_maker, decision_id)
 VALUES (${bind(row.id)}, ${if (row.createdAt != null) bind(row.createdAt) else insertDefault()}, ${bind(row.createdBy)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.statusModifiedAt ?: row.modifiedAt)}, ${bind(row.contentLockedAt)}, ${bind(row.contentLockedBy)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -1524,7 +1524,7 @@ VALUES (${bind(row.id)}, ${if (row.createdAt != null) bind(row.createdAt) else i
                 """
 INSERT INTO child_document_published_version (child_document_id, version_number, created_at, created_by, published_content, document_key)
 VALUES (${bind(documentId)}, ${bind(version.versionNumber)}, ${bind(version.createdAt)}, ${bind(version.createdBy)}, ${bind(version.publishedContent)}, ${bind(version.documentKey)})
-"""
+""",
             )
         }
             .execute()
@@ -1540,7 +1540,7 @@ fun Database.Transaction.insert(row: DevChildDocumentDecision): ChildDocumentDec
             """
 INSERT INTO child_document_decision (id, created_at, created_by, modified_at, modified_by, status, valid_from, valid_to, daycare_id) 
 VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.status)}, ${bind(row.validity?.start)}, ${bind(row.validity?.end)}, ${bind(row.daycareId)})
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -1552,7 +1552,7 @@ fun Database.Transaction.updateDaycareOperationTimes(
     operationTimes: List<TimeRange>,
 ) = createUpdate {
     sql(
-        "UPDATE daycare SET operation_times = ${bind(operationTimes)} WHERE id = ${bind(daycareId)}"
+        "UPDATE daycare SET operation_times = ${bind(operationTimes)} WHERE id = ${bind(daycareId)}",
     )
 }
     .execute()
@@ -1563,7 +1563,7 @@ fun Database.Transaction.insert(row: DevAssistanceFactor): AssistanceFactorId = 
         """
 INSERT INTO assistance_factor (id, child_id, valid_during, capacity_factor, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.capacityFactor)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy.id)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1575,7 +1575,7 @@ fun Database.Transaction.insert(row: DevDaycareAssistance): DaycareAssistanceId 
         """
 INSERT INTO daycare_assistance (id, child_id, valid_during, level, modified, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.level)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1587,7 +1587,7 @@ fun Database.Transaction.insert(row: DevPreschoolAssistance): PreschoolAssistanc
         """
 INSERT INTO preschool_assistance (id, child_id, valid_during, level, modified, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.level)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1600,7 +1600,7 @@ fun Database.Transaction.insert(row: DevOtherAssistanceMeasure): OtherAssistance
             """
 INSERT INTO other_assistance_measure (id, child_id, valid_during, type, modified, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.type)}, ${bind(row.modified)}, ${bind(row.modifiedBy.id)})
-"""
+""",
         )
     }
     .executeAndReturnGeneratedKeys()
@@ -1612,7 +1612,7 @@ fun Database.Transaction.insert(row: DevServiceNeed): ServiceNeedId = createUpda
         """
 INSERT INTO service_need (id, option_id, placement_id, start_date, end_date, shift_care, part_week, confirmed_by, confirmed_at)
 VALUES (${bind(row.id)}, ${bind(row.optionId)}, ${bind(row.placementId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.shiftCare)}, ${bind(row.partWeek)}, ${bind(row.confirmedBy)}, ${bind(row.confirmedAt)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1624,7 +1624,7 @@ fun Database.Transaction.insert(row: DevServiceApplication): ServiceApplicationI
         """
 INSERT INTO service_application (id, sent_at, person_id, child_id, start_date, service_need_option_id, additional_info, decision_status, decided_by, decided_at, rejected_reason) 
 VALUES (${bind(row.id)}, ${bind(row.sentAt)}, ${bind(row.personId)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.serviceNeedOptionId)}, ${bind(row.additionalInfo)}, ${bind(row.decisionStatus)}, ${bind(row.decidedBy)}, ${bind(row.decidedAt)}, ${bind(row.rejectedReason)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1636,7 +1636,7 @@ fun Database.Transaction.insert(row: DevChildAttendance): ChildAttendanceId = cr
         """
 INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
 VALUES (${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.date)}, ${bind(row.arrived)}, ${bind(row.departed)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1648,7 +1648,7 @@ fun Database.Transaction.insert(row: DevPreschoolTerm): PreschoolTermId = create
         """
 INSERT INTO preschool_term (id, finnish_preschool, swedish_preschool, extended_term, application_period, term_breaks) 
 VALUES (${bind(row.id)}, ${bind(row.finnishPreschool)}, ${bind(row.swedishPreschool)}, ${bind(row.extendedTerm)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1660,7 +1660,7 @@ fun Database.Transaction.insert(row: DevMessageThreadFolder): MessageThreadFolde
         """
 INSERT INTO message_thread_folder (id, owner_id, name) 
 VALUES (${bind(row.id)}, ${bind(row.owner)}, ${bind(row.name)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1671,7 +1671,7 @@ fun Database.Transaction.insert(row: ClubTerm) = execute {
         """
 INSERT INTO club_term (id, term, application_period, term_breaks)
 VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
-"""
+""",
     )
 }
 
@@ -1681,7 +1681,7 @@ fun Database.Transaction.insert(row: DevClubTerm): ClubTermId = createUpdate {
         """
 INSERT INTO club_term (id, term, application_period, term_breaks) 
 VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1694,7 +1694,7 @@ fun Database.Transaction.insert(row: DevAssistanceActionOption): AssistanceActio
             """
 INSERT INTO assistance_action_option(id, value, name_fi, name_sv, description_fi, description_sv, category, display_order, valid_from, valid_to)
 VALUES (${bind(row.id)}, ${bind(row.value)}, ${bind(row.nameFi)}, ${bind(row.nameSv)}, ${bind(row.descriptionFi)}, ${bind(row.descriptionSv)}, ${bind(row.category)}, ${bind(row.displayOrder)}, ${bind(row.validFrom)}, ${bind(row.validTo)})        
-"""
+""",
         )
     }
     .executeAndReturnGeneratedKeys()
@@ -1702,13 +1702,13 @@ VALUES (${bind(row.id)}, ${bind(row.value)}, ${bind(row.nameFi)}, ${bind(row.nam
 
 @IgnorableReturnValue
 fun Database.Transaction.insert(
-    row: DevAssistanceNeedVoucherCoefficient
+    row: DevAssistanceNeedVoucherCoefficient,
 ): AssistanceNeedVoucherCoefficientId = createUpdate {
     sql(
         """     
 INSERT INTO assistance_need_voucher_coefficient(id, child_id, validity_period, coefficient, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bind(row.coefficient)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy.id)})
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1763,7 +1763,7 @@ INSERT INTO fee_decision (
     ${bind(decision.processId)}
 )
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -1813,7 +1813,7 @@ INSERT INTO fee_decision_child (
     ${bindJson(feeDecisionChild.childIncome)},
     ${bind(feeDecisionChild.serviceNeedOptionId)}
 )
-"""
+""",
         )
     }
         .execute()
@@ -1912,7 +1912,7 @@ INSERT INTO voucher_value_decision (
     ${bind(decision.processId)}
 )
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -1925,7 +1925,7 @@ fun Database.Transaction.insert(fee: ServiceNeedOptionFee) {
             """
 INSERT INTO service_need_option_fee (service_need_option_id, validity, base_fee, sibling_discount_2, sibling_fee_2, sibling_discount_2_plus, sibling_fee_2_plus)
 VALUES (${bind(fee.serviceNeedOptionId)}, ${bind(fee.validity)}, ${bind(fee.baseFee)}, ${bind(fee.siblingDiscount2)}, ${bind(fee.siblingFee2)}, ${bind(fee.siblingDiscount2Plus)}, ${bind(fee.siblingFee2Plus)})
-"""
+""",
         )
     }
 }
@@ -1936,7 +1936,7 @@ fun Database.Transaction.insert(sn: ServiceNeedOption) {
             """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to, show_for_citizen)
 VALUES (${bind(sn.id)}, ${bind(sn.nameFi)}, ${bind(sn.nameSv)}, ${bind(sn.nameEn)}, ${bind(sn.validPlacementType)}, ${bind(sn.defaultOption)}, ${bind(sn.feeCoefficient)}, ${bind(sn.occupancyCoefficient)}, ${bind(sn.occupancyCoefficientUnder3y)}, ${bind(sn.realizedOccupancyCoefficient)}, ${bind(sn.realizedOccupancyCoefficientUnder3y)}, ${bind(sn.daycareHoursPerWeek)}, ${bind(sn.contractDaysPerMonth)}, ${bind(sn.daycareHoursPerMonth)}, ${bind(sn.partDay)}, ${bind(sn.partWeek)}, ${bind(sn.feeDescriptionFi)}, ${bind(sn.feeDescriptionSv)}, ${bind(sn.voucherValueDescriptionFi)}, ${bind(sn.voucherValueDescriptionSv)}, ${bind(sn.validFrom)}, ${bind(sn.validTo)}, ${bind(sn.showForCitizen)})
-"""
+""",
         )
     }
 }
@@ -1955,7 +1955,7 @@ fun Database.Transaction.insert(citizenUser: DevCitizenUser) {
             """
 INSERT INTO citizen_user (id, username, username_updated_at, password, password_updated_at)
 VALUES (${bind(citizenUser.id)}, ${bind(citizenUser.username)}, ${bind(citizenUser.usernameUpdatedAt)}, ${bindJson(citizenUser.password)}, ${bind(citizenUser.passwordUpdatedAt)})
-"""
+""",
         )
     }
 }
@@ -1966,7 +1966,7 @@ fun Database.Transaction.insert(row: DevSfiMessageEvent) {
             """
 INSERT INTO sfi_message_event (id, created_at, updated_at, message_id, event_type, event_time)
 VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.updatedAt)}, ${bind(row.messageId)}, ${bind(row.eventType)}, ${bind(row.eventTime)})
-"""
+""",
         )
     }
 }
@@ -1977,7 +1977,7 @@ fun Database.Transaction.insert(hq: DevHolidayQuestionnaire) {
             """
 INSERT INTO holiday_period_questionnaire (id, type, absence_type, requires_strong_auth, active, title, description, description_link, condition_continuous_placement, period_options, period_option_label, period, absence_type_threshold)
 VALUES (${bind(hq.id)}, ${bind(hq.type)}, ${bind(hq.absenceType)}, ${bind(hq.requiresStrongAuth)}, ${bind(hq.active)}, ${bindJson(hq.title)}, ${bindJson(hq.description)}, ${bindJson(hq.descriptionLink)}, ${bind(hq.conditions.continuousPlacement)}, ${bind(hq.periodOptions)}, ${bindJson(hq.periodOptionLabel)}, ${bind(hq.period)}, ${bind(hq.absenceTypeThreshold)})
-"""
+""",
         )
     }
 }
@@ -1988,7 +1988,7 @@ fun Database.Transaction.insert(hqa: DevHolidayQuestionnaireAnswer) {
             """
 INSERT INTO holiday_questionnaire_answer (id, modified_by, questionnaire_id, child_id, fixed_period, open_ranges)
 VALUES (${bind(hqa.id)}, ${bind(hqa.modifiedBy)}, ${bind(hqa.questionnaireId)}, ${bind(hqa.childId)}, ${bind(hqa.fixedPeriod)}, ${bind(hqa.openRanges)} )
-"""
+""",
         )
     }
 }
@@ -2001,7 +2001,7 @@ fun Database.Transaction.insert(row: DevDecisionReasoningGeneric): DecisionGener
 INSERT INTO decision_reasoning_generic (id, collection_type, valid_from, text_fi, text_sv, ready, created_at, modified_at)
 VALUES (${bind(row.id)}, ${bind(row.collectionType)}, ${bind(row.validFrom)}, ${bind(row.textFi)}, ${bind(row.textSv)}, ${bind(row.ready)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)})
 RETURNING id
-"""
+""",
         )
     }
     .executeAndReturnGeneratedKeys()
@@ -2048,14 +2048,14 @@ fun Database.Transaction.insertDefaultDecisionGenericReasonings():
 
 @IgnorableReturnValue
 fun Database.Transaction.insert(
-    row: DevDecisionReasoningIndividual
+    row: DevDecisionReasoningIndividual,
 ): DecisionIndividualReasoningId = createUpdate {
     sql(
         """
 INSERT INTO decision_reasoning_individual (id, collection_type, language, title, text, removed_at, created_at, modified_at)
 VALUES (${bind(row.id)}, ${bind(row.collectionType)}, ${bind(row.language)}, ${bind(row.title)}, ${bind(row.text)}, ${bind(row.removedAt)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -2076,7 +2076,7 @@ fun Database.Transaction.insert(row: DevKoskiUploadError) = createUpdate {
         """
 INSERT INTO koski_upload_error (child_id, unit_id, type, error, status_code, errored_at, errored_since)
 VALUES (${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.type)}::koski_study_right_type, ${bind(row.error)}, ${bind(row.statusCode)}, ${bind(row.erroredAt)}, ${bind(row.erroredSince)})
-"""
+""",
     )
 }
     .execute()

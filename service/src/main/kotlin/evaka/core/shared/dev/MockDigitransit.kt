@@ -22,7 +22,7 @@ class MockDigitransit {
     data class Feature(val geometry: Geometry, val properties: FeatureProperties)
 
     data class Geometry(
-        @JsonFormat(shape = JsonFormat.Shape.ARRAY) val coordinates: Pair<Double, Double>
+        @JsonFormat(shape = JsonFormat.Shape.ARRAY) val coordinates: Pair<Double, Double>,
     )
 
     data class FeatureProperties(

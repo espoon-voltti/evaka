@@ -143,7 +143,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 connectedDaycare = true,
                 serviceNeedOption =
                     ofServiceNeedOption(
-                        snPreschoolDaycare45
+                        snPreschoolDaycare45,
                     ), // service need option enabled (=tampere)
             )
         val preschoolClub =
@@ -255,7 +255,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = club.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().minusMonths(6),
-                )
+                ),
             )
 
             it.insert(
@@ -265,7 +265,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = club.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().plusMonths(6),
-                )
+                ),
             )
 
             // Should not show because club placement is in the future
@@ -276,7 +276,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = club.id,
                     startDate = now.today().plusMonths(1),
                     endDate = now.today().plusMonths(6),
-                )
+                ),
             )
         }
 
@@ -302,7 +302,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().plusMonths(6),
-                )
+                ),
             )
 
             // Past placement (not included)
@@ -313,7 +313,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().minusDays(1),
-                )
+                ),
             )
         }
 
@@ -368,7 +368,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().plusMonths(6),
-                )
+                ),
             )
             tx.insertTestApplication(
                 childId = child4.id,
@@ -475,7 +475,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         careDetails =
                             CareDetails(
                                 preparatory =
-                                    if (type == ApplicationType.PRESCHOOL) preparatory else null
+                                    if (type == ApplicationType.PRESCHOOL) preparatory else null,
                             ),
                     ),
             )

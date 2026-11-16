@@ -42,7 +42,7 @@ internal data class KoskiUploadErrorRaw(
 
 internal fun Database.Read.getKoskiUploadErrors() = createQuery {
     sql(
-        "SELECT child_id, unit_id, type, error, status_code, errored_at, errored_since FROM koski_upload_error"
+        "SELECT child_id, unit_id, type, error, status_code, errored_at, errored_since FROM koski_upload_error",
     )
 }
     .toList<KoskiUploadErrorRaw>()

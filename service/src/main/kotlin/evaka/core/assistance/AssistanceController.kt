@@ -368,7 +368,7 @@ class AssistanceController(
                                 AsyncJob.GenerateFinanceDecisions.forChild(
                                     child,
                                     body.validDuring.asDateRange(),
-                                )
+                                ),
                             ),
                             runAt = clock.now(),
                         )
@@ -408,7 +408,7 @@ class AssistanceController(
                                     AsyncJob.GenerateFinanceDecisions.forChild(
                                         original.childId,
                                         it.asDateRange(),
-                                    )
+                                    ),
                                 ),
                                 runAt = clock.now(),
                             )
@@ -446,7 +446,7 @@ class AssistanceController(
                                         AsyncJob.GenerateFinanceDecisions.forChild(
                                             deleted.childId,
                                             deleted.validDuring.asDateRange(),
-                                        )
+                                        ),
                                     ),
                                     runAt = clock.now(),
                                 )
@@ -731,7 +731,7 @@ class AssistanceController(
             val option =
                 options.find { it.value == action }
                     ?: throw BadRequest(
-                        "Action $action is not a recognized option, all options: ${options.map { it.value }}"
+                        "Action $action is not a recognized option, all options: ${options.map { it.value }}",
                     )
 
             if (option.validFrom != null && data.startDate < option.validFrom) {

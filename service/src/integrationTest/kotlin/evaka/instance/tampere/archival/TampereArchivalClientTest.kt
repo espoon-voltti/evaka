@@ -106,8 +106,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -135,8 +135,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -179,8 +179,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -207,8 +207,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -235,8 +235,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -263,8 +263,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -291,8 +291,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -319,8 +319,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -347,8 +347,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -377,8 +377,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -408,8 +408,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -419,7 +419,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                 testChildInfo,
                 testChildDocumentDecisionDetails.let {
                     it.copy(
-                        decision = it.decision!!.copy(status = ChildDocumentDecisionStatus.ANNULLED)
+                        decision =
+                            it.decision!!.copy(status = ChildDocumentDecisionStatus.ANNULLED),
                     )
                 },
                 testDocumentMetadataChildDocument,
@@ -443,8 +444,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-success.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-success.xml"),
+                ),
         )
 
         val archiveId =
@@ -454,7 +455,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                 testChildInfo,
                 testChildDocumentDecisionDetails.let {
                     it.copy(
-                        decision = it.decision!!.copy(status = ChildDocumentDecisionStatus.REJECTED)
+                        decision =
+                            it.decision!!.copy(status = ChildDocumentDecisionStatus.REJECTED),
                     )
                 },
                 testDocumentMetadataChildDocument,
@@ -477,8 +479,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-unexpected.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-unexpected.xml"),
+                ),
         )
 
         assertNull(
@@ -490,7 +492,7 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                 testDocumentMetadataChildDocument,
                 testDocumentChildDocument,
                 testEvakaUser,
-            )
+            ),
         )
         validateMockContent(
             "archival-client/archival-post-record-request-child-document.xml",
@@ -506,8 +508,8 @@ class TampereArchivalClientTest : AbstractTampereIntegrationTest() {
                     aResponse()
                         .withStatus(401)
                         .withHeader("Content-Type", "application/xml")
-                        .withBodyFile("archival-client/archival-response-invalid-apikey.xml")
-                )
+                        .withBodyFile("archival-client/archival-response-invalid-apikey.xml"),
+                ),
         )
 
         val exception =
@@ -1021,10 +1023,10 @@ private fun validateMockContent(
                     .withHeader("Content-Type", equalTo("application/xml; charset=utf-8"))
                     .withBody(
                         equalToXml(
-                            ClassPathResource(metadataPath).getContentAsString(Charsets.UTF_8)
-                        )
+                            ClassPathResource(metadataPath).getContentAsString(Charsets.UTF_8),
+                        ),
                     )
-                    .build()
+                    .build(),
             )
             .withRequestBodyPart(
                 MultipartValuePatternBuilder()
@@ -1034,6 +1036,6 @@ private fun validateMockContent(
                     )
                     .withHeader("Content-Type", equalTo("text/plain"))
                     .withBody(equalTo(documentContent))
-                    .build()
-            )
+                    .build(),
+            ),
     )

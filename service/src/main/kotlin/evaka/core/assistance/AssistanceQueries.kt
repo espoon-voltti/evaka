@@ -34,7 +34,7 @@ SELECT $assistanceSelectFields
 FROM assistance_factor a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE ${predicate(predicate.forTable("a"))}
-"""
+""",
     )
 }
 
@@ -53,9 +53,9 @@ fun Database.Read.getAssistanceFactorsForChildrenOverRange(
             getAssistanceFactors(
                 Predicate {
                     where(
-                        "$it.child_id = ANY (${bind(childIds)}) AND $it.valid_during && ${bind(range)}"
+                        "$it.child_id = ANY (${bind(childIds)}) AND $it.valid_during && ${bind(range)}",
                     )
-                }
+                },
             )
         }
             .toList<AssistanceFactor>()
@@ -70,7 +70,7 @@ SELECT $assistanceSelectFields
 FROM assistance_factor a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("a"))}
-"""
+""",
     )
 }
     .toList<AssistanceFactor>()
@@ -91,7 +91,7 @@ fun Database.Transaction.insertAssistanceFactor(
 INSERT INTO assistance_factor (child_id, modified_at, modified_by, valid_during, capacity_factor)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.capacityFactor)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -112,7 +112,7 @@ SET
     modified_at = ${bind(now)},
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -125,7 +125,7 @@ WITH a AS (
     DELETE FROM assistance_factor WHERE id = ${bind(id)}
     RETURNING id, child_id, valid_during, capacity_factor, modified_at, modified_by
 ) SELECT $assistanceSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
-"""
+""",
         )
     }
     .executeAndReturnGeneratedKeys()
@@ -150,7 +150,7 @@ WHERE adjacent_placement.child_id = assistance_factor.child_id
   AND adjacent_placement.valid_during @> lower(assistance_factor.valid_during)
   AND NOT adjacent_placement.valid_during @> (upper(assistance_factor.valid_during) - interval '1 day')::date
   AND upper(adjacent_placement.valid_during) = ${bind(date)}
-"""
+""",
         )
     }
     .execute()
@@ -165,7 +165,7 @@ SELECT d.id, d.child_id, d.valid_during, d.level, d.modified, e.id AS modified_b
 FROM daycare_assistance d
 LEFT JOIN evaka_user e ON d.modified_by = e.id
 WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("d"))}
-"""
+""",
     )
 }
     .toList<DaycareAssistance>()
@@ -177,7 +177,7 @@ SELECT d.id, d.child_id, d.valid_during, d.level, d.modified, e.id AS modified_b
 FROM daycare_assistance d
 LEFT JOIN evaka_user e ON d.modified_by = e.id
 WHERE d.id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull<DaycareAssistance>()
@@ -193,7 +193,7 @@ fun Database.Transaction.insertDaycareAssistance(
 INSERT INTO daycare_assistance (child_id, modified, modified_by, valid_during, level)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.level)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -214,7 +214,7 @@ SET
     modified = ${bind(now)},
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -228,7 +228,7 @@ WITH d AS (
     RETURNING id, child_id, valid_during, level, modified, modified_by
 ) SELECT d.id, d.child_id, d.valid_during, d.level, d.modified, e.id AS modified_by_id, e.name AS modified_by_name, e.type AS modified_by_type
 FROM d LEFT JOIN evaka_user e ON d.modified_by = e.id
-"""
+""",
         )
     }
     .executeAndReturnGeneratedKeys()
@@ -253,7 +253,7 @@ SELECT $preschoolAssistanceSelectFields
 FROM preschool_assistance p
 LEFT JOIN evaka_user e ON p.modified_by = e.id
 WHERE child_id = ${bind(child)}
-"""
+""",
     )
 }
     .toList<PreschoolAssistance>()
@@ -268,7 +268,7 @@ SELECT $preschoolAssistanceSelectFields
 FROM preschool_assistance p
 LEFT JOIN evaka_user e ON p.modified_by = e.id
 WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("p"))}
-"""
+""",
     )
 }
     .toList<PreschoolAssistance>()
@@ -281,7 +281,7 @@ SELECT $preschoolAssistanceSelectFields
 FROM preschool_assistance p
 LEFT JOIN evaka_user e ON p.modified_by = e.id
 WHERE p.id = ${bind(id)}
-"""
+""",
         )
     }
     .exactlyOneOrNull<PreschoolAssistance>()
@@ -297,7 +297,7 @@ fun Database.Transaction.insertPreschoolAssistance(
 INSERT INTO preschool_assistance (child_id, modified, modified_by, valid_during, level)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.level)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -318,13 +318,13 @@ SET
     modified = ${bind(now)},
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .updateExactlyOne()
 
 fun Database.Transaction.deletePreschoolAssistance(
-    id: PreschoolAssistanceId
+    id: PreschoolAssistanceId,
 ): PreschoolAssistance? = createUpdate {
     sql(
         """
@@ -333,7 +333,7 @@ WITH p AS (
     RETURNING id, child_id, valid_during, level, modified, modified_by
 ) SELECT $preschoolAssistanceSelectFields
 FROM p LEFT JOIN evaka_user e ON p.modified_by = e.id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -361,7 +361,7 @@ SELECT $otherAssistanceSelectFields
 FROM other_assistance_measure o
 LEFT JOIN evaka_user e ON o.modified_by = e.id
 WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("o"))}
-"""
+""",
     )
 }
     .toList<OtherAssistanceMeasure>()
@@ -374,7 +374,7 @@ SELECT $otherAssistanceSelectFields
 FROM other_assistance_measure o
 LEFT JOIN evaka_user e ON o.modified_by = e.id
 WHERE o.id = ${bind(id)}
-"""
+""",
         )
     }
     .exactlyOneOrNull<OtherAssistanceMeasure>()
@@ -390,7 +390,7 @@ fun Database.Transaction.insertOtherAssistanceMeasure(
 INSERT INTO other_assistance_measure (child_id, modified, modified_by, valid_during, type)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.type)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -411,13 +411,13 @@ SET
     modified = ${bind(now)},
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .updateExactlyOne()
 
 fun Database.Transaction.deleteOtherAssistanceMeasure(
-    id: OtherAssistanceMeasureId
+    id: OtherAssistanceMeasureId,
 ): OtherAssistanceMeasure? = createUpdate {
     sql(
         """
@@ -426,7 +426,7 @@ WITH o AS (
     RETURNING id, child_id, valid_during, type, modified, modified_by
 ) SELECT $otherAssistanceSelectFields
 FROM o LEFT JOIN evaka_user e ON o.modified_by = e.id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()

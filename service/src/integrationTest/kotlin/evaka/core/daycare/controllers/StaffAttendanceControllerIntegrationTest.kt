@@ -51,7 +51,7 @@ class StaffAttendanceControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = groupId,
                     name = groupName,
                     startDate = groupStartDate,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroup(
@@ -59,7 +59,7 @@ class StaffAttendanceControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = groupId2,
                     name = groupName2,
                     startDate = groupStartDate,
-                )
+                ),
             )
             tx.insert(supervisor, mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
         }

@@ -260,7 +260,7 @@ allprojects {
             counts.forEach { (count, names) ->
                 @Suppress("ktlint:evaka:no-println")
                 println(
-                    "Resolved $count dependency files for configurations: ${names.joinToString(", ")}"
+                    "Resolved $count dependency files for configurations: ${names.joinToString(", ")}",
                 )
             }
         }
@@ -346,7 +346,7 @@ tasks {
                 "evaka.database.password" to "postgres",
                 "evaka.integration.vtj.mock_url" to
                     "http://localhost:${System.getenv("EVAKA_IDP_PORT") ?: "9090"}",
-            )
+            ),
         )
     }
 

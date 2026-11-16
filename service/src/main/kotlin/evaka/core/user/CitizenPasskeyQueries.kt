@@ -45,7 +45,7 @@ SELECT id, name, created_at, last_used_at, device_class, operating_system_name, 
 FROM citizen_passkey
 WHERE citizen_user_id = ${bind(person)}
 ORDER BY created_at
-"""
+""",
     )
 }
     .toList()
@@ -62,7 +62,7 @@ fun Database.Read.getPasskeyByCredentialId(credentialId: ByteArray): PasskeyCred
 SELECT id, citizen_user_id, credential_id, public_key, signature_counter
 FROM citizen_passkey
 WHERE credential_id = ${bind(credentialId)}
-"""
+""",
         )
     }
     .exactlyOneOrNull()
@@ -92,7 +92,7 @@ VALUES (
     ${bind(passkey.client.agentName)}
 )
 RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -110,7 +110,7 @@ UPDATE citizen_passkey
 SET name = ${bind(name)}
 WHERE id = ${bind(id)} AND citizen_user_id = ${bind(person)}
 RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -125,7 +125,7 @@ fun Database.Transaction.deleteCitizenPasskey(
 DELETE FROM citizen_passkey
 WHERE id = ${bind(id)} AND citizen_user_id = ${bind(person)}
 RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -142,7 +142,7 @@ fun Database.Transaction.updatePasskeyAfterLogin(
 UPDATE citizen_passkey
 SET last_used_at = ${bind(now)}, signature_counter = ${bind(signatureCounter)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .executeAndReturnCount()
@@ -160,7 +160,7 @@ ON CONFLICT (person_id) DO UPDATE SET
     options = excluded.options,
     expires_at = excluded.expires_at,
     created_at = now()
-"""
+""",
     )
 }
 
@@ -175,7 +175,7 @@ fun Database.Transaction.consumePasskeyRegistration(
 DELETE FROM citizen_passkey_registration
 WHERE person_id = ${bind(person)}
 RETURNING options::text AS options, expires_at
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()

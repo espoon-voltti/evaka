@@ -26,7 +26,7 @@ object DwQueries {
                     AND pl.end_date >= ab.date
                 ORDER BY ab.date, ab.child_id
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -71,7 +71,7 @@ object DwQueries {
                 WHERE dg.id IN (application_infos.yksikot::uuid)
                     AND dg.care_area_id = ca.id;
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -92,7 +92,7 @@ object DwQueries {
                     LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
                 WHERE current_date::DATE - INTERVAL '3 years' <= ac.end_date
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -172,7 +172,7 @@ object DwQueries {
                         AND current_date::DATE - INTERVAL '3 years' <= vvd.valid_to
                 ) child
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -190,7 +190,7 @@ object DwQueries {
                     start_time IS NOT NULL and end_time IS NOT NULL AND
                     current_date::DATE - INTERVAL '3 months' <= date
                 ORDER BY date DESC, child_id
-                """
+                """,
             )
         }
 
@@ -207,7 +207,7 @@ object DwQueries {
                 FROM child_attendance
                 WHERE current_date::DATE - INTERVAL '3 months' <= date
                 ORDER BY date DESC, child_id
-                """
+                """,
             )
         }
 
@@ -300,7 +300,7 @@ object DwQueries {
                         AND anvc.validity_period && daterange(sn.start_date, sn.end_date, '[]')
 
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -511,7 +511,7 @@ object DwQueries {
                     ccod.caretaker_count
 
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -621,7 +621,7 @@ object DwQueries {
                     pod.date, pod.unit_id, d.name, pod.caretaker_count
 
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -772,7 +772,7 @@ object DwQueries {
                     pod.date, pod.unit_id, d.name, pod.caretaker_count
 
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -830,7 +830,7 @@ object DwQueries {
                     dc.end_date,
                     dc.amount
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -863,7 +863,7 @@ object DwQueries {
                     AND fd.decision_number IS NOT NULL -- ei tuoda effican päätöksiä
                     AND current_date::DATE - INTERVAL '3 years' <= upper(fd.valid_during)
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -893,7 +893,7 @@ object DwQueries {
                     AND vvd.decision_number IS NOT NULL -- ei tuoda effican päätöksiä
                     AND current_date::DATE - INTERVAL '3 years' <= vvd.valid_to
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -915,7 +915,7 @@ object DwQueries {
     private const val QUERY_STREAM_CHUNK_SIZE = 10_000
 
     private inline fun <reified T : Any> csvQuery(
-        crossinline f: QuerySql.Builder.() -> QuerySql
+        crossinline f: QuerySql.Builder.() -> QuerySql,
     ): CsvQuery =
         StreamingCsvQuery(T::class) { tx ->
             tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>()

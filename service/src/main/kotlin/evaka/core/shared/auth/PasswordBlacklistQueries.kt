@@ -16,7 +16,7 @@ SELECT EXISTS (
     WHERE name = ${bind(source.name)}
     AND imported_at = ${bind(source.updatedAt)}
 )
-"""
+""",
         )
     }
     .exactlyOne()
@@ -33,7 +33,7 @@ VALUES (${bind(source.name)}, ${bind(source.updatedAt)})
 ON CONFLICT (name) DO UPDATE
     SET imported_at = excluded.imported_at
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -44,7 +44,7 @@ RETURNING id
 INSERT INTO password_blacklist (password, source)
 VALUES (${bind { it }}, ${bind(sourceId)})
 ON CONFLICT DO NOTHING
-"""
+""",
         )
     }
 }

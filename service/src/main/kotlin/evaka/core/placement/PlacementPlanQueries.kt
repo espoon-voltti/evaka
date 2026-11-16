@@ -36,7 +36,7 @@ AND NOT EXISTS (
   WHERE application_id = ${bind(applicationId)}
   AND status = 'PENDING'
 )
-"""
+""",
         )
     }
         .execute()
@@ -60,7 +60,7 @@ VALUES (
     ${bind(plan.preschoolDaycarePeriod?.start)},
     ${bind(plan.preschoolDaycarePeriod?.end)}
 )
-RETURNING id"""
+RETURNING id""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -83,7 +83,7 @@ fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan?
 SELECT id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date
 FROM placement_plan
 WHERE application_id = ${bind(applicationId)} AND deleted = false
-    """
+    """,
         )
     }
         .exactlyOneOrNull<QueryResult>()
@@ -116,7 +116,7 @@ SELECT d.id,d.name
 FROM placement_plan
 JOIN daycare d ON d.id = placement_plan.unit_id
 WHERE application_id = ${bind(applicationId)} AND deleted = false
-"""
+""",
         )
     }
         .exactlyOneOrNull<PlacementPlanUnit>()
@@ -180,7 +180,7 @@ WHERE
     pp.unit_confirmation_status != 'REJECTED'::confirmation_status
     ${if (to != null) " AND (start_date <= ${bind(to)} OR preschool_daycare_start_date <= ${bind(to)})" else ""}
     ${if (from != null) " AND (end_date >= ${bind(from)} OR preschool_daycare_end_date >= ${bind(from)})" else ""}
-"""
+""",
         )
     }
         .toList<QueryResult>()
@@ -227,7 +227,7 @@ fun Database.Transaction.updatePlacementPlanUnitConfirmation(
 UPDATE placement_plan
 SET unit_confirmation_status = ${bind(status)}, unit_reject_reason = ${bind(rejectReason)}, unit_reject_other_reason = ${bind(rejectOtherReason)}
 WHERE application_id = ${bind(applicationId)} AND deleted = false
-"""
+""",
         )
     }
         .execute()
@@ -240,7 +240,7 @@ fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild?
 SELECT id, first_name, last_name, date_of_birth AS dob
 FROM person
 WHERE id = ${bind(childId)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<PlacementDraftChild>()
@@ -253,7 +253,7 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
 SELECT restricted_details_enabled
 FROM person
 WHERE id = ${bind(guardianId)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<Boolean>()
@@ -268,7 +268,7 @@ FROM placement_plan pp
 JOIN application a ON pp.application_id = a.id
 WHERE unit_id = ${bind(unitId)} AND a.status = ${bind(ApplicationStatus.WAITING_UNIT_CONFIRMATION)}
 AND pp.unit_confirmation_status != ${bind(PlacementPlanConfirmationStatus.REJECTED)}
-"""
+""",
         )
     }
         .exactlyOne<Int>()

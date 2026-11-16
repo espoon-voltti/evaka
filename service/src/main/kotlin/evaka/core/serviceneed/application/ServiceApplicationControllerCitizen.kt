@@ -74,7 +74,7 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                             data = application,
                             permittedActions =
                                 (permittedActions[application.id] ?: emptySet()).letIf(
-                                    application.decision != null
+                                    application.decision != null,
                                 ) {
                                     // already decided applications can not be deleted
                                     it - Action.Citizen.ServiceApplication.DELETE

@@ -552,7 +552,7 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         val start =
             checkedRange.start.format(
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-                    .withLocale(Locale.of("fi", "FI"))
+                    .withLocale(Locale.of("fi", "FI")),
             )
         return EmailContent(
             subject =
@@ -1180,7 +1180,7 @@ $unsubscribeEn
                 <p>Uusi keskusteluaika varattu / Ett nytt diskussionsmöte bokat / New discussion time reserved</p>
                 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
                 <p>${notificationDetails.calendarEventTime.startTime.format(
-                    DateTimeFormatter.ofPattern("HH:mm")
+                    DateTimeFormatter.ofPattern("HH:mm"),
                 )} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
                 <hr>
                 $securityFi
@@ -1206,7 +1206,7 @@ $unsubscribeEn
                 <p>Varattu keskusteluaika peruttu / Bokad diskussionsmöte avbruten / Reserved discussion time cancelled</p>
                 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
                 <p>${notificationDetails.calendarEventTime.startTime.format(
-                    DateTimeFormatter.ofPattern("HH:mm")
+                    DateTimeFormatter.ofPattern("HH:mm"),
                 )} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
                 <hr>
                 $securityFi
@@ -1265,7 +1265,7 @@ $unsubscribeEn
 <p>${reminderData.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${reminderData.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${
                     reminderData.endTime.format(
-                        DateTimeFormatter.ofPattern("HH:mm")
+                        DateTimeFormatter.ofPattern("HH:mm"),
                     )
                 }</p>
 <p>Varauksen voi peruuttaa 2 arkipäivää ennen varattua aikaa suoraan eVakan kalenterinäkymästä. Myöhempää peruutusta varten ota yhteyttä henkilökuntaan.</p>
@@ -1276,7 +1276,7 @@ $unsubscribeFi
 <p>${reminderData.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${reminderData.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${
                     reminderData.endTime.format(
-                        DateTimeFormatter.ofPattern("HH:mm")
+                        DateTimeFormatter.ofPattern("HH:mm"),
                     )
                 }</p>
 <p>Reservation can be cancelled 2 business days before the reserved time using the eVaka calendar view. For later cancellations contact the daycare staff.</p>

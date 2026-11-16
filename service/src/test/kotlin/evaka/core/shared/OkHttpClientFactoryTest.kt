@@ -21,7 +21,7 @@ class OkHttpClientFactoryTest {
                             readTimeout = Duration.ofSeconds(20),
                             writeTimeout = Duration.ofSeconds(15),
                             callTimeout = Duration.ofMinutes(1),
-                        )
+                        ),
                 )
                 .client
 

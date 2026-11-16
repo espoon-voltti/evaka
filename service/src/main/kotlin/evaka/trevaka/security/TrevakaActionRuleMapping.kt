@@ -45,7 +45,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
             Action.Global.READ_HOLIDAY_PERIODS -> {
                 action.defaultRules.asSequence() +
                     sequenceOf(
-                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
                     )
             }
 
@@ -56,7 +56,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                             UserRole.DIRECTOR,
                             UserRole.FINANCE_ADMIN,
                             UserRole.SERVICE_WORKER,
-                        )
+                        ),
                     )
             }
 
@@ -76,10 +76,10 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                                 ProviderType.MUNICIPAL_SCHOOL,
                                 ProviderType.EXTERNAL_PURCHASED,
                             )
-                            .inAnyUnit()
+                            .inAnyUnit(),
                     ) +
                     sequenceOf(
-                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+                        HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
                     )
             }
 
@@ -109,13 +109,13 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 ) +
                     sequenceOf(
                         HasUnitRole(UserRole.UNIT_SUPERVISOR)
                             .inPlacementPlanUnitOfApplication(
-                                onlyAllowDeletedForTypes = setOf(ApplicationType.PRESCHOOL)
-                            ) as ScopedActionRule<in T>
+                                onlyAllowDeletedForTypes = setOf(ApplicationType.PRESCHOOL),
+                            ) as ScopedActionRule<in T>,
                     )
             }
 
@@ -144,7 +144,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                             .inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -154,7 +154,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.STAFF).inPlacementUnitOfChildOfBackupCare()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -179,7 +179,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementUnitOfChild()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -188,7 +188,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.STAFF).inPlacementUnitOfChild()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -198,7 +198,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.DIRECTOR, UserRole.FINANCE_ADMIN)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -207,12 +207,12 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.DIRECTOR, UserRole.FINANCE_ADMIN)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .inPlacementUnitOfChildOfAssistanceFactor(true)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -232,7 +232,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .inPlacementUnitOfChildOfDaycareAssistance(true)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -243,7 +243,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .inPlacementUnitOfChildOfPreschoolAssistance(true)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -254,7 +254,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .inPlacementUnitOfChildOfAssistanceAction(true)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -265,7 +265,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .inPlacementUnitOfChildOfOtherAssistanceMeasure(true)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -276,7 +276,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
@@ -287,7 +287,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
@@ -296,7 +296,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
@@ -312,14 +312,14 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
                             .inPlacementUnitOfChildOfChildDocument(editable = true)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(
                         HasGroupRole(UserRole.STAFF)
                             .inPlacementGroupOfChildOfChildDocumentWithFutureAccess(
                                 editable = true,
                                 denyForDecisions = false,
-                            ) as ScopedActionRule<in T>
+                            ) as ScopedActionRule<in T>,
                     )
             }
 
@@ -342,7 +342,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -359,7 +359,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -377,7 +377,8 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                            .inPlacementUnitOfChildOfPedagogicalDocument() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChildOfPedagogicalDocument()
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -413,7 +414,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -423,7 +424,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -449,7 +450,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.REPORT_VIEWER, UserRole.DIRECTOR)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(HasUnitRole(UserRole.STAFF).inUnit() as ScopedActionRule<in T>)
             }
@@ -467,7 +468,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -479,7 +480,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -488,7 +489,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
@@ -500,7 +501,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                     sequenceOf(
                         HasUnitRole(UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                             .withUnitFeatures(PilotFeature.RESERVATIONS)
-                            .inUnit() as ScopedActionRule<in T>
+                            .inUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -508,7 +509,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 action.defaultRules.asSequence() +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 

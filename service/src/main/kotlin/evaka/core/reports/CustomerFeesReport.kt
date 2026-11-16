@@ -90,7 +90,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                     WHERE fd.status = 'SENT' AND ${predicate(predicates)}
                       AND fd.valid_during @> ${bind(date)}
                     GROUP BY fdc.final_fee
-                """
+                """,
             )
         }
             .toList()
@@ -119,7 +119,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                     WHERE vvd.status = 'SENT' AND ${predicate(predicates)}
                       AND ${bind(date)} BETWEEN vvd.valid_from AND vvd.valid_to
                     GROUP BY vvd.final_co_payment
-                """
+                """,
             )
         }
             .toList()

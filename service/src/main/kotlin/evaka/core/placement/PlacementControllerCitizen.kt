@@ -60,7 +60,7 @@ class PlacementControllerCitizen(
                         .add(childPlacements.map { it.unitId })
                         .observeDate(childPlacements.minOfOrNull { it.startDate })
                     ChildPlacementResponse(
-                        placements = mapToTerminatablePlacements(childPlacements, clock.today())
+                        placements = mapToTerminatablePlacements(childPlacements, clock.today()),
                     )
                 }
             }
@@ -185,7 +185,7 @@ class PlacementControllerCitizen(
                             AsyncJob.GenerateFinanceDecisions.forChild(
                                 childId,
                                 DateRange(terminationDate, null),
-                            )
+                            ),
                         ),
                         runAt = clock.now(),
                     )

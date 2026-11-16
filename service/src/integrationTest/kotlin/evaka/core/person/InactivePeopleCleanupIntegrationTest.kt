@@ -130,7 +130,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
         }
 
@@ -154,7 +154,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(adult1, DevPersonType.RAW_ROW)
             tx.execute {
                 sql(
-                    "UPDATE person SET last_login = ${bind(testDate.minusMonths(2))} WHERE id = ${bind(adult1.id)}"
+                    "UPDATE person SET last_login = ${bind(testDate.minusMonths(2))} WHERE id = ${bind(adult1.id)}",
                 )
             }
         }
@@ -170,7 +170,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insertGuardian(adult1.id, child1.id)
             tx.execute {
                 sql(
-                    "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(adult1.id)}"
+                    "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(adult1.id)}",
                 )
             }
         }
@@ -192,7 +192,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insertGuardian(adult1.id, child2.id)
             tx.execute {
                 sql(
-                    "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(adult2.id)}"
+                    "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(adult2.id)}",
                 )
             }
         }
@@ -230,7 +230,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.createUpdate {
                     sql(
-                        "DELETE FROM application_other_guardian WHERE guardian_id = ${bind(otherGuardian)}"
+                        "DELETE FROM application_other_guardian WHERE guardian_id = ${bind(otherGuardian)}",
                     )
                 }
                 .execute()
@@ -249,7 +249,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(DevPlacement(childId = child1.id, unitId = daycare.id))
         }
@@ -269,7 +269,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -277,7 +277,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(DevPlacement(childId = child1.id, unitId = daycare.id))
         }
@@ -299,7 +299,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -307,7 +307,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(DevPlacement(childId = child1.id, unitId = daycare.id))
         }
@@ -329,7 +329,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -337,7 +337,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     headOfChildId = adult2.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(DevPlacement(childId = child1.id, unitId = daycare.id))
         }
@@ -353,7 +353,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                 DevIncomeStatement(
                     personId = adult1.id,
                     data = IncomeStatementBody.HighestFee(LocalDate.now(), null),
-                )
+                ),
             )
         }
 
@@ -369,7 +369,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(adult1, DevPersonType.RAW_ROW)
             tx.createUpdate {
                     sql(
-                        "INSERT INTO pedagogical_document_read (person_id, pedagogical_document_id, read_at) VALUES (${bind(adult1.id)}, ${bind(docId)}, ${bind(testDate)})"
+                        "INSERT INTO pedagogical_document_read (person_id, pedagogical_document_id, read_at) VALUES (${bind(adult1.id)}, ${bind(docId)}, ${bind(testDate)})",
                     )
                 }
                 .execute()
@@ -389,12 +389,12 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                             label = "Eka",
                             questions =
                                 listOf(Question.TextQuestion(id = "q1", label = "kysymys 1")),
-                        )
-                    )
+                        ),
+                    ),
             )
         val documentContent =
             DocumentContent(
-                answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "foobar"))
+                answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "foobar")),
             )
         val employee = DevEmployee()
         val employeeUser = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
@@ -406,7 +406,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     DevDocumentTemplate(
                         validity = DateRange(testDate, null),
                         content = templateContent,
-                    )
+                    ),
                 )
             val document =
                 tx.insert(
@@ -426,14 +426,14 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                                     createdAt = HelsinkiDateTime.now(),
                                     createdBy = employeeUser.evakaUserId,
                                     publishedContent = documentContent,
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 )
             tx.insert(adult1, DevPersonType.RAW_ROW)
             tx.createUpdate {
                     sql(
-                        "INSERT INTO child_document_read (person_id, document_id, read_at) VALUES (${bind(adult1.id)}, ${bind(document)}, ${bind(testDate)})"
+                        "INSERT INTO child_document_read (person_id, document_id, read_at) VALUES (${bind(adult1.id)}, ${bind(document)}, ${bind(testDate)})",
                     )
                 }
                 .execute()

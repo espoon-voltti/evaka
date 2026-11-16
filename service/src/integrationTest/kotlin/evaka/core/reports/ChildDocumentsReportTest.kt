@@ -85,7 +85,7 @@ class ChildDocumentsReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = daycare.id,
                         startDate = clock.today().minusMonths(1),
                         endDate = clock.today().plusMonths(1),
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -93,7 +93,7 @@ class ChildDocumentsReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     daycareGroupId = group.id,
                     startDate = clock.today().minusMonths(1),
                     endDate = clock.today().plusMonths(1),
-                )
+                ),
             )
             tx.insert(template)
         }
@@ -134,7 +134,7 @@ class ChildDocumentsReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     modifiedBy = supervisor.evakaUserId,
                     contentLockedAt = clock.now(),
                     contentLockedBy = supervisor.id,
-                )
+                ),
             )
         }
         val rows =

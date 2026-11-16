@@ -39,14 +39,14 @@ class VardaErrorReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(child, DevPersonType.CHILD)
                 tx.execute {
                     sql(
-                        "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)"
+                        "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)",
                     )
                 }
                 tx.setVardaUpdateError(child.id, now, "boom")
             }
             tx.execute {
                 sql(
-                    "UPDATE varda_state SET last_success_at = ${bind(now)} WHERE child_id = ${bind(frozenChild.id)}"
+                    "UPDATE varda_state SET last_success_at = ${bind(now)} WHERE child_id = ${bind(frozenChild.id)}",
                 )
             }
             tx.freezeVardaSync(listOf(frozenChild.id), now)

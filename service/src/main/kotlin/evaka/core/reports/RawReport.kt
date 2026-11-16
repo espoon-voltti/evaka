@@ -53,7 +53,7 @@ class RawReportController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.RawReportRead.log(
-                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size),
                 )
             }
     }
@@ -150,7 +150,7 @@ WHERE
     ) AND
     (t != ALL (${bind(holidays)}) OR u.shift_care_open_on_holidays OR bcu.shift_care_open_on_holidays)
 ORDER BY p.id, t
-"""
+""",
             )
         }
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)

@@ -140,10 +140,10 @@ class KoskiClient(
                                     opiskeluoikeudet =
                                         data.oppija.opiskeluoikeudet
                                             .zip(response.opiskeluoikeudet)
-                                            .map { it.first.copy(oid = it.second.oid) }
-                                )
+                                            .map { it.first.copy(oid = it.second.oid) },
+                                ),
                             ),
-                    )
+                    ),
                 )
             }
             logger.info { "Koski upload ${msg.key} ${data.operation}: finished" }

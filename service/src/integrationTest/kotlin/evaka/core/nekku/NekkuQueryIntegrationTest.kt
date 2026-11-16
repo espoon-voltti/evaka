@@ -367,7 +367,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = placementStartDay,
                             endDate = placementEndDay,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -376,7 +376,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = placementStartDay,
                                 endDate = placementEndDay,
-                            )
+                            ),
                         )
                         tx.insert(
                             DevServiceNeed(
@@ -386,7 +386,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 confirmedBy = employee.evakaUserId,
                                 optionId = serviceNeedOptionId,
                                 shiftCare = ShiftCareType.NONE,
-                            )
+                            ),
                         )
                     }
             }
@@ -398,7 +398,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = placementStartDay.minusWeeks(2),
                         endDate = placementEndDay.minusWeeks(2),
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -407,7 +407,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = placementStartDay.minusWeeks(2),
                             endDate = placementEndDay.minusWeeks(2),
-                        )
+                        ),
                     )
                     tx.insert(
                         DevServiceNeed(
@@ -417,7 +417,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             confirmedBy = employee.evakaUserId,
                             optionId = serviceNeedOptionId,
                             shiftCare = ShiftCareType.FULL,
-                        )
+                        ),
                     )
                 }
 
@@ -437,7 +437,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = placementStartDay,
                         endDate = placementEndDay,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -446,7 +446,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = placementStartDay,
                             endDate = placementEndDay,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevServiceNeed(
@@ -456,7 +456,7 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             confirmedBy = employee.evakaUserId,
                             optionId = serviceNeedOptionId,
                             shiftCare = ShiftCareType.FULL,
-                        )
+                        ),
                     )
                 }
 

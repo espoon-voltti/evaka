@@ -65,7 +65,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                     startDate = range.start,
                     endDate = range.end,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -74,7 +74,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                     startDate = range.start,
                     endDate = range.end,
-                )
+                ),
             )
 
             // childA day 1: absent in both categories -> full day, SICKLEAVE
@@ -84,7 +84,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(3),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -92,7 +92,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(3),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
             // childA day 2: absent only in billable -> NOT a full day
             tx.insert(
@@ -101,7 +101,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             // childA day 3: both categories, types differ -> full day, type from nonbillable
             // (SICKLEAVE)
@@ -111,7 +111,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(1),
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -119,7 +119,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(1),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
             // childB: only a billable absence -> no full day -> excluded from results
             tx.insert(
@@ -128,7 +128,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(3),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -162,7 +162,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     type = PlacementType.DAYCARE,
                     startDate = today.minusDays(20),
                     endDate = today.plusDays(20),
-                )
+                ),
             )
             // today: counts (DAYCARE has only BILLABLE category)
             tx.insert(
@@ -171,7 +171,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today,
                     absenceType = AbsenceType.UNKNOWN_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             // tomorrow: future, excluded by clamp
             tx.insert(
@@ -180,7 +180,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.plusDays(1),
                     absenceType = AbsenceType.UNKNOWN_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -211,7 +211,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                     startDate = range.start,
                     endDate = range.end,
-                )
+                ),
             )
             // Both categories absent with PLANNED_ABSENCE -> full day, reported as PLANNED_ABSENCE
             tx.insert(
@@ -220,7 +220,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(3),
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -228,7 +228,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(3),
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
         }
 
@@ -277,7 +277,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     daycareGroupId = groupG.id,
                     startDate = gStart,
                     endDate = gEnd,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -285,7 +285,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     daycareGroupId = groupH.id,
                     startDate = hStart,
                     endDate = hEnd,
-                )
+                ),
             )
 
             // Absence on a day inside the G period -> should be counted when filtering by G
@@ -295,7 +295,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(8),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -303,7 +303,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(8),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
             // Absence on a day inside the H period -> should NOT be counted when filtering by G
             tx.insert(
@@ -312,7 +312,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -320,7 +320,7 @@ internal class ChildAbsenceReportTest : FullApplicationTest(resetDbBeforeEach = 
                     date = today.minusDays(2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
         }
 

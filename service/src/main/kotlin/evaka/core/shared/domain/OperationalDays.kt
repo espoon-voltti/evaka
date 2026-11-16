@@ -32,7 +32,7 @@ fun Database.Read.getOperationalDatesForChildren(
         SELECT daterange(pl.start_date, pl.end_date, '[]') as range, pl.child_id, pl.unit_id
         FROM placement pl
         WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
-    """
+    """,
         )
     }
         .toList<PlacementRange>()
@@ -45,7 +45,7 @@ fun Database.Read.getOperationalDatesForChildren(
         SELECT daterange(bc.start_date, bc.end_date, '[]') as range, bc.child_id, bc.unit_id
         FROM backup_care bc
         WHERE bc.child_id = ANY(${bind(children)}) AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
-    """
+    """,
         )
     }
         .toList<PlacementRange>()
@@ -73,7 +73,7 @@ fun Database.Read.getOperationalDatesForChildren(
         SELECT id AS unit_id, operation_days, shift_care_operation_days, shift_care_open_on_holidays
         FROM daycare 
         WHERE id = ANY(${bind(daycareIds)})
-    """
+    """,
         )
     }
         .toList<DaycareOperationDays>()
@@ -93,7 +93,7 @@ fun Database.Read.getOperationalDatesForChildren(
         FROM placement pl
         JOIN service_need sn ON sn.placement_id = pl.id AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
         WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
-    """
+    """,
         )
     }
         .toList<ShiftCareRange>()
@@ -104,7 +104,7 @@ fun Database.Read.getOperationalDatesForChildren(
     }
     val intermittentShiftCareRanges: Map<ChildId, DateSet> = shiftCareRanges.mapValues { entry ->
         DateSet.of(
-            entry.value.filter { it.shiftCare == ShiftCareType.INTERMITTENT }.map { it.range }
+            entry.value.filter { it.shiftCare == ShiftCareType.INTERMITTENT }.map { it.range },
         )
     }
 
@@ -161,7 +161,7 @@ fun Database.Read.getPreschoolOperationalDatesForChildren(
         DateSet.of(
             breaks +
                 weekends.map { it.toFiniteDateRange() } +
-                holidays.map { it.toFiniteDateRange() }
+                holidays.map { it.toFiniteDateRange() },
         )
 
     return children.associateWith { childId ->

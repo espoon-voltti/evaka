@@ -26,7 +26,7 @@ fun Database.Transaction.replaceGuardianChildren(
 DELETE FROM guardian
 WHERE guardian_id = ${bind(guardianId)} AND NOT child_id = ANY(${bind(childIds)})
 RETURNING child_id
-"""
+""",
         )
     }
         .toList<ChildId>()
@@ -37,7 +37,7 @@ INSERT INTO guardian (guardian_id, child_id)
 SELECT ${bind(guardianId)}, child_id FROM unnest(${bind(childIds)}) child_id
 ON CONFLICT DO NOTHING
 RETURNING child_id
-"""
+""",
         )
     }
         .toList<ChildId>()
@@ -54,7 +54,7 @@ fun Database.Transaction.replaceChildGuardians(
 DELETE FROM guardian
 WHERE child_id = ${bind(childId)} AND NOT guardian_id = ANY(${bind(guardianIds)})
 RETURNING guardian_id
-"""
+""",
         )
     }
         .toList<PersonId>()
@@ -65,7 +65,7 @@ INSERT INTO guardian (guardian_id, child_id)
 SELECT guardian_id, ${bind(childId)} FROM unnest(${bind(guardianIds)}) guardian_id
 ON CONFLICT DO NOTHING
 RETURNING guardian_id
-"""
+""",
         )
     }
         .toList<PersonId>()
@@ -81,7 +81,7 @@ SELECT EXISTS (
     WHERE guardian_id = ${bind(guardianId)}
     AND child_id = ${bind(childId)}
 )
-"""
+""",
     )
 }
     .exactlyOne<Boolean>()
@@ -101,7 +101,7 @@ fun Database.Transaction.blockGuardian(childId: ChildId, guardianId: PersonId) {
     deleteGuardianRelationship(childId = childId, guardianId = guardianId)
     createUpdate {
         sql(
-            "INSERT INTO guardian_blocklist (child_id, guardian_id) VALUES (${bind(childId)}, ${bind(guardianId)})"
+            "INSERT INTO guardian_blocklist (child_id, guardian_id) VALUES (${bind(childId)}, ${bind(guardianId)})",
         )
     }
         .execute()
@@ -111,7 +111,7 @@ fun Database.Transaction.blockGuardian(childId: ChildId, guardianId: PersonId) {
 fun Database.Transaction.unblockGuardian(childId: ChildId, guardianId: PersonId) {
     createUpdate {
         sql(
-            "DELETE FROM guardian_blocklist WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(guardianId)}"
+            "DELETE FROM guardian_blocklist WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(guardianId)}",
         )
     }
         .execute()
@@ -120,7 +120,7 @@ fun Database.Transaction.unblockGuardian(childId: ChildId, guardianId: PersonId)
 fun Database.Transaction.deleteGuardianRelationship(childId: ChildId, guardianId: PersonId) {
     createUpdate {
         sql(
-            "DELETE FROM guardian WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(guardianId)}"
+            "DELETE FROM guardian WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(guardianId)}",
         )
     }
         .execute()
@@ -132,13 +132,13 @@ private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<Gu
             """
 INSERT INTO guardian (guardian_id, child_id)
 VALUES (${bind { it.guardianId }}, ${bind { it.childId }}) 
-"""
+""",
         )
     }
 }
 
 fun Database.Read.getGuardiansForChildren(
-    childIds: Collection<ChildId>
+    childIds: Collection<ChildId>,
 ): Map<ChildId, List<PersonId>> {
     return createQuery {
         sql(
@@ -150,14 +150,14 @@ fun Database.Read.getGuardiansForChildren(
             LEFT JOIN guardian g ON g.child_id = c.id
             WHERE child_id = ANY(${bind(childIds)})
             GROUP BY c.id
-            """
+            """,
         )
     }
         .toMap { columnPair("child_id", "guardian_ids") }
 }
 
 fun Database.Read.getFosterParentsForChildren(
-    childIds: Collection<ChildId>
+    childIds: Collection<ChildId>,
 ): Map<ChildId, List<PersonId>> {
     return createQuery {
         sql(
@@ -169,7 +169,7 @@ fun Database.Read.getFosterParentsForChildren(
             LEFT JOIN foster_parent fp ON fp.child_id = c.id
             WHERE child_id = ANY(${bind(childIds)})
             GROUP BY c.id
-            """
+            """,
         )
     }
         .toMap { columnPair("child_id", "foster_parent_ids") }
@@ -182,7 +182,7 @@ fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
 SELECT guardian_id
 FROM guardian
 WHERE child_id = ${bind(childId)}
-                """
+                """,
         )
     }
         .toList<PersonId>()
@@ -198,7 +198,7 @@ fun Database.Read.getChildGuardiansAndFosterParents(
 SELECT guardian_id AS id FROM guardian WHERE child_id = ${bind(childId)}
 UNION
 SELECT parent_id AS id FROM foster_parent WHERE child_id = ${bind(childId)} AND valid_during @> ${bind(today)}
-"""
+""",
         )
     }
         .toList<PersonId>()
@@ -211,7 +211,7 @@ fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
                 select child_id
                 from guardian
                 where guardian_id = ${bind(guardianId)}
-                """
+                """,
         )
     }
         .toList<ChildId>()

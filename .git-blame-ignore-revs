@@ -2,12 +2,119 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-# Format all Kotlin code with ktfmt
-7bc6dba4b5a122b2836f321e21d10e3de449d02e
+# 2021-01-14 Upgrade eslint/prettier/typescript
+48fd314c8912d32061f0ec223fb1c324e31f3d23
+
+# 2021-03-02 Remove tilde imports
+76edb40b08514132bb63d04905a26ff5135c5e15
+
+# 2021-03-03 Fix imports
+c80577654b125bf82225a598225bc6057b608291
+
+# 2021-03-08 Fix lint errors
+4f6fafc81ab9b735c6febcfdc6da794e78760879
+
+# 2021-03-19 Remove evaka prefix from imports
+69904f259771d3361da3f51471997ca695157baf
+
+# 2021-03-19 Reformat code
+23be856cb1a6572c75f739bf1481bffc4cb02833
+
+# 2021-07-13 Frontend: autofix prettier errors after update
+5a6a8d5d144a6fcfd773b7083ba707a065ac05f6
+
+# 2022-01-07 Use eslint-plugin-import to order imports
+691ba65c277ecd94f10691d1d0266346a6067ff6
+
+# 2022-01-07 Enable react/jsx-curly-brace-presence eslint rule
+b3f9dfbfac1fdb910e31fa8068b6dd013d5fef35
+
+# 2022-01-07 Order lib-icons import correctly
+d6aebff3c262974e4c8259e2899fd97e48421d39
+
+# 2022-02-17 Enable newlines between import groups
+2443a98a2d9a053d4e61df4985913af54c967790
+
+# 2022-09-20 Fix ktlint errors
+a738d5a87b365c7ef3d1f1a8be15f013a122e43a
+
+# 2022-10-20 Format all Kotlin code with ktfmt
 9898ed3a69d4b3a76ad5d0132c110d09c80c3662
 
-# Upgrade prettier
+# 2023-03-03 Format codegen sources with ktfmt
+f2d949f108495a963a1b6175fb29863536c7a834
+
+# 2023-05-23 eslint: arrow-body-style
+569ae6b8d269b5fe8f01f9b20855ce549ba1c287
+
+# 2023-07-11 Upgrade prettier to v3
 73a26f3c8e3729be96472bcd979b7d3f3171f511
 
-# Upgrade eslint/prettier/typescript
-48fd314c8912d32061f0ec223fb1c324e31f3d23
+# 2023-09-28 Reformat code
+0874d7b00ddc3a67ad98ec819d84efee05620656
+
+# 2023-11-10 ktfmtFormat
+7bc6dba4b5a122b2836f321e21d10e3de449d02e
+
+# 2023-11-10 Ran ktfmtFormat and yarn lint
+746e873538a1378601bbf388a452c5a5e43eacb2
+
+# 2023-11-20 Fix prettier
+8391b58bebe79e40eaa595e01b98a31d9ece1183
+
+# 2024-01-15 prettier
+f4b2b9da36ddf545b6b9d59591454e6016baf6cd
+
+# 2024-07-19 Run `eslint --fix`
+4791219f752d13813d4ee1f4499a2643c8255bb2
+
+# 2024-08-26 Run ktfmtFormat
+56edb7bb833e3eb2615384d86ccb3e5a7f583a99
+
+# 2025-05-16 Only allow absolute imports from `lib-*`
+dfd1894f80f1b6b7df9a9b4081960962ad25caec
+
+# 2025-05-16 Use type imports in generated code
+dc226153f8b15f730b8c4fb992c38eee534ce863
+
+# 2025-05-16 Enforce type-only imports and exports
+a500049a13409a8bee32728a069a39b4b00b0d65
+
+# 2025-05-19 Enforce shortest relative imports with eslint
+ca9fd663e86ef67c5037de7c788113f0e0b00673
+
+# 2025-08-06 Enforce type-only imports
+4634c5d169b829a657803009da644bb1dd581394
+
+# 2025-08-06 Import .ts files
+61c344a130208fca6d833b156ae474fc1b586039
+
+# 2025-11-03 Autoformat code
+2250e5536e34bf76de7bb952555a3d064dccd95e
+
+# 2025-11-24 ktlint update formatting fixes
+03fd0c395e7c9b68a5cc6381f8c75cd562d0c84e
+
+# 2025-12-08 Update dependency prettier to v3.7.4 (#8208)
+511551aa352a1a8a06b4b59c8371c6726fe90b80
+
+# 2026-01-27 format
+362b51eae9cb158fe198d9ba3a38090a62dc14b4
+
+# 2026-04-08 Rename `fi.espoo.evaka` -> `evaka`, `fi.espoo.evaka.{espoo,oulu,turku}` -> `evaka.instance.{espoo,oulu,turku}`
+36581af0acff789293742718e556df352acf7574
+
+# 2026-04-28 Apply new ktfmt formatting
+0681271bb0ee2e06e1cd49b3384347fc1465fa29
+
+# 2026-06-24 Reformat
+dec163f71816ee735f660a41e57e21870cd4d799
+
+# 2026-06-25 Enable eslint/arrow-body-style
+4f14b93e8b775fda0a62a590a46ead1d9b77022d
+
+# 2026-08-11 run ktfmt format for ktfmt 0.27
+3c8e51961bb34fa8945afa7410cad9f5ce3982c2
+
+# 2026-11-16 ktfmt reformat
+ec640e9e76ca409a905d7d9a10e14269cb3951cb

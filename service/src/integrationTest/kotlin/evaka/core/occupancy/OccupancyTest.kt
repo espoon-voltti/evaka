@@ -110,7 +110,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     areaId = careArea2.id,
                     providerType = ProviderType.PURCHASED,
                     type = setOf(CareType.FAMILY),
-                )
+                ),
             )
             it.insert(DevDaycareGroup(id = familyGroup1, daycareId = familyUnitInArea2))
             it.insert(DevDaycareGroup(id = familyGroup2, daycareId = familyUnitInArea2))
@@ -237,7 +237,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
     private fun assertRealtimeAttendances(
-        expectedCaretakers: List<Pair<LocalDate, OccupancyValues>>
+        expectedCaretakers: List<Pair<LocalDate, OccupancyValues>>,
     ) {
         val (rangeStart, rangeEnd) =
             expectedCaretakers.map { it.first }.let { it.minOrNull()!! to it.maxOrNull()!! }
@@ -358,7 +358,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 today.minusDays(1) to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3),
                 today to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3),
-            )
+            ),
         )
     }
 
@@ -453,7 +453,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 today.minusDays(1) to OccupancyValues(1.0, 0.0, 1, 2.0, 7.1),
                 today to OccupancyValues(1.0, 0.0, 1, 2.0, 7.1),
-            )
+            ),
         )
     }
 
@@ -630,14 +630,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 today.minusDays(1) to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3),
                 today to OccupancyValues(1.0, 0.0, 1, 2.0, 7.1),
-            )
+            ),
         )
     }
 
     @ParameterizedTest(name = "Realized occupancy with realtime staff attendance type {0}")
     @EnumSource(StaffAttendanceType::class)
     fun `calculateDailyGroupOccupancyValues with different realtime staff attendance types`(
-        type: StaffAttendanceType
+        type: StaffAttendanceType,
     ) {
         val child = DevPerson(dateOfBirth = today.minusYears(4))
         val placement =
@@ -679,7 +679,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
 
         assertRealtimeAttendances(
-            listOf(today to OccupancyValues(1.0, 0.0, 1, expectedCaretakers, expectedPercentage))
+            listOf(today to OccupancyValues(1.0, 0.0, 1, expectedCaretakers, expectedPercentage)),
         )
     }
 
@@ -706,7 +706,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = today.minusDays(1),
                     endDate = today,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -743,7 +743,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = today.minusDays(1),
                     endDate = today,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -939,7 +939,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = PlacementType.PRESCHOOL,
                     startDate = preschoolTerm2023.finnishPreschool.start,
                     endDate = preschoolTerm2023.finnishPreschool.end,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -948,7 +948,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = PlacementType.CLUB,
                     startDate = clubTerm2023.term.start,
                     endDate = clubTerm2023.term.end,
-                )
+                ),
             )
         }
 
@@ -1017,7 +1017,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = today,
                     endDate = today,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -1037,14 +1037,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycareInArea1.id,
                     startDate = today,
                     endDate = today.plusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceFactor(
                     childId = child.id,
                     capacityFactor = 2.0,
                     validDuring = today.plusDays(1).toFiniteDateRange(),
-                )
+                ),
             )
         }
 
@@ -1082,7 +1082,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                             unitId = daycareInArea1.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
         }
@@ -1123,7 +1123,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 today.plusDays(preschoolDaycare.first.toLong()),
                             preschoolDaycareEndDate =
                                 today.plusDays(preschoolDaycare.last.toLong()),
-                        )
+                        ),
                     )
                 }
         }
@@ -1236,7 +1236,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                             startDate = today,
                             endDate = today,
                             deleted = true,
-                        )
+                        ),
                     )
                 }
         }
@@ -1269,7 +1269,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                             unitId = daycareInArea1.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -1278,7 +1278,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = familyUnitInArea2,
                     startDate = today,
                     endDate = today,
-                )
+                ),
             )
         }
 
@@ -1310,7 +1310,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                             unitId = daycareInArea1.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -1320,7 +1320,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = PlacementType.DAYCARE_PART_TIME,
                     startDate = today,
                     endDate = today,
-                )
+                ),
             )
         }
 
@@ -1353,7 +1353,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                             type = PlacementType.DAYCARE_PART_TIME,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -1362,7 +1362,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycareInArea1.id,
                     startDate = today,
                     endDate = today,
-                )
+                ),
             )
         }
 
@@ -1397,7 +1397,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endDate = today.plusDays(1),
                             preschoolDaycareStartDate = today,
                             preschoolDaycareEndDate = today,
-                        )
+                        ),
                     )
                 }
         }
@@ -1644,7 +1644,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = familyUnitInArea2,
                     groupId = familyGroup2,
                     period = FiniteDateRange(today, today),
-                )
+                ),
             )
 
             tx.insertTestStaffAttendance(groupId = familyGroup1, date = today, count = 3.0)
@@ -1833,8 +1833,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .containsExactlyInAnyOrder(familyUnitInArea2)
             assertThat(
                     calculateDailyUnitOccupancyValuesByProviderType(
-                        ProviderType.PRIVATE_SERVICE_VOUCHER
-                    )
+                        ProviderType.PRIVATE_SERVICE_VOUCHER,
+                    ),
                 )
                 .isEmpty()
         }
@@ -1908,8 +1908,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .containsExactlyInAnyOrder(familyUnitInArea2)
             assertThat(
                     calculateDailyUnitOccupancyValuesByUnitTypes(
-                        setOf(CareType.CENTRE, CareType.FAMILY)
-                    )
+                        setOf(CareType.CENTRE, CareType.FAMILY),
+                    ),
                 )
                 .extracting<DaycareId> { value -> value.key.unitId }
                 .containsExactlyInAnyOrder(daycareInArea1.id, familyUnitInArea2)
@@ -1984,8 +1984,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .containsExactlyInAnyOrder(familyGroup1, familyGroup2)
             assertThat(
                     calculateDailyGroupOccupancyValuesByProviderType(
-                        ProviderType.PRIVATE_SERVICE_VOUCHER
-                    )
+                        ProviderType.PRIVATE_SERVICE_VOUCHER,
+                    ),
                 )
                 .isEmpty()
         }
@@ -2058,8 +2058,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .containsExactlyInAnyOrder(familyGroup1, familyGroup2)
             assertThat(
                     calculateDailyGroupOccupancyValuesByUnitTypes(
-                        setOf(CareType.CENTRE, CareType.FAMILY)
-                    )
+                        setOf(CareType.CENTRE, CareType.FAMILY),
+                    ),
                 )
                 .extracting<GroupId> { value -> value.key.groupId }
                 .containsExactlyInAnyOrder(daycareGroup1, daycareGroup2, familyGroup1, familyGroup2)
@@ -2108,7 +2108,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 today.minusDays(1) to OccupancyValues(1.0, 0.0, 1, 0.3922, 36.4),
                 today to OccupancyValues(1.0, 0.0, 1, 0.6209, 23.0),
-            )
+            ),
         )
     }
 

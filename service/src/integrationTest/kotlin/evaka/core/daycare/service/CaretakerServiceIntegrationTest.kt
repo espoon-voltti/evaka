@@ -33,7 +33,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(group)
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(group.id)}, ${bind(groupStart)}, NULL, 3)"
+                    "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(group.id)}, ${bind(groupStart)}, NULL, 3)",
                 )
             }
         }

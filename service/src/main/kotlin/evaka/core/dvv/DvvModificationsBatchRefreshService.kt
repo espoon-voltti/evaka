@@ -47,8 +47,8 @@ class DvvModificationsBatchRefreshService(
                     listOf(
                         AsyncJob.DvvModificationsRefresh(
                             requestingUserId =
-                                UUID.fromString("00000000-0000-0000-0000-000000000000")
-                        )
+                                UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                        ),
                     ),
                 runAt = clock.now(),
                 retryCount = 10,
@@ -59,7 +59,7 @@ class DvvModificationsBatchRefreshService(
 
 private fun Database.Read.getPersonSsnsToUpdate(): List<String> = createQuery {
     sql(
-        "SELECT DISTINCT(social_security_number) FROM person WHERE social_security_number IS NOT NULL"
+        "SELECT DISTINCT(social_security_number) FROM person WHERE social_security_number IS NOT NULL",
     )
 }
     .toList<String>()

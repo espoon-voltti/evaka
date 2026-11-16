@@ -120,11 +120,11 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                         val daycares =
                             if (body.unitId != null)
                                 listOf(
-                                    tx.getDaycare(body.unitId) ?: throw BadRequest("No such unit")
+                                    tx.getDaycare(body.unitId) ?: throw BadRequest("No such unit"),
                                 )
                             else
                                 tx.getDaycaresForArea(
-                                    body.areaId ?: throw BadRequest("Can't happen")
+                                    body.areaId ?: throw BadRequest("Can't happen"),
                                 )
                         addDaycareAndGroupToReportRows(
                             daycares.flatMap { daycare ->
@@ -171,7 +171,7 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                                 "unitId" to body.unitId,
                                 "term" to body.term,
                                 "groupId" to body.groupId,
-                            )
+                            ),
                     )
                 }
         }
@@ -319,7 +319,7 @@ FROM (
 JOIN daycare_group dg ON group_placements.daycare_group_id = dg.id
 JOIN daycare d ON dg.daycare_id = d.id;
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
         .toMap {
@@ -372,7 +372,7 @@ FROM preschool_placement_children ppc
         AND NOT exists (SELECT FROM preschool_term pt WHERE pt.term_breaks @> ab.date)
 GROUP BY 1, 2, 3, 4, 6;
         """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
         .toList<PreschoolAbsenceRow>()
@@ -425,7 +425,7 @@ FROM preschool_group_placement_children pgpc
         AND NOT exists (SELECT FROM preschool_term pt WHERE pt.term_breaks @> ab.date)
 GROUP BY 1, 2, 3, 4, 6;
         """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
         .toList<PreschoolAbsenceRow>()
@@ -512,7 +512,7 @@ HAVING floor(
     ) / 60
 ) >= 20;
     """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
         .toList<ChildDailyAttendanceDeviation>()
@@ -605,7 +605,7 @@ HAVING floor(
     ) / 60
 ) >= 20;
     """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
         .toList<ChildDailyAttendanceDeviation>()

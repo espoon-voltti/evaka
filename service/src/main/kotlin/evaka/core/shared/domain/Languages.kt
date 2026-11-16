@@ -23,7 +23,7 @@ data class IsoLanguage(
             // Locale javadoc:
             // "When a language has both an alpha-2 code and an alpha-3 code, the alpha-2 code must
             // be used."
-            alpha2.takeIf { it.isNotEmpty() } ?: id
+            alpha2.takeIf { it.isNotEmpty() } ?: id,
         )
 
     companion object {

@@ -111,13 +111,13 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
         when {
             this.end < other.start -> {
                 BoundedRange.Relation.LeftTo(
-                    gap = tryCreate(this.end.plusDays(1), other.start.minusDays(1))
+                    gap = tryCreate(this.end.plusDays(1), other.start.minusDays(1)),
                 )
             }
 
             other.end < this.start -> {
                 BoundedRange.Relation.RightTo(
-                    gap = tryCreate(other.end.plusDays(1), this.start.minusDays(1))
+                    gap = tryCreate(other.end.plusDays(1), this.start.minusDays(1)),
                 )
             }
 

@@ -108,7 +108,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         daycareGroupId = groupId,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             }
 
@@ -128,7 +128,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = groupId2,
                     startDate = placementStart,
                     endDate = today.minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -136,7 +136,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = groupId,
                     startDate = today,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.createMobileDeviceToUnit(mobileUser.id, daycare.id)
@@ -256,7 +256,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     startDate = placementStart,
                     endDate = placementEnd,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
@@ -264,7 +264,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     period = FiniteDateRange(placementStart, placementEnd),
                     groupId = groupId,
-                )
+                ),
             )
             tx.insertAttendance(
                 child7.id,

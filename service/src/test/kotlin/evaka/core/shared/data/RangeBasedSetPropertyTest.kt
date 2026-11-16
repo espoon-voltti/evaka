@@ -39,7 +39,7 @@ abstract class RangeBasedSetPropertyTest<
                         ranges.withIndex().any { (index2, range2) ->
                             index != index2 && (range.overlaps(range2) || range.adjacentTo(range2))
                         }
-                    }
+                    },
                 )
             }
         }

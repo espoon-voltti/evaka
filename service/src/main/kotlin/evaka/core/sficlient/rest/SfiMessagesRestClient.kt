@@ -27,7 +27,7 @@ class Config(env: SfiEnv) {
         ApiUrls(
             requireNotNull(env.restAddress?.toHttpUrlOrNull()) {
                 "SFI REST address must be set (was ${env.restAddress})"
-            }
+            },
         )
     private val printingAndEnvelopingService =
         PrintingAndEnvelopingService(
@@ -38,7 +38,7 @@ class Config(env: SfiEnv) {
                             email =
                                 requireNotNull(env.contactPerson.email) {
                                     "SFI contact person email must be set"
-                                }
+                                },
                         ),
                     username = env.printing.billingId,
                     password =
@@ -69,7 +69,7 @@ class Config(env: SfiEnv) {
                     requireNotNull(env.contactOrganization.postOffice) {
                         "SFI contact organization post office must be set"
                     },
-            )
+            ),
         )
     val restUsername = requireNotNull(env.restUsername) { "SFI REST username must be set" }
 
@@ -105,7 +105,7 @@ class Config(env: SfiEnv) {
                         zipCode = msg.postalCode,
                         city = msg.postOffice,
                         countryCode = msg.countryCode,
-                    )
+                    ),
                 ),
                 rotateLandscapePages = false,
                 sender = paperMailSender,
@@ -163,7 +163,7 @@ class SfiMessagesRestClient(
                 jsonMapper.readValue<T>(body.charStream())
             else
                 error(
-                    "Expected JSON response body ${T::class}, got ${body.contentType()} with length ${body.contentLength()} (${body.string()})"
+                    "Expected JSON response body ${T::class}, got ${body.contentType()} with length ${body.contentLength()} (${body.string()})",
                 )
         }
 
@@ -180,10 +180,10 @@ class SfiMessagesRestClient(
                             AccessTokenRequestBody(
                                 username = config.restUsername,
                                 password = password.value,
-                            )
-                        )
+                            ),
+                        ),
                     )
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response ->
@@ -196,7 +196,7 @@ class SfiMessagesRestClient(
                     }
                     val body = jsonResponseBody<ApiError>(response)
                     error(
-                        "Access token request failed with HTTP ${response.code} ${response.message}: $body"
+                        "Access token request failed with HTTP ${response.code} ${response.message}: $body",
                     )
                 }
             }
@@ -212,7 +212,7 @@ class SfiMessagesRestClient(
                     .header("Authorization", authorizationHeader.get().value)
                     .header("Accept", "application/json")
                     .post(pdfUploadBody(fileName, pdfBytes))
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response ->
@@ -221,7 +221,7 @@ class SfiMessagesRestClient(
                 } else {
                     val body = jsonResponseBody<ApiError>(response)
                     error(
-                        "File upload request failed with HTTP ${response.code} ${response.message}: $body"
+                        "File upload request failed with HTTP ${response.code} ${response.message}: $body",
                     )
                 }
             }
@@ -231,7 +231,7 @@ class SfiMessagesRestClient(
         val pdfBytes = getDocument(DocumentLocation(msg.documentBucket, msg.documentKey)).bytes
 
         logger.info(
-            mapOf("meta" to mapOf("documentId" to msg.documentId, "messageId" to msg.messageId))
+            mapOf("meta" to mapOf("documentId" to msg.documentId, "messageId" to msg.messageId)),
         ) {
             "Sending SFI message about ${msg.documentId} with messageId: ${msg.messageId}"
         }
@@ -245,7 +245,7 @@ class SfiMessagesRestClient(
                     .header("Authorization", authorizationHeader.get().value)
                     .header("Accept", "application/json")
                     .post(jsonRequestBody(config.messageRequestBody(msg, attachmentReference)))
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response ->
@@ -262,7 +262,7 @@ class SfiMessagesRestClient(
                 } else {
                     val body = jsonResponseBody<ApiError>(response)
                     error(
-                        "Message request failed with HTTP ${response.code} ${response.message}: $body"
+                        "Message request failed with HTTP ${response.code} ${response.message}: $body",
                     )
                 }
             }
@@ -314,17 +314,17 @@ class SfiMessagesRestClient(
                                 accessToken = accessToken,
                                 currentPassword = current.password.value,
                                 newPassword = newPassword.password.value,
-                            )
-                        )
+                            ),
+                        ),
                     )
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response ->
                 if (!response.isSuccessful) {
                     val body = jsonResponseBody<ApiError>(response)
                     error(
-                        "Password change request failed with HTTP ${response.code} ${response.message}: $body"
+                        "Password change request failed with HTTP ${response.code} ${response.message}: $body",
                     )
                 }
             }
@@ -360,7 +360,7 @@ class SfiMessagesRestClient(
                     .header("Authorization", authorizationHeader.get().value)
                     .header("Accept", "application/json")
                     .get()
-                    .build()
+                    .build(),
             )
             .execute()
             .use { response ->
@@ -369,7 +369,7 @@ class SfiMessagesRestClient(
                 } else {
                     val body = jsonResponseBody<ApiError>(response)
                     error(
-                        "Message request failed with HTTP ${response.code} ${response.message}: $body"
+                        "Message request failed with HTTP ${response.code} ${response.message}: $body",
                     )
                 }
             }
@@ -389,7 +389,7 @@ class SfiMessagesRestClient(
                     generateSequence { PASSWORD_ANY.random() })
                 .take(PASSWORD_LENGTH)
                 .shuffled()
-                .joinToString("")
+                .joinToString(""),
         )
 
     companion object {

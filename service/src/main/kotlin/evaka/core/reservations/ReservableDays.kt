@@ -18,7 +18,7 @@ fun getNextReservableMonday(
 ): LocalDate =
     if (
         nextMonday.isAfter(
-            now.plusDays(thresholdHours / 24).plusHours(thresholdHours % 24).toLocalDate()
+            now.plusDays(thresholdHours / 24).plusHours(thresholdHours % 24).toLocalDate(),
         )
     ) {
         nextMonday

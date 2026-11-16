@@ -113,7 +113,7 @@ class AromiService(private val aromiEnv: AromiEnv?) {
                     range,
                     aromiUnits.associateBy { it.unitId },
                     aromiUnits.flatMap { it.aromiGroups }.associateBy { it.groupId },
-                )
+                ),
         )
     }
 
@@ -211,7 +211,7 @@ WHERE dg.aromi_customer_id IS NOT NULL
 AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(window)}
 AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(window)}
 ORDER BY d.name, dg.name
-"""
+""",
         )
     }
         .toList<AromiReportingRow>()
@@ -285,7 +285,7 @@ LEFT JOIN service_need sn
 WHERE dg.aromi_customer_id IS NOT NULL 
 AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(date)}
 AND daterange(d.opening_date, d.closing_date, '[]') @> ${bind(date)}
-                    """
+                    """,
     )
 }
     .toList()
@@ -358,7 +358,7 @@ private fun getAttendancePredictionRows(
                                 childInfo.placementType.fixedScheduleRange(
                                     childInfo.dailyPreschoolTime,
                                     childInfo.dailyPreparatoryTime,
-                                )
+                                ),
                             )
                         else childInfo.reservations ?: emptyList()
 
@@ -374,14 +374,14 @@ private fun getAttendancePredictionRows(
                                 evakaAttendanceTimes.mapNotNull { timeRange ->
                                     return@mapNotNull when {
                                         breakfastRefusalStartTime.isBefore(
-                                            timeRange.start.inner
+                                            timeRange.start.inner,
                                         ) -> {
                                             timeRange
                                         }
 
                                         breakfastRefusalStartTime.equals(timeRange.end.inner) ||
                                             breakfastRefusalStartTime.isAfter(
-                                                timeRange.end.inner
+                                                timeRange.end.inner,
                                             ) -> {
                                             null
                                         }
@@ -424,7 +424,7 @@ private fun getAttendancePredictionRows(
                                     listOf(
                                         // non-shift care children should never be expected to
                                         // receive late meals
-                                        entry(TimeRange(LocalTime.MIN, nonShiftCareDefaultEndTime))
+                                        entry(TimeRange(LocalTime.MIN, nonShiftCareDefaultEndTime)),
                                     )
                                 else listOf(entry(null))
                             }
@@ -434,7 +434,7 @@ private fun getAttendancePredictionRows(
                     }
                 }
                 .sortedWith(
-                    compareBy({ it.lastName }, { it.firstName }, { it.attendanceRange?.start })
+                    compareBy({ it.lastName }, { it.firstName }, { it.attendanceRange?.start }),
                 )
         }
         .toList()

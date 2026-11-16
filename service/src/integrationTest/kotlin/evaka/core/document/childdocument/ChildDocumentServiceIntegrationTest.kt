@@ -83,18 +83,18 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     id = "s1",
                     label = "s1",
                     questions = listOf(Question.TextQuestion(id = "q1", label = "q1")),
-                )
-            )
+                ),
+            ),
         )
 
     val content =
         DocumentContent(
-            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "answer"))
+            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "answer")),
         )
 
     val updatedContent =
         DocumentContent(
-            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "updated"))
+            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "updated")),
         )
 
     @BeforeEach
@@ -111,7 +111,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
@@ -120,7 +120,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     name = "HOJKS uusi",
                     validity = DateRange(clock.today().minusYears(1), clock.today()),
                     content = templateContent,
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
@@ -129,7 +129,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     name = "HOJKS",
                     validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
                     content = templateContent,
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
@@ -139,7 +139,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
                     content = templateContent,
                     endDecisionWhenUnitChanges = true,
-                )
+                ),
             )
         }
     }
@@ -163,7 +163,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentLockedBy = null,
                     answeredAt = null,
                     answeredBy = null,
-                )
+                ),
             )
             tx.insert(
                 DevChildDocument(
@@ -189,9 +189,9 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     ),
                                 createdBy = employee.evakaUserId,
                                 publishedContent = updatedContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
             tx.insert(
                 DevChildDocument(
@@ -213,9 +213,9 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                 createdAt = clock.now().minusMonths(1),
                                 createdBy = employee.evakaUserId,
                                 publishedContent = updatedContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
             tx.insert(
                 DevChildDocument(
@@ -230,7 +230,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentLockedBy = null,
                     answeredAt = null,
                     answeredBy = null,
-                )
+                ),
             )
         }
 
@@ -311,9 +311,9 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     ),
                                 createdBy = employee.evakaUserId,
                                 publishedContent = updatedContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
 
             tx.execute {
@@ -322,7 +322,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 UPDATE placement 
                 SET start_date = ${bind(clock.today().minusMonths(1))}, 
                     end_date = ${bind(clock.today().minusDays(1))}
-            """
+            """,
                 )
             }
         }
@@ -364,9 +364,9 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     ),
                                 createdBy = employee.evakaUserId,
                                 publishedContent = content,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
 
@@ -396,7 +396,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     name = "Perustietolomake",
                     content = templateContent,
                     validity = DateRange(clock.today(), clock.today().plusDays(1)),
-                )
+                ),
             )
             tx.insert(employeeUser)
             tx.insert(testAdult, DevPersonType.ADULT)
@@ -408,7 +408,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
         }
         val documentId =
@@ -446,7 +446,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     name = "Pedagoginen arvio",
                     content = templateContent,
                     validity = DateRange(clock.today(), clock.today().plusDays(1)),
-                )
+                ),
             )
             tx.insert(employeeUser)
             tx.insert(testAdult, DevPersonType.ADULT)
@@ -458,7 +458,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
         }
 
@@ -497,7 +497,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     name = "Pedagoginen arvio",
                     content = templateContent,
                     validity = DateRange(clock.today(), clock.today().plusDays(1)),
-                )
+                ),
             )
             tx.insert(employeeUser)
             tx.insert(testAdult, DevPersonType.ADULT)
@@ -510,7 +510,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
-                )
+                ),
             )
         }
 
@@ -537,7 +537,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     documentId,
                     ChildDocumentNotificationType.BASIC_DOCUMENT,
                     childName = "${testChild.firstName} ${testChild.lastName}",
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )

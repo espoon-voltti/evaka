@@ -106,7 +106,7 @@ class ChildAbsenceReport(private val accessControl: AccessControl) {
                             "groupId" to body.groupId,
                             "rangeStart" to body.range.start,
                             "rangeEnd" to body.range.end,
-                        )
+                        ),
                 )
             }
     }
@@ -157,7 +157,7 @@ WHERE
     p.unit_id = ANY (${bind(unitIds)}) AND
     dgp.daycare_group_id = ${bind(groupId)} AND
     daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(range)}
-"""
+""",
                 )
             }
         } else {
@@ -172,7 +172,7 @@ FROM placement p
 WHERE
     p.unit_id = ANY (${bind(unitIds)}) AND
     daterange(p.start_date, p.end_date, '[]') && ${bind(range)}
-"""
+""",
                 )
             }
         }
@@ -213,9 +213,9 @@ WHERE fda.required_categories > 0
         AbsenceType.SICKLEAVE,
         AbsenceType.PLANNED_ABSENCE,
         AbsenceType.UNKNOWN_ABSENCE,
-    ))})
+    ),)})
 GROUP BY child.id, child.first_name, child.last_name, absence_type
-                """
+                """,
             )
         }
         .toList<ChildAbsenceRow>()
@@ -247,7 +247,7 @@ FROM (
 ) pi
 JOIN daycare d ON pi.unit_id = d.id
 LEFT JOIN daycare_group dg ON pi.daycare_group_id = dg.id
-                """
+                """,
             )
         }
         .toMap {

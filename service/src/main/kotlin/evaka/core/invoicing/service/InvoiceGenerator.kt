@@ -308,7 +308,7 @@ class InvoiceGenerator(
         val feeThresholds =
             tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
                 ?: error(
-                    "Missing prices for period ${range.start} - ${range.end}, cannot generate invoices"
+                    "Missing prices for period ${range.start} - ${range.end}, cannot generate invoices",
                 )
 
         val holidays = getHolidays(range)
@@ -318,7 +318,7 @@ class InvoiceGenerator(
                     it.dayOfWeek != DayOfWeek.SATURDAY &&
                         it.dayOfWeek != DayOfWeek.SUNDAY &&
                         !holidays.contains(it)
-                }
+                },
             )
 
         val defaultServiceNeedOptions =
@@ -468,12 +468,12 @@ class InvoiceGenerator(
                                 invoiceWithSubtractions.totalPrice / abs(subtraction.unitPrice)
                             val subtractionWithMaxApplicableAmount =
                                 subtraction.copy(
-                                    amount = minOf(subtraction.amount, maxApplicableAmount)
+                                    amount = minOf(subtraction.amount, maxApplicableAmount),
                                 )
                             invoiceWithSubtractions.copy(
                                 rows =
                                     invoiceWithSubtractions.rows +
-                                        subtractionWithMaxApplicableAmount.toDraftInvoiceRow()
+                                        subtractionWithMaxApplicableAmount.toDraftInvoiceRow(),
                             )
                         } else { // apply partial unit price
                             val maxUnitPrice =
@@ -485,7 +485,7 @@ class InvoiceGenerator(
                             invoiceWithSubtractions.copy(
                                 rows =
                                     invoiceWithSubtractions.rows +
-                                        subtractionWithMaxUnitPrice.toDraftInvoiceRow()
+                                        subtractionWithMaxUnitPrice.toDraftInvoiceRow(),
                             )
                         }
                     }
@@ -517,11 +517,11 @@ fun Database.Read.getInvoiceableFeeDecisions(
                             """
                             $it.valid_during && ${bind(dateRange)} AND
                             $it.status = ANY(${bind(FeeDecisionStatus.effective)}::fee_decision_status[])
-                            """
+                            """,
                         )
                     }
-                    .and(headOfFamilyFilter)
-            )
+                    .and(headOfFamilyFilter),
+            ),
         )
         .toList<FeeDecision>()
 }
@@ -530,7 +530,7 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonI
     val sent = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
     return createQuery {
         sql(
-            "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = ${bind(period.start)} AND period_end = ${bind(period.end)} AND status = ANY(${bind(sent)}::invoice_status[])"
+            "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = ${bind(period.start)} AND period_end = ${bind(period.end)} AND status = ANY(${bind(sent)}::invoice_status[])",
         )
     }
         .toSet<PersonId>()
@@ -550,7 +550,7 @@ WHERE
     between_start_and_end(${bind(range)}, date) AND
     category = 'BILLABLE'
 GROUP BY child_id, absence_type
-"""
+""",
         )
     }
         .map {
@@ -588,7 +588,7 @@ WHERE
     daterange(start_date, end_date, '[]') && ${bind(spanningPeriod)} AND
     p.type = ANY(${bind(placementTypes)}::placement_type[]) AND
     ${predicate(childFilter.forTable("p"))}
-"""
+""",
         )
     }
         .toList { column<FiniteDateRange>("date_range") to row<PlacementStub>() }
@@ -596,7 +596,7 @@ WHERE
 }
 
 private fun Database.Read.getInvoiceableTemporaryPlacements(
-    spanningPeriod: FiniteDateRange
+    spanningPeriod: FiniteDateRange,
 ): Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>> {
     val placements =
         getInvoiceablePlacements(spanningPeriod, PlacementType.temporary, childIds = null)
@@ -684,7 +684,7 @@ INNER JOIN person AS child ON fridge_child.child_id = child.id
 WHERE fridge_child.child_id = ANY(${bind(childIds)})
     AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && ${bind(dateRange)}
     AND conflict = false
-"""
+""",
         )
     }
         .toList {
@@ -704,7 +704,7 @@ fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> = createQuery {
         """
 SELECT daycare.id AS unit_id, daycare.care_area_id AS area_id
 FROM daycare
-"""
+""",
     )
 }
     .toMap { columnPair("unit_id", "area_id") }
@@ -731,7 +731,7 @@ fun Database.Read.getFreeJulyChildren(
         )
     sql(
         """
-                SELECT id FROM child c WHERE ${predicate(where.forTable("c"))}"""
+                SELECT id FROM child c WHERE ${predicate(where.forTable("c"))}""",
     )
 }
     .toSet<ChildId>()
@@ -746,6 +746,6 @@ EXISTS (
         type = ANY(${bind(PlacementType.invoiced)}) AND
         daterange(start_date, end_date, '[]') && ${bind(FiniteDateRange.ofMonth(year, Month.of(month)))}
 )
-"""
+""",
     )
 }

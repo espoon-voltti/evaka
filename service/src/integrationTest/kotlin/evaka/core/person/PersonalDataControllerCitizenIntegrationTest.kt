@@ -275,7 +275,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                     startDate = LocalDate.of(2024, 1, 1),
                     endDate = LocalDate.of(2024, 1, 1),
                     createdAt = clock.now(),
-                )
+                ),
             )
             listOf(olderChild, youngerChild).forEach { child ->
                 tx.insert(
@@ -284,7 +284,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                         headOfChild = head.id,
                         startDate = LocalDate.of(2024, 1, 1),
                         endDate = LocalDate.of(2024, 1, 1),
-                    )
+                    ),
                 )
             }
         }
@@ -331,7 +331,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                         headOfChild = head.id,
                         startDate = LocalDate.of(2024, 1, 1),
                         endDate = LocalDate.of(2024, 1, 1),
-                    )
+                    ),
                 )
             }
         }

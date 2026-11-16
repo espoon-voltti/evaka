@@ -50,9 +50,9 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -138,9 +138,9 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -233,7 +233,7 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
                         ),
                         NekkuApiCustomer(
@@ -253,7 +253,7 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
                         ),
                     ),
@@ -344,9 +344,9 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -401,9 +401,9 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),

@@ -119,7 +119,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                             List(2) { null },
                     enabledPilotFeatures = emptySet(),
-                )
+                ),
             )
             tx.insertDaycareAclRow(daycareId, unitSupervisorA.id, UserRole.UNIT_SUPERVISOR)
         }
@@ -1167,7 +1167,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                    )
+                    ),
                 )
 
             val groupAAId =
@@ -1176,7 +1176,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         name = "Group AA",
                         startDate = monday.minusDays(7),
                         daycareId = daycareAId,
-                    )
+                    ),
                 )
 
             val groupABId =
@@ -1185,7 +1185,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         name = "Group AB",
                         startDate = monday.minusDays(7),
                         daycareId = daycareAId,
-                    )
+                    ),
                 )
 
             val daycareBId =
@@ -1202,7 +1202,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                             List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
                         shiftCareOpenOnHolidays = true,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                    )
+                    ),
                 )
 
             val groupBAId =
@@ -1211,7 +1211,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         name = "Group BA",
                         startDate = monday.minusDays(7),
                         daycareId = daycareBId,
-                    )
+                    ),
                 )
 
             val groupBBId =
@@ -1220,7 +1220,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         name = "Group BB",
                         startDate = monday.minusDays(7),
                         daycareId = daycareBId,
-                    )
+                    ),
                 )
 
             val daycareCId =
@@ -1234,7 +1234,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                    )
+                    ),
                 )
 
             val groupCAId =
@@ -1243,7 +1243,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         name = "Group CA",
                         startDate = monday.minusMonths(1),
                         daycareId = daycareCId,
-                    )
+                    ),
                 )
 
             val groupCBId =
@@ -1252,7 +1252,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                         name = "Group CB",
                         startDate = monday.minusMonths(1),
                         daycareId = daycareCId,
-                    )
+                    ),
                 )
 
             listOf(
@@ -1348,7 +1348,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     daycareGroupId = daycare.groups.first,
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
 
             val placementB =
@@ -1368,7 +1368,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     endDate = wednesday,
                     confirmedBy = admin.evakaUserId,
                     optionId = snDefaultDaycare.id,
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -1377,7 +1377,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     endDate = defaultPlacementDuration.end,
                     confirmedBy = admin.evakaUserId,
                     optionId = snDaycareFullDay35.id,
-                )
+                ),
             )
 
             tx.insert(
@@ -1386,7 +1386,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     daycareGroupId = daycare.groups.first,
                     startDate = defaultPlacementDuration.start,
                     endDate = wednesday,
-                )
+                ),
             )
 
             tx.insert(
@@ -1395,14 +1395,14 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     daycareGroupId = daycare.groups.second,
                     startDate = thursday,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
 
             tx.insert(
                 DevPreschoolAssistance(
                     childId = testChildBertil.id,
                     validDuring = FiniteDateRange(monday.minusMonths(2), tuesday),
-                )
+                ),
             )
 
             val placementC1 =
@@ -1421,7 +1421,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     daycareGroupId = daycare.groups.first,
                     startDate = placementC1.startDate,
                     endDate = placementC1.endDate,
-                )
+                ),
             )
 
             val placementC2 =
@@ -1441,7 +1441,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     daycareGroupId = daycare.groups.second,
                     startDate = placementC2.startDate,
                     endDate = placementC2.endDate,
-                )
+                ),
             )
 
             tx.insert(
@@ -1449,14 +1449,14 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     childId = testChildCecil.id,
                     validDuring = FiniteDateRange(monday, wednesday),
                     capacityFactor = 5.50,
-                )
+                ),
             )
 
             tx.insert(
                 DevDaycareAssistance(
                     childId = testChildCecil.id,
                     validDuring = FiniteDateRange(monday.minusMonths(3), wednesday),
-                )
+                ),
             )
 
             // Monday - everyone is absent, but Bertil has a missing absence category -> no response
@@ -1521,7 +1521,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     shiftCare = shiftCareType,
                     optionId = optionId,
                     confirmedBy = adminLoginUser.evakaUserId,
-                )
+                ),
             )
         }
     }
@@ -1543,7 +1543,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                     childId = childId,
                     unitId = targetDaycareId,
                     groupId = targetGroupId,
-                )
+                ),
             )
         }
     }
@@ -1562,7 +1562,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 null,
                 HelsinkiDateTime.atStartOfDay(date),
                 EvakaUserId(admin.id.raw),
-            )
+            ),
         )
 
     private fun createOtherAbsence(
@@ -1580,7 +1580,7 @@ class HolidayPeriodAttendanceReportTest : FullApplicationTest(resetDbBeforeEach 
                 HelsinkiDateTime.atStartOfDay(date),
                 EvakaUserId(admin.id.raw),
                 category,
-            )
+            ),
         )
 
     private fun assertReportDay(expected: HolidayReportRow, actual: HolidayReportRow) {

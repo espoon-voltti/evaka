@@ -150,7 +150,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     id = GroupId(UUID.randomUUID()),
                     daycareId = unit.id,
                     name = "Test group 1",
-                )
+                ),
             )
             tx.insert(
                 evaka.core.serviceneed.ServiceNeedOption(
@@ -177,7 +177,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validFrom = LocalDate.of(2000, 1, 1),
                     validTo = null,
                     showForCitizen = true,
-                )
+                ),
             )
             tx.insert(
                 evaka.core.serviceneed.ServiceNeedOption(
@@ -204,7 +204,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validFrom = LocalDate.of(2000, 1, 1),
                     validTo = null,
                     showForCitizen = true,
-                )
+                ),
             )
             tx.insert(
                 DevPreschoolTerm(
@@ -214,7 +214,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     preschoolTerm.extendedTerm,
                     preschoolTerm.applicationPeriod,
                     preschoolTerm.termBreaks,
-                )
+                ),
             )
             MockVtjClient.addPersons(adult, child)
             MockVtjClient.addDependants(adult, child)
@@ -233,7 +233,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChild = adult.id,
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18),
-                )
+                ),
             )
         }
     }
@@ -352,7 +352,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
                         clock,
                         Action.MessageAccount.ACCESS,
-                    )
+                    ),
                 )
                 .firstOrNull()
                 ?.unreadCount ?: 0
@@ -449,7 +449,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
                         clock,
                         Action.MessageAccount.ACCESS,
-                    )
+                    ),
                 )
                 .firstOrNull()
                 ?.unreadCount ?: 0
@@ -495,7 +495,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             MockVtjDataset(
                 persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
                 guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),
-            )
+            ),
         )
         db.transaction { tx -> tx.insert(testFeeThresholds) }
         val file =
@@ -548,7 +548,7 @@ ${child.ssn!!};${unit.id}
             MockVtjDataset(
                 persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
                 guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),
-            )
+            ),
         )
         db.transaction { tx -> tx.insert(testFeeThresholds) }
         val file =

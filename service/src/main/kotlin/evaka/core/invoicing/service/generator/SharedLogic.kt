@@ -135,7 +135,7 @@ fun <Decision : FinanceDecision<Decision>> existsActiveDuplicateThatWillRemainEf
 }
 
 fun <Decision : FinanceDecision<Decision>> mergeAdjacentIdenticalDrafts(
-    decisions: List<Decision>
+    decisions: List<Decision>,
 ): List<Decision> {
     return decisions
         .sortedBy { it.validFrom }

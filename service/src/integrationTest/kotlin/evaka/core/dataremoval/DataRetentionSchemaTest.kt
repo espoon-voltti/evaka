@@ -161,7 +161,7 @@ SELECT c.table_name, c.column_name, c.is_nullable AS nullable, c.data_type
 FROM information_schema.columns c
 JOIN information_schema.tables t USING (table_schema, table_name)
 WHERE t.table_schema = 'public' AND t.table_type = 'BASE TABLE'
-"""
+""",
                         )
                     }
                     .toList<Column>()
@@ -182,7 +182,7 @@ JOIN pg_class dst ON dst.oid = c.confrelid
 JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = c.conkey[1]
 JOIN pg_attribute ra ON ra.attrelid = c.confrelid AND ra.attnum = c.confkey[1]
 WHERE c.contype = 'f' AND src.relnamespace = 'public'::regnamespace
-"""
+""",
                         )
                     }
                     .toList<ForeignKey>()
@@ -195,7 +195,7 @@ FROM pg_index i
 JOIN pg_class t ON t.oid = i.indrelid
 JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = i.indkey[0]
 WHERE t.relnamespace = 'public'::regnamespace
-"""
+""",
                         )
                     }
                     .toSet<ColumnRef>()
@@ -213,7 +213,7 @@ JOIN LATERAL unnest(i.indkey::smallint[]) WITH ORDINALITY AS k(attnum, ord) ON t
 JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = k.attnum
 WHERE i.indisunique AND t.relnamespace = 'public'::regnamespace
 GROUP BY i.indexrelid, t.relname, i.indpred, i.indrelid
-"""
+""",
                         )
                     }
                     .toList<UniqueKey>()
@@ -231,7 +231,7 @@ JOIN LATERAL unnest(c.conkey) AS k(attnum) ON true
 JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = k.attnum
 WHERE c.contype = 'c' AND t.relnamespace = 'public'::regnamespace
 GROUP BY c.oid, t.relname
-"""
+""",
                         )
                     }
                     .toList<CheckConstraint>()

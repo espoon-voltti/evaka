@@ -29,7 +29,7 @@ fun Database.Transaction.initPairing(
 INSERT INTO pairing (unit_id, employee_id, expires, challenge_key)
 VALUES (${bind(unitId)}, ${bind(employeeId)}, ${bind(expires)}, ${bind(challenge)})
 RETURNING *
-"""
+""",
         )
     }
         .exactlyOne<Pairing>()
@@ -44,7 +44,7 @@ fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: Strin
 UPDATE pairing SET response_key = ${bind(response)}, status = 'WAITING_RESPONSE'
 WHERE challenge_key = ${bind(challengeKey)} AND status = 'WAITING_CHALLENGE' AND expires > ${bind(now)} AND attempts <= ${bind(maxAttempts)}
 RETURNING *
-"""
+""",
         )
     }
         .exactlyOneOrNull<Pairing>() ?: throw NotFound("Valid pairing not found")
@@ -77,7 +77,7 @@ UPDATE pairing SET status = 'READY', mobile_device_id = new_device.id
 FROM target_pairing, new_device
 WHERE pairing.id = target_pairing.id
 RETURNING pairing.*
-"""
+""",
         )
     }
         .exactlyOneOrNull<Pairing>() ?: throw NotFound("Valid pairing not found")
@@ -102,7 +102,7 @@ WITH target_pairing AS (
 UPDATE mobile_device SET long_term_token = ${bind(longTermToken)}
 WHERE id = (SELECT mobile_device_id FROM target_pairing)
 RETURNING id, long_term_token
-        """
+        """,
         )
     }
         .exactlyOneOrNull<MobileDeviceIdentity>() ?: throw NotFound("Valid pairing not found")
@@ -121,7 +121,7 @@ fun Database.Read.fetchPairingStatus(clock: EvakaClock, id: PairingId): PairingS
             """
 SELECT status FROM pairing
 WHERE id = ${bind(id)} AND expires > ${bind(now)} AND attempts <= ${bind(maxAttempts)}
-"""
+""",
         )
     }
         .toList<PairingStatus>()
@@ -135,7 +135,7 @@ fun Database.Transaction.incrementAttempts(id: PairingId, challengeKey: String) 
             UPDATE pairing
             SET attempts = attempts + 1
             WHERE id = ${bind(id)} OR challenge_key = ${bind(challengeKey)}
-        """
+        """,
         )
     }
         .execute()

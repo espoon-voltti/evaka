@@ -123,7 +123,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[2],
                     startDate = startDate,
                     endDate = startDate.plusYears(5),
-                )
+                ),
             )
         }
 
@@ -206,7 +206,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = voucherFamilyUnit.id,
                     childId = testChildPauliina.id,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
 
             // add family daycare placements for 2 children: 1 under and over 3
@@ -217,7 +217,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[2],
                     childId = testChildren[4].first.id,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
 
             val aapoPlacementEnd = testChildren[0].second.last().endDate
@@ -228,7 +228,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[2],
                     childId = testChildren[0].first.id,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
         }
 
@@ -285,7 +285,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     shiftCare = ShiftCareType.FULL,
                     optionId = fullTimeSno.id,
                     confirmedBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -346,7 +346,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
                     actions = setOf(actionOption40.value),
-                )
+                ),
             )
 
             val testChildFabio = testChildData[4].first
@@ -365,7 +365,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
                     actions = setOf(actionOption40.value),
-                )
+                ),
             )
         }
 
@@ -454,7 +454,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     startDate = startDate,
                     endDate = startDate.plusYears(2),
-                )
+                ),
             )
 
             val testChildCecilia =
@@ -572,7 +572,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     startDate = startDate,
                     endDate = startDate.plusYears(2),
-                )
+                ),
             )
 
             val testChildCecilia =
@@ -682,7 +682,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     startDate = startDate,
                     endDate = startDate.plusYears(3),
-                )
+                ),
             )
         }
 
@@ -853,14 +853,14 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     childId = aapo.id,
                     date = LocalDate.of(2024, 11, 1),
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
                     childId = aapo.id,
                     date = LocalDate.of(2024, 11, 1),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
 
             // add shift care placement for Aapo during December to see that it counts
@@ -883,7 +883,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = shiftCarePlacement.startDate,
                     endDate = shiftCarePlacement.endDate,
                     confirmedBy = admin.evakaUserId,
-                )
+                ),
             )
 
             // add a backup care to see that it is not counted twice
@@ -898,7 +898,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             aapoFirstPlacement.startDate.plusDays(1),
                             aapoFirstPlacement.startDate.plusDays(2),
                         ),
-                )
+                ),
             )
         }
 
@@ -942,7 +942,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[2],
                     childId = testChildren[4].first.id,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
             val aapo = testChildren[0].first
             val aapoPlacementEnd = testChildren[0].second.last().endDate
@@ -954,7 +954,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[2],
                     childId = testChildren[0].first.id,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
 
             // add full day absence to see that it is not counted as a care day
@@ -963,14 +963,14 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     childId = aapo.id,
                     date = LocalDate.of(2024, 12, 5),
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
                     childId = aapo.id,
                     date = LocalDate.of(2024, 12, 5),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
 
             // add voucher and purchased family daycare that should NOT show up
@@ -991,7 +991,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[6],
                     childId = testChildFabioJr.id,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1000,7 +1000,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[7],
                     childId = testChildFabioJr.id,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
         }
 
@@ -1095,14 +1095,14 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     shiftCarePlacement.copy(
                         id = PlacementId(UUID.randomUUID()),
                         childId = testChildSiiri.id,
-                    )
+                    ),
                 )
             tx.insert(
                 shiftCareServiceNeed.copy(
                     id = ServiceNeedId(UUID.randomUUID()),
                     placementId = siiriPlacementId,
                     shiftCare = ShiftCareType.INTERMITTENT,
-                )
+                ),
             )
         }
 
@@ -1181,7 +1181,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[6],
                     type = PlacementType.DAYCARE,
                     childId = testChildFabioJr.id,
-                )
+                ),
             )
         }
 
@@ -1227,7 +1227,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[7],
                     type = PlacementType.DAYCARE,
                     childId = testChildFabioJr.id,
-                )
+                ),
             )
         }
 
@@ -1273,7 +1273,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[2],
                     type = PlacementType.DAYCARE,
                     childId = testChildFabioJr.id,
-                )
+                ),
             )
         }
 
@@ -1337,7 +1337,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     endDate = defaultPlacementDuration.end,
                     unitId = testUnitData[1],
                     type = PlacementType.CLUB,
-                )
+                ),
             )
 
             tx.insert(
@@ -1347,7 +1347,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     endDate = defaultPlacementDuration.end,
                     unitId = testUnitData[1],
                     type = PlacementType.CLUB,
-                )
+                ),
             )
         }
 
@@ -1389,7 +1389,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     capacityFactor = 5.50,
-                )
+                ),
             )
 
             // add action 40 case that should show up
@@ -1410,7 +1410,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[3],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
 
             tx.insert(
@@ -1419,7 +1419,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
                     actions = setOf(actionOption40.value),
-                )
+                ),
             )
 
             // add a test child with an assistance factor that should not show up
@@ -1439,7 +1439,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[0],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceFactor(
@@ -1450,7 +1450,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     capacityFactor = 5.50,
-                )
+                ),
             )
 
             val testChildFabioJr =
@@ -1469,7 +1469,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[6],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
 
             tx.insert(
@@ -1478,7 +1478,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
                     actions = setOf(actionOption40.value),
-                )
+                ),
             )
         }
 
@@ -1525,7 +1525,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.GENERAL_SUPPORT_WITH_DECISION,
-                )
+                ),
             )
 
             // add assistance to Bertil that should NOT show up because of placement type
@@ -1538,7 +1538,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.INTENSIFIED_SUPPORT,
-                )
+                ),
             )
 
             // add daycare assistance period that should show up for Ville
@@ -1549,7 +1549,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[0],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1560,7 +1560,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
-                )
+                ),
             )
 
             // add a daycare assistance period that should show up for Fabio (family care)
@@ -1571,7 +1571,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[2],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1582,7 +1582,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
-                )
+                ),
             )
 
             // add a voucher daycare assistance period that should NOT show up
@@ -1602,7 +1602,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[3],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1613,7 +1613,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
-                )
+                ),
             )
 
             // add INTENSIFIED SUPPORT for DAYCARE placement that should show up
@@ -1633,7 +1633,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[0],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1644,7 +1644,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.INTENSIFIED_SUPPORT,
-                )
+                ),
             )
         }
 
@@ -1691,7 +1691,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.GENERAL_SUPPORT_WITH_DECISION,
-                )
+                ),
             )
 
             tx.insert(
@@ -1703,7 +1703,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.INTENSIFIED_SUPPORT,
-                )
+                ),
             )
 
             tx.insert(
@@ -1713,7 +1713,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[3],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1724,7 +1724,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
-                )
+                ),
             )
 
             // add INTENSIFIED SUPPORT for DAYCARE placement that should show up
@@ -1744,7 +1744,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[3],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1755,7 +1755,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.INTENSIFIED_SUPPORT,
-                )
+                ),
             )
 
             // add a daycare assistance period that should not show up for family care Fabio
@@ -1766,7 +1766,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[2],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1777,7 +1777,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
-                )
+                ),
             )
 
             // add a municipal daycare assistance period that should not show up
@@ -1797,7 +1797,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[0],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1808,7 +1808,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
-                )
+                ),
             )
 
             // add a voucher daycare assistance period that should show up for Fabio (family care)
@@ -1827,7 +1827,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testUnitData[6],
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
@@ -1838,7 +1838,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.SPECIAL_SUPPORT,
-                )
+                ),
             )
         }
 
@@ -1965,7 +1965,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = defaultPlacementRange.start,
                     endDate = defaultPlacementRange.end,
                     unitId = testUnitData[0],
-                )
+                ),
             )
         }
 
@@ -2068,7 +2068,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = shiftCarePlacement.startDate,
                     endDate = shiftCarePlacement.endDate,
                     confirmedBy = admin.evakaUserId,
-                )
+                ),
             )
 
             // add a preschool daycare shift care placement to a school unit
@@ -2100,7 +2100,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = shiftCarePlacement.startDate,
                     endDate = shiftCarePlacement.endDate,
                     confirmedBy = admin.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -2279,7 +2279,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
-                    )
+                    ),
                 )
 
             val daycareBId =
@@ -2297,7 +2297,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                         shiftCareOpenOnHolidays = true,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
-                    )
+                    ),
                 )
 
             val daycareCId =
@@ -2312,7 +2312,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
-                    )
+                    ),
                 )
 
             val daycareDId =
@@ -2328,7 +2328,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
-                    )
+                    ),
                 )
 
             val daycareEId =
@@ -2344,7 +2344,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
-                    )
+                    ),
                 )
 
             val daycareFId =
@@ -2365,7 +2365,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         withSchool = true,
                         visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
-                    )
+                    ),
                 )
 
             val daycareGId =
@@ -2381,7 +2381,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
-                    )
+                    ),
                 )
 
             val daycareHId =
@@ -2397,7 +2397,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         visitingAddress = VisitingAddress(postOffice = "TAMPERE"),
-                    )
+                    ),
                 )
 
             listOf(
@@ -2572,7 +2572,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     confirmedBy = admin.evakaUserId,
                     optionId = partTimeSno.id,
                     shiftCare = ShiftCareType.FULL,
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -2582,7 +2582,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     confirmedBy = admin.evakaUserId,
                     optionId = dailyPartTimeSno.id,
                     shiftCare = ShiftCareType.INTERMITTENT,
-                )
+                ),
             )
 
             tx.insert(
@@ -2591,7 +2591,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
                     actions = setOf(actionOption40.value),
-                )
+                ),
             )
 
             val placementC1 =
@@ -2624,7 +2624,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.start.plusMonths(1),
                         ),
                     capacityFactor = 5.50,
-                )
+                ),
             )
 
             val action1 =
@@ -2646,7 +2646,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                             defaultPlacementDuration.end,
                         ),
                     level = DaycareAssistanceLevel.GENERAL_SUPPORT,
-                )
+                ),
             )
 
             listOf(

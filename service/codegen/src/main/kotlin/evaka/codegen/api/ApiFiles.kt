@@ -140,7 +140,7 @@ ${inline(body).prependIndent("  ")}
 }"""
                                 .removePrefix("\n")
                         }
-                    }
+                    },
             )
         }
 
@@ -371,7 +371,7 @@ fun generateJsonApiClient(
         TsObjectLiteral(
                 (endpoint.pathVariables + endpoint.requestParameters).associate {
                     it.name to TsProperty(it.toOptionalType())
-                } + mapOfNotNullValues("body" to endpoint.requestBodyType?.let(::TsProperty))
+                } + mapOfNotNullValues("body" to endpoint.requestBodyType?.let(::TsProperty)),
             )
             .takeIf { it.properties.isNotEmpty() }
             ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }
@@ -460,7 +460,7 @@ fun generatePlainGetApiFunction(
         TsObjectLiteral(
                 (endpoint.pathVariables + endpoint.requestParameters).associate {
                     it.name to TsProperty(it.toOptionalType())
-                }
+                },
             )
             .takeIf { it.properties.isNotEmpty() }
             ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }
@@ -469,7 +469,7 @@ fun generatePlainGetApiFunction(
         listOfNotNull(
                 if (argumentType != null)
                     "request" to generator.tsType(argumentType, compact = false)
-                else null
+                else null,
             )
             .map { (name, value) -> TsCode { "$name: ${inline(value)}" }.prependIndent("  ") }
             .let { args ->
@@ -524,7 +524,7 @@ fun generateMultipartUploadApiFunction(
         TsObjectLiteral(
                 (endpoint.pathVariables + endpoint.requestParameters + requestParts).associate {
                     it.name to TsProperty(it.toOptionalType())
-                }
+                },
             )
             .let { TsType(it, isNullable = false, typeArguments = emptyList()) }
 

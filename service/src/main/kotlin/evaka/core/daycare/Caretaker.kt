@@ -23,7 +23,7 @@ fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> =
             FROM daycare_caretaker
             WHERE group_id = ${bind(groupId)}
             ORDER BY start_date DESC
-        """
+        """,
             )
         }
         .toList()
@@ -58,7 +58,7 @@ fun insertCaretakers(
 INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
 VALUES (${bind(groupId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(amount)})
 RETURNING id
-"""
+""",
                 )
             }
             .executeAndReturnGeneratedKeys()
@@ -75,7 +75,7 @@ private fun Database.Transaction.endPreviousRow(groupId: GroupId, startDate: Loc
 UPDATE daycare_caretaker
 SET end_date = ${bind(startDate)} - interval '1 day'
 WHERE group_id = ${bind(groupId)} AND daterange(start_date, end_date, '[]') @> ${bind(startDate)}
-"""
+""",
         )
     }
 }
@@ -98,7 +98,7 @@ fun updateCaretakers(
 UPDATE daycare_caretaker
 SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, amount = ${bind(amount)}
 WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}
-"""
+""",
                 )
             }
             .let { updated -> if (updated == 0) throw NotFound("Caretakers $id not found") }
@@ -110,7 +110,7 @@ WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}
 fun deleteCaretakers(tx: Database.Transaction, groupId: GroupId, id: DaycareCaretakerId) {
     tx.executeAndReturnCount {
             sql(
-                "DELETE FROM daycare_caretaker WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}"
+                "DELETE FROM daycare_caretaker WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}",
             )
         }
         .let { deleted -> if (deleted == 0) throw NotFound("Caretakers $id not found") }

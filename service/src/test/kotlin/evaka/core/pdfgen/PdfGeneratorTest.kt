@@ -135,7 +135,7 @@ class PdfGeneratorTest {
                                         "Triljonääri",
                                         "roope.ankka@ankkalinna.fi",
                                         "+358 99 765 4321",
-                                    )
+                                    ),
                                 ),
                         ),
                         AnsweredQuestion.GroupedTextFieldsAnswer(
@@ -146,7 +146,7 @@ class PdfGeneratorTest {
                                     listOf("Hilda", "Hanhivaara", "Ilkeä äitipuoli"),
                                 ),
                         ),
-                    )
+                    ),
             )
         val document =
             ChildDocumentDetails(
@@ -301,7 +301,7 @@ class PdfGeneratorTest {
                                                     ),
                                                 ),
                                         ),
-                                    )
+                                    ),
                             ),
                     ),
                 content = content,

@@ -49,7 +49,7 @@ fun McpToolContext.requireTestEmployee(employeeId: EmployeeId): String {
     val name = requireEmployee(employeeId)
     if (!isMcpTestEntity("employee", employeeId))
         throw Forbidden(
-            "Employee $employeeId ($name) was not created via MCP. This tool only works for test employees; insert one with insert_rows."
+            "Employee $employeeId ($name) was not created via MCP. This tool only works for test employees; insert one with insert_rows.",
         )
     return name
 }
@@ -62,7 +62,7 @@ fun McpToolContext.requireTestEmployee(employeeId: EmployeeId): String {
 fun McpToolContext.requireTestApplication(applicationId: ApplicationId): McpTestDataBatchId =
     McpTestDataService.getBatchOf(tx, "application", applicationId)
         ?: throw Forbidden(
-            "Application $applicationId was not created via MCP. This tool only works for test applications; insert one with insert_rows."
+            "Application $applicationId was not created via MCP. This tool only works for test applications; insert one with insert_rows.",
         )
 
 fun McpToolContext.isMcpTestEntity(table: String, id: Id<*>): Boolean =

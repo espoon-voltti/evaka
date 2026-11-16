@@ -84,7 +84,7 @@ class MessageControllerCitizen(
                                 user,
                                 clock,
                                 Action.MessageAccount.ACCESS,
-                            )
+                            ),
                         )
                         .firstOrNull()
                         ?.unreadCount ?: 0
@@ -107,7 +107,7 @@ class MessageControllerCitizen(
             }
             .also { accountId ->
                 Audit.MessagingMarkMessagesReadWrite.log(
-                    targetId = AuditId(listOf(accountId, threadId))
+                    targetId = AuditId(listOf(accountId, threadId)),
                 )
             }
     }
@@ -131,7 +131,7 @@ class MessageControllerCitizen(
             }
             .also { accountId ->
                 Audit.MessagingMarkMessagesUnreadWrite.log(
-                    targetId = AuditId(listOf(accountId, threadId))
+                    targetId = AuditId(listOf(accountId, threadId)),
                 )
             }
     }
@@ -149,7 +149,7 @@ class MessageControllerCitizen(
             }
             .also { accountId ->
                 Audit.MessagingArchiveMessageWrite.log(
-                    targetId = AuditId(listOf(accountId, threadId))
+                    targetId = AuditId(listOf(accountId, threadId)),
                 )
             }
     }

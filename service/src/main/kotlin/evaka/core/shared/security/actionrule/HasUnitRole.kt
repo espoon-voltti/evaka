@@ -76,7 +76,7 @@ data class HasUnitRole(
         copy(unitProviderTypes = allOf.toEnumSet())
 
     private fun <T : Id<*>> rule(
-        getUnitRoles: GetUnitRoles
+        getUnitRoles: GetUnitRoles,
     ): DatabaseActionRule.Scoped<T, HasUnitRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getUnitRoles))
 
@@ -104,7 +104,7 @@ data class HasUnitRole(
 SELECT target.id, acl.role, acl.unit_id
 FROM (${subquery { idChildQuery(user, now) }}) target
 JOIN (${subquery(aclQuery)}) acl USING (child_id)
-"""
+""",
                             )
                         }
                     },
@@ -135,7 +135,7 @@ SELECT fragment.id, fragment.role, daycare.enabled_pilot_features AS unit_featur
 FROM (${subquery { getUnitRoles(ctx.user, ctx.now) } }) fragment
 JOIN daycare ON fragment.unit_id = daycare.id
 WHERE ${predicate(targetCheck.forTable("fragment"))}
-                    """
+                    """,
                             )
                         }
                         .mapTo<IdRoleFeatures>()
@@ -143,7 +143,7 @@ WHERE ${predicate(targetCheck.forTable("fragment"))}
                             rows.fold(
                                 targets.associateTo(linkedMapOf()) {
                                     (it to mutableSetOf<RoleAndFeatures>())
-                                }
+                                },
                             ) { acc, (target, result) ->
                                 acc[target]?.plusAssign(result)
                                 acc
@@ -172,7 +172,7 @@ JOIN daycare ON fragment.unit_id = daycare.id
 WHERE fragment.role = ANY(${bind(params.oneOf.toSet())})
 AND daycare.enabled_pilot_features @> ${bind(params.unitFeatures.toSet())}
 ${if (params.unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(params.unitProviderTypes.toSet())})" else ""}
-                        """
+                        """,
                         )
                     }
                 }
@@ -208,7 +208,7 @@ ${if (params.unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(
                     Pair(user, now)
 
                 override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
+                    ctx: DatabaseActionRule.QueryContext,
                 ): DatabaseActionRule.Deferred<HasUnitRole> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee -> {
@@ -221,10 +221,10 @@ SELECT role, enabled_pilot_features AS unit_features, provider_type AS unit_prov
 FROM daycare_acl acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(ctx.user.id)}
-                                """
+                                """,
                                         )
                                     }
-                                    .toSet<RoleAndFeatures>()
+                                    .toSet<RoleAndFeatures>(),
                             )
                         }
 
@@ -245,7 +245,7 @@ JOIN placement_plan pp ON pp.application_id = a.id
 JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
 WHERE employee_id = ${bind(user.id)} AND a.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
 ${if (onlyAllowDeletedForTypes != null) "AND (a.type = ANY(${bind(onlyAllowDeletedForTypes)}) OR NOT pp.deleted)" else ""}
-            """
+            """,
             )
         }
 
@@ -277,7 +277,7 @@ WHERE CASE
         ELSE TRUE
      END
 AND aa.end_date >= ${bind(now.toLocalDate())}"""
-                    else ""
+                    else "",
             )
         }
 
@@ -309,7 +309,7 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
+                    else "",
             )
         }
 
@@ -341,7 +341,7 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT da.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
+                    else "",
             )
         }
 
@@ -373,7 +373,7 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT oam.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
+                    else "",
             )
         }
 
@@ -405,12 +405,12 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
+                    else "",
             )
         }
 
     fun inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement(
-        cfg: ChildAclConfig = ChildAclConfig()
+        cfg: ChildAclConfig = ChildAclConfig(),
     ) =
         ruleViaChildAcl<AssistanceNeedVoucherCoefficientId>(cfg) { _, _ ->
             sql(
@@ -423,7 +423,7 @@ WHERE EXISTS(
     WHERE p.child_id = avc.child_id
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
-            """
+            """,
             )
         }
 
@@ -433,7 +433,7 @@ WHERE EXISTS(
                 """
 SELECT bc.id, child_id
 FROM backup_care bc
-            """
+            """,
             )
         }
 
@@ -443,7 +443,7 @@ FROM backup_care bc
                 """
 SELECT bp.id, child_id
 FROM backup_pickup bp
-            """
+            """,
             )
         }
 
@@ -457,7 +457,7 @@ FROM backup_pickup bp
                             """
 SELECT acl.child_id AS id, acl.role, acl.unit_id
 FROM (${subquery(aclQuery)}) acl
-"""
+""",
                         )
                     }
                 },
@@ -470,7 +470,7 @@ FROM (${subquery(aclQuery)}) acl
                 """
 SELECT child_daily_note.id, child_id
 FROM child_daily_note
-"""
+""",
             )
         }
 
@@ -480,7 +480,7 @@ FROM child_daily_note
                 """
 SELECT csn.id, child_id
 FROM child_sticky_note csn
-            """
+            """,
             )
         }
 
@@ -490,7 +490,7 @@ FROM child_sticky_note csn
                 """
 SELECT img.id, child_id
 FROM child_images img
-            """
+            """,
             )
         }
 
@@ -502,7 +502,7 @@ SELECT decision.id, role, acl.daycare_id AS unit_id
 FROM decision
 JOIN daycare_acl acl ON decision.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -514,7 +514,7 @@ SELECT fridge_child.id, role, acl.daycare_id AS unit_id
 FROM fridge_child
 JOIN person_acl_view acl ON fridge_child.head_of_child = acl.person_id OR fridge_child.child_id = acl.person_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -526,7 +526,7 @@ SELECT fridge_partner.partnership_id AS id, role, acl.daycare_id AS unit_id
 FROM fridge_partner
 JOIN person_acl_view acl ON fridge_partner.person_id = acl.person_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -536,12 +536,12 @@ WHERE employee_id = ${bind(user.id)}
                 """
 SELECT pd.id, child_id
 FROM pedagogical_document pd
-            """
+            """,
             )
         }
 
     fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(
-        cfg: ChildAclConfig = ChildAclConfig()
+        cfg: ChildAclConfig = ChildAclConfig(),
     ) =
         ruleViaChildAcl<AttachmentId>(cfg) { _, _ ->
             sql(
@@ -549,7 +549,7 @@ FROM pedagogical_document pd
 SELECT attachment.id, pd.child_id
 FROM attachment
 JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
-            """
+            """,
             )
         }
 
@@ -560,7 +560,7 @@ JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
 SELECT person_id AS id, role, acl.daycare_id AS unit_id
 FROM person_acl_view acl
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -572,7 +572,7 @@ SELECT placement.id, role, acl.daycare_id AS unit_id
 FROM placement
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -584,7 +584,7 @@ SELECT placement.id, role, acl.daycare_id AS unit_id
 FROM placement
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)} AND placement.start_date > ${bind(now)}
-            """
+            """,
             )
         }
 
@@ -597,7 +597,7 @@ FROM service_need
 JOIN placement ON placement.id = service_need.placement_id
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -611,7 +611,7 @@ JOIN placement ON absence_application.child_id = placement.child_id
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE acl.employee_id = ${bind(user.id)}
   AND absence_application.start_date BETWEEN placement.start_date AND placement.end_date
-            """
+            """,
             )
         }
 
@@ -625,7 +625,7 @@ JOIN placement ON placement.child_id = service_application.child_id AND
     between_start_and_end(daterange(placement.start_date, placement.end_date, '[]'), service_application.start_date)
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -647,7 +647,7 @@ ${if (deletable) "AND status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_docume
 ${if (deletable) "AND ${predicate(childDocumentTemplateValidityNotEnded(now.toLocalDate()).forTable("child_document"))}" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
 ${if (canGoToPrevStatus) "AND ((type = 'OTHER_DECISION') OR (type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb)) AND status <> 'COMPLETED'" else ""}
-            """
+            """,
             )
         }
 
@@ -662,7 +662,7 @@ JOIN daycare_acl ON bc.unit_id = daycare_acl.daycare_id
 WHERE daycare_acl.employee_id = ${bind(user.id)}
   AND bc.start_date <= ${bind(now.toLocalDate())}
   AND bc.end_date >= ${bind(now.toLocalDate())}
-            """
+            """,
             )
         }
 
@@ -672,7 +672,7 @@ WHERE daycare_acl.employee_id = ${bind(user.id)}
                 """
 SELECT dst.id, child_id
 FROM daily_service_time dst
-            """
+            """,
             )
         }
 
@@ -683,7 +683,7 @@ FROM daily_service_time dst
 SELECT dst.id, child_id
 FROM daily_service_time dst
 WHERE lower(dst.validity_period) > ${bind(now.toLocalDate())}
-            """
+            """,
             )
         }
 
@@ -695,7 +695,7 @@ SELECT av.id, role, acl.daycare_id AS unit_id
 FROM application_view av
 JOIN daycare_acl acl ON acl.daycare_id = ANY (av.preferredunits)
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -707,7 +707,7 @@ SELECT g.id, role, acl.daycare_id AS unit_id
 FROM daycare_group g
 JOIN daycare_acl acl USING (daycare_id)
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -720,7 +720,7 @@ FROM group_note gn
 JOIN daycare_group g ON gn.group_id = g.id
 JOIN daycare_acl acl USING (daycare_id)
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -733,7 +733,7 @@ FROM placement
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -745,7 +745,7 @@ SELECT d.id, role, acl.daycare_id AS unit_id
 FROM daycare_acl acl
 JOIN mobile_device d ON acl.daycare_id = d.unit_id
 WHERE acl.employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -757,7 +757,7 @@ SELECT p.id, role, acl.daycare_id AS unit_id
 FROM daycare_acl acl
 JOIN pairing p ON acl.daycare_id = p.unit_id
 WHERE acl.employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -768,7 +768,7 @@ WHERE acl.employee_id = ${bind(user.id)}
 SELECT daycare_id AS id, role, acl.daycare_id AS unit_id
 FROM daycare_acl acl
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -783,7 +783,7 @@ JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.provides_shift_c
 JOIN daycare_acl ON daycare.id = daycare_acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
 AND attachment.type = 'EXTENDED_CARE'
-            """
+            """,
             )
         }
 
@@ -803,7 +803,7 @@ WHERE EXISTS (
     WHERE p.child_id = acl.child_id
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
-"""
+""",
                         )
                     }
                 },
@@ -818,7 +818,7 @@ SELECT cea.calendar_event_id id, acl.role, acl.daycare_id AS unit_id
 FROM calendar_event_attendee cea
 JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -832,7 +832,7 @@ JOIN calendar_event ce ON ce.id = cea.calendar_event_id
 JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
 JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 WHERE employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -845,7 +845,7 @@ FROM titania_errors te
 JOIN daycare_acl employee_acl ON employee_acl.employee_id = te.employee_id
 JOIN daycare_acl acl ON acl.daycare_id = employee_acl.daycare_id
 WHERE acl.employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -858,7 +858,7 @@ FROM message_account acc
 JOIN daycare_group dg ON acc.daycare_group_id = dg.id
 JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
 WHERE acl.employee_id = ${bind(user.id)} AND acc.active = TRUE
-                """
+                """,
             )
         }
 }

@@ -173,7 +173,7 @@ class McpToolsApplicationsIntegrationTest : FullApplicationTest(resetDbBeforeEac
 SELECT id, source_application_id IS NOT DISTINCT FROM ${bind(applicationId)} AS from_application
 FROM placement
 WHERE child_id = ${bind(child.id)} AND id != ${bind(existingPlacement.id)}
-"""
+""",
                     )
                 }
                 .toMap { column<PlacementId>("id") to column<Boolean>("from_application") }

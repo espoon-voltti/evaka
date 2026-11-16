@@ -53,7 +53,7 @@ class McpCascadeDeleter(
 SELECT e.table_name, e.entity_id, e.batch_id, b.name AS batch_name
 FROM mcp_test_data_entity e
 JOIN mcp_test_data_batch b ON b.id = e.batch_id
-"""
+""",
                 )
             }
             .toList<TrackedEntity>()
@@ -85,7 +85,7 @@ JOIN mcp_test_data_batch b ON b.id = e.batch_id
         val tracked = trackedEntities[table to id]
         if (tracked != null && tracked.batchId != batchId) {
             throw Conflict(
-                "Cannot delete: $table $id belongs to test data batch '${tracked.batchName}'. Delete that batch first."
+                "Cannot delete: $table $id belongs to test data batch '${tracked.batchName}'. Delete that batch first.",
             )
         }
         for (fk in catalog.foreignKeysByParent[table].orEmpty()) {
@@ -95,13 +95,13 @@ JOIN mcp_test_data_batch b ON b.id = e.batch_id
                 McpSchemaCatalog.OnDelete.SET_NULL ->
                     tx.execute {
                         sql(
-                            "UPDATE ${fk.childTable} SET ${fk.childColumn} = NULL WHERE ${fk.childColumn} = ${bind(id)}"
+                            "UPDATE ${fk.childTable} SET ${fk.childColumn} = NULL WHERE ${fk.childColumn} = ${bind(id)}",
                         )
                     }
                 McpSchemaCatalog.OnDelete.SET_DEFAULT ->
                     tx.execute {
                         sql(
-                            "UPDATE ${fk.childTable} SET ${fk.childColumn} = DEFAULT WHERE ${fk.childColumn} = ${bind(id)}"
+                            "UPDATE ${fk.childTable} SET ${fk.childColumn} = DEFAULT WHERE ${fk.childColumn} = ${bind(id)}",
                         )
                     }
                 McpSchemaCatalog.OnDelete.DELETE_ROW ->
@@ -109,7 +109,7 @@ JOIN mcp_test_data_batch b ON b.id = e.batch_id
                         val childIds =
                             tx.createQuery {
                                     sql(
-                                        "SELECT id FROM ${fk.childTable} WHERE ${fk.childColumn} = ${bind(id)}"
+                                        "SELECT id FROM ${fk.childTable} WHERE ${fk.childColumn} = ${bind(id)}",
                                     )
                                 }
                                 .toList<UUID>()
@@ -118,7 +118,7 @@ JOIN mcp_test_data_batch b ON b.id = e.batch_id
                         val count =
                             tx.createUpdate {
                                     sql(
-                                        "DELETE FROM ${fk.childTable} WHERE ${fk.childColumn} = ${bind(id)}"
+                                        "DELETE FROM ${fk.childTable} WHERE ${fk.childColumn} = ${bind(id)}",
                                     )
                                 }
                                 .executeAndReturnCount()
@@ -134,7 +134,7 @@ JOIN mcp_test_data_batch b ON b.id = e.batch_id
         externallyArchivedTemplate?.let { templateId ->
             tx.execute {
                 sql(
-                    "UPDATE document_template SET archive_externally = true WHERE id = ${bind(templateId)}"
+                    "UPDATE document_template SET archive_externally = true WHERE id = ${bind(templateId)}",
                 )
             }
         }
@@ -153,7 +153,7 @@ JOIN mcp_test_data_batch b ON b.id = e.batch_id
 UPDATE document_template SET archive_externally = false
 WHERE archive_externally AND id = (SELECT template_id FROM child_document WHERE id = ${bind(childDocumentId)})
 RETURNING id
-"""
+""",
                 )
             }
             .executeAndReturnGeneratedKeys()
@@ -204,7 +204,7 @@ SELECT c.table_name
 FROM information_schema.columns c
 JOIN information_schema.tables t ON t.table_schema = c.table_schema AND t.table_name = c.table_name
 WHERE c.table_schema = 'public' AND c.column_name = 'id' AND c.data_type = 'uuid' AND t.table_type = 'BASE TABLE'
-"""
+""",
                 )
             }
             .toSet<String>()
@@ -229,7 +229,7 @@ JOIN pg_class child ON child.oid = con.conrelid
 JOIN pg_class parent ON parent.oid = con.confrelid
 JOIN pg_namespace ns ON ns.oid = parent.relnamespace
 WHERE con.contype = 'f' AND ns.nspname = 'public'
-"""
+""",
                 )
             }
             .toList<ForeignKeyRow>()

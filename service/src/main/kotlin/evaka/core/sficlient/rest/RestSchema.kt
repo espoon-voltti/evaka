@@ -23,7 +23,7 @@ data class ApiUrls(
     val events: HttpUrl,
 ) {
     constructor(
-        base: HttpUrl
+        base: HttpUrl,
     ) : this(
         token = base.newBuilder().addPathSegments("v1/token").build(),
         changePassword = base.newBuilder().addPathSegments("v1/change-password").build(),
@@ -196,7 +196,7 @@ data class NewPaperMailSender(val address: Address)
 // https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.Recipient
 data class Recipient(
     /** SSN */
-    val id: String
+    val id: String,
 ) {
     init {
         require(id.isNotBlank()) { "id must not be blank" }

@@ -20,7 +20,7 @@ fun Database.Read.getOccupancyCoefficientForEmployeeInUnit(
 SELECT coefficient
 FROM staff_occupancy_coefficient
 WHERE daycare_id = ${bind(unitId)} AND employee_id = ${bind(employeeId)}
-"""
+""",
     )
 }
     .exactlyOneOrNull<BigDecimal>()
@@ -35,13 +35,13 @@ SELECT soc.coefficient
 FROM staff_occupancy_coefficient soc
 JOIN daycare_group grp ON soc.daycare_id = grp.daycare_id AND grp.id = ${bind(groupId)}
 WHERE soc.employee_id = ${bind(employeeId)}
-"""
+""",
     )
 }
     .exactlyOneOrNull<BigDecimal>()
 
 fun Database.Read.getOccupancyCoefficientsByUnit(
-    unitId: DaycareId
+    unitId: DaycareId,
 ): List<StaffOccupancyCoefficient> = createQuery {
     sql(
         """
@@ -49,14 +49,14 @@ SELECT soc.id, soc.coefficient, emp.id AS employeeId, emp.first_name, emp.last_n
 FROM staff_occupancy_coefficient soc
 JOIN employee emp ON soc.employee_id = emp.id
 WHERE soc.daycare_id = ${bind(unitId)}
-"""
+""",
     )
 }
     .toList<StaffOccupancyCoefficient>()
 
 @IgnorableReturnValue
 fun Database.Transaction.upsertOccupancyCoefficient(
-    params: OccupancyCoefficientUpsert
+    params: OccupancyCoefficientUpsert,
 ): StaffOccupancyCoefficientId = createUpdate {
     sql(
         """
@@ -64,7 +64,7 @@ INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
 VALUES (${bind(params.unitId)}, ${bind(params.employeeId)}, ${bind(params.coefficient)})
 ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coefficient
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()

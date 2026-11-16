@@ -106,7 +106,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 1, 1),
                         endDate = LocalDate.of(2022, 12, 31),
-                    )
+                    ),
                 )
             }
 
@@ -202,7 +202,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         modifiedByName = unitSupervisor.evakaUser.name,
                         modifiedAt = clock.now(),
                         belongsToQuestionnaire = false,
-                    )
+                    ),
                 ),
                 db.transaction { tx ->
                     tx.getAbsencesOfChildByDate(child.id, LocalDate.of(2022, 8, 10))
@@ -213,7 +213,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             assertThat(MockEmailClient.emails)
                 .extracting({ it.toAddress }, { it.content.subject })
                 .containsExactly(
-                    Tuple("test@example.com", "Esiopetuksen poissaolohakemus käsitelty")
+                    Tuple("test@example.com", "Esiopetuksen poissaolohakemus käsitelty"),
                 )
 
             assertThrows<BadRequest> {
@@ -236,7 +236,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 1, 1),
                         endDate = LocalDate.of(2022, 12, 31),
-                    )
+                    ),
                 )
             }
 
@@ -284,7 +284,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 1, 1),
                         endDate = LocalDate.of(2022, 12, 31),
-                    )
+                    ),
                 )
             }
 
@@ -363,7 +363,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         endDate = placement.endDate,
                         optionId = snPreschoolDaycareContractDays13.id,
                         confirmedBy = unitSupervisor.evakaUserId,
-                    )
+                    ),
                 )
             }
             val id =
@@ -427,7 +427,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 1, 1),
                         endDate = LocalDate.of(2022, 12, 31),
-                    )
+                    ),
                 )
             }
 
@@ -526,7 +526,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
             assertThat(MockEmailClient.emails)
                 .extracting({ it.toAddress }, { it.content.subject })
                 .containsExactly(
-                    Tuple("test@example.com", "Esiopetuksen poissaolohakemus käsitelty")
+                    Tuple("test@example.com", "Esiopetuksen poissaolohakemus käsitelty"),
                 )
 
             assertThrows<BadRequest> {
@@ -554,7 +554,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         range =
                             FiniteDateRange(LocalDate.of(2022, 8, 10), LocalDate.of(2022, 8, 10)),
                         rejected = true,
-                    )
+                    ),
                 ),
                 db.read { it.getPlannedCitizenPushNotifications() },
             )
@@ -581,7 +581,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 1, 1),
                         endDate = LocalDate.of(2022, 12, 31),
-                    )
+                    ),
                 )
                 tx.insertTestCitizenPushSubscription(adult.id, mockWebPushEndpoint(httpPort))
             }
@@ -619,7 +619,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 1, 1),
                         endDate = LocalDate.of(2022, 12, 31),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -629,7 +629,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2023, 2, 1),
                         endDate = LocalDate.of(2023, 2, 28),
-                    )
+                    ),
                 )
             }
 
@@ -654,7 +654,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2021, 1, 1),
                         endDate = LocalDate.of(2021, 12, 31),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -664,7 +664,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 8, 1),
                         endDate = LocalDate.of(2022, 8, 9),
-                    )
+                    ),
                 )
             }
 
@@ -686,7 +686,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 8, 1),
                         endDate = LocalDate.of(2022, 8, 31),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -696,7 +696,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 9, 1),
                         endDate = LocalDate.of(2022, 9, 30),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -706,7 +706,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = LocalDate.of(2022, 10, 1),
                         endDate = LocalDate.of(2022, 10, 31),
-                    )
+                    ),
                 )
             }
 
@@ -746,7 +746,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                                     LocalDate.of(2022, 10, 5),
                                 ),
                             ),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevPlacement(
@@ -755,7 +755,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = termRange.start,
                         endDate = termRange.end,
-                    )
+                    ),
                 )
             }
 
@@ -786,7 +786,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         extendedTerm = termRange,
                         applicationPeriod = termRange.copy(start = clock.today().minusMonths(2)),
                         termBreaks = DateSet.empty(),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevPlacement(
@@ -795,7 +795,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = termRange.start.plusDays(10),
                         endDate = termRange.end.minusMonths(1),
-                    )
+                    ),
                 )
             }
 
@@ -821,7 +821,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         extendedTerm = termRange,
                         applicationPeriod = termRange.copy(start = clock.today().minusMonths(2)),
                         termBreaks = DateSet.empty(),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevPlacement(
@@ -830,7 +830,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = termRange.start,
                         endDate = termRange.end.minusMonths(1),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -840,7 +840,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit.id,
                         startDate = termRange.end.minusMonths(1).plusDays(2),
                         endDate = termRange.end,
-                    )
+                    ),
                 )
             }
 
@@ -883,7 +883,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         extendedTerm = termRange,
                         applicationPeriod = termRange.copy(start = clock.today().minusMonths(2)),
                         termBreaks = DateSet.empty(),
-                    )
+                    ),
                 )
                 tx.insert(area)
                 tx.insert(unit1)
@@ -906,7 +906,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         daycareGroupId = group11.id,
                         startDate = placement1.startDate,
                         endDate = placement1.endDate,
-                    )
+                    ),
                 )
                 tx.insert(child12, DevPersonType.CHILD)
                 val placement2 =
@@ -924,7 +924,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         daycareGroupId = group12.id,
                         startDate = placement2.startDate,
                         endDate = placement2.endDate,
-                    )
+                    ),
                 )
                 tx.insert(child2, DevPersonType.CHILD)
                 tx.insert(
@@ -934,7 +934,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = unit2.id,
                         startDate = termRange.start,
                         endDate = termRange.end,
-                    )
+                    ),
                 )
             }
         }
@@ -1038,7 +1038,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     base.copy(
                         id = AbsenceApplicationId(UUID.randomUUID()),
                         endDate = clock.today().plusWeeks(1).minusDays(1),
-                    )
+                    ),
                 )
             }
             val application2 = db.transaction { tx ->
@@ -1046,12 +1046,12 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     base.copy(
                         id = AbsenceApplicationId(UUID.randomUUID()),
                         endDate = clock.today().plusWeeks(1),
-                    )
+                    ),
                 )
             }
             val application3 = db.transaction { tx ->
                 tx.insert(
-                    base.copy(id = AbsenceApplicationId(UUID.randomUUID()), childId = child12.id)
+                    base.copy(id = AbsenceApplicationId(UUID.randomUUID()), childId = child12.id),
                 )
             }
             val application4 = db.transaction { tx ->
@@ -1060,7 +1060,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         id = AbsenceApplicationId(UUID.randomUUID()),
                         startDate = clock.today().plusYears(1).plusDays(1),
                         endDate = clock.today().plusYears(1).plusDays(3),
-                    )
+                    ),
                 )
             }
 

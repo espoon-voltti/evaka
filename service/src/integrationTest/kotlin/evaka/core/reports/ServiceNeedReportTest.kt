@@ -143,7 +143,7 @@ class ServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                             type = PlacementType.DAYCARE,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
             tx.insert(DevPerson(ssn = null, dateOfBirth = today.minusYears(1)), DevPersonType.CHILD)
@@ -155,7 +155,7 @@ class ServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                             type = PlacementType.PRESCHOOL,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
         }
@@ -167,17 +167,17 @@ class ServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                         0 to { it.copy(missingServiceNeed = 1, total = 1) },
                         1 to { it.copy(missingServiceNeed = 1, total = 1) },
                     )
-                    .values
+                    .values,
             )
         assertThat(getReport(today, user = unitSupervisor, placementType = PlacementType.DAYCARE))
             .containsExactlyElementsOf(
                 replaceMapValue(rowsByAge, 0 to { it.copy(missingServiceNeed = 1, total = 1) })
-                    .values
+                    .values,
             )
         assertThat(getReport(today, user = unitSupervisor, placementType = PlacementType.PRESCHOOL))
             .containsExactlyElementsOf(
                 replaceMapValue(rowsByAge, 1 to { it.copy(missingServiceNeed = 1, total = 1) })
-                    .values
+                    .values,
             )
     }
 

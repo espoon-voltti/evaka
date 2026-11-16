@@ -60,7 +60,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = today.plusYears(1),
                     headOfChild = adult.id,
                     conflict = true,
-                )
+                ),
             )
         }
 
@@ -77,7 +77,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = today.plusYears(1),
                     headOfChild = adult.id,
                     conflict = true,
-                )
+                ),
             )
         }
         insertPlacement(child.id, today, today)
@@ -95,7 +95,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = today.plusYears(1),
                     headOfChild = adult.id,
                     conflict = false,
-                )
+                ),
             )
         }
         insertPlacement(child.id, today, today)
@@ -113,7 +113,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = today.plusYears(1),
                     headOfChild = adult.id,
                     conflict = true,
-                )
+                ),
             )
         }
         insertPlacement(child.id, today.plusDays(7), today.plusDays(14))
@@ -131,7 +131,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = today.plusYears(1),
                     headOfChild = adult.id,
                     conflict = true,
-                )
+                ),
             )
         }
         insertPlacement(child.id, today.plusDays(8), today.plusDays(14), daycare.id)
@@ -162,7 +162,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 unitId = unitId,
                 startDate = startDate,
                 endDate = endDate,
-            )
+            ),
         )
     }
 

@@ -86,7 +86,7 @@ AND (cea.child_id IS NULL OR EXISTS(
         OR ce.event_type = 'DISCUSSION_SURVEY' AND rp.placement_unit_id = cea.unit_id)
 ))
 GROUP BY ce.id, cea.unit_id, eu.id
-"""
+""",
     )
 }
 
@@ -117,7 +117,7 @@ fun Database.Transaction.createCalendarEvent(
 INSERT INTO calendar_event (created_at, created_by, title, description, period, modified_at, modified_by, content_modified_at, content_modified_by, event_type, nekku_unordered_meals)
 VALUES (${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.title)}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.eventType)}, ${bind(event.nekkuUnorderedMeals)})
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -148,7 +148,7 @@ fun Database.Transaction.createCalendarEventAttendees(
                 """
 INSERT INTO calendar_event_attendee (calendar_event_id, unit_id, group_id, child_id)
 VALUES (${bind(eventId)}, ${bind(unitId)}, ${bind { (groupId, _) -> groupId }}, ${bind { (_, childId) -> childId }})
-"""
+""",
             )
         }
     } else {
@@ -170,7 +170,7 @@ SELECT id, date, start_time, end_time
 FROM calendar_event_time
 WHERE calendar_event_id = ${bind(calendarEventId)}
 AND (child_id IS NULL OR child_id = ${bind(childId)})
-"""
+""",
     )
 }
     .toList<CalendarEventTime>()
@@ -187,7 +187,7 @@ fun Database.Transaction.createCalendarEventTime(
 INSERT INTO calendar_event_time (created_at, created_by, updated_at, modified_at, modified_by, calendar_event_id, date, start_time, end_time)
 VALUES (${bind(createdAt)}, ${bind(createdBy)}, ${bind(createdAt)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(calendarEventId)}, ${bind(time.date)}, ${bind(time.timeRange.start)}, ${bind(time.timeRange.end)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -228,7 +228,7 @@ fun Database.Transaction.createCalendarEventAttendee(
                 """
 INSERT INTO calendar_event_attendee (calendar_event_id, unit_id, group_id, child_id)
 VALUES (${bind(eventId)}, ${bind(unitId)}, ${bind(groupId)}, ${bind(childId)})
-"""
+""",
             )
         }
         .updateExactlyOne()
@@ -244,7 +244,7 @@ fun Database.Read.getCalendarEventChildIds(calendarEventId: CalendarEventId) = c
 SELECT child_id
 FROM calendar_event_attendee_child_view
 WHERE calendar_event_id = ${bind(calendarEventId)}
-"""
+""",
     )
 }
     .toList<ChildId>()
@@ -266,7 +266,7 @@ SET title = ${bind(updateForm.title)},
     content_modified_by = ${bind(modifiedBy)},
     nekku_unordered_meals = ${bind(updateForm.nekkuUnorderedMeals)}
 WHERE id = ${bind(eventId)}
-        """
+        """,
     )
 }
     .updateExactlyOne()
@@ -283,7 +283,7 @@ fun Database.Transaction.insertCalendarEventTimeReservation(
 UPDATE calendar_event_time
 SET child_id = ${bind(childId)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
 WHERE id = ${bind(eventTimeId)} AND (child_id IS NULL OR child_id = ${bind(childId)})
-"""
+""",
     )
 }
     .updateNoneOrOne()
@@ -300,7 +300,7 @@ UPDATE calendar_event_time
 SET child_id = NULL::uuid, modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE calendar_event_id = ${bind(calendarEventId)}
 AND child_id = ${bind(childId)}
-"""
+""",
     )
 }
 
@@ -314,7 +314,7 @@ fun Database.Transaction.freeCalendarEventTimeReservation(
 UPDATE calendar_event_time
 SET child_id = NULL::uuid, modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(calendarEventTimeId)}
-"""
+""",
     )
 }
 
@@ -330,7 +330,7 @@ fun Database.Transaction.freeCalendarEventTimeReservations(
 UPDATE calendar_event_time
 SET child_id = NULL::uuid, modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE id = ANY(${bind(calendarEventTimeIds)})
-"""
+""",
         )
     }
 }
@@ -345,7 +345,7 @@ SELECT id, date, start_time, end_time, child_id
 FROM calendar_event_time
 WHERE calendar_event_id = ${bind(calendarEventId)}
 AND child_id = ${bind(childId)}
-"""
+""",
     )
 }
     .toList<CalendarEventTime>()
@@ -476,7 +476,7 @@ FROM matching_attendee ma
 JOIN calendar_event ce ON ce.id = ma.calendar_event_id
 LEFT JOIN daycare_group dg ON dg.id = ma.attendee_group_id
 LEFT JOIN daycare unit ON unit.id = ma.attendee_unit_id
-"""
+""",
     )
 }
     .toList<CitizenCalendarEventRow>()
@@ -542,7 +542,7 @@ WHERE cp.period && ce.period
   AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
   AND daterange(dgp.start_date, dgp.end_date, '[]') && cp.period
   AND ce.event_type = 'DISCUSSION_SURVEY';
-"""
+""",
     )
 }
     .toList<CitizenDiscussionSurveyRow>()
@@ -572,7 +572,7 @@ data class ParentWithDiscussionSurveys(
 )
 
 fun Database.Read.getRecipientsForEventTimeRemindersAt(
-    date: LocalDate
+    date: LocalDate,
 ): List<ParentWithEventTimes> {
     return createQuery {
         sql(
@@ -597,7 +597,7 @@ JOIN LATERAL (
     ) par ON TRUE
 WHERE cet.date = ${bind(date)}
   AND cet.child_id IS NOT NULL
-"""
+""",
         )
     }
         .toList {
@@ -610,7 +610,7 @@ WHERE cet.date = ${bind(date)}
 }
 
 fun Database.Read.getEventTimeReminderInfo(
-    eventTimeId: CalendarEventTimeId
+    eventTimeId: CalendarEventTimeId,
 ): DiscussionTimeReminderData? {
     data class RawRow(
         val title: String,
@@ -636,7 +636,7 @@ FROM calendar_event_time cet
 JOIN person p on cet.child_id = p.id
 JOIN calendar_event ce ON cet.calendar_event_id = ce.id
 WHERE cet.id = ${bind(eventTimeId)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<RawRow>()
@@ -722,7 +722,7 @@ SELECT mp.parent_id, p.language, array_agg(mp.event_id) AS events
 FROM matching_parents mp
 JOIN person p ON p.id = mp.parent_id
 GROUP BY mp.parent_id, p.language
-"""
+""",
     )
 }
     .toList {
@@ -734,7 +734,7 @@ GROUP BY mp.parent_id, p.language
     }
 
 fun Database.Read.getParentsWithNewDiscussionSurveysAfter(
-    cutoff: HelsinkiDateTime
+    cutoff: HelsinkiDateTime,
 ): List<ParentWithDiscussionSurveys> {
     return createQuery {
         sql(
@@ -792,7 +792,7 @@ FROM matching_parents mp
          JOIN person p ON p.id = mp.parent_id
          JOIN calendar_event ce ON ce.id = mp.event_id
 GROUP BY mp.parent_id, p.language
-"""
+""",
         )
     }
         .toList {
@@ -820,7 +820,7 @@ SET period = ${bind(period)},
     content_modified_at = ${bind(modifiedAt)},
     content_modified_by = ${bind(modifiedBy)}
 WHERE id = ${bind(eventId)}
-        """
+        """,
             )
         }
         .updateExactlyOne()
@@ -840,7 +840,7 @@ JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
 WHERE cet.id = ${bind(id)}
         
         """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .exactlyOneOrNull<DiscussionTimeDetailsRow>()

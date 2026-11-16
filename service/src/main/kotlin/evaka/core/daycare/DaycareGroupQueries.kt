@@ -61,7 +61,7 @@ AND (${bind(daycareId)}::uuid IS NULL OR daycare_id = ${bind(daycareId)})
 AND (${bind(period)}::daterange IS NULL OR daterange(start_date, end_date, '[]') && ${bind(period)})
 AND ($includeClosed = TRUE OR end_date IS NULL)
 AND ${predicate(groupPredicate.forTable("daycare_group"))}
-"""
+""",
     )
 }
 
@@ -76,7 +76,7 @@ fun Database.Transaction.createDaycareGroup(
 INSERT INTO daycare_group (daycare_id, name, start_date, end_date, aromi_customer_id)
 VALUES (${bind(daycareId)}, ${bind(name)}, ${bind(startDate)}, NULL, ${bind(aromiCustomerId)})
 RETURNING id, daycare_id, name, start_date, end_date, true AS deletable, jamix_customer_number, aromi_customer_id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -97,7 +97,7 @@ fun Database.Transaction.updateGroup(
 UPDATE daycare_group
 SET name = ${bind(name)}, start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, jamix_customer_number = ${bind(jamixCustomerNumber)}, aromi_customer_id = ${bind(aromiCustomerId)}, nekku_customer_number = ${bind(nekkuCustomerNumber)}
 WHERE id = ${bind(groupId)}
-        """
+        """,
             )
         }
         .updateExactlyOne(notFoundMsg = "Group $groupId not found")
@@ -105,7 +105,7 @@ WHERE id = ${bind(groupId)}
 
 fun Database.Read.getLastGroupPlacementEndDate(groupId: GroupId): LocalDate? = createQuery {
     sql(
-        "SELECT max(end_date) FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}"
+        "SELECT max(end_date) FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}",
     )
 }
     .exactlyOneOrNull<LocalDate>()
@@ -119,7 +119,7 @@ FROM daycare_group_placement gp
 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
 WHERE dg.daycare_id = ${bind(daycareId)}
 GROUP BY gp.daycare_group_id
-"""
+""",
         )
     }
     .toMap { columnPair<GroupId, LocalDate>("daycare_group_id", "last_placement_end_date") }
@@ -156,6 +156,6 @@ DELETE FROM message_account WHERE daycare_group_id = ${bind(groupId)};
 DELETE FROM daycare_caretaker WHERE group_id = ${bind(groupId)};
 DELETE FROM mobile_device_push_group WHERE daycare_group = ${bind(groupId)};
 DELETE FROM daycare_group WHERE id = ${bind(groupId)}
-"""
+""",
     )
 }

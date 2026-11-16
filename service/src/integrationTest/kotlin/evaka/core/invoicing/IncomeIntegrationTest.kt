@@ -105,10 +105,10 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             calculateMonthlyAmount(
                                 500000,
                                 coefficientMultiplierProvider.multiplier(
-                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                 ),
                             ),
-                        )
+                        ),
                 ),
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
@@ -280,11 +280,11 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     calculateMonthlyAmount(
                                         1000,
                                         coefficientMultiplierProvider.multiplier(
-                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                         ),
                                     ),
-                                )
-                        )
+                                ),
+                        ),
                 )
 
         updateIncome(incomeId, updateRequest)

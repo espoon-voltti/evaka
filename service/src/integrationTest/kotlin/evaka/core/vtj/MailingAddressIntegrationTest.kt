@@ -50,7 +50,7 @@ class MailingAddressIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 listOf(
                                     period(AddressPeriodType.TEMPORARY, today, null, "Mökkitie 2"),
                                     period(AddressPeriodType.MAILING, today, null, "PL 10"),
-                                )
+                                ),
                         ),
                         now,
                     )
@@ -76,7 +76,7 @@ class MailingAddressIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         "PL 10",
                                     ),
                                     period(AddressPeriodType.TEMPORARY, today, null, "Mökkitie 2"),
-                                )
+                                ),
                         ),
                         now,
                     )
@@ -94,7 +94,7 @@ class MailingAddressIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     it.applyPerson(
                         vtjPerson.copy(
                             mailingAddressPeriods =
-                                listOf(period(AddressPeriodType.MAILING, start, null, "PL 10"))
+                                listOf(period(AddressPeriodType.MAILING, start, null, "PL 10")),
                         ),
                         now,
                     )
@@ -118,8 +118,8 @@ class MailingAddressIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         vtjPerson.copy(
                             mailingAddressPeriods =
                                 listOf(
-                                    period(AddressPeriodType.TEMPORARY, today, end, "Mökkitie 2")
-                                )
+                                    period(AddressPeriodType.TEMPORARY, today, end, "Mökkitie 2"),
+                                ),
                         ),
                         now,
                     )
@@ -147,8 +147,8 @@ class MailingAddressIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 today.minusDays(10),
                                 today.minusDays(1),
                                 "Mökkitie 2",
-                            )
-                        )
+                            ),
+                        ),
                 ),
                 now,
             )
@@ -163,7 +163,7 @@ class MailingAddressIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.applyPerson(
                 vtjPerson.copy(
                     mailingAddressPeriods =
-                        listOf(period(AddressPeriodType.MAILING, today, null, "PL 10"))
+                        listOf(period(AddressPeriodType.MAILING, today, null, "PL 10")),
                 ),
                 now,
             )

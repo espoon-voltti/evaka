@@ -88,7 +88,7 @@ class AbsencePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     daycareGroupId = group.id,
                     startDate = placement.startDate,
                     endDate = placement.endDate,
-                )
+                ),
             )
         }
     }

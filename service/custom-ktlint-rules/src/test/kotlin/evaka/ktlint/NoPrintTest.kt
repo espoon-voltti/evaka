@@ -20,7 +20,7 @@ class NoPrintTest {
 fun testing() {
     println("test")
 }
-"""
+""",
             )
             .hasLintViolationWithoutAutoCorrect(line = 3, col = 5, detail = NoPrint.ERROR_MESSAGE)
     }
@@ -32,7 +32,7 @@ fun testing() {
 fun testing() {
     print("test")
 }
-"""
+""",
             )
             .hasLintViolationWithoutAutoCorrect(line = 3, col = 5, detail = NoPrint.ERROR_MESSAGE)
     }
@@ -44,7 +44,7 @@ fun testing() {
 fun testing() {
     logger.info("test")
 }
-"""
+""",
             )
             .hasNoLintViolations()
     }

@@ -521,7 +521,7 @@ class AttachmentsController(
         }
         if (count >= maxAttachmentsPerUser) {
             throw Forbidden(
-                "Too many uploaded files for ${user.evakaUserId}: $maxAttachmentsPerUser"
+                "Too many uploaded files for ${user.evakaUserId}: $maxAttachmentsPerUser",
             )
         }
     }

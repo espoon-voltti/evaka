@@ -53,7 +53,7 @@ class ChildAccessControlTest : AccessControlTest() {
                     clock,
                     action,
                     child.id,
-                )
+                ),
             )
         }
     }
@@ -70,7 +70,7 @@ class ChildAccessControlTest : AccessControlTest() {
                     childId = child.id,
                     unitId = daycareId,
                     endDate = LocalDate.of(2100, 1, 1),
-                )
+                ),
             )
             daycareId
         }
@@ -100,7 +100,7 @@ class ChildAccessControlTest : AccessControlTest() {
                         childId = child.id,
                         unitId = daycareId,
                         endDate = LocalDate.of(2100, 1, 1),
-                    )
+                    ),
                 )
                 Pair(daycareId, otherDaycareId)
             }

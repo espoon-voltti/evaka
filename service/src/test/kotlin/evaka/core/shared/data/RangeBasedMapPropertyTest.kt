@@ -42,7 +42,7 @@ abstract class RangeBasedMapPropertyTest<
                         ranges.withIndex().any { (index2, range2) ->
                             index != index2 && (range.overlaps(range2))
                         }
-                    }
+                    },
                 )
             }
         }
@@ -60,7 +60,7 @@ abstract class RangeBasedMapPropertyTest<
                                 (entry.first.adjacentTo(entry2.first) &&
                                     entry.second == entry2.second)
                         }
-                    }
+                    },
                 )
             }
         }

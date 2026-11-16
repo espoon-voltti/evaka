@@ -44,7 +44,7 @@ class ChildAgeLanguageReportController(private val accessControl: AccessControl)
             }
             .also {
                 Audit.ChildAgeLanguageReportRead.log(
-                    meta = mapOf("date" to date, "count" to it.size)
+                    meta = mapOf("date" to date, "count" to it.size),
                 )
             }
     }
@@ -102,7 +102,7 @@ private fun Database.Read.getChildAgeLanguageRows(
         GROUP BY ca.name, u.id, u.name, u.type, u.provider_type
         ORDER BY ca.name, u.name;
             """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)

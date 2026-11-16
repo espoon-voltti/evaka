@@ -80,7 +80,7 @@ class TampereInvoiceClient(
                         properties.url,
                         request,
                         SoapActionCallback(
-                            "http://www.tampere.fi/services/sapsd/salesorder/v1.0/SendSalesOrder"
+                            "http://www.tampere.fi/services/sapsd/salesorder/v1.0/SendSalesOrder",
                         ),
                     )
                 when (val value = JAXBIntrospector.getValue(response)) {
@@ -179,10 +179,10 @@ class TampereInvoiceClient(
                                 "${it.child.lastName} ${it.child.firstName}"
                                     .take(MAX_TEXT_ROW_LENGTH),
                                 "${it.periodStart.format(dateFormatter)} - ${it.periodEnd.format(dateFormatter)}",
-                            )
+                            ),
                         )
-                    }
-                )
+                    },
+                ),
             )
         }
     }

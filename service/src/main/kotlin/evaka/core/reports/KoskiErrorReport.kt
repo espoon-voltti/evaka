@@ -49,7 +49,7 @@ FROM koski_upload_error e
 JOIN daycare d ON d.id = e.unit_id
 JOIN person p ON e.child_id = p.id
 ORDER BY e.errored_at DESC
-    """
+    """,
     )
 }
     .toList<KoskiErrorReportRow>()

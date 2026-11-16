@@ -56,7 +56,7 @@ class PlacementPlanService(
 
         if (application.status != ApplicationStatus.WAITING_PLACEMENT) {
             throw Conflict(
-                "Cannot get placement plan drafts for application with status ${application.status}"
+                "Cannot get placement plan drafts for application with status ${application.status}",
             )
         }
 
@@ -65,12 +65,12 @@ class PlacementPlanService(
         val child =
             tx.getPlacementDraftChild(application.childId)
                 ?: throw NotFound(
-                    "Cannot find child with id ${application.childId} to application ${application.id}"
+                    "Cannot find child with id ${application.childId} to application ${application.id}",
                 )
         val guardianHasRestrictedDetails =
             tx.getGuardiansRestrictedStatus(application.guardianId)
                 ?: throw NotFound(
-                    "Cannot find guardian with id ${application.guardianId} to application ${application.id}"
+                    "Cannot find guardian with id ${application.guardianId} to application ${application.id}",
                 )
         val preferredUnits =
             form.preferences.preferredUnits.map { PlacementDraftUnit(id = it.id, name = it.name) }
@@ -86,7 +86,7 @@ class PlacementPlanService(
             FROM placement_draft pd
             JOIN daycare d ON d.id = pd.unit_id
             WHERE pd.application_id = ${bind(applicationId)}
-        """
+        """,
                     )
                 }
                 .map {
@@ -102,7 +102,7 @@ class PlacementPlanService(
                 val preschoolTerms =
                     tx.getPreschoolTerm(startDate)
                         ?: throw Exception(
-                            "No suitable preschool term found for start date $startDate"
+                            "No suitable preschool term found for start date $startDate",
                         )
                 val exactTerm =
                     if (isSvebiUnit(tx, preferredUnits[0].id)) {
@@ -264,7 +264,7 @@ class PlacementPlanService(
                         val preschoolTerms =
                             tx.getPreschoolTerm(period.start)
                                 ?: throw Exception(
-                                    "No suitable preschool term found for start date ${period.start}"
+                                    "No suitable preschool term found for start date ${period.start}",
                                 )
 
                         val exactTerm =
@@ -366,7 +366,7 @@ class PlacementPlanService(
                         period,
                         preschoolDaycarePeriod
                             ?: throw BadRequest(
-                                "Placement type $placementType requires a preschool daycare period"
+                                "Placement type $placementType requires a preschool daycare period",
                             ),
                     )
                 } else {
@@ -412,7 +412,7 @@ class PlacementPlanService(
                     SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi
                     FROM daycare d LEFT JOIN care_area ca ON d.care_area_id = ca.id
                     WHERE d.id = ${bind(unitId)}
-                    """
+                    """,
                 )
             }
             .exactlyOne<Boolean>()

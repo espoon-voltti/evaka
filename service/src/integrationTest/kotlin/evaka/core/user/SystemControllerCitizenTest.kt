@@ -69,7 +69,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                     type = PlacementType.DAYCARE,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
         }
         return systemController
@@ -88,7 +88,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                     type = PlacementType.DAYCARE,
                     startDate = clock.today().minusDays(1),
                     endDate = clock.today().plusDays(1),
-                )
+                ),
             )
         }
         val result = systemController.citizenUser(dbInstance(), user, clock, adult.id)
@@ -106,7 +106,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                     type = PlacementType.DAYCARE,
                     startDate = clock.today().minusMonths(2),
                     endDate = clock.today().minusDays(1),
-                )
+                ),
             )
         }
         val result = systemController.citizenUser(dbInstance(), user, clock, adult.id)
@@ -124,7 +124,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                     type = PlacementType.DAYCARE,
                     startDate = clock.today().plusWeeks(2).plusDays(1),
                     endDate = clock.today().plusMonths(2),
-                )
+                ),
             )
         }
         val result = systemController.citizenUser(dbInstance(), user, clock, adult.id)
@@ -142,7 +142,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                     type = PlacementType.DAYCARE,
                     startDate = clock.today().plusWeeks(2),
                     endDate = clock.today().plusMonths(2),
-                )
+                ),
             )
         }
         val result = systemController.citizenUser(dbInstance(), user, clock, adult.id)
@@ -157,7 +157,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 daycare.id,
                 clock.today().minusDays(1),
                 clock.today().plusDays(1),
-            )
+            ),
         )
     }
 
@@ -168,7 +168,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 daycare.id,
                 clock.today().minusMonths(2),
                 clock.today().minusDays(1),
-            )
+            ),
         )
     }
 
@@ -179,7 +179,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 daycare.id,
                 clock.today().plusDays(30),
                 clock.today().plusMonths(4),
-            )
+            ),
         )
     }
 
@@ -190,7 +190,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 citizenBasicDaycare.id,
                 clock.today().plusDays(60),
                 clock.today().plusMonths(4),
-            )
+            ),
         )
     }
 
@@ -201,7 +201,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 citizenBasicDaycare.id,
                 clock.today().plusDays(61),
                 clock.today().plusMonths(4),
-            )
+            ),
         )
     }
 
@@ -212,7 +212,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 citizenBasicDaycare.id,
                 clock.today().minusDays(1),
                 clock.today().plusDays(1),
-            )
+            ),
         )
     }
 
@@ -223,7 +223,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 citizenBasicDaycare.id,
                 clock.today().minusMonths(2),
                 clock.today().minusDays(1),
-            )
+            ),
         )
     }
 
@@ -234,7 +234,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 otherDecisionDaycare.id,
                 clock.today().minusDays(1),
                 clock.today().plusDays(1),
-            )
+            ),
         )
     }
 
@@ -245,7 +245,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 otherDecisionDaycare.id,
                 clock.today().plusDays(30),
                 clock.today().plusMonths(4),
-            )
+            ),
         )
     }
 
@@ -256,7 +256,7 @@ class SystemControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true
                 noDocumentDaycare.id,
                 clock.today().minusDays(1),
                 clock.today().plusDays(1),
-            )
+            ),
         )
     }
 }

@@ -464,7 +464,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE attachment SET received_at = ${bind(now.minusWeeks(1))} WHERE application_id = ${bind(applicationId)}"
+                    "UPDATE attachment SET received_at = ${bind(now.minusWeeks(1))} WHERE application_id = ${bind(applicationId)}",
                 )
             }
         }
@@ -513,12 +513,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE attachment SET received_at = ${bind(now.plusWeeks(1))} WHERE type = ${bind(ApplicationAttachmentType.EXTENDED_CARE)} AND application_id = ${bind(applicationId)}"
+                    "UPDATE attachment SET received_at = ${bind(now.plusWeeks(1))} WHERE type = ${bind(ApplicationAttachmentType.EXTENDED_CARE)} AND application_id = ${bind(applicationId)}",
                 )
             }
             tx.execute {
                 sql(
-                    "UPDATE attachment SET received_at = ${bind(now.plusDays(3))} WHERE type = ${bind(ApplicationAttachmentType.URGENCY)} AND application_id = ${bind(applicationId)}"
+                    "UPDATE attachment SET received_at = ${bind(now.plusDays(3))} WHERE type = ${bind(ApplicationAttachmentType.URGENCY)} AND application_id = ${bind(applicationId)}",
                 )
             }
         }
@@ -550,7 +550,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     unitId = daycare2.id,
                     startDate = preferredStartDate,
                     endDate = preferredStartDate.plusYears(1),
-                )
+                ),
             )
         }
         db.transaction { tx ->
@@ -583,7 +583,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     startDate = preferredStartDate,
                     endDate = preferredStartDate.plusYears(1),
                     type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                )
+                ),
             )
         }
         db.transaction { tx ->
@@ -614,7 +614,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     unitId = daycare2.id,
                     startDate = preferredStartDate,
                     endDate = preferredStartDate.plusYears(1),
-                )
+                ),
             )
         }
 
@@ -648,7 +648,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     unitId = daycare2.id,
                     startDate = preferredStartDate,
                     endDate = preferredStartDate.plusYears(1),
-                )
+                ),
             )
         }
 
@@ -1207,7 +1207,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         appliedType = PlacementType.PRESCHOOL_DAYCARE,
                         primaryDecision = DecisionType.PRESCHOOL,
                         connectedDecision = DecisionType.PRESCHOOL_DAYCARE,
-                    )
+                    ),
                 ),
                 Arguments.of(
                     ConnectedPlacementPlanTestCase(
@@ -1222,14 +1222,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                                 nameEn = snPreschoolClub45.nameEn,
                                 validPlacementType = PlacementType.PRESCHOOL_CLUB,
                             ),
-                    )
+                    ),
                 ),
                 Arguments.of(
                     ConnectedPlacementPlanTestCase(
                         appliedType = PlacementType.PREPARATORY_DAYCARE,
                         primaryDecision = DecisionType.PREPARATORY_EDUCATION,
                         connectedDecision = DecisionType.PRESCHOOL_DAYCARE,
-                    )
+                    ),
                 ),
             )
             .stream()
@@ -1291,7 +1291,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @ParameterizedTest(name = "{0}")
     @MethodSource("connectedPlacementPlanCases")
     fun `createPlacementPlan - connected placement type fails without a connected period`(
-        test: ConnectedPlacementPlanTestCase
+        test: ConnectedPlacementPlanTestCase,
     ) {
         db.transaction { tx ->
             tx.insertApplication(
@@ -1493,10 +1493,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                                 DecisionType.PRESCHOOL,
                                 daycare.name,
                                 mainPeriod.start,
-                            )
+                            ),
                         ),
                     answerRequired = true,
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -1528,8 +1528,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                                 AddressPeriodType.MAILING,
                                 DateRange(today, null),
                                 PersonAddress("PL 10", "02101", "Espoo"),
-                            )
-                        )
+                            ),
+                        ),
                 ),
             MockVtjPerson.from(child),
         )
@@ -1655,7 +1655,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     Tuple(
                         "abc@espoo.fi",
                         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-                    )
+                    ),
                 )
         } else {
             assertThat(MockEmailClient.emails)
@@ -1698,7 +1698,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         Tuple(
                             "abc@espoo.fi",
                             "Uusi päätös eVakassa / Nytt beslut i eVaka / New decision in eVaka",
-                        )
+                        ),
                     )
             } else {
                 assertThat(MockEmailClient.emails)
@@ -1972,7 +1972,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     Tuple(
                         "abc@espoo.fi",
                         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-                    )
+                    ),
                 )
 
             val placementPlan = tx.getPlacementPlan(applicationId)
@@ -2050,7 +2050,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     .toZonedDateTime()
                     .format(
                         DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                            .withLocale(Locale.of("fi", "FI"))
+                            .withLocale(Locale.of("fi", "FI")),
                     )
             val expectedNote =
                 "$previousNoteContent\nSijoitusehdotus hylätty (${daycare.name}) - $rejectReason - ${employee.firstName} ${employee.lastName} $dateTimeString"
@@ -2068,7 +2068,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     Tuple(
                         "abc@espoo.fi",
                         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-                    )
+                    ),
                 )
         }
     }
@@ -2137,7 +2137,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     .toZonedDateTime()
                     .format(
                         DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                            .withLocale(Locale.of("fi", "FI"))
+                            .withLocale(Locale.of("fi", "FI")),
                     )
 
             val expectedNote =
@@ -2156,7 +2156,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     Tuple(
                         "abc@espoo.fi",
                         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-                    )
+                    ),
                 )
         }
     }
@@ -2164,7 +2164,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Test
     fun `confirmPlacementProposalChanges - preschool decision is not sent to guardian if skip is enabled`() {
         workflowForPreschoolDecisions(
-            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true)
+            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true),
         )
 
         db.read { tx ->
@@ -2185,7 +2185,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Test
     fun `confirmPlacementProposalChanges - preparatory decision is not sent to guardian if skip is enabled`() {
         workflowForPreparatoryDecisions(
-            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true)
+            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true),
         )
 
         db.read { tx ->
@@ -2201,7 +2201,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Test
     fun `confirmPlacementProposalChanges - preschool daycare decision is sent to guardian even if skip is enabled`() {
         workflowForPreschoolDaycareDecisions(
-            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true)
+            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true),
         )
 
         db.read { tx ->
@@ -2221,7 +2221,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Test
     fun `confirmPlacementProposalChanges - preparatory daycare decision is sent to guardian even if skip is enabled`() {
         workflowForPreparatoryDaycareDecisions(
-            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true)
+            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true),
         )
 
         db.read { tx ->
@@ -2305,7 +2305,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     personId = adult1.id,
                     startDate = startDate,
                     createdAt = clock.now(),
-                )
+                ),
             )
             tx.insert(
                 DevFridgePartner(
@@ -2315,7 +2315,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     personId = adult2.id,
                     startDate = startDate,
                     createdAt = clock.now(),
-                )
+                ),
             )
 
             tx.insert(
@@ -2325,7 +2325,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     adult2.id,
                     startDate,
                     startDate.plusMonths(12),
-                )
+                ),
             )
 
             tx.insertApplication(
@@ -2910,7 +2910,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val decisionId =
                 tx.createQuery {
                         sql(
-                            "SELECT id FROM decision WHERE application_id = ${bind(testApplicationId)}"
+                            "SELECT id FROM decision WHERE application_id = ${bind(testApplicationId)}",
                         )
                     }
                     .exactlyOne<DecisionId>()
@@ -3032,7 +3032,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                                             PlacementType.PREPARATORY,
                                             PlacementType.PREPARATORY_DAYCARE,
                                         ))
-                                    .takeIf { type == ApplicationType.PRESCHOOL }
+                                    .takeIf { type == ApplicationType.PRESCHOOL },
                         ),
                     additionalDetails =
                         DaycareAdditionalDetails(
@@ -3077,8 +3077,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             ApplicationUpdate(
                 form =
                     form.copy(
-                        preferences = form.preferences.copy(preferredStartDate = preferredStartDate)
-                    )
+                        preferences =
+                            form.preferences.copy(preferredStartDate = preferredStartDate),
+                    ),
             ),
             serviceWorker.evakaUserId,
         )

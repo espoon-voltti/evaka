@@ -124,7 +124,7 @@ fun getExpectedAbsenceCategories(
             setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
                         overlapTime(presences, preschoolTime) < Duration.ofMinutes(60)
-                    }
+                    },
                 )
                 .takeIf { preschoolEducationOnGoing }
         }
@@ -145,7 +145,7 @@ fun getExpectedAbsenceCategories(
                 setOfNotNull(
                     AbsenceCategory.BILLABLE.takeIf {
                         totalTime(presences) < Duration.ofMinutes(15)
-                    }
+                    },
                 )
             }
         }
@@ -154,7 +154,7 @@ fun getExpectedAbsenceCategories(
             setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
                         overlapTime(presences, preparatoryTime) < Duration.ofMinutes(60)
-                    }
+                    },
                 )
                 .takeIf { preparatoryEducationOnGoing }
         }
@@ -174,7 +174,7 @@ fun getExpectedAbsenceCategories(
                 setOfNotNull(
                     AbsenceCategory.BILLABLE.takeIf {
                         totalTime(presences) < Duration.ofMinutes(15)
-                    }
+                    },
                 )
             }
         }
@@ -186,7 +186,7 @@ fun getExpectedAbsenceCategories(
         PlacementType.TEMPORARY_DAYCARE,
         PlacementType.TEMPORARY_DAYCARE_PART_DAY -> {
             setOfNotNull(
-                AbsenceCategory.BILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) }
+                AbsenceCategory.BILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) },
             )
         }
 
@@ -204,7 +204,9 @@ fun getExpectedAbsenceCategories(
 
         PlacementType.SCHOOL_SHIFT_CARE -> {
             setOfNotNull(
-                AbsenceCategory.NONBILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) }
+                AbsenceCategory.NONBILLABLE.takeIf {
+                    totalTime(presences) < Duration.ofMinutes(15)
+                },
             )
         }
 

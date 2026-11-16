@@ -57,7 +57,7 @@ class PendingDecisionNotificationService(
     fun schedulePendingDecisionNotifications(db: Database.Connection, clock: EvakaClock): Int {
         val jobCount = db.transaction { tx ->
             tx.removeUnclaimedJobs(
-                setOf(AsyncJobType(AsyncJob.SendPendingDecisionNotification::class))
+                setOf(AsyncJobType(AsyncJob.SendPendingDecisionNotification::class)),
             )
 
             val today = clock.today()
@@ -82,7 +82,7 @@ WHERE EXISTS (
     SELECT FROM foster_parent WHERE parent_id = application.guardian_id AND child_id = application.child_id AND valid_during @> ${bind(today)}
 )
 GROUP BY application.guardian_id
-"""
+""",
                         )
                     }
                     .toList<GuardianDecisions>()
@@ -115,7 +115,7 @@ GROUP BY application.guardian_id
                                                 guardianId = pendingDecision.guardianId,
                                                 language = guardian.language,
                                                 decisionIds = pendingDecision.decisionIds,
-                                            )
+                                            ),
                                         ),
                                     runAt = clock.now(),
                                     retryCount = 3,
@@ -161,7 +161,7 @@ GROUP BY application.guardian_id
                 clock.now(),
                 pendingDecision.guardianId,
                 CitizenPushNotification.PendingDecisions(
-                    tx.getPendingDecisionsForPush(pendingDecision.decisionIds)
+                    tx.getPendingDecisionsForPush(pendingDecision.decisionIds),
                 ),
             )
         }
@@ -177,7 +177,7 @@ GROUP BY application.guardian_id
 UPDATE decision
 SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = ${bind(now)}
 WHERE id = ${bind(decisionId)}
-"""
+""",
                     )
                 }
             }
@@ -198,7 +198,7 @@ WHERE id = ${bind(decisionId)}
 }
 
 private fun Database.Read.getPendingDecisionsForPush(
-    decisionIds: List<DecisionId>
+    decisionIds: List<DecisionId>,
 ): List<PendingDecision> = createQuery {
     sql(
         """
@@ -209,7 +209,7 @@ JOIN person p ON a.child_id = p.id
 JOIN daycare u ON d.unit_id = u.id
 WHERE d.id = ANY(${bind(decisionIds)})
 ORDER BY d.sent_date, p.last_name, p.first_name, d.type
-"""
+""",
     )
 }
     .toList {

@@ -51,7 +51,7 @@ fun Database.Transaction.insertAbsences(
 INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
 VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${bind { it.absenceType }}, ${bind(userId)}, ${bind(now)})
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
@@ -71,7 +71,7 @@ VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${
 ON CONFLICT (child_id, date, category)
 DO UPDATE SET absence_type = ${bind { it.absenceType }}, modified_by = ${bind(userId)}, modified_at = ${bind(now)}
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
@@ -93,7 +93,7 @@ fun Database.Transaction.upsertGeneratedAbsences(
             """
         DELETE FROM attendance_reservation
         WHERE child_id = ${bind(childId)} AND date = ANY (${bind(absences.map { it.date }.distinct())})
-    """
+    """,
         )
     }
 
@@ -105,7 +105,7 @@ VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${
 ON CONFLICT (child_id, date, category)
 DO UPDATE SET absence_type = ${bind { it.absenceType }}, modified_at = ${bind(now)} WHERE a.modified_by = ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
@@ -152,7 +152,7 @@ FROM (
 ) care_type
 ON CONFLICT DO NOTHING
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
@@ -167,14 +167,14 @@ fun Database.Transaction.batchDeleteAbsences(deletions: List<Presence>): List<Ab
 DELETE FROM absence
 WHERE category = ${bind { it.category }} AND date = ${bind { it.date }} AND child_id = ${bind { it.childId }}
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
         .toList()
 
 fun Database.Transaction.deleteAbsencesFromHolidayPeriodDates(
-    deletions: List<Pair<ChildId, LocalDate>>
+    deletions: List<Pair<ChildId, LocalDate>>,
 ): List<AbsenceId> =
     prepareBatch(deletions) {
             sql(
@@ -184,7 +184,7 @@ WHERE child_id = ${bind { (childId, _) -> childId }}
 AND date = ${bind { (_, date) -> date }}
 AND EXISTS (SELECT 1 FROM holiday_period WHERE period @> date)
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
@@ -211,7 +211,7 @@ WHERE
     ) AND
     NOT EXISTS (SELECT 1 FROM attendance_reservation WHERE child_id = ${bind { it.childId }} AND date = ${bind { it.date }})
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
@@ -227,7 +227,7 @@ fun Database.Transaction.deleteChildAbsences(
 DELETE FROM absence
 WHERE child_id = ${bind(childId)} AND date = ${bind(date)} AND category = ANY(${bind(categories)})
 RETURNING id
-    """
+    """,
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -248,7 +248,7 @@ WHERE
     modified_by = ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)} AND
     modified_at < ${bind(now)}
 RETURNING id
-"""
+""",
     )
 }
     .toList()
@@ -275,14 +275,14 @@ AND questionnaire_id IS NULL
 AND (${bind(reservableRange)} @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type)
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
         .toList()
 
 fun Database.Transaction.clearOldAbsences(
-    childDatePairs: List<Pair<ChildId, LocalDate>>
+    childDatePairs: List<Pair<ChildId, LocalDate>>,
 ): List<AbsenceId> =
     prepareBatch(childDatePairs) {
             sql(
@@ -291,7 +291,7 @@ DELETE FROM absence a
 WHERE child_id = ${bind { (childId, _) -> childId }}
 AND date = ${bind { (_, date) -> date }}
 RETURNING id
-"""
+""",
             )
         }
         .executeAndReturn()
@@ -306,7 +306,7 @@ WHERE between_start_and_end(${bind(range)}, date)
 AND absence_type <> 'FREE_ABSENCE'::absence_type
 AND questionnaire_id IS NULL
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
-"""
+""",
         )
     }
         .execute()
@@ -326,7 +326,7 @@ SELECT exists(
         AND date = ${bind(date)}
         AND category = ${bind(category)}
         AND absence_type = ${bind(type)}
-)"""
+)""",
     )
 }
     .exactlyOne()
@@ -337,7 +337,7 @@ fun Database.Read.getGroupName(groupId: GroupId): String? = createQuery {
 SELECT daycare_group.name
 FROM daycare_group
 WHERE id = ${bind(groupId)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -349,7 +349,7 @@ SELECT daycare.id
 FROM daycare_group
 LEFT JOIN daycare ON daycare_group.daycare_id = daycare.id
 WHERE daycare_group.id = ${bind(groupId)}
-"""
+""",
     )
 }
     .exactlyOne()
@@ -372,7 +372,7 @@ JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end
 WHERE daterange(p.start_date, p.end_date, '[]') && ${bind(range)}
 AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
 AND group_id = ${bind(groupId)}
-"""
+""",
     )
 }
 
@@ -413,7 +413,7 @@ FROM all_placements
 JOIN person ON person.id = all_placements.child_id
 JOIN placement ON placement.child_id = all_placements.child_id AND daterange(placement.start_date, placement.end_date, '[]') && all_placements.date_range
 JOIN daycare ON daycare.id = placement.unit_id
-"""
+""",
         )
     }
         .toList<QueryResult>()
@@ -447,7 +447,7 @@ SELECT
 FROM absence a
 JOIN evaka_user eu ON eu.id = a.modified_by
 WHERE ${predicate(where.forTable("a"))}
-"""
+""",
     )
 }
     .toList()
@@ -462,9 +462,9 @@ fun Database.Read.getAbsencesInGroupByRange(
                     """
 $it.child_id IN (SELECT child_id FROM (${subquery(placementsQuery(range, groupId))}) p) AND
 between_start_and_end(${bind(range)}, $it.date)
-"""
+""",
                 )
-            }
+            },
         )
         .groupBy { it.childId to it.date }
 
@@ -472,9 +472,9 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
     getAbsences(
         Predicate {
             where(
-                "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ${bind(childId)}"
+                "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ${bind(childId)}",
             )
-        }
+        },
     )
 
 fun Database.Read.getAbsencesOfChildrenByRange(
@@ -484,9 +484,9 @@ fun Database.Read.getAbsencesOfChildrenByRange(
     getAbsences(
         Predicate {
             where(
-                "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY(${bind(childIds)})"
+                "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY(${bind(childIds)})",
             )
-        }
+        },
     )
 
 fun Database.Read.getAbsencesOfChildByDate(childId: ChildId, date: LocalDate): List<Absence> =
@@ -506,9 +506,9 @@ between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY (
     UNION ALL
     SELECT child_id FROM foster_parent WHERE parent_id = ${bind(guardianId)} AND valid_during @> ${bind(today)}
 )
-"""
+""",
             )
-        }
+        },
     )
 
 fun Database.Read.getAbsenceDatesForChildrenInRange(
@@ -521,7 +521,7 @@ SELECT a.child_id, a.date
 FROM absence a
 WHERE between_start_and_end(${bind(range)}, date)
 AND a.child_id = ANY(${bind(childIds)})
-"""
+""",
     )
 }
     .toList { column<ChildId>("child_id") to column<LocalDate>("date") }
@@ -542,7 +542,7 @@ WHERE daycare_group_id = ${bind(groupId)}
 AND (bc.group_id IS NULL OR bc.group_id != gp.daycare_group_id)
 AND daterange(gp.start_date, gp.end_date, '[]') && ${bind(period)}
 AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)}
-"""
+""",
     )
 }
     .toList { column<ChildId>("child_id") to column<FiniteDateRange>("period") }
@@ -574,7 +574,7 @@ AND EXISTS (
     WHERE r.child_id = p.child_id
     AND between_start_and_end(p.date_range, r.date)
 )
-"""
+""",
             )
         }
         .toList {
@@ -606,9 +606,9 @@ AND EXISTS (
     WHERE $it.child_id = p.child_id AND between_start_and_end(p.date_range, $it.date)
         AND p.type = ANY(${bind(PlacementType.requiringAttendanceReservations)})
 )
-"""
+""",
             )
-        }
+        },
     )
 
 fun Database.Read.getGroupDailyServiceTimes(
@@ -635,7 +635,7 @@ SELECT
     sunday_times
 FROM daily_service_time dst
 WHERE EXISTS (SELECT 1 FROM all_placements p WHERE dst.child_id = p.child_id)
-"""
+""",
     )
 }
     .mapTo<DailyServiceTimeRow>()

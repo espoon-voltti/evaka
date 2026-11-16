@@ -156,8 +156,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                         preferences =
                             it.preferences.copy(
                                 preferredUnits =
-                                    listOf(PreferredUnit(id = daycare.id, name = daycare.name))
-                            )
+                                    listOf(PreferredUnit(id = daycare.id, name = daycare.name)),
+                            ),
                     )
                 }
         assertEquals(expectedForm, data.application.form)
@@ -184,8 +184,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         street = "foo",
                                         postalCode = "00200",
                                         city = "Espoo",
-                                    )
-                            )
+                                    ),
+                            ),
                     ),
             )
         }
@@ -215,8 +215,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         street = "foo",
                                         postalCode = "00200",
                                         city = "Espoo",
-                                    )
-                            )
+                                    ),
+                            ),
                     ),
             )
         }
@@ -274,7 +274,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET created_at = '2020-01-01T00:00:00Z' WHERE id = ${bind(old)}"
+                    "UPDATE application SET created_at = '2020-01-01T00:00:00Z' WHERE id = ${bind(old)}",
                 )
             }
         }
@@ -362,7 +362,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         firstName = "secret",
                                         lastName = "secret",
                                         socialSecurityNumber = "secret",
-                                    )
+                                    ),
                                 ),
                         ),
                 )
@@ -388,7 +388,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     firstName = "secret",
                     lastName = "secret",
                     socialSecurityNumber = "secret",
-                )
+                ),
             ),
             guardianResult.form.otherChildren,
         )

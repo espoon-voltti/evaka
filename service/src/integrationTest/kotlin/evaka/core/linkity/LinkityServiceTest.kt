@@ -62,7 +62,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             "Tänään$days",
                         )
                     }
-                    .toList()
+                    .toList(),
             )
         }
         val period = FiniteDateRange(today, today.plusDays(1))
@@ -75,7 +75,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     HelsinkiDateTime.of(today.atTime(16, 0)),
                     ShiftType.PRESENT,
                     "Uusi",
-                )
+                ),
             )
         val client = MockLinkityClient(shifts)
         updateStaffAttendancePlansFromLinkity(period, db, client)
@@ -104,7 +104,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     HelsinkiDateTime.of(today.atTime(16, 0)),
                     ShiftType.PRESENT,
                     "Uusi",
-                )
+                ),
             )
         val client = MockLinkityClient(shifts)
         updateStaffAttendancePlansFromLinkity(period, db, client)
@@ -127,7 +127,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     HelsinkiDateTime.of(today.atTime(8, 0)),
                     ShiftType.PRESENT,
                     "Uusi",
-                )
+                ),
             )
         val client = MockLinkityClient(shifts)
         updateStaffAttendancePlansFromLinkity(period, db, client)
@@ -191,7 +191,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     HelsinkiDateTime.of(today.atTime(16, 0)),
                     ShiftType.PRESENT,
                     "Uusi",
-                )
+                ),
             )
         val client = MockLinkityClient(shifts)
         updateStaffAttendancePlansFromLinkity(period, db, client)
@@ -265,7 +265,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         now.plusHours(5),
                         null,
                     ),
-                )
+                ),
             )
             attendanceIds =
                 listOf(
