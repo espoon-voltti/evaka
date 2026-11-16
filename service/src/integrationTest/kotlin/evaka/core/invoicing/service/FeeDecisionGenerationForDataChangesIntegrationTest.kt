@@ -87,7 +87,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     headOfChildId = adult.id,
                     startDate = originalRange.start.minusYears(1),
                     endDate = originalRange.end.plusYears(1),
-                )
+                ),
             )
         }
         generate()
@@ -127,7 +127,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(5, 9), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(10, 20), 1),
-            )
+            ),
         )
     }
 
@@ -152,7 +152,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(FeeDecisionStatus.ANNULLED, dateRange(10, 20), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(15, 20), 1),
-            )
+            ),
         )
     }
 
@@ -197,7 +197,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(10, 20), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(21, 25), 1),
-            )
+            ),
         )
     }
 
@@ -222,7 +222,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(5, 9), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(10, 15), 1),
-            )
+            ),
         )
     }
 
@@ -248,7 +248,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                 Triple(FeeDecisionStatus.SENT, dateRange(5, 9), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(10, 20), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(21, 25), 1),
-            )
+            ),
         )
     }
 
@@ -273,7 +273,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(FeeDecisionStatus.ANNULLED, dateRange(10, 20), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(15, 15), 1),
-            )
+            ),
         )
     }
 
@@ -298,7 +298,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(FeeDecisionStatus.ANNULLED, dateRange(10, 20), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(15, 25), 1),
-            )
+            ),
         )
     }
 
@@ -318,7 +318,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     unitId = daycare.id,
                     startDate = day(16),
                     endDate = originalRange.end,
-                )
+                ),
             )
         }
 
@@ -332,7 +332,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(10, 13), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(16, 20), 1),
-            )
+            ),
         )
     }
 
@@ -380,7 +380,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     headOfChildId = adult.id,
                     startDate = originalRange.start.minusYears(1),
                     endDate = originalRange.end.plusYears(1),
-                )
+                ),
             )
         }
         generate()
@@ -433,7 +433,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     headOfChildId = adult.id,
                     startDate = day(21),
                     endDate = day(22),
-                )
+                ),
             )
         }
         generate()
@@ -451,7 +451,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     data = emptyMap(),
                     effect = IncomeEffect.INCOMPLETE,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
         generate()
@@ -487,7 +487,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     }
 
     private fun assertFinal(
-        expectedFinalState: List<Triple<FeeDecisionStatus, FiniteDateRange, Int>>
+        expectedFinalState: List<Triple<FeeDecisionStatus, FiniteDateRange, Int>>,
     ) {
         val sent = getAllFeeDecisions()
         assertEquals(expectedFinalState.size, sent.size)

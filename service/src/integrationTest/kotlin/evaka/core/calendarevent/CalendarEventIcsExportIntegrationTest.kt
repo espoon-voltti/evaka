@@ -75,7 +75,7 @@ class CalendarEventIcsExportIntegrationTest : FullApplicationTest(resetDbBeforeE
                     daycareGroupId = group1.id,
                     startDate = today.minusDays(100),
                     endDate = today.plusDays(100),
-                )
+                ),
             )
         }
     }
@@ -133,7 +133,7 @@ class CalendarEventIcsExportIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = child.id,
                     modifiedBy = adminEmployee.evakaUserId,
                     modifiedAt = clock.now(),
-                )
+                ),
             )
         }
 
@@ -190,14 +190,14 @@ class CalendarEventIcsExportIntegrationTest : FullApplicationTest(resetDbBeforeE
                     modifiedAt = clock.now(),
                     modifiedBy = adminEmployee.evakaUserId,
                     eventType = eventType,
-                )
+                ),
             )
         tx.insert(
             DevCalendarEventAttendee(
                 calendarEventId = eventId,
                 unitId = daycare.id,
                 groupId = groupId,
-            )
+            ),
         )
         eventId
     }

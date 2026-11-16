@@ -143,7 +143,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     s3Client,
                     SftpClient(badCredentials, ouluEnv.dwExport.sftp.path),
                     ouluEnv,
-                )
+                ),
             )
         val query = DwQuery.entries.first()
 
@@ -161,7 +161,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     s3Client,
                     SftpClient(ouluEnv.dwExport.sftp.toSftpEnv(), ouluEnv.dwExport.sftp.path),
                     missingBucket,
-                )
+                ),
             )
         val query = DwQuery.entries.first()
 
@@ -189,10 +189,13 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = daycareId,
                         createdBy = employee.evakaUserId,
                         modifiedBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             tx.insert(
-                DevDaycareGroupPlacement(daycarePlacementId = placementId, daycareGroupId = groupId)
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId,
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -200,7 +203,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     date = LocalDate.of(2019, 7, 15),
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevVoucherValueDecision(
@@ -209,14 +212,14 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                     placementUnitId = daycareId,
                     validFrom = LocalDate.of(2019, 1, 1),
                     validTo = LocalDate.of(2019, 12, 31),
-                )
+                ),
             )
             tx.insert(
                 DevFeeDecision(
                     validDuring =
                         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31)),
                     headOfFamilyId = guardianId,
-                )
+                ),
             )
         }
     }

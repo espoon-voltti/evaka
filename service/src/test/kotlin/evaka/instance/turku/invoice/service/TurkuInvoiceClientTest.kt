@@ -114,7 +114,7 @@ internal class TurkuInvoiceClientTest {
                 sftpClient.put(
                     any<InputStream>(),
                     argThat { filePath -> filePath.matches(Regex(fileNamePattern)) },
-                )
+                ),
             )
             .thenThrow(RuntimeException::class.java)
 
@@ -133,7 +133,7 @@ internal class TurkuInvoiceClientTest {
                 StringInvoiceGenerator.InvoiceGeneratorResult(
                     InvoiceIntegrationClient.SendResult(invoiceList, listOf(), listOf()),
                     sapInvoice1,
-                )
+                ),
             )
         val sendResult = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
@@ -160,7 +160,7 @@ internal class TurkuInvoiceClientTest {
                         listOf(invoiceWithRestrictedDetails),
                     ),
                     sapInvoice1,
-                )
+                ),
             )
         val sendResult = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
@@ -186,7 +186,7 @@ internal class TurkuInvoiceClientTest {
                         listOf(invoiceWithoutSSN),
                     ),
                     "x",
-                )
+                ),
             )
 
         val _ = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
@@ -205,14 +205,14 @@ internal class TurkuInvoiceClientTest {
                 StringInvoiceGenerator.InvoiceGeneratorResult(
                     InvoiceIntegrationClient.SendResult(invoiceList, listOf(), listOf()),
                     sapInvoice1,
-                )
+                ),
             )
 
         whenever(
                 sftpClient.put(
                     any<InputStream>(),
                     argThat { filePath -> filePath.matches(Regex(fileNamePattern)) },
-                )
+                ),
             )
             .thenThrow(RuntimeException::class.java)
         val _ = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)

@@ -65,7 +65,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             headOfChild = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
-                        )
+                        ),
                     )
                 }
             fosterParent =
@@ -77,7 +77,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             validDuring = currentlyValid.asDateRange(),
                             modifiedAt = clock.now(),
                             modifiedBy = employee.evakaUserId,
-                        )
+                        ),
                     )
                 }
 
@@ -89,7 +89,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         headOfChild = guardianAndHouseholdHead,
                         startDate = currentlyValid.start,
                         endDate = currentlyValid.end,
-                    )
+                    ),
                 )
             }
             householdAdult =
@@ -101,7 +101,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
                             createdAt = clock.now(),
-                        )
+                        ),
                     )
                 }
         }
@@ -130,7 +130,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             validDuring = currentlyValid.asDateRange(),
                             modifiedAt = clock.now(),
                             modifiedBy = employee.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevFridgeChild(
@@ -138,7 +138,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             headOfChild = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
-                        )
+                        ),
                     )
                 }
         }
@@ -161,7 +161,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             headOfChild = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
-                        )
+                        ),
                     )
                 }
             // Household siblings are not shown
@@ -172,7 +172,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         headOfChild = headOfChild,
                         startDate = currentlyValid.start,
                         endDate = currentlyValid.end,
-                    )
+                    ),
                 )
             }
             // conflict head of child
@@ -185,7 +185,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
                             conflict = true,
-                        )
+                        ),
                     )
                 }
             // conflict adult in valid household
@@ -197,7 +197,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startDate = currentlyValid.start,
                         endDate = currentlyValid.end,
                         conflict = true,
-                    )
+                    ),
                 )
             }
             // valid adult in conflict household
@@ -208,7 +208,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         second = it,
                         startDate = currentlyValid.start,
                         endDate = currentlyValid.end,
-                    )
+                    ),
                 )
             }
             // conflict sibling in valid household
@@ -220,7 +220,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startDate = currentlyValid.start,
                         endDate = currentlyValid.end,
                         conflict = true,
-                    )
+                    ),
                 )
             }
             // valid sibling in conflict household
@@ -231,7 +231,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         headOfChild = conflictHeadOfChild,
                         startDate = currentlyValid.start,
                         endDate = currentlyValid.end,
-                    )
+                    ),
                 )
             }
         }

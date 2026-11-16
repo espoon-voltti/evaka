@@ -21,7 +21,7 @@ class WebPushMessageTest {
                     body = "Esimies Essi",
                     tag = "message-123",
                     appBadge = 1,
-                )
+                ),
             )
         assertEquals(
             """{"notification":{"title":"Uusi viesti","navigate":"https://evaka.example.com/messages/123","body":"Esimies Essi","tag":"message-123","app_badge":1},"app_badge":1,"web_push":8030}""",

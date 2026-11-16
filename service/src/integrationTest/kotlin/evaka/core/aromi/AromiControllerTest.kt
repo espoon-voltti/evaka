@@ -130,7 +130,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startDate = sannaTestPerson.dateOfBirth,
                             endDate = placementEnd,
                             type = PlacementType.DAYCARE,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -140,7 +140,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         shiftCare = ShiftCareType.INTERMITTENT,
                         optionId = snDefaultDaycare.id,
                         confirmedBy = admin.evakaUserId,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -149,7 +149,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = group2.id,
                         startDate = sannaTestPerson.dateOfBirth,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevReservation(
@@ -158,7 +158,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(11, 0),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -166,7 +166,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = childId,
                         date = LocalDate.of(2024, 12, 3),
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
             }
 
@@ -179,7 +179,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startDate = teemuTestPerson.dateOfBirth,
                             endDate = placementEnd,
                             type = PlacementType.DAYCARE,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -189,7 +189,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         shiftCare = ShiftCareType.FULL,
                         optionId = snDefaultDaycare.id,
                         confirmedBy = admin.evakaUserId,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -198,7 +198,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = group1.id,
                         startDate = teemuTestPerson.dateOfBirth,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevReservation(
@@ -207,7 +207,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startTime = LocalTime.of(18, 0),
                         endTime = LocalTime.of(23, 0),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -217,7 +217,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(11, 0),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -225,7 +225,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = childId,
                         date = LocalDate.of(2024, 12, 4),
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
             }
         }
@@ -259,7 +259,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startDate = valtoTestPerson.dateOfBirth,
                             endDate = placementEnd,
                             type = PlacementType.DAYCARE,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -269,7 +269,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         shiftCare = ShiftCareType.NONE,
                         optionId = snDefaultDaycare.id,
                         confirmedBy = admin.evakaUserId,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -278,7 +278,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = group2.id,
                         startDate = valtoTestPerson.dateOfBirth,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevReservation(
@@ -287,7 +287,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(11, 0),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -295,7 +295,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = childId,
                         date = LocalDate.of(2024, 12, 3),
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -305,7 +305,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         groupId = groupEO.id,
                         period =
                             FiniteDateRange(LocalDate.of(2024, 12, 2), LocalDate.of(2024, 12, 3)),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -315,7 +315,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         groupId = group3.id,
                         period =
                             FiniteDateRange(LocalDate.of(2024, 12, 5), LocalDate.of(2024, 12, 5)),
-                    )
+                    ),
                 )
             }
         }
@@ -350,7 +350,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 unitId = daycare1.id,
                                 startDate = dateOfBirthHarri,
                                 endDate = placementEnd,
-                            )
+                            ),
                         )
 
                     tx.insert(
@@ -360,7 +360,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             endDate = placementEnd,
                             optionId = snDefaultDaycare.id,
                             confirmedBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevDaycareGroupPlacement(
@@ -368,7 +368,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             daycareGroupId = group1.id,
                             startDate = dateOfBirthHarri,
                             endDate = LocalDate.of(2024, 12, 4),
-                        )
+                        ),
                     )
                     tx.insert(
                         DevDaycareGroupPlacement(
@@ -376,7 +376,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             daycareGroupId = group2.id,
                             startDate = LocalDate.of(2024, 12, 5),
                             endDate = placementEnd,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -385,7 +385,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -394,7 +394,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(12, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -403,14 +403,14 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(14, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevAbsence(
                             childId = childId,
                             date = LocalDate.of(2024, 12, 4),
                             absenceCategory = AbsenceCategory.BILLABLE,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -431,7 +431,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 unitId = daycare2.id,
                                 startDate = dateOfBirthElina,
                                 endDate = placementEnd,
-                            )
+                            ),
                         )
                     tx.insert(
                         DevServiceNeed(
@@ -441,7 +441,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             shiftCare = ShiftCareType.FULL,
                             optionId = snDefaultDaycare.id,
                             confirmedBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevDaycareGroupPlacement(
@@ -449,7 +449,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             daycareGroupId = groupEO.id,
                             startDate = dateOfBirthElina,
                             endDate = LocalDate.of(2024, 12, 2),
-                        )
+                        ),
                     )
                     tx.insert(
                         DevDaycareGroupPlacement(
@@ -457,7 +457,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             daycareGroupId = groupEO2.id,
                             startDate = LocalDate.of(2024, 12, 3),
                             endDate = placementEnd,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -466,7 +466,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -475,14 +475,14 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevAbsence(
                             childId = childId,
                             date = LocalDate.of(2024, 12, 4),
                             absenceCategory = AbsenceCategory.BILLABLE,
-                        )
+                        ),
                     )
                 }
         }
@@ -540,7 +540,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = groupEO2.id,
                         startDate = placement.startDate,
                         endDate = placement.endDate,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -548,7 +548,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = childId,
                         date = LocalDate.of(2024, 12, 3),
                         absenceCategory = AbsenceCategory.NONBILLABLE,
-                    )
+                    ),
                 )
             }
 
@@ -569,21 +569,21 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = groupEO2.id,
                         startDate = placement.startDate,
                         endDate = placement.endDate,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevAbsence(
                         childId = childId,
                         date = LocalDate.of(2024, 12, 4),
                         absenceCategory = AbsenceCategory.NONBILLABLE,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevAbsence(
                         childId = childId,
                         date = LocalDate.of(2024, 12, 4),
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -593,7 +593,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(13, 0),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevReservation(
@@ -602,7 +602,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startTime = LocalTime.of(14, 0),
                         endTime = LocalTime.of(17, 0),
                         createdBy = admin.evakaUserId,
-                    )
+                    ),
                 )
             }
         }
@@ -686,7 +686,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startDate = placement.startDate,
                         endDate = placement.endDate,
                         daycareGroupId = closingGroup.id,
-                    )
+                    ),
                 )
             }
             tx.insert(tariqTestPerson, DevPersonType.CHILD).also { childId ->
@@ -705,7 +705,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startDate = placement.startDate,
                         endDate = placement.endDate,
                         daycareGroupId = regularGroup.id,
-                    )
+                    ),
                 )
             }
         }
@@ -740,7 +740,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 unitId = daycare1.id,
                                 startDate = dateOfBirthHarri,
                                 endDate = placementEnd,
-                            )
+                            ),
                         )
 
                     tx.insert(
@@ -750,7 +750,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             endDate = placementEnd,
                             optionId = snDefaultDaycare.id,
                             confirmedBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevDaycareGroupPlacement(
@@ -758,7 +758,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             daycareGroupId = group2.id,
                             startDate = dateOfBirthHarri,
                             endDate = placementEnd,
-                        )
+                        ),
                     )
                     // 2024-11-28 expectation 10:00-14:00
                     tx.insert(
@@ -768,7 +768,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(9, 0),
                             endTime = LocalTime.of(14, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
 
                     // 2024-11-29 expectation -
@@ -779,7 +779,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(7, 0),
                             endTime = LocalTime.of(8, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -788,7 +788,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(9, 0),
                             endTime = LocalTime.of(10, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     // 2024-12-02 expectation 10:00-16:00
                     tx.insert(
@@ -798,7 +798,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(7, 0),
                             endTime = LocalTime.of(8, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -807,7 +807,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(9, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     // 2024-12-03 expectation 10:00-16:00
                     tx.insert(
@@ -817,7 +817,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(9, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -826,7 +826,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(10, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     // 2024-12-04 expectation 10:00-11:00 + 12:00-16:00
                     tx.insert(
@@ -836,7 +836,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(11, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     tx.insert(
                         DevReservation(
@@ -845,7 +845,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             startTime = LocalTime.of(12, 0),
                             endTime = LocalTime.of(16, 0),
                             createdBy = admin.evakaUserId,
-                        )
+                        ),
                     )
                     // 2024-12-05 expectation 10:00-23:59
                 }

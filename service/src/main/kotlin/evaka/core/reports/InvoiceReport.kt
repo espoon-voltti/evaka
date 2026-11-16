@@ -43,7 +43,7 @@ class InvoiceReportController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.InvoicesReportRead.log(
-                    meta = mapOf("yearMonth" to yearMonth, "count" to it.reportRows.size)
+                    meta = mapOf("yearMonth" to yearMonth, "count" to it.reportRows.size),
                 )
             }
     }

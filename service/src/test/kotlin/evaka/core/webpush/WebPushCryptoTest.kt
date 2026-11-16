@@ -79,7 +79,7 @@ ly8Thjg
 BP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIg
 Dll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8
 """
-                        .removeWhitespace()
+                        .removeWhitespace(),
                 ),
                 WebPushCrypto.decodePrivateKey("yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw"),
             )
@@ -90,7 +90,7 @@ Dll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8
 BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-
 JvLexhqUzORcx aOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4
 """
-                        .removeWhitespace()
+                        .removeWhitespace(),
                 ),
                 WebPushCrypto.decodePrivateKey("q1dXpw3UpT5VOmu_cf_v6ih07Aems3njxI-JWgLcM94"),
             )

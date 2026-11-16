@@ -144,7 +144,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
                     voucherDaycare,
                     placementId,
                     "palvelusetelialue",
-                )
+                ),
             ),
         )
     }
@@ -234,7 +234,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
                 unitId = unit.id,
                 startDate = startDate,
                 endDate = endDate,
-            )
+            ),
         )
     }
 

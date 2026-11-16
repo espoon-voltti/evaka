@@ -186,7 +186,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     maksun_peruste_koodi = "MP01",
                     asiakasmaksu = 0.0,
                     palveluseteli_arvo = 0.0,
-                )
+                ),
             ),
             evakaMaksutiedot(),
         )
@@ -212,7 +212,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     maksun_peruste_koodi = "MP02",
                     asiakasmaksu = 50.0,
                     palveluseteli_arvo = 1000.0,
-                )
+                ),
             ),
             evakaMaksutiedot(),
         )
@@ -233,7 +233,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     maksun_peruste_koodi = "MP03",
                     asiakasmaksu = 0.0,
                     palveluseteli_arvo = 1000.0,
-                )
+                ),
             ),
             evakaMaksutiedot(),
         )
@@ -283,7 +283,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         unitId = unit.id,
                         startDate = range.start,
                         endDate = range.end,
-                    )
+                    ),
                 )
             tx.insert(
                 DevServiceNeed(
@@ -293,7 +293,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     optionId = serviceNeedOption.id,
                     confirmedBy = employee.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
     }
@@ -306,7 +306,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     headOfChildId = guardian.id,
                     startDate = startDate,
                     endDate = range.end,
-                )
+                ),
             )
         }
     }
@@ -329,7 +329,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     serviceNeedFeeCoefficient = serviceNeedFeeCoefficient,
                     voucherValue = 100000,
                     finalCoPayment = finalCoPayment,
-                )
+                ),
             )
         }
     }
@@ -356,7 +356,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     placementUnitId = municipalUnit.id,
                     serviceNeedFeeCoefficient = serviceNeedFeeCoefficient,
                     finalFee = finalFee,
-                )
+                ),
             )
         }
     }
@@ -390,7 +390,7 @@ class VardaMaksutietoIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         henkilo_oid = null,
                         etunimet = guardian.firstName,
                         sukunimi = guardian.lastName,
-                    )
+                    ),
                 ),
         )
 }

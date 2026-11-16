@@ -140,7 +140,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                             postal_code = ${bind(sameAddressGuardian.postalCode)},
                             post_office = ${bind(sameAddressGuardian.postOffice)}
                         WHERE id = ${bind(sameAddressGuardian.id)}
-                        """
+                        """,
                     )
                 }
                 .execute()
@@ -175,7 +175,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     ClubFormV0(
                         child =
                             evaka.core.application.persistence.club.Child(
-                                dateOfBirth = child.dateOfBirth
+                                dateOfBirth = child.dateOfBirth,
                             ),
                         guardian =
                             evaka.core.application.persistence.club.Adult(
@@ -185,7 +185,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                             ),
                         apply =
                             evaka.core.application.persistence.club.Apply(
-                                preferredUnits = listOf(club.id)
+                                preferredUnits = listOf(club.id),
                             ),
                         preferredStartDate = preferredStartDate,
                     ),
@@ -227,7 +227,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             tx.createUpdate {
                     sql(
-                        "UPDATE decision SET document_contains_contact_info = TRUE WHERE application_id = ${bind(application)}"
+                        "UPDATE decision SET document_contains_contact_info = TRUE WHERE application_id = ${bind(application)}",
                     )
                 }
                 .execute()
@@ -241,11 +241,11 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
 
     @ParameterizedTest(
         name =
-            "sfi messages are sent to all guardians and foster parents - foster parent added during the process {0}"
+            "sfi messages are sent to all guardians and foster parents - foster parent added during the process {0}",
     )
     @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
     fun `sfi messages are sent to guardians and foster parents - foster parent added during the process`(
-        addDuring: ApplicationStatus
+        addDuring: ApplicationStatus,
     ) {
         val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id)
         val clock = MockEvakaClock(2024, 1, 1, 12, 0)
@@ -277,11 +277,11 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
 
     @ParameterizedTest(
         name =
-            "sfi messages are sent to all guardians and foster parents - guardian blocked during the process {0}"
+            "sfi messages are sent to all guardians and foster parents - guardian blocked during the process {0}",
     )
     @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
     fun `sfi messages are sent to guardians - guardian blocked during the process`(
-        blockDuring: ApplicationStatus
+        blockDuring: ApplicationStatus,
     ) {
         val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id, fosterParent.id)
         val clock = MockEvakaClock(2024, 1, 1, 12, 0)
@@ -300,11 +300,11 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
 
     @ParameterizedTest(
         name =
-            "sfi messages are sent to all guardians and foster parents - foster parent relationship expired during the process {0}"
+            "sfi messages are sent to all guardians and foster parents - foster parent relationship expired during the process {0}",
     )
     @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
     fun `sfi messages are sent to guardians - foster parent relationship expired during the process`(
-        expireDuring: ApplicationStatus
+        expireDuring: ApplicationStatus,
     ) {
         val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id, fosterParent.id)
         val clock = MockEvakaClock(2024, 1, 1, 12, 0)
@@ -356,7 +356,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 validDuring = DateRange(clock.today(), null),
                 modifiedAt = clock.now(),
                 modifiedBy = serviceWorker.evakaUserId,
-            )
+            ),
         )
     }
 

@@ -107,7 +107,7 @@ private fun Database.Read.getUnits(
             from?.let {
                 Predicate { table ->
                     where(
-                        "daterange($table.opening_date, $table.closing_date, '[]') && daterange(${bind(it)}, NULL)"
+                        "daterange($table.opening_date, $table.closing_date, '[]') && daterange(${bind(it)}, NULL)",
                     )
                 }
             },
@@ -120,7 +120,7 @@ FROM daycare unit
 JOIN care_area area ON unit.care_area_id = area.id
 WHERE (${bind(areaIdsParam)}::uuid[] IS NULL OR area.id = ANY(${bind(areaIdsParam)}))
 AND ${predicate(unitPredicates.forTable("unit"))}
-    """
+    """,
         )
     }
         .toList()

@@ -70,7 +70,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
     @Test
     fun `create a highest fee income statement`() {
         createIncomeStatement(
-            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
+            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null),
         )
 
         val incomeStatements = getIncomeStatements().data
@@ -90,7 +90,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerNote = "",
-                )
+                ),
             ),
             incomeStatements,
         )
@@ -142,7 +142,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 alimonyPayer = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(),
-            )
+            ),
         )
 
         val incomeStatements = getIncomeStatements().data
@@ -202,7 +202,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     handlerNote = "",
                     handledAt = null,
                     attachments = listOf(),
-                )
+                ),
             ),
             incomeStatements,
         )
@@ -256,7 +256,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     handlerNote = "",
                     handledAt = null,
                     attachments = listOf(),
-                )
+                ),
             ),
             incomeStatements,
         )
@@ -276,7 +276,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = true,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(),
-                )
+                ),
             )
         }
         assertThrows<BadRequest> {
@@ -297,7 +297,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = true,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(),
-                )
+                ),
             )
         }
         assertThrows<BadRequest> {
@@ -331,7 +331,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(),
-                )
+                ),
             )
         }
         assertThrows<BadRequest> {
@@ -359,7 +359,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(),
-                )
+                ),
             )
         }
         assertThrows<BadRequest> {
@@ -388,7 +388,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(),
-                )
+                ),
             )
         }
     }
@@ -415,7 +415,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 alimonyPayer = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachmentId1, attachmentId2),
-            )
+            ),
         )
 
         val incomeStatements = getIncomeStatements().data
@@ -454,7 +454,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             ),
                             idToAttachment(attachmentId2, IncomeStatementAttachmentType.OTHER),
                         ),
-                )
+                ),
             ),
             incomeStatements,
         )
@@ -480,7 +480,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 alimonyPayer = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachmentId),
-            )
+            ),
         )
 
         val incomeStatements = getIncomeStatements().data
@@ -528,7 +528,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     handlerNote = "",
                     handledAt = null,
                     attachments = listOf(idToAttachment(attachmentId)),
-                )
+                ),
             ),
             incomeStatements,
         )
@@ -555,7 +555,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(nonExistingAttachmentId),
-                )
+                ),
             )
         }
     }
@@ -582,7 +582,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(attachmentId),
-                )
+                ),
             )
         }
     }
@@ -761,7 +761,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         db.transaction { it.insert(employee) }
 
         createIncomeStatement(
-            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
+            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null),
         )
         val id = getIncomeStatements().data.first().id
 
@@ -794,7 +794,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         db.transaction { it.insert(employee) }
 
         createIncomeStatement(
-            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
+            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null),
         )
         val incomeStatement = getIncomeStatements().data.first()
         assertEquals("", incomeStatement.handlerNote)
@@ -814,10 +814,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2020, 4, 3),
                 endDate = LocalDate.of(2020, 12, 31),
-            )
+            ),
         )
         createIncomeStatement(
-            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 1, 1), endDate = null)
+            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 1, 1), endDate = null),
         )
 
         val result = getIncomeStatements()
@@ -830,11 +830,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
     @Test
     fun `cannot create two income statements with the same startDate`() {
         createIncomeStatement(
-            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
+            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null),
         )
         assertThrows<BadRequest> {
             createIncomeStatement(
-                IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
+                IncomeStatementBody.HighestFee(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = null,
+                ),
             )
         }
     }
@@ -853,7 +856,7 @@ SET handler_id = ${bind(handlerId)},
     status = 'HANDLED'::income_statement_status,
     handled_at = ${bind(clock.now())}
 WHERE id = ${bind(id)}
-"""
+""",
             )
         }
     }
@@ -910,7 +913,7 @@ WHERE id = ${bind(id)}
                 alimonyPayer = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachment1),
-            )
+            ),
         )
 
         val incomeStatementId = getIncomeStatements().data[0].id
@@ -944,7 +947,7 @@ WHERE id = ${bind(id)}
                     endDate = clock.today(),
                     type = PlacementType.DAYCARE,
                     unitId = daycare.id,
-                )
+                ),
             )
         }
 
@@ -963,7 +966,7 @@ WHERE id = ${bind(id)}
                     endDate = clock.today().minusWeeks(1),
                     type = PlacementType.DAYCARE,
                     unitId = daycare.id,
-                )
+                ),
             )
         }
 
@@ -984,7 +987,7 @@ WHERE id = ${bind(id)}
                     second = adult2.id,
                     startDate = clock.today().minusDays(1),
                     endDate = null,
-                )
+                ),
             )
         }
 
@@ -994,7 +997,7 @@ WHERE id = ${bind(id)}
                     PartnerIncomeStatementStatus(
                         name = "${adult2.firstName} ${adult2.lastName}",
                         hasIncomeStatement = false,
-                    )
+                    ),
             ),
             getPartnerIncomeStatementStatus(),
         )
@@ -1008,7 +1011,7 @@ WHERE id = ${bind(id)}
                             startDate = clock.today().plusMonths(3),
                             endDate = null,
                         ),
-                )
+                ),
             )
         }
 
@@ -1018,7 +1021,7 @@ WHERE id = ${bind(id)}
                     PartnerIncomeStatementStatus(
                         name = "${adult2.firstName} ${adult2.lastName}",
                         hasIncomeStatement = true,
-                    )
+                    ),
             ),
             getPartnerIncomeStatementStatus(),
         )
@@ -1033,7 +1036,7 @@ WHERE id = ${bind(id)}
                     second = adult2.id,
                     startDate = clock.today().minusDays(1),
                     endDate = null,
-                )
+                ),
             )
             tx.insert(DevIncome(personId = adult2.id, modifiedBy = adult2.evakaUserId()))
         }
@@ -1044,7 +1047,7 @@ WHERE id = ${bind(id)}
                     PartnerIncomeStatementStatus(
                         name = "${adult2.firstName} ${adult2.lastName}",
                         hasIncomeStatement = true,
-                    )
+                    ),
             ),
             getPartnerIncomeStatementStatus(),
         )

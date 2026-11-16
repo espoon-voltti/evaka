@@ -76,7 +76,7 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
     @TestFactory
     fun `each BiTable exports a non-empty CSV with PII and legacy columns stripped`() =
         exportTests(
-            BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 60)
+            BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 60),
         )
 
     private fun exportTests(config: BiExportConfig) =
@@ -116,7 +116,7 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE),
-                    )
+                    ),
                 )
             tx.insert(DevDaycareGroup(daycareId = daycareId))
             val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
@@ -203,7 +203,7 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
                                     finalFee = 10_000,
                                     feeAlterations = emptyList(),
                                     childIncome = null,
-                                )
+                                ),
                             ),
                         headOfFamilyId = guardianId,
                         validDuring = FiniteDateRange.ofMonth(2019, Month.JANUARY),
@@ -216,8 +216,8 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
                         familySize = 1,
                         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(1),
                         difference = setOf(FeeDecisionDifference.PLACEMENT),
-                    )
-                )
+                    ),
+                ),
             )
 
             tx.upsertValueDecisions(
@@ -265,8 +265,8 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
                         assistanceNeedCoefficient = BigDecimal.ONE,
                         voucherValue = 1,
                         difference = setOf(VoucherValueDecisionDifference.PLACEMENT),
-                    )
-                )
+                    ),
+                ),
             )
         }
     }

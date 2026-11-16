@@ -65,7 +65,7 @@ class RequestToAuthenticatedUserTest {
                         UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                         UserRole.ADMIN,
                     ),
-                )
+                ),
             )
         assertEquals("|ADMIN|EARLY_CHILDHOOD_EDUCATION_SECRETARY|SERVICE_WORKER|", roles)
     }
@@ -74,7 +74,7 @@ class RequestToAuthenticatedUserTest {
     fun `a single role is still wrapped in delimiters`() {
         val roles =
             rolesLoggedFor(
-                AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+                AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN)),
             )
         assertEquals("|ADMIN|", roles)
     }
@@ -82,7 +82,7 @@ class RequestToAuthenticatedUserTest {
     @Test
     fun `an employee without any role logs nothing`() {
         assertNull(
-            rolesLoggedFor(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet()))
+            rolesLoggedFor(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())),
         )
     }
 
@@ -90,8 +90,8 @@ class RequestToAuthenticatedUserTest {
     fun `a citizen logs no roles`() {
         assertNull(
             rolesLoggedFor(
-                AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-            )
+                AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG),
+            ),
         )
     }
 
@@ -102,8 +102,8 @@ class RequestToAuthenticatedUserTest {
                 AuthenticatedUser.MobileDevice(
                     MobileDeviceId(UUID.randomUUID()),
                     EmployeeId(UUID.randomUUID()),
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -111,7 +111,7 @@ class RequestToAuthenticatedUserTest {
     fun `roles are cleared once the request completes`() {
         val _ =
             rolesLoggedFor(
-                AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+                AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN)),
             )
         assertNull(MdcKey.USER_ROLES.get())
     }

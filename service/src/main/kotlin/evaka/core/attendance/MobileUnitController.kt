@@ -120,7 +120,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             operation_days, shift_care_operation_days, shift_care_open_on_holidays
         FROM daycare u
         WHERE u.id = ${bind(unitId)}
-        """
+        """,
             )
         }
             .exactlyOneOrNull<UnitBasics>() ?: throw NotFound("Unit $unitId not found")
@@ -226,7 +226,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             LEFT JOIN child c ON c.group_id = g.id
             LEFT JOIN staff s ON s.group_id = g.id
         WHERE u.id = ${bind(unitId)};
-        """
+        """,
         )
     }
         .toList<TempGroupInfo>()
@@ -265,7 +265,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             GROUP BY employee_id
         ) group_acl ON acl.employee_id = group_acl.employee_id
         WHERE acl.daycare_id = ${bind(unitId)} AND e.active
-        """
+        """,
         )
     }
         .toList<Staff>()
@@ -366,7 +366,7 @@ LEFT JOIN total_children tc ON tc.unit_id = u.id
 LEFT JOIN present_staff ps ON ps.unit_id = u.id
 LEFT JOIN total_staff ts ON ts.unit_id = u.id
 WHERE u.id = ANY(${bind(unitIds)})
-"""
+""",
         )
     }
     .toList()

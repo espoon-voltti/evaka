@@ -612,10 +612,10 @@ class AssistanceNeedsAndActionsReportControllerTest :
                                 label = "Section 1",
                                 questions =
                                     listOf(
-                                        Question.CheckboxQuestion(id = "q1", label = "Question 1")
+                                        Question.CheckboxQuestion(id = "q1", label = "Question 1"),
                                     ),
-                            )
-                        )
+                            ),
+                        ),
                 ),
             endDecisionWhenUnitChanges = true,
         )
@@ -638,7 +638,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         startDate = date.minusMonths(2),
                         endDate = date.plusMonths(2),
                         type = PlacementType.DAYCARE,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -646,7 +646,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareGroupId = groupId,
                     startDate = date.minusMonths(2),
                     endDate = date.plusMonths(2),
-                )
+                ),
             )
             child
         }
@@ -675,8 +675,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                                     AnsweredQuestion.CheckboxAnswer(
                                         questionId = "q1",
                                         answer = true,
-                                    )
-                                )
+                                    ),
+                                ),
                         ),
                     modifiedAt = clock.now(),
                     modifiedBy = decisionMaker.evakaUserId,
@@ -695,10 +695,10 @@ class AssistanceNeedsAndActionsReportControllerTest :
                                                 AnsweredQuestion.CheckboxAnswer(
                                                     questionId = "q1",
                                                     answer = true,
-                                                )
-                                            )
+                                                ),
+                                            ),
                                     ),
-                            )
+                            ),
                         ),
                     decision =
                         DevChildDocumentDecision(
@@ -708,7 +708,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                             validity = validity,
                             daycareId = unitId,
                         ),
-                )
+                ),
             )
         }
     }
@@ -1065,7 +1065,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         startDate = date,
                         endDate = date,
                         type = placementType,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1073,14 +1073,14 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareGroupId = groups[0].id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
                     childId = child.id,
                     validDuring = FiniteDateRange(date, date),
                     level = DaycareAssistanceLevel.GENERAL_SUPPORT,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceAction(
@@ -1088,14 +1088,14 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     startDate = date,
                     endDate = date,
                     actions = setOf("ASSISTANCE_SERVICE_CHILD"),
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceNeedVoucherCoefficient(
                     childId = child.id,
                     validityPeriod = FiniteDateRange(date, date),
                     coefficient = BigDecimal(1.50),
-                )
+                ),
             )
             child
         }
@@ -1110,7 +1110,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         startDate = date,
                         endDate = date,
                         type = placementType,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1118,14 +1118,14 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareGroupId = groups[0].id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
                     childId = child.id,
                     validDuring = FiniteDateRange(date, date),
                     level = DaycareAssistanceLevel.GENERAL_SUPPORT,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceAction(
@@ -1133,7 +1133,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     startDate = date,
                     endDate = date,
                     otherAction = "other action test",
-                )
+                ),
             )
             child
         }
@@ -1148,7 +1148,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         startDate = date,
                         endDate = date,
                         type = placementType,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1156,14 +1156,14 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareGroupId = groups[1].id,
                     startDate = date,
                     endDate = date,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareAssistance(
                     childId = child.id,
                     validDuring = FiniteDateRange(date, date),
                     level = DaycareAssistanceLevel.GENERAL_SUPPORT,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceAction(
@@ -1171,7 +1171,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     startDate = date,
                     endDate = date,
                     actions = setOf("ASSISTANCE_SERVICE_CHILD"),
-                )
+                ),
             )
             child
         }

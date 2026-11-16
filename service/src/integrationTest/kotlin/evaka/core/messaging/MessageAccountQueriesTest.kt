@@ -54,15 +54,15 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
             it.insert(
-                DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
+                DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor"),
             )
             supervisorAccountId = it.upsertEmployeeMessageAccount(supervisorId)
 
             it.insert(
-                DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee 1")
+                DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee 1"),
             )
             it.insert(
-                DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee 2")
+                DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee 2"),
             )
 
             val randomUuid = it.insert(DevEmployee(firstName = "Random", lastName = "Employee"))
@@ -74,7 +74,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                    )
+                    ),
                 )
 
             val groupId = it.insert(DevDaycareGroup(daycareId = daycareId, name = "Testiläiset"))
@@ -98,7 +98,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         areaId = areaId,
                         name = "Väärä päiväkoti",
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                    )
+                    ),
                 )
             val group3Id = it.insert(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
             it.createDaycareGroupMessageAccount(group3Id)
@@ -109,7 +109,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                    )
+                    ),
                 )
             it.insertDaycareAclRow(daycare3Id, supervisorId, UserRole.UNIT_SUPERVISOR)
         }
@@ -133,7 +133,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     AuthenticatedUser.Employee(supervisorId, emptySet()),
                     clock,
                     Action.MessageAccount.ACCESS,
-                )
+                ),
             )
         }
         assertEquals(3, accounts.size)
@@ -186,7 +186,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     AuthenticatedUser.Employee(employee1Id, emptySet()),
                     clock,
                     Action.MessageAccount.ACCESS,
-                )
+                ),
             )
         }
         assertEquals(1, accounts.size)
@@ -225,7 +225,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     AuthenticatedUser.Employee(employee2Id, emptySet()),
                     clock,
                     Action.MessageAccount.ACCESS,
-                )
+                ),
             )
         }
         assertEquals(0, accounts.size)
@@ -258,7 +258,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             AuthenticatedUser.Employee(supervisorId, emptySet()),
                             clock,
                             Action.MessageAccount.ACCESS,
-                        )
+                        ),
                     )
                 }
                 .size,
@@ -272,7 +272,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     AuthenticatedUser.Employee(supervisorId, emptySet()),
                     clock,
                     Action.MessageAccount.ACCESS,
-                )
+                ),
             )
         }
         assertEquals(2, accounts.size)

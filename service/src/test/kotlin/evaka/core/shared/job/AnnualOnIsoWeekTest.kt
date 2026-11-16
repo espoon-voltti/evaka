@@ -86,7 +86,7 @@ class AnnualOnIsoWeekTest {
     fun `isDeterministic returns true`() {
         assertTrue(
             AnnualOnIsoWeek(isoWeek = 17, dayOfWeek = DayOfWeek.WEDNESDAY, runAt = defaultRunAt)
-                .isDeterministic()
+                .isDeterministic(),
         )
     }
 

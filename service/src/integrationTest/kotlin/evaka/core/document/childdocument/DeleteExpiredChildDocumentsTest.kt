@@ -132,7 +132,7 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = today.minusYears(2),
                     endDate = today.minusDays(365),
-                )
+                ),
             )
         }
 
@@ -155,7 +155,7 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = today.minusYears(2),
                     endDate = today.minusDays(364),
-                )
+                ),
             )
         }
 
@@ -188,7 +188,7 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = today.plusDays(30),
                     endDate = today.plusDays(60),
-                )
+                ),
             )
         }
 
@@ -321,7 +321,7 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
                             createdAt = now.minusYears(1),
                             createdBy = admin.evakaUserId,
                             publishedContent = DocumentContent(emptyList()),
-                        )
+                        ),
                     ),
             )
         val sfiMessageId = db.transaction { tx ->
@@ -336,10 +336,10 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevSfiMessageEvent(
                     messageId = messageId,
                     eventType = EventType.ELECTRONIC_MESSAGE_CREATED,
-                )
+                ),
             )
             tx.insert(
-                DevSfiMessageEvent(messageId = messageId, eventType = EventType.RECEIPT_CONFIRMED)
+                DevSfiMessageEvent(messageId = messageId, eventType = EventType.RECEIPT_CONFIRMED),
             )
             messageId
         }
@@ -434,7 +434,7 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
                             createdBy = admin.evakaUserId,
                             publishedContent = DocumentContent(emptyList()),
                             documentKey = "archived-doc-key",
-                        )
+                        ),
                     ),
             )
         db.transaction { tx -> tx.markDocumentAsArchived(docId, now.minusMonths(6)) }
@@ -460,7 +460,7 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = today.minusYears(3),
                     endDate = today.minusYears(2),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -468,7 +468,7 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = today.minusYears(1),
                     endDate = today.minusDays(29),
-                )
+                ),
             )
         }
 
@@ -542,7 +542,7 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
 
 private fun Database.Read.countPublishedVersions(id: ChildDocumentId): Int = createQuery {
     sql(
-        "SELECT count(*) FROM child_document_published_version WHERE child_document_id = ${bind(id)}"
+        "SELECT count(*) FROM child_document_published_version WHERE child_document_id = ${bind(id)}",
     )
 }
     .exactlyOne<Int>()

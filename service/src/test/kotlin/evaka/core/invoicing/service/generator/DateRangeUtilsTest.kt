@@ -68,7 +68,7 @@ class DateRangeUtilsTest {
                 TestEntityFinite(
                     FiniteDateRange(LocalDate.of(2000, 4, 1), LocalDate.of(2000, 10, 1)),
                     "b",
-                )
+                ),
             )
         assertEquals(
             setOf(

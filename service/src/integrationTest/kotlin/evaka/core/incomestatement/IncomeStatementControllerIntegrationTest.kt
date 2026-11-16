@@ -343,7 +343,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                             contentType = "image/png",
                             type = IncomeStatementAttachmentType.OTHER,
                             uploadedByEmployee = true,
-                        )
+                        ),
                     ),
                 createdAt = incomeStatement.createdAt,
                 modifiedAt = incomeStatement.modifiedAt,
@@ -425,7 +425,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -434,7 +434,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             // `validTo` of the newest income statement is returned as `incomeEndDate`
@@ -444,7 +444,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate1.minusYears(1),
                     validTo = incomeDate1.minusMonths(1).minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevIncome(
@@ -452,7 +452,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate1.minusMonths(1),
                     validTo = incomeDate1,
-                )
+                ),
             )
 
             tx.insert(
@@ -461,7 +461,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -469,7 +469,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insertTestPartnership(
                 adult2.id,
@@ -485,7 +485,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -494,7 +494,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             // adult1 also heads a child with no placement, which has no care area of its own
@@ -504,7 +504,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             // Latest income has no end date -> incomeEndDate is null
@@ -514,7 +514,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate2.minusMonths(1),
                     validTo = incomeDate2.minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevIncome(
@@ -523,7 +523,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     effect = IncomeEffect.MAX_FEE_ACCEPTED,
                     validFrom = incomeDate2,
                     validTo = null,
-                )
+                ),
             )
 
             tx.insert(
@@ -532,7 +532,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult4.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insertTestApplication(
                 type = ApplicationType.PRESCHOOL,
@@ -556,7 +556,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -681,7 +681,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -690,7 +690,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -699,7 +699,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -708,7 +708,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -730,7 +730,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         careAreas = listOf(area2.name),
-                    )
+                    ),
                 ),
                 1,
                 1,
@@ -739,7 +739,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     areas = listOf(area2.shortName),
                     providerTypes = listOf(ProviderType.MUNICIPAL),
-                )
+                ),
             ),
         )
     }
@@ -753,7 +753,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = today.minusYears(2),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -761,7 +761,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = today.minusDays(30),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -769,7 +769,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = today.minusYears(2),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -777,7 +777,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare2.id,
                     startDate = today.minusYears(2),
                     endDate = today.minusYears(1),
-                )
+                ),
             )
             tx.insertTestApplication(
                 type = ApplicationType.DAYCARE,
@@ -805,7 +805,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = today.minusYears(2),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             tx.insertTestApplication(
                 type = ApplicationType.DAYCARE,
@@ -833,7 +833,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = today.minusYears(2),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -841,7 +841,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = today.plusDays(10),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             // the accepted application behind the placement prefers another area and must not count
             tx.insertTestApplication(
@@ -870,7 +870,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = today.minusYears(2),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -878,7 +878,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare2.id,
                     startDate = today.minusYears(2),
                     endDate = today.minusYears(1),
-                )
+                ),
             )
             tx.insertTestApplication(
                 type = ApplicationType.DAYCARE,
@@ -933,7 +933,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = today.minusDays(30),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
         }
         val incomeStatement = createTestIncomeStatement(adult1.id)
@@ -954,7 +954,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -963,7 +963,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -972,7 +972,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -981,7 +981,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1003,13 +1003,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         careAreas = listOf(area2.name),
-                    )
+                    ),
                 ),
                 1,
                 1,
             ),
             getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(unitIds = listOf(daycare2.id))
+                SearchIncomeStatementsRequest(unitIds = listOf(daycare2.id)),
             ),
         )
     }
@@ -1025,7 +1025,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1034,7 +1034,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -1043,7 +1043,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1052,7 +1052,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -1061,7 +1061,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult3.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1070,7 +1070,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycarePurchased.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1112,7 +1112,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 1,
             ),
             getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(unitIds = listOf(daycare1.id, daycare2.id))
+                SearchIncomeStatementsRequest(unitIds = listOf(daycare1.id, daycare2.id)),
             ),
         )
     }
@@ -1128,7 +1128,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1137,7 +1137,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -1146,7 +1146,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1155,7 +1155,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1181,7 +1181,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1190,7 +1190,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycarePurchased.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -1199,7 +1199,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1208,7 +1208,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1230,13 +1230,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         careAreas = listOf(area1.name),
-                    )
+                    ),
                 ),
                 1,
                 1,
             ),
             getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(providerTypes = listOf(ProviderType.MUNICIPAL))
+                SearchIncomeStatementsRequest(providerTypes = listOf(ProviderType.MUNICIPAL)),
             ),
         )
     }
@@ -1252,7 +1252,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1261,7 +1261,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -1270,7 +1270,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1279,7 +1279,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1291,7 +1291,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE income_statement SET sent_at = ${bind(newSentAt)}, citizen_modified_at = ${bind(newSentAt)} WHERE id = ${bind(incomeStatement1.id)}"
+                    "UPDATE income_statement SET sent_at = ${bind(newSentAt)}, citizen_modified_at = ${bind(newSentAt)} WHERE id = ${bind(incomeStatement1.id)}",
                 )
             }
         }
@@ -1311,7 +1311,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personLastName = "Doe",
                         personFirstName = "John",
                         careAreas = listOf(area1.name),
-                    )
+                    ),
                 ),
                 1,
                 1,
@@ -1320,7 +1320,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sentStartDate = today.minusDays(3),
                     sentEndDate = today.minusDays(1),
-                )
+                ),
             ),
         )
 
@@ -1339,13 +1339,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         careAreas = listOf(area1.name),
-                    )
+                    ),
                 ),
                 1,
                 1,
             ),
             getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(sentStartDate = today)
+                SearchIncomeStatementsRequest(sentStartDate = today),
             ),
         )
     }
@@ -1363,7 +1363,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placement1Start,
                     endDate = placement1End,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1372,7 +1372,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placement1Start,
                     endDate = placement1End,
-                )
+                ),
             )
 
             tx.insert(
@@ -1381,7 +1381,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placement2Start,
                     endDate = placement2End,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1390,7 +1390,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placement2Start,
                     endDate = placement2End,
-                )
+                ),
             )
 
             tx.insert(DevGuardian(guardianId = adult3.id, childId = child3.id))
@@ -1401,7 +1401,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placement2Start,
                     endDate = placement2End,
-                )
+                ),
             )
         }
 
@@ -1414,7 +1414,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE income_statement SET sent_at = ${bind(newSentAt)}, citizen_modified_at = ${bind(newSentAt)} WHERE id = ${bind(incomeStatement1.id)}"
+                    "UPDATE income_statement SET sent_at = ${bind(newSentAt)}, citizen_modified_at = ${bind(newSentAt)} WHERE id = ${bind(incomeStatement1.id)}",
                 )
             }
         }
@@ -1485,7 +1485,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         careAreas = listOf(area1.name),
-                    )
+                    ),
                 ),
                 1,
                 1,
@@ -1547,7 +1547,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1556,7 +1556,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -1564,7 +1564,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1573,7 +1573,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevParentship(
@@ -1581,7 +1581,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult3.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1590,7 +1590,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1667,13 +1667,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personLastName = "Foo",
                         personFirstName = "Mark",
                         careAreas = listOf(area1.name),
-                    )
+                    ),
                 ),
                 1,
                 1,
             ),
             getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(status = listOf(IncomeStatementStatus.SENT))
+                SearchIncomeStatementsRequest(status = listOf(IncomeStatementStatus.SENT)),
             ),
         )
 
@@ -1692,41 +1692,41 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         careAreas = listOf(area1.name),
-                    )
+                    ),
                 ),
                 1,
                 1,
             ),
             getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(status = listOf(IncomeStatementStatus.HANDLING))
+                SearchIncomeStatementsRequest(status = listOf(IncomeStatementStatus.HANDLING)),
             ),
         )
 
         assertThrows<BadRequest> {
             getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(status = listOf(IncomeStatementStatus.DRAFT))
+                SearchIncomeStatementsRequest(status = listOf(IncomeStatementStatus.DRAFT)),
             )
         }
 
         assertThrows<BadRequest> {
             getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(status = listOf(IncomeStatementStatus.HANDLED))
-            )
-        }
-
-        assertThrows<BadRequest> {
-            getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(
-                    status = listOf(IncomeStatementStatus.SENT, IncomeStatementStatus.DRAFT)
-                )
+                SearchIncomeStatementsRequest(status = listOf(IncomeStatementStatus.HANDLED)),
             )
         }
 
         assertThrows<BadRequest> {
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
-                    status = listOf(IncomeStatementStatus.HANDLING, IncomeStatementStatus.HANDLED)
-                )
+                    status = listOf(IncomeStatementStatus.SENT, IncomeStatementStatus.DRAFT),
+                ),
+            )
+        }
+
+        assertThrows<BadRequest> {
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    status = listOf(IncomeStatementStatus.HANDLING, IncomeStatementStatus.HANDLED),
+                ),
             )
         }
     }
@@ -1742,7 +1742,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1751,7 +1751,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -1760,7 +1760,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1769,7 +1769,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1783,7 +1783,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE income_statement SET sent_at = ${bind(newSentAt)}, citizen_modified_at = ${bind(newSentAt)}"
+                    "UPDATE income_statement SET sent_at = ${bind(newSentAt)}, citizen_modified_at = ${bind(newSentAt)}",
                 )
             }
         }
@@ -1822,7 +1822,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.START_DATE,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             ),
         )
         assertEquals(
@@ -1831,7 +1831,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.START_DATE,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             ),
         )
     }
@@ -1849,7 +1849,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1858,7 +1858,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevIncome(
@@ -1866,7 +1866,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeRange1.start,
                     validTo = incomeRange1.end,
-                )
+                ),
             )
 
             tx.insert(
@@ -1875,7 +1875,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1884,7 +1884,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevIncome(
@@ -1892,7 +1892,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeRange2.start,
                     validTo = incomeRange2.end,
-                )
+                ),
             )
         }
 
@@ -1935,7 +1935,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.INCOME_END_DATE,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             ),
         )
         assertEquals(
@@ -1944,7 +1944,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.INCOME_END_DATE,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             ),
         )
     }
@@ -1960,7 +1960,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1969,7 +1969,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -1978,7 +1978,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1987,7 +1987,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -2030,7 +2030,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.TYPE,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             ),
         )
         assertEquals(
@@ -2039,7 +2039,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.TYPE,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             ),
         )
     }
@@ -2055,7 +2055,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -2064,7 +2064,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -2073,7 +2073,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -2082,7 +2082,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -2139,7 +2139,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.HANDLER_NOTE,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             ),
         )
         assertEquals(
@@ -2148,7 +2148,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.HANDLER_NOTE,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             ),
         )
     }
@@ -2164,7 +2164,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -2173,7 +2173,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -2182,7 +2182,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -2191,7 +2191,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -2234,7 +2234,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.PERSON_NAME,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             ),
         )
         assertEquals(
@@ -2243,7 +2243,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.PERSON_NAME,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             ),
         )
     }
@@ -2259,7 +2259,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -2268,7 +2268,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(
@@ -2277,7 +2277,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -2286,7 +2286,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -2346,7 +2346,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.CITIZEN_MODIFIED_AT,
                     sortDirection = SortDirection.ASC,
-                )
+                ),
             )
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
@@ -2364,7 +2364,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.CITIZEN_MODIFIED_AT,
                     sortDirection = SortDirection.DESC,
-                )
+                ),
             ),
         )
     }
@@ -2380,7 +2380,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -2389,7 +2389,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -2474,7 +2474,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     private fun searchByArea(area: DevCareArea) =
         getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(areas = listOf(area.shortName))
+                SearchIncomeStatementsRequest(areas = listOf(area.shortName)),
             )
             .data
 

@@ -204,7 +204,7 @@ SELECT id, daterange(valid_from, valid_to, '[]') as range, status
 FROM voucher_value_decision
 WHERE head_of_family_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
-"""
+""",
         )
     }
     .toList<TimelineValueDecision>()
@@ -222,7 +222,7 @@ SELECT id, daterange(valid_from, valid_to, '[]') as range, effect
 FROM income
 WHERE person_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
-"""
+""",
     )
 }
     .toList<TimelineIncome>()
@@ -335,7 +335,7 @@ FROM placement pl
 JOIN daycare d on d.id = pl.unit_id
 WHERE pl.child_id = ${bind(personId)} AND daterange(start_date, end_date, '[]') && ${bind(range)}
 ORDER BY pl.start_date
-"""
+""",
     )
 }
     .toList<TimelinePlacement>()
@@ -361,7 +361,7 @@ JOIN placement pl on sn.placement_id = pl.id
 JOIN service_need_option sno on sn.option_id = sno.id
 WHERE pl.child_id = ${bind(personId)} AND daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)}
 ORDER BY pl.start_date
-"""
+""",
         )
     }
     .toList<TimelineServiceNeed>()
@@ -383,7 +383,7 @@ SELECT id, daterange(valid_from, valid_to, '[]') as range, type, amount, is_abso
 FROM fee_alteration
 WHERE person_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
-"""
+""",
         )
     }
     .toList<TimelineFeeAlteration>()

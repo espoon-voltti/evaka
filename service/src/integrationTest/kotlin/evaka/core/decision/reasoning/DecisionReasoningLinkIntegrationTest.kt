@@ -675,7 +675,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                             decisionId,
                             unitId,
                             individualReasoningIds = setOf(preschoolReasoning),
-                        )
+                        ),
                     ),
                     now,
                     admin.evakaUserId,
@@ -701,7 +701,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                             decisionId,
                             unitId,
                             individualReasoningIds = setOf(swedishReasoning),
-                        )
+                        ),
                     ),
                     now,
                     admin.evakaUserId,
@@ -749,7 +749,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                             decisionId,
                             unitId,
                             individualReasoningIds = setOf(bogusReasoningId),
-                        )
+                        ),
                     ),
                     now,
                     admin.evakaUserId,
@@ -819,7 +819,7 @@ INSERT INTO decision (
     ${bind(startDate)}, ${bind(startDate.plusYears(1))}, ${bind(DecisionStatus.PENDING)}, NULL
 )
 RETURNING id
-"""
+""",
                     )
                 }
                 .executeAndReturnGeneratedKeys()

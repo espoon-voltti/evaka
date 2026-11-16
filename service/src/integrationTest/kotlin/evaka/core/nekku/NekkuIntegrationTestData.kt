@@ -29,9 +29,9 @@ val basicTestClientCustomers =
                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                     ),
                     "100-lasta",
-                )
+                ),
             ),
-        )
+        ),
     )
 
 val basicTestClientWithAnotherCustomerNumber =
@@ -53,9 +53,9 @@ val basicTestClientWithAnotherCustomerNumber =
                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                     ),
                     "100-lasta",
-                )
+                ),
             ),
-        )
+        ),
     )
 
 val weekdayOnlyTestClientCustomers =
@@ -74,9 +74,9 @@ val weekdayOnlyTestClientCustomers =
                         NekkuCustomerApiWeekday.FRIDAY,
                     ),
                     "100-lasta",
-                )
+                ),
             ),
-        )
+        ),
     )
 
 val nekkuProducts =

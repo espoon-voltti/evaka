@@ -69,7 +69,7 @@ class DvvModificationsService(
     ) {
         val personIds = db.read { tx ->
             tx.getPersonIdsBySsns(
-                    page.muutokset.mapNotNull { Ssn.parse(it.henkilotunnus) }.distinct()
+                    page.muutokset.mapNotNull { Ssn.parse(it.henkilotunnus) }.distinct(),
                 )
                 .found
                 .mapKeys { it.key.value }

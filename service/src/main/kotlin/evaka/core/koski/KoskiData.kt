@@ -52,7 +52,7 @@ data class KoskiChildRaw(
 
             else -> {
                 throw IllegalStateException(
-                    "not enough information available to create Koski Henkilö"
+                    "not enough information available to create Koski Henkilö",
                 )
             }
         }
@@ -96,7 +96,7 @@ data class KoskiUnitRaw(
                 when (type) {
                     OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> SuorituksenTyyppiKoodi.PRESCHOOL
                     OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> SuorituksenTyyppiKoodi.PREPARATORY
-                }
+                },
             ),
             vahvistus,
             osasuoritus?.let { listOf(it) },
@@ -207,7 +207,7 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
                                 ophOrganizationOid,
                                 ophMunicipalityCode,
                                 termination,
-                            )
+                            ),
                         ),
                 ),
             operation = if (studyRightOid == null) KoskiOperation.CREATE else KoskiOperation.UPDATE,
@@ -234,7 +234,7 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
                                     nimi = unit.approverName,
                                     titteli = MyöntäjäHenkilönTitteli(unit.approverTitle),
                                     organisaatio = MyöntäjäOrganisaatio(unit.ophOrganizerOid),
-                                )
+                                ),
                             ),
                     )
                 }
@@ -259,7 +259,7 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
     }
 
     private fun haeOpiskeluoikeusjaksot(
-        termination: StudyRightTermination?
+        termination: StudyRightTermination?,
     ): List<Opiskeluoikeusjakso> =
         DateMap.of(placements.ranges(), OpiskeluoikeusjaksonTilaKoodi.PRESENT)
             .set(placements.gaps(), OpiskeluoikeusjaksonTilaKoodi.INTERRUPTED)
@@ -371,7 +371,7 @@ data class KoskiActivePreschoolDataRaw(
         // Koski before that term's placement starts
         val newEceIncludingFuture =
             childSupportAndExtendedCompulsoryEducation.intersection(
-                listOf(FiniteDateRange(placementSpan.start, LocalDate.MAX))
+                listOf(FiniteDateRange(placementSpan.start, LocalDate.MAX)),
             )
 
         val allChildSupport =
@@ -470,7 +470,7 @@ data class KoskiActivePreparatoryDataRaw(
                             arvo = 25,
                             yksikkö =
                                 Laajuusyksikkö(
-                                    koodiarvo = LaajuusyksikköKoodiarvo.VUOSIVIIKKOTUNTI
+                                    koodiarvo = LaajuusyksikköKoodiarvo.VUOSIVIIKKOTUNTI,
                                 ),
                         ),
                     ),
@@ -480,9 +480,9 @@ data class KoskiActivePreparatoryDataRaw(
                             kuvaus =
                                 LokalisoituTeksti(
                                     fi =
-                                        "Suorittanut perusopetukseen valmistavan opetuksen esiopetuksen yhteydessä"
+                                        "Suorittanut perusopetukseen valmistavan opetuksen esiopetuksen yhteydessä",
                                 ),
-                        )
+                        ),
                     ),
                     SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY_SUBJECT),
                 ),
@@ -532,7 +532,7 @@ sealed class StudyRightTermination {
 /** Fill gaps between periods if those gaps contain only holidays or weekend days */
 internal fun DateSet.fillWeekendAndHolidayGaps(holidays: Set<LocalDate>) =
     this.addAll(
-        this.gaps().filter { gap -> gap.dates().all { it.isWeekend() || holidays.contains(it) } }
+        this.gaps().filter { gap -> gap.dates().all { it.isWeekend() || holidays.contains(it) } },
     )
 
 internal data class PreparatoryAbsences(
@@ -550,37 +550,37 @@ internal fun calculatePreparatoryAbsences(
         DateSet.of(
             DateSet.of(
                     (absences[AbsenceType.PLANNED_ABSENCE]?.map { it.toFiniteDateRange() }
-                        ?: emptyList())
+                        ?: emptyList()),
                 )
                 .addAll(
                     absences[AbsenceType.OTHER_ABSENCE]?.map { it.toFiniteDateRange() }
-                        ?: emptyList()
+                        ?: emptyList(),
                 )
                 .fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)
                 .ranges()
-                .filter { it.durationInDays() > 7 }
+                .filter { it.durationInDays() > 7 },
         )
     val sickLeaveAbsence =
         DateSet.of(
             DateSet.of(
-                    absences[AbsenceType.SICKLEAVE]?.map { it.toFiniteDateRange() } ?: emptyList()
+                    absences[AbsenceType.SICKLEAVE]?.map { it.toFiniteDateRange() } ?: emptyList(),
                 )
                 .fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)
                 .ranges()
-                .filter { it.durationInDays() > 7 }
+                .filter { it.durationInDays() > 7 },
         )
     val unknownAbsence =
         DateSet.of(
             DateSet.of(
                     absences[AbsenceType.UNKNOWN_ABSENCE]?.map { it.toFiniteDateRange() }
-                        ?: emptyList()
+                        ?: emptyList(),
                 )
                 .fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)
                 .ranges()
-                .filter { it.durationInDays() > 7 }
+                .filter { it.durationInDays() > 7 },
         )
 
     return PreparatoryAbsences(

@@ -20,7 +20,7 @@ class TitaniaPersonTest {
                 "'ANKKA ','',ANKKA",
                 "' ANKKA',ANKKA,''",
                 "'','',''",
-            ]
+            ],
     )
     fun firstNameAndLastName(name: String, expectedFirstName: String, expectedLastName: String) {
         val person =

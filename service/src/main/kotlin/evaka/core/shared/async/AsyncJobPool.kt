@@ -50,7 +50,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
     data class Config(val concurrency: Int = 1, val throttleInterval: Duration? = null)
 
     data class Handler<T : AsyncJobPayload>(
-        val handler: (db: Database, clock: EvakaClock, msg: T, remainingAttempts: Int) -> Unit
+        val handler: (db: Database, clock: EvakaClock, msg: T, remainingAttempts: Int) -> Unit,
     ) {
         fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload, remainingAttempts: Int) =
             @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T, remainingAttempts)
@@ -117,7 +117,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                     .tag("jobType", id.jobType.simpleName!!)
                     .tag("pool", id.pool)
                     .register(meterRegistry),
-            )
+            ),
         )
     }
 
@@ -168,7 +168,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                                             clock.now().toInstant(),
                                             permit.availableAt.toInstant(),
                                         )
-                                        .coerceIn(Duration.ZERO, throttleInterval)
+                                        .coerceIn(Duration.ZERO, throttleInterval),
                                 )
                             }
                             tx.claimJob(clock.now(), registration.jobTypes())?.also {

@@ -370,7 +370,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -379,7 +379,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -390,7 +390,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -803,7 +803,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -812,7 +812,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -868,7 +868,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 NekkuClient.Item("31000011", 1, null),
                             ),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -880,7 +880,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000010", 1, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -933,7 +933,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -942,7 +942,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -953,7 +953,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
                 .forEach { tx.insert(it) }
         }
@@ -1041,9 +1041,9 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForErrorOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -1079,7 +1079,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1088,7 +1088,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -1099,7 +1099,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
                 .forEach { tx.insert(it) }
         }
@@ -1132,7 +1132,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         "Could not find any customer with given date: MONDAY groupId=${group.id}",
                         now,
-                    )
+                    ),
                 ),
                 nekkuOrderReportResult.toSet(),
             )
@@ -1198,7 +1198,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -1207,7 +1207,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 listOf(
@@ -1264,7 +1264,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 NekkuClient.Item("31000011", 9, null),
                             ),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -1276,7 +1276,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000010", 9, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -1368,7 +1368,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare1.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -1377,7 +1377,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group1.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 // Two meals on Monday
@@ -1388,7 +1388,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(12, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             }
 
@@ -1400,7 +1400,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare2.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -1409,7 +1409,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group2.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 // Two meals on Monday
@@ -1420,7 +1420,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(12, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             }
         }
@@ -1457,7 +1457,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 NekkuClient.Item("31000011", 9, null),
                             ),
                             group1.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -1472,7 +1472,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 NekkuClient.Item("31000011", 8, null),
                             ),
                             group2.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -1541,7 +1541,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -1550,7 +1550,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 listOf(
@@ -1607,7 +1607,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 NekkuClient.Item("31000015", 10, null),
                             ),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -1619,7 +1619,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000014", 10, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -1657,9 +1657,9 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "50-99-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -1690,7 +1690,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(employee)
             tx.insert(child, DevPersonType.CHILD)
             tx.insert(
-                DevChild(id = child.id, participatesInBreakfast = false)
+                DevChild(id = child.id, participatesInBreakfast = false),
             ) // child does not eat breakfast
             tx.insert(
                     DevPlacement(
@@ -1698,7 +1698,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1707,7 +1707,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -1751,10 +1751,10 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000018", 1, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
-                )
+                ),
             ),
             client.orders,
         )
@@ -1800,7 +1800,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(employee)
             tx.insert(child, DevPersonType.CHILD)
             tx.insert(
-                DevChild(id = child.id, participatesInBreakfast = false)
+                DevChild(id = child.id, participatesInBreakfast = false),
             ) // child does not eat breakfast
             tx.insert(
                     DevPlacement(
@@ -1808,7 +1808,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1817,7 +1817,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -1828,7 +1828,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(12, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
                 .forEach { tx.insert(it) }
         }
@@ -1853,10 +1853,10 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000011", 1, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
-                )
+                ),
             ),
             client.orders,
         )
@@ -1907,7 +1907,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1916,7 +1916,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -1973,7 +1973,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 NekkuClient.Item("31000016", 1, null),
                             ),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -1985,7 +1985,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000014", 1, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -2039,7 +2039,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -2048,7 +2048,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             tx.insert(child2, DevPersonType.CHILD)
@@ -2058,7 +2058,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -2067,7 +2067,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
         }
@@ -2105,7 +2105,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 NekkuClient.Item("31000012", 2, null),
                             ),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -2121,7 +2121,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 NekkuClient.Item("31000012", 2, null),
                             ),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -2174,7 +2174,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -2183,7 +2183,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -2238,7 +2238,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             emptyList(),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -2250,7 +2250,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             emptyList(),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -2287,9 +2287,9 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "50-99-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -2325,7 +2325,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -2334,7 +2334,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -2387,7 +2387,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000018", 1, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -2399,7 +2399,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000018", 1, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 ),
@@ -2427,9 +2427,9 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 CustomerApiType(
                                     listOf(NekkuCustomerApiWeekday.TUESDAY),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -2465,7 +2465,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -2474,7 +2474,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                 }
             listOf(
@@ -2529,10 +2529,10 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("31000010", 1, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
-                )
+                ),
             ),
             client.orders,
         )
@@ -2604,7 +2604,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -2613,7 +2613,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 tx.insert(
@@ -2624,15 +2624,21 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             }
 
             tx.insert(
-                DevChild(id = vegetableSpecialChild1.id, nekkuDiet = NekkuProductMealType.VEGETABLE)
+                DevChild(
+                    id = vegetableSpecialChild1.id,
+                    nekkuDiet = NekkuProductMealType.VEGETABLE,
+                ),
             )
             tx.insert(
-                DevChild(id = vegetableSpecialChild2.id, nekkuDiet = NekkuProductMealType.VEGETABLE)
+                DevChild(
+                    id = vegetableSpecialChild2.id,
+                    nekkuDiet = NekkuProductMealType.VEGETABLE,
+                ),
             )
         }
 
@@ -2757,7 +2763,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
                                             "Kananmunaton ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -2767,7 +2773,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
                                             "Kananmunaton ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -2777,7 +2783,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
                                             "Kananmunaton ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -2787,7 +2793,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Pähkinätön",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -2797,7 +2803,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Pähkinätön",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -2807,15 +2813,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Pähkinätön",
-                                        )
+                                        ),
                                     ),
                                 ),
                             ),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
-                )
+                ),
             ),
             client.orders,
         )
@@ -2876,7 +2882,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -2885,7 +2891,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 tx.insert(
@@ -2896,7 +2902,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             }
         }
@@ -2956,7 +2962,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Alle 1-vuotiaan ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -2966,7 +2972,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Alle 1-vuotiaan ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -2976,7 +2982,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Alle 1-vuotiaan ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -3028,7 +3034,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Pähkinätön, Alle 1-vuotiaan ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -3038,7 +3044,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Pähkinätön, Alle 1-vuotiaan ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -3048,7 +3054,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuClient.ProductOption(
                                             "17A9ACF0-DE9E-4C07-882E-C8C47351D009",
                                             "Pähkinätön, Alle 1-vuotiaan ruokavalio",
-                                        )
+                                        ),
                                     ),
                                 ),
                                 NekkuClient.Item(
@@ -3095,10 +3101,10 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 ),
                             ),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
-                )
+                ),
             ),
             client.orders,
         )
@@ -3127,9 +3133,9 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "palveluovelle",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts =
                     listOf(
@@ -3184,7 +3190,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = monday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -3193,7 +3199,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = monday,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -3204,7 +3210,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -3228,10 +3234,10 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             group.id.toString(),
                             listOf(NekkuClient.Item("310000030", 1, null)),
                             group.name,
-                        )
+                        ),
                     ),
                     dryRun = false,
-                )
+                ),
             ),
             client.orders,
         )
@@ -3349,7 +3355,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = group.daycareId,
                             startDate = startDate,
                             endDate = endDate,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -3358,7 +3364,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = startDate,
                                 endDate = endDate,
-                            )
+                            ),
                         )
                     }
             }
@@ -3438,7 +3444,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = group.daycareId,
                         startDate = LocalDate.of(2025, 6, 30),
                         endDate = LocalDate.of(2025, 7, 4),
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -3447,7 +3453,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = LocalDate.of(2025, 6, 30),
                             endDate = LocalDate.of(2025, 7, 4),
-                        )
+                        ),
                     )
                 }
         }
@@ -3636,7 +3642,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = sunday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -3645,7 +3651,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             daycareGroupId = group.id,
                             startDate = monday,
                             endDate = sunday,
-                        )
+                        ),
                     )
                 }
         }
@@ -3718,7 +3724,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = sunday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -3727,7 +3733,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = monday,
                                 endDate = sunday,
-                            )
+                            ),
                         )
                         tx.insert(
                             DevServiceNeed(
@@ -3739,7 +3745,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 shiftCare =
                                     if (child != notInExtendedCareChild) ShiftCareType.FULL
                                     else ShiftCareType.NONE,
-                            )
+                            ),
                         )
                     }
             }
@@ -3780,9 +3786,9 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                         NekkuCustomerApiWeekday.FRIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
+                        ),
                     ),
                 nekkuProducts = nekkuProductsForOrder,
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -3840,7 +3846,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = sunday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -3849,7 +3855,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = monday,
                                 endDate = sunday,
-                            )
+                            ),
                         )
                         tx.insert(
                             DevServiceNeed(
@@ -3859,7 +3865,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 confirmedBy = employee.evakaUserId,
                                 optionId = serviceNeedOptionId,
                                 shiftCare = ShiftCareType.NONE,
-                            )
+                            ),
                         )
                     }
             }
@@ -4576,7 +4582,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -4585,7 +4591,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 tx.insert(
@@ -4596,7 +4602,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             }
         }
@@ -4851,7 +4857,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -4860,7 +4866,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 daycareGroupId = group.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 tx.insert(
@@ -4871,7 +4877,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
             }
         }
@@ -5270,7 +5276,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 group.id.toString(),
                                 listOf(NekkuClient.Item("31000010", 42, setOf())),
                                 null,
-                            )
+                            ),
                         ),
                         false,
                     )

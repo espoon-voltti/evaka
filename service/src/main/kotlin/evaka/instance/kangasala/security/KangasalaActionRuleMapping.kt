@@ -25,14 +25,14 @@ class KangasalaActionRuleMapping(private val commonRules: ActionRuleMapping) : A
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(
                         HasUnitRole(
                                 UserRole.UNIT_SUPERVISOR,
                                 UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                             )
-                            .inUnit() as ScopedActionRule<in T>
+                            .inUnit() as ScopedActionRule<in T>,
                     )
 
             Action.Unit.READ_PRESCHOOL_APPLICATION_REPORT -> {
@@ -40,10 +40,10 @@ class KangasalaActionRuleMapping(private val commonRules: ActionRuleMapping) : A
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 

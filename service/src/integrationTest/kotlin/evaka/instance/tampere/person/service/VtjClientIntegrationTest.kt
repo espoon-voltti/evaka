@@ -33,8 +33,8 @@ internal class VtjClientIntegrationTest : AbstractTampereIntegrationTest() {
                         .withHeader("Content-Type", "text/xml")
                         .withBodyFile("person-client/henkilotunnuskysely-response-ok.xml")
                         .withTransformers("response-template")
-                        .withTransformerParameter("ssn", "070644-937X")
-                )
+                        .withTransformerParameter("ssn", "070644-937X"),
+                ),
         )
 
         val person =
@@ -42,7 +42,7 @@ internal class VtjClientIntegrationTest : AbstractTampereIntegrationTest() {
                 VtjClient.DetailsQuery(
                     AuthenticatedUser.SystemInternalUser.evakaUserId,
                     Ssn.parse("070644-937X")!!,
-                )
+                ),
             )
 
         assertThat(person).returns("070644-937X", { it.ssn.value })
@@ -51,7 +51,7 @@ internal class VtjClientIntegrationTest : AbstractTampereIntegrationTest() {
                 .withoutHeader("Authorization")
                 .withHeader("X-API-KEY", equalTo("vtj-kysely-api-key-123"))
                 .withHeader("Content-Type", equalTo("text/xml; charset=utf-8"))
-                .withHeader("SOAPAction", equalTo("\"\""))
+                .withHeader("SOAPAction", equalTo("\"\"")),
         )
     }
 }

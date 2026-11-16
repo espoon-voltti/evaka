@@ -178,7 +178,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         placementUnitId = daycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    )
+                    ),
                 ),
         )
     private val decision2 =
@@ -195,7 +195,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         placementUnitId = daycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    )
+                    ),
                 ),
         )
     private val decisionNoSsn =
@@ -212,7 +212,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         placementUnitId = daycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    )
+                    ),
                 ),
         )
 
@@ -265,7 +265,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     area = listOf("test_area"),
-                )
+                ),
             )
         assertEqualEnough(
             invoices.filter { it.status == InvoiceStatus.DRAFT }.map(::toSummary),
@@ -284,7 +284,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     area = listOf("test_area"),
                     status = InvoiceStatus.DRAFT,
-                )
+                ),
             )
         assertEqualEnough(
             invoices
@@ -304,7 +304,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     area = listOf("non_existent"),
-                )
+                ),
             )
         assertEqualEnough(listOf(), result)
     }
@@ -338,7 +338,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     searchTerms = adult1.streetAddress,
-                )
+                ),
             )
         assertEqualEnough(listOf(), result)
     }
@@ -353,7 +353,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     searchTerms = "${adult1.lastName.substring(0, 2)} ${adult1.firstName}",
-                )
+                ),
             )
         assertEqualEnough(testInvoices.take(1).map(::toSummary), result)
     }
@@ -368,7 +368,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     searchTerms = "${adult1.lastName} ${adult1.streetAddress} nomatch",
-                )
+                ),
             )
         assertEqualEnough(listOf(), result)
     }
@@ -383,7 +383,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     searchTerms = child2.firstName,
-                )
+                ),
             )
         assertEqualEnough(testInvoices.takeLast(1).map(::toSummary), result)
     }
@@ -398,7 +398,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     searchTerms = adult1.ssn,
-                )
+                ),
             )
         assertEqualEnough(testInvoices.take(1).map(::toSummary), result)
     }
@@ -413,7 +413,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     status = InvoiceStatus.DRAFT,
                     searchTerms = adult1.ssn!!.substring(0, 6),
-                )
+                ),
             )
         assertEqualEnough(testInvoices.take(1).map(::toSummary), result)
     }
@@ -492,9 +492,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         .copy(
                             relatedFeeDecisions =
                                 listOf(
-                                    RelatedFeeDecision(id = feeDecision.id, decisionNumber = 123)
-                                )
-                        )
+                                    RelatedFeeDecision(id = feeDecision.id, decisionNumber = 123),
+                                ),
+                        ),
                 ),
             actual = listOf(result),
         )
@@ -647,7 +647,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sql(
                     """
                 SELECT saved_cost_center, saved_sub_cost_center FROM invoice_row WHERE invoice_id = ${bind(invoiceId)}
-            """
+            """,
                 )
             }
             .exactlyOne {
@@ -856,7 +856,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = part.placement.unitId,
                         startDate = decision.validFrom,
                         endDate = decision.validTo,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevParentship(
@@ -864,7 +864,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         headOfChildId = decision.headOfFamilyId,
                         startDate = decision.validFrom,
                         endDate = decision.validTo,
-                    )
+                    ),
                 )
             }
         }

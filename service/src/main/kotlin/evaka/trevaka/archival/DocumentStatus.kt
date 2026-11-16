@@ -34,7 +34,7 @@ fun status(childDocumentDetails: ChildDocumentDetails): String {
             DocumentStatus.COMPLETED -> "Valmis"
             else ->
                 error(
-                    "Child document with status ${childDocumentDetails.status} cannot be archived"
+                    "Child document with status ${childDocumentDetails.status} cannot be archived",
                 )
         }
     }
@@ -53,6 +53,6 @@ fun status(voucherValueDecision: VoucherValueDecisionDetailed) =
         VoucherValueDecisionStatus.ANNULLED -> "Mitätöity"
         else ->
             error(
-                "Voucher value decision with status ${voucherValueDecision.status} cannot be archived"
+                "Voucher value decision with status ${voucherValueDecision.status} cannot be archived",
             )
     }

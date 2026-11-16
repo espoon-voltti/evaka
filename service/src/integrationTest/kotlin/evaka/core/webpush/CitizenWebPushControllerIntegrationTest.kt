@@ -87,7 +87,7 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
                     clock,
                     CitizenWebPushController.PushSubscriptionCheckRequest(endpoint),
                 )
-                .deviceId
+                .deviceId,
         )
         assertEquals(
             emptyList(),

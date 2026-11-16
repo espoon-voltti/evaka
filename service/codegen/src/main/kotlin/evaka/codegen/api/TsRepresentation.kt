@@ -120,7 +120,7 @@ data class TsPlainObject(
     val properties: Map<String, TsProperty>,
 ) : TsNamedType<List<KType?>> {
     constructor(
-        clazz: KClass<*>
+        clazz: KClass<*>,
     ) : this(
         clazz,
         clazz.simpleName ?: error("no class name: $clazz"),
@@ -132,7 +132,7 @@ data class TsPlainObject(
         return properties.mapValues { (_, prop) ->
             mapping[prop.type.classifier]?.type
                 ?: prop.type.classifier?.createType(
-                    prop.type.arguments.map { mapping[it.type?.classifier] ?: it }
+                    prop.type.arguments.map { mapping[it.type?.classifier] ?: it },
                 )
                 ?: prop.type
         }
@@ -184,7 +184,7 @@ data class TsStringEnum(
     val constList: ConstList?,
 ) : TsNamedType<Nothing> {
     constructor(
-        clazz: KClass<*>
+        clazz: KClass<*>,
     ) : this(
         clazz,
         name = clazz.simpleName ?: error("no class name: $clazz"),
@@ -196,7 +196,7 @@ data class TsStringEnum(
                     }
                 ) {
                     error(
-                        "Enum class ${clazz.simpleName} has a @JsonValue field. This is not supported. API types should only use simple enums."
+                        "Enum class ${clazz.simpleName} has a @JsonValue field. This is not supported. API types should only use simple enums.",
                     )
                 }
 

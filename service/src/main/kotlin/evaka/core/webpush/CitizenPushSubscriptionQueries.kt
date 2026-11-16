@@ -35,7 +35,7 @@ SELECT id, installed, device_class, operating_system_name, agent_name, created_a
 FROM citizen_push_subscription
 WHERE person_id = ${bind(person)}
 ORDER BY created_at
-"""
+""",
     )
 }
     .toList()
@@ -55,7 +55,7 @@ fun Database.Transaction.insertCitizenPushSubscription(
 ): CitizenPushDevice {
     execute {
         sql(
-            "DELETE FROM citizen_push_subscription WHERE endpoint = ${bind(subscription.endpoint.toString())}"
+            "DELETE FROM citizen_push_subscription WHERE endpoint = ${bind(subscription.endpoint.toString())}",
         )
     }
     val subscriptionCount = createQuery {
@@ -81,7 +81,7 @@ VALUES (
     ${bind(client.agentName)}
 )
 RETURNING id, installed, device_class, operating_system_name, agent_name, created_at, last_sent_at
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -97,7 +97,7 @@ fun Database.Read.getCitizenPushSubscriptionId(
 SELECT id
 FROM citizen_push_subscription
 WHERE endpoint = ${bind(endpoint.toString())} AND person_id = ${bind(person)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -111,7 +111,7 @@ fun Database.Transaction.deleteForeignCitizenPushSubscription(
 DELETE FROM citizen_push_subscription
 WHERE endpoint = ${bind(endpoint.toString())} AND person_id <> ${bind(person)}
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -126,7 +126,7 @@ fun Database.Transaction.deleteCitizenPushDevice(
 DELETE FROM citizen_push_subscription
 WHERE id = ${bind(id)} AND person_id = ${bind(person)}
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -139,7 +139,7 @@ data class CitizenPushTarget(
 )
 
 fun Database.Read.getCitizenPushTarget(
-    subscription: CitizenPushSubscriptionId
+    subscription: CitizenPushSubscriptionId,
 ): CitizenPushTarget? = createQuery {
     sql(
         """
@@ -147,7 +147,7 @@ SELECT cps.person_id, cps.endpoint, cps.auth_secret, cps.ecdh_key, p.disabled_pu
 FROM citizen_push_subscription cps
 JOIN person p ON p.id = cps.person_id
 WHERE cps.id = ${bind(subscription)}
-"""
+""",
     )
 }
     .exactlyOneOrNull {
@@ -169,14 +169,14 @@ fun Database.Transaction.markCitizenPushSent(
     now: HelsinkiDateTime,
 ): Int = createUpdate {
     sql(
-        "UPDATE citizen_push_subscription SET last_sent_at = ${bind(now)} WHERE id = ${bind(subscription)}"
+        "UPDATE citizen_push_subscription SET last_sent_at = ${bind(now)} WHERE id = ${bind(subscription)}",
     )
 }
     .executeAndReturnCount()
 
 @IgnorableReturnValue
 fun Database.Transaction.deleteCitizenPushSubscription(
-    subscription: CitizenPushSubscriptionId
+    subscription: CitizenPushSubscriptionId,
 ): Int = createUpdate {
     sql("DELETE FROM citizen_push_subscription WHERE id = ${bind(subscription)}")
 }
@@ -197,7 +197,7 @@ SELECT coalesce(cu.preferred_ui_language, 'FI') AS language
 FROM citizen_push_subscription cps
 LEFT JOIN citizen_user cu ON cu.id = cps.person_id
 WHERE cps.id = ${bind(subscription)}
-"""
+""",
         )
     }
     .exactlyOneOrNull()
@@ -221,7 +221,7 @@ fun Database.Read.getPushChildNames(children: Collection<PersonId>): Map<PersonI
 SELECT id, first_name, last_name
 FROM person
 WHERE id = ANY(${bind(children)})
-"""
+""",
         )
     }
     .toMap { column<PersonId>("id") to pushChildName(column("first_name"), column("last_name")) }

@@ -30,7 +30,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val id = UUID.randomUUID()
         db.transaction {
             it.insertJob(
-                JobParams(TestJob(id), 1234, Duration.ofMinutes(42), HelsinkiDateTime.now())
+                JobParams(TestJob(id), 1234, Duration.ofMinutes(42), HelsinkiDateTime.now()),
             )
         }
         val runAt = db.read {
@@ -80,7 +80,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 Database.Transaction.wrap(h1).claimJob(HelsinkiDateTime.now(), listOf(jobType))!!
             assertNotEquals(job0.jobId, job1.jobId)
             assertNull(
-                Database.Transaction.wrap(h2).claimJob(HelsinkiDateTime.now(), listOf(jobType))
+                Database.Transaction.wrap(h2).claimJob(HelsinkiDateTime.now(), listOf(jobType)),
             )
 
             h1.rollback()
@@ -130,7 +130,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val remainingJobs = db.read {
             it.createQuery {
                     sql(
-                        "SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2"
+                        "SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2",
                     )
                 }
                 .toList {
@@ -165,7 +165,7 @@ private fun Database.Transaction.insertTestJob(params: TestJobParams) {
             """
 INSERT INTO async_job (type, run_at, retry_count, retry_interval, payload, claimed_at, claimed_by, completed_at)
 VALUES ('TestJob', ${bind(runAt)}, 0, interval '1 hours', '{}', ${bind(completedAt)}, ${bind(claimedBy)}, ${bind(completedAt)})
-"""
+""",
         )
     }
 }

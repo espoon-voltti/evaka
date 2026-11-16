@@ -251,7 +251,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -283,7 +283,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -316,7 +316,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -349,7 +349,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -391,7 +391,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -431,7 +431,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @ParameterizedTest(
-        name = "Employee arriving 20 minutes before planned time can be marked arrived with {0}"
+        name = "Employee arriving 20 minutes before planned time can be marked arrived with {0}",
     )
     @EnumSource(names = ["OVERTIME", "JUSTIFIED_CHANGE"])
     fun testStaffArrivalBeforePlanStartWithAllowedType(type: StaffAttendanceType) {
@@ -449,7 +449,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -467,7 +467,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @ParameterizedTest(
-        name = "Employee arriving 20 minutes before planned time cannot be marked arrived with {0}"
+        name = "Employee arriving 20 minutes before planned time cannot be marked arrived with {0}",
     )
     @EnumSource(names = ["PRESENT", "OTHER_WORK", "TRAINING"])
     fun testStaffArrivalBeforePlanStartWithUnallowedType(type: StaffAttendanceType) {
@@ -485,7 +485,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -518,7 +518,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -542,7 +542,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -567,7 +567,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @ParameterizedTest(
-        name = "Employee arriving 20 minutes after planned time can be marked arrived with {0}"
+        name = "Employee arriving 20 minutes after planned time can be marked arrived with {0}",
     )
     @EnumSource(names = ["OTHER_WORK", "TRAINING"])
     fun testStaffArrivalAfterPlanStartWithAllowedType(type: StaffAttendanceType) {
@@ -585,7 +585,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -606,7 +606,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @ParameterizedTest(
-        name = "Employee arriving 20 minutes after planned time cannot be marked arrived with {0}"
+        name = "Employee arriving 20 minutes after planned time cannot be marked arrived with {0}",
     )
     @EnumSource(names = ["PRESENT", "OVERTIME"])
     fun testStaffArrivalAfterPlanStartWithUnallowedType(type: StaffAttendanceType) {
@@ -624,7 +624,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -657,7 +657,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -690,7 +690,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -732,7 +732,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -751,7 +751,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @ParameterizedTest(
-        name = "Employee departing 20 minutes before planned time can be marked departed with {0}"
+        name = "Employee departing 20 minutes before planned time can be marked departed with {0}",
     )
     @EnumSource(names = ["OTHER_WORK", "TRAINING"])
     fun testStaffDepartureBeforePlanStartWithAllowedType(type: StaffAttendanceType) {
@@ -769,7 +769,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -800,7 +800,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
 
     @ParameterizedTest(
         name =
-            "Employee departing 20 minutes before planned time cannot be marked departed with {0}"
+            "Employee departing 20 minutes before planned time cannot be marked departed with {0}",
     )
     @EnumSource(names = ["PRESENT", "OVERTIME"])
     fun testStaffDepartureBeforePlanStartWithUnallowedType(type: StaffAttendanceType) {
@@ -818,7 +818,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -853,7 +853,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -871,7 +871,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @ParameterizedTest(
-        name = "Employee departing 20 minutes after planned time can be marked departed with {0}"
+        name = "Employee departing 20 minutes after planned time can be marked departed with {0}",
     )
     @EnumSource(names = ["OVERTIME", "JUSTIFIED_CHANGE"])
     fun testStaffDepartureAfterPlanStartWithAllowedType(type: StaffAttendanceType) {
@@ -889,7 +889,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -916,7 +916,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @ParameterizedTest(
-        name = "Employee departing 20 minutes after planned time cannot be marked departed with {0}"
+        name =
+            "Employee departing 20 minutes after planned time cannot be marked departed with {0}",
     )
     @EnumSource(names = ["PRESENT", "OTHER_WORK", "TRAINING"])
     fun testStaffDepartureAfterPlanStartWithUnallowedType(type: StaffAttendanceType) {
@@ -934,7 +935,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -969,7 +970,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -1074,7 +1075,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
 
     @ParameterizedTest(
         name =
-            "Employee returning from other work cannot be marked arrived {0} minutes before the other work started"
+            "Employee returning from other work cannot be marked arrived {0} minutes before the other work started",
     )
     @ValueSource(longs = [0, 10])
     fun testStaffArrivalNotAfterOngoingOtherWorkStart(minutesBeforeOtherWorkStart: Long) {
@@ -1092,7 +1093,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employee.id,
                     startTime = plannedStart,
                     endTime = plannedEnd,
-                )
+                ),
             )
         }
 
@@ -1169,7 +1170,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 departed = null,
                                 type = StaffAttendanceType.PRESENT,
                                 hasStaffOccupancyEffect = true,
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1216,7 +1217,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 departed = now,
                                 type = StaffAttendanceType.JUSTIFIED_CHANGE,
                                 hasStaffOccupancyEffect = false,
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1272,7 +1273,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     departedAutomatically = false,
                     modifiedAt = now,
                     modifiedBy = mobileUser.evakaUserId,
-                )
+                ),
             )
         }
         val staffAttendance2Id = db.transaction { tx ->
@@ -1288,7 +1289,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     departedAutomatically = false,
                     modifiedAt = now,
                     modifiedBy = mobileUser.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -1345,7 +1346,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             departed = null,
                             type = StaffAttendanceType.TRAINING,
                             hasStaffOccupancyEffect = false,
-                        )
+                        ),
                     ),
             )
 
@@ -1393,7 +1394,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 departed = now,
                                 type = StaffAttendanceType.PRESENT,
                                 hasStaffOccupancyEffect = true,
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1419,7 +1420,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 departed = now.plusHours(2),
                                 type = StaffAttendanceType.PRESENT,
                                 hasStaffOccupancyEffect = false,
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1444,7 +1445,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
-                        )
+                        ),
                     ),
             )
 
@@ -1478,7 +1479,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
-                        )
+                        ),
                     ),
             )
 
@@ -1544,7 +1545,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
-                        )
+                        ),
                     ),
             )
 
@@ -1590,7 +1591,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
-                        )
+                        ),
                     ),
             )
 
@@ -1624,7 +1625,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             departed = now.minusMinutes(1),
                             type = StaffAttendanceType.TRAINING,
                             hasStaffOccupancyEffect = false,
-                        )
+                        ),
                     ),
             )
 
@@ -1658,7 +1659,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
-                        )
+                        ),
                     ),
             )
 

@@ -101,11 +101,11 @@ data class PreschoolAssistanceUpdate(
     fun validate() {
         if (level.minStartDate != null && validDuring.start < level.minStartDate)
             throw BadRequest(
-                "Preschool assistance level $level cannot start before ${level.minStartDate}"
+                "Preschool assistance level $level cannot start before ${level.minStartDate}",
             )
         if (level.maxEndDate != null && validDuring.end > level.maxEndDate)
             throw BadRequest(
-                "Preschool assistance level $level cannot end after ${level.maxEndDate}"
+                "Preschool assistance level $level cannot end after ${level.maxEndDate}",
             )
     }
 }

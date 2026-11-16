@@ -99,7 +99,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     headOfChild = fridgeHeadOfChild.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             val placementId =
@@ -109,7 +109,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insertServiceNeedOptions()
             tx.insertServiceNeed(
@@ -136,7 +136,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today(),
-                )
+                ),
             )
 
             it.insert(
@@ -145,7 +145,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().plusDays(1),
                     validTo = clock.today().plusMonths(6),
-                )
+                ),
             )
         }
 
@@ -161,7 +161,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
-                )
+                ),
             )
         }
 
@@ -189,7 +189,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
-                )
+                ),
             )
         }
 
@@ -200,7 +200,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     IncomeNotificationType.INITIAL_EMAIL,
                     expirationDate = clock.today().plusWeeks(4),
                     deadline = null,
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -216,7 +216,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     UPDATE daycare
                     SET provider_type = 'MUNICIPAL', invoiced_by_municipality = false
                     WHERE id = ${bind(daycare.id)}
-                    """
+                    """,
                 )
             }
 
@@ -226,7 +226,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
-                )
+                ),
             )
         }
 
@@ -243,7 +243,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     UPDATE daycare
                     SET provider_type = 'PRIVATE_SERVICE_VOUCHER', invoiced_by_municipality = false
                     WHERE id = ${bind(daycare.id)}
-                    """
+                    """,
                 )
             }
 
@@ -253,7 +253,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
-                )
+                ),
             )
         }
 
@@ -274,7 +274,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
-                )
+                ),
             )
 
             val partnershipId = PartnershipId(UUID.randomUUID())
@@ -287,7 +287,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     clock.today(),
                     clock.today(),
                     clock.now(),
-                )
+                ),
             )
             it.insert(
                 DevFridgePartner(
@@ -298,7 +298,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     clock.today(),
                     clock.today(),
                     clock.now(),
-                )
+                ),
             )
         }
 
@@ -323,7 +323,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
-                )
+                ),
             )
 
             val partnershipId = PartnershipId(UUID.randomUUID())
@@ -336,7 +336,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     clock.today(),
                     clock.today(),
                     clock.now(),
-                )
+                ),
             )
             it.insert(
                 DevFridgePartner(
@@ -347,7 +347,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     clock.today(),
                     null,
                     clock.now(),
-                )
+                ),
             )
         }
 
@@ -369,7 +369,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().minusDays(2),
-                )
+                ),
             )
         }
 
@@ -387,7 +387,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
 
             it.insert(
@@ -396,7 +396,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     data = createGrossIncome(incomeExpirationDate.plusDays(1)),
                     status = IncomeStatementStatus.SENT,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -414,7 +414,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
 
             it.insert(
@@ -423,7 +423,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     data = createGrossIncome(incomeExpirationDate.plusDays(1)),
                     status = IncomeStatementStatus.HANDLING,
                     handlerId = null,
-                )
+                ),
             )
         }
 
@@ -444,7 +444,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
 
             it.insert(
@@ -455,7 +455,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     status = IncomeStatementStatus.HANDLED,
                     handlerId = employee.id,
                     handledAt = clock.now(),
-                )
+                ),
             )
         }
 
@@ -473,7 +473,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
 
             it.insert(
@@ -482,7 +482,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChild.id,
                     data = createGrossIncome(incomeExpirationDate.plusDays(1)),
                     status = IncomeStatementStatus.SENT,
-                )
+                ),
             )
         }
 
@@ -499,7 +499,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = expirationDate,
-                )
+                ),
             )
 
             // The placement ends on the same day as the income, and there is no billable placement
@@ -507,7 +507,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             // so no notification should be sent
             it.execute {
                 sql(
-                    "UPDATE placement SET end_date = ${bind(expirationDate)} WHERE child_id = ${bind(testChild.id)}"
+                    "UPDATE placement SET end_date = ${bind(expirationDate)} WHERE child_id = ${bind(testChild.id)}",
                 )
             }
         }
@@ -519,7 +519,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE placement SET end_date = ${bind(expirationDate)} + INTERVAL '1 day' WHERE child_id = ${bind(testChild.id)}"
+                    "UPDATE placement SET end_date = ${bind(expirationDate)} + INTERVAL '1 day' WHERE child_id = ${bind(testChild.id)}",
                 )
             }
         }
@@ -536,12 +536,12 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusDays(13),
-                )
+                ),
             )
 
             it.execute {
                 sql(
-                    "UPDATE service_need_option SET fee_coefficient = 0 WHERE id = ${bind(snDaycareContractDays15.id)}"
+                    "UPDATE service_need_option SET fee_coefficient = 0 WHERE id = ${bind(snDaycareContractDays15.id)}",
                 )
             }
         }
@@ -558,7 +558,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
-                )
+                ),
             )
         }
 
@@ -569,8 +569,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 .content
                 .text
                 .contains(
-                    "Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain"
-                )
+                    "Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain",
+                ),
         )
         // A check that no new income has yet been generated (it is generated only after the third
         // email)
@@ -598,7 +598,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusDays(6),
-                )
+                ),
             )
         }
 
@@ -609,14 +609,14 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 .content
                 .text
                 .contains(
-                    "Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain"
-                )
+                    "Varhaiskasvatuksen asiakasmaksun tai palvelusetelin omavastuuosuuden perusteena olevat tulotiedot tarkistetaan vuosittain",
+                ),
         )
 
         val secondMails = getEmails()
         assertEquals(1, secondMails.size)
         assertTrue(
-            secondMails[0].content.text.contains("Ette ole vielä toimittaneet uusia tulotietoja")
+            secondMails[0].content.text.contains("Ette ole vielä toimittaneet uusia tulotietoja"),
         )
 
         // A check that no new income has yet been generated (it is generated only after the third
@@ -645,7 +645,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     validFrom = expirationDay.minusMonths(1),
                     validTo = expirationDay,
                     effect = IncomeEffect.INCOME,
-                )
+                ),
             )
 
             it.createIncomeNotification(
@@ -684,7 +684,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
                     temporaryFeeSiblingPartDay = 800,
-                )
+                ),
             )
         }
 
@@ -694,7 +694,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             mails[0]
                 .content
                 .text
-                .contains("Seuraava asiakasmaksunne määräytyy korkeimman maksuluokan mukaan")
+                .contains("Seuraava asiakasmaksunne määräytyy korkeimman maksuluokan mukaan"),
         )
 
         assertEquals(0, getEmails().size)
@@ -753,7 +753,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insertServiceNeed(
                 placementId = placementId,
@@ -772,7 +772,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today().plusWeeks(4),
-                )
+                ),
             )
         }
 

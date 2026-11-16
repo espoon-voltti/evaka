@@ -82,7 +82,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     fun registerMeters(registry: MeterRegistry) = pools.forEach { it.registerMeters(registry) }
 
     inline fun <reified P : T> registerHandler(
-        noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit
+        noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit,
     ) =
         registerHandler(AsyncJobType(P::class)) { db, clock, msg, _ ->
             db.connect { handler(it, clock, msg) }
@@ -90,7 +90,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     inline fun <reified P : T> registerHandler(
         noinline handler:
-            (db: Database.Connection, clock: EvakaClock, msg: P, remainingAttempts: Int) -> Unit
+            (db: Database.Connection, clock: EvakaClock, msg: P, remainingAttempts: Int) -> Unit,
     ) =
         registerHandler(AsyncJobType(P::class)) { db, clock, msg, remainingAttempts ->
             db.connect { handler(it, clock, msg, remainingAttempts) }

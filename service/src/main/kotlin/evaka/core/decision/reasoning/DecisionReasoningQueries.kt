@@ -36,7 +36,7 @@ SELECT id, collection_type, valid_from, text_fi, text_sv, ready, created_at, mod
 FROM decision_reasoning_generic
 WHERE collection_type = ${bind(collectionType)} AND removed_at IS NULL
 ORDER BY valid_from DESC, created_at DESC
-"""
+""",
         )
     }
         .toList<DecisionGenericReasoningRow>()
@@ -73,7 +73,7 @@ fun Database.Transaction.insertGenericReasoning(
 INSERT INTO decision_reasoning_generic (collection_type, valid_from, text_fi, text_sv, ready, created_at, modified_at)
 VALUES (${bind(request.collectionType)}, ${bind(request.validFrom)}, ${bind(request.textFi)}, ${bind(request.textSv)}, ${bind(request.ready)}, ${bind(now)}, ${bind(now)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -94,7 +94,7 @@ SET valid_from = ${bind(request.validFrom)},
     ready = ${bind(request.ready)},
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)} AND ready = false
-"""
+""",
         )
     }
         .executeAndReturnCount()
@@ -109,7 +109,7 @@ data class DeletedGenericReasoning(
 )
 
 fun Database.Transaction.deleteGenericReasoning(
-    id: DecisionGenericReasoningId
+    id: DecisionGenericReasoningId,
 ): DeletedGenericReasoning =
     createUpdate {
         sql(
@@ -117,7 +117,7 @@ fun Database.Transaction.deleteGenericReasoning(
 DELETE FROM decision_reasoning_generic
 WHERE id = ${bind(id)} AND ready = false
 RETURNING collection_type, valid_from
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -134,7 +134,7 @@ fun Database.Transaction.removeGenericReasoning(
 UPDATE decision_reasoning_generic
 SET removed_at = ${bind(now)}, modified_at = ${bind(now)}
 WHERE id = ${bind(id)} AND removed_at IS NULL
-"""
+""",
         )
     }
         .updateExactlyOne()
@@ -154,14 +154,14 @@ SELECT id, collection_type, language, title, text, removed_at, created_at, modif
 FROM decision_reasoning_individual
 WHERE collection_type = ${bind(collectionType)} AND ${predicate(languageFilter)}
 ORDER BY created_at DESC
-"""
+""",
         )
     }
         .toList<DecisionIndividualReasoning>()
 }
 
 fun Database.Read.getIndividualReasoningSelectionsForDecision(
-    decisionId: DecisionId
+    decisionId: DecisionId,
 ): List<DecisionIndividualReasoning> = createQuery {
     sql(
         """
@@ -173,20 +173,20 @@ WHERE EXISTS (
     WHERE link.decision_id = ${bind(decisionId)} AND link.reasoning_id = decision_reasoning_individual.id
 )
 ORDER BY created_at DESC
-"""
+""",
     )
 }
     .toList<DecisionIndividualReasoning>()
 
 fun Database.Read.getIndividualReasoning(
-    id: DecisionIndividualReasoningId
+    id: DecisionIndividualReasoningId,
 ): DecisionIndividualReasoning? = createQuery {
     sql(
         """
 SELECT id, collection_type, language, title, text, removed_at, created_at, modified_at
 FROM decision_reasoning_individual
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull<DecisionIndividualReasoning>()
@@ -200,7 +200,7 @@ fun Database.Transaction.insertIndividualReasoning(
 INSERT INTO decision_reasoning_individual (collection_type, language, title, text, created_at, modified_at)
 VALUES (${bind(request.collectionType)}, ${bind(request.language)}, ${bind(request.title)}, ${bind(request.text)}, ${bind(now)}, ${bind(now)})
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -216,7 +216,7 @@ fun Database.Transaction.removeIndividualReasoning(
 UPDATE decision_reasoning_individual
 SET removed_at = ${bind(now)}, modified_at = ${bind(now)}
 WHERE id = ${bind(id)} AND removed_at IS NULL
-"""
+""",
         )
     }
         .executeAndReturnCount()

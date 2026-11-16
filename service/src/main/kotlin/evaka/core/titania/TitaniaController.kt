@@ -37,7 +37,7 @@ class TitaniaController(private val titaniaService: TitaniaService) {
                     TitaniaErrorDetail(
                         errorcode = TitaniaError.CONFLICTING_SHIFTS,
                         message = "Conflicting working time events found",
-                    )
+                    ),
                 )
             }
             result.updateWorkingTimeEventsResponse

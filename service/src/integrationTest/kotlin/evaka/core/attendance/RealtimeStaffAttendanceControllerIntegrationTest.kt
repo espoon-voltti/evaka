@@ -64,10 +64,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             tx.syncDaycareGroupAcl(daycare.id, staff.id, listOf(group1.id), now)
 
             tx.upsertOccupancyCoefficient(
-                OccupancyCoefficientUpsert(daycare.id, staff.id, BigDecimal(7))
+                OccupancyCoefficientUpsert(daycare.id, staff.id, BigDecimal(7)),
             )
             tx.upsertOccupancyCoefficient(
-                OccupancyCoefficientUpsert(daycare2.id, staff.id, BigDecimal(7))
+                OccupancyCoefficientUpsert(daycare2.id, staff.id, BigDecimal(7)),
             )
         }
     }
@@ -212,7 +212,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             departed = now.minusHours(2),
                             type = StaffAttendanceType.TRAINING,
                             hasStaffOccupancyEffect = false,
-                        )
+                        ),
                     ),
             ),
         )
@@ -267,7 +267,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                                 departed = now.minusHours(2),
                                 type = StaffAttendanceType.TRAINING,
                                 hasStaffOccupancyEffect = false,
-                            )
+                            ),
                         ),
                 ),
             )
@@ -294,7 +294,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             departed = now.minusHours(2),
                             type = type,
                             hasStaffOccupancyEffect = false,
-                        )
+                        ),
                     ),
             ),
         )
@@ -335,7 +335,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             departed = departed,
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = hasStaffOccupancyEffect,
-                        )
+                        ),
                     ),
             ),
         )
@@ -363,7 +363,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             hasStaffOccupancyEffect = false,
                             arrived = arrived,
                             departed = departed,
-                        )
+                        ),
                     ),
             ),
         )

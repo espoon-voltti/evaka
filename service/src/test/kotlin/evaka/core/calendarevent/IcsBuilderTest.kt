@@ -87,7 +87,8 @@ class IcsBuilderTest {
         assertTrue(result.contains("DTEND;TZID=Europe/Helsinki:20260624T103000"))
         // VTIMEZONE must be declared before it is referenced
         assertTrue(
-            result.indexOf("END:VTIMEZONE") < result.indexOfFirst { it.startsWith("DTSTART;TZID=") }
+            result.indexOf("END:VTIMEZONE") <
+                result.indexOfFirst { it.startsWith("DTSTART;TZID=") },
         )
     }
 

@@ -122,7 +122,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevDaycareGroupPlacement(
                         daycarePlacementId = it.insertTestPlacement(daycare),
                         daycareGroupId = it.insertTestGroup(daycare),
-                    )
+                    ),
                 )
             }
         }
@@ -137,7 +137,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = it.insertTestChild(),
                     date = LocalDate.of(2020, 1, 1),
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
         assertSingleRowContainingId(EspooBi.getAbsences, id)
@@ -168,7 +168,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = DecisionType.DAYCARE,
                     unitId = daycare,
                     status = DecisionStatus.ACCEPTED,
-                )
+                ),
             )
         }
         assertSingleRowContainingId(EspooBi.getDecisions, id)
@@ -192,7 +192,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     optionId = it.insertTestServiceNeedOption(),
                     confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
         assertSingleRowContainingId(EspooBi.getServiceNeeds, id)
@@ -225,7 +225,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     id = PedagogicalDocumentId(UUID.randomUUID()),
                     childId = it.insertTestChild(),
                     description = "Test",
-                )
+                ),
             )
         }
         assertSingleRowContainingId(EspooBi.getPedagogicalDocuments, id)
@@ -258,7 +258,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevOtherAssistanceMeasure(
                     childId = it.insertTestChild(),
                     type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
-                )
+                ),
             )
         }
         assertSingleRowContainingId(EspooBi.getOtherAssistanceMeasureEntries, id)
@@ -328,7 +328,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         insert(DevPlacement(childId = insertTestChild(), unitId = daycare ?: insertTestDaycare()))
 
     private fun Database.Transaction.insertTestApplicationWithForm(
-        daycare: DaycareId? = null
+        daycare: DaycareId? = null,
     ): ApplicationId =
         insertTestApplication(
             type = ApplicationType.DAYCARE,
@@ -375,7 +375,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     validFrom = LocalDate.of(2000, 1, 1),
                     validTo = null,
                     showForCitizen = true,
-                )
+                ),
             )
         }
 
@@ -414,7 +414,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     finalFee = 10_000,
                                     feeAlterations = emptyList(),
                                     childIncome = null,
-                                )
+                                ),
                             ),
                         headOfFamilyId = insert(DevPerson(), DevPersonType.RAW_ROW),
                         validDuring = FiniteDateRange.ofMonth(2019, Month.JANUARY),
@@ -427,8 +427,8 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         familySize = 1,
                         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(1),
                         difference = setOf(FeeDecisionDifference.PLACEMENT),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
@@ -479,8 +479,8 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         assistanceNeedCoefficient = BigDecimal.ONE,
                         voucherValue = 1,
                         difference = setOf(VoucherValueDecisionDifference.PLACEMENT),
-                    )
-                )
+                    ),
+                ),
             )
         }
 }

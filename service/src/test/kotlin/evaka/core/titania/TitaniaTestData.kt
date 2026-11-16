@@ -77,7 +77,7 @@ internal val titaniaUpdateRequestValidExampleData =
                                                             code = "V",
                                                             description = "Vapaapaiva",
                                                         ),
-                                                    )
+                                                    ),
                                             ),
                                             payrollItems =
                                                 TitaniaPayrollItems(
@@ -90,14 +90,14 @@ internal val titaniaUpdateRequestValidExampleData =
                                                                 value = "90",
                                                                 unit =
                                                                     TitaniaPayrollItemUnit.MINUTE,
-                                                            )
-                                                        )
+                                                            ),
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
-                )
+                ),
             ),
     )
 
@@ -127,15 +127,15 @@ internal val titaniaUpdateRequestValidMinimalData =
                                                     event =
                                                         listOf(
                                                             TitaniaWorkingTimeEvent(
-                                                                date = LocalDate.of(2010, 1, 1)
-                                                            )
-                                                        )
+                                                                date = LocalDate.of(2010, 1, 1),
+                                                            ),
+                                                        ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
-                )
+                ),
             ),
     )
 
@@ -164,7 +164,7 @@ internal val titaniaGetRequestValidExampleData =
                                 name = "HOPO HESSU",
                             ),
                         ),
-                )
+                ),
             ),
     )
 
@@ -197,7 +197,7 @@ internal val titaniaGetResponseValidExampleData =
                                                     beginReasonCode = "YT",
                                                     endReasonCode = "YT",
                                                 ),
-                                            )
+                                            ),
                                     ),
                             ),
                             TitaniaStampedPersonResponse(
@@ -224,10 +224,10 @@ internal val titaniaGetResponseValidExampleData =
                                                     endTime = "1715",
                                                     endReasonCode = null,
                                                 ),
-                                            )
+                                            ),
                                     ),
                             ),
                         ),
-                )
-            )
+                ),
+            ),
     )

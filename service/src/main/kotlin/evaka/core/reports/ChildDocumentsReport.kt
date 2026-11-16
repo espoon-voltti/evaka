@@ -115,7 +115,7 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
                     SELECT id, name, type
                     FROM document_template
                     WHERE validity @> ${bind(clock.today())} AND published AND type = ANY(${bind(templateTypes)})
-                """
+                """,
                             )
                         }
                         .toList<ChildDocumentsReportTemplate>()
@@ -179,7 +179,7 @@ LEFT JOIN valid_children vc ON d.id = vc.unit_id AND dg.id = vc.group_id
 LEFT JOIN child_document cd ON vc.child_id = cd.child_id AND cd.template_id = ANY(${bind(templateIds)})
 WHERE d.id = ANY(${bind(unitIds)})
 GROUP BY d.id, d.name, dg.id, dg.name
-        """
+        """,
             )
         }
             .toList<DataRow>()

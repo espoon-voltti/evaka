@@ -69,7 +69,7 @@ class FamilyController(
                                 listOfNotNull(
                                     family.headOfFamily.personId,
                                     family.partner?.personId,
-                                ) + family.children.map { child -> child.personId }
+                                ) + family.children.map { child -> child.personId },
                             )
                         }
                     if (includeIncome) {
@@ -213,7 +213,7 @@ WITH deleted_contact AS (
 UPDATE family_contact SET priority = priority - 1
 FROM deleted_contact
 WHERE child_id = ${bind(childId)} AND priority > old_priority
-"""
+""",
             )
         }
         .execute()
@@ -225,7 +225,7 @@ WHERE child_id = ${bind(childId)} AND priority > old_priority
                 """
 UPDATE family_contact SET priority = priority + 1 WHERE child_id = ${bind(childId)} AND priority >= ${bind(priority)};
 INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (${bind(childId)}, ${bind(contactPersonId)}, ${bind(priority)});
-"""
+""",
             )
         }
         .execute()
@@ -264,7 +264,7 @@ SELECT EXISTS (
             )
         )
 )
-"""
+""",
         )
     }
         .exactlyOne<Boolean>()
@@ -320,7 +320,7 @@ SELECT
 FROM contact
 JOIN person p USING (id)
 LEFT JOIN family_contact ON family_contact.contact_person_id = contact.id AND family_contact.child_id = ${bind(childId)}
-"""
+""",
         )
     }
     .toList<FamilyContact>()

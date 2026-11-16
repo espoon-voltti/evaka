@@ -240,35 +240,35 @@ class VardaClient(
     val rateLimiter = StrictRateLimiter(ratePerSec)
 
     override fun getOrCreateHenkilo(
-        body: VardaReadClient.GetOrCreateHenkiloRequest
+        body: VardaReadClient.GetOrCreateHenkiloRequest,
     ): VardaReadClient.HenkiloResponse = post(baseUrl.resolve("v1/henkilot/"), body)
 
     override fun createLapsi(
-        body: VardaWriteClient.CreateLapsiRequest
+        body: VardaWriteClient.CreateLapsiRequest,
     ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/lapset/"), body)
 
     override fun getLapsi(url: URI): VardaReadClient.LapsiResponse = get(url)
 
     override fun createVarhaiskasvatuspaatos(
-        body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest
+        body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest,
     ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/varhaiskasvatuspaatokset/"), body)
 
     override fun getVarhaiskasvatuspaatoksetByLapsi(
-        lapsiUrl: URI
+        lapsiUrl: URI,
     ): List<VardaReadClient.VarhaiskasvatuspaatosResponse> =
         getAllPages(lapsiUrl.resolve("varhaiskasvatuspaatokset/"))
 
     override fun createVarhaiskasvatussuhde(
-        body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest
+        body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest,
     ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/varhaiskasvatussuhteet/"), body)
 
     override fun getVarhaiskasvatussuhteetByLapsi(
-        lapsiUrl: URI
+        lapsiUrl: URI,
     ): List<VardaReadClient.VarhaiskasvatussuhdeResponse> =
         getAllPages(lapsiUrl.resolve("varhaiskasvatussuhteet/"))
 
     override fun createMaksutieto(
-        body: VardaWriteClient.CreateMaksutietoRequest
+        body: VardaWriteClient.CreateMaksutietoRequest,
     ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/maksutiedot/"), body)
 
     override fun getMaksutiedotByLapsi(lapsiUrl: URI): List<VardaReadClient.MaksutietoResponse> =
@@ -288,7 +288,7 @@ class VardaClient(
 
         val escapedOid = URLEncoder.encode(oid, Charsets.UTF_8)
         return getAllPages<FindToimipaikkaResponse>(
-                baseUrl.resolve("v1/toimipaikat/?organisaatio_oid=$escapedOid")
+                baseUrl.resolve("v1/toimipaikat/?organisaatio_oid=$escapedOid"),
             )
             .singleOrNull() ?: error("Toimipaikka not found with oid $oid")
     }

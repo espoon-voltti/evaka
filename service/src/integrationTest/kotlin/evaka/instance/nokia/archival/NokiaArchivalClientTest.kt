@@ -483,7 +483,8 @@ class NokiaArchivalClientTest : AbstractNokiaIntegrationTest() {
                 testChildInfo,
                 testChildDocumentDecisionDetails.let {
                     it.copy(
-                        decision = it.decision!!.copy(status = ChildDocumentDecisionStatus.REJECTED)
+                        decision =
+                            it.decision!!.copy(status = ChildDocumentDecisionStatus.REJECTED),
                     )
                 },
                 testDocumentMetadataChildDocument,

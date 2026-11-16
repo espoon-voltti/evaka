@@ -21,7 +21,7 @@ fun generateMcpSecret(): String {
 /** Returns the SHA-256 hash of the given string as base64url. Used to store tokens at rest. */
 fun sha256Base64Url(value: String): String =
     base64Url.encodeToString(
-        MessageDigest.getInstance("SHA-256").digest(value.toByteArray(Charsets.US_ASCII))
+        MessageDigest.getInstance("SHA-256").digest(value.toByteArray(Charsets.US_ASCII)),
     )
 
 /** PKCE S256: BASE64URL(SHA256(ASCII(code_verifier))) == code_challenge */

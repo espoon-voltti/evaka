@@ -25,7 +25,7 @@ enum class TurkuScheduledJob(
     PlanDwExportJobs(
         { jobs, db, clock -> jobs.planDwExportJobs(db, clock, DwQuery.entries) },
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(20, 0))),
-    )
+    ),
 }
 
 class TurkuScheduledJobs(

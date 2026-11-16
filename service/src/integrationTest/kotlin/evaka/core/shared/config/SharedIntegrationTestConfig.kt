@@ -124,13 +124,13 @@ private fun migrateDatabase() {
                 setUrl(dbUrl)
                 user = "evaka_migration_local"
                 password = "flyway"
-            }
+            },
         )
         .placeholders(
             mapOf(
                 "application_user" to "evaka_application_local",
                 "migration_user" to "evaka_migration_local",
-            )
+            ),
         )
         .load()
         .run { migrate() }
@@ -144,7 +144,7 @@ private fun createTestDataSource(): TestDataSource {
             db.executeOutsideTransaction { sql("CREATE DATABASE \"$dbName\" OWNER evaka_it") }
             db.executeOutsideTransaction {
                 sql(
-                    "GRANT ALL PRIVILEGES ON DATABASE \"$dbName\" TO evaka_migration_role_local WITH GRANT OPTION"
+                    "GRANT ALL PRIVILEGES ON DATABASE \"$dbName\" TO evaka_migration_role_local WITH GRANT OPTION",
                 )
             }
         }
@@ -161,7 +161,7 @@ private fun createTestDataSource(): TestDataSource {
                 jdbcUrl = dbUrl
                 username = "evaka_it"
                 password = "evaka_it"
-            }
+            },
         )
     Database(Jdbi.create(pool), noopTracer()).connect { db ->
         db.transaction { tx ->
@@ -194,7 +194,7 @@ class SharedIntegrationTestConfig {
                 .httpClient(DefaultSdkHttpClientBuilder().buildWithDefaults(attrs))
                 .region(Region.US_EAST_1)
                 .serviceConfiguration(
-                    S3Configuration.builder().pathStyleAccessEnabled(true).build()
+                    S3Configuration.builder().pathStyleAccessEnabled(true).build(),
                 )
                 .endpointOverride(env.localS3Url)
                 .credentialsProvider(
@@ -202,8 +202,8 @@ class SharedIntegrationTestConfig {
                         AwsBasicCredentials.create(
                             env.localS3AccessKeyId,
                             env.localS3SecretAccessKey,
-                        )
-                    )
+                        ),
+                    ),
                 )
                 .build()
 
@@ -228,8 +228,8 @@ class SharedIntegrationTestConfig {
             .endpointOverride(env.localS3Url)
             .credentialsProvider(
                 StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(env.localS3AccessKeyId, env.localS3SecretAccessKey)
-                )
+                    AwsBasicCredentials.create(env.localS3AccessKeyId, env.localS3SecretAccessKey),
+                ),
             )
             .build()
 
@@ -292,7 +292,7 @@ class SharedIntegrationTestConfig {
     @Bean
     fun passwordSpecification(): PasswordSpecification =
         DefaultPasswordSpecification(
-            PasswordConstraints.UNCONSTRAINED.copy(minLength = 8, minDigits = 1)
+            PasswordConstraints.UNCONSTRAINED.copy(minLength = 8, minDigits = 1),
         )
 
     @Bean fun särmäClient(): ArchivalClient = SärmäMockClient()
@@ -396,10 +396,11 @@ private class TestActionRuleMapping : ActionRuleMapping {
             Action.Unit.READ_PRESCHOOL_APPLICATION_REPORT -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
-                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER) as ScopedActionRule<in T>
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+                        as ScopedActionRule<in T>,
                 ) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 

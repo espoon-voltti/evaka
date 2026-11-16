@@ -83,7 +83,7 @@ LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to,
 WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
 AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
-"""
+""",
                     )
                 }
                 .map { toFamilyOverviewPerson(incomeTypesProvider, coefficientMultiplierProvider) }
@@ -187,7 +187,7 @@ WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
   AND fc.conflict IS FALSE
 
 ORDER BY date_of_birth, last_name, first_name
-"""
+""",
         )
     }
         .toList {

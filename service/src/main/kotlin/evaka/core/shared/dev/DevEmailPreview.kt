@@ -222,7 +222,7 @@ fun emailPreviewContent(
             provider.discussionSurveyReservationNotification(
                 language,
                 DiscussionSurveyReservationNotificationData(
-                    calendarEventTime = exampleCalendarEventTime()
+                    calendarEventTime = exampleCalendarEventTime(),
                 ),
             )
         }
@@ -231,7 +231,7 @@ fun emailPreviewContent(
             provider.discussionSurveyReservationCancellationNotification(
                 language,
                 DiscussionSurveyReservationNotificationData(
-                    calendarEventTime = exampleCalendarEventTime()
+                    calendarEventTime = exampleCalendarEventTime(),
                 ),
             )
         }
@@ -255,7 +255,7 @@ fun emailPreviewContent(
                     eventTitle = HtmlSafe("VASU-keskustelut 2029 syksy"),
                     eventDescription =
                         HtmlSafe(
-                            "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki."
+                            "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki.",
                         ),
                 ),
             )

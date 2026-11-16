@@ -126,7 +126,7 @@ fun freezeVoucherValueReportRows(
     val voucherValueReportSnapshotId =
         tx.createUpdate {
                 sql(
-                    "INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (${bind(month)}, ${bind(year)}, ${bind(takenAt)}) RETURNING id"
+                    "INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (${bind(month)}, ${bind(year)}, ${bind(takenAt)}) RETURNING id",
                 )
             }
             .executeAndReturnGeneratedKeys()
@@ -137,7 +137,7 @@ fun freezeVoucherValueReportRows(
             """
 INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period, type)
 VALUES (${bind(voucherValueReportSnapshotId)}, ${bind { it.serviceVoucherDecisionId }}, ${bind { it.realizedAmount }}, ${bind { it.realizedPeriod }}, ${bind { it.type }})
-"""
+""",
         )
     }
 }
@@ -165,7 +165,7 @@ fun getServiceVoucherReport(
             is AccessControlFilter.Some -> {
                 tx.createQuery {
                         sql(
-                            "SELECT id FROM daycare WHERE ${predicate(unitFilter.forTable("daycare"))}"
+                            "SELECT id FROM daycare WHERE ${predicate(unitFilter.forTable("daycare"))}",
                         )
                     }
                     .toSet<DaycareId>()
@@ -256,7 +256,7 @@ private data class RowGrouping(
 )
 
 fun removeRefundsAndCorrectionsThatCancelEachOthersOut(
-    rows: List<ServiceVoucherValueRow>
+    rows: List<ServiceVoucherValueRow>,
 ): List<ServiceVoucherValueRow> {
     return rows
         .groupBy {
@@ -311,7 +311,7 @@ private fun Database.Read.getServiceVoucherValues(
     SELECT coalesce(min(valid_from), ${bind(reportDate)})
     FROM voucher_value_decision
     WHERE status != 'DRAFT'
-    """
+    """,
         )
     }
         .exactlyOne<LocalDate>()
@@ -518,7 +518,7 @@ LEFT JOIN LATERAL (
     GROUP BY p.child_id
 ) child_group ON true
 WHERE (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)}) AND (${bind(unitIds)}::uuid[] IS NULL OR unit.id = ANY(${bind(unitIds)}))
-"""
+""",
             )
         }
         .toList<ServiceVoucherValueRow>()
@@ -531,14 +531,14 @@ WHERE (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)}) AND (${bind(u
                 { it.type },
                 { it.realizedPeriod.start },
                 { it.realizedPeriod.end },
-            )
+            ),
         )
 }
 
 private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
     return createQuery {
         sql(
-            "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= ${bind(year)} AND month >= ${bind(month)} LIMIT 1"
+            "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= ${bind(year)} AND month >= ${bind(month)} LIMIT 1",
         )
     }
         .exactlyOneOrNull<HelsinkiDateTime>()
@@ -550,7 +550,7 @@ data class MonthOfYear(val year: Int, val month: Int)
 fun Database.Read.getLastSnapshotMonth(): MonthOfYear? {
     return createQuery {
         sql(
-            "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1"
+            "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1",
         )
     }
         .exactlyOneOrNull<MonthOfYear>()
@@ -614,7 +614,7 @@ LEFT JOIN LATERAL (
 WHERE sn.year = ${bind(year)} AND sn.month = ${bind(month)}
 AND (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)})
 AND (${bind(unitIds)}::uuid[] IS NULL OR unit.id = ANY(${bind(unitIds)}))
-"""
+""",
         )
     }
         .toList<ServiceVoucherValueRow>()

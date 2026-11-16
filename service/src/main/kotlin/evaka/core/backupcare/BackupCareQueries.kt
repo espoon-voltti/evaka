@@ -32,7 +32,7 @@ ON daycare.id = unit_id
 LEFT JOIN daycare_group
 ON daycare_group.id = group_id
 WHERE child_id = ${bind(childId)}
-"""
+""",
     )
 }
     .toList<ChildBackupCare>()
@@ -77,7 +77,7 @@ JOIN LATERAL (
 ) placement ON TRUE
 WHERE unit_id = ${bind(daycareId)}
 AND daterange(backup_care.start_date, backup_care.end_date, '[]') && ${bind(period)}
-"""
+""",
     )
 }
     .toList<UnitBackupCare>()
@@ -93,7 +93,7 @@ SELECT child_id FROM backup_care
 WHERE unit_id = ${bind(daycareId)}
   AND group_id = ${bind(groupId)}
   AND daterange(start_date, end_date, '[]') && ${bind(period)}
-"""
+""",
     )
 }
     .toList<ChildId>()
@@ -105,7 +105,7 @@ fun Database.Read.getBackupCare(id: BackupCareId): BackupCareInfo? = createQuery
         """
 SELECT child_id, unit_id, daterange(start_date, end_date, '[]') period FROM backup_care
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull<BackupCareInfo>()
@@ -132,7 +132,7 @@ VALUES (
   ${bind(backupCare.period.end)}
 )
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -155,7 +155,7 @@ SET
   modified_by = ${bind(user)},
   modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
 
@@ -164,7 +164,7 @@ fun Database.Transaction.deleteBackupCare(id: BackupCareId) = execute {
         """
 DELETE FROM backup_care
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
 
@@ -172,7 +172,7 @@ fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId = createQuery 
     sql(
         """
 SELECT child_id FROM backup_care WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOne<ChildId>()
@@ -187,7 +187,7 @@ fun Database.Transaction.recreateBackupCares(
         DateSet.of(
             getPlacementsForChild(childId).asSequence().map {
                 FiniteDateRange(it.startDate, it.endDate)
-            }
+            },
         )
     val placementSpan = placementDates.spanningRange()
     val backupCares = getBackupCaresForChild(childId)

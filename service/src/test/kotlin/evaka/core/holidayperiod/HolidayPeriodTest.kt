@@ -175,11 +175,11 @@ class HolidayPeriodTest {
                         range =
                             FiniteDateRange(
                                 reservationDeadline.plusDays(
-                                    calendarOpenBeforePlacementDays.toLong() + 1
+                                    calendarOpenBeforePlacementDays.toLong() + 1,
                                 ),
                                 dec31,
                             ),
-                    )
+                    ),
                 ),
                 calendarOpenBeforePlacementDays,
             ),

@@ -127,7 +127,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                         amount = 50,
                         isAbsolute = false,
                         effect = -14400,
-                    )
+                    ),
                 ),
         )
 

@@ -83,7 +83,7 @@ fun Database.Transaction.insertApplication(
 INSERT INTO application (type, status, guardian_id, child_id, origin, created_at, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, modified_at, modified_by, status_modified_at, status_modified_by, confidential)
 VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(now)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)}, ${bind(createdBy)}, ${bind(now)}, ${bind(createdBy)}, NULL)
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -106,7 +106,7 @@ SELECT EXISTS(
         hidefromguardian = false AND
         status = ANY ('{CREATED,SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
 )
-                """
+                """,
     )
 }
     .exactlyOne()
@@ -147,7 +147,7 @@ fun Database.Read.activePlacementExists(
                     child_id = ${bind(childId)} AND
                     type = ANY(${bind(placementTypes)}) AND
                     ${bind(today)} <= end_date
-                """
+                """,
         )
     }
         .toList<Int>()
@@ -190,7 +190,7 @@ fun Database.Read.fetchApplicationSummaries(
         PredicateSql {
             where(
                 // value is intentionally inlined
-                "coalesce(a.document->'careDetails'->>'assistanceNeeded', a.document->'clubCare'->>'assistanceNeeded')::boolean = $value"
+                "coalesce(a.document->'careDetails'->>'assistanceNeeded', a.document->'clubCare'->>'assistanceNeeded')::boolean = $value",
             )
         }
     }
@@ -216,7 +216,7 @@ fun Database.Read.fetchApplicationSummaries(
                             (a.document -> 'additionalDetails' ->> 'dietType') != '' OR 
                             (a.document -> 'additionalDetails' ->> 'otherInfo') != '' OR 
                             (a.document -> 'additionalDetails' ->> 'allergyType') != ''
-                    """
+                    """,
                                 )
                             }
                         }
@@ -262,12 +262,12 @@ fun Database.Read.fetchApplicationSummaries(
                         ApplicationBasis.HAS_ATTACHMENTS -> {
                             PredicateSql {
                                 where(
-                                    "((a.document ->> 'urgent')::boolean = true OR (a.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
+                                    "((a.document ->> 'urgent')::boolean = true OR (a.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0",
                                 )
                             }
                         }
                     }
-                }
+                },
             ),
             if (type != ApplicationTypeToggle.ALL) PredicateSql { where("a.type = ${bind(type)}") }
             else null,
@@ -335,18 +335,18 @@ fun Database.Read.fetchApplicationSummaries(
                                 preparatory?.let {
                                     PredicateSql {
                                         where(
-                                            "(a.document->'careDetails'->>'preparatory')::boolean = $preparatory"
+                                            "(a.document->'careDetails'->>'preparatory')::boolean = $preparatory",
                                         )
                                     }
                                 } ?: PredicateSql.alwaysTrue(),
                                 PredicateSql {
                                     where(
-                                        "(a.document->>'connectedDaycare')::boolean = $connectedDaycare"
+                                        "(a.document->>'connectedDaycare')::boolean = $connectedDaycare",
                                     )
                                 },
                                 PredicateSql {
                                     where(
-                                        "a.additionalDaycareApplication = $additionalDaycareApplication"
+                                        "a.additionalDaycareApplication = $additionalDaycareApplication",
                                     )
                                 },
                                 serviceNeedOptionType?.let { pt ->
@@ -354,7 +354,7 @@ fun Database.Read.fetchApplicationSummaries(
                                         PlacementType.PRESCHOOL_DAYCARE -> {
                                             PredicateSql {
                                                 where(
-                                                    "(a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR a.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
+                                                    "(a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR a.document->'serviceNeedOption'->>'validPlacementType' IS NULL)",
                                                 )
                                             }
                                         }
@@ -362,21 +362,21 @@ fun Database.Read.fetchApplicationSummaries(
                                         PlacementType.PRESCHOOL_CLUB -> {
                                             PredicateSql {
                                                 where(
-                                                    "a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
+                                                    "a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'",
                                                 )
                                             }
                                         }
 
                                         else -> {
                                             throw Error(
-                                                "Unsupported preschool type: $serviceNeedOptionType"
+                                                "Unsupported preschool type: $serviceNeedOptionType",
                                             )
                                         }
                                     }
                                 } ?: PredicateSql.alwaysTrue(),
                             )
                         }
-                    }
+                    },
                 )
             } else null,
             PredicateSql.any(
@@ -391,7 +391,7 @@ fun Database.Read.fetchApplicationSummaries(
             )
                 PredicateSql {
                     where(
-                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), a.dueDate)"
+                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), a.dueDate)",
                     )
                 }
             else null,
@@ -401,7 +401,7 @@ fun Database.Read.fetchApplicationSummaries(
             )
                 PredicateSql {
                     where(
-                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), (a.document ->> 'preferredStartDate')::date)"
+                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), (a.document ->> 'preferredStartDate')::date)",
                     )
                 }
             else null,
@@ -411,7 +411,7 @@ fun Database.Read.fetchApplicationSummaries(
             )
                 PredicateSql {
                     where(
-                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), a.sentdate)"
+                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), a.sentdate)",
                     )
                 }
             else null,
@@ -439,7 +439,7 @@ fun Database.Read.fetchApplicationSummaries(
                 VoucherApplicationFilter.VOUCHER_ONLY -> {
                     PredicateSql {
                         where(
-                            "pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+                            "pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')",
                         )
                     }
                 }
@@ -447,7 +447,7 @@ fun Database.Read.fetchApplicationSummaries(
                 VoucherApplicationFilter.NO_VOUCHER -> {
                     PredicateSql {
                         where(
-                            "NOT pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+                            "NOT pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')",
                         )
                     }
                 }
@@ -617,7 +617,7 @@ fun Database.Read.fetchApplicationSummaries(
         ) sb ON (a.document -> 'apply' ->> 'siblingBasis')::boolean
         WHERE a.status != 'CREATED'::application_status_type AND ${predicate(predicates)}
         $orderBy LIMIT $pageSize OFFSET ${bind((page - 1) * pageSize)}
-        """
+        """,
         )
     }
         .mapToPaged(::PagedApplicationSummaries, pageSize, "total") {
@@ -720,7 +720,7 @@ fun Database.Read.fetchApplicationSummaries(
                     SELECT id, name
                     FROM daycare
                     WHERE id = ANY(${bind(unitIds)})
-                    """
+                    """,
         )
     }
         .toMap { columnPair<DaycareId, String>("id", "name") }
@@ -732,14 +732,14 @@ fun Database.Read.fetchApplicationSummaries(
                     preferredUnits =
                         summary.preferredUnits.map {
                             PreferredUnit(id = it.id, name = unitMap.getOrDefault(it.id, ""))
-                        }
+                        },
                 )
-            }
+            },
     )
 }
 
 fun Database.Read.fetchApplicationSummariesForGuardian(
-    guardianId: PersonId
+    guardianId: PersonId,
 ): List<PersonApplicationSummary> {
     return createQuery {
         sql(
@@ -760,7 +760,7 @@ fun Database.Read.fetchApplicationSummariesForGuardian(
                 WHERE guardianId = ${bind(guardianId)}
                 AND status != 'CREATED'::application_status_type
                 ORDER BY sentDate DESC
-                """
+                """,
         )
     }
         .toList<PersonApplicationSummary>()
@@ -789,7 +789,7 @@ fun Database.Read.fetchApplicationSummariesForChild(
                 AND ${predicate(filter.forTable("a"))}
                 AND status != 'CREATED'::application_status_type
                 ORDER BY sentDate DESC
-                """
+                """,
     )
 }
     .toList<PersonApplicationSummary>()
@@ -834,7 +834,7 @@ WHERE (a.guardian_id = ${bind(citizenId)} OR EXISTS (
 )
 AND NOT a.hidefromguardian AND a.status != 'CANCELLED'
 ORDER BY sentDate DESC
-"""
+""",
     )
 }
     .toList()
@@ -861,7 +861,7 @@ fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): Lis
                 SELECT child.id, first_name, last_name, date_of_birth, social_security_number, duplicate_of
                 FROM foster_parent JOIN person child ON foster_parent.child_id = child.id
                 WHERE parent_id = ${bind(citizenId)} AND valid_during @> ${bind(today)}
-                """
+                """,
         )
     }
         .toList<CitizenChildren>()
@@ -929,7 +929,7 @@ fun Database.Read.fetchApplicationDetails(
                         GROUP BY application_id
                     ) att ON a.id = att.application_id
                     WHERE a.id = ${bind(applicationId)}
-                    """
+                    """,
         )
     }
         .exactlyOneOrNull {
@@ -994,7 +994,7 @@ fun Database.Read.fetchApplicationDetails(
                         SELECT id, name
                         FROM daycare
                         WHERE id = ANY(${bind(unitIds)})
-                        """
+                        """,
             )
         }
             .toMap { columnPair<DaycareId, String>("id", "name") }
@@ -1010,9 +1010,9 @@ fun Database.Read.fetchApplicationDetails(
                                         id = it.id,
                                         name = unitMap.getOrDefault(it.id, ""),
                                     )
-                                }
-                        )
-                )
+                                },
+                        ),
+                ),
         )
     } else {
         return null
@@ -1055,7 +1055,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                     WHERE e = ${bind(unitId)}::text
                 ) AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[])
                 ORDER BY c.last_name, c.first_name
-                """
+                """,
         )
     }
         .toList {
@@ -1105,7 +1105,7 @@ WHERE application.transferapplication
   AND NOT application.document -> 'apply' -> 'preferredUnits' ?? ${bind(unitId.toString())}
   AND placement.unit_id = ${bind(unitId)}
   AND ${bind(date)} BETWEEN placement.start_date AND placement.end_date
-"""
+""",
         )
     }
     .toList<TransferApplicationUnitSummary>()
@@ -1173,7 +1173,7 @@ fun Database.Transaction.updateForm(
 
     execute {
         sql(
-            "UPDATE application SET document = ${bindJson(transformedForm)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+            "UPDATE application SET document = ${bindJson(transformedForm)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}",
         )
     }
 }
@@ -1222,7 +1222,7 @@ fun Database.Transaction.resetCheckedByAdminAndConfidentiality(
                 modified_by = ${bind(modifiedBy)},
                 confidential = ${bind(confidential)}
             WHERE id = ${bind(id)}
-            """
+            """,
         )
     }
 }
@@ -1242,7 +1242,7 @@ fun Database.Transaction.updateApplicationStatus(
             modified_by = ${bind(modifiedBy)},
             modified_at = ${bind(now)}
         WHERE id = ${bind(id)}
-        """
+        """,
     )
 }
 
@@ -1256,7 +1256,7 @@ fun Database.Transaction.updateApplicationDates(
 ) {
     execute {
         sql(
-            "UPDATE application SET sentdate = ${bind(sentDate)}, senttime = ${bind(sentTime)}, duedate = ${bind(dueDate)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+            "UPDATE application SET sentdate = ${bind(sentDate)}, senttime = ${bind(sentTime)}, duedate = ${bind(dueDate)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}",
         )
     }
 }
@@ -1276,7 +1276,7 @@ fun Database.Transaction.updateApplicationFlags(
             modified_at = ${bind(now)},
             modified_by = ${bind(modifiedBy)}
         WHERE id = ${bind(id)}
-        """
+        """,
     )
 }
 
@@ -1293,7 +1293,7 @@ fun Database.Transaction.updateApplicationAllowOtherGuardianAccess(
             modified_at = ${bind(now)},
             modified_by = ${bind(modifiedBy)}
         WHERE id = ${bind(id)}
-        """
+        """,
     )
 }
 
@@ -1303,7 +1303,7 @@ fun Database.Read.getApplicationOtherGuardians(id: ApplicationId): Set<PersonId>
 SELECT guardian_id
 FROM application_other_guardian
 WHERE application_id = ${bind(id)}
-"""
+""",
     )
 }
     .toSet()
@@ -1335,7 +1335,7 @@ JOIN LATERAL (
 WHERE application.id = ${bind(id)}
 AND other_citizen.id != application.guardian_id
 RETURNING guardian_id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -1350,7 +1350,7 @@ fun Database.Transaction.setApplicationVerified(
 ) {
     execute {
         sql(
-            "UPDATE application SET checkedByAdmin = ${bind(verified)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+            "UPDATE application SET checkedByAdmin = ${bind(verified)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}",
         )
     }
 }
@@ -1363,7 +1363,7 @@ fun Database.Transaction.setApplicationConfidentiality(
 ) {
     execute {
         sql(
-            "UPDATE application SET confidential = ${bind(confidential)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+            "UPDATE application SET confidential = ${bind(confidential)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}",
         )
     }
 }
@@ -1376,7 +1376,7 @@ fun Database.Transaction.setApplicationProcessId(
 ) {
     execute {
         sql(
-            "UPDATE application SET process_id = ${bind(processId)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+            "UPDATE application SET process_id = ${bind(processId)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}",
         )
     }
 }
@@ -1391,7 +1391,7 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
 
     val applicationIds = createQuery {
         sql(
-            "SELECT id FROM application WHERE status = 'CREATED' AND created_at < ${bind(clock.today())} - ${bind(thresholdDays)}"
+            "SELECT id FROM application WHERE status = 'CREATED' AND created_at < ${bind(clock.today())} - ${bind(thresholdDays)}",
         )
     }
         .toList<ApplicationId>()
@@ -1403,7 +1403,7 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
 
         execute {
             sql(
-                "DELETE FROM application_note WHERE application_id = ANY(${bind(applicationIds)}::uuid[])"
+                "DELETE FROM application_note WHERE application_id = ANY(${bind(applicationIds)}::uuid[])",
             )
         }
 
@@ -1482,7 +1482,7 @@ AND NOT EXISTS (
     AND p.end_date >= ${bind(yesterday)}
 )
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -1490,7 +1490,7 @@ RETURNING id
 }
 
 fun Database.Read.getApplicationAttachments(
-    applicationId: ApplicationId
+    applicationId: ApplicationId,
 ): List<ApplicationAttachment> = createQuery {
     sql(
         """
@@ -1501,7 +1501,7 @@ SELECT
 FROM attachment
 JOIN evaka_user ON attachment.uploaded_by = evaka_user.id
 WHERE application_id = ${bind(applicationId)}
-"""
+""",
     )
 }
     .toList<ApplicationAttachment>()
@@ -1526,7 +1526,7 @@ AND child_id = ${bind(childId)}
 AND type = ${bind(applicationType)}
 AND status = ANY(${bind(arrayOf(ApplicationStatus.SENT))}::application_status_type[])
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1591,7 +1591,7 @@ AND NOT EXISTS (
     AND bl.guardian_id = ${bind(citizenId)}
 )
 AND a.status = 'WAITING_CONFIRMATION'
-                """
+                """,
     )
 }
     .exactlyOne()
@@ -1608,7 +1608,7 @@ fun Database.Read.personHasSentApplicationWithId(
                     WHERE app.guardian_id = ${bind(citizenId)}
                           AND app.id = ${bind(applicationId)}
                 )
-                """
+                """,
     )
 }
     .exactlyOne<Boolean>()
@@ -1651,7 +1651,7 @@ AND EXISTS(
     SELECT FROM decision d
     WHERE a.id = d.application_id AND d.start_date > ${bind(today)} AND d.unit_id != p.unit_id 
 )
-"""
+""",
     )
 }
     .toList<TerminatedPlacement>()

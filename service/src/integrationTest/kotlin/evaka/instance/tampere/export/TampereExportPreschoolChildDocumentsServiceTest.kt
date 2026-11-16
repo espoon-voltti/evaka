@@ -70,7 +70,7 @@ class TampereExportPreschoolChildDocumentsServiceTest : AbstractTampereIntegrati
                     name = "Tiedonsiirto esiopetuksesta perusopetukseen 2024-2025",
                     validity = DateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
         }
 
@@ -99,28 +99,28 @@ class TampereExportPreschoolChildDocumentsServiceTest : AbstractTampereIntegrati
                     name = "Tiedonsiirto esiopetuksesta perusopetukseen 2023-2024",
                     validity = DateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
                     name = "Tiedonsiirto esiopetuksesta perusopetukseen 2024-2025",
                     validity = DateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
                     name = "Tiedonsiirto esiopetuksesta perusopetukseen 2025-2026",
                     validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
                     name = "Varhaiskasvatussuunnitelma 2024-2025",
                     validity = DateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
         }
 
@@ -206,10 +206,10 @@ class TampereExportPreschoolChildDocumentsServiceTest : AbstractTampereIntegrati
                                             id = "1",
                                             label = questionType.name,
                                             questions = listOf(answer.toQuestion("kysymys")),
-                                        )
-                                    )
+                                        ),
+                                    ),
                             ),
-                    )
+                    ),
                 )
             val content = DocumentContent(answers = listOf(answer))
             tx.insert(
@@ -229,9 +229,9 @@ class TampereExportPreschoolChildDocumentsServiceTest : AbstractTampereIntegrati
                                 createdAt = timestamp,
                                 createdBy = employee.evakaUserId,
                                 publishedContent = content,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
 

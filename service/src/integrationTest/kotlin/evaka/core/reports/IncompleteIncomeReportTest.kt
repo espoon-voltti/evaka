@@ -92,7 +92,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     headOfChild = headOfChild.id,
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18),
-                )
+                ),
             )
         }
     }
@@ -103,7 +103,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertPartnership()
             tx.insert(incompleteIncome)
             tx.insert(
-                incompleteIncome.copy(id = IncomeId(UUID.randomUUID()), personId = partner.id)
+                incompleteIncome.copy(id = IncomeId(UUID.randomUUID()), personId = partner.id),
             )
             tx.insertPlacement()
         }
@@ -182,7 +182,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 incompleteIncome.copy(
                     id = IncomeId(UUID.randomUUID()),
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             tx.insertPlacement()
         }
@@ -210,7 +210,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     validFrom = today.minusYears(1),
                     validTo = today.minusDays(1),
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             tx.insertPlacement()
         }
@@ -224,7 +224,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     validFrom = today,
                     validTo = null,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
         assertEquals(0, getIncompleteIncomeReport().size)
@@ -235,7 +235,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insertPartnership()
             tx.insert(
-                incompleteIncome.copy(id = IncomeId(UUID.randomUUID()), personId = partner.id)
+                incompleteIncome.copy(id = IncomeId(UUID.randomUUID()), personId = partner.id),
             )
             tx.insert(
                 DevIncome(
@@ -244,7 +244,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     validFrom = today,
                     validTo = null,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             tx.insertPlacement()
         }
@@ -258,7 +258,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 incompleteIncome.copy(
                     id = IncomeId(UUID.randomUUID()),
                     validTo = today.plusMonths(1),
-                )
+                ),
             )
             tx.insertPlacement()
         }
@@ -276,7 +276,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     headOfChild = headOfChild.id,
                     startDate = child2.dateOfBirth,
                     endDate = child2.dateOfBirth.plusYears(18),
-                )
+                ),
             )
             tx.insert(incompleteIncome)
             tx.insertPlacement()
@@ -291,7 +291,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 first = headOfChild.id,
                 second = partner.id,
                 startDate = child.dateOfBirth,
-            )
+            ),
         )
     }
 
@@ -311,7 +311,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = type,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
         if (option != null) insertServiceNeed(placementId, option, startDate, endDate)
         return placementId
@@ -330,7 +330,7 @@ class IncompleteIncomeReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 endDate = endDate,
                 optionId = option.id,
                 confirmedBy = employee.evakaUserId,
-            )
+            ),
         )
     }
 

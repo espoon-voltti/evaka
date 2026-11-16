@@ -17,7 +17,7 @@ fun Database.Transaction.resetTampereDatabaseForE2ETests() {
     execute { sql("SELECT reset_tampere_database_for_e2e_tests()") }
     execute {
         sql(
-            "INSERT INTO evaka_user (id, type, name) VALUES ('00000000-0000-0000-0000-000000000000', 'SYSTEM', 'eVaka')"
+            "INSERT INTO evaka_user (id, type, name) VALUES ('00000000-0000-0000-0000-000000000000', 'SYSTEM', 'eVaka')",
         )
     }
 }

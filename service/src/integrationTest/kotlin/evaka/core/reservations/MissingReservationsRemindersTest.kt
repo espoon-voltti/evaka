@@ -97,7 +97,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     startDate = checkedRange.start,
                     endDate = checkedRange.end,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
         }
     }
@@ -123,7 +123,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     // falls between the deadline and the start of the week
                     deadline = HelsinkiDateTime.of(LocalDate.of(2022, 10, 24), LocalTime.of(18, 0)),
                     childNames = listOf("${child.firstName} ${child.lastName}"),
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -161,7 +161,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                         date = it,
                         absenceType = AbsenceType.SICKLEAVE,
                         absenceCategory = AbsenceCategory.NONBILLABLE,
-                    )
+                    ),
                 )
             }
         }
@@ -205,7 +205,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     startDate = placementStart,
                     endDate = placementStart.plusMonths(12),
                     type = placementType,
-                )
+                ),
             )
         }
         val recipients = getReminderRecipients()
@@ -224,7 +224,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                 startTime = startTime,
                 endTime = endTime,
                 createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-            )
+            ),
         )
 
     private fun getReminderRecipients(): List<String> {

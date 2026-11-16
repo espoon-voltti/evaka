@@ -177,7 +177,7 @@ data class Osasuoritus(
 data class Arviointi(val arvosana: Arvosana, val kuvaus: LokalisoituTeksti)
 
 enum class ArvosanaKoodiarvo {
-    @JsonProperty("O") OSALLISTUNUT
+    @JsonProperty("O") OSALLISTUNUT,
 }
 
 data class Arvosana(
@@ -195,7 +195,7 @@ data class OsasuorituksenTunniste(val koodiarvo: String, val nimi: LokalisoituTe
 data class OsasuorituksenLaajuus(val arvo: Int, val yksikkö: Laajuusyksikkö)
 
 enum class LaajuusyksikköKoodiarvo {
-    @JsonProperty("3") VUOSIVIIKKOTUNTI
+    @JsonProperty("3") VUOSIVIIKKOTUNTI,
 }
 
 data class Laajuusyksikkö(

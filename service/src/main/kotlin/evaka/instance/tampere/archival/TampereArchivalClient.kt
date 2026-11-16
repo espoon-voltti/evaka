@@ -207,7 +207,7 @@ private fun extractAgents(caseProcess: CaseProcess?): List<AuthorDetails> =
         ?.groupBy { it.enteredBy.id }
         ?.map { AuthorDetails(it.value[0].enteredBy.name, extractAgentRole(it.value)) }
         ?: throw IllegalStateException(
-            "No employee agents found for case process ${caseProcess?.id}"
+            "No employee agents found for case process ${caseProcess?.id}",
         )
 
 internal fun createDecisionMakerAgent(firstName: String?, lastName: String?): List<Agent> =
@@ -218,7 +218,7 @@ internal fun createDecisionMakerAgent(firstName: String?, lastName: String?): Li
                 // name order derives from evaka_user names
                 agentName = "$lastName $firstName"
                 // agent corporateName left empty
-            }
+            },
         )
     } else {
         emptyList()

@@ -50,7 +50,7 @@ fun Database.Transaction.insertChildDocument(
 INSERT INTO child_document(child_id, template_id, type, status, content, modified_at, modified_by, status_modified_at, content_locked_at, content_locked_by, created_by, process_id, decision_maker)
 VALUES (${bind(childId)}, ${bind(templateId)}, ${bind(type)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(userId)}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)}, NULL)
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOne<ChildDocumentId>()
@@ -70,7 +70,7 @@ fun Database.Read.getChildDocuments(
             val decisionStatuses = statuses.mapNotNull { it.asDecisionStatus() }
             PredicateSql {
                 where(
-                    "cd.status = ANY(${bind(documentStatuses)}) OR cdd.status = ANY(${bind(decisionStatuses)})"
+                    "cd.status = ANY(${bind(documentStatuses)}) OR cdd.status = ANY(${bind(decisionStatuses)})",
                 )
             }
         } else {
@@ -123,7 +123,7 @@ LEFT JOIN evaka_user decision_maker ON cd.decision_maker = decision_maker.employ
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 LEFT JOIN daycare d ON d.id = cdd.daycare_id
 WHERE ${predicate(combinedPredicate)}
-"""
+""",
         )
     }
         .toList<ChildDocumentSummary>()
@@ -140,7 +140,7 @@ FROM child_document
 WHERE template_id = ${bind(templateId)}
   AND status != 'COMPLETED'
   AND ${predicate(predicate.forTable("child_document"))}
-"""
+""",
     )
 }
 
@@ -171,7 +171,7 @@ EXISTS (SELECT
       AND ${bind(date)} BETWEEN dgp.start_date AND dgp.end_date
       AND p.child_id = $it.child_id
 )
-        """
+        """,
                 )
             },
         )
@@ -226,7 +226,7 @@ LEFT JOIN child_document_latest_published_version latest_version ON latest_versi
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 LEFT JOIN daycare d ON d.id = cdd.daycare_id
 WHERE cd.id = ${bind(id)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<ChildDocumentDetails>()
@@ -255,7 +255,7 @@ fun Database.Transaction.insertChildDocumentPublishedVersion(
                 ${bind(publishedContent)}::jsonb
             )
             RETURNING version_number
-        """
+        """,
     )
 }
     .exactlyOne<Int>()
@@ -273,14 +273,14 @@ fun Database.Transaction.updateChildDocumentPublishedVersionKey(
             WHERE child_document_id = ${bind(documentId)}
                 AND version_number = ${bind(versionNumber)}
                 AND document_key IS NULL
-        """
+        """,
         )
     }
         .updateExactlyOne()
 }
 
 fun Database.Read.getChildDocumentPublishedVersions(
-    documentId: ChildDocumentId
+    documentId: ChildDocumentId,
 ): List<PublishedVersion> = createQuery {
     sql(
         """
@@ -288,7 +288,7 @@ fun Database.Read.getChildDocumentPublishedVersions(
             FROM child_document_published_version
             WHERE child_document_id = ${bind(documentId)}
             ORDER BY version_number DESC
-        """
+        """,
     )
 }
     .toList()
@@ -310,7 +310,7 @@ fun Database.Read.getChildDocumentPublishedVersion(
                 ${if (versionNumber != null) "AND version_number = ${bind(versionNumber)}" else ""}
             ORDER BY version_number DESC
             LIMIT 1
-        """
+        """,
     )
 }
     .exactlyOneOrNull<PublishedVersion>()
@@ -331,7 +331,7 @@ fun Database.Read.getChildDocumentPublishedVersionContent(
             FROM child_document_published_version
             WHERE child_document_id = ${bind(documentId)}
                 AND version_number = ${bind(versionNumber)}
-            """
+            """,
     )
 }
     .exactlyOneOrNull<DocumentContent>()
@@ -359,7 +359,7 @@ fun Database.Read.getCurrentWriteLock(
     WHERE id = ${bind(id)} AND 
         content_locked_by IS NOT NULL AND 
         content_locked_at >= ${bind(now.minusMinutes(lockMinutes.toLong()))}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -377,7 +377,7 @@ fun Database.Transaction.tryTakeWriteLock(
             content_locked_by = ${bind(userId)} OR
             content_locked_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
         )
-    """
+    """,
     )
 }
     .executeAndReturnCount()
@@ -405,7 +405,7 @@ fun Database.Transaction.updateChildDocumentContent(
                     content_locked_by = ${bind(userId)} OR 
                     content_locked_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
                 )
-                """
+                """,
         )
     }
         .updateExactlyOne()
@@ -433,7 +433,7 @@ fun Database.Transaction.updateChildDocument(
                     answered_at = ${bind(now)},
                     answered_by = ${bind(userId)}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
-                """
+                """,
         )
     }
         .updateExactlyOne()
@@ -466,7 +466,7 @@ fun Database.Transaction.createPublishedVersionIfNeeded(
                 LIMIT 1
             ) lv ON true
             WHERE cd.id = ${bind(id)}
-            """
+            """,
             )
         }
             .exactlyOneOrNull<Result>() ?: throw NotFound("Document $id not found")
@@ -500,7 +500,7 @@ fun Database.Transaction.updateChildDocumentStatus(
                     status_modified_at = CASE WHEN status = ${bind(statusTransition.newStatus)} THEN status_modified_at ELSE ${bind(now)} END
                     ${if (answeredBy != null) ", answered_at = ${bind(now)}, answered_by = ${bind(answeredBy)}" else ""}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
-                """
+                """,
         )
     }
         .updateExactlyOne()
@@ -522,7 +522,7 @@ fun Database.Transaction.markCompletedAndPublish(
                     modified_by = ${bind(userId)},
                     status_modified_at = CASE WHEN status = 'COMPLETED' THEN status_modified_at ELSE ${bind(now)} END
                 WHERE id = ANY(${bind(ids)})
-                """
+                """,
         )
     }
         .execute()
@@ -561,7 +561,7 @@ fun Database.Transaction.markCompletedAndPublish(
                 RETURNING child_document_id, version_number
             )
             SELECT child_document_id, version_number FROM inserted
-                """
+                """,
         )
     }
         .toMap { column<ChildDocumentId>("child_document_id") to column<Int>("version_number") }
@@ -587,7 +587,7 @@ fun Database.Transaction.markDocumentAsArchived(id: ChildDocumentId, now: Helsin
             UPDATE child_document
             SET archived_at = ${bind(now)}
             WHERE id = ${bind(id)}
-            """
+            """,
         )
     }
         .updateExactlyOne()
@@ -609,7 +609,7 @@ WHERE e.roles && ${bind(listOf(UserRole.ADMIN, UserRole.DIRECTOR))} OR EXISTS(
     SELECT FROM child_document cd
     WHERE cd.id = ${bind(documentId)} AND cd.decision_maker = e.id
 )
-"""
+""",
         )
     }
     .toList()
@@ -623,7 +623,7 @@ fun Database.Transaction.setChildDocumentDecisionMaker(
             UPDATE child_document 
             SET decision_maker = ${bind(decisionMaker)}
             WHERE id = ${bind(id)}
-        """
+        """,
     )
 }
     .updateExactlyOne()
@@ -641,7 +641,7 @@ fun Database.Transaction.insertChildDocumentDecision(
                 INSERT INTO child_document_decision (created_by, modified_by, status, valid_from, valid_to, daycare_id, annulment_reason) 
                 VALUES (${bind(userId)}, ${bind(userId)}, ${bind(status)}, ${bind(validity?.start)}, ${bind(validity?.end)}, ${bind(daycareId)}, ${bind(annulmentReason)})
                 RETURNING id
-            """
+            """,
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -660,7 +660,7 @@ fun Database.Transaction.annulChildDocumentDecision(
             UPDATE child_document_decision
             SET status = 'ANNULLED', modified_by = ${bind(userId)}, modified_at = ${bind(now)}, annulment_reason = ${bind(annulmentReason)}
             WHERE id = ${bind(decisionId)} AND status = 'ACCEPTED'
-        """
+        """,
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -683,14 +683,14 @@ fun Database.Transaction.setChildDocumentDecisionAndComplete(
                     modified_by = ${bind(userId)},
                     status_modified_at = ${bind(now)}
                 WHERE id = ${bind(documentId)} AND status = 'DECISION_PROPOSAL'
-                """
+                """,
         )
     }
         .updateExactlyOne()
 }
 
 fun Database.Transaction.endExpiredChildDocumentDecisions(
-    today: LocalDate
+    today: LocalDate,
 ): List<ChildDocumentDecisionId> {
     val yesterday = today.minusDays(1)
     return createQuery {
@@ -721,14 +721,14 @@ fun Database.Transaction.endExpiredChildDocumentDecisions(
         FROM expired exp
         WHERE cdd.id = exp.id
         RETURNING cdd.id
-    """
+    """,
         )
     }
         .toList<ChildDocumentDecisionId>()
 }
 
 fun Database.Read.getAcceptedChildDocumentDecisions(
-    documentId: ChildDocumentId
+    documentId: ChildDocumentId,
 ): List<AcceptedChildDecisions> {
     return createQuery {
         sql(
@@ -743,7 +743,7 @@ FROM child_document new_document
          JOIN child_document_decision cdd ON accepted_document.decision_id = cdd.id
          JOIN document_template dt ON accepted_document.template_id = dt.id
 WHERE new_document.id = ${bind(documentId)} AND cdd.status = 'ACCEPTED'
-"""
+""",
         )
     }
         .toList<AcceptedChildDecisions>()
@@ -771,7 +771,7 @@ WHERE cdd.id = ANY(${bind(endingDecisionIds)})
     AND cd.decision_id = cdd.id
     AND cd.child_id = ${bind(childId)}
 RETURNING cdd.id, cdd.valid_from
-"""
+""",
         )
     }
         .toList<EndedChildDocumentDecision>()
@@ -788,7 +788,7 @@ fun Database.Transaction.setChildDocumentDecisionValidity(
             SET valid_from = ${bind(validity.start)}, valid_to = ${bind(validity.end)}
             WHERE id = ${bind(decisionId)} AND status = 'ACCEPTED'
             RETURNING id
-        """
+        """,
         )
     }
         .updateExactlyOne()
@@ -797,12 +797,12 @@ fun Database.Transaction.setChildDocumentDecisionValidity(
 /** Documents can't be modified after their template's validity has ended */
 fun childDocumentTemplateValidityNotEnded(today: LocalDate) = Predicate {
     where(
-        "NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = $it.template_id AND dt.validity << ${bind(today.toFiniteDateRange())})"
+        "NOT EXISTS(SELECT 1 FROM document_template dt WHERE dt.id = $it.template_id AND dt.validity << ${bind(today.toFiniteDateRange())})",
     )
 }
 
 fun Database.Read.getChildDocumentsEligibleForArchival(
-    eligibleDate: LocalDate
+    eligibleDate: LocalDate,
 ): List<ChildDocumentId> = createQuery {
     sql(
         """
@@ -813,7 +813,7 @@ fun Database.Read.getChildDocumentsEligibleForArchival(
                   AND dt.archive_externally = true
                   AND cd.archived_at IS NULL
                 ORDER BY cd.created_at
-                """
+                """,
     )
 }
     .toList<ChildDocumentId>()
@@ -867,7 +867,7 @@ JOIN child_document cd ON cd.id = del_batch.id
 LEFT JOIN child_document_published_version v ON v.child_document_id = cd.id
 LEFT JOIN sfi_message sm ON sm.document_id = cd.id
 GROUP BY cd.id
-"""
+""",
         )
     }
         .toList<DeletedChildDocument>()
@@ -883,13 +883,13 @@ GROUP BY cd.id
         }
         execute {
             sql(
-                "DELETE FROM child_document_published_version WHERE child_document_id = ANY(${bind(deletableIds)})"
+                "DELETE FROM child_document_published_version WHERE child_document_id = ANY(${bind(deletableIds)})",
             )
         }
         if (deletableSfiMessageIds.isNotEmpty()) {
             execute {
                 sql(
-                    "DELETE FROM sfi_message_event WHERE message_id = ANY(${bind(deletableSfiMessageIds)})"
+                    "DELETE FROM sfi_message_event WHERE message_id = ANY(${bind(deletableSfiMessageIds)})",
                 )
             }
             execute {

@@ -37,7 +37,7 @@ data class ClubFormV0(
                     address = Address(),
                     correctingAddress = Address(),
                     restricted = true,
-                )
+                ),
         )
     }
 
@@ -48,7 +48,7 @@ data class ClubFormV0(
                     address = Address(),
                     correctingAddress = Address(),
                     restricted = true,
-                )
+                ),
         )
     }
 

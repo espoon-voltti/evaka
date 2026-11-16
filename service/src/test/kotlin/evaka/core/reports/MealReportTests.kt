@@ -60,7 +60,7 @@ class MealReportTests {
                             supper = null,
                             eveningSnack = null,
                         ),
-                )
+                ),
             )
 
         val report =
@@ -97,7 +97,7 @@ class MealReportTests {
                             supper = null,
                             eveningSnack = null,
                         ),
-                )
+                ),
             )
 
         val report =
@@ -141,7 +141,7 @@ class MealReportTests {
                             supper = null,
                             eveningSnack = null,
                         ),
-                )
+                ),
             )
 
         val report =
@@ -185,7 +185,7 @@ class MealReportTests {
                             supper = null,
                             eveningSnack = null,
                         ),
-                )
+                ),
             )
         val preschoolTerms =
             listOf(
@@ -200,7 +200,7 @@ class MealReportTests {
                     termBreaks = DateSet.empty(),
                     applicationPeriod =
                         FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
-                )
+                ),
             )
 
         val report =
@@ -244,7 +244,7 @@ class MealReportTests {
                             supper = null,
                             eveningSnack = null,
                         ),
-                )
+                ),
             )
         val preschoolTerms =
             listOf(
@@ -258,11 +258,11 @@ class MealReportTests {
                         FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
                     termBreaks =
                         DateSet.of( // Term break in effect
-                            listOf(FiniteDateRange(testDate.minusDays(2), testDate.plusDays(2)))
+                            listOf(FiniteDateRange(testDate.minusDays(2), testDate.plusDays(2))),
                         ),
                     applicationPeriod =
                         FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
-                )
+                ),
             )
 
         val report =
@@ -306,7 +306,7 @@ class MealReportTests {
                             supper = null,
                             eveningSnack = null,
                         ),
-                )
+                ),
             )
         val preschoolTerms =
             listOf(
@@ -320,11 +320,11 @@ class MealReportTests {
                         FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
                     termBreaks =
                         DateSet.of( // Term break in effect
-                            listOf(FiniteDateRange(testDate.minusDays(2), testDate.plusDays(2)))
+                            listOf(FiniteDateRange(testDate.minusDays(2), testDate.plusDays(2))),
                         ),
                     applicationPeriod =
                         FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
-                )
+                ),
             )
 
         val report =
@@ -463,7 +463,7 @@ class MealReportTests {
                     glutenFreeDiet.id,
                     glutenFreeDiet.abbreviation,
                     "Brown Mike",
-                )
+                ),
             )
         val rowsForMike = report.filter { it.additionalInfo.equals("Brown Mike") }.toSet()
 
@@ -482,7 +482,7 @@ class MealReportTests {
                     lactoseFreeDiet.id,
                     lactoseFreeDiet.abbreviation,
                     "Mallikas Mikko",
-                )
+                ),
             )
         val rowsForMikko = report.filter { it.additionalInfo.equals("Mallikas Mikko") }.toSet()
 
@@ -763,8 +763,8 @@ class MealReportTests {
                                             false,
                                             clock.now(),
                                             user,
-                                        )
-                                    )
+                                        ),
+                                    ),
                             ),
                         absences = emptyMap(),
                         attendances = emptyMap(),
@@ -779,7 +779,7 @@ class MealReportTests {
                                 id = childId2,
                                 serviceNeeds =
                                     listOf(
-                                        createServiceNeedInfo(childId2, ShiftCareType.INTERMITTENT)
+                                        createServiceNeedInfo(childId2, ShiftCareType.INTERMITTENT),
                                     ),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
                                 preferredName = "",
@@ -793,8 +793,8 @@ class MealReportTests {
                                             false,
                                             clock.now(),
                                             user,
-                                        )
-                                    )
+                                        ),
+                                    ),
                             ),
                         absences = emptyMap(),
                         attendances = emptyMap(),
@@ -974,7 +974,7 @@ class MealReportTests {
                                 id = childId2,
                                 serviceNeeds =
                                     listOf(
-                                        createServiceNeedInfo(childId2, ShiftCareType.INTERMITTENT)
+                                        createServiceNeedInfo(childId2, ShiftCareType.INTERMITTENT),
                                     ),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
                                 preferredName = "",

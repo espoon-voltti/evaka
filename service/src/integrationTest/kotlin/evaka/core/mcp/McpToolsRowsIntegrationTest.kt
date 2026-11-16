@@ -218,7 +218,7 @@ class McpToolsRowsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     private fun callTool(name: String, arguments: String): JsonNode = db.transaction { tx ->
         val ctx = McpToolContext(tx, admin.user, clock, authorizationId, config, AuditContext())
         jsonMapper.valueToTree(
-            tools.findTool(name)!!.call(ctx, jsonMapper.readTree(arguments), jsonMapper)
+            tools.findTool(name)!!.call(ctx, jsonMapper.readTree(arguments), jsonMapper),
         )
     }
 

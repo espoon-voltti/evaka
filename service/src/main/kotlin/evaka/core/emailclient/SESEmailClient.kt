@@ -66,9 +66,9 @@ ${content.html}
                                         Content.builder()
                                             .charset(charset)
                                             .data(content.text)
-                                            .build()
+                                            .build(),
                                     )
-                                    .build()
+                                    .build(),
                             )
                             .subject(
                                 Content.builder()
@@ -79,11 +79,11 @@ ${content.html}
                                             "" -> content.subject
 
                                             else -> "${content.subject} [$subjectPostfix]"
-                                        }
+                                        },
                                     )
-                                    .build()
+                                    .build(),
                             )
-                            .build()
+                            .build(),
                     )
                     .source(fromAddress.address)
                     .build()

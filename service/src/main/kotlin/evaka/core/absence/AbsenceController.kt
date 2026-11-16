@@ -123,7 +123,7 @@ class AbsenceController(
                     tx.clearOldReservations(
                             absences
                                 .filter { reservableRange.includes(it.date) }
-                                .map { it.childId to it.date }
+                                .map { it.childId to it.date },
                         )
                         .also { audit.add(it) }
 

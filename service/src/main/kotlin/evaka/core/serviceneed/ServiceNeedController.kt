@@ -208,7 +208,7 @@ class ServiceNeedController(
     }
 
     @GetMapping(
-        path = ["/citizen/public/service-needs/options", "/employee/public/service-needs/options"]
+        path = ["/citizen/public/service-needs/options", "/employee/public/service-needs/options"],
     )
     fun getServiceNeedOptionPublicInfos(
         db: Database,

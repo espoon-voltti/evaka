@@ -448,7 +448,7 @@ WITH attendances_to_end AS (
 )
 UPDATE child_attendance SET end_time = '23:59'::time
 WHERE id IN (SELECT id FROM attendances_to_end)
-"""
+""",
                     )
                 }
                 .execute()
@@ -475,7 +475,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
                             WHERE p.child_id = ar.child_id
                             AND ar.date BETWEEN p.start_date AND p.end_date
                         )
-                        """
+                        """,
                     )
                 }
                 .execute()
@@ -604,7 +604,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
                     WHERE g.child_id = ch.id AND ch.date_of_birth <= ${bind(clock.today().minusYears(18))}
                 )
                 RETURNING g.child_id
-            """
+            """,
                         )
                     }
                     .executeAndReturnGeneratedKeys()

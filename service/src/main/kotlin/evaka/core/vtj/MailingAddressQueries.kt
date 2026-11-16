@@ -27,7 +27,7 @@ fun Database.Transaction.replaceAddressPeriods(
             """
 INSERT INTO person_address_period (person_id, type, valid_during, street_address, postal_code, post_office)
 VALUES (${bind(personId)}, ${bind { it.type }}, ${bind { it.validDuring }}, ${bind { it.streetAddress }}, ${bind { it.postalCode }}, ${bind { it.postOffice }})
-"""
+""",
         )
     }
 }
@@ -66,7 +66,7 @@ FROM new_address
 WHERE p.id = new_address.id
 AND (p.mailing_street_address, p.mailing_postal_code, p.mailing_post_office) IS DISTINCT FROM
     (new_address.street_address, new_address.postal_code, new_address.post_office)
-"""
+""",
     )
 }
     .executeAndReturnCount()

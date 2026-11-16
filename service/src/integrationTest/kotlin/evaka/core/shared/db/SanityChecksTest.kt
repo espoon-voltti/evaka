@@ -64,7 +64,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     date = today.plusDays(1),
                     arrived = LocalTime.of(0, 15),
                     departed = null,
-                )
+                ),
             )
         }
         val violations = db.read { it.sanityCheckAttendancesInFuture(mockClock.today()) }
@@ -82,7 +82,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     date = today,
                     arrived = LocalTime.of(0, 15),
                     departed = null,
-                )
+                ),
             )
         }
         val violations = db.read { it.sanityCheckAttendancesInFuture(mockClock.today()) }
@@ -105,7 +105,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = today.minusDays(1),
                     optionId = snDaycareFullDay35.id,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
             it.insert(
                 DevServiceNeed(
@@ -114,7 +114,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = placementEnd.plusDays(1),
                     optionId = snDaycareFullDay35.id,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
         val violations = db.read { it.sanityCheckServiceNeedOutsidePlacement() }
@@ -137,7 +137,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = today.minusDays(1),
                     optionId = snDaycareFullDay35.id,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
             it.insert(
                 DevServiceNeed(
@@ -146,7 +146,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = placementEnd.minusDays(1),
                     optionId = snDaycareFullDay35.id,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
         val violations = db.read { it.sanityCheckServiceNeedOutsidePlacement() }
@@ -167,7 +167,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group.id,
                     startDate = placementStart.minusDays(1),
                     endDate = today.minusDays(1),
-                )
+                ),
             )
             it.insert(
                 DevDaycareGroupPlacement(
@@ -175,7 +175,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group.id,
                     startDate = today.plusDays(1),
                     endDate = placementEnd.plusDays(1),
-                )
+                ),
             )
         }
         val violations = db.read { it.sanityCheckGroupPlacementOutsidePlacement() }
@@ -196,7 +196,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group.id,
                     startDate = placementStart.plusDays(1),
                     endDate = today.minusDays(1),
-                )
+                ),
             )
             it.insert(
                 DevDaycareGroupPlacement(
@@ -204,7 +204,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group.id,
                     startDate = today.plusDays(1),
                     endDate = placementEnd,
-                )
+                ),
             )
         }
         val violations = db.read { it.sanityCheckGroupPlacementOutsidePlacement() }
@@ -229,7 +229,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = child1.id,
                     unitId = unit.id,
                     period = FiniteDateRange(today, today),
-                )
+                ),
             )
 
             tx.insert(
@@ -238,14 +238,14 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = unit.id,
                     startDate = today.minusDays(1),
                     endDate = today.minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
                     childId = child2.id,
                     unitId = unit.id,
                     period = FiniteDateRange(today, today),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -253,7 +253,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = unit.id,
                     startDate = today.plusDays(1),
                     endDate = today.plusDays(1),
-                )
+                ),
             )
         }
 
@@ -278,14 +278,14 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = unit.id,
                     startDate = today.minusDays(1),
                     endDate = today.plusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
                     childId = child.id,
                     unitId = unit.id,
                     period = FiniteDateRange(today, today),
-                )
+                ),
             )
         }
 
@@ -317,7 +317,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamilyId = guardian1.id,
                         validDuring = range1,
                         status = FeeDecisionStatus.SENT,
-                    )
+                    ),
                 )
                 .also { id ->
                     tx.insert(
@@ -325,7 +325,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                             feeDecisionId = id,
                             childId = child.id,
                             placementUnitId = unit.id,
-                        )
+                        ),
                     )
                 }
 
@@ -334,7 +334,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamilyId = guardian2.id,
                         validDuring = range2,
                         status = FeeDecisionStatus.WAITING_FOR_SENDING,
-                    )
+                    ),
                 )
                 .also { id ->
                     tx.insert(
@@ -342,14 +342,14 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                             feeDecisionId = id,
                             childId = child.id,
                             placementUnitId = unit.id,
-                        )
+                        ),
                     )
                 }
         }
 
         val violations = db.read {
             it.sanityCheckChildInOverlappingFeeDecisions(
-                listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
+                listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING),
             )
         }
         assertEquals(1, violations.size)
@@ -379,7 +379,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamilyId = guardian1.id,
                         validDuring = range1,
                         status = FeeDecisionStatus.SENT,
-                    )
+                    ),
                 )
                 .also { id ->
                     tx.insert(
@@ -387,7 +387,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                             feeDecisionId = id,
                             childId = child.id,
                             placementUnitId = unit.id,
-                        )
+                        ),
                     )
                 }
 
@@ -396,7 +396,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamilyId = guardian2.id,
                         validDuring = range2,
                         status = FeeDecisionStatus.WAITING_FOR_SENDING,
-                    )
+                    ),
                 )
                 .also { id ->
                     tx.insert(
@@ -404,14 +404,14 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                             feeDecisionId = id,
                             childId = child.id,
                             placementUnitId = unit.id,
-                        )
+                        ),
                     )
                 }
         }
 
         val violations = db.read {
             it.sanityCheckChildInOverlappingFeeDecisions(
-                listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
+                listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING),
             )
         }
         assertEquals(0, violations.size)
@@ -434,7 +434,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = unit.id,
                     startDate = today,
                     endDate = today,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -443,7 +443,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -468,7 +468,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = unit.id,
                     startDate = today,
                     endDate = today,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -477,7 +477,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -503,7 +503,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = PlacementType.PRESCHOOL,
                     startDate = today,
                     endDate = today,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -512,7 +512,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -538,7 +538,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = PlacementType.DAYCARE,
                     startDate = today,
                     endDate = today,
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -547,7 +547,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -603,7 +603,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionMaker = fixture.employee.id,
                     decision = fixture.createDecision(),
                     publishedVersions = emptyList(),
-                )
+                ),
             )
 
             // Violation 2: Decision document DRAFT but published
@@ -624,9 +624,9 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 createdAt = now,
                                 createdBy = fixture.employee.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
 
             // Violation 3: VASU document COMPLETED but unpublished
@@ -641,7 +641,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     contentLockedAt = now,
                     contentLockedBy = fixture.employee.id,
                     publishedVersions = emptyList(),
-                )
+                ),
             )
         }
 
@@ -674,9 +674,9 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 createdAt = now,
                                 createdBy = fixture.employee.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
 
             // Valid 2: Decision DRAFT without version
@@ -691,7 +691,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     contentLockedAt = now,
                     contentLockedBy = fixture.employee.id,
                     publishedVersions = emptyList(),
-                )
+                ),
             )
 
             // Valid 3: VASU DRAFT without version
@@ -706,7 +706,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     contentLockedAt = now,
                     contentLockedBy = fixture.employee.id,
                     publishedVersions = emptyList(),
-                )
+                ),
             )
 
             // Valid 4: VASU COMPLETED with version 1
@@ -727,9 +727,9 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 createdAt = now,
                                 createdBy = fixture.employee.evakaUserId,
                                 publishedContent = documentContent,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
 
@@ -761,13 +761,13 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     id = "s1",
                     label = "s1",
                     questions = listOf(Question.TextQuestion(id = "q1", label = "q1")),
-                )
-            )
+                ),
+            ),
         )
 
     private val documentContent =
         DocumentContent(
-            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "answer"))
+            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "answer")),
         )
 
     private fun givenChildDocumentFixtures(): ChildDocumentTestFixture {
@@ -793,7 +793,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     validity = DateRange(today.minusYears(1), null),
                     content = templateContent,
                     endDecisionWhenUnitChanges = false,
-                )
+                ),
             )
 
             tx.insert(
@@ -803,7 +803,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = ChildDocumentType.VASU,
                     validity = DateRange(today.minusYears(1), null),
                     content = templateContent,
-                )
+                ),
             )
         }
 

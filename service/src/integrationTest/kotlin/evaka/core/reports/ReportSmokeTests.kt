@@ -179,7 +179,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                     unitId = daycare.id,
                     startDate = LocalDate.of(2022, 1, 1),
                     endDate = LocalDate.of(2022, 3, 1),
-                )
+                ),
             )
         }
         familyContactReportController.getFamilyContactsReport(

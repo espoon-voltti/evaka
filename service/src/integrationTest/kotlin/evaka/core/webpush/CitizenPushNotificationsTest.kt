@@ -47,7 +47,7 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
 
     private val decision =
         CitizenPushNotification.PendingDecisions(
-            listOf(PendingDecision("Test", DecisionType.DAYCARE, "Test Daycare"))
+            listOf(PendingDecision("Test", DecisionType.DAYCARE, "Test Daycare")),
         )
 
     @BeforeEach
@@ -170,7 +170,11 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     childName = "Test",
                     decisions =
                         listOf(
-                            ApplicationDecision(DecisionType.DAYCARE, "Test Daycare", clock.today())
+                            ApplicationDecision(
+                                DecisionType.DAYCARE,
+                                "Test Daycare",
+                                clock.today(),
+                            ),
                         ),
                     answerRequired = true,
                 ),
@@ -211,8 +215,8 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                                     clock.today().plusDays(3),
                                 ),
                             groupNames = listOf("Ryhmä 1"),
-                        )
-                    )
+                        ),
+                    ),
                 ),
                 CitizenPushNotification.Document(
                     ChildDocumentId(UUID.randomUUID()),

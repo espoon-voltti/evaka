@@ -22,7 +22,7 @@ SELECT
     note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note
 FROM child_daily_note cdn
 WHERE ${predicate(predicate.forTable("cdn"))}
-"""
+""",
         )
     }
 
@@ -30,7 +30,7 @@ fun Database.Read.getChildDailyNoteForChild(childId: ChildId): ChildDailyNote? =
     getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).exactlyOneOrNull()
 
 fun Database.Read.getChildDailyNotesForChildren(
-    children: Collection<ChildId>
+    children: Collection<ChildId>,
 ): List<ChildDailyNote> =
     getChildDailyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).toList()
 
@@ -47,9 +47,9 @@ $it.child_id IN (
     FROM realized_placement_all(${bind(today)})
     WHERE group_id = ${bind(groupId)}
 )
-"""
+""",
                 )
-            }
+            },
         )
         .toList()
 
@@ -63,7 +63,7 @@ fun Database.Transaction.createChildDailyNote(
 INSERT INTO child_daily_note (child_id, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note)
 VALUES (${bind(childId)}, ${bind(note.note)}, ${bind(note.feedingNote)}, ${bind(note.sleepingNote)}, ${bind(note.sleepingMinutes)}, ${bind(note.reminders)}::child_daily_note_reminder[], ${bind(note.reminderNote)})
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -89,7 +89,7 @@ UPDATE child_daily_note SET
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
 RETURNING *
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()

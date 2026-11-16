@@ -66,7 +66,7 @@ class PasskeyControllerCitizen(
 
     data class PasskeyRegistrationOptions(
         /** Argument for the browser's navigator.credentials.create() */
-        val credentialsCreate: String
+        val credentialsCreate: String,
     )
 
     @PostMapping("/register")

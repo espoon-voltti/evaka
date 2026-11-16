@@ -43,7 +43,7 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
             }
             .also {
                 Audit.EndedPlacementsReportRead.log(
-                    meta = mapOf("year" to year, "month" to month, "count" to it.size)
+                    meta = mapOf("year" to year, "month" to month, "count" to it.size),
                 )
             }
     }
@@ -92,7 +92,7 @@ LEFT JOIN daycare next_dc
 GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.date_of_birth, ep.placement_end, dc.name, ca.name, next_dc.name
 HAVING min(next_pl.start_date) IS NULL OR min(next_pl.start_date) > ${bind(to)}
 ORDER BY last_name, first_name, ep.child_id
-"""
+""",
         )
     }
         .toList<EndedPlacementsReportRow>()

@@ -234,7 +234,7 @@ fun insertApplicationPlacementTestData(tx: Database.Transaction) {
         val group = DevDaycareGroup(daycareId = daycare.id, name = "Ryhmä 1")
         tx.insert(group)
         tx.insert(
-            DevDaycareCaretaker(groupId = group.id, amount = BigDecimal(daycare.capacity / 7))
+            DevDaycareCaretaker(groupId = group.id, amount = BigDecimal(daycare.capacity / 7)),
         )
     }
 

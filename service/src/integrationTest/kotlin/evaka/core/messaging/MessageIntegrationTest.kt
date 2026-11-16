@@ -179,7 +179,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareId = daycare.id,
                         startDate = placementStart,
                         name = name ?: "Testiläiset",
-                    )
+                    ),
                 )
                 return tx.createDaycareGroupMessageAccount(id)
             }
@@ -214,7 +214,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         headOfChildId = fridgeHeadId,
                         startDate = LocalDate.of(2019, 1, 1),
                         endDate = LocalDate.of(2019, 12, 31),
-                    )
+                    ),
                 ) // parentship alone does not allow messaging if not a guardian
             }
 
@@ -244,7 +244,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         headOfChildId = fridgeHeadId,
                         startDate = LocalDate.of(2019, 1, 1),
                         endDate = LocalDate.of(2019, 12, 31),
-                    )
+                    ),
                 ) // no guardian, no messages
             }
 
@@ -424,7 +424,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         validDuring = DateRange(placementStart, placementEnd),
                         modifiedAt = HelsinkiDateTime.now(),
                         modifiedBy = devEmployee1.evakaUserId,
-                    )
+                    ),
                 )
             }
 
@@ -566,7 +566,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = daycare.id,
                             startDate = endedPlacementStart,
                             endDate = endedPlacementEnd,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -574,7 +574,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = groupId1,
                         startDate = endedPlacementStart,
                         endDate = endedPlacementEnd,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevServiceNeed(
@@ -583,7 +583,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startDate = endedPlacementStart,
                         endDate = endedPlacementEnd,
                         optionId = snDefaultDaycare.id,
-                    )
+                    ),
                 )
             }
 
@@ -844,7 +844,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         id = groupId3,
                         daycareId = daycare2.id,
                         startDate = placementStart,
-                    )
+                    ),
                 )
                 child7.let {
                     insertChild(tx, it, groupId3, daycare2.id)
@@ -905,7 +905,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareId = daycare.id,
                         startDate = placementStart,
                         name = "Group 3",
-                    )
+                    ),
                 )
                 tx.createDaycareGroupMessageAccount(groupId3)
             }
@@ -1077,7 +1077,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = daycare.id,
                             startDate = placementStart,
                             endDate = child2PlacementEnd,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -1085,7 +1085,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = groupId2,
                         startDate = placementStart,
                         endDate = child2PlacementEnd,
-                    )
+                    ),
                 )
                 tx.insert(
                     DevServiceNeed(
@@ -1095,7 +1095,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         endDate = child2PlacementEnd,
                         optionId = snDefaultDaycare.id,
                         shiftCare = ShiftCareType.NONE,
-                    )
+                    ),
                 )
             }
 
@@ -1196,7 +1196,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 val threadChildren =
                     tx.createQuery {
                             sql(
-                                "SELECT child_id FROM message_thread_children WHERE thread_id = ${bind(threadId)}"
+                                "SELECT child_id FROM message_thread_children WHERE thread_id = ${bind(threadId)}",
                             )
                         }
                         .toList<ChildId>()
@@ -1293,7 +1293,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 val messageThreadId =
                     tx.createQuery {
                             sql(
-                                "SELECT thread_id FROM message WHERE content_id = ${bind(messageContentId)}"
+                                "SELECT thread_id FROM message WHERE content_id = ${bind(messageContentId)}",
                             )
                         }
                         .exactlyOne<MessageThreadId>()
@@ -1661,7 +1661,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             val person1ThreadsWithoutReadAt = person1Threads.map { thread ->
                 thread.copy(
-                    messages = thread.messages.map { message -> message.copy(readAt = null) }
+                    messages = thread.messages.map { message -> message.copy(readAt = null) },
                 )
             }
             val person2Threads = getRegularMessageThreads(person2)
@@ -1899,7 +1899,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             val person1ThreadsWithoutReadAt = person1ThreadsAfterReply.map { thread ->
                 thread.copy(
-                    messages = thread.messages.map { message -> message.copy(readAt = null) }
+                    messages = thread.messages.map { message -> message.copy(readAt = null) },
                 )
             }
             assertEquals(
@@ -1973,7 +1973,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     2,
                     it.createQuery {
                             sql(
-                                "SELECT COUNT(DISTINCT id) FROM message_thread WHERE title = ${bind(title)}"
+                                "SELECT COUNT(DISTINCT id) FROM message_thread WHERE title = ${bind(title)}",
                             )
                         }
                         .exactlyOne<Int>(),
@@ -2039,7 +2039,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     2,
                     it.createQuery {
                             sql(
-                                "SELECT COUNT(DISTINCT id) FROM message_thread WHERE title = ${bind(title)}"
+                                "SELECT COUNT(DISTINCT id) FROM message_thread WHERE title = ${bind(title)}",
                             )
                         }
                         .exactlyOne<Int>(),
@@ -2596,7 +2596,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = unit.id,
                             startDate = placementStart.minusMonths(5),
                             endDate = placementEnd,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -2604,7 +2604,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = group.id,
                         startDate = placementStart.minusMonths(5),
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             }
 
@@ -2831,7 +2831,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 endDate = null,
                             ),
                         status = IncomeStatementStatus.SENT,
-                    )
+                    ),
                 )
             }
             postNewThread(
@@ -2867,7 +2867,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         status = IncomeStatementStatus.HANDLED,
                         handlerId = financeAdmin.id,
                         handledAt = HelsinkiDateTime.of(placementStart, LocalTime.of(10, 0)),
-                    )
+                    ),
                 )
             }
             postNewThread(
@@ -2911,7 +2911,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 endDate = null,
                             ),
                         status = IncomeStatementStatus.SENT,
-                    )
+                    ),
                 )
             }
             val recipients = getCitizenRecipients(person1)
@@ -3015,7 +3015,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 endDate = null,
                             ),
                         status = IncomeStatementStatus.SENT,
-                    )
+                    ),
                 )
             }
 
@@ -3527,7 +3527,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 db.read {
                     it.createQuery {
                             sql(
-                                "SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL"
+                                "SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL",
                             )
                         }
                         .exactlyOne<Int>()
@@ -3599,7 +3599,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 db.read {
                     it.createQuery {
                             sql(
-                                "SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL"
+                                "SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL",
                             )
                         }
                         .exactlyOne<Int>()
@@ -3705,7 +3705,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         private fun messageIdOfContent(contentId: MessageContentId): MessageId = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT id FROM message WHERE content_id = ${bind(contentId)} ORDER BY id LIMIT 1"
+                        "SELECT id FROM message WHERE content_id = ${bind(contentId)} ORDER BY id LIMIT 1",
                     )
                 }
                 .exactlyOne<MessageId>()
@@ -3760,7 +3760,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         FROM message m
                         JOIN message_thread_participant tp ON tp.thread_id = m.thread_id
                         WHERE m.content_id = ${bind(contentId)} AND tp.participant_id = ${bind(participant)}
-                        """
+                        """,
                     )
                 }
                 .exactlyOne<MessageThreadId>()
@@ -3784,7 +3784,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         private fun deletionInfoOf(messageId: MessageId): DeletionInfo = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT content_deleted_at, content_deleted_by_employee_id FROM message WHERE id = ${bind(messageId)}"
+                        "SELECT content_deleted_at, content_deleted_by_employee_id FROM message WHERE id = ${bind(messageId)}",
                     )
                 }
                 .exactlyOne<DeletionInfo>()
@@ -3797,7 +3797,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             SELECT id FROM message
                             WHERE thread_id = ${bind(threadId)} AND sender_id = ${bind(employee1Account)}
                             ORDER BY sent_at DESC LIMIT 1
-                            """
+                            """,
                     )
                 }
                 .exactlyOne<MessageId>()
@@ -4302,7 +4302,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
                             deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                         )
-                    }
+                    },
                 )
             val message = thread.messages.single()
             assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, message.content)
@@ -4470,7 +4470,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 MockEmailClient.emails.any {
                     it.toAddress == "test.person@espoo.fi" &&
                         it.content.subject == "eVaka-viesti poistettu – ota yhteyttä tukeen"
-                }
+                },
             )
         }
 
@@ -4526,7 +4526,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         sender = financeAccount,
                         recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                         user = financeAdmin.user,
-                    )!!
+                    )!!,
                 )
             MockEmailClient.clear()
 
@@ -4540,7 +4540,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     .getValue("admin@espoo.fi")
                     .content
                     .html
-                    .contains("Finance Admin (Varhaiskasvatuksen asiakasmaksut")
+                    .contains("Finance Admin (Varhaiskasvatuksen asiakasmaksut"),
             )
         }
 
@@ -4611,7 +4611,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     .getValue("supervisor.a@example.com")
                     .content
                     .html
-                    .contains("Vastaanottajien lukumäärä: 4")
+                    .contains("Vastaanottajien lukumäärä: 4"),
             )
         }
     }
@@ -4643,7 +4643,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = daycareId,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         tx.insert(
             DevDaycareGroupPlacement(
@@ -4651,7 +4651,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 daycareGroupId = groupId,
                 startDate = placementStart,
                 endDate = placementEnd,
-            )
+            ),
         )
         tx.insert(
             DevServiceNeed(
@@ -4661,7 +4661,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 endDate = placementEnd,
                 optionId = optionId,
                 shiftCare = shiftCare,
-            )
+            ),
         )
     }
 
@@ -4681,7 +4681,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = daycare.id,
                         startDate = now.toLocalDate().minusMonths(6),
                         endDate = now.toLocalDate().plusMonths(6),
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -4689,7 +4689,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     daycareGroupId = groupId1,
                     startDate = now.toLocalDate().minusMonths(6),
                     endDate = now.toLocalDate().plusMonths(6),
-                )
+                ),
             )
             val employee = DevEmployee(firstName = "New", lastName = "Staff")
             tx.insert(employee)
@@ -5042,13 +5042,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun getMyAccount(
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
     ): MessageControllerCitizen.MyAccountResponse {
         return messageControllerCitizen.getMyAccount(dbInstance(), user, MockEvakaClock(readTime))
     }
 
     private fun getCitizenRecipients(
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
     ): MessageControllerCitizen.GetRecipientsResponse {
         return messageControllerCitizen.getRecipients(dbInstance(), user, MockEvakaClock(readTime))
     }

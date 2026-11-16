@@ -17,7 +17,7 @@ fun pdfTemplateEngine(municipality: String): ITemplateEngine =
                 prefix = "$municipality/templates/"
                 suffix = ".html"
                 setTemplateMode("HTML")
-            }
+            },
         )
         addDialect(Java8TimeDialect())
         addDialect(LayoutDialect())

@@ -48,7 +48,7 @@ class FamilyInitializerService(
         val application =
             db.read { it.fetchApplicationDetails(msg.applicationId) }
                 ?: throw PermanentAsyncJobFailure(
-                    "Could not initialize family, application ${msg.applicationId} not found"
+                    "Could not initialize family, application ${msg.applicationId} not found",
                 )
 
         val members = parseFridgeFamilyMembersFromApplication(db, clock, user, application)
@@ -147,12 +147,12 @@ class FamilyInitializerService(
                 val headOfFamily =
                     tx.getPersonById(application.guardianId)
                         ?: throw PermanentAsyncJobFailure(
-                            "Application guardian not found with id ${application.guardianId}"
+                            "Application guardian not found with id ${application.guardianId}",
                         )
                 val child =
                     tx.getPersonById(application.childId)
                         ?: throw PermanentAsyncJobFailure(
-                            "Application child not found with id ${application.childId}"
+                            "Application child not found with id ${application.childId}",
                         )
 
                 val otherGuardianInSameAddressSsn =

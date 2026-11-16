@@ -86,7 +86,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     endDate = date,
                     createdBy = employee.evakaUserId,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             val templateId =
                 tx.insert(
@@ -94,7 +94,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                         name = templateNameFi,
                         validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                         content = DocumentTemplateContent(sections = emptyList()),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -107,7 +107,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = timestamp,
                     contentLockedBy = null,
-                )
+                ),
             )
         }
 
@@ -125,7 +125,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     nimi = "Ankka Aku",
                     yksikkö = "Ankkalinnake",
                     `tuen taso esiopetuksessa` = null,
-                )
+                ),
             )
     }
 
@@ -151,7 +151,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     endDate = date,
                     createdBy = employee.evakaUserId,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             val templateId =
                 tx.insert(
@@ -159,7 +159,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                         name = templateNameFi,
                         validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                         content = DocumentTemplateContent(sections = emptyList()),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -172,7 +172,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = timestamp,
                     contentLockedBy = null,
-                )
+                ),
             )
             tx.insert(
                 DevPreschoolAssistance(
@@ -185,7 +185,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                             employee.firstName + " " + employee.lastName,
                             EvakaUserType.EMPLOYEE,
                         ),
-                )
+                ),
             )
         }
 
@@ -203,7 +203,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     nimi = "Ankka Aku",
                     yksikkö = "Ankkalinnake",
                     `tuen taso esiopetuksessa` = "Tehostettu tuki",
-                )
+                ),
             )
     }
 
@@ -229,7 +229,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     endDate = date,
                     createdBy = employee.evakaUserId,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             val templateId =
                 tx.insert(
@@ -237,7 +237,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                         name = templateNameFi,
                         validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                         content = DocumentTemplateContent(sections = emptyList()),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -250,7 +250,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = timestamp,
                     contentLockedBy = null,
-                )
+                ),
             )
             val modifiedBy =
                 EvakaUser(
@@ -264,7 +264,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     validDuring = FiniteDateRange(date, date),
                     level = PreschoolAssistanceLevel.INTENSIFIED_SUPPORT,
                     modifiedBy = modifiedBy,
-                )
+                ),
             )
             tx.insert(
                 DevPreschoolAssistance(
@@ -272,7 +272,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     validDuring = FiniteDateRange(date.plusDays(1), date.plusDays(1)),
                     level = PreschoolAssistanceLevel.SPECIAL_SUPPORT,
                     modifiedBy = modifiedBy,
-                )
+                ),
             )
         }
 
@@ -303,7 +303,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     endDate = date,
                     createdBy = employee.evakaUserId,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -331,7 +331,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     endDate = date,
                     createdBy = employee.evakaUserId,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             val templateId =
                 tx.insert(
@@ -339,7 +339,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                         name = templateNameFi,
                         validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                         content = DocumentTemplateContent(sections = emptyList()),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -352,7 +352,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = timestamp,
                     contentLockedBy = null,
-                )
+                ),
             )
         }
 
@@ -388,7 +388,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     endDate = date,
                     createdBy = employee.evakaUserId,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             val templateId =
                 tx.insert(
@@ -396,7 +396,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                         name = templateNameFi,
                         validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                         content = DocumentTemplateContent(sections = emptyList()),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -409,7 +409,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = timestamp,
                     contentLockedBy = null,
-                )
+                ),
             )
         }
 
@@ -427,7 +427,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     nimi = "Ankka Aku",
                     yksikkö = "Ankkalinnake",
                     `tuen taso esiopetuksessa` = null,
-                )
+                ),
             )
     }
 
@@ -453,7 +453,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     endDate = date,
                     createdBy = employee.evakaUserId,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             val templateId =
                 tx.insert(
@@ -461,7 +461,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                         name = templateNameSv,
                         validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                         content = DocumentTemplateContent(sections = emptyList()),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -474,7 +474,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = timestamp,
                     contentLockedBy = null,
-                )
+                ),
             )
         }
 
@@ -492,7 +492,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     nimi = "Ankka Aku",
                     yksikkö = "Ankkalinnake",
                     `tuen taso esiopetuksessa` = null,
-                )
+                ),
             )
     }
 
@@ -518,7 +518,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     endDate = date,
                     createdBy = employee.evakaUserId,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             val templateId =
                 tx.insert(
@@ -526,7 +526,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                         name = templateNameFi,
                         validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                         content = DocumentTemplateContent(sections = emptyList()),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -539,7 +539,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = timestamp,
                     contentLockedBy = null,
-                )
+                ),
             )
         }
 
@@ -557,7 +557,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
                     nimi = "Ankka Aku",
                     yksikkö = "Ankkalinnake",
                     `tuen taso esiopetuksessa` = null,
-                )
+                ),
             )
     }
 }

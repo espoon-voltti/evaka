@@ -167,7 +167,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         val asyncJobs: List<AsyncJob>,
     ) {
         constructor(
-            plan: DeletionPlan
+            plan: DeletionPlan,
         ) : this(
             deletions =
                 plan.ownNodeDeletions.map {
@@ -211,7 +211,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
     private fun freezes(id: PersonId): Map<String, HelsinkiDateTime?> = db.read { tx ->
         tx.createQuery {
                 sql(
-                    "SELECT koski_data_first_removed_at AS koski, varda_data_first_removed_at AS varda FROM child WHERE id = ${bind(id)}"
+                    "SELECT koski_data_first_removed_at AS koski, varda_data_first_removed_at AS varda FROM child WHERE id = ${bind(id)}",
                 )
             }
             .exactlyOne {
@@ -279,7 +279,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                 OwnNodeId.SingleRow(
                     "child_document",
                     RowIdentity(mapOf("id" to family.documentId.raw)),
-                )
+                ),
             )
         assertEquals(
             family.lastPlacementEnd.plusDays(retentionDays.toLong()),
@@ -301,9 +301,9 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                         mapOf(
                             "document_id" to family.documentId.raw,
                             "person_id" to guardian.id.raw,
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         assertEquals(
             guardian.id.raw,
@@ -438,25 +438,25 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assertEquals(
             1,
             count(
-                "placement WHERE id = '${family.placementIds.last().raw}' AND source IS NULL AND source_application_id IS NULL"
+                "placement WHERE id = '${family.placementIds.last().raw}' AND source IS NULL AND source_application_id IS NULL",
             ),
         )
         assertEquals(
             1,
             count(
-                "income WHERE person_id = '${guardian.id.raw}' AND application_id IS NULL AND valid_to IS NOT NULL"
+                "income WHERE person_id = '${guardian.id.raw}' AND application_id IS NULL AND valid_to IS NOT NULL",
             ),
         )
         assertEquals(
             2,
             count(
-                "fridge_partner WHERE partnership_id = '${family.partnershipId.raw}' AND created_from_application IS NULL AND create_source IS NULL"
+                "fridge_partner WHERE partnership_id = '${family.partnershipId.raw}' AND created_from_application IS NULL AND create_source IS NULL",
             ),
         )
         assertEquals(
             1,
             count(
-                "fridge_child WHERE child_id = '${child.id.raw}' AND created_by_application IS NULL AND create_source IS NULL"
+                "fridge_child WHERE child_id = '${child.id.raw}' AND created_by_application IS NULL AND create_source IS NULL",
             ),
         )
         assertEquals(1, count("message_thread WHERE application_id IS NULL"))
@@ -562,7 +562,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE income SET valid_from = '2013-01-01', valid_to = '2014-12-31' WHERE person_id = ${bind(guardian.id)}"
+                    "UPDATE income SET valid_from = '2013-01-01', valid_to = '2014-12-31' WHERE person_id = ${bind(guardian.id)}",
                 )
             }
             it.execute {
@@ -594,7 +594,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     validFrom = LocalDate.of(2010, 1, 1),
                     validTo = LocalDate.of(2010, 12, 31),
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -646,7 +646,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                         devDocumentTemplate(
                             basis = DocumentDeletionBasis.STATUS_TRANSITION,
                             retentionDays = 30,
-                        )
+                        ),
                     ),
                     documentKey = "status.pdf",
                 )
@@ -660,7 +660,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     validFrom = LocalDate.of(2014, 1, 1),
                     validTo = null,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevFamilyContact(
@@ -668,7 +668,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     childId = child.id,
                     contactPersonId = otherGuardian.id,
                     priority = 1,
-                )
+                ),
             )
             byStatus
         }
@@ -677,7 +677,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         assert(graph.ownNodes.none { it.table.name == "placement" })
         val document =
             graph.ownNode(
-                OwnNodeId.SingleRow("child_document", RowIdentity(mapOf("id" to byStatus.raw)))
+                OwnNodeId.SingleRow("child_document", RowIdentity(mapOf("id" to byStatus.raw))),
             )
         assertEquals(
             longAgo.toLocalDate().plusDays(30),
@@ -727,7 +727,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = guardian.id,
                     startDate = sibling.dateOfBirth,
                     endDate = LocalDate.of(2015, 12, 31),
-                )
+                ),
             )
         }
         val graph = load(sibling.id)
@@ -763,7 +763,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = guardian.id,
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -771,7 +771,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = daycare.id,
                     startDate = LocalDate.of(2012, 8, 1),
                     endDate = LocalDate.of(2018, 5, 31),
-                )
+                ),
             )
             tx.insert(
                 DevFridgeChild(
@@ -779,7 +779,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = otherGuardian.id,
                     startDate = stepchild.dateOfBirth,
                     endDate = stepchild.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -787,7 +787,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = daycare.id,
                     startDate = LocalDate.of(2019, 8, 1),
                     endDate = LocalDate.of(2025, 5, 31),
-                )
+                ),
             )
             tx.insert(
                 DevFridgePartnership(
@@ -795,7 +795,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     second = otherGuardian.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     createdAt = longAgo,
-                )
+                ),
             )
         }
 
@@ -808,7 +808,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE fridge_partner SET start_date = '2009-01-01', end_date = '2010-12-31' WHERE partnership_id = ${bind(partnershipId)}"
+                    "UPDATE fridge_partner SET start_date = '2009-01-01', end_date = '2010-12-31' WHERE partnership_id = ${bind(partnershipId)}",
                 )
             }
         }
@@ -826,7 +826,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = guardian.id,
                     startDate = child.dateOfBirth,
                     endDate = LocalDate.of(2015, 12, 31),
-                )
+                ),
             )
             tx.insert(
                 DevFridgeChild(
@@ -834,7 +834,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = guardian.id,
                     startDate = youngChild.dateOfBirth,
                     endDate = youngChild.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -842,7 +842,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = daycare.id,
                     startDate = LocalDate.of(2021, 8, 1),
                     endDate = LocalDate.of(2027, 5, 31),
-                )
+                ),
             )
         }
 
@@ -861,7 +861,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     second = otherGuardian.id,
                     startDate = LocalDate.of(2012, 1, 1),
                     createdAt = longAgo,
-                )
+                ),
             )
             tx.insert(
                 DevFridgeChild(
@@ -869,7 +869,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = otherGuardian.id,
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             tx.insertApplication(
                 child.id,
@@ -890,7 +890,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = daycare.id,
                     startDate = LocalDate.of(2021, 8, 1),
                     endDate = LocalDate.of(2025, 5, 31),
-                )
+                ),
             )
         }
 
@@ -899,7 +899,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE placement SET start_date = '2012-08-01', end_date = '2018-05-31' WHERE child_id = ${bind(child.id)}"
+                    "UPDATE placement SET start_date = '2012-08-01', end_date = '2018-05-31' WHERE child_id = ${bind(child.id)}",
                 )
             }
         }
@@ -916,7 +916,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     second = otherGuardian.id,
                     startDate = LocalDate.of(2012, 1, 1),
                     createdAt = now,
-                )
+                ),
             )
         }
 
@@ -932,7 +932,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = guardian.id,
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
         }
 
@@ -950,7 +950,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = daycare.id,
                     startDate = LocalDate.of(2012, 8, 1),
                     endDate = LocalDate.of(2018, 5, 31),
-                )
+                ),
             )
             tx.insert(
                 DevFridgeChild(
@@ -958,7 +958,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = guardian.id,
                     startDate = child.dateOfBirth,
                     endDate = child.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevFridgeChild(
@@ -966,7 +966,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     headOfChild = guardian.id,
                     startDate = today.minusMonths(1),
                     endDate = baby.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevFridgePartnership(
@@ -974,7 +974,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     second = otherGuardian.id,
                     startDate = today.minusMonths(1),
                     createdAt = now,
-                )
+                ),
             )
             tx.insertApplication(
                 baby.id,
@@ -1007,7 +1007,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = daycare.id,
                     startDate = LocalDate.of(2012, 8, 1),
                     endDate = LocalDate.of(2014, 7, 31),
-                )
+                ),
             )
             tx.insertApplication(
                 child.id,
@@ -1021,7 +1021,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET sentdate = ${bind(today.minusYears(1).minusDays(1))} WHERE id = ${bind(applicationId)}"
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(1).minusDays(1))} WHERE id = ${bind(applicationId)}",
                 )
             }
         }
@@ -1038,14 +1038,14 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = daycare.id,
                     startDate = LocalDate.of(2012, 8, 1),
                     endDate = LocalDate.of(2014, 7, 31),
-                )
+                ),
             )
             tx.insertApplicationTree(ApplicationStatus.WAITING_CONFIRMATION, DecisionStatus.PENDING)
         }
         fun setDecisionSent(date: LocalDate) = db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE decision SET sent_date = ${bind(date)} WHERE application_id = ${bind(applicationId)}"
+                    "UPDATE decision SET sent_date = ${bind(date)} WHERE application_id = ${bind(applicationId)}",
                 )
             }
         }
@@ -1074,7 +1074,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(applicationId)}"
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(applicationId)}",
                 )
             }
         }
@@ -1096,7 +1096,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         fun setDraftCreated(date: LocalDate) = db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET created_at = ${bind(HelsinkiDateTime.of(date, LocalTime.NOON))} WHERE id = ${bind(draftId)}"
+                    "UPDATE application SET created_at = ${bind(HelsinkiDateTime.of(date, LocalTime.NOON))} WHERE id = ${bind(draftId)}",
                 )
             }
         }
@@ -1107,7 +1107,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(sentId)}"
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(sentId)}",
                 )
             }
         }
@@ -1133,7 +1133,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(applicationId)}"
+                    "UPDATE application SET sentdate = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(applicationId)}",
                 )
             }
         }
@@ -1150,7 +1150,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = daycare.id,
                     startDate = today.minusYears(12),
                     endDate = today.minusYears(10),
-                )
+                ),
             )
             tx.insertApplication(
                 child.id,
@@ -1164,7 +1164,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE placement SET end_date = end_date - 1 WHERE child_id = ${bind(child.id)}"
+                    "UPDATE placement SET end_date = end_date - 1 WHERE child_id = ${bind(child.id)}",
                 )
             }
         }
@@ -1180,7 +1180,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         fun setDecisionSent(date: LocalDate) = db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE decision SET sent_date = ${bind(date)} WHERE application_id = ${bind(applicationId)}"
+                    "UPDATE decision SET sent_date = ${bind(date)} WHERE application_id = ${bind(applicationId)}",
                 )
             }
         }
@@ -1230,7 +1230,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                     startDate = LocalDate.of(2012, 8, 1),
                     endDate = LocalDate.of(2013, 5, 31),
                     status = DecisionStatus.REJECTED,
-                )
+                ),
             )
         }
 
@@ -1239,7 +1239,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE decision SET archived_at = ${bind(now)} WHERE application_id = ${bind(applicationId)}"
+                    "UPDATE decision SET archived_at = ${bind(now)} WHERE application_id = ${bind(applicationId)}",
                 )
             }
         }
@@ -1336,7 +1336,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
                         type = ChildDocumentType.OTHER_DECISION,
                         basis = DocumentDeletionBasis.STATUS_TRANSITION,
                         retentionDays = 100 * 365,
-                    )
+                    ),
                 )
             tx.insertDocument(
                 keptTemplateId,
@@ -1375,7 +1375,7 @@ class DataRetentionQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = tru
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE child_document SET archived_at = ${bind(now)} WHERE id = ${bind(archivedDocumentId)}"
+                    "UPDATE child_document SET archived_at = ${bind(now)} WHERE id = ${bind(archivedDocumentId)}",
                 )
             }
         }
@@ -1408,7 +1408,7 @@ WITH snapshot AS (
 INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period, type)
 SELECT id, ${bind(family.voucherValueDecisionId)}, 100, daterange('2015-06-01', '2015-07-01'), 'CORRECTION'
 FROM snapshot
-"""
+""",
                 )
             }
         }
@@ -1419,7 +1419,7 @@ FROM snapshot
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE voucher_value_report_snapshot SET year = ${bind(monthNoLongerShown.year)}, month = ${bind(monthNoLongerShown.monthValue)}"
+                    "UPDATE voucher_value_report_snapshot SET year = ${bind(monthNoLongerShown.year)}, month = ${bind(monthNoLongerShown.monthValue)}",
                 )
             }
         }
@@ -1440,7 +1440,7 @@ FROM snapshot
                     unitId = daycare.id,
                     startDate = LocalDate.of(2019, 8, 1),
                     endDate = LocalDate.of(2020, 6, 30),
-                )
+                ),
             )
         }
 
@@ -1466,14 +1466,14 @@ FROM snapshot
             fun feeDecision(validDuring: FiniteDateRange, childId: ChildId) {
                 val feeDecisionId =
                     tx.insert(
-                        DevFeeDecision(validDuring = validDuring, headOfFamilyId = guardian.id)
+                        DevFeeDecision(validDuring = validDuring, headOfFamilyId = guardian.id),
                     )
                 tx.insert(
                     DevFeeDecisionChild(
                         feeDecisionId = feeDecisionId,
                         childId = childId,
                         placementUnitId = daycare.id,
-                    )
+                    ),
                 )
             }
             fun invoice(month: YearMonth, childId: ChildId) =
@@ -1484,7 +1484,7 @@ FROM snapshot
                         headOfFamilyId = guardian.id,
                         areaId = area.id,
                         rows = listOf(DevInvoiceRow(childId = childId, unitId = daycare.id)),
-                    )
+                    ),
                 )
             fun correction(month: YearMonth, childId: ChildId) =
                 tx.insert(
@@ -1499,7 +1499,7 @@ FROM snapshot
                         unitPrice = 100,
                         description = "",
                         note = "",
-                    )
+                    ),
                 )
             // The sibling was never placed, so these count from their own end in 2015
             feeDecision(
@@ -1520,7 +1520,7 @@ FROM snapshot
                     unitId = daycare.id,
                     startDate = LocalDate.of(2014, 1, 1),
                     endDate = today.minusYears(10),
-                )
+                ),
             )
         }
         val financeTables =
@@ -1541,7 +1541,7 @@ FROM snapshot
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE placement SET end_date = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(placementId)}"
+                    "UPDATE placement SET end_date = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(placementId)}",
                 )
             }
         }
@@ -1582,7 +1582,7 @@ FROM snapshot
             )
             tx.execute {
                 sql(
-                    "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(young.id)}, NULL, now())"
+                    "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(young.id)}, NULL, now())",
                 )
             }
         }
@@ -1612,7 +1612,7 @@ FROM snapshot
                         """
 INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_version)
 VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
-"""
+""",
                     )
                 }
             }
@@ -1651,7 +1651,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     validDuring = FiniteDateRange(LocalDate.of(2014, 1, 1), fiveYearsAndAMonthAgo),
                     headOfFamilyId = otherGuardian.id,
                     partnerId = guardian.id,
-                )
+                ),
             )
         }
         val voucherValueDecisionId = db.transaction { tx ->
@@ -1662,19 +1662,19 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     headOfFamilyId = guardian.id,
                     childId = child.id,
                     placementUnitId = daycare.id,
-                )
+                ),
             )
         }
         fun endDecisions(feeDecisionEnd: LocalDate, voucherValueDecisionEnd: LocalDate) =
             db.transaction { tx ->
                 tx.execute {
                     sql(
-                        "UPDATE fee_decision SET valid_during = daterange(lower(valid_during), ${bind(feeDecisionEnd)}, '[]') WHERE id = ${bind(feeDecisionId)}"
+                        "UPDATE fee_decision SET valid_during = daterange(lower(valid_during), ${bind(feeDecisionEnd)}, '[]') WHERE id = ${bind(feeDecisionId)}",
                     )
                 }
                 tx.execute {
                     sql(
-                        "UPDATE voucher_value_decision SET valid_to = ${bind(voucherValueDecisionEnd)} WHERE id = ${bind(voucherValueDecisionId)}"
+                        "UPDATE voucher_value_decision SET valid_to = ${bind(voucherValueDecisionEnd)} WHERE id = ${bind(voucherValueDecisionId)}",
                     )
                 }
             }
@@ -1703,7 +1703,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     unitId = daycare.id,
                     startDate = LocalDate.of(2012, 8, 1),
                     endDate = LocalDate.of(2014, 7, 31),
-                )
+                ),
             )
             tx.insert(
                 DevFeeAlteration(
@@ -1714,7 +1714,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     validFrom = today.minusYears(1),
                     validTo = null,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -1724,7 +1724,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE fee_alteration SET valid_from = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(alterationId)}"
+                    "UPDATE fee_alteration SET valid_from = ${bind(today.minusYears(10).minusDays(1))} WHERE id = ${bind(alterationId)}",
                 )
             }
         }
@@ -1742,7 +1742,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     date = date,
                     arrived = LocalTime.of(8, 0),
                     departed = LocalTime.of(16, 0),
-                )
+                ),
             )
             tx.insert(
                 DevReservation(
@@ -1751,7 +1751,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
                     createdBy = employee.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1759,7 +1759,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     unitId = daycare.id,
                     startDate = LocalDate.of(2019, 8, 1),
                     endDate = today.minusYears(5),
-                )
+                ),
             )
         }
 
@@ -1768,7 +1768,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE placement SET end_date = ${bind(today.minusYears(5).minusDays(1))} WHERE id = ${bind(placementId)}"
+                    "UPDATE placement SET end_date = ${bind(today.minusYears(5).minusDays(1))} WHERE id = ${bind(placementId)}",
                 )
             }
         }
@@ -1790,7 +1790,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                         unitId = daycare.id,
                         startDate = LocalDate.of(2019, 8, 1),
                         endDate = today.plusYears(1),
-                    )
+                    ),
                 )
                 fun feeDecision(status: FeeDecisionStatus, validDuring: FiniteDateRange) =
                     tx.insert(
@@ -1798,7 +1798,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                                 status = status,
                                 validDuring = validDuring,
                                 headOfFamilyId = guardian.id,
-                            )
+                            ),
                         )
                         .also {
                             tx.insert(
@@ -1806,7 +1806,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                                     feeDecisionId = it,
                                     childId = child.id,
                                     placementUnitId = daycare.id,
-                                )
+                                ),
                             )
                         }
                 feeDecision(
@@ -1823,7 +1823,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                             headOfFamilyId = guardian.id,
                             childId = child.id,
                             placementUnitId = daycare.id,
-                        )
+                        ),
                     )
                 val applicationId =
                     tx.insert(
@@ -1841,7 +1841,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                             decidedBy = employee.id,
                             decidedAt =
                                 HelsinkiDateTime.of(applicationStart.minusDays(14), LocalTime.NOON),
-                        )
+                        ),
                     )
                 Triple(applicationId, feeDecisionId, voucherValueDecisionId)
             }
@@ -1851,12 +1851,12 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
         ) = db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE fee_decision SET status = ${bind(feeDecisionStatus)} WHERE id = ${bind(feeDecisionId)}"
+                    "UPDATE fee_decision SET status = ${bind(feeDecisionStatus)} WHERE id = ${bind(feeDecisionId)}",
                 )
             }
             tx.execute {
                 sql(
-                    "UPDATE voucher_value_decision SET status = ${bind(voucherValueDecisionStatus)} WHERE id = ${bind(voucherValueDecisionId)}"
+                    "UPDATE voucher_value_decision SET status = ${bind(voucherValueDecisionStatus)} WHERE id = ${bind(voucherValueDecisionId)}",
                 )
             }
         }
@@ -1868,7 +1868,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE service_application SET start_date = ${bind(pastFiveYears)} WHERE id = ${bind(applicationId)}"
+                    "UPDATE service_application SET start_date = ${bind(pastFiveYears)} WHERE id = ${bind(applicationId)}",
                 )
             }
         }
@@ -1968,7 +1968,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                         FiniteDateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 12, 31)),
                     headOfFamilyId = otherGuardian.id,
                     partnerId = guardian.id,
-                )
+                ),
             )
             tx.insert(
                 DevFeeDecision(
@@ -1976,7 +1976,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                         FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 12, 31)),
                     headOfFamilyId = guardian.id,
                     status = FeeDecisionStatus.IGNORED,
-                )
+                ),
             )
         }
 
@@ -1986,7 +1986,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
             db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT id FROM income_statement WHERE person_id = ${bind(guardian.id)}"
+                            "SELECT id FROM income_statement WHERE person_id = ${bind(guardian.id)}",
                         )
                     }
                     .toSet<IncomeStatementId>()
@@ -2017,12 +2017,12 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                     id = "s1",
                     label = "s1",
                     questions = listOf(Question.TextQuestion(id = "q1", label = "q1")),
-                )
-            )
+                ),
+            ),
         )
     private val documentContent =
         DocumentContent(
-            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "answer"))
+            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "answer")),
         )
 
     private fun devDocumentTemplate(
@@ -2082,13 +2082,13 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                                 createdBy = employee.evakaUserId,
                                 publishedContent = documentContent,
                                 documentKey = documentKey,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         execute {
             sql(
-                "INSERT INTO child_document_read (document_id, person_id) VALUES (${bind(documentId)}, ${bind(guardian.id)})"
+                "INSERT INTO child_document_read (document_id, person_id) VALUES (${bind(documentId)}, ${bind(guardian.id)})",
             )
         }
         return documentId
@@ -2127,7 +2127,7 @@ VALUES (${bind(person.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                 """
 INSERT INTO application_note (application_id, content, created_by, modified_by, modified_at)
 VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(employee.evakaUserId)}, ${bind(longAgo)})
-"""
+""",
             )
         }
         insert(DevPlacementPlan(applicationId = applicationId, unitId = daycare.id))
@@ -2138,7 +2138,7 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
                 startDate = LocalDate.of(2012, 8, 1),
                 createdBy = employee.evakaUserId,
                 modifiedBy = employee.evakaUserId,
-            )
+            ),
         )
         val decisionId =
             insertTestDecision(
@@ -2152,11 +2152,11 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
                     endDate = LocalDate.of(2013, 7, 31),
                     status = decisionStatus,
                     documentKey = "decision.pdf",
-                )
+                ),
             )
         execute {
             sql(
-                "UPDATE decision SET other_guardian_document_key = 'decision-other-guardian.pdf', archived_at = ${bind(decisionArchivedAt.takeIf { decisionArchived })} WHERE id = ${bind(decisionId)}"
+                "UPDATE decision SET other_guardian_document_key = 'decision-other-guardian.pdf', archived_at = ${bind(decisionArchivedAt.takeIf { decisionArchived })} WHERE id = ${bind(decisionId)}",
             )
         }
         return applicationId
@@ -2191,7 +2191,7 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
      * about the application
      */
     private fun Database.Transaction.insertFamily(
-        lastPlacementEnd: LocalDate = LocalDate.of(2015, 6, 30)
+        lastPlacementEnd: LocalDate = LocalDate.of(2015, 6, 30),
     ): Family {
         val applicationId = insertApplicationTree()
         val placementIds =
@@ -2202,7 +2202,7 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
                         unitId = daycare.id,
                         startDate = LocalDate.of(2012, 8, 1),
                         endDate = LocalDate.of(2013, 7, 31),
-                    )
+                    ),
                 ),
                 insert(
                     DevPlacement(
@@ -2212,7 +2212,7 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
                         endDate = lastPlacementEnd,
                         source = PlacementSource.APPLICATION,
                         sourceApplicationId = applicationId,
-                    )
+                    ),
                 ),
             )
         insert(
@@ -2222,7 +2222,7 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
                 endDate = LocalDate.of(2013, 7, 31),
                 optionId = snDefaultDaycare.id,
                 confirmedBy = employee.evakaUserId,
-            )
+            ),
         )
         insert(
             DevDaycareGroupPlacement(
@@ -2230,21 +2230,21 @@ VALUES (${bind(applicationId)}, 'note', ${bind(employee.evakaUserId)}, ${bind(em
                 daycareGroupId = group.id,
                 startDate = lastPlacementEnd.minusYears(1),
                 endDate = lastPlacementEnd,
-            )
+            ),
         )
         insert(
             DevBackupCare(
                 childId = child.id,
                 unitId = daycare.id,
                 period = FiniteDateRange(lastPlacementEnd.minusMonths(1), lastPlacementEnd),
-            )
+            ),
         )
         execute {
             sql(
                 """
 INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_version)
 VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
-"""
+""",
             )
         }
         execute {
@@ -2252,12 +2252,12 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
                 """
 INSERT INTO koski_upload_error (child_id, unit_id, type, error, status_code, errored_at, errored_since)
 VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(), now())
-"""
+""",
             )
         }
         execute {
             sql(
-                "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(child.id)}, NULL, now())"
+                "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(child.id)}, NULL, now())",
             )
         }
         val imageId = insertChildImage(child.id)
@@ -2270,7 +2270,7 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                 childId = child.id,
                 contactPersonId = otherGuardian.id,
                 priority = 1,
-            )
+            ),
         )
         insert(
             DevFridgeChild(
@@ -2278,11 +2278,11 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                 headOfChild = guardian.id,
                 startDate = child.dateOfBirth,
                 endDate = child.dateOfBirth.plusYears(18).minusDays(1),
-            )
+            ),
         )
         execute {
             sql(
-                "UPDATE fridge_child SET create_source = 'APPLICATION', created_by_application = ${bind(applicationId)} WHERE child_id = ${bind(child.id)}"
+                "UPDATE fridge_child SET create_source = 'APPLICATION', created_by_application = ${bind(applicationId)} WHERE child_id = ${bind(child.id)}",
             )
         }
         val partnershipId =
@@ -2293,11 +2293,11 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                     startDate = LocalDate.of(2012, 1, 1),
                     endDate = LocalDate.of(2015, 12, 31),
                     createdAt = longAgo,
-                )
+                ),
             )
         execute {
             sql(
-                "UPDATE fridge_partner SET create_source = 'APPLICATION', created_from_application = ${bind(applicationId)} WHERE partnership_id = ${bind(partnershipId)}"
+                "UPDATE fridge_partner SET create_source = 'APPLICATION', created_from_application = ${bind(applicationId)} WHERE partnership_id = ${bind(partnershipId)}",
             )
         }
         val feeDecisionId =
@@ -2308,14 +2308,14 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                     headOfFamilyId = guardian.id,
                     partnerId = otherGuardian.id,
                     documentKey = "fee-decision.pdf",
-                )
+                ),
             )
         insert(
             DevFeeDecisionChild(
                 feeDecisionId = feeDecisionId,
                 childId = child.id,
                 placementUnitId = daycare.id,
-            )
+            ),
         )
         val voucherValueDecisionId =
             insert(
@@ -2328,7 +2328,7 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                     childDateOfBirth = child.dateOfBirth,
                     placementUnitId = daycare.id,
                     documentKey = "value-decision.pdf",
-                )
+                ),
             )
         val incomeId =
             insert(
@@ -2337,11 +2337,11 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                     validFrom = LocalDate.of(2013, 1, 1),
                     validTo = LocalDate.of(2013, 12, 31),
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         execute {
             sql(
-                "UPDATE income SET application_id = ${bind(applicationId)} WHERE id = ${bind(incomeId)}"
+                "UPDATE income SET application_id = ${bind(applicationId)} WHERE id = ${bind(incomeId)}",
             )
         }
         insert(
@@ -2350,7 +2350,7 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                 validFrom = LocalDate.of(2024, 1, 1),
                 validTo = null,
                 modifiedBy = employee.evakaUserId,
-            )
+            ),
         )
         insert(
             DevIncomeStatement(
@@ -2366,7 +2366,7 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                 sentAt = longAgo,
                 handlerId = employee.id,
                 handledAt = longAgo,
-            )
+            ),
         )
         createPersonMessageAccount(guardian.id)
         execute {
@@ -2374,7 +2374,7 @@ VALUES (${bind(child.id)}, ${bind(daycare.id)}, 'PRESCHOOL', 'failed', 500, now(
                 """
 INSERT INTO message_thread (message_type, title, urgent, is_copy, application_id, sensitive)
 VALUES ('MESSAGE', 'About the application', false, false, ${bind(applicationId)}, false)
-"""
+""",
             )
         }
         return Family(

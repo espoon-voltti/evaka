@@ -22,7 +22,7 @@ fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {
             """
 INSERT INTO setting (key, value) VALUES (${bind { it.key }}, ${bind { it.value }})
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value WHERE setting.value != EXCLUDED.value
-        """
+        """,
         )
     }
 }

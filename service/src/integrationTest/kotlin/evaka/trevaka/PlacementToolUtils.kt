@@ -37,6 +37,6 @@ fun assertPlacementToolServiceNeedOptionIdExists(
         }
     assertTrue(
         DateRange(serviceNeedOption.validFrom, serviceNeedOption.validTo)
-            .includes(nextFirstOfAugust)
+            .includes(nextFirstOfAugust),
     )
 }

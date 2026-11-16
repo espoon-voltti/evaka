@@ -66,7 +66,7 @@ data class DaycareFormV0(
                     address = Address(),
                     correctingAddress = Address(),
                     restricted = true,
-                )
+                ),
         )
     }
 
@@ -77,7 +77,7 @@ data class DaycareFormV0(
                     address = Address(),
                     correctingAddress = Address(),
                     restricted = true,
-                )
+                ),
         )
     }
 
@@ -202,7 +202,7 @@ data class DaycareFormV0(
                                 firstName = it.firstName,
                                 lastName = it.lastName,
                                 socialSecurityNumber = it.socialSecurityNumber ?: "",
-                            )
+                            ),
                         )
                     } ?: listOf(),
                 hasOtherChildren = form.otherChildren.isNotEmpty(),

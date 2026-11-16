@@ -121,7 +121,7 @@ class LempaalaConfig {
                 minUppers = 1,
                 minDigits = 1,
                 minSymbols = 0,
-            )
+            ),
         )
 
     @Bean

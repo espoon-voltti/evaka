@@ -118,7 +118,7 @@ class EvakaPushNotificationMessageProvider : PushNotificationMessageProvider {
                                     UiLanguage.SV -> "Godkänn eller avvisa beslutet i eVaka"
                                     UiLanguage.EN -> "Accept or reject the decision in eVaka"
                                 }
-                            else null
+                            else null,
                         ))
                     .joinToString("\n"),
         )

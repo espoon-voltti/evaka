@@ -47,13 +47,13 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit.id,
                     startDate = jan1,
                     endDate = today,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceNeedVoucherCoefficient(
                     childId = child.id,
                     validityPeriod = FiniteDateRange(jan1, dec31),
-                )
+                ),
             )
         }
         assertEquals(listOf(FiniteDateRange(jan1, dec31)), getCoefficientRanges())
@@ -84,7 +84,7 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit.id,
                     startDate = jan1,
                     endDate = yesterday,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -92,13 +92,13 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit.id,
                     startDate = today,
                     endDate = dec31,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceNeedVoucherCoefficient(
                     childId = child.id,
                     validityPeriod = FiniteDateRange(jan1, dec31),
-                )
+                ),
             )
         }
         assertEquals(listOf(FiniteDateRange(jan1, dec31)), getCoefficientRanges())
@@ -129,13 +129,13 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit.id,
                     startDate = jan1,
                     endDate = yesterday,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceNeedVoucherCoefficient(
                     childId = child.id,
                     validityPeriod = FiniteDateRange(jan1, dec31),
-                )
+                ),
             )
         }
         assertEquals(listOf(FiniteDateRange(jan1, dec31)), getCoefficientRanges())
@@ -168,7 +168,7 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit.id,
                     startDate = jan1,
                     endDate = yesterday,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -176,13 +176,13 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit2.id,
                     startDate = today,
                     endDate = dec31,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceNeedVoucherCoefficient(
                     childId = child.id,
                     validityPeriod = FiniteDateRange(jan1, dec31),
-                )
+                ),
             )
         }
         assertEquals(listOf(FiniteDateRange(jan1, dec31)), getCoefficientRanges())
@@ -215,7 +215,7 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit.id,
                     startDate = jan1,
                     endDate = yesterday,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -223,13 +223,13 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit2.id,
                     startDate = today,
                     endDate = dec31,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceNeedVoucherCoefficient(
                     childId = child.id,
                     validityPeriod = FiniteDateRange(today, dec31),
-                )
+                ),
             )
         }
         assertEquals(listOf(FiniteDateRange(today, dec31)), getCoefficientRanges())
@@ -261,13 +261,13 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     startDate = jan1,
                     // Placement already ended 2 days ago
                     endDate = today.minusDays(2),
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceNeedVoucherCoefficient(
                     childId = child.id,
                     validityPeriod = FiniteDateRange(jan1, dec31),
-                )
+                ),
             )
         }
         assertEquals(listOf(FiniteDateRange(jan1, dec31)), getCoefficientRanges())
@@ -298,13 +298,13 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
                     unitId = unit.id,
                     startDate = jan1,
                     endDate = yesterday,
-                )
+                ),
             )
             tx.insert(
                 DevAssistanceNeedVoucherCoefficient(
                     childId = child.id,
                     validityPeriod = FiniteDateRange(jan1, dec31),
-                )
+                ),
             )
         }
 
@@ -327,7 +327,7 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
     private fun getCoefficientRanges() = db.read {
         it.createQuery {
                 sql(
-                    "SELECT validity_period FROM assistance_need_voucher_coefficient ORDER BY validity_period"
+                    "SELECT validity_period FROM assistance_need_voucher_coefficient ORDER BY validity_period",
                 )
             }
             .toList<FiniteDateRange>()

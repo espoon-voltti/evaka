@@ -23,7 +23,7 @@ fun Database.Read.getPlacementRangesByChild(childIds: Set<ChildId>) = createQuer
                 FROM placement pl
                 JOIN daycare d ON pl.unit_id = d.id
                 WHERE child_id = ANY(${bind(childIds)}) AND NOT pl.type = ANY(${bind(ignoredPlacementTypes)})
-            """
+            """,
     )
 }
     .toList<PlacementRange>()
@@ -36,7 +36,7 @@ fun Database.Read.getServiceNeedRangesByChild(childIds: Set<ChildId>) = createQu
         FROM service_need sn
         JOIN placement p ON sn.placement_id = p.id
         WHERE child_id = ANY(${bind(childIds)})
-    """
+    """,
     )
 }
     .toList<ServiceNeedRange>()
@@ -56,7 +56,7 @@ SELECT
     coefficient_under_3y,
     value_under_3y
 FROM service_need_option_voucher_value
-        """
+        """,
     )
 }
     .toList<ServiceNeedOptionVoucherValueRangeWithId>()
@@ -77,7 +77,7 @@ SELECT
 FROM fridge_child fc
 JOIN person p on fc.child_id = p.id
 WHERE head_of_child = ANY(${bind(parentIds)}) AND NOT conflict
-"""
+""",
         )
     }
         .toList<ChildRelation>()
@@ -102,7 +102,7 @@ SELECT
 FROM fridge_partner fp1
 JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx <> fp2.indx
 WHERE fp1.person_id = ${bind(id)} AND NOT fp1.conflict AND NOT fp2.conflict
-"""
+""",
         )
     }
         .toList<PartnerRelation>()

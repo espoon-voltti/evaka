@@ -34,7 +34,7 @@ internal fun transform(
                     createDecisionMakerAgent(
                         feeDecision.financeDecisionHandlerFirstName,
                         feeDecision.financeDecisionHandlerLastName,
-                    )
+                    ),
                 )
             }
         content =
@@ -45,7 +45,7 @@ internal fun transform(
                         val mimeType = mimeTypes.forName(document.contentType)
                         name = "Maksupäätös${mimeType.extension}"
                         this.originalId = originalId
-                    }
+                    },
                 )
             }
     } to mapOf(originalId to document)

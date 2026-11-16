@@ -64,7 +64,7 @@ fun Database.Transaction.insertIncome(
             NULL
         )
         RETURNING id
-    """
+    """,
         )
     }
 
@@ -93,7 +93,7 @@ fun Database.Transaction.updateIncome(
             modified_by = ${bind(modifiedBy)},
             application_id = NULL
         WHERE id = ${bind(id)}
-    """
+    """,
         )
     }
 
@@ -131,7 +131,7 @@ FROM income
 JOIN evaka_user created_by ON income.created_by = created_by.id
 JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE income.id = ${bind(id)}
-"""
+""",
         )
     }
         .exactlyOneOrNull { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
@@ -171,7 +171,7 @@ JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE person_id = ${bind(personId)}
 AND (${bind(validAt)}::timestamp IS NULL OR tsrange(valid_from, valid_to) @> ${bind(validAt)}::timestamp)
 ORDER BY valid_from DESC
-        """
+        """,
         )
     }
         .toList { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
@@ -203,7 +203,7 @@ JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE
     person_id = ANY(${bind(personIds)})
     AND (valid_to IS NULL OR valid_to >= ${bind(from)})
-"""
+""",
         )
     }
         .toList { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
@@ -233,7 +233,7 @@ fun Database.Transaction.endEarlierOverlappingIncome(
                 AND valid_from < ${bind(period.start)}
                 AND (valid_to IS NULL OR valid_to >= ${bind(period.start)})
             RETURNING id, valid_from
-            """
+            """,
         )
     }
 

@@ -297,7 +297,7 @@ fun buildDataRetentionSchema(
                             referenceColumn = "decision_id",
                             referencedTable = "child_document_decision",
                             auditIdType = DatabaseTable.ChildDocumentDecision::class,
-                        )
+                        ),
                     ),
             ),
             HandledTable(
@@ -318,7 +318,7 @@ fun buildDataRetentionSchema(
                 handledBy = CHILD,
                 references =
                     listOf(
-                        primaryReference("child_document_id", referencedTable = "child_document")
+                        primaryReference("child_document_id", referencedTable = "child_document"),
                     ),
                 independentRows = true,
                 auditIdType = DatabaseTable.ChildDocumentPublishedVersion::class,
@@ -643,7 +643,7 @@ fun buildDataRetentionSchema(
                 handledBy = CHILD,
                 references =
                     listOf(
-                        primaryReference("decision_id", referencedTable = "voucher_value_decision")
+                        primaryReference("decision_id", referencedTable = "voucher_value_decision"),
                     ),
                 auditIdType = DatabaseTable.VoucherValueReportDecision::class,
                 expirationRule = Always,
@@ -926,7 +926,7 @@ private fun requireSafetyConditions(
     require(
         voucherValueReportRows.deletedWithParent &&
             schema.parentOf(voucherValueReportRows)?.name == "voucher_value_decision" &&
-            !voucherValueReportRows.independentRows
+            !voucherValueReportRows.independentRows,
     ) {
         "$voucherValueReportRows must be deleted with voucher_value_decision and be evaluated as a whole, so that the service voucher report loses all the rows of a child at once"
     }
@@ -941,7 +941,9 @@ private fun requireSafetyConditions(
         }
         // Always on its own would delete the rows the first time a run reaches them
         require(
-            table.expirationRule != Always || table.deletedWithParent || table.financeFreeze != null
+            table.expirationRule != Always ||
+                table.deletedWithParent ||
+                table.financeFreeze != null,
         ) {
             "$table: Always is the only rule, so the table must be deleted with its parent or wait for the finance freeze"
         }
@@ -970,7 +972,7 @@ private fun requireSafetyConditions(
         require(
             schema.handledTables.any {
                 schema.deletionBundleRoot(it) == root && it.waitsForFinanceThreads()
-            }
+            },
         ) {
             "The finance thread removal reads $table, so it must wait for the finance thread period after the placements of its children, directly or through a table it is deleted with"
         }

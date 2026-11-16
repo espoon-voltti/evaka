@@ -33,8 +33,8 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
             val fetcher = PreschoolValuesFetcher(tx)
             assert(
                 fetcher.fetchPreschoolAccountingAmount(
-                    DateRange.Companion.ofMonth(2022, Month.SEPTEMBER)
-                ) == 451
+                    DateRange.Companion.ofMonth(2022, Month.SEPTEMBER),
+                ) == 451,
             )
         }
     }
@@ -196,7 +196,7 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
                 VALUES (${bind(UUID.fromString("bc6a4550-fa74-11eb-9a2d-035acd5db9aa"))}, 'Esiopetus', 'Esiopetus', 'Esiopetus', 'PRESCHOOL', true, 1.0, 1.0, 1.0, 1.0, 1.0, 40, false, false, '', '', '', '', '2020-01-01')
                 ON CONFLICT DO NOTHING
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
             .execute()
@@ -209,7 +209,7 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
                     VALUES (${bind(UUID.fromString(id))}, 'Test', 'Test', 'Test', 'DAYCARE', false, 1.0, 1.0, 1.0, 1.0, 1.0, 40, false, false, '', '', '', '', '2020-01-01')
                     ON CONFLICT DO NOTHING
                     """
-                            .trimIndent()
+                            .trimIndent(),
                     )
                 }
                     .execute()
@@ -263,7 +263,7 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ${bind(baseValue)}, 1, 0, 0, 0, 0
                     )
                     """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
             .execute()
@@ -278,7 +278,7 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
                     INSERT INTO voucher_value_report_snapshot (id, "month", "year", taken_at)
                     VALUES (${bind(id)}, 4, 2022, '2022-04-30 23:30:00')
                     """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
             .execute()
@@ -301,7 +301,7 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
                         'ORIGINAL', ${bind(decisionId)}
                     )
                     """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
             .execute()

@@ -41,7 +41,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `no applications means no duplicates`() {
         db.transaction { tx ->
             assertFalse(
-                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE)
+                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE),
             )
         }
     }
@@ -51,7 +51,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         addDaycareApplication()
         db.transaction { tx ->
             assertTrue(
-                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE)
+                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE),
             )
         }
     }
@@ -61,7 +61,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         addDaycareApplication()
         db.transaction { tx ->
             assertFalse(
-                tx.duplicateApplicationExists(child2.id, guardian.id, ApplicationType.DAYCARE)
+                tx.duplicateApplicationExists(child2.id, guardian.id, ApplicationType.DAYCARE),
             )
         }
     }
@@ -71,7 +71,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         addDaycareApplication()
         db.transaction { tx ->
             assertFalse(
-                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.PRESCHOOL)
+                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.PRESCHOOL),
             )
         }
     }
@@ -83,7 +83,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         addDaycareApplication(ApplicationStatus.CANCELLED)
         db.transaction { tx ->
             assertFalse(
-                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE)
+                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE),
             )
         }
     }

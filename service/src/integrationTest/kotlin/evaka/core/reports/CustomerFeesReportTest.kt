@@ -62,7 +62,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                         headOfFamilyId = headOfFamily,
                         validDuring = range,
                         status = FeeDecisionStatus.SENT,
-                    )
+                    ),
                 )
             tx.insert(
                 DevFeeDecisionChild(
@@ -70,7 +70,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child1,
                     placementUnitId = daycare.id,
                     finalFee = 28800,
-                )
+                ),
             )
             tx.insert(
                 DevFeeDecisionChild(
@@ -78,7 +78,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child2,
                     placementUnitId = daycare.id,
                     finalFee = 28800,
-                )
+                ),
             )
             tx.insert(
                 DevFeeDecisionChild(
@@ -86,7 +86,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child3,
                     placementUnitId = daycare.id,
                     finalFee = 14400,
-                )
+                ),
             )
         }
 
@@ -155,7 +155,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     status = VoucherValueDecisionStatus.SENT,
                     placementUnitId = daycare.id,
                     finalCoPayment = 28800,
-                )
+                ),
             )
             tx.insert(
                 DevVoucherValueDecision(
@@ -166,7 +166,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     status = VoucherValueDecisionStatus.SENT,
                     placementUnitId = daycare.id,
                     finalCoPayment = 28800,
-                )
+                ),
             )
             tx.insert(
                 DevVoucherValueDecision(
@@ -177,7 +177,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     status = VoucherValueDecisionStatus.SENT,
                     placementUnitId = daycare.id,
                     finalCoPayment = 14400,
-                )
+                ),
             )
         }
 

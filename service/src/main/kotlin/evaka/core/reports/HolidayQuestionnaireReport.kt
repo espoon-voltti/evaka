@@ -219,8 +219,8 @@ class HolidayQuestionnaireReport(
                         val staffNeedAtDate =
                             ceil(
                                     dailyOccupancyCoefficient.div(
-                                        occupancyCoefficientSeven.toDouble()
-                                    )
+                                        occupancyCoefficientSeven.toDouble(),
+                                    ),
                                 )
                                 .toInt()
 
@@ -267,7 +267,7 @@ class HolidayQuestionnaireReport(
             }
             .also {
                 Audit.HolidayQuestionnaireReport.log(
-                    meta = mapOf("unitId" to unitId, "questionnaireId" to questionnaireId)
+                    meta = mapOf("unitId" to unitId, "questionnaireId" to questionnaireId),
                 )
             }
     }

@@ -31,7 +31,7 @@ SELECT
 FROM child_document cd
 JOIN document_template dt ON dt.id = cd.template_id
 WHERE cd.id = ANY(${bind(ids)})
-"""
+""",
                 )
             }
             .toDatesById()
@@ -47,7 +47,7 @@ SELECT cd.id
 FROM child_document cd
 JOIN document_template dt ON dt.id = cd.template_id
 WHERE cd.id = ANY(${bind(ids)}) AND cd.status <> 'DRAFT' AND dt.archive_externally AND cd.archived_at IS NULL
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -65,7 +65,7 @@ val notWhileDecisionAwaitingArchival =
 SELECT id
 FROM decision
 WHERE id = ANY(${bind(ids)}) AND status IN ('ACCEPTED', 'REJECTED') AND type <> 'CLUB' AND archived_at IS NULL
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -79,7 +79,7 @@ val notWhileDecisionPending =
 SELECT id
 FROM decision
 WHERE id = ANY(${bind(ids)}) AND status = 'PENDING'
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -106,7 +106,7 @@ SELECT
   END AS date
 FROM decision
 WHERE id = ANY(${bind(ids)})
-"""
+""",
                 )
             }
             .toDatesById()
@@ -121,7 +121,7 @@ val notWhileFeeDecisionAwaitingArchival =
 SELECT id
 FROM fee_decision
 WHERE id = ANY(${bind(ids)}) AND status IN ('SENT', 'ANNULLED') AND archived_at IS NULL
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -136,7 +136,7 @@ val notWhileVoucherValueDecisionAwaitingArchival =
 SELECT id
 FROM voucher_value_decision
 WHERE id = ANY(${bind(ids)}) AND status IN ('SENT', 'ANNULLED') AND archived_at IS NULL
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -154,7 +154,7 @@ SELECT r.id, (make_date(s.year, s.month, 1) + interval '1 month' - interval '1 d
 FROM voucher_value_report_decision r
 JOIN voucher_value_report_snapshot s ON s.id = r.voucher_value_report_snapshot_id
 WHERE r.id = ANY(${bind(ids)})
-"""
+""",
                 )
             }
             .toDatesById()
@@ -192,7 +192,7 @@ SELECT
   END AS date
 FROM income_statement s
 WHERE s.id = ANY(${bind(ids)})
-"""
+""",
                 )
             }
             .toDatesById()
@@ -206,7 +206,7 @@ val notWhileIncomeStatementAwaitingHandling =
 SELECT id
 FROM income_statement
 WHERE id = ANY(${bind(ids)}) AND status IN ('SENT', 'HANDLING')
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -233,7 +233,7 @@ WHERE fp.person_id = fc.head_of_child
     * daterange(fp.start_date, fp.end_date, '[]')
     * daterange(theirs.start_date, theirs.end_date, '[]')
   )
-"""
+""",
     )
 }
 
@@ -256,7 +256,7 @@ JOIN LATERAL (${subquery(fridgeChildRelevantChildren)}) relevant ON true
 JOIN placement p ON p.child_id = relevant.child_id
 WHERE fc.id = ANY(${bind(ids)})
 GROUP BY fc.id
-"""
+""",
                 )
             }
             .toDatesById()
@@ -272,7 +272,7 @@ FROM fridge_child fc
 JOIN LATERAL (${subquery(fridgeChildRelevantChildren)}) relevant ON true
 JOIN application a ON a.child_id = relevant.child_id AND a.status = ANY(${bind(ApplicationStatus.pending)})
 WHERE fc.id = ANY(${bind(ids)})
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -288,7 +288,7 @@ JOIN fridge_child fc
   ON fc.head_of_child = fp.person_id
   AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp.start_date, fp.end_date, '[]')
 WHERE fp.partnership_id = partnership.partnership_id
-"""
+""",
     )
 }
 
@@ -307,7 +307,7 @@ JOIN LATERAL (${subquery(fridgePartnerRelevantChildren)}) relevant ON true
 JOIN placement p ON p.child_id = relevant.child_id
 WHERE partnership.partnership_id = ANY(${bind(ids)})
 GROUP BY partnership.partnership_id
-"""
+""",
                 )
             }
             .toDatesById()
@@ -323,7 +323,7 @@ FROM fridge_partner partnership
 JOIN LATERAL (${subquery(fridgePartnerRelevantChildren)}) relevant ON true
 JOIN application a ON a.child_id = relevant.child_id AND a.status = ANY(${bind(ApplicationStatus.pending)})
 WHERE partnership.partnership_id = ANY(${bind(ids)})
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -357,7 +357,7 @@ SELECT relevant.child_id
 FROM fridge_partner partnership
 JOIN LATERAL (${subquery(fridgePartnerRelevantChildren)}) relevant ON true
 WHERE partnership.person_id = person.id
-"""
+""",
     )
 }
 
@@ -372,7 +372,7 @@ val notWhileApplicationPending =
 SELECT id
 FROM application
 WHERE id = ANY(${bind(ids)}) AND status = ANY(${bind(ApplicationStatus.pending)})
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -399,7 +399,7 @@ SELECT
   END AS date
 FROM application
 WHERE id = ANY(${bind(ids)})
-"""
+""",
                 )
             }
             .toDatesById()
@@ -412,7 +412,7 @@ WHERE id = ANY(${bind(ids)})
  */
 val notWhileFinanceDecisionsFromServiceApplicationStart =
     NotWhile(
-        "a sent fee or voucher value decision of the child covers days from the application's start"
+        "a sent fee or voucher value decision of the child covers days from the application's start",
     ) { tx, ids ->
         tx.createQuery {
                 sql(
@@ -433,7 +433,7 @@ AND (
         AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sa.start_date, NULL)
     )
 )
-"""
+""",
                 )
             }
             .toSet<UUID>()
@@ -457,7 +457,7 @@ LEFT JOIN fee_decision_child fdc ON fdc.fee_decision_id = fd.id
 LEFT JOIN placement p ON p.child_id = fdc.child_id
 WHERE fd.id = ANY(${bind(ids)})
 GROUP BY fd.id
-"""
+""",
                 )
             }
             .toDatesById()
@@ -481,7 +481,7 @@ LEFT JOIN invoice_row ir ON ir.invoice_id = i.id
 LEFT JOIN placement p ON p.child_id = ir.child
 WHERE i.id = ANY(${bind(ids)})
 GROUP BY i.id
-"""
+""",
                 )
             }
             .toDatesById()
@@ -504,7 +504,7 @@ FROM invoice_correction ic
 LEFT JOIN placement p ON p.child_id = ic.child_id
 WHERE ic.id = ANY(${bind(ids)})
 GROUP BY ic.id
-"""
+""",
                 )
             }
             .toDatesById()
@@ -544,7 +544,7 @@ JOIN LATERAL (
 ) decision ON true
 WHERE i.id = ANY(${bind(ids)})
 GROUP BY i.id
-"""
+""",
                 )
             }
             .toDatesById()

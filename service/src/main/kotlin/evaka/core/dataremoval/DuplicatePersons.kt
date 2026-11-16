@@ -76,7 +76,7 @@ SELECT
 FROM person d
 JOIN person o ON o.id = d.duplicate_of
 WHERE ${bind(personId)} IN (d.id, o.id)
-"""
+""",
         )
     }
         .toList {

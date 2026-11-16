@@ -44,7 +44,7 @@ NOT EXISTS (
     JOIN application_note an ON an.message_content_id = m.content_id
     WHERE m.thread_id = $it.id
 )
-"""
+""",
     )
 }
 
@@ -58,7 +58,7 @@ NOT EXISTS (
     FROM message m
     WHERE m.thread_id = $it.id AND m.created >= ${bind(expiresBefore)}
 )
-"""
+""",
     )
 }
 
@@ -81,7 +81,7 @@ COALESCE(
     ) < ${bind(placementExpireDate)},
     ${predicate(lastMessageBefore(expiresBefore).forTable(it))}
 )
-"""
+""",
     )
 }
 
@@ -117,7 +117,7 @@ WHERE
     END
 LIMIT ${bind(limit)}
 FOR UPDATE OF mt
-"""
+""",
         )
     }
         .toList<MessageThreadId>()
@@ -140,7 +140,7 @@ NOT EXISTS (
     JOIN message_account sender ON sender.id = m.sender_id
     WHERE m.thread_id = $it.id AND sender.type IN ('SERVICE_WORKER', 'FINANCE')
 )
-"""
+""",
     )
 }
 
@@ -171,7 +171,7 @@ WHERE
     ${predicate(expiredByChildPlacements(placementExpireDate, expiresBefore).forTable("mt"))}
 LIMIT ${bind(limit)}
 FOR UPDATE OF mt
-"""
+""",
         )
     }
         .toList<MessageThreadId>()
@@ -202,7 +202,7 @@ JOIN message_thread mt ON mt.id = swt.thread_id
 WHERE ${predicate(unreferencedByApplication.forTable("mt"))}
 LIMIT ${bind(limit)}
 FOR UPDATE OF mt
-"""
+""",
         )
     }
         .toList<MessageThreadId>()
@@ -251,7 +251,7 @@ WHERE
     ${predicate(lastMessageBefore(expiresBefore).forTable("mt"))}
 LIMIT ${bind(limit)}
 FOR UPDATE OF mt
-"""
+""",
         )
     }
         .toList<MessageThreadId>()
@@ -272,18 +272,18 @@ WHERE EXISTS (
     JOIN message_account sender ON sender.id = sent.sender_id
     WHERE sent.thread_id = m.thread_id AND sender.type = 'FINANCE'
 )
-"""
+""",
     )
 }
 
 private fun Database.Transaction.deleteMessageThreads(
-    threadIds: List<MessageThreadId>
+    threadIds: List<MessageThreadId>,
 ): DeletedMessageThreadBatch {
     if (threadIds.isEmpty()) return DeletedMessageThreadBatch(emptyList(), emptyList())
 
     val childIdsByThread = createQuery {
         sql(
-            "SELECT thread_id, child_id FROM message_thread_children WHERE thread_id = ANY(${bind(threadIds)})"
+            "SELECT thread_id, child_id FROM message_thread_children WHERE thread_id = ANY(${bind(threadIds)})",
         )
     }
         .toList { columnPair<MessageThreadId, ChildId>("thread_id", "child_id") }
@@ -307,7 +307,7 @@ private fun Database.Transaction.deleteMessageThreads(
  * some of its threads and is deleted once the last one is gone.
  */
 private fun Database.Transaction.deleteUnreferencedMessageContents(
-    contentIds: List<MessageContentId>
+    contentIds: List<MessageContentId>,
 ): List<DeletedThreadContent> {
     if (contentIds.isEmpty()) return emptyList()
 
@@ -319,7 +319,7 @@ FROM message_content mc
 WHERE
     mc.id = ANY(${bind(contentIds)}) AND
     NOT EXISTS (SELECT 1 FROM message m WHERE m.content_id = mc.id)
-"""
+""",
         )
     }
         .toList<MessageContentId>()
@@ -330,7 +330,7 @@ WHERE
     // the contents are deleted
     val attachmentsByContent = createQuery {
         sql(
-            "SELECT message_content_id, id FROM attachment WHERE message_content_id = ANY(${bind(deletableIds)})"
+            "SELECT message_content_id, id FROM attachment WHERE message_content_id = ANY(${bind(deletableIds)})",
         )
     }
         .toList { columnPair<MessageContentId, AttachmentId>("message_content_id", "id") }
@@ -353,7 +353,7 @@ FROM message_draft
 WHERE created_at < ${bind(expiresBefore)}
 LIMIT ${bind(limit)}
 FOR UPDATE
-"""
+""",
         )
     }
         .toList<MessageDraftId>()
@@ -364,7 +364,7 @@ FOR UPDATE
     // drafts are deleted
     val attachmentsByDraft = createQuery {
         sql(
-            "SELECT message_draft_id, id FROM attachment WHERE message_draft_id = ANY(${bind(draftIds)})"
+            "SELECT message_draft_id, id FROM attachment WHERE message_draft_id = ANY(${bind(draftIds)})",
         )
     }
         .toList { columnPair<MessageDraftId, AttachmentId>("message_draft_id", "id") }

@@ -21,7 +21,7 @@ data class TurkuEnv(
                 sapPayments = SftpProperties.fromEnvironment(env, "evakaturku.sap_payments"),
                 dwExport =
                     DwExportProperties(
-                        sftp = SftpProperties.fromEnvironment(env, "evakaturku.dw_export.sftp")
+                        sftp = SftpProperties.fromEnvironment(env, "evakaturku.dw_export.sftp"),
                     ),
             )
     }

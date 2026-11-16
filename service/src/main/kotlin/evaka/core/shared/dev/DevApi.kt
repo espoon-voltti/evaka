@@ -335,7 +335,7 @@ class DevApi(
                             it.daycareGroupId,
                             it.startDate,
                             it.endDate,
-                        )
+                        ),
                     )
                 }
             }
@@ -361,7 +361,7 @@ class DevApi(
                             caretaker.amount.toBigDecimal(),
                             startDate = caretaker.startDate,
                             endDate = caretaker.endDate,
-                        )
+                        ),
                     )
                 }
             }
@@ -396,10 +396,10 @@ class DevApi(
                             """
 UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date = ${bind(req.terminationRequestedDate)}, terminated_by = ${
                             bind(
-                                req.terminatedBy
+                                req.terminatedBy,
                             )
                         } WHERE id = ${bind(req.placementId)}
-"""
+""",
                         )
                     }
                 }
@@ -455,7 +455,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             pendingDecisionEmailsSentCount = null,
                             pendingDecisionEmailSent = null,
                             genericReasoningId = decision.genericReasoningId,
-                        )
+                        ),
                     )
                     if (decision.individualReasoningIds.isNotEmpty()) {
                         tx.setDecisionReasoningIndividualSelections(
@@ -650,7 +650,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 val id = it.createIncomeNotification(body.receiverId, body.notificationType)
                 it.createUpdate {
                         sql(
-                            "UPDATE income_notification SET created = ${bind(body.created)} WHERE id = ${bind(id)}"
+                            "UPDATE income_notification SET created = ${bind(body.created)} WHERE id = ${bind(id)}",
                         )
                     }
                     .execute()
@@ -699,52 +699,52 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
             dbc.transaction { tx ->
                 tx.execute {
                     sql(
-                        "INSERT INTO message_account (daycare_group_id, type) SELECT id, 'GROUP'::message_account_type as type FROM daycare_group ON CONFLICT DO NOTHING"
+                        "INSERT INTO message_account (daycare_group_id, type) SELECT id, 'GROUP'::message_account_type as type FROM daycare_group ON CONFLICT DO NOTHING",
                     )
                 }
                 tx.execute {
                     sql(
-                        "INSERT INTO message_account (person_id, type) SELECT id, 'CITIZEN'::message_account_type as type FROM person ON CONFLICT DO NOTHING"
+                        "INSERT INTO message_account (person_id, type) SELECT id, 'CITIZEN'::message_account_type as type FROM person ON CONFLICT DO NOTHING",
                     )
                 }
                 tx.execute {
                     sql(
-                        "INSERT INTO message_account (employee_id, type) SELECT employee_id, 'PERSONAL'::message_account_type as type FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' OR role = 'SPECIAL_EDUCATION_TEACHER' ON CONFLICT DO NOTHING"
+                        "INSERT INTO message_account (employee_id, type) SELECT employee_id, 'PERSONAL'::message_account_type as type FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' OR role = 'SPECIAL_EDUCATION_TEACHER' ON CONFLICT DO NOTHING",
                     )
                 }
                 tx.execute {
                     sql(
-                        "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'MUNICIPAL') ON CONFLICT DO NOTHING"
+                        "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'MUNICIPAL') ON CONFLICT DO NOTHING",
                     )
                 }
                 tx.createUpdate {
                         sql(
-                            "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING RETURNING id"
+                            "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING RETURNING id",
                         )
                     }
                     .executeAndReturnGeneratedKeys()
                     .exactlyOneOrNull<MessageAccountId>()
                     ?.also { serviceWorkerAccount ->
                         tx.insert(
-                            DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Kansio 1")
+                            DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Kansio 1"),
                         )
                         tx.insert(
-                            DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Kansio 2")
+                            DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Kansio 2"),
                         )
                     }
                 tx.createUpdate {
                         sql(
-                            "INSERT INTO message_account (daycare_group_id, employee_id, person_id, type) VALUES (NULL, NULL, NULL, 'FINANCE') ON CONFLICT DO NOTHING RETURNING id"
+                            "INSERT INTO message_account (daycare_group_id, employee_id, person_id, type) VALUES (NULL, NULL, NULL, 'FINANCE') ON CONFLICT DO NOTHING RETURNING id",
                         )
                     }
                     .executeAndReturnGeneratedKeys()
                     .exactlyOneOrNull<MessageAccountId>()
                     ?.also { financeAccount ->
                         tx.insert(
-                            DevMessageThreadFolder(owner = financeAccount, name = "Talouskansio 1")
+                            DevMessageThreadFolder(owner = financeAccount, name = "Talouskansio 1"),
                         )
                         tx.insert(
-                            DevMessageThreadFolder(owner = financeAccount, name = "Talouskansio 2")
+                            DevMessageThreadFolder(owner = financeAccount, name = "Talouskansio 2"),
                         )
                     }
             }
@@ -789,9 +789,9 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             sql(
                                 "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(id)}, ${
                                     bind(
-                                        otherGuardianId
+                                        otherGuardianId,
                                     )
-                                })"
+                                })",
                             )
                         }
                         .execute()
@@ -1017,7 +1017,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     .let {
                         tx.createUpdate {
                                 sql(
-                                    "UPDATE holiday_period SET id = ${bind(id)} WHERE id = ${bind(it.id)}"
+                                    "UPDATE holiday_period SET id = ${bind(id)} WHERE id = ${bind(it.id)}",
                                 )
                             }
                             .execute()
@@ -1045,7 +1045,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 }.let {
                     tx.createUpdate {
                             sql(
-                                "UPDATE holiday_period_questionnaire SET id = ${bind(id)} WHERE id = ${bind(it)}"
+                                "UPDATE holiday_period_questionnaire SET id = ${bind(id)} WHERE id = ${bind(it)}",
                             )
                         }
                         .execute()
@@ -1175,7 +1175,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             it.getEmployeeIdByExternalId(employeePin.employeeExternalId)
                         } else {
                             throw Error(
-                                "Cannot create dev employee pin: user id and external user id missing"
+                                "Cannot create dev employee pin: user id and external user id missing",
                             )
                         }
 
@@ -1392,7 +1392,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
 VALUES (${bind(body.unitId)}, ${bind(body.employeeId)}, ${bind(body.coefficient)})
 ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coefficient
-"""
+""",
                         )
                     }
                     .execute()
@@ -1540,7 +1540,7 @@ $form
                     sql(
                         """
 UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}            
-"""
+""",
                     )
                 }
                 .execute()
@@ -1690,7 +1690,7 @@ private fun Database.Read.getActiveConnections(): List<ActiveConnection> = creat
 SELECT state, xact_start, query_start, left(query, 100) AS query FROM pg_stat_activity
 WHERE pid <> pg_backend_pid() AND datname = current_database() AND usename = current_user AND backend_type = 'client backend'
 AND state != 'idle'
-    """
+    """,
     )
 }
     .toList<ActiveConnection>()
@@ -1702,7 +1702,7 @@ fun Database.Transaction.ensureFakeAdminExists() {
 INSERT INTO employee (id, first_name, last_name, email, external_id, roles, active)
 VALUES (${bind(fakeAdmin.id)}, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || ${bind(fakeAdmin.id)}, '{ADMIN, SERVICE_WORKER}'::user_role[], TRUE)
 ON CONFLICT DO NOTHING
-"""
+""",
         )
     }
         .execute()
@@ -1731,7 +1731,7 @@ INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_
     ('7406e172-e715-11ec-9ec2-77c5dee24145', 'Kerho', 'Kerho', 'Kerho', 'CLUB', TRUE, 0.0, 1.0, 1.75, 1.0, 1.75, 0, TRUE, TRUE, '', '', '', '', '2000-01-01'::date, NULL),
     ('7406e186-e715-11ec-9ec2-73d12d14969d', 'Kokopäiväinen tilapäinen', 'Kokopäiväinen tilapäinen', 'Kokopäiväinen tilapäinen', 'TEMPORARY_DAYCARE', TRUE, 1.0, 1.0, 1.75, 1.0, 1.75, 35, FALSE, TRUE, '', '', '', '', '2000-01-01'::date, NULL),
     ('7406e19a-e715-11ec-9ec2-875be5d177c9', 'Osapäiväinen tilapäinen', 'Osapäiväinen tilapäinen', 'Osapäiväinen tilapäinen', 'TEMPORARY_DAYCARE_PART_DAY', TRUE, 0.5, 0.54, 1.75, 0.54, 1.75, 25, TRUE, TRUE, '', '', '', '', '2000-01-01'::date, NULL)
-"""
+""",
         )
     }
 }
@@ -1764,7 +1764,7 @@ INSERT INTO service_need_option_voucher_value (service_need_option_id, validity,
     ('7406e172-e715-11ec-9ec2-77c5dee24145', daterange('2023-04-01', NULL, '[]'), 88000, 0.0, 0, 136400, 0.0, 0),
     ('7406e186-e715-11ec-9ec2-73d12d14969d', daterange('2023-04-01', NULL, '[]'), 88000, 0.0, 0, 136400, 0.0, 0),
     ('7406e19a-e715-11ec-9ec2-875be5d177c9', daterange('2023-04-01', NULL, '[]'), 88000, 0.0, 0, 136400, 0.0, 0)
-"""
+""",
         )
     }
 }
@@ -1773,7 +1773,7 @@ fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) = cre
     sql(
         """
 UPDATE fee_decision SET sent_at = ${bind(feeDecision.sentAt)} WHERE id = ${bind(feeDecision.id)}    
-"""
+""",
     )
 }
     .execute()

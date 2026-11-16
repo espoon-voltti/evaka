@@ -54,10 +54,10 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     calculateMonthlyAmount(
                         500000,
                         coefficientMultiplierProvider.multiplier(
-                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                         ),
                     ),
-                )
+                ),
         )
     private val testIncome =
         IncomeRequest(
@@ -212,11 +212,11 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     calculateMonthlyAmount(
                                         1000,
                                         coefficientMultiplierProvider.multiplier(
-                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                         ),
                                     ),
-                                )
-                        )
+                                ),
+                        ),
                 )
             tx.updateIncome(clock, incomeId, updated, user.evakaUserId)
 
@@ -285,10 +285,10 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             calculateMonthlyAmount(
                                 10000,
                                 coefficientMultiplierProvider.multiplier(
-                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                 ),
                             ),
-                        )
+                        ),
                 )
             val updated = testIncome.copy(data = newData)
             tx.updateIncome(clock, incomeId, updated, user.evakaUserId)

@@ -42,7 +42,7 @@ VALUES (
     ${bind(data.otherAction)}
 )
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOne<AssistanceActionId>()
@@ -63,7 +63,7 @@ fun Database.Transaction.insertAssistanceActionOptionRefs(
 INSERT INTO assistance_action_option_ref (action_id, option_id)
 VALUES (${bind(actionId)}, (SELECT id FROM assistance_action_option WHERE value = ${bind { it }}))
 ON CONFLICT DO NOTHING
-"""
+""",
         )
     }
 
@@ -85,7 +85,7 @@ LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
 LEFT JOIN evaka_user e ON aa.modified_by = e.id
 WHERE aa.id = ${bind(id)}
 GROUP BY aa.id, child_id, start_date, end_date, other_action, aa.modified_at, e.id, e.name, e.type
-"""
+""",
         )
     }
     .exactlyOneOrNull()
@@ -108,7 +108,7 @@ LEFT JOIN evaka_user e ON aa.modified_by = e.id
 WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("aa"))}
 GROUP BY aa.id, child_id, start_date, end_date, other_action, aa.modified_at, e.id, e.name, e.type
 ORDER BY start_date DESC
-"""
+""",
     )
 }
     .toList()
@@ -131,7 +131,7 @@ UPDATE assistance_action SET
     other_action = ${bind(data.otherAction)}
 WHERE id = ${bind(id)}
 RETURNING id
-"""
+""",
             )
         }
             .exactlyOneOrNull<AssistanceActionId>()
@@ -156,7 +156,7 @@ UPDATE assistance_action
 SET end_date = ${bind(startDate)} - interval '1 day', modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE child_id = ${bind(childId)} AND daterange(start_date, end_date, '[]') @> ${bind(startDate)} AND start_date <> ${bind(startDate)}
 RETURNING id, start_date
-"""
+""",
         )
     }
         .toList { column<AssistanceActionId>("id") to column<LocalDate>("start_date") }
@@ -178,7 +178,7 @@ fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(
 DELETE FROM assistance_action_option_ref
 WHERE action_id = ${bind(actionId)}
 AND option_id NOT IN (SELECT id FROM assistance_action_option WHERE value = ANY(${bind(excluded)}))
-"""
+""",
     )
 }
 
@@ -189,7 +189,7 @@ SELECT value, name_fi, coalesce(name_sv, name_fi) AS name_sv,
     description_fi, coalesce(description_sv, description_fi) AS description_sv,
     category, display_order, valid_from, valid_to
 FROM assistance_action_option
-"""
+""",
     )
 }
     .toList()

@@ -33,9 +33,9 @@ internal class DvvModificationsServiceClientIntegrationTest : AbstractTampereInt
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBodyFile(
-                            "modifications-client/first-modification-token-response-ok.json"
-                        )
-                )
+                            "modifications-client/first-modification-token-response-ok.json",
+                        ),
+                ),
         )
 
         val response =
@@ -45,7 +45,7 @@ internal class DvvModificationsServiceClientIntegrationTest : AbstractTampereInt
         verify(
             getRequestedFor(urlEqualTo("/mock/modifications/kirjausavain/2021-04-01"))
                 .withHeader("Authorization", equalTo("Basic dXNlcjpwYXNz"))
-                .withHeader("X-API-KEY", equalTo("vtj-mutpa-api-key-123"))
+                .withHeader("X-API-KEY", equalTo("vtj-mutpa-api-key-123")),
         )
     }
 
@@ -57,8 +57,8 @@ internal class DvvModificationsServiceClientIntegrationTest : AbstractTampereInt
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBodyFile("modifications-client/modifications-response-ok.json")
-                )
+                        .withBodyFile("modifications-client/modifications-response-ok.json"),
+                ),
         )
 
         val response = dvvModificationsServiceClient.getModifications("5446623423", listOf())
@@ -67,7 +67,7 @@ internal class DvvModificationsServiceClientIntegrationTest : AbstractTampereInt
         verify(
             postRequestedFor(urlEqualTo("/mock/modifications/muutokset"))
                 .withHeader("Authorization", equalTo("Basic dXNlcjpwYXNz"))
-                .withHeader("X-API-KEY", equalTo("vtj-mutpa-api-key-123"))
+                .withHeader("X-API-KEY", equalTo("vtj-mutpa-api-key-123")),
         )
     }
 }

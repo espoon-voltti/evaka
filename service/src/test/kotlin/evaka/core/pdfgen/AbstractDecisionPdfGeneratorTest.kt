@@ -229,7 +229,7 @@ abstract class AbstractDecisionPdfGeneratorTest {
                                     providerType = scenario.providerType,
                                     language = unitLanguage(lang),
                                 ),
-                        )
+                        ),
                     )
                 reasoningVariants().map { reasoningOrNull ->
                     val variant = if (reasoningOrNull == null) "vanha" else "uusi"
@@ -278,7 +278,7 @@ abstract class AbstractDecisionPdfGeneratorTest {
                 DynamicTest.dynamicTest(label) {
                     val bytes =
                         pdfGenerator.generateFeeDecisionPdf(
-                            FeeDecisionPdfData(decision, effectiveSettings, lang)
+                            FeeDecisionPdfData(decision, effectiveSettings, lang),
                         )
                     assertNotNull(bytes)
                     writeTempFile("fee_decision_${municipality}_$label", bytes)
@@ -292,14 +292,14 @@ abstract class AbstractDecisionPdfGeneratorTest {
             val effectiveSettings = scenario.settings ?: settings
             val decision =
                 scenario.customize(
-                    createValidVoucherValueDecision(municipality, scenario.decisionType)
+                    createValidVoucherValueDecision(municipality, scenario.decisionType),
                 )
             scenario.languages.map { lang ->
                 val label = "${scenario.name}_${lang.name}"
                 DynamicTest.dynamicTest(label) {
                     val bytes =
                         pdfGenerator.generateVoucherValueDecisionPdf(
-                            VoucherValueDecisionPdfData(decision, effectiveSettings, lang)
+                            VoucherValueDecisionPdfData(decision, effectiveSettings, lang),
                         )
                     assertNotNull(bytes)
                     writeTempFile("voucher_value_decision_${municipality}_$label", bytes)

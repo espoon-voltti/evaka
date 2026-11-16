@@ -29,7 +29,7 @@ sealed interface DocumentKey {
                 "child-documents/child_document_${id}_v$version.pdf"
             } else {
                 "child-documents/child_document_$id.pdf"
-            }
+            },
         )
     }
 
@@ -55,7 +55,7 @@ sealed interface DocumentKey {
                 DecisionType.PRESCHOOL_CLUB -> "connectingdaycaredecision"
 
                 DecisionType.PREPARATORY_EDUCATION -> "preparatorydecision"
-            }.let { "${it}_${id}_$lang" }
+            }.let { "${it}_${id}_$lang" },
         )
     }
 

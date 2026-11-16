@@ -80,7 +80,7 @@ class ParentshipController(
             headOfChildId
                 ?: childId
                 ?: error(
-                    "One of parameters headOfChildId and childId should be validated not to be null"
+                    "One of parameters headOfChildId and childId should be validated not to be null",
                 )
 
         return db.connect { dbc ->

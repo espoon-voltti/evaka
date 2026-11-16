@@ -23,7 +23,7 @@ internal fun transform(
     val publicationDate =
         childDocumentDetails.publishedAt?.toLocalDate()?.let { localDateToXMLGregorianCalendar(it) }
             ?: error(
-                "Document publication date missing, child document: ${childDocumentDetails.id}"
+                "Document publication date missing, child document: ${childDocumentDetails.id}",
             )
     return Collections.Collection().apply {
         type = "record"
@@ -40,7 +40,7 @@ internal fun transform(
                             agentRole = it.role
                             agentName = it.name
                             // agent corporateName left empty
-                        }
+                        },
                     )
                 }
             }
@@ -52,7 +52,7 @@ internal fun transform(
                         val mimeType = mimeTypes.forName(document.contentType)
                         name = "${childDocumentDetails.template.name}${mimeType.extension}"
                         this.originalId = originalId
-                    }
+                    },
                 )
             }
     } to mapOf(originalId to document)

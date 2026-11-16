@@ -85,7 +85,7 @@ JOIN person child ON application.child_id = child.id
 WHERE application.type = 'PRESCHOOL'
   AND (application.document ->> 'preferredStartDate')::date = ${bind(term.finnishPreschool.start)}
   AND (child.social_security_number = ANY (${bind(socialSecurityNumbers)}) OR child.id = ANY(${bind(personIds)}))
-            """
+            """,
                     )
                 }
                 .exactlyOne<Int>()
@@ -121,7 +121,7 @@ WHERE application.type = 'PRESCHOOL'
                     serviceNeedOptions.any { option -> option.id == it }
                 }
                     ?: throw NotFound(
-                        "No service need option found: ${evakaEnv.placementToolServiceNeedOptionId}"
+                        "No service need option found: ${evakaEnv.placementToolServiceNeedOptionId}",
                     )
             } else null
         val nextPreschoolTerm =
@@ -201,7 +201,7 @@ WHERE application.type = 'PRESCHOOL'
                         PlacementToolData(childId, msg.preschoolId),
                         msg.defaultServiceNeedOption,
                         msg.nextPreschoolTerm,
-                    )
+                    ),
                 ),
                 runAt = clock.now(),
                 retryCount = 1,
@@ -328,7 +328,7 @@ WHERE application.type = 'PRESCHOOL'
             }
             if (desiredStatus >= ApplicationStatus.WAITING_MAILING) {
                 throw UnsupportedOperationException(
-                    "Application status $desiredStatus is not supported"
+                    "Application status $desiredStatus is not supported",
                 )
             }
         }
@@ -415,7 +415,7 @@ fun parsePlacementToolCsv(inputStream: InputStream): Map<String, DaycareId> {
         .associate { row ->
             row.get(PlacementToolCsvField.CHILD_ID.fieldName) to
                 DaycareId(
-                    UUID.fromString(row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName))
+                    UUID.fromString(row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName)),
                 )
         }
 }

@@ -139,8 +139,8 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         assertTrue(
             toolNames.containsAll(
-                listOf("get_environment_info", "list_test_data", "delete_test_data")
-            )
+                listOf("get_environment_info", "list_test_data", "delete_test_data"),
+            ),
         )
 
         // Notifications get no response
@@ -159,7 +159,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // Tool errors are reported as tool results, not protocol errors
         assertTrue(
-            callToolExpectingError(token, "delete_test_data", "{}").startsWith("Invalid input:")
+            callToolExpectingError(token, "delete_test_data", "{}").startsWith("Invalid input:"),
         )
 
         val area = DevCareArea()
@@ -204,7 +204,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = unit.id,
                     startDate = today.plusYears(2),
                     endDate = today.plusYears(3),
-                )
+                ),
             )
         }
         val refused = callToolExpectingError(token, "delete_test_data", """{"batchName":"demo"}""")
@@ -265,7 +265,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             },
         )
         assertTrue(
-            callTool(otherToken, "get_environment_info", "{}").path("testDataBatches").isEmpty
+            callTool(otherToken, "get_environment_info", "{}").path("testDataBatches").isEmpty,
         )
         // ...but all batches are listed with their owners, so shared data is visible
         assertEquals(
@@ -285,11 +285,11 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // Another user cannot delete the batch via MCP, not even by id
         assertTrue(
             callToolExpectingError(otherToken, "delete_test_data", """{"batchId":"$batchId"}""")
-                .startsWith("Forbidden:")
+                .startsWith("Forbidden:"),
         )
         assertTrue(
             callToolExpectingError(otherToken, "delete_test_data", """{"batchName":"mine"}""")
-                .startsWith("Not found:")
+                .startsWith("Not found:"),
         )
         callTool(token, "delete_test_data", """{"batchName":"mine"}""")
         assertEquals(3, countRows("employee"))
@@ -419,12 +419,12 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 clock,
                 MockHttpServletRequest(),
                 jsonMapper.readTree(
-                    """{"client_name":"x","redirect_uris":["http://example.com/callback"]}"""
+                    """{"client_name":"x","redirect_uris":["http://example.com/callback"]}""",
                 ),
             )
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
         assertNull(
-            employeeController.getMcpAuthorizations(dbInstance(), admin.user, clock).firstOrNull()
+            employeeController.getMcpAuthorizations(dbInstance(), admin.user, clock).firstOrNull(),
         )
     }
 
@@ -480,7 +480,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     daycareGroupId = group.id,
                     startDate = placement.startDate,
                     endDate = placement.endDate,
-                )
+                ),
             )
         }
 
@@ -560,7 +560,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareGroupId = group.id,
                         startDate = placement.startDate,
                         endDate = placement.endDate,
-                    )
+                    ),
                 )
                 tx.insert(supervisor, unitRoles = mapOf(unit.id to UserRole.UNIT_SUPERVISOR))
                 val testApplicationId = insertApplication(tx)
@@ -574,7 +574,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     "advance_application",
                     """{"applicationId":"$realApplicationId","action":"MOVE_TO_WAITING_PLACEMENT"}""",
                 )
-                .startsWith("Forbidden:")
+                .startsWith("Forbidden:"),
         )
         fun advance(action: String) =
             callTool(
@@ -591,7 +591,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             """{"batch":"demo","senderEmployeeId":"$sender","childIds":["${child.id}"],"title":"x","content":"y"}"""
         assertTrue(
             callToolExpectingError(token, "send_message", sendMessage(serviceWorker.id))
-                .startsWith("Forbidden:")
+                .startsWith("Forbidden:"),
         )
         assertEquals(
             1,
@@ -619,7 +619,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 clock,
                 MockHttpServletRequest(),
                 jsonMapper.readTree(
-                    """{"client_name":"Claude Code","redirect_uris":["$redirectUri"],"grant_types":["authorization_code"],"response_types":["code"],"token_endpoint_auth_method":"none"}"""
+                    """{"client_name":"Claude Code","redirect_uris":["$redirectUri"],"grant_types":["authorization_code"],"response_types":["code"],"token_endpoint_auth_method":"none"}""",
                 ),
             )
         assertEquals(HttpStatus.CREATED, response.statusCode)
@@ -685,7 +685,7 @@ class McpIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 clock,
                 mcpRequest(token),
                 jsonMapper.readTree(
-                    """{"jsonrpc":"2.0","id":"${UUID.randomUUID()}","method":"$method","params":$params}"""
+                    """{"jsonrpc":"2.0","id":"${UUID.randomUUID()}","method":"$method","params":$params}""",
                 ),
             )
         assertEquals(HttpStatus.OK, response.statusCode)

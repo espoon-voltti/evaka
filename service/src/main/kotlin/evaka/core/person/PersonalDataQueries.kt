@@ -17,7 +17,7 @@ fun Database.Transaction.updatePersonalDetails(personId: PersonId, body: Persona
                     backup_phone = coalesce(${bind(body.backupPhone)}, backup_phone),
                     email = coalesce(${bind(body.email)}, email)
                 WHERE id = ${bind(personId)}
-                """
+                """,
         )
     }
         .updateExactlyOne()
@@ -36,7 +36,7 @@ fun Database.Transaction.updateDisabledEmailTypes(
 ) {
     createUpdate {
         sql(
-            "UPDATE person SET disabled_email_types = ${bind(emailTypes)} WHERE id = ${bind(personId)}"
+            "UPDATE person SET disabled_email_types = ${bind(emailTypes)} WHERE id = ${bind(personId)}",
         )
     }
         .updateExactlyOne()
@@ -55,7 +55,7 @@ fun Database.Transaction.updateDisabledPushTypes(
 ) {
     createUpdate {
         sql(
-            "UPDATE person SET disabled_push_types = ${bind(categories)} WHERE id = ${bind(personId)}"
+            "UPDATE person SET disabled_push_types = ${bind(categories)} WHERE id = ${bind(personId)}",
         )
     }
         .updateExactlyOne()

@@ -265,7 +265,7 @@ class AttendanceReservationController(
                                                     ),
                                                 occupancy = coefficient * factor,
                                             )
-                                        }
+                                        },
                                 )
                             },
                     )
@@ -398,7 +398,7 @@ class AttendanceReservationController(
                                 date = body.date,
                                 childId = body.childId,
                                 attendanceTimes = body.attendances,
-                            )
+                            ),
                     )
                 }
             }
@@ -470,12 +470,12 @@ class AttendanceReservationController(
                         .forEach { update ->
                             if (update.reservations.size > 1) {
                                 throw BadRequest(
-                                    "NO_TIMES reservation must be the only reservation of the day"
+                                    "NO_TIMES reservation must be the only reservation of the day",
                                 )
                             }
                             if (holidayPeriods.none { it.period.includes(update.date) }) {
                                 throw BadRequest(
-                                    "NO_TIMES reservation is only allowed on holiday period days"
+                                    "NO_TIMES reservation is only allowed on holiday period days",
                                 )
                             }
                         }
@@ -752,7 +752,7 @@ class AttendanceReservationController(
                                             calculatedPresent = BigDecimal.ZERO,
                                             absentCount = 0,
                                             groupId = null,
-                                        )
+                                        ),
                                     ),
                         )
                     }
@@ -865,7 +865,7 @@ private fun getConfirmedRangeDates(
                         compareBy(
                             { it is ReservationResponse.Times },
                             { (it as? ReservationResponse.Times)?.range?.start },
-                        )
+                        ),
                     ),
                 absenceType =
                     if (isFullDayAbsent)
@@ -947,7 +947,7 @@ private fun createDateMapForChild(
                         backupGroupId = null,
                         backupOtherUnit = false,
                     )
-            }
+            },
         )
         .update(
             entries =
@@ -1017,7 +1017,7 @@ SELECT
     p.type AS placement_type
 FROM placement p
 WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && ${bind(dateRange)}
-"""
+""",
     )
 }
     .toList<ChildPlacement>()
@@ -1037,7 +1037,7 @@ SELECT
 FROM daycare_group_placement dgp
 JOIN placement p ON p.id = dgp.daycare_placement_id
 WHERE p.unit_id = ${bind(unitId)} AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(dateRange)}
-"""
+""",
     )
 }
     .toList<ChildGroupPlacement>()
@@ -1058,7 +1058,7 @@ SELECT
 FROM backup_care bc
 JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
 WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(dateRange)}
-"""
+""",
     )
 }
     .toList<ChildBackupPlacement>()
@@ -1190,7 +1190,7 @@ SELECT
     ), '[]'::jsonb) AS absences
 FROM person p
 WHERE p.id = ANY(${bind(childIds)})
-"""
+""",
         )
     }
         .toList<ChildDataQueryResult>()

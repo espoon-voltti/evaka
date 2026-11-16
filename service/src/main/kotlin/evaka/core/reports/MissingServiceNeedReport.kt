@@ -71,7 +71,7 @@ class MissingServiceNeedReportController(private val accessControl: AccessContro
             }
             .also {
                 Audit.MissingServiceNeedReportRead.log(
-                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size),
                 )
             }
     }
@@ -132,7 +132,7 @@ private fun Database.Read.getMissingServiceNeedRows(
         GROUP BY 1, daycare.name, unit_id, child_id, first_name, last_name, unit_id, results.placement_type
         ORDER BY 1, daycare.name, last_name, first_name
         """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .toList<MissingServiceNeedReportRow>()

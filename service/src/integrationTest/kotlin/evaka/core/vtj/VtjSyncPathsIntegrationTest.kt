@@ -360,7 +360,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     headOfChildId = dead.id,
                     startDate = LocalDate.of(2018, 1, 1),
                     endDate = LocalDate.of(2035, 5, 31),
-                )
+                ),
             )
         }
 
@@ -841,7 +841,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     headOfChildId = dead.id,
                     startDate = LocalDate.of(2018, 1, 1),
                     endDate = LocalDate.of(2035, 5, 31),
-                )
+                ),
             )
         }
         addToVtj(dead.copy(dateOfDeath = dateOfDeath), dependants = listOf(child))
@@ -969,7 +969,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     hasOtherAdults = otherPartner != null,
                     otherAdults =
                         listOfNotNull(
-                            otherPartner?.let { OtherPerson(it.firstName, it.lastName, it.ssn!!) }
+                            otherPartner?.let { OtherPerson(it.firstName, it.lastName, it.ssn!!) },
                         ),
                     apply = Apply(preferredUnits = listOf(daycare.id)),
                     preferredStartDate = clock.today().plusMonths(4),
@@ -985,13 +985,13 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     private fun Database.Transaction.setVtjDependantsQueried(person: DevPerson) = execute {
         sql(
-            "UPDATE person SET vtj_dependants_queried = ${bind(clock.now())} WHERE id = ${bind(person.id)}"
+            "UPDATE person SET vtj_dependants_queried = ${bind(clock.now())} WHERE id = ${bind(person.id)}",
         )
     }
 
     private fun Database.Transaction.setVtjGuardiansQueried(person: DevPerson) = execute {
         sql(
-            "UPDATE person SET vtj_guardians_queried = ${bind(clock.now())} WHERE id = ${bind(person.id)}"
+            "UPDATE person SET vtj_guardians_queried = ${bind(clock.now())} WHERE id = ${bind(person.id)}",
         )
     }
 
@@ -1015,7 +1015,7 @@ SELECT g.social_security_number AS guardian, c.social_security_number AS child
 FROM guardian
 JOIN person g ON g.id = guardian.guardian_id
 JOIN person c ON c.id = guardian.child_id
-"""
+""",
                         )
                     }
                     .toSet { column<String>("guardian") to column<String>("child") }
@@ -1035,7 +1035,7 @@ FROM fridge_child fc
 JOIN person h ON h.id = fc.head_of_child
 JOIN person c ON c.id = fc.child_id
 WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(clock.today())}
-"""
+""",
                         )
                     }
                     .toSet { column<String>("head") to column<String>("child") }

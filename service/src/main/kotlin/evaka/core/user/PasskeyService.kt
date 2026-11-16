@@ -97,15 +97,15 @@ class PasskeyService(private val env: EvakaEnv) {
                             .name(accountName)
                             .displayName(accountName)
                             .id(person.toUserHandle())
-                            .build()
+                            .build(),
                     )
                     .authenticatorSelection(
                         AuthenticatorSelectionCriteria.builder()
                             .residentKey(ResidentKeyRequirement.REQUIRED)
                             .userVerification(UserVerificationRequirement.REQUIRED)
-                            .build()
+                            .build(),
                     )
-                    .build()
+                    .build(),
             )
         return StartedPasskeyRegistration(
             options = options.toJson(),
@@ -131,7 +131,7 @@ class PasskeyService(private val env: EvakaEnv) {
         val result =
             try {
                 rp.finishRegistration(
-                    FinishRegistrationOptions.builder().request(options).response(response).build()
+                    FinishRegistrationOptions.builder().request(options).response(response).build(),
                 )
             } catch (e: Exception) {
                 throw BadRequest("Passkey registration failed", cause = e)
@@ -153,7 +153,7 @@ class PasskeyService(private val env: EvakaEnv) {
             rp.startAssertion(
                 StartAssertionOptions.builder()
                     .userVerification(UserVerificationRequirement.REQUIRED)
-                    .build()
+                    .build(),
             )
         return StartedPasskeyAssertion(
             assertionRequest = request.toJson(),
@@ -179,7 +179,7 @@ class PasskeyService(private val env: EvakaEnv) {
         val result =
             try {
                 rp.finishAssertion(
-                    FinishAssertionOptions.builder().request(request).response(response).build()
+                    FinishAssertionOptions.builder().request(request).response(response).build(),
                 )
             } catch (e: Exception) {
                 throw Forbidden(cause = e)
@@ -210,7 +210,7 @@ class PasskeyService(private val env: EvakaEnv) {
     ): CredentialRepository =
         object : CredentialRepository {
             override fun getCredentialIdsForUsername(
-                username: String
+                username: String,
             ): Set<PublicKeyCredentialDescriptor> =
                 excludeCredentialIds
                     .map {
@@ -231,7 +231,7 @@ class PasskeyService(private val env: EvakaEnv) {
                 Optional.ofNullable(
                     credentials
                         .find { WebAuthnByteArray(it.credentialId) == credentialId }
-                        ?.toRegistered()
+                        ?.toRegistered(),
                 )
 
             override fun lookupAll(credentialId: WebAuthnByteArray): Set<RegisteredCredential> =

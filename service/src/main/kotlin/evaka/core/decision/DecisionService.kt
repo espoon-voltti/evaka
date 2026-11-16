@@ -307,7 +307,7 @@ class DecisionService(
 
         val messageId =
             tx.storeSentSfiMessage(
-                SentSfiMessage(guardianId = guardian.id, decisionId = decision.id)
+                SentSfiMessage(guardianId = guardian.id, decisionId = decision.id),
             )
 
         val message =
@@ -385,9 +385,9 @@ class DecisionService(
                         DocumentKey.Decision(
                             decision.documentKey
                                 ?: throw NotFound(
-                                    "Document generation for ${decision.id} in progress"
-                                )
-                        )
+                                    "Document generation for ${decision.id} in progress",
+                                ),
+                        ),
                     )
                 val lang = tx.getDecisionLanguage(decision.id)
                 val fileName = calculateDecisionFileName(decision, lang)
@@ -412,13 +412,13 @@ internal fun buildPdfReasoning(
     val generic =
         source.generic?.let { if (swedish) it.textSv else it.textFi }?.takeIf { it.isNotBlank() }
             ?: throw PermanentAsyncJobFailure(
-                "Cannot render decision reasoning: generic reasoning text is missing or blank"
+                "Cannot render decision reasoning: generic reasoning text is missing or blank",
             )
     val individual =
         source.individual.map { reasoning ->
             reasoning.text.takeIf { it.isNotBlank() }
                 ?: throw PermanentAsyncJobFailure(
-                    "Cannot render decision reasoning: individual reasoning ${reasoning.id} has blank text"
+                    "Cannot render decision reasoning: individual reasoning ${reasoning.id} has blank text",
                 )
         }
     return PdfReasoning(generic, individual)
@@ -561,7 +561,7 @@ private fun createTemplate(
 }
 
 private fun Database.Read.getApplicationDecisionsForPush(
-    applicationId: ApplicationId
+    applicationId: ApplicationId,
 ): CitizenPushNotification.ApplicationDecisions {
     data class Row(
         val childFirstName: String,
@@ -587,7 +587,7 @@ JOIN person p ON a.child_id = p.id
 JOIN daycare u ON d.unit_id = u.id
 WHERE d.application_id = ${bind(applicationId)} AND d.sent_date IS NOT NULL
 ORDER BY d.start_date, d.type
-"""
+""",
         )
     }
         .toList<Row>()

@@ -109,7 +109,7 @@ class ProcessMetadataControllerCitizen(
                                 secondaryDocuments = emptyList(),
                                 businessId = featureConfig.metadataBusinessId,
                             )
-                            .redactForCitizen()
+                            .redactForCitizen(),
                     )
                 }
             }
@@ -161,7 +161,7 @@ class ProcessMetadataControllerCitizen(
                                 secondaryDocuments = emptyList(),
                                 businessId = featureConfig.metadataBusinessId,
                             )
-                            .redactForCitizen()
+                            .redactForCitizen(),
                     )
                 }
             }

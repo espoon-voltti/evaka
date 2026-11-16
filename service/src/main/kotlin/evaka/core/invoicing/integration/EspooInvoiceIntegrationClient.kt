@@ -70,7 +70,7 @@ class EspooInvoiceIntegrationClient(
     private fun sendBatch(invoices: List<InvoiceDetailed>, agreementType: Int): Boolean {
         val batch = createBatchExports(invoices, agreementType, sendCodebtor = env.sendCodebtor)
         logger.info(
-            mapOf("batchNumber" to batch.batchNumber, "batchLength" to batch.invoices.size)
+            mapOf("batchNumber" to batch.batchNumber, "batchLength" to batch.invoices.size),
         ) {
             "Sending invoice batch to integration"
         }
@@ -129,7 +129,7 @@ class EspooInvoiceIntegrationClient(
                                                 .flatMap { (child, rows) ->
                                                     val nameRow =
                                                         emptyRow(
-                                                            "${child.lastName.take(invoicingLastNameMaxLength)} ${child.firstName}"
+                                                            "${child.lastName.take(invoicingLastNameMaxLength)} ${child.firstName}",
                                                         )
                                                     val rowsWithContent = rows.map { row ->
                                                         invoiceRow(

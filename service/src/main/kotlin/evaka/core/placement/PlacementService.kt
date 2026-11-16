@@ -348,7 +348,7 @@ fun Database.Transaction.transferGroup(
     when {
         startDate.isBefore(groupPlacement.startDate) -> {
             throw BadRequest(
-                "Cannot transfer to another group before the original placement even starts"
+                "Cannot transfer to another group before the original placement even starts",
             )
         }
 
@@ -371,7 +371,7 @@ fun Database.Transaction.transferGroup(
         startDate.isAfter(groupPlacement.startDate) -> {
             if (startDate.isAfter(groupPlacement.endDate)) {
                 throw BadRequest(
-                    "Cannot transfer to another group after the original placement has already ended."
+                    "Cannot transfer to another group after the original placement has already ended.",
                 )
             }
 
@@ -543,7 +543,7 @@ LEFT JOIN service_need_option sno on sn.option_id = sno.id
 LEFT JOIN service_need_option default_sno on pl.placement_type = default_sno.valid_placement_type AND default_sno.default_option
 LEFT JOIN assistance_factor an ON an.child_id = ch.id AND an.valid_during @> ${bind(date)}
 WHERE ch.id = ANY(${bind(childIds)})
-"""
+""",
         )
     }
         .toList<UnitChildrenCapacityFactors>()
@@ -606,7 +606,7 @@ fun Database.Read.getDetailedDaycarePlacements(
 }
 
 private fun addMissingGroupPlacements(
-    daycarePlacement: DaycarePlacementWithDetails
+    daycarePlacement: DaycarePlacementWithDetails,
 ): DaycarePlacementWithDetails {
     // calculate unique sorted events from start dates and exclusive end dates
     val eventDates =
@@ -689,7 +689,7 @@ JOIN LATERAL (
     WHERE p.id = sn.placement_id
 ) sn ON true
 LEFT JOIN service_need_option default_sno ON default_sno.default_option AND default_sno.valid_placement_type = p.type
-"""
+""",
                 )
             }
             .toList<MissingGroupPlacement>()
@@ -718,7 +718,7 @@ JOIN LATERAL (
 ) p ON TRUE
 WHERE bc.unit_id = ${bind(unitId)} AND bc.group_id IS NULL
     AND daterange(bc.start_date, bc.end_date, '[]') && daterange(${bind(evakaLaunch)}, NULL)
-"""
+""",
                 )
             }
             .toList<MissingBackupGroupPlacement>()

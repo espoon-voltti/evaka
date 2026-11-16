@@ -230,7 +230,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             getAllVoucherValueDecisions()
                 .sortedWith(
                     compareBy<VoucherValueDecision> { it.validFrom }
-                        .thenByDescending { it.child.dateOfBirth }
+                        .thenByDescending { it.child.dateOfBirth },
                 )
         assertEquals(4, voucherValueDecisions.size)
         voucherValueDecisions[0].also { decision ->
@@ -779,7 +779,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { it.headOfFamilyId },
             )
             .containsExactly(
-                Tuple(period, emptySet<VoucherValueDecisionDifference>(), expectedHeadOfFamily.id)
+                Tuple(period, emptySet<VoucherValueDecisionDifference>(), expectedHeadOfFamily.id),
             )
     }
 
@@ -901,7 +901,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 sql(
                     """
                 UPDATE voucher_value_decision SET head_of_family_income = head_of_family_income - 'id'
-            """
+            """,
                 )
             }
         }
@@ -1184,7 +1184,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         db.transaction { tx ->
             tx.createUpdate {
                     sql(
-                        "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), ${bind(subPeriod1.end)}, '[]')"
+                        "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), ${bind(subPeriod1.end)}, '[]')",
                     )
                 }
                 .updateExactlyOne()
@@ -1215,7 +1215,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
                     temporaryFeeSiblingPartDay = 800,
-                )
+                ),
             )
             tx.insert(
                 DevIncome(
@@ -1229,11 +1229,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                                     coefficient = IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                     multiplier = 1,
                                     monthlyAmount = 0,
-                                )
+                                ),
                         ),
                     effect = IncomeEffect.INCOME,
                     modifiedBy = decisionMaker.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -1489,7 +1489,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     unitId = daycareId,
                     startDate = period.start,
                     endDate = period.end,
-                )
+                ),
             )
         }
     }
@@ -1507,7 +1507,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                         headOfChildId = headOfFamilyId,
                         startDate = period.start,
                         endDate = period.end,
-                    )
+                    ),
                 )
             }
         }
@@ -1546,7 +1546,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     partWeek = false,
                     confirmedBy = decisionMaker.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
     }
@@ -1592,13 +1592,13 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                                     calculateMonthlyAmount(
                                         amount,
                                         coefficientMultiplierProvider.multiplier(
-                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                         ),
                                     ),
-                                )
+                                ),
                         ),
                     modifiedBy = decisionMaker.evakaUserId,
-                )
+                ),
             )
         }
     }
@@ -1614,7 +1614,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     validFrom = period.start,
                     validTo = period.end,
                     modifiedBy = decisionMaker.evakaUserId,
-                )
+                ),
             )
         }
     }

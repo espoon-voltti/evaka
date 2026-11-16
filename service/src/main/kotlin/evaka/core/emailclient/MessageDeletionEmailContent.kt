@@ -54,7 +54,7 @@ ${detailsBlock(data)}
         val fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
         val viewableDuration =
             formatViewableDuration(
-                Duration.between(data.sentAt.toInstant(), data.deletedAt.toInstant())
+                Duration.between(data.sentAt.toInstant(), data.deletedAt.toInstant()),
             )
         return """
 <p><strong>VIESTIN TIEDOT</strong><br>

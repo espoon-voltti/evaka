@@ -48,7 +48,7 @@ class OutdatedIncomeNotifications(
 
     fun scheduleNotifications(tx: Database.Transaction, clock: EvakaClock): Int {
         tx.removeUnclaimedJobs(
-            setOf(AsyncJobType(AsyncJob.SendOutdatedIncomeNotificationEmail::class))
+            setOf(AsyncJobType(AsyncJob.SendOutdatedIncomeNotificationEmail::class)),
         )
 
         val guardiansForInitialNotification =
@@ -97,7 +97,7 @@ class OutdatedIncomeNotifications(
                                 IncomeNotificationType.REMINDER_EMAIL,
                                 it.expirationDate,
                             )
-                        }
+                        },
                     )
                     .plus(
                         guardiansForExpirationNotification.map {
@@ -106,12 +106,12 @@ class OutdatedIncomeNotifications(
                                 IncomeNotificationType.EXPIRED_EMAIL,
                                 it.expirationDate,
                             )
-                        }
+                        },
                     )
                     .plus(
                         guardiansForExpirationNotification.map {
                             AsyncJob.CreateExpiredIncome(it.personId, it.expirationDate)
-                        }
+                        },
                     ),
             runAt = clock.now(),
         )
@@ -193,7 +193,7 @@ class OutdatedIncomeNotifications(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             msg.guardianId,
                             DateRange(dayAfterExpiration, null),
-                        )
+                        ),
                     ),
                     runAt = clock.now(),
                 )
@@ -206,7 +206,7 @@ internal data class IncomeNotificationRecipient(val language: Language, val hasE
 
 /** Null when the person does not exist */
 internal fun Database.Read.getIncomeNotificationRecipient(
-    id: PersonId
+    id: PersonId,
 ): IncomeNotificationRecipient? = createQuery {
     sql("SELECT language, email IS NOT NULL AS has_email FROM person WHERE id = ${bind(id)}")
 }

@@ -103,7 +103,7 @@ class McpServerController(
                                 null,
                                 INVALID_REQUEST,
                                 "Request body must be a JSON-RPC message",
-                            )
+                            ),
                         )
             }
         } finally {
@@ -120,7 +120,7 @@ class McpServerController(
             (user.globalRoles + user.allScopedRoles)
                 .map { it.name }
                 .sorted()
-                .joinToString("|", "|", "|")
+                .joinToString("|", "|", "|"),
         )
     }
 
@@ -237,7 +237,7 @@ class McpServerController(
                 mapOf(
                     "error" to (failure.error ?: "unauthorized"),
                     "error_description" to failure.description,
-                )
+                ),
             )
     }
 
@@ -320,7 +320,7 @@ data sets with create_upload_url. delete_test_data removes a batch.
                                 "openWorldHint" to false,
                             ),
                     )
-                }
+                },
         )
 
     private fun callTool(

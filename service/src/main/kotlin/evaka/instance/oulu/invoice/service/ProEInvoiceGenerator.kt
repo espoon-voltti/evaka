@@ -247,7 +247,7 @@ class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : Strin
     }
 
     override fun generateInvoice(
-        invoices: List<InvoiceDetailed>
+        invoices: List<InvoiceDetailed>,
     ): StringInvoiceGenerator.InvoiceGeneratorResult {
         val invoiceString = StringBuilder("")
         val successList = mutableListOf<InvoiceDetailed>()

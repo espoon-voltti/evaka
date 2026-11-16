@@ -82,7 +82,7 @@ internal class TampereInvoiceClientTest {
             .expect(connectionTo("http://localhost:8080/salesOrder"))
             .andExpect(payload(ClassPathResource("invoice-client/sales-order-request-1.xml")))
             .andRespond(
-                withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml"))
+                withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml")),
             )
 
         assertThat(client.send(mockNow, listOf(invoice1, invoice2)))
@@ -105,17 +105,17 @@ internal class TampereInvoiceClientTest {
                                 invoicingStreetAddress = "Kotikatu 3",
                                 invoicingPostalCode = "33960",
                                 invoicingPostOffice = "PIRKKALA",
-                            )
+                            ),
                 )
         server
             .expect(connectionTo("http://localhost:8080/salesOrder"))
             .andExpect(
                 payload(
-                    ClassPathResource("invoice-client/sales-order-request-invoicing-details.xml")
-                )
+                    ClassPathResource("invoice-client/sales-order-request-invoicing-details.xml"),
+                ),
             )
             .andRespond(
-                withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml"))
+                withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml")),
             )
 
         assertThat(client.send(mockNow, listOf(invoice1)))
@@ -134,11 +134,11 @@ internal class TampereInvoiceClientTest {
             .expect(connectionTo("http://localhost:8080/salesOrder"))
             .andExpect(
                 payload(
-                    ClassPathResource("invoice-client/sales-order-request-restricted-details.xml")
-                )
+                    ClassPathResource("invoice-client/sales-order-request-restricted-details.xml"),
+                ),
             )
             .andRespond(
-                withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml"))
+                withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml")),
             )
 
         assertThat(client.send(mockNow, listOf(invoice1)))
@@ -155,10 +155,10 @@ internal class TampereInvoiceClientTest {
         server
             .expect(connectionTo("http://localhost:8080/salesOrder"))
             .andExpect(
-                payload(ClassPathResource("invoice-client/sales-order-request-codebtor.xml"))
+                payload(ClassPathResource("invoice-client/sales-order-request-codebtor.xml")),
             )
             .andRespond(
-                withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml"))
+                withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml")),
             )
 
         assertThat(client.send(mockNow, listOf(invoice1)))
@@ -207,7 +207,7 @@ internal class TampereInvoiceClientTest {
                         listOf(
                             validInvoiceRow(15000),
                             validInvoiceRow(-15000, ProductKey("DAYCARE_DISCOUNT")),
-                        )
+                        ),
                 )
         val invoice2 =
             validInvoice()

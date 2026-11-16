@@ -164,7 +164,7 @@ sealed class Question(val type: QuestionType) {
                             answeredQuestion.answer.map { answerOption ->
                                 val option = options.find { it.id == answerOption.optionId }!!
                                 li(
-                                    "${option.label}${if (option.withText) " : ${answerOption.extra}" else ""}"
+                                    "${option.label}${if (option.withText) " : ${answerOption.extra}" else ""}",
                                 )
                             }
                         }
@@ -254,7 +254,7 @@ sealed class Question(val type: QuestionType) {
                     label(label),
                     div(
                         answeredQuestion.answer?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-                            ?: "-"
+                            ?: "-",
                     ),
                 )
             }

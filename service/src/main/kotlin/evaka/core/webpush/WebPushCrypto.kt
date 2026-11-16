@@ -254,12 +254,12 @@ object WebPushCrypto {
                 ECPublicKeySpec(
                     EC5Util.convertPoint(domainParams.validatePublicPoint(this)),
                     parameterSpec,
-                )
+                ),
             ) as ECPublicKey
 
     private fun BigInteger.toPrivateKey(): ECPrivateKey =
         keyFactory()
             .generatePrivate(
-                ECPrivateKeySpec(domainParams.validatePrivateScalar(this), parameterSpec)
+                ECPrivateKeySpec(domainParams.validatePrivateScalar(this), parameterSpec),
             ) as ECPrivateKey
 }

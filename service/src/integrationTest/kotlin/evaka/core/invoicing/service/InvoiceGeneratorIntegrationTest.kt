@@ -158,7 +158,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction(insertChildParentRelation(adult1.id, child1.id, period))
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(
-            insertPlacement(child1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY)
+            insertPlacement(child1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY),
         )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -224,14 +224,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 child1.id,
                 placementPeriod.copy(end = placementPeriod.end.minusDays(1)),
                 PlacementType.TEMPORARY_DAYCARE,
-            )
+            ),
         )
         db.transaction(
             insertPlacement(
                 child1.id,
                 placementPeriod.copy(start = placementPeriod.end),
                 PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-            )
+            ),
         )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -316,12 +316,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction(insertChildParentRelation(adult1.id, child1.id, period))
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
         db.transaction(
-            insertPlacement(child1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY)
+            insertPlacement(child1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY),
         )
 
         db.transaction(insertChildParentRelation(adult1.id, child2.id, period))
         db.transaction(
-            insertPlacement(child2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY)
+            insertPlacement(child2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY),
         )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -367,14 +367,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 adult1.id,
                 child1.id,
                 placementPeriod.copy(end = placementPeriod.start),
-            )
+            ),
         )
         db.transaction(
             insertChildParentRelation(
                 adult2.id,
                 child1.id,
                 placementPeriod.copy(start = placementPeriod.end),
-            )
+            ),
         )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -481,19 +481,19 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
-                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7)),
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
                 ),
-            )
+            ),
         )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -545,21 +545,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     amount = 20,
                                     isAbsolute = false,
                                     effect = -5780,
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
-                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7)),
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
                 ),
-            )
+            ),
         )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -618,13 +618,13 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
-                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7)),
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
@@ -643,7 +643,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 fee = 14500,
                             ),
                 ),
-            )
+            ),
         )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -700,7 +700,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                        )
+                        ),
                     ),
                 ),
                 createFeeDecisionFixture(
@@ -717,7 +717,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                        )
+                        ),
                     ),
                 ),
             )
@@ -787,7 +787,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                        )
+                        ),
                     ),
                 ),
                 createFeeDecisionFixture(
@@ -804,7 +804,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                        )
+                        ),
                     ),
                 ),
             )
@@ -874,7 +874,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                        )
+                        ),
                     ),
                 ),
                 createFeeDecisionFixture(
@@ -891,7 +891,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                        )
+                        ),
                     ),
                 ),
             )
@@ -966,7 +966,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
-                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7)),
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
@@ -977,7 +977,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             decision.children[1].copy(fee = 10000, finalFee = 10000),
                         ),
                 ),
-            )
+            ),
         )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -1049,9 +1049,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     amount = 20,
                                     isAbsolute = false,
                                     effect = -5780,
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -1126,7 +1126,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     effect = 9300,
                                 ),
                             ),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -1207,9 +1207,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     amount = 95,
                                     isAbsolute = false,
                                     effect = -27455,
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -1270,7 +1270,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         db.transaction { tx ->
@@ -1280,7 +1280,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = period.start,
                     endDate = period.end,
-                )
+                ),
             )
             tx.upsertFeeDecisions(
                 listOf(
@@ -1289,7 +1289,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         id = FeeDecisionId(UUID.randomUUID()),
                         headOfFamilyId = adult2.id,
                     ),
-                )
+                ),
             )
         }
 
@@ -1354,7 +1354,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         db.transaction { tx ->
@@ -1364,7 +1364,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
-                )
+                ),
             )
             tx.upsertFeeDecisions(
                 listOf(
@@ -1374,7 +1374,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         headOfFamilyId = adult2.id,
                         validDuring = period.copy(start = period.start.plusDays(15)),
                     ),
-                )
+                ),
             )
         }
 
@@ -1635,7 +1635,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 .plus(
                     datesBetween(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31)).map {
                         it to AbsenceType.SICKLEAVE
-                    }
+                    },
                 )
 
         initDataForAbsences(listOf(period), absenceDays)
@@ -2019,9 +2019,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     amount = -50,
                                     isAbsolute = false,
                                     effect = -10850,
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -2181,7 +2181,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 baseFee = fee,
                                 fee = fee,
                                 feeAlterations = listOf(),
-                            )
+                            ),
                         ),
                     )
                 }
@@ -2376,7 +2376,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 baseFee = fee,
                                 fee = fee,
                                 feeAlterations = listOf(),
-                            )
+                            ),
                         ),
                     )
                 }
@@ -2440,9 +2440,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     amount = 100,
                                     isAbsolute = false,
                                     effect = -28900,
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 ),
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
@@ -2617,7 +2617,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 15000,
                             fee = 15000,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
                 ),
                 createFeeDecisionFixture(
@@ -2636,7 +2636,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 9000,
                             fee = 9000,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
                 ),
             )
@@ -2687,7 +2687,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare2.id,
                     startDate = LocalDate.of(2025, 1, 1),
                     endDate = LocalDate.of(2025, 1, 12),
-                )
+                ),
             )
         }
 
@@ -2709,10 +2709,10 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
-            )
+                ),
+            ),
         )
 
         // 15 operational days, 7 planned absences -> 8 attendance days
@@ -2767,7 +2767,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -2800,7 +2800,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -2842,7 +2842,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
@@ -2887,7 +2887,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -2929,7 +2929,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -2971,7 +2971,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
@@ -3018,9 +3018,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -3061,7 +3061,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
                 ),
                 createFeeDecisionFixture(
@@ -3079,7 +3079,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
                 ),
             )
@@ -3134,7 +3134,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
                 ),
                 createFeeDecisionFixture(
@@ -3152,7 +3152,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
                 ),
             )
@@ -3204,7 +3204,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -3252,7 +3252,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
@@ -3303,7 +3303,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 28900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -3508,7 +3508,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             YearMonth.of(2021, 7),
             listOf(
                 PlacementType.PREPARATORY_DAYCARE to
-                    FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))
+                    FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31)),
             ),
         )
         val result = db.read { it.getAllInvoices() }
@@ -3743,9 +3743,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 21700,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -3798,9 +3798,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -3863,9 +3863,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -3931,9 +3931,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 21700,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -3982,9 +3982,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 21700,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -4040,9 +4040,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 21700,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -4107,9 +4107,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             fee = 21700,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -4178,10 +4178,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 baseFee = fee,
                                 fee =
                                     roundToEuros(
-                                            BigDecimal(fee) * snDaycareContractDays15.feeCoefficient
+                                            BigDecimal(fee) *
+                                                snDaycareContractDays15.feeCoefficient,
                                         )
                                         .toInt(),
-                            )
+                            ),
                         ),
                     )
                 }
@@ -4254,9 +4255,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
         db.transaction {
@@ -4272,7 +4273,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     product = productProvider.mapToProduct(PlacementType.DAYCARE),
                     description = "",
                     note = "",
-                )
+                ),
             )
         }
 
@@ -4333,9 +4334,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
         val correctionId = db.transaction {
@@ -4351,7 +4352,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     product = productProvider.mapToProduct(PlacementType.DAYCARE),
                     description = "",
                     note = "",
-                )
+                ),
             )
         }
 
@@ -4563,7 +4564,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 featureConfig.copy(
                     maxContractDaySurplusThreshold = 13,
                     useContractDaysAsDailyFeeDivisor = false,
-                )
+                ),
             )
         db.transaction { generator.generateAllDraftInvoices(it, month) }
 
@@ -4630,7 +4631,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         siblingDiscount = 50,
                         fee = 8700, // 28900 * 0.6 * 0.5
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -4641,7 +4642,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 featureConfig.copy(
                     maxContractDaySurplusThreshold = 13,
                     useContractDaysAsDailyFeeDivisor = false,
-                )
+                ),
             )
         db.transaction { generator.generateAllDraftInvoices(it, month) }
 
@@ -4689,7 +4690,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         siblingDiscount = 50,
                         fee = 10900,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -4750,9 +4751,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                             50,
                                             false,
                                         ),
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -4911,7 +4912,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 21700,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -4961,7 +4962,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 21700,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -4973,7 +4974,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 featureConfig.copy(
                     useContractDaysAsDailyFeeDivisor = false,
                     maxContractDaySurplusThreshold = 16,
-                )
+                ),
             )
         db.transaction { generator.generateAllDraftInvoices(it, month) }
 
@@ -5020,7 +5021,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         baseFee = 28900,
                         fee = 21700,
                         feeAlterations = listOf(),
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
@@ -5032,7 +5033,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 featureConfig.copy(
                     useContractDaysAsDailyFeeDivisor = false,
                     maxContractDaySurplusThreshold = 16,
-                )
+                ),
             )
         db.transaction { generator.generateAllDraftInvoices(it, month) }
 
@@ -5078,7 +5079,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 21700,
-                    )
+                    ),
                 ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
@@ -5088,7 +5089,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = period.copy(start = LocalDate.of(2019, 1, 16)),
                 ),
-            )
+            ),
         )
 
         // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature
@@ -5098,7 +5099,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 featureConfig.copy(
                     useContractDaysAsDailyFeeDivisor = false,
                     maxContractDaySurplusThreshold = 16,
-                )
+                ),
             )
         db.transaction { generator.generateAllDraftInvoices(it, month) }
 
@@ -5145,7 +5146,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 21700,
-                        )
+                        ),
                     ),
                 ),
                 createFeeDecisionFixture(
@@ -5163,7 +5164,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             baseFee = 28900,
                             siblingDiscount = 50,
                             fee = 10900,
-                        )
+                        ),
                     ),
                 ),
             )
@@ -5176,7 +5177,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 featureConfig.copy(
                     useContractDaysAsDailyFeeDivisor = false,
                     maxContractDaySurplusThreshold = 16,
-                )
+                ),
             )
         db.transaction { generator.generateAllDraftInvoices(it, month) }
 
@@ -5339,7 +5340,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             assertEquals(setOf(child1.id), childIds)
                             return childIds
                         }
-                    }
+                    },
             )
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
@@ -5453,13 +5454,13 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
-                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7)),
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
                 ),
-            )
+            ),
         )
     }
 
@@ -5496,7 +5497,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                    )
+                    ),
                 ),
             )
         db.transaction(insertChildParentRelation(adult1.id, child1.id, invoicingPeriod))
@@ -5505,9 +5506,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 listOf(
                     decision.copy(
                         validDuring =
-                            decision.validDuring.copy(end = invoicingPeriod.start.plusDays(7))
-                    )
-                )
+                            decision.validDuring.copy(end = invoicingPeriod.start.plusDays(7)),
+                    ),
+                ),
             )
         }
 
@@ -5517,7 +5518,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val generator =
             invoiceGenerator(
-                featureConfig.copy(freeJulyStartOnSeptember = freeJulyStartOnSeptember)
+                featureConfig.copy(freeJulyStartOnSeptember = freeJulyStartOnSeptember),
             )
         db.transaction { generator.generateAllDraftInvoices(it, invoicingMonth) }
     }
@@ -5555,12 +5556,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                             amount = -100,
                                             isAbsolute = true,
                                             effect = -10000,
-                                        )
+                                        ),
                                     )
                                 } else {
                                     listOf()
                                 },
-                        )
+                        ),
                     ),
                 )
 
@@ -5576,7 +5577,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         optionId = serviceNeed.id,
                         shiftCare = shiftCare,
                         confirmedBy = employee.evakaUserId,
-                    )
+                    ),
                 )
                 val groupId = tx.insert(DevDaycareGroup(daycareId = daycare.id))
                 tx.insert(
@@ -5585,7 +5586,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycareGroupId = groupId,
                         startDate = period.start,
                         endDate = period.end,
-                    )
+                    ),
                 )
             }
         }
@@ -5625,7 +5626,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             unitId = part.placement.unitId,
                             startDate = decision.validFrom,
                             endDate = decision.validTo,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         if (part.serviceNeed.optionId != null && !part.serviceNeed.missing) {
@@ -5637,7 +5638,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     optionId = part.serviceNeed.optionId!!,
                                     shiftCare = shiftCare,
                                     confirmedBy = employee.evakaUserId,
-                                )
+                                ),
                             )
                         }
                     }
@@ -5657,7 +5658,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 unitId = daycare.id,
                 startDate = period.start,
                 endDate = period.end,
-            )
+            ),
         )
     }
 
@@ -5672,7 +5673,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 headOfChildId = headOfFamilyId,
                 startDate = period.start,
                 endDate = period.end,
-            )
+            ),
         )
     }
 

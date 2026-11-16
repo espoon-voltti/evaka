@@ -55,7 +55,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                             "examinationDate" to examinationDate,
                             "providerTypes" to providerTypes,
                             "careTypes" to placementTypes,
-                        )
+                        ),
                 )
             }
     }
@@ -105,7 +105,7 @@ WHERE d.opening_date <= ${bind(examinationDate)}
   AND pl.type = ANY(${bind(placementTypes)}::placement_type[])
 GROUP BY ROLLUP ((ca.id, ca.name), (d.id, d.name))
 ORDER BY ca.name, d.name ASC
-            """
+            """,
             )
         }
             .toList<PlacementCountReportRow>()
@@ -132,7 +132,7 @@ ORDER BY ca.name, d.name ASC
                         placementCountUnder3v = row.placementCountUnder3v,
                         placementCount3vAndOver = row.placementCount3vAndOver,
                         calculatedPlacements = row.calculatedPlacements,
-                    )
+                    ),
                 )
             } else if (row.areaId != null && row.areaName != null) {
                 collectedAreaResults.add(
@@ -144,7 +144,7 @@ ORDER BY ca.name, d.name ASC
                         placementCount3vAndOver = row.placementCount3vAndOver,
                         calculatedPlacements = row.calculatedPlacements,
                         daycareResults = daycaresByArea[row.areaId.toString()].orEmpty(),
-                    )
+                    ),
                 )
             } else {
                 totalResult =

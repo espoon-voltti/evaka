@@ -64,7 +64,7 @@ WHERE m.id = ANY(${bind(messageIds)})
   AND mr.read_at IS NULL
   AND mr.email_notification_sent_at IS NULL
   AND p.email IS NOT NULL
-"""
+""",
                 )
             }
             .toList<AsyncJob.SendMessageNotificationEmail>()

@@ -28,7 +28,7 @@ data class Caretakers(val minimum: Double, val maximum: Double) {
 fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
     execute {
         sql(
-            "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(groupId)}, ${bind(startDate)}, NULL, ${bind(amount)})"
+            "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(groupId)}, ${bind(startDate)}, NULL, ${bind(amount)})",
         )
     }
 }
@@ -79,7 +79,7 @@ JOIN daycare_caretaker dc ON dg.id = dc.group_id AND daterange(dg.start_date, dg
 WHERE ${predicate(byGroup.toRawPredicate().forTable("dg"))}
 AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
 AND daterange(dc.start_date, dc.end_date, '[]') && ${bind(range)}
-"""
+""",
         )
     }
         .mapTo<RawCaretakers>()

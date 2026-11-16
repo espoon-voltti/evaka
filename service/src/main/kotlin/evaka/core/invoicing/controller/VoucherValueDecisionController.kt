@@ -352,7 +352,7 @@ class VoucherValueDecisionController(
                         restrictedDetails && decision.documentContainsContactInfo && !user.isAdmin
                     ) {
                         throw Forbidden(
-                            "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
+                            "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.",
                         )
                     }
                 }

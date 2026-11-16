@@ -21,7 +21,7 @@ internal fun transform(
     val decisionApprovalDate =
         voucherValueDecision.approvedAt?.let { localDateToXMLGregorianCalendar(it.toLocalDate()) }
             ?: error(
-                "Voucher value decision approval date missing, decision: ${voucherValueDecision.id}"
+                "Voucher value decision approval date missing, decision: ${voucherValueDecision.id}",
             )
     return Collections.Collection().apply {
         type = "record"
@@ -36,7 +36,7 @@ internal fun transform(
                     createDecisionMakerAgent(
                         voucherValueDecision.financeDecisionHandlerFirstName,
                         voucherValueDecision.financeDecisionHandlerLastName,
-                    )
+                    ),
                 )
             }
         content =
@@ -47,7 +47,7 @@ internal fun transform(
                         val mimeType = mimeTypes.forName(document.contentType)
                         name = "Arvopäätös${mimeType.extension}"
                         this.originalId = originalId
-                    }
+                    },
                 )
             }
     } to mapOf(originalId to document)

@@ -18,7 +18,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import tools.jackson.dataformat.csv.CsvMapper
 
 @JsonPropertyOrder(
-    value = ["unitId", "unitName", "firstName", "lastName", "email", "employeeNumber"]
+    value = ["unitId", "unitName", "firstName", "lastName", "email", "employeeNumber"],
 )
 data class UnitAclRow(
     @get:JsonProperty("unit_id") val unitId: DaycareId,
@@ -78,7 +78,7 @@ SELECT
 FROM daycare_acl
 JOIN daycare d ON daycare_acl.daycare_id = d.id
 JOIN employee e ON daycare_acl.employee_id = e.id
-"""
+""",
     )
 }
     .toList<UnitAclRow>()

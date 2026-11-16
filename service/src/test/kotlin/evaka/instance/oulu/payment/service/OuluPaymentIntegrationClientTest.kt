@@ -160,7 +160,7 @@ internal class OuluPaymentIntegrationClientTest {
                 ProEPaymentGenerator.Result(
                     PaymentIntegrationClient.SendResult(paymentList, listOf()),
                     "xx",
-                )
+                ),
             )
         val sendResult = paymentClient.send(paymentList, tx)
 
@@ -180,7 +180,7 @@ internal class OuluPaymentIntegrationClientTest {
                 ProEPaymentGenerator.Result(
                     PaymentIntegrationClient.SendResult(listOf(validPayment), listOf()),
                     "x",
-                )
+                ),
             )
 
         val _ = paymentClient.send(paymentList, tx)
@@ -198,7 +198,7 @@ internal class OuluPaymentIntegrationClientTest {
                 ProEPaymentGenerator.Result(
                     PaymentIntegrationClient.SendResult(paymentList, listOf()),
                     proEPayment1,
-                )
+                ),
             )
 
         doThrow(RuntimeException::class).whenever(sftpClient).put(any<InputStream>(), any<String>())

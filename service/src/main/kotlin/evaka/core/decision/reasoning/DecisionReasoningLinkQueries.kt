@@ -74,7 +74,7 @@ LEFT JOIN LATERAL (
 ) gen ON true
 WHERE d.application_id = ANY(${bind(applicationIds)}) AND d.sent_date IS NULL AND d.planned
 GROUP BY d.application_id
-"""
+""",
         )
     }
         .toList<Row>()
@@ -133,14 +133,14 @@ data class PlannedUnsentDecision(
 )
 
 fun Database.Read.getPlannedUnsentDecisions(
-    applicationId: ApplicationId
+    applicationId: ApplicationId,
 ): List<PlannedUnsentDecision> = createQuery {
     sql(
         """
 SELECT id, type, start_date
 FROM decision
 WHERE application_id = ${bind(applicationId)} AND sent_date IS NULL AND planned
-"""
+""",
     )
 }
     .toList<PlannedUnsentDecision>()
@@ -151,7 +151,7 @@ fun Database.Transaction.clearGenericReasoningFromUnsentDecisions(applicationId:
             """
 UPDATE decision SET generic_reasoning_id = NULL
 WHERE application_id = ${bind(applicationId)} AND sent_date IS NULL
-"""
+""",
         )
     }
 }
@@ -165,7 +165,7 @@ fun Database.Transaction.updateGenericReasoningToDecision(
                     SET generic_reasoning_id = ${bind(reasoningId)}
                     WHERE id = ${bind(decisionId)}
                     AND generic_reasoning_id IS NULL
-                """
+                """,
     )
 }
     .updateExactlyOne()
@@ -180,7 +180,7 @@ fun Database.Transaction.setDecisionReasoningIndividualSelections(
         sql(
             """DELETE FROM decision_reasoning_individual_selection
     WHERE decision_id = ${bind(decisionId)}
-    """
+    """,
         )
     }
 
@@ -190,7 +190,7 @@ fun Database.Transaction.setDecisionReasoningIndividualSelections(
                     """
                 INSERT INTO decision_reasoning_individual_selection (decision_id, reasoning_id, created_at, created_by)
                 VALUES (${bind(decisionId)}, ${bind{it}}, ${bind(createdAt)}, ${bind(createdBy)})
-                """
+                """,
                 )
             }
             .execute()
@@ -198,7 +198,7 @@ fun Database.Transaction.setDecisionReasoningIndividualSelections(
 }
 
 fun Database.Read.getDecisionIndividualReasoningIds(
-    decisionId: DecisionId
+    decisionId: DecisionId,
 ): List<DecisionIndividualReasoningId> = createQuery {
     sql(
         """
@@ -206,7 +206,7 @@ SELECT reasoning_id
 FROM decision_reasoning_individual_selection
 WHERE decision_id = ${bind(decisionId)}
 ORDER BY created_at
-"""
+""",
     )
 }
     .toList<DecisionIndividualReasoningId>()
@@ -214,7 +214,7 @@ ORDER BY created_at
 data class GenericReasoningText(val textFi: String, val textSv: String)
 
 fun Database.Read.getDecisionLinkedGenericReasoningText(
-    decisionId: DecisionId
+    decisionId: DecisionId,
 ): GenericReasoningText? = createQuery {
     sql(
         """
@@ -222,7 +222,7 @@ SELECT g.text_fi, g.text_sv
 FROM decision d
 JOIN decision_reasoning_generic g ON g.id = d.generic_reasoning_id
 WHERE d.id = ${bind(decisionId)}
-"""
+""",
     )
 }
     .exactlyOneOrNull<GenericReasoningText>()
@@ -233,7 +233,7 @@ data class DecisionPdfReasoningSource(
 )
 
 fun Database.Read.getDecisionPdfReasoningSource(
-    decisionId: DecisionId
+    decisionId: DecisionId,
 ): DecisionPdfReasoningSource =
     DecisionPdfReasoningSource(
         generic = getDecisionLinkedGenericReasoningText(decisionId),

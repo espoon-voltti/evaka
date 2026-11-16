@@ -76,18 +76,18 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
 }
 
 fun Database.Read.getDailyServiceTimesNotifications(
-    userId: PersonId
+    userId: PersonId,
 ): List<DailyServiceTimeNotificationId> = createQuery {
     sql(
         """
 SELECT id FROM daily_service_time_notification WHERE guardian_id = ${bind(userId)}
-    """
+    """,
     )
 }
     .toList<DailyServiceTimeNotificationId>()
 
 fun Database.Transaction.deleteDailyServiceTimesNotifications(
-    notificationIds: List<DailyServiceTimeNotificationId>
+    notificationIds: List<DailyServiceTimeNotificationId>,
 ) {
     execute {
         sql("DELETE FROM daily_service_time_notification WHERE id = ANY(${bind(notificationIds)})")

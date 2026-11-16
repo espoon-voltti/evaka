@@ -48,7 +48,7 @@ WITH dates AS (
     SELECT min(start_date) AS min_date, max(end_date) AS max_date FROM placement SET WHERE child_id = ${bind(duplicate)}
 )
 SELECT min(min_date) AS min_date, max(max_date) AS max_date FROM dates HAVING min(min_date) IS NOT NULL;
-"""
+""",
                     )
                 }
                 .exactlyOneOrNull {
@@ -131,7 +131,7 @@ ON CONFLICT (thread_id, participant_id) DO UPDATE SET
     last_message_timestamp = greatest(EXCLUDED.last_message_timestamp, mtp_new.last_message_timestamp),
     last_received_timestamp = greatest(EXCLUDED.last_received_timestamp, mtp_new.last_received_timestamp),
     last_sent_timestamp = greatest(EXCLUDED.last_sent_timestamp, mtp_new.last_sent_timestamp);
-"""
+""",
                     )
                 }
                 .execute()
@@ -147,7 +147,7 @@ ON CONFLICT (thread_id, participant_id) DO UPDATE SET
                         SELECT DISTINCT head_of_child
                         FROM fridge_child
                         WHERE head_of_child = ${bind(master)} OR child_id = ${bind(master)}
-                        """
+                        """,
                     )
                 }
                 .toList<PersonId>()
@@ -171,7 +171,7 @@ SELECT
     (SELECT count(*) FROM message_content WHERE author_id = (SELECT id FROM message_account WHERE person_id = ${bind(id)})) +
     (SELECT count(*) FROM message_recipients WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = ${bind(id)})) +
     (SELECT count(*) FROM message_draft WHERE account_id = (SELECT id FROM message_account WHERE person_id = ${bind(id)})) AS count;
-"""
+""",
                     )
                 }
                 .exactlyOne<Int>()
@@ -191,7 +191,7 @@ DELETE FROM guardian WHERE guardian_id = ${bind(id)} OR child_id = ${bind(id)};
 DELETE FROM child WHERE id = ${bind(id)};
 DELETE FROM citizen_user WHERE id = ${bind(id)};
 DELETE FROM person WHERE id = ${bind(id)};
-"""
+""",
                 )
             }
             .execute()

@@ -92,7 +92,7 @@ class FinanceBasicsController(private val accessControl: AccessControl) {
                         tx.updateFeeThresholdsValidity(
                             latest.id,
                             latest.thresholds.validDuring.copy(
-                                end = body.validDuring.start.minusDays(1)
+                                end = body.validDuring.start.minusDays(1),
                             ),
                         )
                     }
@@ -171,7 +171,7 @@ class FinanceBasicsController(private val accessControl: AccessControl) {
                     ?.let { latest ->
                         if (!body.range.start.isAfter(latest.voucherValues.range.start))
                             throw BadRequest(
-                                "New voucher value range must start after existing ones"
+                                "New voucher value range must start after existing ones",
                             )
 
                         if (
@@ -344,7 +344,7 @@ SELECT
     temporary_fee_sibling,
     temporary_fee_sibling_part_day
 FROM fee_thresholds
-"""
+""",
     )
 }
     .toList<FeeThresholdsWithId>()
@@ -409,7 +409,7 @@ INSERT INTO fee_thresholds (
     ${bind(thresholds.temporaryFeeSiblingPartDay)}
 )
 RETURNING id
-"""
+""",
         )
     }
     .executeAndReturnGeneratedKeys()
@@ -453,13 +453,13 @@ SET
     temporary_fee_sibling = ${bind(feeThresholds.temporaryFeeSibling)},
     temporary_fee_sibling_part_day = ${bind(feeThresholds.temporaryFeeSiblingPartDay)}
 WHERE id = ${bind(id)}
-"""
+""",
         )
     }
     .execute()
 
 fun Database.Read.getServiceNeedVoucherValuesByVoucherValueRangeId(
-    voucherValueId: ServiceNeedOptionVoucherValueId
+    voucherValueId: ServiceNeedOptionVoucherValueId,
 ): List<ServiceNeedOptionVoucherValueRangeWithId> = createQuery {
     sql(
         """
@@ -480,13 +480,13 @@ WHERE service_need_option_id = (
   WHERE id = ${bind(voucherValueId)}
 )
 ORDER by upper(validity) DESC
-"""
+""",
     )
 }
     .toList<ServiceNeedOptionVoucherValueRangeWithId>()
 
 fun Database.Transaction.insertNewVoucherValue(
-    voucherValue: ServiceNeedOptionVoucherValueRange
+    voucherValue: ServiceNeedOptionVoucherValueRange,
 ): ServiceNeedOptionVoucherValueId = createUpdate {
     sql(
         """
@@ -511,7 +511,7 @@ INSERT INTO service_need_option_voucher_value (
     ${bind(voucherValue.valueUnder3y)}
 )
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -535,7 +535,7 @@ fun Database.Transaction.updateVouchervalue(
                     value_under_3y = ${bind(voucherValue.valueUnder3y)}
                 WHERE id = ${bind(id)}
             """
-                .trimIndent()
+                .trimIndent(),
         )
     }
 }
@@ -547,7 +547,7 @@ fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId)
                 DELETE
                 FROM service_need_option_voucher_value
                 WHERE id = ${bind(id)}
-            """
+            """,
         )
     }
         .execute()
@@ -563,7 +563,7 @@ fun Database.Transaction.updateVoucherValueEndDate(
                 UPDATE service_need_option_voucher_value
                 SET validity = daterange(lower(validity), ${bind(endDate)}, '[]')
                 WHERE id = ${bind(id)}
-            """
+            """,
         )
     }
         .execute()

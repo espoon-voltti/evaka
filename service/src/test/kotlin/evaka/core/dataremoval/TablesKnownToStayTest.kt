@@ -176,7 +176,7 @@ class TablesKnownToStayTest {
                         dateOfBirth,
                         sentToKoski = sentToKoski,
                         sentToVarda = sentToVarda,
-                    )
+                    ),
             )
         assertEquals(
             setOf("person", "child_handled", "placement_rule"),
@@ -275,7 +275,7 @@ class TablesKnownToStayTest {
                     "child_id" to "child",
                     optional =
                         listOf(
-                            optionalReference("ref_id", referencedTable = "referenced_otherwise")
+                            optionalReference("ref_id", referencedTable = "referenced_otherwise"),
                         ),
                 ),
                 externalTable("external_referrer", "ref_id" to "referenced_otherwise"),

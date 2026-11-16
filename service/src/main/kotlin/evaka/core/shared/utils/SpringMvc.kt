@@ -13,7 +13,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 
 inline fun <reified T> asArgumentResolver(
-    crossinline f: (parameter: MethodParameter, webRequest: NativeWebRequest) -> T
+    crossinline f: (parameter: MethodParameter, webRequest: NativeWebRequest) -> T,
 ): HandlerMethodArgumentResolver =
     object : HandlerMethodArgumentResolver {
         override fun supportsParameter(parameter: MethodParameter): Boolean =

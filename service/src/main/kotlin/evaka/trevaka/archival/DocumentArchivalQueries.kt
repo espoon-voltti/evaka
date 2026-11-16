@@ -21,7 +21,7 @@ fun Database.Read.getEligibleChildDocumentCount(
                 FROM child_document cd
                 JOIN document_template dt ON cd.template_id = dt.id
                 WHERE ${predicate(templatePredicate.forTable("dt").and(documentPredicate.forTable("cd")))}
-                """
+                """,
     )
 }
     .exactlyOne<Int>()
@@ -39,7 +39,7 @@ fun Database.Read.getChildDocumentsEligibleForArchival(
                 WHERE ${predicate(templatePredicate.forTable("dt").and(documentPredicate.forTable("cd")))}
                 ORDER BY cd.created
                 LIMIT $limit
-                """
+                """,
     )
 }
     .toList<ChildDocumentId>()
@@ -50,7 +50,7 @@ fun Database.Read.getEligibleDecisionCount(decision: Predicate): Int = createQue
                 SELECT count(d.id)
                 FROM decision d
                 WHERE ${predicate(decision.forTable("d"))}
-                """
+                """,
     )
 }
     .exactlyOne<Int>()
@@ -66,7 +66,7 @@ fun Database.Read.getDecisionsEligibleForArchival(
                 WHERE ${predicate(decision.forTable("d"))}
                 ORDER BY d.resolved
                 LIMIT $limit
-                """
+                """,
     )
 }
     .toList<DecisionId>()
@@ -77,7 +77,7 @@ fun Database.Read.getEligibleFeeDecisionCount(feeDecision: Predicate): Int = cre
                 SELECT count(fd.id)
                 FROM fee_decision fd
                 WHERE ${predicate(feeDecision.forTable("fd"))}
-                """
+                """,
     )
 }
     .exactlyOne<Int>()
@@ -93,7 +93,7 @@ fun Database.Read.getFeeDecisionsEligibleForArchival(
                 WHERE ${predicate(feeDecision.forTable("fd"))}
                 ORDER BY fd.approved_at
                 LIMIT $limit
-                """
+                """,
     )
 }
     .toList<FeeDecisionId>()
@@ -104,7 +104,7 @@ fun Database.Read.getEligibleVoucherDecisionCount(voucherDecision: Predicate): I
                 SELECT count(vvd.id)
                 FROM voucher_value_decision vvd
                 WHERE ${predicate(voucherDecision.forTable("vvd"))}
-                """
+                """,
     )
 }
     .exactlyOne<Int>()
@@ -120,7 +120,7 @@ fun Database.Read.getVoucherValueDecisionsEligibleForArchival(
                 WHERE ${predicate(voucherDecision.forTable("vvd"))}
                 ORDER BY vvd.approved_at
                 LIMIT $limit
-                """
+                """,
     )
 }
     .toList<VoucherValueDecisionId>()

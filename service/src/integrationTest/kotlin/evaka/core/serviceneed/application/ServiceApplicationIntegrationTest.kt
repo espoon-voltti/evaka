@@ -150,7 +150,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                 ),
                         ),
                     permittedActions = setOf(Action.Citizen.ServiceApplication.DELETE),
-                )
+                ),
             ),
             applications,
         )
@@ -170,7 +170,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     validDuring = DateRange(today.minusMonths(1), null),
                     modifiedAt = clock.now(),
                     modifiedBy = supervisor.evakaUserId,
-                )
+                ),
             )
         }
         createServiceApplication(
@@ -216,7 +216,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     unitId = daycare.id,
                     startDate = today,
                     endDate = today.plusYears(1),
-                )
+                ),
             )
         }
         createServiceApplication(
@@ -248,7 +248,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     serviceNeedOptionId = snDaycareFullDay35.id,
                     additionalInfo = "Sain uuden duunin",
                     sentAt = now.minusDays(1),
-                )
+                ),
             )
         }
 
@@ -266,7 +266,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     currentNeedSv = snDaycareFullDay25to35.nameSv,
                     newNeedFi = snDaycareFullDay35.nameFi,
                     newNeedSv = snDaycareFullDay35.nameSv,
-                )
+                ),
             ),
             undecidedApplications,
         )
@@ -310,7 +310,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         ),
                     permittedActions =
                         setOf(Action.ServiceApplication.ACCEPT, Action.ServiceApplication.REJECT),
-                )
+                ),
             ),
             applications,
         )
@@ -361,7 +361,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(1, MockEmailClient.emails.size)
         val emailContent = MockEmailClient.emails.first().content
         assertTrue(
-            emailContent.subject.startsWith("Palveluntarpeen muutoshakemuksesi on käsitelty")
+            emailContent.subject.startsWith("Palveluntarpeen muutoshakemuksesi on käsitelty"),
         )
         assertTrue(emailContent.text.contains("palveluntarve on hyväksytty 01.03.2024 alkaen"))
     }
@@ -385,7 +385,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(newOption)
             tx.execute {
                 sql(
-                    "UPDATE service_need SET option_id = ${bind(currentOption.id)} WHERE id = ${bind(serviceNeed.id)}"
+                    "UPDATE service_need SET option_id = ${bind(currentOption.id)} WHERE id = ${bind(serviceNeed.id)}",
                 )
             }
             tx.insert(
@@ -395,7 +395,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     startDate = startDate,
                     serviceNeedOptionId = newOption.id,
                     sentAt = now.minusDays(1),
-                )
+                ),
             )
         }
 
@@ -420,7 +420,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     serviceNeedOptionId = snDaycareFullDay35.id,
                     additionalInfo = "Sain uuden duunin",
                     sentAt = now.minusDays(1),
-                )
+                ),
             )
         }
 
@@ -456,7 +456,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(1, MockEmailClient.emails.size)
         val emailContent = MockEmailClient.emails.first().content
         assertTrue(
-            emailContent.subject.startsWith("Palveluntarpeen muutoshakemuksesi on käsitelty")
+            emailContent.subject.startsWith("Palveluntarpeen muutoshakemuksesi on käsitelty"),
         )
         assertTrue(emailContent.text.contains("palveluntarve on hylätty"))
     }
@@ -479,7 +479,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     serviceNeedNameEn = snDaycareFullDay35.nameEn,
                     startDate = startDate,
                     rejected = true,
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -509,7 +509,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 serviceNeedOptionId = snDaycareFullDay35.id,
                 additionalInfo = "Sain uuden duunin",
                 sentAt = now.minusDays(1),
-            )
+            ),
         )
     }
 
@@ -525,7 +525,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     serviceNeedOptionId = snDaycarePartDay25.id,
                     additionalInfo = "Sain potkut",
                     sentAt = now.minusDays(1),
-                )
+                ),
             )
         }
 
@@ -597,7 +597,7 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     nameSv = "Ei kansalaiselle",
                     nameEn = "Ei kansalaiselle",
                     showForCitizen = false,
-                )
+                ),
             )
         }
 

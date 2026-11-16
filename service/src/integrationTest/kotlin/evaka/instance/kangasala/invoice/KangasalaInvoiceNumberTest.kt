@@ -45,7 +45,7 @@ class KangasalaInvoiceNumberTest : AbstractKangasalaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("c27fccb5-66cc-4d45-b146-e150128cd0e3")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -82,7 +82,7 @@ class KangasalaInvoiceNumberTest : AbstractKangasalaIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 11, 30),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("c27fccb5-66cc-4d45-b146-e150128cd0e3")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -95,7 +95,7 @@ class KangasalaInvoiceNumberTest : AbstractKangasalaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("c27fccb5-66cc-4d45-b146-e150128cd0e3")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)

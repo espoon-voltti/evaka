@@ -47,7 +47,7 @@ class OtherAssistanceMeasureAccessControlTest : PureJdbiTest(resetDbBeforeEach =
                         unitId = daycareId,
                         startDate = LocalDate.of(2020, 1, 1),
                         endDate = LocalDate.of(2100, 1, 1),
-                    )
+                    ),
                 )
                 val measureId =
                     tx.insert(
@@ -56,7 +56,7 @@ class OtherAssistanceMeasureAccessControlTest : PureJdbiTest(resetDbBeforeEach =
                             validDuring =
                                 FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 6, 1)),
                             type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
-                        )
+                        ),
                     )
                 daycareId to measureId
             }
@@ -84,7 +84,7 @@ class OtherAssistanceMeasureAccessControlTest : PureJdbiTest(resetDbBeforeEach =
                     clock,
                     Action.OtherAssistanceMeasure.READ,
                     measureId,
-                )
+                ),
             )
             assertFalse(
                 accessControl.hasPermissionFor(
@@ -93,7 +93,7 @@ class OtherAssistanceMeasureAccessControlTest : PureJdbiTest(resetDbBeforeEach =
                     clock,
                     Action.OtherAssistanceMeasure.READ,
                     measureId,
-                )
+                ),
             )
         }
     }

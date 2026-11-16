@@ -27,7 +27,7 @@ class ValidateArchiveMetadata {
                 ?: throw IllegalStateException(
                     "Set -Dsarma.schema.file=/path/to/top-level.xsd " +
                         "-Dsarma.main.namespace=<main-ns> -Dsarma.policy.namespace=<policy-ns> " +
-                        "to run this test"
+                        "to run this test",
                 )
         require(schemaFile.exists()) { "Schema file not found: ${schemaFile.absolutePath}" }
 
@@ -68,7 +68,7 @@ class ValidateArchiveMetadata {
 
         if (errors.isNotEmpty()) {
             throw AssertionError(
-                "XML validation errors:\n${errors.joinToString("\n") { it.message ?: it.toString() }}\n\nXML:\n$prettyXml"
+                "XML validation errors:\n${errors.joinToString("\n") { it.message ?: it.toString() }}\n\nXML:\n$prettyXml",
             )
         }
     }

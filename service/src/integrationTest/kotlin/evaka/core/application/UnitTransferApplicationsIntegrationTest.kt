@@ -70,7 +70,7 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
                         unitId = placementUnit1.id,
                         startDate = LocalDate.of(2020, 1, 1),
                         endDate = LocalDate.of(2025, 12, 31),
-                    )
+                    ),
                 )
             }
             val preferredStartDate = LocalDate.of(2021, 1, 1)
@@ -99,7 +99,7 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
                         lastName = child.lastName,
                         dateOfBirth = child.dateOfBirth,
                         preferredStartDate = preferredStartDate,
-                    )
+                    ),
                 )
         }
 

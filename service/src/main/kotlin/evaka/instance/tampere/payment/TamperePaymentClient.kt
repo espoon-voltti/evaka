@@ -45,7 +45,7 @@ class TamperePaymentClient(
                     properties.url,
                     request,
                     SoapActionCallback(
-                        "http://www.tampere.fi/services/sapfico/payableaccounting/v1.0/SendPayableAccounting"
+                        "http://www.tampere.fi/services/sapfico/payableaccounting/v1.0/SendPayableAccounting",
                     ),
                 )
             when (val value = JAXBIntrospector.getValue(response)) {
@@ -97,7 +97,7 @@ class TamperePaymentClient(
                     this.partnerCode = partnerCode?.toBigInteger()
                     debetKredit = "+"
                     this.value = value
-                }
+                },
             )
         }
     }

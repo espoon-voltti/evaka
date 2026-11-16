@@ -64,7 +64,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
 SELECT target.id
 FROM (${subquery { idChildQuery(user, now) }}) target
 JOIN (${subquery(aclQuery)}) acl USING (child_id)
-"""
+""",
                             )
                         }
                     },
@@ -95,7 +95,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
                     FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
                     WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
-                                    .trimIndent()
+                                    .trimIndent(),
                             )
                         }
                         .toSet<Id<DatabaseTable>>()
@@ -166,7 +166,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
                             """
 SELECT acl.child_id AS id
 FROM (${subquery(aclQuery)}) acl
-"""
+""",
                         )
                     }
                 },
@@ -179,7 +179,7 @@ FROM (${subquery(aclQuery)}) acl
                 """
 SELECT cdn.id, cdn.child_id
 FROM child_daily_note cdn
-"""
+""",
             )
         }
 
@@ -189,7 +189,7 @@ FROM child_daily_note cdn
                 """
 SELECT csn.id, csn.child_id
 FROM child_sticky_note csn
-"""
+""",
             )
         }
 
@@ -199,7 +199,7 @@ FROM child_sticky_note csn
                 """
 SELECT img.id, img.child_id
 FROM child_images img
-"""
+""",
             )
         }
 
@@ -214,7 +214,7 @@ WHERE EXISTS (
     LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
     WHERE md.id = ${bind(user.id)} AND (md.unit_id = g.daycare_id OR acl.daycare_id = g.daycare_id)
 )
-"""
+""",
             )
         }
 
@@ -230,7 +230,7 @@ WHERE EXISTS (
     LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
     WHERE md.id = ${bind(user.id)} AND (md.unit_id = g.daycare_id OR acl.daycare_id = g.daycare_id)
 )
-"""
+""",
             )
         }
 
@@ -248,7 +248,7 @@ WHERE EXISTS (
     JOIN daycare_acl useracl ON md.employee_id = useracl.employee_id
     JOIN daycare_acl targetacl ON useracl.daycare_id = targetacl.daycare_id
     WHERE md.id = ${bind(user.id)}
-"""
+""",
             )
         }
 
@@ -263,7 +263,7 @@ WHERE EXISTS (
     LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
     WHERE md.id = ${bind(user.id)} AND (md.unit_id = d.id OR acl.daycare_id = d.id)
 )
-"""
+""",
             )
         }
 
@@ -276,7 +276,7 @@ FROM message_account acc
 JOIN employee ON acc.employee_id = employee.id
 WHERE employee.id = ${bind(user.employeeId)} AND acc.active = TRUE
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -290,7 +290,7 @@ JOIN daycare_group dg ON acc.daycare_group_id = dg.id
 JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id AND acl.role = ANY(${bind(roles.asList())})
 WHERE acl.employee_id = ${bind(user.employeeId)} AND acc.active = TRUE
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -303,7 +303,7 @@ FROM message_account acc
 JOIN daycare_group_acl gacl ON gacl.daycare_group_id = acc.daycare_group_id
 WHERE gacl.employee_id = ${bind(user.employeeId)} AND acc.active = TRUE
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 }

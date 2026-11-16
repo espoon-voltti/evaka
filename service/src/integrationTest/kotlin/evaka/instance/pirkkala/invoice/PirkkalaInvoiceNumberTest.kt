@@ -45,7 +45,7 @@ class PirkkalaInvoiceNumberTest : AbstractPirkkalaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("951ef865-6c59-4225-9b4c-28e2317dbcc0")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -82,7 +82,7 @@ class PirkkalaInvoiceNumberTest : AbstractPirkkalaIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 11, 30),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("951ef865-6c59-4225-9b4c-28e2317dbcc0")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -95,7 +95,7 @@ class PirkkalaInvoiceNumberTest : AbstractPirkkalaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("951ef865-6c59-4225-9b4c-28e2317dbcc0")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -132,7 +132,7 @@ class PirkkalaInvoiceNumberTest : AbstractPirkkalaIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 10, 31),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("951ef865-6c59-4225-9b4c-28e2317dbcc0")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -145,7 +145,7 @@ class PirkkalaInvoiceNumberTest : AbstractPirkkalaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("951ef865-6c59-4225-9b4c-28e2317dbcc0")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)

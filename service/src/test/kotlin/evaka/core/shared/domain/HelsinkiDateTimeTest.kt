@@ -19,11 +19,11 @@ class HelsinkiDateTimeTest {
     private val jsonMapper = defaultJsonMapperBuilder().build()
     private val summerValue =
         HelsinkiDateTime.from(
-            ZonedDateTime.of(LocalDate.of(2021, 4, 14), LocalTime.of(16, 2), europeHelsinki)
+            ZonedDateTime.of(LocalDate.of(2021, 4, 14), LocalTime.of(16, 2), europeHelsinki),
         )
     private val winterValue =
         HelsinkiDateTime.from(
-            ZonedDateTime.of(LocalDate.of(2020, 12, 1), LocalTime.of(23, 59), europeHelsinki)
+            ZonedDateTime.of(LocalDate.of(2020, 12, 1), LocalTime.of(23, 59), europeHelsinki),
         )
 
     @Test

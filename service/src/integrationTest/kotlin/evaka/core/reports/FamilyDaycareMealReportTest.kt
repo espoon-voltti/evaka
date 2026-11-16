@@ -88,9 +88,9 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         breakfastCount = 1,
                                                         lunchCount = 1,
                                                         snackCount = 1,
-                                                    )
+                                                    ),
                                             ),
-                                    )
+                                    ),
                                 ),
                         ),
                         FamilyDaycareMealReport.FamilyDaycareMealAreaResult(
@@ -117,9 +117,9 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
                                                         snackCount = 1,
-                                                    )
+                                                    ),
                                             ),
-                                    )
+                                    ),
                                 ),
                         ),
                     ),
@@ -173,11 +173,11 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
                                                         snackCount = 1,
-                                                    )
+                                                    ),
                                             ),
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     ),
             )
 
@@ -200,7 +200,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     unitId = testData.daycareBId,
                     startDate = mockToday.today().minusMonths(1),
                     endDate = mockToday.today().plusMonths(1),
-                )
+                ),
             )
             tx.insertTestChildAttendance(
                 childMId,
@@ -275,9 +275,9 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         snackCount = 0,
                                                     ),
                                             ),
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     ),
             )
 
@@ -301,7 +301,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     unitId = testData.daycareBId,
                     startDate = previousAttendanceDay.minusMonths(1),
                     endDate = previousAttendanceDay.plusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -310,7 +310,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     unitId = testData.daycareBId,
                     startDate = previousAttendanceDay.plusDays(2),
                     endDate = examinationDay.plusMonths(1),
-                )
+                ),
             )
             tx.insertTestChildAttendance(
                 childPId,
@@ -379,9 +379,9 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         snackCount = 2,
                                                     ),
                                             ),
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     ),
             )
 
@@ -410,7 +410,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                             areaId = testData.areaBId,
                             openingDate = previousAttendanceDay.minusDays(7),
                             type = setOf(CareType.FAMILY),
-                        )
+                        ),
                     )
 
                 tx.insert(
@@ -420,7 +420,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         unitId = testData.daycareBId,
                         startDate = previousAttendanceDay.minusMonths(1),
                         endDate = examinationDay.plusMonths(1),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -428,7 +428,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         childId = childPId,
                         unitId = backupDaycareId,
                         period = FiniteDateRange(previousAttendanceDay, previousAttendanceDay),
-                    )
+                    ),
                 )
 
                 tx.insertTestChildAttendance(
@@ -487,9 +487,9 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         breakfastCount = 1,
                                                         lunchCount = 1,
                                                         snackCount = 1,
-                                                    )
+                                                    ),
                                             ),
-                                    )
+                                    ),
                                 ),
                         ),
                         FamilyDaycareMealReport.FamilyDaycareMealAreaResult(
@@ -516,7 +516,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         breakfastCount = 1,
                                                         lunchCount = 1,
                                                         snackCount = 1,
-                                                    )
+                                                    ),
                                             ),
                                     ),
                                     FamilyDaycareMealReport.FamilyDaycareMealDaycareResult(
@@ -569,7 +569,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         areaId = areaAId,
                         openingDate = keyDate.minusDays(7),
                         type = setOf(CareType.FAMILY),
-                    )
+                    ),
                 )
             val daycareBId =
                 tx.insert(
@@ -578,7 +578,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         areaId = areaBId,
                         openingDate = keyDate.minusDays(7),
                         type = setOf(CareType.FAMILY),
-                    )
+                    ),
                 )
 
             tx.insertDaycareAclRow(daycareBId, unitSupervisorId, UserRole.UNIT_SUPERVISOR)
@@ -608,7 +608,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     unitId = daycareAId,
                     startDate = keyDate.minusMonths(1),
                     endDate = keyDate.plusMonths(1),
-                )
+                ),
             )
 
             tx.insert(
@@ -618,7 +618,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     unitId = daycareBId,
                     startDate = keyDate.minusMonths(1),
                     endDate = keyDate.plusMonths(1),
-                )
+                ),
             )
 
             tx.insertTestChildAttendance(

@@ -378,7 +378,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     objectId =
                         AuditId(
                             (updates.mapNotNull { it.new.id } + updates.mapNotNull { it.old.id })
-                                .distinct()
+                                .distinct(),
                         ),
                     meta = mapOf("date" to body.date, "changes" to changes),
                 )
@@ -433,7 +433,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             occupancyCoefficient =
                                 if (body.hasStaffOccupancyEffect) occupancyCoefficientSeven
                                 else occupancyCoefficientZero,
-                        )
+                        ),
                     )
                 }
             }
@@ -479,7 +479,10 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
             dbc.transaction {
                 it.markExternalStaffDeparture(
-                    ExternalStaffDeparture(id = body.attendanceId, departed = departedTimeOrDefault)
+                    ExternalStaffDeparture(
+                        id = body.attendanceId,
+                        departed = departedTimeOrDefault,
+                    ),
                 )
             }
         }
@@ -503,7 +506,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     it >= now.minusMinutes(ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES)
             }
                 ?: throw BadRequest(
-                    "Arrival time is not allowed to differ from now for more than $ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES minutes"
+                    "Arrival time is not allowed to differ from now for more than $ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES minutes",
                 )
 
         fun createNewAttendance(
@@ -531,7 +534,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
         if (arrival.type == StaffAttendanceType.JUSTIFIED_CHANGE) {
             return listOf(
-                createNewAttendance(arrivalTime, null, StaffAttendanceType.JUSTIFIED_CHANGE)
+                createNewAttendance(arrivalTime, null, StaffAttendanceType.JUSTIFIED_CHANGE),
             )
         }
 
@@ -544,7 +547,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
                 else -> {
                     throw BadRequest(
-                        "Staff attendance type ${arrival.type} cannot be used when arrived $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes before plan start"
+                        "Staff attendance type ${arrival.type} cannot be used when arrived $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes before plan start",
                     )
                 }
             }
@@ -560,12 +563,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 null -> {
                     if (ongoingAttendance != null && ongoingAttendance.type != arrival.type) {
                         throw BadRequest(
-                            "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}"
+                            "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}",
                         )
                     }
                     if (ongoingAttendance != null && arrivalTime <= ongoingAttendance.arrived) {
                         throw BadRequest(
-                            "Arrival time must be after the start of the ongoing attendance"
+                            "Arrival time must be after the start of the ongoing attendance",
                         )
                     }
                     listOfNotNull(
@@ -578,7 +581,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
                 else -> {
                     throw BadRequest(
-                        "Staff attendance type ${arrival.type} cannot be used when arrived $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes after plan start"
+                        "Staff attendance type ${arrival.type} cannot be used when arrived $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes after plan start",
                     )
                 }
             }
@@ -588,7 +591,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             listOf(createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT))
         } else {
             throw BadRequest(
-                "Staff attendance type should not be used when arrived within $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes of plan start"
+                "Staff attendance type should not be used when arrived within $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes of plan start",
             )
         }
     }
@@ -628,7 +631,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
         if (!ongoingAttendance.type.presentInGroup()) {
             throw BadRequest(
-                "Trying to mark a departure for an employee that is not present in group"
+                "Trying to mark a departure for an employee that is not present in group",
             )
         }
 
@@ -647,7 +650,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         } else {
                             ongoingAttendance.type
                         },
-                )
+                ),
             )
         }
 
@@ -666,7 +669,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
                 else -> {
                     throw BadRequest(
-                        "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes or more before plan end"
+                        "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes or more before plan end",
                     )
                 }
             }
@@ -680,7 +683,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
                 else -> {
                     throw BadRequest(
-                        "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes after plan end"
+                        "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes after plan end",
                     )
                 }
             }

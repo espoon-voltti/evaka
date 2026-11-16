@@ -37,7 +37,7 @@ fun Database.Read.getPlacement(id: PlacementId): Placement? {
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.id = ${bind(id)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<Placement>()
@@ -51,7 +51,7 @@ SELECT p.id, p.type, p.child_id, d.id AS unit_id, d.name AS unit_name, p.start_d
 FROM placement p
 JOIN daycare d on p.unit_id = d.id
 WHERE p.child_id = ${bind(childId)}
-"""
+""",
         )
     }
         .toList<PlacementSummary>()
@@ -64,7 +64,7 @@ fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.child_id = ${bind(childId)}
-"""
+""",
         )
     }
         .toList<Placement>()
@@ -76,7 +76,7 @@ fun Database.Read.getPlacements(where: Predicate): List<Placement> = createQuery
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE ${predicate(where.forTable("p"))}
-"""
+""",
     )
 }
     .toList<Placement>()
@@ -89,18 +89,18 @@ fun Database.Read.getPlacementsForChildDuring(
     getPlacements(
         Predicate {
             where(
-                "$it.child_id = ${bind(childId)} AND daterange($it.start_date, $it.end_date, '[]') && ${bind(DateRange(start, end))}"
+                "$it.child_id = ${bind(childId)} AND daterange($it.start_date, $it.end_date, '[]') && ${bind(DateRange(start, end))}",
             )
-        }
+        },
     )
 
 fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildId): Placement? =
     getPlacements(
             Predicate {
                 where(
-                    "$it.child_id = ${bind(childId)} AND daterange($it.start_date, $it.end_date, '[]') @> ${bind(clock.today())}"
+                    "$it.child_id = ${bind(childId)} AND daterange($it.start_date, $it.end_date, '[]') @> ${bind(clock.today())}",
                 )
-            }
+            },
         )
         .firstOrNull()
 
@@ -113,7 +113,7 @@ fun Database.Read.getChildIdsWithPlacementInRange(
 SELECT DISTINCT child_id
 FROM placement
 WHERE child_id = ANY(${bind(childIds)}) AND daterange(start_date, end_date, '[]') && ${bind(range)}
-"""
+""",
     )
 }
     .toSet<ChildId>()
@@ -130,7 +130,7 @@ JOIN daycare d ON d.id = p.unit_id
 WHERE p.child_id = ANY(${bind(childIds)})
   AND daterange(p.start_date, p.end_date, '[]') @> ${bind(date)}
   AND d.provider_type = 'PRIVATE_SERVICE_VOUCHER'
-"""
+""",
     )
 }
     .toSet<ChildId>()
@@ -142,9 +142,9 @@ fun Database.Read.getPlacementsForChildrenAt(
     getPlacements(
             Predicate {
                 where(
-                    "$it.child_id = ANY(${bind(childIds)}) AND daterange($it.start_date, $it.end_date, '[]') @> ${bind(date)}"
+                    "$it.child_id = ANY(${bind(childIds)}) AND daterange($it.start_date, $it.end_date, '[]') @> ${bind(date)}",
                 )
-            }
+            },
         )
         .associateBy { it.childId }
 
@@ -197,7 +197,7 @@ INSERT INTO placement (
     ${bind(modifiedBy)}
 )
 RETURNING *
-"""
+""",
         )
     }
         .mapTo<Placement>()
@@ -247,7 +247,7 @@ INSERT INTO placement (
     ${bind(modifiedBy)}
 )
 RETURNING *
-"""
+""",
         )
     }
         .mapTo<Placement>()
@@ -263,7 +263,7 @@ data class PlacementChildAndRange(
 
 fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) = createQuery {
     sql(
-        "SELECT child_id, start_date, end_date, unit_id FROM placement WHERE id = ${bind(placementId)}"
+        "SELECT child_id, start_date, end_date, unit_id FROM placement WHERE id = ${bind(placementId)}",
     )
 }
     .exactlyOne<PlacementChildAndRange>()
@@ -278,7 +278,7 @@ fun Database.Transaction.updatePlacementStartDate(
 
     createUpdate {
         sql(
-            "UPDATE placement SET start_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+            "UPDATE placement SET start_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}",
         )
     }
         .execute()
@@ -295,7 +295,7 @@ fun Database.Transaction.updatePlacementEndDate(
     val placement = getPlacementChildAndRange(placementId)
     createUpdate {
         sql(
-            "UPDATE placement SET end_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+            "UPDATE placement SET end_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}",
         )
     }
         .execute()
@@ -313,7 +313,7 @@ fun Database.Transaction.updatePlacementStartAndEndDate(
     val placement = getPlacementChildAndRange(placementId)
     createUpdate {
         sql(
-            "UPDATE placement SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+            "UPDATE placement SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}",
         )
     }
         .execute()
@@ -329,7 +329,7 @@ fun Database.Transaction.updatePlacementType(
 ) {
     createUpdate {
         sql(
-            "UPDATE placement SET type = ${bind(type)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+            "UPDATE placement SET type = ${bind(type)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}",
         )
     }
         .execute()
@@ -387,7 +387,7 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, dat
             """
                 DELETE from daycare_group_placement
                 WHERE daycare_placement_id = ${bind(placementId)} AND start_date > ${bind(date)}
-                """
+                """,
         )
     }
         .execute()
@@ -397,7 +397,7 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, dat
             """
             UPDATE daycare_group_placement SET end_date = ${bind(date)}
             WHERE daycare_placement_id = ${bind(placementId)} AND start_date <= ${bind(date)} AND end_date > ${bind(date)}
-        """
+        """,
         )
     }
         .execute()
@@ -419,7 +419,7 @@ fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, da
             """
         DELETE from daycare_group_placement
         WHERE daycare_placement_id = ${bind(placementId)} AND end_date < ${bind(date)}
-        """
+        """,
         )
     }
         .execute()
@@ -429,7 +429,7 @@ fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, da
             """
             UPDATE daycare_group_placement SET start_date = ${bind(date)}
             WHERE daycare_placement_id = ${bind(placementId)} AND start_date < ${bind(date)} AND end_date >= ${bind(date)}
-        """
+        """,
         )
     }
         .execute()
@@ -466,7 +466,7 @@ WHERE cea.child_id = ${bind(childId)}
     ${bind(endDate)} IS NULL OR
     (SELECT upper(ce.period) FROM calendar_event ce WHERE ce.id = cea.calendar_event_id) < ${bind(endDate)}
   )
-"""
+""",
         )
     }
         .execute()
@@ -479,7 +479,7 @@ WHERE cea.child_id = ${bind(childId)}
             WHERE NOT EXISTS(
                 SELECT 1 FROM calendar_event_attendee cea WHERE cea.calendar_event_id = ce.id
             )
-        """
+        """,
         )
     }
         .execute()
@@ -547,7 +547,7 @@ fun Database.Read.getDaycarePlacements(
         LEFT JOIN evaka_user source_application_user ON app.created_by = source_application_user.id
         WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
         AND ${predicate(placementPredicate.forTable("pl"))}
-"""
+""",
         )
     }
         .toList {
@@ -663,7 +663,7 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
                 JOIN care_area a ON u.care_area_id = a.id
                 LEFT JOIN evaka_user e ON p.modified_by = e.id
                 WHERE p.id = ${bind(id)}
-                """
+                """,
             )
         }
         .exactlyOneOrNull(toDaycarePlacement)
@@ -703,7 +703,7 @@ SELECT
     LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
     WHERE pl.unit_id = ${bind(daycareId)}
     AND daterange(${bind(terminationRequestedMinDate)}, ${bind(terminationRequestedMaxDate)}, '[]') @> pl.termination_requested_date 
-    """
+    """,
     )
 }
     .toList<TerminatedPlacement>()
@@ -758,7 +758,7 @@ LEFT JOIN evaka_user ON p.terminated_by = evaka_user.id
 WHERE
     p.child_id = ${bind(childId)}
     AND p.end_date >= ${bind(today)}::date
-    """
+    """,
     )
 }
     .toList<ChildPlacement>()
@@ -777,7 +777,7 @@ fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPl
                 FROM daycare_group_placement gp
                 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
                 WHERE gp.id = ${bind(id)}
-                """
+                """,
         )
     }
         .exactlyOneOrNull<DaycareGroupPlacement>()
@@ -801,7 +801,7 @@ SELECT
 FROM daycare_group_placement gp
 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
 WHERE daycare_placement_id = ${bind(daycarePlacementId)} AND daycare_group_id = ${bind(groupId)} AND gp.end_date = ${bind(startDate.minusDays(1))}
-"""
+""",
         )
     }
         .exactlyOneOrNull<DaycareGroupPlacement>()
@@ -825,7 +825,7 @@ SELECT
 FROM daycare_group_placement gp
 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
 WHERE daycare_placement_id = ${bind(daycarePlacementId)} AND daycare_group_id = ${bind(groupId)} AND gp.start_date = ${bind(endDate.plusDays(1))}
-"""
+""",
         )
     }
         .exactlyOneOrNull<DaycareGroupPlacement>()
@@ -833,7 +833,7 @@ WHERE daycare_placement_id = ${bind(daycarePlacementId)} AND daycare_group_id = 
 
 fun Database.Read.hasGroupPlacements(groupId: GroupId): Boolean = createQuery {
     sql(
-        "SELECT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)})"
+        "SELECT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)})",
     )
 }
     .exactlyOne<Boolean>()
@@ -860,7 +860,7 @@ WHERE EXISTS (
     AND p.unit_id = ${bind(daycareId)}
     AND daterange(p.start_date, p.end_date, '[]') && ${bind(placementRange)}
 )
-"""
+""",
         )
     }
         .toList<DaycareGroupPlacement>()
@@ -879,7 +879,7 @@ JOIN daycare_group dg ON dg.id = gp.daycare_group_id
 JOIN placement pl ON pl.id = gp.daycare_placement_id
 WHERE pl.child_id = ANY(${bind(childIds)}) AND daterange(gp.start_date, gp.end_date, '[]') && ${bind(range)}
 ORDER BY gp.start_date
-"""
+""",
         )
     }
         .toList<ChildDaycareGroupPlacement>()
@@ -901,7 +901,7 @@ FROM daycare_group_placement gp
 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
 JOIN placement pl ON pl.id = gp.daycare_placement_id
 WHERE pl.child_id = ${bind(childId)}
-"""
+""",
         )
     }
         .toList<DaycareGroupPlacement>()
@@ -918,7 +918,7 @@ fun Database.Read.getGroupPlacementChildren(
         FROM daycare_group_placement gp
         JOIN placement pl ON pl.id = gp.daycare_placement_id
         WHERE gp.daycare_group_id = ${bind(groupId)} AND daterange(gp.start_date, gp.end_date, '[]') && ${bind(range)}
-        """
+        """,
         )
     }
         .toList<ChildId>()
@@ -937,7 +937,7 @@ fun Database.Transaction.createGroupPlacement(
 INSERT INTO daycare_group_placement (daycare_placement_id, daycare_group_id, start_date, end_date)
 VALUES (${bind(placementId)}, ${bind(groupId)}, ${bind(startDate)}, ${bind(endDate)})
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOne<GroupPlacementId>()
@@ -950,7 +950,7 @@ fun Database.Transaction.updateGroupPlacementStartDate(
 ): Boolean {
     return createQuery {
         sql(
-            "UPDATE daycare_group_placement SET start_date = ${bind(startDate)} WHERE id = ${bind(id)} RETURNING id"
+            "UPDATE daycare_group_placement SET start_date = ${bind(startDate)} WHERE id = ${bind(id)} RETURNING id",
         )
     }
         .exactlyOneOrNull<GroupPlacementId>() != null
@@ -963,7 +963,7 @@ fun Database.Transaction.updateGroupPlacementEndDate(
 ): Boolean {
     return createQuery {
         sql(
-            "UPDATE daycare_group_placement SET end_date = ${bind(endDate)} WHERE id = ${bind(id)} RETURNING id"
+            "UPDATE daycare_group_placement SET end_date = ${bind(endDate)} WHERE id = ${bind(id)} RETURNING id",
         )
     }
         .exactlyOneOrNull<GroupPlacementId>() != null
@@ -1033,7 +1033,7 @@ fun Database.Transaction.deleteServiceNeedsFromPlacementAfter(id: PlacementId, d
             """
 DELETE FROM service_need
 WHERE placement_id = ${bind(id)} AND start_date > ${bind(date)}
-"""
+""",
         )
     }
         .execute()
@@ -1045,7 +1045,7 @@ UPDATE service_need
 SET end_date = ${bind(date)}
 WHERE placement_id = ${bind(id)}
     AND daterange(start_date, end_date, '[]') @> ${bind(date)}::date
-"""
+""",
         )
     }
         .execute()
@@ -1070,7 +1070,7 @@ SET termination_requested_date = ${bind(now.toLocalDate())},
     terminated_by = ${bind(terminatedBy)},
     end_date = ${bind(terminationDate)}
 WHERE id = ${bind(placementId)}
-        """
+        """,
         )
     }
         .execute()
@@ -1090,7 +1090,7 @@ UPDATE placement SET
     termination_requested_date = ${bind(terminationDate)},
     terminated_by = ${bind(terminatedBy)}
 WHERE id = ${bind(placementId)}
-"""
+""",
         )
     }
         .execute()
@@ -1106,7 +1106,7 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
         SELECT range_agg(daterange(start_date, end_date, '[]')) FROM placement
         WHERE child_id = ${bind(childId)}
     ) @> ${bind(range)}
-    """
+    """,
     )
 }
     .exactlyOne<Boolean>()
@@ -1125,7 +1125,7 @@ WHERE child_id = ANY (${bind(childIds)})
   AND end_date >= ${bind(period.start)}
   AND start_date <= ${bind(period.end)}
 GROUP BY child_id
-"""
+""",
     )
 }
     .toMap { columnPair<ChildId, DateSet>("child_id", "ranges") }
@@ -1143,7 +1143,7 @@ fun Database.Transaction.deleteFutureReservationsAndAbsencesOutsideValidPlacemen
             WHERE pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
             AND pl.type = ANY(${bind(PlacementType.requiringAttendanceReservations)})
         )
-    """
+    """,
         )
     }
 
@@ -1161,7 +1161,7 @@ fun Database.Transaction.deleteFutureReservationsAndAbsencesOutsideValidPlacemen
                 WHERE pl.child_id = ab.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ab.date
                 AND pl.type = ANY(${bind(PlacementType.withNonbillableAbsences)})
         )))
-    """
+    """,
         )
     }
 }

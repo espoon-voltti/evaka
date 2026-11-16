@@ -157,18 +157,22 @@ enum class VoucherValueDecisionStatus : DatabaseEnum {
 
 @ConstList("voucherValueDecisionDifferences")
 enum class VoucherValueDecisionDifference(
-    val contentEquals: (d1: VoucherValueDecision, d2: VoucherValueDecision) -> Boolean
+    val contentEquals: (d1: VoucherValueDecision, d2: VoucherValueDecision) -> Boolean,
 ) : DatabaseEnum {
-    GUARDIANS({ d1, d2 ->
-        setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
-    }),
-    INCOME({ d1, d2 ->
-        ((decisionIncomesEqual(d1.headOfFamilyIncome, d2.headOfFamilyIncome) &&
-            decisionIncomesEqual(d1.partnerIncome, d2.partnerIncome)) ||
-            (decisionIncomesEqual(d1.headOfFamilyIncome, d2.partnerIncome) &&
-                decisionIncomesEqual(d1.partnerIncome, d2.headOfFamilyIncome))) &&
-            decisionIncomesEqual(d1.childIncome, d2.childIncome)
-    }),
+    GUARDIANS(
+        { d1, d2 ->
+            setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
+        },
+    ),
+    INCOME(
+        { d1, d2 ->
+            ((decisionIncomesEqual(d1.headOfFamilyIncome, d2.headOfFamilyIncome) &&
+                decisionIncomesEqual(d1.partnerIncome, d2.partnerIncome)) ||
+                (decisionIncomesEqual(d1.headOfFamilyIncome, d2.partnerIncome) &&
+                    decisionIncomesEqual(d1.partnerIncome, d2.headOfFamilyIncome))) &&
+                decisionIncomesEqual(d1.childIncome, d2.childIncome)
+        },
+    ),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),
     SERVICE_NEED({ d1, d2 -> d1.serviceNeed == d2.serviceNeed }),
@@ -177,11 +181,14 @@ enum class VoucherValueDecisionDifference(
     FEE_ALTERATIONS({ d1, d2 -> d1.feeAlterations == d2.feeAlterations }),
     FINAL_CO_PAYMENT({ d1, d2 -> d1.finalCoPayment == d2.finalCoPayment }),
     BASE_VALUE({ d1, d2 -> d1.baseValue == d2.baseValue }),
-    VOUCHER_VALUE({ d1, d2 ->
-        // Voucher value rounding was added later, so the values need to be rounded before comparing
-        // them to consider old decisions as not changed
-        roundToEuros(BigDecimal(d1.voucherValue)) == roundToEuros(BigDecimal(d2.voucherValue))
-    }),
+    VOUCHER_VALUE(
+        { d1, d2 ->
+            // Voucher value rounding was added later, so the values need to be rounded before
+            // comparing
+            // them to consider old decisions as not changed
+            roundToEuros(BigDecimal(d1.voucherValue)) == roundToEuros(BigDecimal(d2.voucherValue))
+        },
+    ),
     FEE_THRESHOLDS({ d1, d2 -> d1.feeThresholds == d2.feeThresholds });
 
     override val sqlType: String = "voucher_value_decision_difference"

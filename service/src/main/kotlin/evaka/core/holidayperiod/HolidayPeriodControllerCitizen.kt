@@ -128,7 +128,7 @@ class HolidayPeriodControllerCitizen(
                                         activeQuestionnaire.id,
                                         eligibleChildren.keys.toList(),
                                     ),
-                            )
+                            ),
                         )
                     }
                 }
@@ -269,7 +269,7 @@ class HolidayPeriodControllerCitizen(
                         val serviceNeeds = tx.getServiceNeedsByChild(childId)
                         val holidays =
                             getHolidays(
-                                FiniteDateRange(ranges.minOf { it.start }, ranges.maxOf { it.end })
+                                FiniteDateRange(ranges.minOf { it.start }, ranges.maxOf { it.end }),
                             )
                         ranges.flatMap { range ->
                             val absenceType =
@@ -361,7 +361,7 @@ class HolidayPeriodControllerCitizen(
                 .toMap()
         if (invalid.isNotEmpty()) {
             throw BadRequest(
-                "Some children are not eligible to answer or invalid option provided ($invalid)"
+                "Some children are not eligible to answer or invalid option provided ($invalid)",
             )
         }
     }

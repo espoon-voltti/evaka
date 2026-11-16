@@ -261,7 +261,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                    )
+                    ),
                 )
 
             val groupAAId =
@@ -270,7 +270,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                         name = "Group AA",
                         startDate = monday.minusDays(7),
                         daycareId = daycareAId,
-                    )
+                    ),
                 )
 
             val groupABId =
@@ -279,7 +279,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                         name = "Group AB",
                         startDate = monday.minusDays(7),
                         daycareId = daycareAId,
-                    )
+                    ),
                 )
 
             val daycareBId =
@@ -296,7 +296,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                             List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
                         shiftCareOpenOnHolidays = true,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                    )
+                    ),
                 )
 
             val groupBAId =
@@ -305,7 +305,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                         name = "Group BA",
                         startDate = monday.minusDays(7),
                         daycareId = daycareBId,
-                    )
+                    ),
                 )
 
             val groupBBId =
@@ -314,7 +314,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                         name = "Group BB",
                         startDate = monday.minusDays(7),
                         daycareId = daycareBId,
-                    )
+                    ),
                 )
 
             val daycareCId =
@@ -328,7 +328,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                    )
+                    ),
                 )
 
             val groupCAId =
@@ -337,7 +337,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                         name = "Group CA",
                         startDate = monday.minusMonths(1),
                         daycareId = daycareCId,
-                    )
+                    ),
                 )
 
             val groupCBId =
@@ -346,7 +346,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                         name = "Group CB",
                         startDate = monday.minusMonths(1),
                         daycareId = daycareCId,
-                    )
+                    ),
                 )
 
             listOf(
@@ -449,7 +449,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     daycareGroupId = daycare.groups.first,
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
 
             val placementB =
@@ -469,7 +469,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     endDate = wednesday,
                     confirmedBy = admin.evakaUserId,
                     optionId = snDefaultDaycare.id,
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -478,7 +478,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     endDate = defaultPlacementDuration.end,
                     confirmedBy = admin.evakaUserId,
                     optionId = snDaycareFullDay35.id,
-                )
+                ),
             )
 
             tx.insert(
@@ -487,7 +487,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     daycareGroupId = daycare.groups.first,
                     startDate = defaultPlacementDuration.start,
                     endDate = wednesday,
-                )
+                ),
             )
 
             tx.insert(
@@ -496,14 +496,14 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     daycareGroupId = daycare.groups.second,
                     startDate = thursday,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
 
             tx.insert(
                 DevPreschoolAssistance(
                     childId = testChildBertil.id,
                     validDuring = FiniteDateRange(monday.minusMonths(2), tuesday),
-                )
+                ),
             )
 
             val placementC1 =
@@ -522,7 +522,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     daycareGroupId = daycare.groups.first,
                     startDate = placementC1.startDate,
                     endDate = placementC1.endDate,
-                )
+                ),
             )
 
             val placementC2 =
@@ -541,7 +541,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     daycareGroupId = daycare.groups.second,
                     startDate = placementC2.startDate,
                     endDate = placementC2.endDate,
-                )
+                ),
             )
 
             tx.insert(
@@ -549,14 +549,14 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     childId = testChildCecil.id,
                     validDuring = FiniteDateRange(monday, wednesday),
                     capacityFactor = 5.50,
-                )
+                ),
             )
 
             tx.insert(
                 DevDaycareAssistance(
                     childId = testChildCecil.id,
                     validDuring = FiniteDateRange(monday.minusMonths(3), wednesday),
-                )
+                ),
             )
 
             val placementD =
@@ -575,7 +575,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     daycareGroupId = daycare.groups.first,
                     startDate = defaultPlacementDuration.start,
                     endDate = defaultPlacementDuration.end,
-                )
+                ),
             )
 
             tx.insert(
@@ -584,7 +584,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     childId = testChildVille.id,
                     startDate = monday,
                     endDate = monday.plusDays(6),
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
@@ -592,7 +592,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     childId = testChildVille.id,
                     unitId = daycare.id,
                     groupId = daycare.groups.first,
-                )
+                ),
             )
 
             tx.insert(holidayQuestionnaire)
@@ -603,7 +603,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     questionnaireId = holidayQuestionnaire.id,
                     childId = testChildAapo.id,
                     fixedPeriod = FiniteDateRange(monday, wednesday),
-                )
+                ),
             )
 
             tx.insert(
@@ -612,7 +612,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     questionnaireId = holidayQuestionnaire.id,
                     childId = testChildBertil.id,
                     fixedPeriod = FiniteDateRange(tuesday, thursday),
-                )
+                ),
             )
 
             tx.insert(
@@ -621,7 +621,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     questionnaireId = holidayQuestionnaire.id,
                     childId = testChildCecil.id,
                     fixedPeriod = FiniteDateRange(wednesday, friday),
-                )
+                ),
             )
 
             tx.insert(
@@ -630,7 +630,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                     questionnaireId = holidayQuestionnaire.id,
                     childId = testChildVille.id,
                     fixedPeriod = FiniteDateRange(thursday, saturday),
-                )
+                ),
             )
 
             listOf(

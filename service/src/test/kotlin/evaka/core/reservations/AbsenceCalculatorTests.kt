@@ -246,7 +246,7 @@ class AbsenceCalculatorTests {
                                 FiniteDateRange(
                                     LocalDate.of(2023, 12, 18),
                                     LocalDate.of(2024, 1, 5),
-                                )
+                                ),
                             ),
                     )
                     .takeIf { it.extendedTerm.includes(date) },

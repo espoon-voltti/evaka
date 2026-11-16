@@ -142,7 +142,7 @@ sealed class DailyServiceTimesValue(
             if (!validityPeriod.includes(date)) return ServiceTimesPresenceStatus.Unknown
 
             return ServiceTimesPresenceStatus.Present(
-                timesForDayOfWeek(date.dayOfWeek) ?: return ServiceTimesPresenceStatus.Absent
+                timesForDayOfWeek(date.dayOfWeek) ?: return ServiceTimesPresenceStatus.Absent,
             )
         }
     }
@@ -210,14 +210,14 @@ SELECT
 FROM daily_service_time
 WHERE child_id = ${bind(childId)}
 ORDER BY lower(validity_period) DESC
-"""
+""",
         )
     }
     .mapTo<DailyServiceTimeRow>()
     .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.toList() }
 
 fun Database.Read.getDailyServiceTimesForChildren(
-    childIds: Set<ChildId>
+    childIds: Set<ChildId>,
 ): Map<ChildId, List<DailyServiceTimesValue>> = createQuery {
     sql(
         """
@@ -236,7 +236,7 @@ SELECT
     sunday_times
 FROM daily_service_time
 WHERE child_id = ANY(${bind(childIds)})
-"""
+""",
     )
 }
     .mapTo<DailyServiceTimeRow>()
@@ -247,14 +247,14 @@ WHERE child_id = ANY(${bind(childIds)})
 data class DailyServiceTimesValidity(val childId: ChildId, val validityPeriod: DateRange)
 
 fun Database.Read.getDailyServiceTimesValidity(
-    id: DailyServiceTimesId
+    id: DailyServiceTimesId,
 ): DailyServiceTimesValidity? = createQuery {
     sql(
         """
 SELECT child_id, validity_period
 FROM daily_service_time
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -267,7 +267,7 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
                     regularTimes =
                         row.regularTimes
                             ?: throw IllegalStateException(
-                                "Regular daily service times must have regular times"
+                                "Regular daily service times must have regular times",
                             ),
                 )
                 .withId(row.id, row.childId)
@@ -328,7 +328,7 @@ SET
     saturday_times = ${bind(u.saturdayTimes)},
     sunday_times = ${bind(u.sundayTimes)}
 WHERE id = ${bind(id)}
-"""
+""",
         )
     }
 }
@@ -344,7 +344,7 @@ WITH recipient AS (
 )
 INSERT INTO daily_service_time_notification (guardian_id)
 SELECT recipient.id FROM recipient
-"""
+""",
         )
     }
 }
@@ -353,7 +353,7 @@ SELECT recipient.id FROM recipient
 fun Database.Transaction.deleteOldDailyServiceTimeNotifications(now: HelsinkiDateTime): Int =
     createUpdate {
         sql(
-            "DELETE FROM daily_service_time_notification WHERE created_at < ${bind(now.minusMonths(2))}"
+            "DELETE FROM daily_service_time_notification WHERE created_at < ${bind(now.minusMonths(2))}",
         )
     }
     .executeAndReturnCount()
@@ -395,7 +395,7 @@ fun Database.Transaction.createChildDailyServiceTimes(
             ${bind(u.validityPeriod)}
         )
         RETURNING id
-    """
+    """,
         )
     }
         .exactlyOne<DailyServiceTimesId>()
@@ -416,7 +416,7 @@ SELECT id, validity_period
 FROM daily_service_time
 WHERE child_id = ${bind(childId)}
   AND ${bind(range)} && validity_period
-"""
+""",
     )
 }
     .toList<DailyServiceTimesValidityWithId>()
@@ -431,7 +431,7 @@ fun Database.Transaction.updateChildDailyServiceTimesValidity(
 UPDATE daily_service_time
 SET validity_period = ${bind(validityPeriod)}
 WHERE id = ${bind(id)}
-"""
+""",
         )
     }
 }

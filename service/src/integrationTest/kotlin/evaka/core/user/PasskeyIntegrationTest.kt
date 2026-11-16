@@ -373,7 +373,7 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun getCitizenUserRow(): CitizenUserRow? = db.read {
         it.createQuery {
                 sql(
-                    "SELECT username, last_weak_login FROM citizen_user WHERE id = ${bind(person.id)}"
+                    "SELECT username, last_weak_login FROM citizen_user WHERE id = ${bind(person.id)}",
                 )
             }
             .exactlyOneOrNull<CitizenUserRow>()

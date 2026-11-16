@@ -66,7 +66,8 @@ class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
             )
             val nullable: Foo? = null
             assertNull(
-                tx.createQuery { sql("SELECT ${bindJson(nullable)}") }.exactlyOne<Foo?>(Json::class)
+                tx.createQuery { sql("SELECT ${bindJson(nullable)}") }
+                    .exactlyOne<Foo?>(Json::class),
             )
         }
     }

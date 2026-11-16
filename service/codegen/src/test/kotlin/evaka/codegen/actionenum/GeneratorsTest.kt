@@ -12,7 +12,7 @@ class GeneratorsTest {
 
     @Suppress("unused")
     private enum class Single {
-        VARIANT
+        VARIANT,
     }
 
     @Suppress("unused")

@@ -129,8 +129,8 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         areaId = area.id,
                         number = 5000000123L,
                         rows = listOf(DevInvoiceRow(childId = child1.id, unitId = daycare.id)),
-                    )
-                )
+                    ),
+                ),
             )
 
             val maxNumber = tx.getMaxInvoiceNumber()
@@ -167,7 +167,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             val result =
                 tx.getInvoicedHeadsOfFamily(
-                    FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+                    FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
                 )
             assertEquals(1, result.size)
             assertEquals(setOf(testInvoices[0].headOfFamilyId), result)
@@ -181,7 +181,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             val result =
                 tx.getInvoicedHeadsOfFamily(
-                    FiniteDateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30))
+                    FiniteDateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)),
                 )
             assertEquals(0, result.size)
         }
@@ -221,8 +221,8 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamilyId = adult2.id,
                         areaId = area.id,
                         rows = listOf(DevInvoiceRow(childId = child1.id, unitId = daycare.id)),
-                    )
-                )
+                    ),
+                ),
             )
 
             assertEquals(testInvoices.size, tx.getHeadOfFamilyInvoices(adult1.id).size)

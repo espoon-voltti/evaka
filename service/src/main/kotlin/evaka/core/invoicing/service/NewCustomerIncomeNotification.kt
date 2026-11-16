@@ -39,7 +39,7 @@ class NewCustomerIncomeNotification(
 
     fun scheduleNotifications(tx: Database.Transaction, clock: EvakaClock): Int {
         tx.removeUnclaimedJobs(
-            setOf(AsyncJobType(AsyncJob.SendNewCustomerIncomeNotificationEmail::class))
+            setOf(AsyncJobType(AsyncJob.SendNewCustomerIncomeNotificationEmail::class)),
         )
 
         tx.setStatementTimeout(Duration.ofSeconds(300))

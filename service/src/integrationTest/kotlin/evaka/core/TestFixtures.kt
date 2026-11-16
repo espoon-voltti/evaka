@@ -210,7 +210,7 @@ fun Database.Transaction.insertServiceNeedOptions() {
             """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to)
 VALUES (${bind { it.id }}, ${bind { it.nameFi }}, ${bind { it.nameSv }}, ${bind { it.nameEn }}, ${bind { it.validPlacementType }}, ${bind { it.defaultOption }}, ${bind { it.feeCoefficient }}, ${bind { it.occupancyCoefficient }}, ${bind { it.occupancyCoefficientUnder3y }}, ${bind { it.realizedOccupancyCoefficient }}, ${bind { it.realizedOccupancyCoefficientUnder3y }}, ${bind { it.daycareHoursPerWeek }}, ${bind { it.contractDaysPerMonth }}, ${bind { it.daycareHoursPerMonth }}, ${bind { it.partDay }}, ${bind { it.partWeek }}, ${bind { it.feeDescriptionFi }}, ${bind { it.feeDescriptionSv }}, ${bind { it.voucherValueDescriptionFi }}, ${bind { it.voucherValueDescriptionSv }}, ${bind { it.validFrom }}, ${bind { it.validTo }})
-"""
+""",
         )
     }
 }
@@ -221,7 +221,7 @@ fun Database.Transaction.insertServiceNeedOptionVoucherValues() {
             """
 INSERT INTO service_need_option_voucher_value (service_need_option_id, validity, base_value, coefficient, value, base_value_under_3y, coefficient_under_3y, value_under_3y)
 VALUES (${bind { it.serviceNeedOptionId }}, ${bind { it.validity }}, ${bind { it.baseValue }}, ${bind { it.coefficient }}, ${bind { it.value }}, ${bind { it.baseValueUnder3y }}, ${bind { it.coefficientUnder3y }}, ${bind { it.valueUnder3y }})
-"""
+""",
         )
     }
 }
@@ -246,7 +246,7 @@ INSERT INTO assistance_action_option (value, name_fi, display_order, category, v
     ('PERSONAL_ASSISTANT', 'Lapsikohtainen avustaja', 30, 'PRESCHOOL', '2025-08-01'::date, NULL),
     ('ASSISTIVE_DEVICES', 'Apuvälineet', 40, 'PRESCHOOL', '2025-08-01'::date, NULL),
     ('INTERPRETATION_SERVICES', 'Tulkitsemispalvelut', 50, 'PRESCHOOL', '2025-08-01'::date, NULL);
-"""
+""",
         )
     }
 }

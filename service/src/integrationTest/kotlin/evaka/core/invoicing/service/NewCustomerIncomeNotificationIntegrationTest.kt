@@ -104,7 +104,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     headOfChild = fridgeHeadOfChild.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusYears(1),
-                )
+                ),
             )
 
             tx.insertServiceNeedOptions()
@@ -127,7 +127,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     startDate = start,
                     endDate = end,
                     createdAt = createdAt,
-                )
+                ),
             )
         }
     }
@@ -178,7 +178,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     IncomeNotificationType.NEW_CUSTOMER,
                     expirationDate = null,
                     deadline = clock.today().with(TemporalAdjusters.lastDayOfMonth()),
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -283,7 +283,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     headOfChild = fridgeHeadOfChild.id,
                     startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
-                )
+                ),
             )
         }
         val start = clock.today().minusWeeks(3) // 2024-01-11, previous month
@@ -311,7 +311,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     headOfChild = fridgeHeadOfChild.id,
                     startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
-                )
+                ),
             )
         }
         val siblingCreatedAt = HelsinkiDateTime.of(LocalDate.of(2024, 1, 31), LocalTime.of(20, 0))
@@ -353,7 +353,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     headOfChild = fridgeHeadOfChild.id,
                     startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
-                )
+                ),
             )
         }
 
@@ -385,7 +385,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     headOfChild = fridgeHeadOfChild.id,
                     startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
-                )
+                ),
             )
         }
 
@@ -413,7 +413,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     headOfChild = fridgeHeadOfChild.id,
                     startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -442,7 +442,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     startDate = clock.today(),
                     endDate = clock.today(),
                     createdAt = clock.now(),
-                )
+                ),
             )
             tx.insert(
                 DevFridgePartner(
@@ -453,7 +453,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     startDate = clock.today(),
                     endDate = clock.today(),
                     createdAt = clock.now(),
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -488,7 +488,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     startDate = clock.today(),
                     endDate = clock.today(),
                     createdAt = clock.now(),
-                )
+                ),
             )
             tx.insert(
                 DevFridgePartner(
@@ -499,7 +499,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     startDate = clock.today(),
                     endDate = clock.today(),
                     createdAt = clock.now(),
-                )
+                ),
             )
 
             tx.insert(
@@ -508,7 +508,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     headOfChild = fridgePartner.id,
                     startDate = clock.today().minusYears(1),
                     endDate = clock.today().plusYears(1),
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -540,7 +540,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     data = createGrossIncome(incomeExpirationDate.plusDays(1)),
                     status = IncomeStatementStatus.SENT,
                     handlerId = null,
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -564,7 +564,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     status = IncomeStatementStatus.HANDLED,
                     handlerId = employee.id,
                     handledAt = clock.now(),
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -584,7 +584,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -605,7 +605,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -623,7 +623,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = clock.today().minusYears(1),
                     validTo = null,
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -643,7 +643,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
 
             it.insert(
@@ -653,7 +653,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     data = createGrossIncome(clock.today()),
                     status = IncomeStatementStatus.SENT,
                     handlerId = null,
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -673,7 +673,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
 
             it.insert(
@@ -683,7 +683,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     data = createGrossIncome(clock.today()),
                     status = IncomeStatementStatus.HANDLING,
                     handlerId = null,
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)
@@ -706,7 +706,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeExpirationDate.minusWeeks(4),
                     validTo = incomeExpirationDate,
-                )
+                ),
             )
 
             it.insert(
@@ -717,7 +717,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     status = IncomeStatementStatus.HANDLED,
                     handlerId = employee.id,
                     handledAt = clock.now(),
-                )
+                ),
             )
         }
         val placementId = insertPlacement(child, placementStart, placementEnd)

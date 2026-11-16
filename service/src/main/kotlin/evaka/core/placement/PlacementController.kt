@@ -202,7 +202,7 @@ class PlacementController(
                                     AsyncJob.GenerateFinanceDecisions.forChild(
                                         body.childId,
                                         DateRange(body.startDate, body.endDate),
-                                    )
+                                    ),
                                 ),
                                 runAt = now,
                             )
@@ -276,7 +276,7 @@ class PlacementController(
                                     minOf(body.startDate, oldPlacement.startDate),
                                     maxOf(body.endDate, oldPlacement.endDate),
                                 ),
-                            )
+                            ),
                         ),
                         runAt = now,
                     )
@@ -324,7 +324,7 @@ class PlacementController(
                                 AsyncJob.GenerateFinanceDecisions.forChild(
                                     it.childId,
                                     DateRange(it.startDate, it.endDate),
-                                )
+                                ),
                             ),
                             runAt = now,
                         )
@@ -447,7 +447,7 @@ WITH all_fridge_children AS (
 SELECT fc.child_id, daterange(greatest(p.start_date, fc.start_date), least(p.end_date, fc.end_date), '[]') AS range
 FROM placement p
 JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(fc.start_date, fc.end_date, '[]')
-"""
+""",
                             )
                         }
                         .toList<ChildPlacementPeriod>()

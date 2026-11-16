@@ -35,10 +35,10 @@ class TampereActionRuleMapping(private val commonRules: ActionRuleMapping) : Act
                 action.defaultRules.asSequence() +
                     sequenceOf(
                         HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     ) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 

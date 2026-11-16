@@ -50,7 +50,7 @@ FROM person_email_verification
 WHERE id = ${bind(job.id)}
 AND sent_at IS NULL
 AND expires_at > ${bind(clock.now())}
-"""
+""",
                         )
                     }
                     .map { columnPair<String, String>("email", "verification_code") }

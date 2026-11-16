@@ -45,7 +45,7 @@ class NokiaInvoiceNumberTest : AbstractNokiaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("0c529071-36ab-4824-9191-e7d2ebc01ba8")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -82,7 +82,7 @@ class NokiaInvoiceNumberTest : AbstractNokiaIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 11, 30),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("0c529071-36ab-4824-9191-e7d2ebc01ba8")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -95,7 +95,7 @@ class NokiaInvoiceNumberTest : AbstractNokiaIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("0c529071-36ab-4824-9191-e7d2ebc01ba8")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)

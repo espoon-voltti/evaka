@@ -66,16 +66,18 @@ private fun Database.Read.getServiceNeedRows(
 ): List<ServiceNeedReportRow> {
     val areaPredicates =
         Predicate.allNotNull(
-            areaId?.let { Predicate { table -> where("$table.id = ${bind(it)}") } }
+            areaId?.let { Predicate { table -> where("$table.id = ${bind(it)}") } },
         )
     val unitPredicates =
         Predicate.allNotNull(
-            providerType?.let { Predicate { table -> where("$table.provider_type = ${bind(it)}") } }
+            providerType?.let {
+                Predicate { table -> where("$table.provider_type = ${bind(it)}") }
+            },
         )
     val placementPredicates =
         Predicate.allNotNull(
             placementType?.let { Predicate { table -> where("$table.type = ${bind(it)}") } }
-                ?: Predicate { table -> where("$table.type != 'CLUB'::placement_type") }
+                ?: Predicate { table -> where("$table.type != 'CLUB'::placement_type") },
         )
     return createQuery {
             sql(
@@ -108,7 +110,7 @@ private fun Database.Read.getServiceNeedRows(
         GROUP BY care_area_name, ages.age, unit_name, unit_provider_type, unit_type
         ORDER BY care_area_name, unit_name, ages.age
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)

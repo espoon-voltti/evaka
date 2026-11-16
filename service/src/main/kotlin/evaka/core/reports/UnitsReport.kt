@@ -78,7 +78,7 @@ private fun Database.Read.getUnitRows(today: LocalDate): List<UnitsReportRow> {
             FROM daycare u
             JOIN care_area ca ON ca.id = u.care_area_id
             WHERE u.closing_date IS NULL OR u.closing_date >= ${bind(today)}
-        """
+        """,
         )
     }
         .toList<UnitsReportRow>()

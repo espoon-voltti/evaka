@@ -315,7 +315,7 @@ class CitizenPushNotifications(
                     body = delivery.content.body?.let { truncate(it, MAX_BODY_LENGTH) },
                     tag = delivery.tag,
                     appBadge = appBadge,
-                )
+                ),
             )
         try {
             webPush.send(vapidJwt, WebPushNotification(endpoint, delivery.ttl, message))

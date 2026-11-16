@@ -85,14 +85,14 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
             val placementId =
                 tx.insert(
-                    DevPlacement(childId = child1.id, unitId = daycare.id, endDate = LocalDate.MAX)
+                    DevPlacement(childId = child1.id, unitId = daycare.id, endDate = LocalDate.MAX),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
                     daycareGroupId = group.id,
                     endDate = LocalDate.MAX,
-                )
+                ),
             )
 
             tx.insertGuardian(adult.id, child1.id)
@@ -163,7 +163,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `supervisor can't read pedagogical document or attachment if child is in another unit`() {
         db.transaction {
             it.insert(
-                DevPlacement(childId = child2.id, unitId = daycare2.id, endDate = LocalDate.MAX)
+                DevPlacement(childId = child2.id, unitId = daycare2.id, endDate = LocalDate.MAX),
             )
         }
 
@@ -304,7 +304,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = otherDaycare.id,
                     startDate = clock.now().minusDays(1).toLocalDate(),
                     endDate = clock.now().minusDays(1).toLocalDate(),
-                )
+                ),
             )
         }
 

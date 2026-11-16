@@ -89,7 +89,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                             amountWithoutAddress = 0,
                             amountWithZeroPrice = 1,
                         ),
-                    )
+                    ),
             ),
         )
     }
@@ -143,7 +143,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                         periodEnd = range.end,
                         sentAt = HelsinkiDateTime.of(invoiceDate, LocalTime.of(11, 12)),
                     )
-                }
+                },
             )
         }
     }

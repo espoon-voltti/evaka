@@ -30,7 +30,7 @@ class TitaniaHelpersTest {
     fun `splitOvernight should return attendance as is when departed is same date as arrived`() {
         val attendance =
             testAttendance.copy(
-                departed = HelsinkiDateTime.of(LocalDate.of(2022, 6, 6), LocalTime.of(16, 27))
+                departed = HelsinkiDateTime.of(LocalDate.of(2022, 6, 6), LocalTime.of(16, 27)),
             )
 
         Assertions.assertThat(splitOvernight(attendance)).containsExactly(attendance)
@@ -40,7 +40,7 @@ class TitaniaHelpersTest {
     fun `splitOvernight should return multiple attendances when departed is different date as arrived`() {
         val attendance =
             testAttendance.copy(
-                departed = HelsinkiDateTime.of(LocalDate.of(2022, 6, 8), LocalTime.of(10, 15))
+                departed = HelsinkiDateTime.of(LocalDate.of(2022, 6, 8), LocalTime.of(10, 15)),
             )
 
         Assertions.assertThat(splitOvernight(attendance))

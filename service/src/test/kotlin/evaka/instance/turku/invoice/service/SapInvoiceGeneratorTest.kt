@@ -57,7 +57,7 @@ class SapInvoiceGeneratorTest {
                                 invoicingStreetAddress = "Laskutuskatu 1",
                                 invoicingPostalCode = "20200",
                                 invoicingPostOffice = "TURKU",
-                            )
+                            ),
                 )
 
         val xml = SapInvoiceGenerator().generateInvoice(listOf(invoice)).invoiceString
@@ -68,7 +68,7 @@ class SapInvoiceGeneratorTest {
                         "<PARVW>$role</PARVW>\\s*<PARTN>310382-956D</PARTN>\\s*" +
                             "<NAME1>Laskunsaaja Liisa</NAME1>\\s*" +
                             "<STRAS>Laskutuskatu 1</STRAS>\\s*" +
-                            "<ORT01>TURKU</ORT01>\\s*<PSTLZ>20200</PSTLZ>"
+                            "<ORT01>TURKU</ORT01>\\s*<PSTLZ>20200</PSTLZ>",
                     )
                     .containsMatchIn(xml),
                 role,

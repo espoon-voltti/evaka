@@ -23,7 +23,7 @@ class JamixServiceTest {
                 JamixSpecialDiet(
                     1,
                     JamixSpecialDietFields("tsekattava   \nFoobar  ", "ätarkasta   \nFoo"),
-                )
+                ),
             )
         val result = cleanupJamixDietList(testData)
         assertEquals(setOf(SpecialDiet(1, "ätarkasta Foo")), result.toSet())

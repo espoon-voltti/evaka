@@ -234,7 +234,7 @@ class DaycareController(private val accessControl: AccessControl) {
                     SELECT service_worker_note
                     FROM daycare
                     WHERE id = ${bind(daycareId)}
-                """
+                """,
                             )
                         }
                         .exactlyOneOrNull<String>()
@@ -268,7 +268,7 @@ class DaycareController(private val accessControl: AccessControl) {
                     UPDATE daycare
                     SET service_worker_note = ${bind(body.note)}
                     WHERE id = ${bind(daycareId)}
-                """
+                """,
                             )
                         }
                         .also { if (it == 0) throw NotFound("daycare $daycareId not found") }
@@ -378,7 +378,7 @@ class DaycareController(private val accessControl: AccessControl) {
                             lastGroupPlacementEndDate > body.endDate
                     ) {
                         throw BadRequest(
-                            "Group end date cannot be before the last group placement date"
+                            "Group end date cannot be before the last group placement date",
                         )
                     }
                 }
@@ -614,7 +614,7 @@ class DaycareController(private val accessControl: AccessControl) {
                         id
                     }
                 }
-                .also { unitId -> Audit.UnitCreate.log(targetId = AuditId(unitId)) }
+                .also { unitId -> Audit.UnitCreate.log(targetId = AuditId(unitId)) },
         )
     }
 
@@ -702,7 +702,7 @@ class DaycareController(private val accessControl: AccessControl) {
                     val responsePlacements = placements.map { placement ->
                         if (
                             serviceNeedPermissionByChild[placement.child.id]?.contains(
-                                Action.Child.READ_SERVICE_NEEDS
+                                Action.Child.READ_SERVICE_NEEDS,
                             ) == true
                         ) {
                             placement
@@ -959,7 +959,7 @@ private fun getGroupOccupancies(
                     period,
                     OccupancyType.CONFIRMED,
                     unitFilter,
-                )
+                ),
             ),
         realized =
             getGroupOccupancyResponses(
@@ -969,13 +969,13 @@ private fun getGroupOccupancies(
                     period,
                     OccupancyType.REALIZED,
                     unitFilter,
-                )
+                ),
             ),
     )
 }
 
 private fun getGroupOccupancyResponses(
-    occupancies: List<OccupancyPeriodGroupLevel>
+    occupancies: List<OccupancyPeriodGroupLevel>,
 ): Map<GroupId, OccupancyResponse> {
     return occupancies
         .groupBy { it.groupId }

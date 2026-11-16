@@ -535,7 +535,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         type = PlacementType.DAYCARE,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -543,7 +543,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group1Id,
                     startDate = startDate,
                     endDate = endDateGroup1,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -551,7 +551,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group2Id,
                     startDate = startDateGroup2,
                     endDate = endDate,
-                )
+                ),
             )
         }
 
@@ -596,7 +596,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         type = PlacementType.DAYCARE,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -604,7 +604,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group1Id,
                     startDate = startDate,
                     endDate = endDateGroup1,
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -612,7 +612,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group2Id,
                     startDate = startDateGroup2,
                     endDate = endDate,
-                )
+                ),
             )
         }
 
@@ -645,7 +645,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         type = PlacementType.DAYCARE,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -653,7 +653,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group1Id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
         }
         val recipients = db.read { it.getCitizenRecipients(today, accounts.person1.id).values }
@@ -684,7 +684,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         type = PlacementType.DAYCARE,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -692,7 +692,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = groupId,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             val backupDaycareId =
                 tx.insert(
@@ -700,7 +700,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         areaId = areaId,
                         language = Language.fi,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                    )
+                    ),
                 )
             val supervisorId = tx.insert(anotherUnitSupervisor)
             anotherUnitSupervisorAccount = tx.createAccount(anotherUnitSupervisor)
@@ -714,7 +714,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = childId,
                     unitId = backupDaycareId,
                     period = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
-                )
+                ),
             )
         }
         val recipients = db.read { it.getCitizenRecipients(today, accounts.person1.id).values }
@@ -746,7 +746,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                    )
+                    ),
                 )
             tx.insertDaycareAclRow(daycareId, employee1.id, UserRole.UNIT_SUPERVISOR)
             val group = DevDaycareGroup(daycareId = daycareId)
@@ -774,7 +774,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         unitId = daycareId,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -782,7 +782,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             child2Placement =
                 tx.insert(
@@ -791,7 +791,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         unitId = daycareId,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
         }
         fun recipientsOf(account: MessageAccount) = db.read {
@@ -843,7 +843,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             groupAccount,
                             accounts.person2,
                         ),
-                    )
+                    ),
             ),
             recipientsOf(accounts.person1),
         )
@@ -864,7 +864,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         areaId = areaId,
                         language = Language.fi,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                    )
+                    ),
                 )
             tx.insertDaycareAclRow(
                 daycareId = daycareId,
@@ -891,7 +891,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     validDuring = DateRange(startDate, endDate),
                     modifiedAt = HelsinkiDateTime.now(),
                     modifiedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             // Create a placement so messaging is enabled
@@ -903,7 +903,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         type = PlacementType.DAYCARE,
                         startDate = startDate,
                         endDate = endDate,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -911,7 +911,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycareGroupId = group.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
         }
 
@@ -1197,7 +1197,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     AuthenticatedUser.Citizen(personId, CitizenAuthLevel.WEAK),
                     clock,
                     Action.MessageAccount.ACCESS,
-                )
+                ),
             )
             .firstOrNull()
             ?.unreadCount ?: 0
@@ -1249,7 +1249,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     areaId = areaId,
                     language = Language.fi,
                     enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                )
+                ),
             )
         tx.insertDaycareAclRow(
             daycareId = daycareId,

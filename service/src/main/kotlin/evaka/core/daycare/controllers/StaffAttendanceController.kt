@@ -90,7 +90,7 @@ class StaffAttendanceController(private val accessControl: AccessControl) {
                     val sa = staffAttendance.copy(groupId = groupId)
                     if (!tx.isValidStaffAttendanceDate(sa)) {
                         throw BadRequest(
-                            "Error: Upserting staff count failed. Group is not operating in given date"
+                            "Error: Upserting staff count failed. Group is not operating in given date",
                         )
                     }
                     tx.upsertStaffAttendance(sa)

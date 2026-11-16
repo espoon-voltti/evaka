@@ -105,9 +105,9 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                             placementUnitId = daycare.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
-            )
+            ),
         )
 
     private val feeDecisions = testFeeDecisions.map {
@@ -142,7 +142,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                 unitId = daycare.id,
                 placementType = PlacementType.DAYCARE,
                 serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
-            )
+            ),
         )
 
     private val voucherValueDecisions = testVoucherValueDecisions.map {
@@ -158,7 +158,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                         headOfFamily.id,
                         headOfFamily.firstName,
                         headOfFamily.lastName,
-                    )
+                    ),
                 ),
             decisionChildren =
                 listOf(FinanceDecisionChildInfo(child.id, child.firstName, child.lastName)),
@@ -316,7 +316,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         LiableCitizenInfo(headOfFamily.id, headOfFamily.firstName, headOfFamily.lastName)
 
     private fun insertSentVoucherValueDecisionWithPartner(
-        partnerIsCodebtor: Boolean
+        partnerIsCodebtor: Boolean,
     ): VoucherValueDecisionId {
         val decision =
             createTestVoucherValueDecision(

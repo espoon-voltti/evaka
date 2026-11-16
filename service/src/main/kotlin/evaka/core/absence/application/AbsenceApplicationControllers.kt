@@ -101,9 +101,9 @@ class AbsenceApplicationControllerEmployee(
                                 DateSet.of(
                                         applications.map {
                                             FiniteDateRange(it.startDate, it.endDate)
-                                        }
+                                        },
                                     )
-                                    .spanningRange()
+                                    .spanningRange(),
                         )
                     applications
                         .mapNotNull { application ->
@@ -319,7 +319,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                         tx.selectAbsenceApplication(id, forUpdate = true) ?: throw NotFound()
                     if (application.status != AbsenceApplicationStatus.WAITING_DECISION) {
                         throw BadRequest(
-                            "Absence application ${application.id} is not waiting decision"
+                            "Absence application ${application.id} is not waiting decision",
                         )
                     }
                     audit
@@ -361,7 +361,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                                     .intersection(listOf(range))
                             val breaks = terms.flatMap { it.termBreaks.ranges() }
                             operationalDates.removeAll(breaks).ranges()
-                        }
+                        },
                     )
                 }
             }

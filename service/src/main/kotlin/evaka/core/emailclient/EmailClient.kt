@@ -107,7 +107,7 @@ private data class EmailAndEnabledEmailTypes(
 )
 
 private fun Database.Read.getEmailAddressAndDisabledTypes(
-    personId: PersonId
+    personId: PersonId,
 ): EmailAndEnabledEmailTypes {
     return createQuery {
         sql("""SELECT email, disabled_email_types FROM person WHERE id = ${bind(personId)}""")

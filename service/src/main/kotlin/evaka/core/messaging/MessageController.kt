@@ -93,7 +93,7 @@ class MessageController(
             }
             .also { accounts ->
                 Audit.MessagingMyAccountsRead.log(
-                    targetId = AuditId(accounts.map { it.account.id })
+                    targetId = AuditId(accounts.map { it.account.id }),
                 )
             }
     }
@@ -421,7 +421,7 @@ class MessageController(
             }
             .also {
                 Audit.MessagingMessageThreadRead.log(
-                    targetId = AuditId(listOf(accountId, threadId))
+                    targetId = AuditId(listOf(accountId, threadId)),
                 )
             }
     }
@@ -504,7 +504,9 @@ class MessageController(
                                     .add(thread.id)
                                     .add(thread.children.map { child -> child.childId })
                                     .observeDate(
-                                        thread.messages.minOfOrNull { m -> m.sentAt }?.toLocalDate()
+                                        thread.messages
+                                            .minOfOrNull { m -> m.sentAt }
+                                            ?.toLocalDate(),
                                     )
                             }
                     }
@@ -533,7 +535,7 @@ class MessageController(
             }
             .also { response ->
                 Audit.MessagingUnreadMessagesRead.log(
-                    targetId = AuditId(response.map { it.accountId })
+                    targetId = AuditId(response.map { it.accountId }),
                 )
             }
     }
@@ -699,7 +701,7 @@ class MessageController(
                                             MessageRecipientType.CITIZEN)))
                     ) {
                         throw BadRequest(
-                            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient or from financial account to a single citizen"
+                            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient or from financial account to a single citizen",
                         )
                     }
                     if (
@@ -707,7 +709,7 @@ class MessageController(
                             body.type != MessageType.BULLETIN
                     ) {
                         throw BadRequest(
-                            "Municipal message accounts are only allowed to send bulletins"
+                            "Municipal message accounts are only allowed to send bulletins",
                         )
                     }
                     if (body.type == MessageType.BULLETIN && body.relatedApplicationId != null) {
@@ -716,14 +718,14 @@ class MessageController(
                     if (senderAccountType == AccountType.SERVICE_WORKER) {
                         if (body.relatedApplicationId == null) {
                             throw BadRequest(
-                                "Service worker message accounts must have a related application"
+                                "Service worker message accounts must have a related application",
                             )
                         }
                         val citizenRecipients =
                             body.recipients.filterIsInstance<MessageRecipient.Citizen>()
                         if (body.recipients.size != citizenRecipients.size) {
                             throw BadRequest(
-                                "Service worker message accounts can only send messages to citizens"
+                                "Service worker message accounts can only send messages to citizens",
                             )
                         }
 
@@ -733,26 +735,26 @@ class MessageController(
                             }
                         ) {
                             throw BadRequest(
-                                "Service worker message accounts can only send messages to citizens with sent applications"
+                                "Service worker message accounts can only send messages to citizens with sent applications",
                             )
                         }
                     } else {
                         if (body.relatedApplicationId != null) {
                             throw BadRequest(
-                                "Only service worker message accounts can have a related application"
+                                "Only service worker message accounts can have a related application",
                             )
                         }
                     }
                     if (senderAccountType == AccountType.FINANCE) {
                         if (body.recipients.size > 1) {
                             throw BadRequest(
-                                "Finance message accounts can only send messages to single recipient"
+                                "Finance message accounts can only send messages to single recipient",
                             )
                         } else if (
                             body.recipients.any { it.type != MessageRecipientType.CITIZEN }
                         ) {
                             throw BadRequest(
-                                "Finance message accounts can only send messages to citizens"
+                                "Finance message accounts can only send messages to citizens",
                             )
                         }
                     }
@@ -1107,7 +1109,7 @@ class MessageController(
             }
             .also {
                 Audit.MessagingMarkMessagesUnreadWrite.log(
-                    targetId = AuditId(listOf(accountId, threadId))
+                    targetId = AuditId(listOf(accountId, threadId)),
                 )
             }
     }
@@ -1178,7 +1180,7 @@ class MessageController(
             }
             .also { response ->
                 Audit.MessagingMessageReceiversRead.log(
-                    targetId = AuditId(response.map { it.accountId })
+                    targetId = AuditId(response.map { it.accountId }),
                 )
             }
     }
@@ -1228,12 +1230,12 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read { tx -> tx.fetchDeletedMessageContent(accountId, contentId) }
                     ?: throw Forbidden(
-                        "Message $contentId is not a deleted message of this account"
+                        "Message $contentId is not a deleted message of this account",
                     )
             }
             .also {
                 Audit.MessagingViewDeletedContent.log(
-                    targetId = AuditId(listOf(accountId, contentId))
+                    targetId = AuditId(listOf(accountId, contentId)),
                 )
             }
 

@@ -158,7 +158,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun initializeUnitSupervisorUserAndRights(
-        childId: ChildId
+        childId: ChildId,
     ): AuthenticatedUser.Employee {
         val externalId = ExternalId.of("test", "id")
         val unitSupervisor = DevEmployee(externalId = externalId)
@@ -169,7 +169,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = LocalDate.now(),
                     endDate = LocalDate.now().plusYears(1),
-                )
+                ),
             )
             it.insert(unitSupervisor)
             it.updateDaycareAcl(daycare.id, externalId, UserRole.UNIT_SUPERVISOR)
@@ -194,13 +194,13 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     calculateMonthlyAmount(
                                         incomeTotal,
                                         coefficientMultiplierProvider.multiplier(
-                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                         ),
                                     ),
-                                )
+                                ),
                         ),
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
         return incomeTotal

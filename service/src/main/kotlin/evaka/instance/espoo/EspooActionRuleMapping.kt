@@ -49,10 +49,10 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         UserRole.DIRECTOR,
                         UserRole.REPORT_VIEWER,
                     )
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 ) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inAnyUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inAnyUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -60,7 +60,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -68,14 +68,14 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.REPORT_VIEWER, UserRole.FINANCE_ADMIN)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 ) +
                     sequenceOf(
                         HasUnitRole(
                                 UserRole.UNIT_SUPERVISOR,
                                 UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                             )
-                            .inUnit() as ScopedActionRule<in T>
+                            .inUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -83,7 +83,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>,
                     )
             }
 
@@ -98,7 +98,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 )
             }
 
@@ -110,14 +110,14 @@ class EspooActionRuleMapping : ActionRuleMapping {
             Action.Group.UPDATE -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf<ScopedActionRule<in T>>(
-                    HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>
+                    HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>,
                 )
             }
 
             Action.Group.DELETE -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf<ScopedActionRule<in T>>(
-                    HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>
+                    HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>,
                 )
             }
 
@@ -125,7 +125,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 )
             }
 
@@ -133,7 +133,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 )
             }
 
@@ -142,7 +142,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 )
             }
 
@@ -152,7 +152,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 )
             }
 
@@ -160,7 +160,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 ) +
                     sequenceOf(
                         HasUnitRole(
@@ -169,7 +169,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                                 UserRole.STAFF,
                                 UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                             )
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
@@ -177,7 +177,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-                        as ScopedActionRule<in T>
+                        as ScopedActionRule<in T>,
                 ) +
                     sequenceOf(
                         HasUnitRole(
@@ -185,25 +185,25 @@ class EspooActionRuleMapping : ActionRuleMapping {
                                 UserRole.SPECIAL_EDUCATION_TEACHER,
                                 UserRole.STAFF,
                             )
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>,
                     )
             }
 
             Action.Citizen.Child.READ_DAILY_SERVICE_TIMES -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
-                    IsCitizen(allowWeakLogin = true).guardianOfChild() as ScopedActionRule<in T>
+                    IsCitizen(allowWeakLogin = true).guardianOfChild() as ScopedActionRule<in T>,
                 ) +
                     sequenceOf(
                         IsCitizen(allowWeakLogin = true).fosterParentOfChild()
-                            as ScopedActionRule<in T>
+                            as ScopedActionRule<in T>,
                     )
             }
 
             Action.Invoice.RESEND -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
-                    HasGlobalRole(UserRole.ADMIN, UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>
+                    HasGlobalRole(UserRole.ADMIN, UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>,
                 )
             }
 

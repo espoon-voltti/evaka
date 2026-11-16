@@ -52,7 +52,7 @@ class AromiServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
                         operationTimes =
                             List(5) { TimeRange(LocalTime.of(7, 0), LocalTime.of(17, 0)) } +
                                 listOf(null, null),
-                    )
+                    ),
                 )
             val groupId =
                 tx.insert(
@@ -60,7 +60,7 @@ class AromiServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
                         daycareId = unitId,
                         name = "Ryhmä A1",
                         aromiCustomerId = "PvkA_PK",
-                    )
+                    ),
                 )
             val testPerson =
                 DevPerson(
@@ -88,7 +88,7 @@ class AromiServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
                         endDate = placement.endDate,
                         daycareGroupId = groupId,
                         daycarePlacementId = placement.id,
-                    )
+                    ),
                 )
             }
         }

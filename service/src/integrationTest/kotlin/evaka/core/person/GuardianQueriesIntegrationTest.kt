@@ -100,7 +100,7 @@ class GuardianQueriesIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     private fun Database.Read.getGuardianCreated(guardianId: PersonId, childId: ChildId) =
         createQuery {
             sql(
-                "SELECT created FROM guardian WHERE guardian_id = ${bind(guardianId)} AND child_id = ${bind(childId)}"
+                "SELECT created FROM guardian WHERE guardian_id = ${bind(guardianId)} AND child_id = ${bind(childId)}",
             )
         }
         .exactlyOne<HelsinkiDateTime>()

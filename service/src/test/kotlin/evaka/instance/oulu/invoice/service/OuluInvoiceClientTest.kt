@@ -131,7 +131,7 @@ internal class OuluInvoiceClientTest {
                 StringInvoiceGenerator.InvoiceGeneratorResult(
                     InvoiceIntegrationClient.SendResult(invoiceList, listOf(), listOf()),
                     "xx",
-                )
+                ),
             )
         val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
@@ -158,7 +158,7 @@ internal class OuluInvoiceClientTest {
                         listOf(invoiceWithRestrictedDetails),
                     ),
                     "x",
-                )
+                ),
             )
         val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
@@ -184,7 +184,7 @@ internal class OuluInvoiceClientTest {
                         listOf(invoiceWithoutSSN),
                     ),
                     "x",
-                )
+                ),
             )
 
         val _ = ouluInvoiceClient.send(mockNow, invoiceList)
@@ -203,7 +203,7 @@ internal class OuluInvoiceClientTest {
                 StringInvoiceGenerator.InvoiceGeneratorResult(
                     InvoiceIntegrationClient.SendResult(invoiceList, listOf(), listOf()),
                     proEInvoice1,
-                )
+                ),
             )
 
         doThrow(RuntimeException::class).whenever(sftpClient).put(any<InputStream>(), any<String>())
@@ -221,7 +221,7 @@ internal class OuluInvoiceClientTest {
                 StringInvoiceGenerator.InvoiceGeneratorResult(
                     InvoiceIntegrationClient.SendResult(invoiceList, listOf(), listOf()),
                     "xx",
-                )
+                ),
             )
         val _ = ouluInvoiceClient.send(mockNow, invoiceList)
 

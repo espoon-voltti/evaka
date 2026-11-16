@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.psi.KtOperationReferenceExpression
 
 private fun KtOperationReferenceExpression.replaceOperator(token: KtSingleValueToken) =
     (getReferencedNameElement() as LeafPsiElement).rawReplaceWithList(
-        LeafPsiElement(token, token.value)
+        LeafPsiElement(token, token.value),
     )
 
 class NoTripleEquals : EvakaRule("no-triple-equals"), RuleAutocorrectApproveHandler {

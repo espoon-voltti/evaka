@@ -43,7 +43,7 @@ class SwappableDataSource(initial: HikariDataSource, baseConfig: HikariConfig) :
                 storedDataSourceProperties.forEach { (key, value) ->
                     addDataSourceProperty(key as String, value)
                 }
-            }
+            },
         )
     }
 

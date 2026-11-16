@@ -435,12 +435,12 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             if (pairing.mobileDeviceId != null) {
                 tx.execute {
                     sql(
-                        "INSERT INTO employee (id, first_name, last_name, active) VALUES (${bind(pairing.mobileDeviceId)}, '', '', TRUE)"
+                        "INSERT INTO employee (id, first_name, last_name, active) VALUES (${bind(pairing.mobileDeviceId)}, '', '', TRUE)",
                     )
                 }
                 tx.execute {
                     sql(
-                        "INSERT INTO mobile_device (id, unit_id, name) VALUES (${bind(pairing.mobileDeviceId)}, ${bind(pairing.unitId)}, 'Laite')"
+                        "INSERT INTO mobile_device (id, unit_id, name) VALUES (${bind(pairing.mobileDeviceId)}, ${bind(pairing.unitId)}, 'Laite')",
                     )
                 }
             }
@@ -449,7 +449,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     """
             INSERT INTO pairing (id, unit_id, expires, status, challenge_key, response_key, attempts, mobile_device_id) 
             VALUES (${bind(pairing.id)}, ${bind(pairing.unitId)}, ${bind(pairing.expires)}, ${bind(pairing.status)}, ${bind(pairing.challengeKey)}, ${bind(pairing.responseKey)}, ${bind(attempts)}, ${bind(pairing.mobileDeviceId)});
-            """
+            """,
                 )
             }
         }

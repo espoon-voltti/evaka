@@ -59,7 +59,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = child.id,
                     startDate = child.dateOfBirth,
                     endDate = LocalDate.now(),
-                )
+                ),
             )
             tx.insertDaycareAclRow(
                 daycareId = daycare.id,
@@ -67,7 +67,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                 role = UserRole.UNIT_SUPERVISOR,
             )
             tx.insert(
-                DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now())
+                DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now()),
             )
         }
     }
@@ -80,7 +80,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `unit supervisor can create and fetch partnerships`() {
         `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(unitSupervisor.id, setOf(UserRole.UNIT_SUPERVISOR))
+            AuthenticatedUser.Employee(unitSupervisor.id, setOf(UserRole.UNIT_SUPERVISOR)),
         )
     }
 
@@ -112,14 +112,17 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
                 setOf(UserRole.SERVICE_WORKER),
-            )
+            ),
         )
     }
 
     @Test
     fun `finance admin can delete partnerships`() {
         canDeletePartnership(
-            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.FINANCE_ADMIN),
+            ),
         )
     }
 
@@ -160,7 +163,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `unit supervisor can update partnerships`() {
         canUpdatePartnershipDuration(
-            AuthenticatedUser.Employee(unitSupervisor.id, setOf(UserRole.UNIT_SUPERVISOR))
+            AuthenticatedUser.Employee(unitSupervisor.id, setOf(UserRole.UNIT_SUPERVISOR)),
         )
     }
 

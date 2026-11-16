@@ -56,7 +56,7 @@ data class Decision(
                         DecisionType.PREPARATORY_EDUCATION -> {
                             if (isCitizen) 0 else featureConfig.requestedStartUpperLimit
                         }
-                    }.toLong()
+                    }.toLong(),
                 ),
             ),
         )

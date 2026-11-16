@@ -77,7 +77,7 @@ private fun selectLimitedEligibleDocumentIds(
                   AND $it.archived_at IS NULL
                   AND $it.resolved <= ${bind(clock.today().minusDays(schedule.decisionDelayDays)!!)}
                   AND $it.document_key IS NOT NULL
-        """
+        """,
         )
     }
 
@@ -88,7 +88,7 @@ private fun selectLimitedEligibleDocumentIds(
                   AND $it.status in ('ANNULLED','SENT')
                   AND $it.archived_at IS NULL
                   AND $it.document_key IS NOT NULL
-        """
+        """,
         )
     }
 
@@ -99,7 +99,7 @@ private fun selectLimitedEligibleDocumentIds(
                   AND $it.status in ('ANNULLED','SENT')
                   AND $it.archived_at IS NULL
                   AND $it.document_key IS NOT NULL
-        """
+        """,
         )
     }
 
@@ -109,7 +109,7 @@ private fun selectLimitedEligibleDocumentIds(
                   $it.archived_at IS NULL
                   AND $it.status = 'COMPLETED'
                   AND EXISTS (SELECT FROM child_document_published_version v WHERE v.child_document_id = $it.id AND v.document_key IS NOT NULL)
-        """
+        """,
         )
     }
 
@@ -120,7 +120,7 @@ private fun selectLimitedEligibleDocumentIds(
             upper($it.validity) - interval '1 day' <= ${bind(clock.today().minusDays(schedule.documentPlanDelayDays)!!)}
             AND $it.archive_externally = true
             AND $it.type <> 'OTHER_DECISION'
-        """
+        """,
         )
     }
 
@@ -131,7 +131,7 @@ private fun selectLimitedEligibleDocumentIds(
             NOT EXISTS (select from placement pla where cd.child_id = pla.child_id AND pla.end_date > ${bind(clock.today().minusDays(schedule.documentDecisionDelayDays)!!)})
             AND $it.archive_externally = true
             AND $it.type = 'OTHER_DECISION'
-        """
+        """,
         )
     }
 

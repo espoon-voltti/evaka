@@ -25,7 +25,7 @@ SELECT id, period
 FROM out_of_office
 WHERE employee_id = ${bind(employeeId)}
 AND period && DATERANGE(${bind(today)}, NULL)
-"""
+""",
         )
     }
         .toList<OutOfOfficePeriod>()
@@ -42,7 +42,7 @@ fun Database.Transaction.upsertOutOfOfficePeriod(
                 """
 INSERT INTO out_of_office (employee_id, period)
 VALUES (${bind(employeeId)}, DATERANGE(${bind(period.period.start)}, ${bind(period.period.end)}, '[]'))
-"""
+""",
             )
         }
             .execute()
@@ -53,7 +53,7 @@ VALUES (${bind(employeeId)}, DATERANGE(${bind(period.period.start)}, ${bind(peri
 UPDATE out_of_office
 SET period = DATERANGE(${bind(period.period.start)}, ${bind(period.period.end)}, '[]')
 WHERE id = ${bind(period.id)}
-"""
+""",
             )
         }
             .updateExactlyOne()
@@ -66,7 +66,7 @@ fun Database.Transaction.deleteOutOfOfficePeriod(id: OutOfOfficeId) {
             """
 DELETE FROM out_of_office
 WHERE id = ${bind(id)}
-"""
+""",
         )
     }
         .updateExactlyOne()

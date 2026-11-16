@@ -323,7 +323,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     siblingFee2 = 8000,
                     siblingDiscount2Plus = BigDecimal("0.4"),
                     siblingFee2Plus = 8000,
-                )
+                ),
             )
         }
 
@@ -356,7 +356,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     siblingFee2 = 8000,
                     siblingDiscount2Plus = BigDecimal("0.4"),
                     siblingFee2Plus = 8000,
-                )
+                ),
             )
         }
 
@@ -599,10 +599,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
-                    )
-                )
+                    ),
+                ),
             )
 
             generator.generateNewDecisionsForAdult(tx, today, adult1.id)
@@ -633,10 +633,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
-                    )
-                )
+                    ),
+                ),
             )
 
             generator.generateNewDecisionsForAdult(tx, today, adult1.id)
@@ -1086,10 +1086,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
-                    )
-                )
+                    ),
+                ),
             )
 
             generator.generateNewDecisionsForAdult(tx, today, adult1.id)
@@ -1460,7 +1460,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.createUpdate {
                     sql(
-                        "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), ${bind(subPeriod1.end)}, '[]')"
+                        "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), ${bind(subPeriod1.end)}, '[]')",
                     )
                 }
                 .updateExactlyOne()
@@ -1491,7 +1491,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
                     temporaryFeeSiblingPartDay = 800,
-                )
+                ),
             )
         }
 
@@ -1656,7 +1656,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
                     ),
                     createFeeDecisionFixture(
@@ -1672,10 +1672,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
                     ),
-                )
+                ),
             )
 
             generator.generateNewDecisionsForAdult(tx, today, adult1.id)
@@ -1710,10 +1710,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
-                    )
-                )
+                    ),
+                ),
             )
 
             generator.generateNewDecisionsForAdult(tx, today, adult1.id)
@@ -1779,7 +1779,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
                     ),
                     createFeeDecisionFixture(
@@ -1795,7 +1795,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
                     ),
                     createFeeDecisionFixture(
@@ -1811,10 +1811,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
                     ),
-                )
+                ),
             )
 
             generator.generateNewDecisionsForAdult(tx, today, adult1.id)
@@ -2638,7 +2638,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         daycare.id,
                         DAYCARE,
                         snDefaultDaycare.toFeeDecisionServiceNeed(),
-                    )
+                    ),
                 ),
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(sentDecision)) }
@@ -2754,10 +2754,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     placementUnitId = daycare.id,
                                     placementType = DAYCARE,
                                     serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
-                    )
-                )
+                    ),
+                ),
             )
 
             generator.generateNewDecisionsForAdult(tx, today, adult1.id)
@@ -2809,7 +2809,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                             baseFee = 0,
                             fee = 0,
-                        )
+                        ),
                     ),
             )
             .let { fixture ->
@@ -2929,7 +2929,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                             baseFee = 0,
                             fee = 0,
-                        )
+                        ),
                     ),
             )
         db.transaction { it.upsertFeeDecisions(listOf(sentDecision)) }
@@ -2973,7 +2973,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                 baseFee = 28900,
                                 siblingDiscount = 0,
                                 fee = 28900,
-                            )
+                            ),
                         ),
                 )
             }
@@ -3261,7 +3261,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 sql(
                     """
                 UPDATE fee_decision SET head_of_family_income = head_of_family_income - 'id'
-            """
+            """,
                 )
             }
         }
@@ -3314,7 +3314,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycareId,
                     startDate = period.start,
                     endDate = period.end,
-                )
+                ),
             )
         }
     }
@@ -3332,7 +3332,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         headOfChildId = headOfFamilyId,
                         startDate = period.start,
                         endDate = period.end,
-                    )
+                    ),
                 )
             }
         }
@@ -3377,7 +3377,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     partWeek = false,
                     confirmedBy = employee.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
     }
@@ -3405,13 +3405,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     calculateMonthlyAmount(
                                         amount,
                                         coefficientMultiplierProvider.multiplier(
-                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                         ),
                                     ),
-                                )
+                                ),
                         ),
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
     }
@@ -3427,7 +3427,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     data = mapOf(),
                     worksAtEcha = true,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
     }
@@ -3448,7 +3448,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validFrom = period.start,
                     validTo = period.end,
                     modifiedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
     }

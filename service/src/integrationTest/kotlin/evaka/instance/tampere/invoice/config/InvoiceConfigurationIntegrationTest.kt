@@ -70,7 +70,7 @@ internal class InvoiceConfigurationIntegrationTest : AbstractTampereIntegrationT
                         """
                 INSERT INTO holiday_period_questionnaire(id, type, absence_type, requires_strong_auth, active, title, description, description_link, condition_continuous_placement, period_options, period_option_label)
                 VALUES (:questionnaireId, 'FIXED_PERIOD', 'FREE_ABSENCE', false, daterange('2022-04-13', '2022-04-29'), '{"fi": "title"}', '{"fi": "description"}', '{"fi": "link"}', daterange('2021-08-31', '2022-06-30'), array[daterange('2022-06-06', '2022-07-31', '[]'), daterange('2022-06-13', '2022-08-07', '[]'), daterange('2022-06-20', '2022-08-14', '[]'), daterange('2022-06-27', '2022-08-21', '[]'), daterange('2022-07-04', '2022-08-28', '[]')], '{"fi": "period option label"}')
-                """
+                """,
                     )
                 }
                 .bind("questionnaireId", questionnaireId)
@@ -102,7 +102,7 @@ internal class InvoiceConfigurationIntegrationTest : AbstractTampereIntegrationT
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
                     temporaryFeeSiblingPartDay = 800,
-                )
+                ),
             )
             tx.insert(testDaycare)
             tx.insert(testChild, DevPersonType.CHILD)
@@ -111,13 +111,13 @@ internal class InvoiceConfigurationIntegrationTest : AbstractTampereIntegrationT
             tx.insert(testParentship)
             tx.createUpdate {
                     sql(
-                        "INSERT INTO evaka_user (id, type, name) VALUES (:id, 'UNKNOWN', 'integration-test')"
+                        "INSERT INTO evaka_user (id, type, name) VALUES (:id, 'UNKNOWN', 'integration-test')",
                     )
                 }
                 .bind("id", evakaUserId)
                 .execute()
             tx.findServiceNeedOptionById(
-                ServiceNeedOptionId(UUID.fromString("86ef70a0-bf85-11eb-91e6-1fb57a101161"))
+                ServiceNeedOptionId(UUID.fromString("86ef70a0-bf85-11eb-91e6-1fb57a101161")),
             )!!
         }
         val decisions =
@@ -137,9 +137,9 @@ internal class InvoiceConfigurationIntegrationTest : AbstractTampereIntegrationT
                             baseFee = 28900,
                             fee = 28900,
                             feeAlterations = listOf(),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         insertDecisionsAndPlacements(decisions)
     }
@@ -158,7 +158,7 @@ internal class InvoiceConfigurationIntegrationTest : AbstractTampereIntegrationT
                         """
                 INSERT INTO absence(child_id, date, absence_type, modified_at, modified_by, category, questionnaire_id)
                 VALUES (:childId, generate_series('2022-06-06', '2022-07-31', interval '1 day')::date, 'FREE_ABSENCE', now(), :evakaUserId, 'BILLABLE', :questionnaireId)
-                """
+                """,
                     )
                 }
                 .bind("childId", testChild.id)
@@ -181,7 +181,7 @@ internal class InvoiceConfigurationIntegrationTest : AbstractTampereIntegrationT
                         """
                 INSERT INTO absence(child_id, date, absence_type, modified_at, modified_by, category, questionnaire_id)
                 VALUES (:childId, generate_series('2022-06-13', '2022-07-31', interval '1 day')::date, 'FREE_ABSENCE', now(), :evakaUserId, 'BILLABLE', :questionnaireId)
-                """
+                """,
                     )
                 }
                 .bind("childId", testChild.id)
@@ -355,7 +355,7 @@ internal class InvoiceConfigurationIntegrationTest : AbstractTampereIntegrationT
                             startDate = decision.validFrom,
                             endDate = decision.validTo,
                             type = part.placement.type,
-                        )
+                        ),
                     )
                 }
             }

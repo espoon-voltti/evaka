@@ -96,7 +96,7 @@ class FixedLengthFieldTest {
         assertEquals(
             "20241204\n",
             FixedLengthField.render(
-                listOf(listOf(FixedLengthField.Date(LocalDate.of(2024, 12, 4))))
+                listOf(listOf(FixedLengthField.Date(LocalDate.of(2024, 12, 4)))),
             ),
         )
     }

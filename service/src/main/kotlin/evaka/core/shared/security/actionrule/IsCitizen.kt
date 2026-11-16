@@ -66,7 +66,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                     FROM (${subquery { filter(ctx.user.id, ctx.now) } }) fragment
                     WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
-                                    .trimIndent()
+                                    .trimIndent(),
                             )
                         }
                         .toSet<Id<DatabaseTable>>()
@@ -169,7 +169,7 @@ SELECT id
 FROM attachment
 WHERE uploaded_by = ${bind(personId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -181,7 +181,7 @@ SELECT child_id AS id
 FROM guardian
 WHERE guardian_id = ${bind(guardianId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -193,7 +193,7 @@ SELECT child_id AS id
 FROM foster_parent
 WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -206,7 +206,7 @@ FROM guardian
 JOIN placement p ON p.child_id = guardian.child_id AND p.end_date >= ${bind(now.toLocalDate())}
 WHERE guardian_id = ${bind(guardianId)}
 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -219,7 +219,7 @@ FROM foster_parent
 JOIN placement p ON p.child_id = foster_parent.child_id AND p.end_date >= ${bind(now.toLocalDate())}
 WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -233,7 +233,7 @@ JOIN person child ON img.child_id = child.id
 JOIN foster_parent ON child.id = foster_parent.child_id
 WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -247,7 +247,7 @@ JOIN person child ON img.child_id = child.id
 JOIN guardian ON child.id = guardian.child_id
 WHERE guardian_id = ${bind(guardianId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -260,7 +260,7 @@ FROM income_statement i
 JOIN guardian g ON i.person_id = g.child_id
 WHERE g.guardian_id = ${bind(citizenId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -273,7 +273,7 @@ FROM pedagogical_document pd
 JOIN guardian g ON pd.child_id = g.child_id
 WHERE g.guardian_id = ${bind(guardianId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -286,7 +286,7 @@ FROM pedagogical_document pd
 JOIN foster_parent fp ON pd.child_id = fp.child_id
 WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -301,7 +301,7 @@ JOIN guardian g ON pd.child_id = g.child_id
 JOIN placement p ON pd.child_id = p.child_id AND p.end_date >= ${bind(now.toLocalDate())}
 WHERE g.guardian_id = ${bind(guardianId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -316,7 +316,7 @@ JOIN foster_parent fp ON pd.child_id = fp.child_id
 JOIN placement p ON pd.child_id = p.child_id AND p.end_date >= ${bind(now.toLocalDate())}
 WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -329,7 +329,7 @@ FROM placement
 JOIN guardian ON placement.child_id = guardian.child_id
 WHERE guardian_id = ${bind(guardianId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -342,7 +342,7 @@ FROM placement
 JOIN foster_parent fp ON placement.child_id = fp.child_id AND fp.valid_during @> ${bind(now.toLocalDate())}
 WHERE parent_id = ${bind(userId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -357,7 +357,7 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} A
     ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
     ${if (editable) "AND ${predicate(childDocumentTemplateValidityNotEnded(now.toLocalDate()).forTable("cd"))}" else ""}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -372,7 +372,7 @@ WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenI
     ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
     ${if (editable) "AND ${predicate(childDocumentTemplateValidityNotEnded(now.toLocalDate()).forTable("cd"))}" else ""}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -386,7 +386,7 @@ WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenI
 SELECT id
 FROM application
 WHERE guardian_id = ${bind(citizenId)}
-            """
+            """,
             )
         }
 
@@ -403,7 +403,7 @@ AND (
     EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
     OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
 )
-"""
+""",
             )
         }
 
@@ -451,7 +451,7 @@ AND (
      lower(other_guardian.street_address) = lower(child.street_address) AND
      other_guardian.postal_code = child.postal_code)
 )
-"""
+""",
             )
         }
 
@@ -464,7 +464,7 @@ FROM decision
 JOIN application ON decision.application_id = application.id
 WHERE guardian_id = ${bind(citizenId)}
 AND decision.sent_date IS NOT NULL
-"""
+""",
             )
         }
 
@@ -483,7 +483,7 @@ AND (
     EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
     OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
 )
-"""
+""",
             )
         }
 
@@ -503,7 +503,7 @@ AND (
     OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
 )
 AND NOT decision.document_contains_contact_info
-"""
+""",
             )
         }
 
@@ -514,7 +514,7 @@ AND NOT decision.document_contains_contact_info
 SELECT id
 FROM absence_application
 WHERE created_by = ${bind(userId)}
-            """
+            """,
             )
         }
 
@@ -525,7 +525,7 @@ WHERE created_by = ${bind(userId)}
 SELECT id
 FROM service_application
 WHERE person_id = ${bind(userId)}
-            """
+            """,
             )
         }
 
@@ -537,7 +537,7 @@ SELECT id
 FROM income_statement
 WHERE person_id = ${bind(citizenId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -549,7 +549,7 @@ SELECT id
 FROM daily_service_time_notification
 WHERE guardian_id = ${bind(citizenId)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -563,7 +563,7 @@ WHERE
     fd.head_of_family_id = ${bind(citizenId)} OR
     (fd.partner_id = ${bind(citizenId)} AND fd.partner_is_codebtor IS NOT FALSE)
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -577,7 +577,7 @@ WHERE
     vvd.head_of_family_id = ${bind(citizenId)} OR
     (vvd.partner_id = ${bind(citizenId)} AND vvd.partner_is_codebtor IS NOT FALSE)
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -590,7 +590,7 @@ FROM calendar_event_attendee_child_view cea
 JOIN person child ON cea.child_id = child.id
 JOIN guardian ON child.id = guardian.child_id
 WHERE guardian_id = ${bind(citizenId)}
-"""
+""",
             )
         }
 
@@ -603,7 +603,7 @@ FROM calendar_event_attendee_child_view cea
 JOIN person child ON cea.child_id = child.id
 JOIN foster_parent ON child.id = foster_parent.child_id
 WHERE parent_id = ${bind(citizenId)} AND valid_during @> ${bind(now.toLocalDate())}
-"""
+""",
             )
         }
 
@@ -616,7 +616,7 @@ FROM calendar_event_time cet
 JOIN person child ON cet.child_id = child.id
 JOIN guardian g ON child.id = g.child_id
 WHERE g.guardian_id = ${bind(citizenId)}
-"""
+""",
             )
         }
 
@@ -629,7 +629,7 @@ FROM calendar_event_time cet
 JOIN person child ON cet.child_id = child.id
 JOIN foster_parent fp ON child.id = fp.child_id
 WHERE fp.parent_id = ${bind(citizenId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
-"""
+""",
             )
         }
 }

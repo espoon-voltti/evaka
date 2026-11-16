@@ -347,7 +347,7 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
                         ${bind(errorType)}
                     )
                 """
-                        .trimIndent()
+                        .trimIndent(),
                 )
             }
             .execute()

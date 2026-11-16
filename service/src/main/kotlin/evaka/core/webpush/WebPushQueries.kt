@@ -30,7 +30,7 @@ ON CONFLICT (device) DO UPDATE SET
     expires = EXCLUDED.expires,
     auth_secret = EXCLUDED.auth_secret,
     ecdh_key = EXCLUDED.ecdh_key
-"""
+""",
     )
 }
     .execute()
@@ -44,7 +44,7 @@ fun Database.Transaction.upsertPushGroup(
         """
 INSERT INTO mobile_device_push_group (device, daycare_group, created_at)
 VALUES (${bind(device)}, ${bind(group)}, ${bind(now)})
-"""
+""",
     )
 }
     .execute()
@@ -53,7 +53,7 @@ fun Database.Transaction.deletePushSubscription(device: MobileDeviceId) = create
     sql(
         """
 DELETE FROM mobile_device_push_subscription WHERE device = ${bind(device)}
-"""
+""",
     )
 }
     .execute()
@@ -74,7 +74,7 @@ ON CONFLICT (origin, public_key) DO UPDATE SET
     expires_at = excluded.expires_at
 WHERE vapid_jwt.expires_at < ${bind(minValidThreshold)}
 RETURNING origin, public_key, jwt, expires_at
-"""
+""",
         )
     }
         .exactlyOneOrNull<VapidJwt?>()
@@ -86,7 +86,7 @@ RETURNING origin, public_key, jwt, expires_at
 SELECT origin, public_key, jwt, expires_at
 FROM vapid_jwt
 WHERE (origin, public_key) = (${bind(newToken.origin)}, ${bind(newToken.publicKey)})
-"""
+""",
             )
         }
             .exactlyOne<VapidJwt>()
@@ -99,7 +99,7 @@ fun Database.Read.getPushCategories(device: MobileDeviceId): Set<PushNotificatio
 SELECT unnest(push_notification_categories)
 FROM mobile_device
 WHERE id = ${bind(device)}
-"""
+""",
         )
     }
     .toSet<PushNotificationCategory>()
@@ -113,7 +113,7 @@ fun Database.Transaction.setPushCategories(
             """
 UPDATE mobile_device SET push_notification_categories = ${bind(categories)}
 WHERE id = ${bind(device)}
-"""
+""",
         )
     }
         .execute()
@@ -130,7 +130,7 @@ FROM mobile_device_push_group mdpg
 JOIN daycare_group dg ON mdpg.daycare_group = dg.id
 WHERE device = ${bind(device)}
 AND ${predicate(filter.forTable("dg"))}
-"""
+""",
     )
 }
     .toSet<GroupId>()
@@ -152,7 +152,7 @@ INSERT INTO mobile_device_push_group (device, daycare_group, created_at)
 SELECT ${bind(device)}, daycare_group, ${bind(now)}
 FROM unnest(${bind(groups)}) AS daycare_group
 ON CONFLICT (device, daycare_group) DO NOTHING
-"""
+""",
         )
     }
         .execute()

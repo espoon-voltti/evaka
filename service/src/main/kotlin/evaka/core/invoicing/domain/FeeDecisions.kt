@@ -138,33 +138,45 @@ enum class FeeDecisionType : DatabaseEnum {
 @ConstList("feeDecisionDifferences")
 enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDecision) -> Boolean) :
     DatabaseEnum {
-    GUARDIANS({ d1, d2 ->
-        setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
-    }),
-    CHILDREN({ d1, d2 ->
-        d1.children.map { it.child.id }.toSet() == d2.children.map { it.child.id }.toSet()
-    }),
-    INCOME({ d1, d2 ->
-        ((decisionIncomesEqual(d1.headOfFamilyIncome, d2.headOfFamilyIncome) &&
-            decisionIncomesEqual(d1.partnerIncome, d2.partnerIncome)) ||
-            (decisionIncomesEqual(d1.headOfFamilyIncome, d2.partnerIncome) &&
-                decisionIncomesEqual(d1.partnerIncome, d2.headOfFamilyIncome))) &&
-            decisionChildrenEquals(d1, d2) { a, b ->
-                decisionIncomesEqual(a.childIncome, b.childIncome)
-            }
-    }),
+    GUARDIANS(
+        { d1, d2 ->
+            setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
+        },
+    ),
+    CHILDREN(
+        { d1, d2 ->
+            d1.children.map { it.child.id }.toSet() == d2.children.map { it.child.id }.toSet()
+        },
+    ),
+    INCOME(
+        { d1, d2 ->
+            ((decisionIncomesEqual(d1.headOfFamilyIncome, d2.headOfFamilyIncome) &&
+                decisionIncomesEqual(d1.partnerIncome, d2.partnerIncome)) ||
+                (decisionIncomesEqual(d1.headOfFamilyIncome, d2.partnerIncome) &&
+                    decisionIncomesEqual(d1.partnerIncome, d2.headOfFamilyIncome))) &&
+                decisionChildrenEquals(d1, d2) { a, b ->
+                    decisionIncomesEqual(a.childIncome, b.childIncome)
+                }
+        },
+    ),
     PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { a, b -> a.placement == b.placement } }),
-    SERVICE_NEED({ d1, d2 ->
-        decisionChildrenEquals(d1, d2) { a, b ->
-            a.serviceNeed.copy(optionId = null) == b.serviceNeed.copy(optionId = null)
-        }
-    }),
-    SIBLING_DISCOUNT({ d1, d2 ->
-        decisionChildrenEquals(d1, d2) { a, b -> a.siblingDiscount == b.siblingDiscount }
-    }),
-    FEE_ALTERATIONS({ d1, d2 ->
-        decisionChildrenEquals(d1, d2) { a, b -> a.feeAlterations == b.feeAlterations }
-    }),
+    SERVICE_NEED(
+        { d1, d2 ->
+            decisionChildrenEquals(d1, d2) { a, b ->
+                a.serviceNeed.copy(optionId = null) == b.serviceNeed.copy(optionId = null)
+            }
+        },
+    ),
+    SIBLING_DISCOUNT(
+        { d1, d2 ->
+            decisionChildrenEquals(d1, d2) { a, b -> a.siblingDiscount == b.siblingDiscount }
+        },
+    ),
+    FEE_ALTERATIONS(
+        { d1, d2 ->
+            decisionChildrenEquals(d1, d2) { a, b -> a.feeAlterations == b.feeAlterations }
+        },
+    ),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     FEE_THRESHOLDS({ d1, d2 -> d1.feeThresholds == d2.feeThresholds });
 
@@ -318,7 +330,7 @@ fun calculateBaseFee(
             multiplier *
                 BigDecimal(
                     feeThresholds.maxIncomeThreshold(familySize) -
-                        feeThresholds.minIncomeThreshold(familySize)
+                        feeThresholds.minIncomeThreshold(familySize),
                 )
         } else {
             val minThreshold = feeThresholds.minIncomeThreshold(familySize)

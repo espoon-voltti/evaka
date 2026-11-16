@@ -203,7 +203,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         val (confirmedPresent, noResponses) =
                             dailyExpectedAtUnitData.partition {
                                 fullReservationDataByDateAndChild.containsKey(
-                                    Pair(date, it.child.id)
+                                    Pair(date, it.child.id),
                                 )
                             }
 
@@ -217,8 +217,8 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
                         val staffNeedAtDate =
                             ceil(
                                     dailyOccupancyCoefficient.div(
-                                        occupancyCoefficientSeven.toDouble()
-                                    )
+                                        occupancyCoefficientSeven.toDouble(),
+                                    ),
                                 )
                                 .toInt()
 
@@ -266,7 +266,7 @@ class HolidayPeriodAttendanceReport(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.HolidayPeriodAttendanceReport.log(
-                    meta = mapOf("unitId" to unitId, "periodId" to periodId)
+                    meta = mapOf("unitId" to unitId, "periodId" to periodId),
                 )
             }
     }

@@ -311,9 +311,9 @@ class VtjSoapTransportTest {
                 asiakasinfoOrPaluukoodiOrHakuperusteet.add(
                     Henkilo().apply {
                         henkilotunnus = Henkilo.Henkilotunnus().apply { value = ssn }
-                    }
+                    },
                 )
-            }
+            },
         )
 
     private fun responsePersonNotFound() =
@@ -326,7 +326,7 @@ class VtjSoapTransportTest {
                     responseFactory.createHenkiloTunnusKyselyResType().apply {
                         vtjHenkiloVastaussanomaAndFaultCodeAndFaultString.add(content)
                     }
-            }
+            },
         )
 
     private fun createDefaultQuery(

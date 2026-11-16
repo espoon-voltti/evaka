@@ -141,7 +141,7 @@ class ServiceApplicationController(
 
                     if (!application.serviceNeedOption.validity.includes(application.startDate)) {
                         throw BadRequest(
-                            "Selected service need is not valid on requested start date"
+                            "Selected service need is not valid on requested start date",
                         )
                     }
 
@@ -155,7 +155,7 @@ class ServiceApplicationController(
                     val placement =
                         application.currentPlacement
                             ?: throw BadRequest(
-                                "Child no longer has placement on requested start date"
+                                "Child no longer has placement on requested start date",
                             )
 
                     if (
@@ -165,7 +165,7 @@ class ServiceApplicationController(
                         )
                     ) {
                         throw BadRequest(
-                            "Selected service need is not valid with child's placement type"
+                            "Selected service need is not valid with child's placement type",
                         )
                     }
 

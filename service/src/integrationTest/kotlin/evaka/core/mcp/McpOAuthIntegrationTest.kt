@@ -73,7 +73,7 @@ class McpOAuthIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertTrue(info(staleClientId, redirectUri).redirectUriAccepted)
         assertTrue(
-            info(McpClientId(UUID.randomUUID()), "https://claude.ai/callback").redirectUriAccepted
+            info(McpClientId(UUID.randomUUID()), "https://claude.ai/callback").redirectUriAccepted,
         )
         assertThrows<NotFound> { info(McpClientId(UUID.randomUUID()), "javascript:alert(1)") }
 
@@ -137,7 +137,7 @@ class McpOAuthIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Base64.getEncoder()
                     .encodeToString(
                         "${URLEncoder.encode(id, Charsets.UTF_8)}:${URLEncoder.encode(secret, Charsets.UTF_8)}"
-                            .toByteArray()
+                            .toByteArray(),
                     )
 
         val wrong =
@@ -172,7 +172,7 @@ class McpOAuthIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 clock,
                 MockHttpServletRequest(),
                 jsonMapper.readTree(
-                    """{"client_name":"Claude Code","redirect_uris":["$redirectUri"],"token_endpoint_auth_method":"none"}"""
+                    """{"client_name":"Claude Code","redirect_uris":["$redirectUri"],"token_endpoint_auth_method":"none"}""",
                 ),
             )
         assertEquals(HttpStatus.CREATED, response.statusCode)
@@ -188,7 +188,7 @@ class McpOAuthIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 clock,
                 MockHttpServletRequest(),
                 jsonMapper.readTree(
-                    """{"client_name":"Server app","redirect_uris":["$redirectUri"],"token_endpoint_auth_method":"$authMethod"}"""
+                    """{"client_name":"Server app","redirect_uris":["$redirectUri"],"token_endpoint_auth_method":"$authMethod"}""",
                 ),
             )
         assertEquals(HttpStatus.CREATED, response.statusCode)

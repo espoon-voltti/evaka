@@ -105,7 +105,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     daycareGroupId = group.id,
                     startDate = placement.startDate,
                     endDate = placement.endDate,
-                )
+                ),
             )
             municipalAccount = tx.createMunicipalMessageAccount()
         }
@@ -207,7 +207,7 @@ UPDATE message
 SET content_deleted_at = ${bind(clock.now())},
     content_deleted_by_employee_id = ${bind(employee.id)}
 WHERE id = ${bind(sent.messageId)}
-"""
+""",
                 )
             }
         }

@@ -19,7 +19,7 @@ import java.time.LocalDate
 fun Database.Read.getCitizenAppBadgeCount(citizenId: PersonId, today: LocalDate): Int {
     val unreadMessages =
         getUnreadMessagesCountsCitizen(
-                AccessControlFilter.Some(citizenMessageAccountIds(citizenId))
+                AccessControlFilter.Some(citizenMessageAccountIds(citizenId)),
             )
             .sumOf { it.unreadCount }
     val unreadDecisions = fetchApplicationNotificationCountForCitizen(citizenId, today)

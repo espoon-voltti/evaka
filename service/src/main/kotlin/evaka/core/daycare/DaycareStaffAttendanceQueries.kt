@@ -48,7 +48,7 @@ fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? = createQuery {
 SELECT dg.id AS group_id, dg.name AS group_name, dg.start_date, dg.end_date
 FROM daycare_group AS dg
 WHERE id = ${bind(groupId)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -63,7 +63,7 @@ SELECT EXISTS (
     WHERE id = ${bind(staffAttendance.groupId)}
     AND daterange(start_date, end_date, '[]') @> ${bind(staffAttendance.date)}
 )
-"""
+""",
         )
     }
     .exactlyOne()
@@ -76,7 +76,7 @@ INSERT INTO staff_attendance (group_id, date, count)
 VALUES (${bind(staffAttendance.groupId)}, ${bind(staffAttendance.date)}, ${bind(staffAttendance.count)})
 ON CONFLICT (group_id, date) DO UPDATE SET
     count = ${bind(staffAttendance.count)}
-"""
+""",
         )
     }
 }
@@ -91,7 +91,7 @@ SELECT group_id, date, count, updated_at
 FROM staff_attendance
 WHERE group_id = ${bind(groupId)}
 AND between_start_and_end(${bind(range)}, date)
-"""
+""",
     )
 }
     .toList()
@@ -108,7 +108,7 @@ FROM staff_attendance sa
 JOIN daycare_group dg on sa.group_id = dg.id
 WHERE dg.daycare_id = ${bind(unitId)}
   AND sa.date = ${bind(date)}
-"""
+""",
         )
     }
         .toList<GroupStaffAttendance>()
@@ -131,7 +131,7 @@ fun Database.Transaction.deleteStaffAttendance(groupId: GroupId, date: LocalDate
 DELETE FROM staff_attendance
 WHERE group_id = ${bind(groupId)}
 AND date = ${bind(date)}
-"""
+""",
         )
     }
         .updateNoneOrOne()

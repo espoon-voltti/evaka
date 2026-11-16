@@ -69,7 +69,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                     headOfChild = fridgeParent.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2030, 1, 1),
-                )
+                ),
             )
             tx.insertGuardian(guardian.id, child.id)
             val applicationId =
@@ -93,7 +93,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                     type = DecisionType.DAYCARE,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2100, 1, 1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -101,7 +101,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                     unitId = daycare.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2100, 1, 1),
-                )
+                ),
             )
             tx.insert(mobile)
         }
@@ -120,10 +120,16 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParent.id)
+                accessControl.hasPermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Person.READ,
+                    fridgeParent.id,
+                ),
             )
             assertTrue(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id),
             )
         }
     }
@@ -135,10 +141,16 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         db.read { tx ->
             assertFalse(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParent.id)
+                accessControl.hasPermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Person.READ,
+                    fridgeParent.id,
+                ),
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id),
             )
         }
 
@@ -146,10 +158,16 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParent.id)
+                accessControl.hasPermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Person.READ,
+                    fridgeParent.id,
+                ),
             )
             assertTrue(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id),
             )
         }
     }

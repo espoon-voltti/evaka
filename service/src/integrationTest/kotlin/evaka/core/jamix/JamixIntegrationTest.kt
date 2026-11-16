@@ -268,7 +268,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -277,7 +277,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 daycareGroupId = group1.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 listOf(
@@ -311,7 +311,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             unitId = daycare.id,
                             startDate = monday,
                             endDate = tuesday,
-                        )
+                        ),
                     )
                     .also { placementId ->
                         tx.insert(
@@ -320,7 +320,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 daycareGroupId = group2.id,
                                 startDate = monday,
                                 endDate = tuesday,
-                            )
+                            ),
                         )
                     }
                 // Lunch only on Monday
@@ -331,7 +331,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startTime = LocalTime.of(11, 0),
                         endTime = LocalTime.of(12, 0),
                         createdBy = employee.evakaUserId,
-                    )
+                    ),
                 )
                 // Absent on Tuesday
                 tx.insert(
@@ -339,7 +339,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = childWithSpecialDiet.id,
                         date = tuesday,
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
             }
 
@@ -407,7 +407,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 dietID = null,
                                 additionalInfo = null,
                                 textureID = null,
-                            )
+                            ),
                         ),
                 ),
                 order2,
@@ -430,7 +430,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 dietID = 1,
                                 additionalInfo = "Johnson Diet",
                                 textureID = 42,
-                            )
+                            ),
                         ),
                 ),
                 order3,
@@ -470,7 +470,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `diet sync nullifies removed diets from child`() {
         useJamixMockServer(
-            specialDiets = listOf(JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")))
+            specialDiets = listOf(JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo"))),
         ) { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
@@ -523,7 +523,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = daycare.id,
                         startDate = now.toLocalDate().minusYears(1),
                         endDate = now.toLocalDate(),
-                    )
+                    ),
                 )
                 // Placement today and another in the future -> email is generated only for the
                 // current placement
@@ -533,7 +533,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = daycare2.id,
                         startDate = now.toLocalDate().plusDays(1),
                         endDate = now.toLocalDate().plusYears(1),
-                    )
+                    ),
                 )
 
                 tx.insert(child2, DevPersonType.RAW_ROW)
@@ -545,7 +545,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = daycare.id,
                         startDate = now.toLocalDate().plusDays(1),
                         endDate = now.toLocalDate().plusYears(1),
-                    )
+                    ),
                 )
 
                 tx.insert(child3, DevPersonType.RAW_ROW)
@@ -557,7 +557,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = daycare.id,
                         startDate = now.toLocalDate().minusYears(1),
                         endDate = now.toLocalDate().minusDays(1),
-                    )
+                    ),
                 )
             }
 
@@ -593,8 +593,8 @@ Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden 
                     JamixSpecialDiet(
                         1,
                         JamixSpecialDietFields("diet name fixed", "diet abbreviation fixed"),
-                    )
-                )
+                    ),
+                ),
         ) { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")

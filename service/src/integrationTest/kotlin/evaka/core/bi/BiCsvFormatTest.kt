@@ -44,7 +44,7 @@ class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
                             childId = childId,
                             date = date,
                             absenceCategory = AbsenceCategory.BILLABLE,
-                        )
+                        ),
                     )
                 }
         }
@@ -64,7 +64,7 @@ class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         date = LocalDate.of(2024, 1, 1).plusDays(i.toLong()),
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
             }
         }
@@ -110,7 +110,7 @@ class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
                             date = LocalDate.of(2024, 5, 1).plusDays(i.toLong()),
                             arrived = arrived,
                             departed = departed,
-                        )
+                        ),
                     )
                 }
         }
@@ -131,14 +131,14 @@ class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
                     areaId = areaId,
                     name = "Daycare A",
                     mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 30)),
-                )
+                ),
             )
             tx.insert(
                 DevDaycare(
                     areaId = areaId,
                     name = "Daycare B",
                     mealtimeBreakfast = TimeRange(LocalTime.of(7, 15), LocalTime.of(9, 45)),
-                )
+                ),
             )
         }
         assertCsvColumnsEqual<TypedTimeRange, TextTimeRange>(

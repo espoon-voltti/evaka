@@ -62,9 +62,9 @@ class MockSfiMessagesClient : SfiMessagesClient {
                                     externalId = message.messageId.raw.toString(),
                                     serviceId = "espoo_ws_vaka",
                                 ),
-                        )
+                        ),
                     ),
-            )
+            ),
         )
     }
 

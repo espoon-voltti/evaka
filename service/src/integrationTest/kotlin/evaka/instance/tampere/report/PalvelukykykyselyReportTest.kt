@@ -67,7 +67,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                     headOfChild = parent1.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             tx.insert(
                 DevFridgeChild(
@@ -75,7 +75,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                     headOfChild = parent1.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             tx.insert(
                 DevFridgeChild(
@@ -83,7 +83,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                     headOfChild = parent1.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             tx.insert(
@@ -92,7 +92,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                     second = parent2.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             tx.insert(
@@ -102,7 +102,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                     startDate = startDate,
                     endDate = endDate,
                     type = PlacementType.DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -111,7 +111,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                     startDate = startDate,
                     endDate = endDate,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -120,7 +120,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                     startDate = startDate,
                     endDate = endDate,
                     type = PlacementType.PRESCHOOL,
-                )
+                ),
             )
         }
 
@@ -145,7 +145,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                     partnerFirstName = parent2.firstName,
                     partnerLastName = parent2.lastName,
                     partnerEmail = parent2.email ?: "",
-                )
+                ),
             )
     }
 }

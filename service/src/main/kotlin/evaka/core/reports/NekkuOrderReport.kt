@@ -108,7 +108,7 @@ fun Database.Read.getNekkuReportRows(
                 AND nor.group_id =ANY(${bind ( groupIds)})
                 AND nor.delivery_date BETWEEN ${bind(start)} AND ${bind(end)}
                 ORDER BY nor.delivery_date, nor.group_id, nor.meal_time, nor.meal_sku
-            """
+            """,
         )
     }
         .toList<NekkuOrderRow>()

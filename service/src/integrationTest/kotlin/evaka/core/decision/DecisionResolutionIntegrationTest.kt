@@ -261,7 +261,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(
                     tx.getDecisionRowsByApplication(ids.applicationId).toList().all {
                         it.status == DecisionStatus.REJECTED
-                    }
+                    },
                 )
             }
         }
@@ -317,7 +317,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(
                     r.getDecisionRowsByApplication(ids.applicationId).toList().all {
                         it.status == DecisionStatus.REJECTED
-                    }
+                    },
                 )
             }
         }
@@ -382,7 +382,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(
                     r.getDecisionRowsByApplication(ids.applicationId).toList().all {
                         it.status == DecisionStatus.REJECTED
-                    }
+                    },
                 )
             }
         }
@@ -432,7 +432,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(
                     r.getDecisionRowsByApplication(ids.applicationId).toList().all {
                         it.status == DecisionStatus.REJECTED
-                    }
+                    },
                 )
             }
         }
@@ -553,7 +553,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                     listOf(
                                         PlacementType.PREPARATORY,
                                         PlacementType.PREPARATORY_DAYCARE,
-                                    )
+                                    ),
                         ),
                     child = child.toDaycareFormChild(),
                     guardian = adult.toDaycareFormAdult(),
@@ -570,7 +570,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = period.end,
                 preschoolDaycareStartDate = preschoolDaycarePeriod?.start,
                 preschoolDaycareEndDate = preschoolDaycarePeriod?.end,
-            )
+            ),
         )
         val primaryId =
             if (preschoolDaycareWithoutPreschool) {
@@ -618,7 +618,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                             },
                         startDate = period.start,
                         endDate = period.end,
-                    )
+                    ),
                 )
             }
         val preschoolDaycareId = preschoolDaycarePeriod?.let {
@@ -632,7 +632,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         else DecisionType.PRESCHOOL_DAYCARE,
                     startDate = it.start,
                     endDate = it.end,
-                )
+                ),
             )
         }
         DataIdentifiers(applicationId, primaryId, preschoolDaycareId)

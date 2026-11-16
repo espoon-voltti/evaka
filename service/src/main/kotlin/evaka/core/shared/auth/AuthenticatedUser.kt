@@ -57,7 +57,7 @@ sealed class AuthenticatedUser {
         ) : this(id, roles - UserRole.SCOPED_ROLES, roles.intersect(UserRole.SCOPED_ROLES))
 
         constructor(
-            employeeUser: EmployeeUser
+            employeeUser: EmployeeUser,
         ) : this(employeeUser.id, employeeUser.globalRoles, employeeUser.allScopedRoles)
 
         override fun rawId(): UUID = id.raw

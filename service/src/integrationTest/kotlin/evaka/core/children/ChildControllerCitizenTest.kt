@@ -56,7 +56,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         unitId = unitId,
                         startDate = LocalDate.of(2023, 8, 1),
                         endDate = LocalDate.of(2023, 9, 17),
-                    )
+                    ),
                 )
                 Pair(guardianId, childId)
             }
@@ -66,11 +66,11 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23)),
                     ),
                     childId,
                     YearMonth.of(2023, 8),
-                )
+                ),
             )
             .isEqualTo(AttendanceSummary(attendanceDays = 23))
         assertThat(
@@ -78,11 +78,11 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23)),
                     ),
                     childId,
                     YearMonth.of(2023, 9),
-                )
+                ),
             )
             .isEqualTo(AttendanceSummary(attendanceDays = 11))
         assertThat(
@@ -90,11 +90,11 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23)),
                     ),
                     childId,
                     YearMonth.of(2023, 10),
-                )
+                ),
             )
             .isEqualTo(AttendanceSummary(attendanceDays = 0))
     }
@@ -114,7 +114,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         unitId = unitId,
                         startDate = LocalDate.of(2023, 9, 1),
                         endDate = LocalDate.of(2023, 9, 30),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevAbsence(
@@ -122,7 +122,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         date = LocalDate.of(2023, 9, 11),
                         absenceType = AbsenceType.PLANNED_ABSENCE,
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
                 Pair(guardianId, childId)
             }
@@ -132,11 +132,11 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23)),
                     ),
                     childId,
                     YearMonth.of(2023, 9),
-                )
+                ),
             )
             .isEqualTo(AttendanceSummary(attendanceDays = 20))
     }
@@ -156,7 +156,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         unitId = unitId,
                         startDate = LocalDate.of(2023, 9, 4),
                         endDate = LocalDate.of(2023, 9, 17),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevAbsence(
@@ -164,7 +164,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         date = LocalDate.of(2023, 9, 18),
                         absenceType = AbsenceType.PLANNED_ABSENCE,
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
                 Pair(guardianId, childId)
             }
@@ -174,11 +174,11 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23)),
                     ),
                     childId,
                     YearMonth.of(2023, 9),
-                )
+                ),
             )
             .isEqualTo(AttendanceSummary(attendanceDays = 10))
     }
@@ -198,7 +198,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         unitId = unitId,
                         startDate = LocalDate.of(2023, 9, 1),
                         endDate = LocalDate.of(2023, 9, 30),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevAbsence(
@@ -206,7 +206,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         date = LocalDate.of(2023, 9, 11),
                         absenceType = AbsenceType.UNKNOWN_ABSENCE,
                         absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+                    ),
                 )
                 Pair(guardianId, childId)
             }
@@ -216,11 +216,11 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23)),
                     ),
                     childId,
                     YearMonth.of(2023, 9),
-                )
+                ),
             )
             .isEqualTo(AttendanceSummary(attendanceDays = 21))
     }
@@ -240,7 +240,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         unitId = unitId,
                         startDate = LocalDate.of(2023, 5, 1),
                         endDate = LocalDate.of(2023, 5, 31),
-                    )
+                    ),
                 )
                 Pair(guardianId, childId)
             }
@@ -251,11 +251,11 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 5, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 5, 11), LocalTime.of(8, 23)),
                     ),
                     childId,
                     YearMonth.of(2023, 5),
-                )
+                ),
             )
             .isEqualTo(AttendanceSummary(attendanceDays = 21))
     }
@@ -275,7 +275,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         unitId = unitId,
                         startDate = LocalDate.of(2023, 9, 1),
                         endDate = LocalDate.of(2023, 9, 30),
-                    )
+                    ),
                 )
                 Pair(guardianId, childId)
             }
@@ -306,7 +306,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         unitId = unitId,
                         startDate = LocalDate.of(2023, 8, 1),
                         endDate = LocalDate.of(2023, 9, 17),
-                    )
+                    ),
                 )
                 Triple(guardianId, childId, unitId)
             }
@@ -344,9 +344,9 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     dbInstance(),
                     AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
                     MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23)),
                     ),
-                )
+                ),
             )
             .isEqualTo(listOf(childAndPermittedActions))
     }

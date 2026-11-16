@@ -77,7 +77,7 @@ class AbsenceApplicationService(
 
                             else -> {
                                 throw IllegalArgumentException(
-                                    "Invalid absence application status: ${application.status}"
+                                    "Invalid absence application status: ${application.status}",
                                 )
                             }
                         },

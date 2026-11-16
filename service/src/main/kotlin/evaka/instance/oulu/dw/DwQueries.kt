@@ -25,7 +25,7 @@ WHERE current_date - INTERVAL '3 months' <= ab.date
     AND pl.start_date <= ab.date
     AND pl.end_date >= ab.date
 ORDER BY ab.date, ab.child_id
-"""
+""",
             )
         }
 
@@ -69,7 +69,7 @@ SELECT
 FROM application_infos, daycare dg, care_area ca
 WHERE dg.id IN (application_infos.yksikot::uuid)
     AND dg.care_area_id = ca.id
-"""
+""",
             )
         }
 
@@ -89,7 +89,7 @@ FROM assistance_action ac
     LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = ac.id
     LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
 WHERE current_date - INTERVAL '3 months' <= ac.end_date
-"""
+""",
             )
         }
 
@@ -114,7 +114,7 @@ WHERE current_date - INTERVAL '3 months' <= ac.end_date
                 WHERE current_date::DATE - INTERVAL '3 months' <= ca.date
                 ORDER BY ca.date DESC
                 """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -187,7 +187,7 @@ FROM person p
     LEFT JOIN assistance_need_voucher_coefficient anvc ON p.id = anvc.child_id
         AND lower(anvc.validity_period) <= current_date
         AND upper(anvc.validity_period) >= current_date
-"""
+""",
             )
         }
 
@@ -288,7 +288,7 @@ GROUP BY
     dc.amount,
     cc.caretaker_count
 ORDER BY dg.name, cc.date
-"""
+""",
             )
         }
 
@@ -396,7 +396,7 @@ FROM placements_on_date pod
     JOIN daycare d ON d.id = pod.unit_id
 GROUP BY
     pod.date, pod.unit_id, d.name, pod.caretaker_count
-"""
+""",
             )
         }
 
@@ -545,7 +545,7 @@ FROM placements_on_date pod
     JOIN daycare d ON d.id = pod.unit_id
 GROUP BY
     pod.date, pod.unit_id, d.name, pod.caretaker_count
-"""
+""",
             )
         }
 
@@ -561,7 +561,7 @@ SELECT
     upper(valid_during)                     AS loppu_pvm
 FROM daycare_assistance
 WHERE current_date - INTERVAL '3 months' <= upper(valid_during)
-"""
+""",
             )
         }
 
@@ -593,7 +593,7 @@ FROM fee_decision fd
     JOIN care_area ca ON d.care_area_id = ca.id
 WHERE fd.decision_number IS NOT NULL -- ei tuoda effican päätöksiä
     AND current_date - INTERVAL '3 months' <= upper(fd.valid_during)
-"""
+""",
             )
         }
 
@@ -609,7 +609,7 @@ SELECT
     upper(valid_during)                     AS loppu_pvm
 FROM other_assistance_measure
 WHERE current_date - INTERVAL '3 months' <= upper(valid_during)
-"""
+""",
             )
         }
 
@@ -648,7 +648,7 @@ FROM person p
         AND sn.end_date >= current_date - INTERVAL '15 days'
     LEFT JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE current_date - INTERVAL '3 months' <= pl.end_date
-"""
+""",
             )
         }
 
@@ -664,7 +664,7 @@ SELECT
     upper(valid_during)                     AS loppu_pvm
 FROM preschool_assistance
 WHERE current_date - INTERVAL '3 months' <= upper(valid_during)
-"""
+""",
             )
         }
 
@@ -715,7 +715,7 @@ GROUP BY
     dg.end_date,
     dc.amount
 ORDER BY d.name
-"""
+""",
             )
         }
 
@@ -744,7 +744,7 @@ FROM voucher_value_decision vvd
     JOIN care_area ca ON d.care_area_id = ca.id
 WHERE vvd.decision_number IS NOT NULL -- ei tuoda effican päätöksiä
     AND current_date - INTERVAL '3 months' <= vvd.valid_to
-"""
+""",
             )
         }
 }
@@ -766,7 +766,7 @@ class StreamingCsvQuery<T : Any>(
 private const val QUERY_STREAM_CHUNK_SIZE = 10_000
 
 private inline fun <reified T : Any> csvQuery(
-    crossinline f: QuerySql.Builder.() -> QuerySql
+    crossinline f: QuerySql.Builder.() -> QuerySql,
 ): CsvQuery =
     StreamingCsvQuery(T::class) { tx ->
         tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>()

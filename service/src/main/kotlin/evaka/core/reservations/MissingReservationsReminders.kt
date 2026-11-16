@@ -58,7 +58,7 @@ FROM (${subquery(missingReservationsQuery(range, guardian = null))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE p.email IS NOT NULL OR EXISTS (SELECT FROM citizen_push_subscription cps WHERE cps.person_id = p.id)
     """
-                            .trimIndent()
+                            .trimIndent(),
                     )
                 }
                 .toList<PersonId>()
@@ -86,7 +86,7 @@ FROM (${subquery(missingReservationsQuery(msg.range, msg.guardian))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE missing.guardian_id = ${bind(msg.guardian)}
 LIMIT 1
-"""
+""",
                         )
                     }
                     .exactlyOneOrNull {
@@ -181,7 +181,7 @@ JOIN (
 ) guardian
 ON missing.child_id = guardian.child_id
 AND (valid_during IS NULL OR valid_during @> missing.date)
-"""
+""",
     )
 }
 
@@ -194,7 +194,7 @@ private fun Database.Read.getChildNamesWithMissingReservations(
             """
 SELECT DISTINCT missing.child_id
 FROM (${subquery(missingReservationsQuery(range, guardian))}) missing
-"""
+""",
         )
     }
         .toList<PersonId>()

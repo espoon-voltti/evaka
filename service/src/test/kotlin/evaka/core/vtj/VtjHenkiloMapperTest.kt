@@ -136,7 +136,7 @@ class VtjHenkiloMapperTest {
                     dateOfBirth = LocalDate.of(1944, 6, 7),
                     firstNames = "Johannes",
                     lastName = "Karhula",
-                )
+                ),
             )
     }
 
@@ -211,7 +211,7 @@ class VtjHenkiloMapperTest {
                         postiosoiteR = "PB 10"
                         postitoimipaikkaR = "Esbo"
                         postiosoiteAlkupvm = "20300101"
-                    }
+                    },
                 )
                 tilapainenKotimainenLahiosoite.add(
                     Henkilo.TilapainenKotimainenLahiosoite().apply {
@@ -220,7 +220,7 @@ class VtjHenkiloMapperTest {
                         postitoimipaikkaS = "Hanko"
                         asuminenAlkupvm = "20200601"
                         asuminenLoppupvm = "20200831"
-                    }
+                    },
                 )
                 aidinkieli = Aidinkieli()
                 turvakielto = Turvakielto()

@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 enum class InvoiceDistinctiveParams {
-    MISSING_ADDRESS
+    MISSING_ADDRESS,
 }
 
 enum class InvoiceSortParam {
@@ -253,7 +253,7 @@ class InvoiceController(
                     "areas" to payload.areas,
                     "invoiceDate" to payload.invoiceDate,
                     "dueDate" to payload.dueDate,
-                )
+                ),
         )
     }
 
@@ -292,7 +292,7 @@ class InvoiceController(
                     "areas" to payload.areas,
                     "invoiceDate" to payload.invoiceDate,
                     "dueDate" to payload.dueDate,
-                )
+                ),
         )
     }
 

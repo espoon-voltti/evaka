@@ -49,7 +49,7 @@ fun createTestMetadataInstance(): RecordMetadataInstance =
                                     role = "Henkilökunta",
                                     name = "Testi Testaaja",
                                     corporateName = "Espoon kaupungin esiopetus ja varhaiskasvatus",
-                                )
+                                ),
                             ),
                     ),
                 format =
@@ -136,7 +136,7 @@ fun createTestMetadataInstance(): RecordMetadataInstance =
                         caseCreated = LocalDate.of(2023, 2, 1),
                         caseFinished = LocalDate.of(2023, 2, 1),
                     ),
-            )
+            ),
     )
 
 class RecordMetadataXmlTest {

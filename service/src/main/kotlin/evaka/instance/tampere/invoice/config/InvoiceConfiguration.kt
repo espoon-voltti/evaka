@@ -80,7 +80,7 @@ class InvoiceConfiguration {
 
     @Bean
     fun invoiceGenerationLogicChooser(
-        properties: TampereProperties
+        properties: TampereProperties,
     ): InvoiceGenerationLogicChooser =
         TampereInvoiceGeneratorLogicChooser(properties.summertimeAbsence)
 
@@ -186,7 +186,7 @@ class TampereInvoiceProductProvider : InvoiceProductProvider {
 
                 else ->
                     error(
-                        "No product mapping found for product + fee alteration type combo ($productKey + $feeAlterationType)"
+                        "No product mapping found for product + fee alteration type combo ($productKey + $feeAlterationType)",
                     )
             }
         return product.key
@@ -228,7 +228,7 @@ class TampereInvoiceGeneratorLogicChooser(private val properties: SummertimeAbse
     ): Set<ChildId> {
         val holidays =
             getHolidays(
-                FiniteDateRange(LocalDate.of(month.year, 1, 1), LocalDate.of(month.year, 12, 31))
+                FiniteDateRange(LocalDate.of(month.year, 1, 1), LocalDate.of(month.year, 12, 31)),
             )
         return when {
             properties.freeMonth == month.month ->

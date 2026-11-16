@@ -20,7 +20,7 @@ class S3Sender(private val s3Client: S3Client, private val properties: Kangasala
         val fileName =
             now.toLocalDateTime()
                 .format(
-                    DateTimeFormatter.ofPattern("'invoices/Kangasala_eVaka_'ddMMyyyy_HHmmss'.dat'")
+                    DateTimeFormatter.ofPattern("'invoices/Kangasala_eVaka_'ddMMyyyy_HHmmss'.dat'"),
                 )
 
         val request =

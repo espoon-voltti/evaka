@@ -38,7 +38,7 @@ RETURNING id,
     updated_at, modified_at, modified_by,
     child_id, start_date, end_date, description, status,
     decided_at, decided_by, rejected_reason
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -61,7 +61,7 @@ WHERE placement.unit_id = ${bind(it)}
   AND placement.start_date <= absence_application.end_date
   AND placement.end_date >= absence_application.start_date
 )
-        """
+        """,
                     )
                 }
             },
@@ -83,7 +83,7 @@ SELECT id,
 FROM absence_application
 WHERE id = ${bind(id)}
 ${if (forUpdate) "FOR UPDATE" else ""}
-"""
+""",
         )
     }
     .exactlyOneOrNull<AbsenceApplication>()
@@ -106,7 +106,7 @@ UPDATE absence_application SET
     rejected_reason = ${bind(rejectedReason)}
 WHERE id = ${bind(id)}
   AND status = 'WAITING_DECISION'
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -127,7 +127,7 @@ FROM placement
 WHERE type = ANY (${bind(PlacementType.preschool)})
   AND child_id = ANY (${bind(childIds)})
   AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
-        """
+        """,
     )
 }
     .toSet()
@@ -143,7 +143,7 @@ FROM placement
 WHERE type = ANY (${bind(PlacementType.preschool)})
     AND child_id = ${bind(childId)}
     AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
-          """
+          """,
     )
 }
     .toSet()
@@ -174,6 +174,6 @@ JOIN evaka_user created_by ON absence_application.created_by = created_by.id
 JOIN person child ON absence_application.child_id = child.id
 LEFT JOIN evaka_user decided_by ON absence_application.decided_by = decided_by.id
 WHERE ${predicate(predicate.forTable("absence_application"))}
-"""
+""",
     )
 }

@@ -98,7 +98,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     id = id,
                     childId = child.id,
                     validityPeriod = DateRange(today, null),
-                )
+                ),
             )
         }
 
@@ -129,14 +129,14 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     id = idFuture,
                     childId = child.id,
                     validityPeriod = DateRange(today, null),
-                )
+                ),
             )
             tx.insert(
                 DevDailyServiceTimes(
                     id = past,
                     childId = child2.id,
                     validityPeriod = DateRange(today.minusDays(2), today.minusDays(1)),
-                )
+                ),
             )
         }
 
@@ -241,13 +241,13 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     id = id,
                     childId = child.id,
                     validityPeriod = DateRange(today.plusDays(1), today.plusDays(10)),
-                )
+                ),
             )
             tx.insert(
                 DevDailyServiceTimes(
                     childId = child.id,
                     validityPeriod = DateRange(today.plusDays(11), null),
-                )
+                ),
             )
         }
 
@@ -392,7 +392,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         unitId = daycare.id,
                         startDate = today,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     // First week: no shift care
@@ -404,7 +404,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             endDate = dailyServiceTimesValidity.start.plusWeeks(1).minusDays(1),
                             confirmedBy = admin.evakaUserId,
                             shiftCare = ShiftCareType.NONE,
-                        )
+                        ),
                     )
                     // Second week: shift care
                     tx.insert(
@@ -415,7 +415,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             endDate = dailyServiceTimesValidity.start.plusWeeks(2).minusDays(1),
                             confirmedBy = admin.evakaUserId,
                             shiftCare = ShiftCareType.FULL,
-                        )
+                        ),
                     )
                     // Third week: no service need
                 }
@@ -468,20 +468,20 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimeNotification(
                     guardianId = guardian1.id,
                     createdAt = now.minusMonths(3),
-                )
+                ),
             )
             tx.insert(
                 DevDailyServiceTimeNotification(
                     guardianId = guardian2.id,
                     createdAt = now.minusMonths(4),
-                )
+                ),
             )
             tx.insert(
                 DevDailyServiceTimeNotification(
                     id = recentId,
                     guardianId = guardian1.id,
                     createdAt = now.minusDays(2),
-                )
+                ),
             )
         }
 
@@ -499,7 +499,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimeNotification(
                     guardianId = guardian1.id,
                     createdAt = now.minusMonths(2),
-                )
+                ),
             )
         }
 
@@ -555,7 +555,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun getDailyServiceTimes(
-        childId: ChildId
+        childId: ChildId,
     ): List<DailyServiceTimesController.DailyServiceTimesResponse> {
         return dailyServiceTimesController.getDailyServiceTimes(
             dbInstance(),
@@ -566,7 +566,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun getDailyServiceTimeNotifications(
-        user: DevPerson
+        user: DevPerson,
     ): List<DailyServiceTimeNotificationId> {
         return dailyServiceTimesCitizenController.getDailyServiceTimeNotifications(
             dbInstance(),

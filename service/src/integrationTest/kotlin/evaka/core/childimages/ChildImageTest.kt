@@ -56,7 +56,7 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusMonths(1),
-                )
+                ),
             )
             it.insert(mobileDevice)
         }

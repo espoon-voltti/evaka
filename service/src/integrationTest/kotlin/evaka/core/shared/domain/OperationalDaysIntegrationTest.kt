@@ -49,7 +49,7 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
                     shiftCareOperationTimes = null,
                     shiftCareOpenOnHolidays = false,
-                )
+                ),
             )
         }
         val normalChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.NONE) }
@@ -77,7 +77,7 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
                     shiftCareOperationTimes = null,
                     shiftCareOpenOnHolidays = false,
-                )
+                ),
             )
         }
         val shiftCareChild = db.transaction { tx ->
@@ -106,7 +106,7 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     shiftCareOperationTimes =
                         listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
                     shiftCareOpenOnHolidays = false,
-                )
+                ),
             )
         }
         val normalChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.NONE) }
@@ -135,7 +135,7 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     shiftCareOperationTimes =
                         listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
                     shiftCareOpenOnHolidays = true,
-                )
+                ),
             )
         }
         val normalChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.NONE) }
@@ -164,7 +164,7 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         unitId = daycareId,
                         startDate = placementRange.start,
                         endDate = placementRange.end,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -175,7 +175,7 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             optionId = snDaycareFullDay35.id,
                             confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                             shiftCare = shiftCare,
-                        )
+                        ),
                     )
                 }
         }

@@ -221,7 +221,7 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = today,
                     endDate = today.plusMonths(6),
-                )
+                ),
             )
             tx.setVtjGuardiansQueried(x, clock.now())
         }
@@ -250,7 +250,7 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         mode = EnumSource.Mode.EXCLUDE,
     )
     fun `plans a sync for a child with an application that is not in a final state`(
-        status: ApplicationStatus
+        status: ApplicationStatus,
     ) {
         db.transaction { it.insertApplication(x, status) }
 
@@ -262,7 +262,7 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
     @ParameterizedTest
     @EnumSource(value = ApplicationStatus::class, names = ["ACTIVE", "REJECTED", "CANCELLED"])
     fun `does not plan a sync for a child with an application in a final state`(
-        status: ApplicationStatus
+        status: ApplicationStatus,
     ) {
         db.transaction { it.insertApplication(x, status) }
 
@@ -412,7 +412,7 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                     unitId = daycare.id,
                     startDate = today,
                     endDate = today.plusMonths(6),
-                )
+                ),
             )
         }
 
@@ -457,7 +457,7 @@ class SyncMissingVtjRelationsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
 SELECT (payload ->> 'personId')::uuid
 FROM async_job
 WHERE type = 'SyncMissingVtjRelationsOfPerson' AND completed_at IS NULL AND retry_count > 0
-"""
+""",
                 )
             }
             .toList<PersonId>()
@@ -475,7 +475,7 @@ WHERE type = 'SyncMissingVtjRelationsOfPerson' AND completed_at IS NULL AND retr
         createdAt: HelsinkiDateTime,
     ) = execute {
         sql(
-            "INSERT INTO citizen_user (id, created_at) VALUES (${bind(person.id)}, ${bind(createdAt)})"
+            "INSERT INTO citizen_user (id, created_at) VALUES (${bind(person.id)}, ${bind(createdAt)})",
         )
     }
 
@@ -489,7 +489,7 @@ WHERE type = 'SyncMissingVtjRelationsOfPerson' AND completed_at IS NULL AND retr
             """
 INSERT INTO fridge_child (head_of_child, child_id, start_date, end_date, created_at, updated)
 VALUES (${bind(head.id)}, ${bind(child.id)}, ${bind(startDate)}, ${bind(child.dateOfBirth.plusYears(18).minusDays(1))}, ${bind(updated)}, ${bind(updated)})
-"""
+""",
         )
     }
 
@@ -507,7 +507,7 @@ VALUES (${bind(head.id)}, ${bind(child.id)}, ${bind(startDate)}, ${bind(child.da
                     """
 INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, created_at, updated)
 VALUES (${bind(id)}, ${bind(indx)}, ${bind(otherIndx)}, ${bind(partner.id)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(updated)}, ${bind(updated)})
-"""
+""",
                 )
             }
         }
@@ -521,7 +521,7 @@ VALUES (${bind(id)}, ${bind(indx)}, ${bind(otherIndx)}, ${bind(partner.id)}, ${b
                 unitId = daycare.id,
                 startDate = today.minusYears(1),
                 endDate = endDate,
-            )
+            ),
         )
 
     private fun Database.Transaction.insertApplication(

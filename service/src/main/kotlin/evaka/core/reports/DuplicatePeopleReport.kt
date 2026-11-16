@@ -115,7 +115,7 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
         FROM duplicate_ids dups
         JOIN person p ON p.id = dups.id
         ORDER BY key, social_security_number, p.id
-        """
+        """,
         )
     }
         .toList<DuplicatePeopleReportRow>()

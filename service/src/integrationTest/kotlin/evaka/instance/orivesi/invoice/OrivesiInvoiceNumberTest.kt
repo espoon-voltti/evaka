@@ -45,7 +45,7 @@ class OrivesiInvoiceNumberTest : AbstractOrivesiIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("e463e978-4de3-44d2-ab5f-4ca883453385")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -82,7 +82,7 @@ class OrivesiInvoiceNumberTest : AbstractOrivesiIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 11, 30),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("e463e978-4de3-44d2-ab5f-4ca883453385")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -95,7 +95,7 @@ class OrivesiInvoiceNumberTest : AbstractOrivesiIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("e463e978-4de3-44d2-ab5f-4ca883453385")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -132,7 +132,7 @@ class OrivesiInvoiceNumberTest : AbstractOrivesiIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 10, 31),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("e463e978-4de3-44d2-ab5f-4ca883453385")),
-                )
+                ),
             )
             tx.insert(
                 DevInvoice(
@@ -144,7 +144,7 @@ class OrivesiInvoiceNumberTest : AbstractOrivesiIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 11, 30),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("e463e978-4de3-44d2-ab5f-4ca883453385")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -157,7 +157,7 @@ class OrivesiInvoiceNumberTest : AbstractOrivesiIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("e463e978-4de3-44d2-ab5f-4ca883453385")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)

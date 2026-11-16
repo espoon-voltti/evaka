@@ -236,8 +236,8 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                                                     ),
                                             ),
                                         ),
-                                )
-                            )
+                                ),
+                            ),
                     ),
             )
         return db.transaction { tx ->
@@ -332,7 +332,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 questionId = templateContent.questions[1].id,
                                 answer = "rbgqo1",
                             ),
-                        )
+                        ),
                 )
 
             val negativeDocumentContent =
@@ -347,7 +347,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 questionId = templateContent.questions[1].id,
                                 answer = "rbgqo2",
                             ),
-                        )
+                        ),
                 )
 
             // Test case Aapo:
@@ -375,7 +375,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = daycareData.second.first().id,
                     startDate = placementA.startDate,
                     endDate = placementA.endDate,
-                )
+                ),
             )
 
             val aapoLatestResponse =
@@ -399,7 +399,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                                 createdAt = mockClock.now(),
                                 createdBy = admin.evakaUserId,
                                 publishedContent = affirmativeDocumentContent,
-                            )
+                            ),
                         ),
                 )
             val aapoEarlierResponse =
@@ -436,7 +436,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = daycareData.second.first().id,
                     startDate = placementB.startDate,
                     endDate = placementB.endDate,
-                )
+                ),
             )
 
             val bertilResponse =
@@ -473,7 +473,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = daycareData.second.first().id,
                     startDate = placementC1.startDate,
                     endDate = placementC1.endDate,
-                )
+                ),
             )
 
             val placementC2 =
@@ -491,7 +491,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = daycareData.second.first().id,
                     startDate = placementC2.startDate,
                     endDate = placementC2.endDate,
-                )
+                ),
             )
 
             val cecilEarlierPlacementResponse =
@@ -533,14 +533,14 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = daycareData.second.first().id,
                     startDate = placementE.startDate,
                     endDate = placementE.endDate,
-                )
+                ),
             )
 
             val eemeliCreatedAt =
                 HelsinkiDateTime.of(
                     placementE.startDate
                         .minusDays(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT.toLong())
-                        .atStartOfDay()
+                        .atStartOfDay(),
                 )
             val eemeliResponse =
                 aapoLatestResponse.copy(
@@ -579,14 +579,14 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = daycareData.second.first().id,
                     startDate = placementF.startDate,
                     endDate = placementF.endDate,
-                )
+                ),
             )
 
             val fanniCreatedAt =
                 HelsinkiDateTime.of(
                     placementF.startDate
                         .minusDays(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT + 1L)
-                        .atStartOfDay()
+                        .atStartOfDay(),
                 )
             val fanniResponse =
                 aapoLatestResponse.copy(
@@ -623,14 +623,14 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = daycareData.second.first().id,
                     startDate = placementG.startDate,
                     endDate = placementG.endDate,
-                )
+                ),
             )
 
             val gretaCreatedAt =
                 HelsinkiDateTime.of(
                     placementG.startDate
                         .minusDays(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT + 30L)
-                        .atStartOfDay()
+                        .atStartOfDay(),
                 )
             val gretaSentAt = HelsinkiDateTime.of(placementG.startDate.minusDays(30).atStartOfDay())
             val gretaResponse =
@@ -670,7 +670,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = daycareData.second.first().id,
                     startDate = placementH.startDate,
                     endDate = placementH.endDate,
-                )
+                ),
             )
 
             val heidiUnansweredAt = mockClock.now().minusDays(30)
@@ -726,7 +726,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     daycareGroupId = secondaryDaycareData.second.first().id,
                     startDate = placementD.startDate,
                     endDate = placementD.endDate,
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
@@ -734,7 +734,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     groupId = daycareData.second.first().id,
                     childId = testChildDemetrius.id,
                     period = FiniteDateRange(mockClock.today(), mockClock.today()),
-                )
+                ),
             )
 
             listOf(

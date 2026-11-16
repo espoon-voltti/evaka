@@ -94,13 +94,13 @@ class ChildDocumentService(
                 tx.getChildDocumentPublishedVersionContent(documentId, requestedVersion)
             }
                 ?: throw NotFound(
-                    "Published version $requestedVersion not found for document $documentId"
+                    "Published version $requestedVersion not found for document $documentId",
                 )
 
         // Create document with version-specific content for HTML generation
         val html =
             generateChildDocumentHtml(
-                document.copy(content = versionContent, publishedContent = versionContent)
+                document.copy(content = versionContent, publishedContent = versionContent),
             )
         val pdfBytes = pdfGenerator.render(html)
 
@@ -124,7 +124,7 @@ class ChildDocumentService(
                 asyncJobRunner.plan(
                     tx,
                     listOf(
-                        AsyncJob.SendChildDocumentDecisionSfiMessage(documentId, requestedVersion)
+                        AsyncJob.SendChildDocumentDecisionSfiMessage(documentId, requestedVersion),
                     ),
                     runAt = clock.now(),
                 )
@@ -160,7 +160,7 @@ class ChildDocumentService(
 
             if (publishedVersion?.documentKey == null) {
                 throw IllegalStateException(
-                    "Decision pdf version ${msg.versionNumber} does not have a document key yet for document $documentId"
+                    "Decision pdf version ${msg.versionNumber} does not have a document key yet for document $documentId",
                 )
             }
 
@@ -185,7 +185,7 @@ class ChildDocumentService(
 
                     val messageId =
                         tx.storeSentSfiMessage(
-                            SentSfiMessage(guardianId = guardian.id, documentId = document.id)
+                            SentSfiMessage(guardianId = guardian.id, documentId = document.id),
                         )
 
                     // SFI expects unique string for each message, so document.id is not suitable as
@@ -236,7 +236,7 @@ class ChildDocumentService(
                     "Document $documentId version $versionNumber pdf not ready"
                 } else {
                     "Document $documentId pdf not ready"
-                }
+                },
             )
         }
 
@@ -259,14 +259,14 @@ class ChildDocumentService(
                 JOIN document_template dt on dt.id = cd.template_id
                 WHERE dt.validity << ${bind(now.toLocalDate().toFiniteDateRange())} 
                     AND dt.type = ANY (${bind(
-                        ChildDocumentType.entries.filter { it.autoCompleteAtEndOfValidity }
+                        ChildDocumentType.entries.filter { it.autoCompleteAtEndOfValidity },
                     )})
                     AND cd.status <> 'COMPLETED'
                     AND EXISTS (
                         SELECT 1 FROM child_document_published_version v
                         WHERE v.child_document_id = cd.id
                     )
-            """
+            """,
                     )
                 }
                 .toList<ChildDocumentId>()
@@ -392,7 +392,7 @@ FROM parents
 JOIN person ON person.id = parents.parent_id
 WHERE (person.email IS NOT NULL AND person.email != '')
    OR EXISTS (SELECT FROM citizen_push_subscription cps WHERE cps.person_id = person.id)
-"""
+""",
                 )
             }
             .toList {

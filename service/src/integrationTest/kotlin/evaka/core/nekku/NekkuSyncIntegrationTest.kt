@@ -62,10 +62,10 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         db.transaction { tx ->
@@ -130,7 +130,7 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 ),
                             ),
                         ),
-                    )
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         db.transaction { tx ->
@@ -233,8 +233,8 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     "Palvelu-Ovelle-viikonloppu",
                                 ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         db.transaction { tx ->
@@ -275,7 +275,7 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 "Palvelu-Ovelle-viikonloppu",
                             ),
                         ),
-                    )
+                    ),
                 ),
                 customers,
             )
@@ -305,7 +305,7 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
                         ),
                         NekkuApiCustomer(
@@ -325,10 +325,10 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "palvelu-ovelle-viikonloppu-ja-arkipyhat",
-                                )
+                                ),
                             ),
                         ),
-                    )
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         db.transaction { tx ->
@@ -360,10 +360,10 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "100-lasta",
-                                )
+                                ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
 
@@ -397,10 +397,10 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
         db.transaction { tx ->
@@ -436,7 +436,7 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
                         ),
                         NekkuApiCustomer(
@@ -456,7 +456,7 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
                         ),
                         NekkuApiCustomer(
@@ -476,10 +476,10 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
                         ),
-                    )
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
 
@@ -524,10 +524,10 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
 
@@ -562,7 +562,7 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
                         ),
                         NekkuApiCustomer(
@@ -582,7 +582,7 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
                         ),
                         NekkuApiCustomer(
@@ -602,10 +602,10 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
                         ),
-                    )
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
 
@@ -676,10 +676,10 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         NekkuCustomerApiWeekday.WEEKDAYHOLIDAY,
                                     ),
                                     "alle 50-lasta",
-                                )
+                                ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
 
@@ -784,8 +784,8 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                                     ),
                                 ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
         db.transaction { tx ->
@@ -835,8 +835,8 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                                     ),
                                 ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
 
         fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
@@ -890,7 +890,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                                 ),
                             ),
                         ),
-                    )
+                    ),
             )
 
         fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
@@ -1024,8 +1024,8 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                                 ),
                                 NekkuApiSpecialDietsField("F", "F", NekkuApiSpecialDietType.Email),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
 
         fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
@@ -1128,10 +1128,10 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                                             "Sianlihaton ruokavalio",
                                         ),
                                     ),
-                                )
+                                ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
 
         fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
@@ -1146,7 +1146,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         "2",
                         "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
                         "Kananmunaton ruokavalio",
-                    )
+                    ),
                 ),
                 tx.getNekkuSpecialDietChoices(childWithRemainingCheckbox.id),
             )
@@ -1160,7 +1160,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         "2",
                         "AE1FE5FE-9619-4D7A-9043-A6B0C615156B",
                         "Kananmunaton ruokavalio",
-                    )
+                    ),
                 ),
                 tx.getNekkuSpecialDietChoices(childWithFreeTextFieldAndRemainingCheckbox.id),
             )
@@ -1236,7 +1236,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         unitId = daycare1.id,
                         startDate = today,
                         endDate = today,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1245,7 +1245,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                             daycareGroupId = group1.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -1254,7 +1254,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         unitId = daycare1.id,
                         startDate = today,
                         endDate = today,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1263,7 +1263,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                             daycareGroupId = group1.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
 
@@ -1273,7 +1273,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         unitId = daycare2.id,
                         startDate = today,
                         endDate = today,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1282,7 +1282,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                             daycareGroupId = group2.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -1291,7 +1291,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         unitId = daycare2.id,
                         startDate = today,
                         endDate = today,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1300,7 +1300,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                             daycareGroupId = group2.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
 
@@ -1310,7 +1310,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         unitId = daycare2.id,
                         startDate = today,
                         endDate = today,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1319,7 +1319,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                             daycareGroupId = group3.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -1328,7 +1328,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         unitId = daycare2.id,
                         startDate = today,
                         endDate = today,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1337,7 +1337,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                             daycareGroupId = group3.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
 
@@ -1347,7 +1347,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         unitId = daycare3.id,
                         startDate = today,
                         endDate = today,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1356,7 +1356,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                             daycareGroupId = group4.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
             tx.insert(
@@ -1365,7 +1365,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                         unitId = daycare3.id,
                         startDate = today,
                         endDate = today,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1374,7 +1374,7 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                             daycareGroupId = group4.id,
                             startDate = today,
                             endDate = today,
-                        )
+                        ),
                     )
                 }
         }
@@ -1446,10 +1446,10 @@ Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nek
                                             "Sianlihaton ruokavalio",
                                         ),
                                     ),
-                                )
+                                ),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             )
 
         fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, noonToday) // triggers emails
@@ -1537,7 +1537,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                             listOf(NekkuApiProductMealTime.DINNER),
                             NekkuApiProductMealType.Kasvis,
                         ),
-                    )
+                    ),
             )
         fetchAndUpdateNekkuProducts(client, db)
         db.read { tx ->
@@ -1563,8 +1563,8 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                                 NekkuApiProductMealTime.SNACK,
                             ),
                             NekkuApiProductMealType.Kasvis,
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuProducts(client, db)
         db.read { tx ->
@@ -1583,8 +1583,8 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                             listOf("100-lasta"),
                             null,
                             NekkuApiProductMealType.Vegaani,
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuProducts(client, db)
         db.transaction { tx ->
@@ -1610,8 +1610,8 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                             listOf("alle-50-lasta"),
                             null,
                             null,
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuProducts(client, db)
         db.read { tx ->
@@ -1634,8 +1634,8 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                                 NekkuApiProductMealTime.SNACK,
                             ),
                             NekkuApiProductMealType.Vegaani,
-                        )
-                    )
+                        ),
+                    ),
             )
         fetchAndUpdateNekkuProducts(client, db)
         db.transaction { tx ->

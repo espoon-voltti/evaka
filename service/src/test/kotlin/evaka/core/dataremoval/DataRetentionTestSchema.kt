@@ -60,7 +60,7 @@ fun table(
         handledBy = handledBy,
         references =
             listOfNotNull(
-                primary?.let { primaryReference(it.first, referencedTable = it.second) }
+                primary?.let { primaryReference(it.first, referencedTable = it.second) },
             ) +
                 secondary.map { secondaryReference(it.first, referencedTable = it.second) } +
                 optional,

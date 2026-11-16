@@ -417,7 +417,7 @@ fun planNekkuManualOrderJob(
     // this week we have made the orders for up to the week after next
     if (date.isAfter(today.nextWeeksSunday().plusDays(14)))
         throw BadRequest(
-            "Can only make a manual order if an automatic order has been made for the day"
+            "Can only make a manual order if an automatic order has been made for the day",
         )
 
     val groupOperationDays =
@@ -533,13 +533,13 @@ fun createAndSendNekkuOrder(
                                         1 -
                                             (dbc.read { tx ->
                                                     tx.getNekkuOrderReductionForDaycareByGroup(
-                                                        groupId
+                                                        groupId,
                                                     )
                                                 }
                                                 .toDouble() / 100),
                                 ),
                             description = nekkuDaycareCustomerMapping.groupName,
-                        )
+                        ),
                     ),
                     dryRun = false,
                 )
@@ -578,7 +578,7 @@ fun createAndSendNekkuOrder(
                     "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
                 }
                 error(
-                    "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
+                    "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId",
                 )
             }
         }
@@ -654,7 +654,7 @@ fun nekkuMealReportData(
                             childInfo.placementType.fixedScheduleRange(
                                 childInfo.dailyPreschoolTime,
                                 childInfo.dailyPreparatoryTime,
-                            )
+                            ),
                         )
                     else childInfo.reservations ?: emptyList()
 
@@ -719,7 +719,7 @@ private fun getNekkuProductNumber(
             "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.name}"
         }
         error(
-            "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.name}"
+            "Found too many Nekku Products from database with customertype=$customerType optionsId=${nekkuChildInfo.optionsId} mealtype=${nekkuChildInfo.mealType} mealtime=${nekkuProductMealTime.name}",
         )
     } else {
         return if (filteredNekkuProducts.isEmpty()) null else filteredNekkuProducts.first().sku
@@ -849,7 +849,7 @@ fun addUnderOneYearOldDiet(
                 textFieldsPerSpecialDiet[defaultOptionsId]
                     ?: error("Special diet $defaultOptionsId not found"),
                 UNDER_ONE_YEAR_OLD_DIET,
-            )
+            ),
         )
     // if the child's special diet choices already contain the free text field
     // we append to it, otherwise we will create a new free text field
@@ -885,7 +885,7 @@ fun daycareOpenNextTime(
 
     if (daycareOperationInfo.combinedDays.isEmpty()) {
         throw IllegalStateException(
-            "Päiväkodin aukioloaikoja ei olla asetettu Nekku-tilausta luotaessa"
+            "Päiväkodin aukioloaikoja ei olla asetettu Nekku-tilausta luotaessa",
         )
     }
 
@@ -905,7 +905,7 @@ fun perChildCalendarEventReductions(
     childId: ChildId,
 ): Set<NekkuProductMealTime> =
     calendarEventReductions.groupWide.union(
-        calendarEventReductions.childSpecific[childId] ?: setOf()
+        calendarEventReductions.childSpecific[childId] ?: setOf(),
     )
 
 data class NekkuCustomer(

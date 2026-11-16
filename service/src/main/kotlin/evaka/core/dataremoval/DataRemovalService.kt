@@ -81,7 +81,7 @@ EXISTS (
     WHERE p.id = $it.child_id
     AND p.date_of_birth <= ${bind(today.minusYears(SAFE_DATA_REMOVAL_AGE))}
 )
-"""
+""",
     )
 }
 
@@ -710,7 +710,7 @@ DELETE FROM $table
 USING del_batch
 WHERE $table.id = del_batch.id
 RETURNING $table.id, $table.child_id
-        """
+        """,
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -761,7 +761,7 @@ SET $column = NULL
 FROM update_batch
 WHERE child.id = update_batch.id
 RETURNING child.id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -774,7 +774,7 @@ SELECT child_id
 FROM placement
 GROUP BY child_id
 HAVING max(end_date) < ${bind(date)}
-"""
+""",
     )
 }
 
@@ -832,7 +832,7 @@ LEFT JOIN LATERAL (VALUES (d.document_key), (d.other_guardian_document_key)) AS 
 LEFT JOIN sfi_message sm ON sm.decision_id = d.id
 LEFT JOIN attachment att ON att.application_id = a.id
 GROUP BY a.id
-"""
+""",
         )
     }
         .toList<DeletedApplication>()
@@ -847,7 +847,7 @@ GROUP BY a.id
     val unsetReferences = buildList {
         createUpdate {
             sql(
-                "UPDATE placement SET source = NULL, source_application_id = NULL WHERE source_application_id = ANY(${bind(deletableIds)}) RETURNING id"
+                "UPDATE placement SET source = NULL, source_application_id = NULL WHERE source_application_id = ANY(${bind(deletableIds)}) RETURNING id",
             )
         }
             .executeAndReturnGeneratedKeys()
@@ -858,12 +858,12 @@ GROUP BY a.id
                         "placement",
                         AuditId(it),
                         listOf("source", "source_application_id"),
-                    )
+                    ),
                 )
             }
         createUpdate {
             sql(
-                "UPDATE income SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id"
+                "UPDATE income SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id",
             )
         }
             .executeAndReturnGeneratedKeys()
@@ -871,7 +871,7 @@ GROUP BY a.id
             .forEach { add(UnsetReference("income", AuditId(it), listOf("application_id"))) }
         createUpdate {
             sql(
-                "UPDATE fridge_child SET create_source = NULL, created_by_application = NULL WHERE created_by_application = ANY(${bind(deletableIds)}) RETURNING id"
+                "UPDATE fridge_child SET create_source = NULL, created_by_application = NULL WHERE created_by_application = ANY(${bind(deletableIds)}) RETURNING id",
             )
         }
             .executeAndReturnGeneratedKeys()
@@ -882,18 +882,18 @@ GROUP BY a.id
                         "fridge_child",
                         AuditId(it),
                         listOf("create_source", "created_by_application"),
-                    )
+                    ),
                 )
             }
         createUpdate {
             sql(
-                "UPDATE fridge_partner SET create_source = NULL, created_from_application = NULL WHERE created_from_application = ANY(${bind(deletableIds)}) RETURNING partnership_id"
+                "UPDATE fridge_partner SET create_source = NULL, created_from_application = NULL WHERE created_from_application = ANY(${bind(deletableIds)}) RETURNING partnership_id",
             )
         }
             .executeAndReturnGeneratedKeys()
-            // fridge_partner has two rows per partnership (indx 1/2), both created from the same
-            // application, so RETURNING partnership_id yields each id twice
-            .mapTo<PartnershipId>()
+        // fridge_partner has two rows per partnership (indx 1/2), both created from the same
+        // application, so RETURNING partnership_id yields each id twice
+        .mapTo<PartnershipId>()
             .toSet()
             .forEach {
                 add(
@@ -901,12 +901,12 @@ GROUP BY a.id
                         "fridge_partner",
                         AuditId(it),
                         listOf("create_source", "created_from_application"),
-                    )
+                    ),
                 )
             }
         createUpdate {
             sql(
-                "UPDATE message_thread SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id"
+                "UPDATE message_thread SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id",
             )
         }
             .executeAndReturnGeneratedKeys()
@@ -976,7 +976,7 @@ DELETE FROM finance_note
 USING del_batch
 WHERE finance_note.id = del_batch.id
 RETURNING finance_note.id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1018,7 +1018,7 @@ FROM service_application
 WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
 FOR UPDATE
 LIMIT ${bind(limit)}
-"""
+""",
         )
     }
         .toList<ServiceApplicationId>()
@@ -1037,7 +1037,7 @@ UPDATE placement
 SET source = NULL, source_service_application_id = NULL
 WHERE source_service_application_id = ANY(${bind(batch)})
 RETURNING id
-"""
+""",
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -1067,7 +1067,7 @@ WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))}
 ORDER BY created_at
 LIMIT ${bind(limit)}
 FOR UPDATE
-"""
+""",
         )
     }
         .toList { column<PedagogicalDocumentId>("id") to column<ChildId>("child_id") }
@@ -1077,7 +1077,7 @@ FOR UPDATE
 
     val attachmentsByDocument = createQuery {
         sql(
-            "SELECT id, pedagogical_document_id FROM attachment WHERE pedagogical_document_id = ANY(${bind(documentIds)})"
+            "SELECT id, pedagogical_document_id FROM attachment WHERE pedagogical_document_id = ANY(${bind(documentIds)})",
         )
     }
         .toList {
@@ -1087,7 +1087,7 @@ FOR UPDATE
 
     execute {
         sql(
-            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ANY(${bind(documentIds)})"
+            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ANY(${bind(documentIds)})",
         )
     }
     execute { sql("DELETE FROM pedagogical_document WHERE id = ANY(${bind(documentIds)})") }
@@ -1169,7 +1169,7 @@ AND (i.sent_at < ${bind(defaultExpireAt)} OR family.exclusively_voucher_placemen
 ORDER BY i.sent_at
 LIMIT ${bind(limit)}
 FOR UPDATE OF i
-"""
+""",
         )
     }
         .toList<ExpiredIncomeStatement>()
@@ -1179,7 +1179,7 @@ FOR UPDATE OF i
 
     val attachmentsByStatement = createQuery {
         sql(
-            "SELECT id, income_statement_id FROM attachment WHERE income_statement_id = ANY(${bind(statementIds)})"
+            "SELECT id, income_statement_id FROM attachment WHERE income_statement_id = ANY(${bind(statementIds)})",
         )
     }
         .toList { column<IncomeStatementId>("income_statement_id") to column<AttachmentId>("id") }
@@ -1231,7 +1231,7 @@ DELETE FROM income_notification
 USING del_batch
 WHERE income_notification.id = del_batch.id
 RETURNING income_notification.id, income_notification.receiver_id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1266,7 +1266,7 @@ DELETE FROM citizen_user
 USING del_batch
 WHERE citizen_user.id = del_batch.id
 RETURNING citizen_user.id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1336,7 +1336,7 @@ DELETE FROM guardian
 USING del_batch
 WHERE guardian.guardian_id = del_batch.guardian_id AND guardian.child_id = del_batch.child_id
 RETURNING guardian.guardian_id, guardian.child_id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1398,7 +1398,7 @@ DELETE FROM foster_parent
 USING del_batch
 WHERE foster_parent.id = del_batch.id
 RETURNING foster_parent.id, foster_parent.parent_id, foster_parent.child_id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1441,7 +1441,7 @@ WHERE
     guardian_blocklist.guardian_id = del_batch.guardian_id AND
     guardian_blocklist.child_id = del_batch.child_id
 RETURNING guardian_blocklist.guardian_id, guardian_blocklist.child_id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -1463,7 +1463,7 @@ JOIN citizen_user cu ON cu.id = gc.person_id
 JOIN placement p ON p.child_id = gc.child_id
 GROUP BY gc.person_id
 HAVING max(p.end_date) < ${bind(date)}
-"""
+""",
     )
 }
 
@@ -1487,7 +1487,7 @@ JOIN fridge_partner partner
     ON partner.partnership_id = partner_head.partnership_id
     AND partner.person_id <> partner_head.person_id
 WHERE fc.conflict = false AND partner_head.conflict = false AND partner.conflict = false
-"""
+""",
     )
 }
 
@@ -1502,6 +1502,6 @@ FROM finance_connection fconn
 JOIN placement p ON p.child_id = fconn.child_id
 GROUP BY fconn.person_id
 HAVING max(p.end_date) < ${bind(date)}
-"""
+""",
     )
 }

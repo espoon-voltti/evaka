@@ -17,7 +17,7 @@ private fun Database.Read.getHolidayPeriods(where: Predicate): Database.Result<H
 SELECT id, period, reservations_open_on, reservation_deadline
 FROM holiday_period h
 WHERE ${predicate(where.forTable("h"))}
-"""
+""",
         )
     }
     .mapTo<HolidayPeriod>()
@@ -26,10 +26,10 @@ fun Database.Read.getHolidayPeriodsInRange(range: FiniteDateRange): List<Holiday
     getHolidayPeriods(Predicate { where("$it.period && ${bind(range)}") }).toList()
 
 fun Database.Read.getHolidayPeriodsWithReservationDeadline(
-    reservationDeadline: LocalDate
+    reservationDeadline: LocalDate,
 ): List<HolidayPeriod> =
     getHolidayPeriods(
-            Predicate { where("$it.reservation_deadline = ${bind(reservationDeadline)}") }
+            Predicate { where("$it.reservation_deadline = ${bind(reservationDeadline)}") },
         )
         .toList()
 
@@ -49,7 +49,7 @@ fun Database.Transaction.insertHolidayPeriod(
 INSERT INTO holiday_period (period, reservations_open_on, reservation_deadline)
 VALUES (${bind(period)}, ${bind(reservationsOpenOn)}, ${bind(reservationDeadline)})
 RETURNING *
-        """
+        """,
     )
 }
     .exactlyOne<HolidayPeriod>()
@@ -66,7 +66,7 @@ SET
     reservations_open_on = ${bind(reservationsOpenOn)},
     reservation_deadline = ${bind(reservationDeadline)}
 WHERE id = ${bind(id)}
-        """
+        """,
     )
 }
     .updateExactlyOne()

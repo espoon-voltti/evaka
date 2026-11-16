@@ -87,7 +87,7 @@ object McpTestDataService {
         if (!allowUntrackedRows && result.untrackedRowCounts.isNotEmpty()) {
             val rows = result.untrackedRowCounts.entries.joinToString { "${it.key}: ${it.value}" }
             throw Conflict(
-                "Deleting batch '${batch.name}' would also delete ${result.untrackedRowCounts.values.sum()} row(s) that were not created via MCP ($rows). Review them first and then explicitly allow deleting untracked rows."
+                "Deleting batch '${batch.name}' would also delete ${result.untrackedRowCounts.values.sum()} row(s) that were not created via MCP ($rows). Review them first and then explicitly allow deleting untracked rows.",
             )
         }
         return result

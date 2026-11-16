@@ -73,7 +73,7 @@ class AttachmentService(
                         """
 DELETE FROM attachment
 WHERE id = ${bind(id)}
-"""
+""",
                     )
                 }
                 .execute()

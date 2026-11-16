@@ -118,7 +118,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
         }
         val applicationId = createApplication(child1.id)
@@ -180,7 +180,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Under 3 years (coefficient 1.75)
@@ -190,7 +190,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
@@ -200,7 +200,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = startDate.plusMonths(4),
                     endDate = endDate,
-                )
+                ),
             )
         }
 
@@ -264,7 +264,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Under 3 years (coefficient 1.75)
@@ -274,7 +274,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
@@ -284,7 +284,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
                     endDate = endDate,
-                )
+                ),
             )
         }
 
@@ -349,7 +349,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Under 3 years (coefficient 1.75)
@@ -359,7 +359,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
@@ -369,7 +369,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
                     endDate = endDate,
-                )
+                ),
             )
         }
 
@@ -437,7 +437,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Under 3 years (coefficient 1.75)
@@ -447,7 +447,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
@@ -457,7 +457,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
                     endDate = endDate,
-                )
+                ),
             )
 
             // Over 3 years (coefficient 1), will be speculated for preschool
@@ -467,7 +467,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
         }
 
@@ -1042,7 +1042,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                     headcount = 1,
                                     caretakers = null,
                                     percentage = null,
-                                )
+                                ),
                             ),
                         max = null,
                         min = null,
@@ -1355,11 +1355,11 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 occupancies.copy(
                     childAttendances =
                         occupancies.childAttendances.sortedWith(
-                            compareBy({ it.arrived }, { it.departed })
+                            compareBy({ it.arrived }, { it.departed }),
                         ),
                     staffAttendances =
                         occupancies.staffAttendances.sortedWith(
-                            compareBy({ it.arrived }, { it.departed })
+                            compareBy({ it.arrived }, { it.departed }),
                         ),
                 )
             }

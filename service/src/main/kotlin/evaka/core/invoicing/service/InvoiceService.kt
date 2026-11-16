@@ -79,7 +79,7 @@ class InvoiceService(
         tx.setDraftsSent(now, sendResult.succeeded, sentBy)
         tx.setDraftsWaitingForManualSending(sendResult.manuallySent)
         tx.saveCostCenterFields(
-            sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id }
+            sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id },
         )
         updateCorrectionsOfInvoices(tx, now, invoices)
     }
@@ -123,7 +123,7 @@ class InvoiceService(
                         FROM daycare
                         WHERE cost_center IS NOT NULL
                         ORDER BY name
-                        """
+                        """,
                     )
                 }
                 .toList<InvoiceDaycare>()
@@ -143,7 +143,7 @@ fun Database.Transaction.markManuallySent(
 UPDATE invoice SET status = ${bind(InvoiceStatus.SENT)}, sent_at = ${bind(now)}, sent_by = ${bind(user.evakaUserId)}
 WHERE id = ANY(${bind(invoiceIds)}) AND status = ${bind(InvoiceStatus.WAITING_FOR_SENDING)}
 RETURNING id
-"""
+""",
         )
     }
         .toList<InvoiceId>()

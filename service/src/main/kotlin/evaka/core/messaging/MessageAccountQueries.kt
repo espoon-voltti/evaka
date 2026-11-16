@@ -26,14 +26,14 @@ fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId
             """
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = ${bind(personId)} AND acc.active = true
-"""
+""",
         )
     }
         .exactlyOne<MessageAccountId>()
 }
 
 fun Database.Read.getEmployeeMessageAccountIds(
-    idFilter: AccessControlFilter<MessageAccountId>
+    idFilter: AccessControlFilter<MessageAccountId>,
 ): Set<MessageAccountId> {
     return createQuery {
         sql(
@@ -41,7 +41,7 @@ fun Database.Read.getEmployeeMessageAccountIds(
 SELECT id
 FROM message_account
 WHERE (${predicate(idFilter.forTable("message_account"))})
-        """
+        """,
         )
     }
         .toSet<MessageAccountId>()
@@ -95,7 +95,7 @@ AND (
     OR acc.type = 'SERVICE_WORKER'
     OR acc.type = 'FINANCE'
 )
-"""
+""",
         )
     }
         .toList {
@@ -146,7 +146,7 @@ SELECT CASE mav.type
 END as name
 FROM message_account_view mav
 WHERE mav.id = ANY(${bind(accountIds)})
-"""
+""",
         )
     }
         .toList<String>()
@@ -168,7 +168,7 @@ SELECT
     acc.person_id
 FROM message_account_view acc
 WHERE acc.id = ${bind(accountId)}
-"""
+""",
         )
     }
         .exactlyOne {
@@ -204,7 +204,7 @@ fun Database.Transaction.createFinanceMessageAccount(): MessageAccountId =
 
 @IgnorableReturnValue
 private fun Database.Transaction.createSingletonMessageAccount(
-    accountType: AccountType
+    accountType: AccountType,
 ): MessageAccountId {
     return createUpdate { sql("INSERT INTO message_account (type) VALUES (${bind(accountType)})") }
         .executeAndReturnGeneratedKeys()
@@ -213,14 +213,14 @@ private fun Database.Transaction.createSingletonMessageAccount(
 
 @IgnorableReturnValue
 fun Database.Transaction.createDaycareGroupMessageAccount(
-    daycareGroupId: GroupId
+    daycareGroupId: GroupId,
 ): MessageAccountId {
     return createQuery {
         sql(
             """
 INSERT INTO message_account (daycare_group_id, type) VALUES (${bind(daycareGroupId)}, 'GROUP')
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOne<MessageAccountId>()
@@ -231,7 +231,7 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupI
         sql(
             """
 DELETE FROM message_account WHERE daycare_group_id = ${bind(daycareGroupId)}
-"""
+""",
         )
     }
         .execute()
@@ -244,7 +244,7 @@ fun Database.Transaction.createPersonMessageAccount(personId: PersonId): Message
             """
 INSERT INTO message_account (person_id, type) VALUES (${bind(personId)}, 'CITIZEN')
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOne<MessageAccountId>()
@@ -258,7 +258,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): M
 INSERT INTO message_account (employee_id, type) VALUES (${bind(employeeId)}, ${bind(AccountType.PERSONAL)})
 ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOne<MessageAccountId>()
@@ -270,7 +270,7 @@ fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId
             """
 UPDATE message_account SET active = false
 WHERE employee_id = ${bind(employeeId)}
-"""
+""",
         )
     }
         .execute()
@@ -301,7 +301,7 @@ FROM message_content content
 JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 WHERE content.id = ${bind(id)}
-"""
+""",
         )
     }
     .toList<MessageAccountId>()

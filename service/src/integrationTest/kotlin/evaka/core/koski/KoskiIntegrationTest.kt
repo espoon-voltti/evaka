@@ -90,7 +90,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         koskiEnv =
             spy(
                 KoskiEnv.fromEnvironment(env)
-                    .copy(url = "http://localhost:$httpPort/public/mock-koski")
+                    .copy(url = "http://localhost:$httpPort/public/mock-koski"),
             )
         koskiTester =
             KoskiTester(
@@ -282,7 +282,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE placement SET end_date = end_date - interval '7 days' WHERE id = ${bind(placementId)}"
+                    "UPDATE placement SET end_date = end_date - interval '7 days' WHERE id = ${bind(placementId)}",
                 )
             }
         }
@@ -294,7 +294,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE placement SET end_date = ${bind(preschoolTerm2019.end)} WHERE id = ${bind(placementId)}"
+                    "UPDATE placement SET end_date = ${bind(preschoolTerm2019.end)} WHERE id = ${bind(placementId)}",
                 )
             }
             it.clearKoskiInputCache()
@@ -338,7 +338,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // (child1, daycare, PRESCHOOL) in exactly one column
         val keptPlacementId =
             insertPlacement(
-                period = FiniteDateRange(preschoolTerm2019.start, LocalDate.of(2019, 10, 31))
+                period = FiniteDateRange(preschoolTerm2019.start, LocalDate.of(2019, 10, 31)),
             )
         val obsoletePlacementIds =
             listOf(
@@ -464,7 +464,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val endDate = preschoolTerm2019.end.minusDays(1)
             it.execute {
                 sql(
-                    "UPDATE placement SET end_date = ${bind(endDate)} WHERE id = ${bind(placementId)}"
+                    "UPDATE placement SET end_date = ${bind(endDate)} WHERE id = ${bind(placementId)}",
                 )
             }
         }
@@ -476,7 +476,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `preschool ended within 30 days of term end qualifies`() {
         insertPlacement(
-            period = FiniteDateRange(LocalDate.of(2018, 8, 1), LocalDate.of(2019, 5, 1))
+            period = FiniteDateRange(LocalDate.of(2018, 8, 1), LocalDate.of(2019, 5, 1)),
         )
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
@@ -492,7 +492,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `preschool ended earlier than 30 days of term end is considered cancelled`() {
         insertPlacement(
-            period = FiniteDateRange(LocalDate.of(2018, 8, 1), LocalDate.of(2019, 4, 30))
+            period = FiniteDateRange(LocalDate.of(2018, 8, 1), LocalDate.of(2019, 4, 30)),
         )
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
@@ -508,7 +508,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `preschool started late still qualifies`() {
         insertPlacement(
-            period = FiniteDateRange(LocalDate.of(2018, 12, 1), LocalDate.of(2019, 5, 1))
+            period = FiniteDateRange(LocalDate.of(2018, 12, 1), LocalDate.of(2019, 5, 1)),
         )
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
@@ -660,7 +660,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = child1.id,
                         validDuring = it.period,
                         level = it.level,
-                    )
+                    ),
                 )
             }
         }
@@ -676,8 +676,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 erityisenTuenPäätökset =
                     listOf(
                         ErityisenTuenPäätös.from(
-                            level1.period.merge(level2.period).merge(specialSupport.period)
-                        )
+                            level1.period.merge(level2.period).merge(specialSupport.period),
+                        ),
                     ),
                 tuenPäätöksenJaksot = null,
             ),
@@ -773,7 +773,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = child.id,
                         validDuring = it.period,
                         level = it.level,
-                    )
+                    ),
                 )
             }
         }
@@ -813,7 +813,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     validDuring = nextTermEce,
                     level =
                         PreschoolAssistanceLevel.CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION,
-                )
+                ),
             )
         }
 
@@ -841,7 +841,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     validDuring = ece,
                     level =
                         PreschoolAssistanceLevel.CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION,
-                )
+                ),
             )
         }
 
@@ -874,7 +874,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = child1.id,
                         validDuring = it,
                         type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
-                    )
+                    ),
                 )
             }
         }
@@ -1087,7 +1087,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     providerType = ProviderType.PURCHASED,
                     ophUnitOid = "1.2.246.562.10.5555555555",
                     ophOrganizerOid = defaultMunicipalOrganizerOid,
-                )
+                ),
             )
         }
         insertPlacement(daycareId = daycareId)
@@ -1111,7 +1111,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     providerType = ProviderType.PRIVATE,
                     ophUnitOid = "1.2.246.562.10.6666666666",
                     ophOrganizerOid = defaultMunicipalOrganizerOid,
-                )
+                ),
             )
         }
         insertPlacement(daycareId = daycareId)
@@ -1307,7 +1307,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE person SET oph_person_oid = ${bind(personOid)} WHERE id = ${bind(childWithoutSsn.id)}"
+                    "UPDATE person SET oph_person_oid = ${bind(personOid)} WHERE id = ${bind(childWithoutSsn.id)}",
                 )
             }
         }
@@ -1458,7 +1458,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     uploadToKoski = true,
                     ophUnitOid = "1.2.246.562.10.3333333333",
                     ophOrganizerOid = defaultMunicipalOrganizerOid,
-                )
+                ),
             )
         }
         val daycare4 = db.transaction {
@@ -1468,7 +1468,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     uploadToKoski = true,
                     ophUnitOid = "1.2.246.562.10.4444444444",
                     ophOrganizerOid = defaultMunicipalOrganizerOid,
-                )
+                ),
             )
         }
         val placements =
@@ -1515,14 +1515,14 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 startDate = period.start,
                 endDate = period.end,
                 type = type,
-            )
+            ),
         )
     }
 
     private fun markKoskiDataRemoved(childId: ChildId) = db.transaction { tx ->
         tx.execute {
             sql(
-                "UPDATE child SET koski_data_first_removed_at = ${bind(koskiUploadTime(preschoolTerm2019.end))} WHERE id = ${bind(childId)}"
+                "UPDATE child SET koski_data_first_removed_at = ${bind(koskiUploadTime(preschoolTerm2019.end))} WHERE id = ${bind(childId)}",
             )
         }
     }
@@ -1540,7 +1540,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         date = date,
                         absenceType = absenceType,
                         absenceCategory = AbsenceCategory.NONBILLABLE,
-                    )
+                    ),
                 )
             }
         }

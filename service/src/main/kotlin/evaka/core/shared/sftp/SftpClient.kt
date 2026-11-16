@@ -53,7 +53,7 @@ class SftpClient(
                         ReadOnlyHostKeyRepository(
                             sftpEnv.hostKeys.map {
                                 HostKey(hostKeyAlias, HostKey.GUESS, Base64.getDecoder().decode(it))
-                            }
+                            },
                         )
                 }
             }

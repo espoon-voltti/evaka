@@ -14,7 +14,7 @@ import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.qualifier.Qualifier
 
 inline fun <reified T> createQualifiedType(
-    vararg annotations: KClass<out Annotation>
+    vararg annotations: KClass<out Annotation>,
 ): QualifiedType<T> = createQualifiedType(typeOf<T>(), *annotations)
 
 fun <T> createQualifiedType(
@@ -23,7 +23,7 @@ fun <T> createQualifiedType(
 ): QualifiedType<T> =
     @Suppress("UNCHECKED_CAST")
     (QualifiedType.of(type.asJdbiJavaType()) as QualifiedType<T>).withAnnotationClasses(
-        annotations.map { it.java }
+        annotations.map { it.java },
     )
 
 fun KType.asJdbiJavaType(): Type {

@@ -58,7 +58,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 DevEmployee(
                     lastLogin = firstOfAugust2021.minusDays(daysToDeactivation),
                     roles = setOf(UserRole.ADMIN),
-                )
+                ),
             )
         }
 
@@ -250,7 +250,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 DevEmployee(
                     lastLogin = firstOfAugust2021.minusDays(daysToDeactivation),
                     roles = setOf(UserRole.ADMIN),
-                )
+                ),
             )
 
             it.insert(
@@ -258,7 +258,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     lastLogin = firstOfAugust2021.minusDays(daysToDeactivation),
                     roles = setOf(UserRole.ADMIN),
                     active = false,
-                )
+                ),
             )
         }
 
@@ -274,7 +274,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     lastLogin = null,
                     created = firstOfAugust2021.minusDays(daysToDeactivation),
                     roles = setOf(UserRole.ADMIN),
-                )
+                ),
             )
 
             it.insert(
@@ -282,7 +282,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     lastLogin = null,
                     created = firstOfAugust2021.minusDays(5),
                     roles = setOf(UserRole.ADMIN),
-                )
+                ),
             )
         }
 
@@ -299,7 +299,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                         ssn = ssn,
                         lastLogin = null,
                         created = firstOfAugust2021.minusDays(daysToDeletion),
-                    )
+                    ),
                 )
             val areaId = it.insert(DevCareArea())
             val unitId = it.insert(DevDaycare(areaId = areaId))
@@ -326,7 +326,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     ssn = ssn,
                     lastLogin = null,
                     created = firstOfAugust2021.minusDays(daysToDeletion - 1),
-                )
+                ),
             )
         }
 
@@ -344,7 +344,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     ssn = null,
                     lastLogin = null,
                     created = firstOfAugust2021.minusDays(1000),
-                )
+                ),
             )
         }
 
@@ -362,7 +362,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     ssn = ssn,
                     lastLogin = firstOfAugust2021.minusDays(1000),
                     created = firstOfAugust2021.minusDays(1000),
-                )
+                ),
             )
         }
 
@@ -381,7 +381,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     lastLogin = null,
                     created = firstOfAugust2021.minusDays(1000),
                     active = false,
-                )
+                ),
             )
         }
 
@@ -403,7 +403,7 @@ ALTER TABLE daycare_acl DISABLE TRIGGER USER;
 UPDATE daycare_acl SET updated = ${bind(timestamp)}
 WHERE daycare_id = ${bind(unitId)} AND employee_id = ${bind(employeeId)};
 ALTER TABLE daycare_acl ENABLE TRIGGER USER;
-"""
+""",
             )
         }
     }
@@ -420,7 +420,7 @@ ALTER TABLE daycare_group_acl DISABLE TRIGGER USER;
 UPDATE daycare_group_acl SET updated = ${bind(timestamp)}
 WHERE daycare_group_id = ${bind(groupId)} AND employee_id = ${bind(employeeId)};
 ALTER TABLE daycare_group_acl ENABLE TRIGGER USER;
-"""
+""",
             )
         }
     }

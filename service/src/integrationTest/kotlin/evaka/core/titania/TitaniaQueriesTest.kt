@@ -37,7 +37,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             assertThat(tx.getEmployeeIdsByNumbers(listOf("1111", "3333")))
                 .containsExactlyInAnyOrderEntriesOf(
-                    mapOf("1111" to employee1.id, "3333" to employee3.id)
+                    mapOf("1111" to employee1.id, "3333" to employee3.id),
                 )
             assertThat(tx.getEmployeeIdsByNumbers(listOf("2222", "5555")))
                 .containsExactlyEntriesOf(mapOf("2222" to employee2.id))
@@ -106,7 +106,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 ),
                             description = null,
                         ),
-                    )
+                    ),
                 )
             assertThat(inserted).containsExactlyInAnyOrder(1, 1, 1, 1)
 
@@ -121,7 +121,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             val existing =
                 tx.findStaffAttendancePlansBy(
-                    period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+                    period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
                 )
             assertThat(existing)
                 .extracting<EmployeeId> { it.employeeId }
@@ -141,7 +141,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val inserted = db.transaction { tx ->
             val employee = tx.createEmployee(testEmployee)
             tx.insertStaffAttendancePlans(
-                listOf(testStaffAttendancePlan.copy(employeeId = employee.id))
+                listOf(testStaffAttendancePlan.copy(employeeId = employee.id)),
             )
             employee
         }
@@ -156,7 +156,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val employee = tx.createEmployee(testEmployee)
             tx.insertStaffAttendancePlans(
-                listOf(testStaffAttendancePlan.copy(employeeId = employee.id))
+                listOf(testStaffAttendancePlan.copy(employeeId = employee.id)),
             )
             employee
         }
@@ -171,7 +171,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val inserted = db.transaction { tx ->
             val employee = tx.createEmployee(testEmployee)
             tx.insertStaffAttendancePlans(
-                listOf(testStaffAttendancePlan.copy(employeeId = employee.id))
+                listOf(testStaffAttendancePlan.copy(employeeId = employee.id)),
             )
             employee
         }
@@ -186,7 +186,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val employee = tx.createEmployee(testEmployee)
             tx.insertStaffAttendancePlans(
-                listOf(testStaffAttendancePlan.copy(employeeId = employee.id))
+                listOf(testStaffAttendancePlan.copy(employeeId = employee.id)),
             )
             employee
         }
@@ -242,7 +242,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insertErrorTestData()
             tx.cleanTitaniaErrors(
-                HelsinkiDateTime.of(LocalDate.of(2024, 10, 1), LocalTime.of(3, 40))
+                HelsinkiDateTime.of(LocalDate.of(2024, 10, 1), LocalTime.of(3, 40)),
             )
 
             val remainingRows = tx.fetchReportRows()
@@ -322,7 +322,7 @@ fun Database.Transaction.insertErrorTestData() {
                 LocalTime.of(11, 0),
                 LocalTime.of(10, 0),
                 LocalTime.of(13, 0),
-            )
+            ),
         )
 
     insertReportRows(HelsinkiDateTime.of(LocalDate.of(2024, 9, 30), LocalTime.of(12, 34)), rows)

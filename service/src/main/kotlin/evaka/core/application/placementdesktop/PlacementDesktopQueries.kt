@@ -30,7 +30,7 @@ fun Database.Transaction.upsertApplicationPlacementDraft(
         )::date as start_date
         FROM application a
         WHERE a.id = ${bind(applicationId)}
-    """
+    """,
                 )
             }
                 .exactlyOneOrNull<LocalDate?>()
@@ -46,7 +46,7 @@ fun Database.Transaction.upsertApplicationPlacementDraft(
                 start_date = ${bind(startDateWithDefault)},
                 modified_at = ${bind(now)},
                 modified_by = ${bind(userId)}
-        """
+        """,
         )
     }
         .updateExactlyOne()
@@ -57,14 +57,14 @@ fun Database.Transaction.upsertApplicationPlacementDraft(
 data class DeletedPlacementDraft(val unitId: DaycareId, val startDate: LocalDate)
 
 fun Database.Transaction.deleteApplicationPlacementDraftIfExists(
-    applicationId: ApplicationId
+    applicationId: ApplicationId,
 ): DeletedPlacementDraft? = createUpdate {
     sql(
         """
             DELETE FROM placement_draft
             WHERE application_id = ${bind(applicationId)}
             RETURNING unit_id, start_date
-        """
+        """,
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -101,7 +101,7 @@ fun Database.Read.getPlacementDesktopDaycaresWithoutOccupancies(unitIds: Set<Day
         ), '[]'::jsonb) AS placement_drafts
     FROM daycare d
     WHERE d.id = ANY(${bind(unitIds)})
-"""
+""",
         )
     }
     .toList<PlacementDesktopDaycare>()

@@ -90,7 +90,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycareId = unitId,
                         startDate = placementStart,
                         name = "group 1",
-                    )
+                    ),
                 )
             groupId2 =
                 tx.insert(
@@ -98,7 +98,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycareId = unitId,
                         startDate = placementStart,
                         name = "group 2",
-                    )
+                    ),
                 )
 
             val daycarePlacementId =
@@ -109,7 +109,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         startDate = placementStart,
                         endDate = placementEnd,
                         placeGuarantee = false,
-                    )
+                    ),
                 )
             oldPlacement = tx.getPlacement(daycarePlacementId)!!
 
@@ -120,7 +120,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycareGroupId = groupId1,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
         }
     }
@@ -221,7 +221,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 it.id == oldPlacement.id &&
                     it.startDate.isEqual(oldPlacement.startDate) &&
                     it.endDate.isEqual(newPlacement.startDate.minusDays(1))
-            }
+            },
         )
     }
 
@@ -262,7 +262,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     extendedTerm = preschoolTerm,
                     applicationPeriod = preschoolTerm,
                     termBreaks = DateSet.empty(),
-                )
+                ),
             )
         }
         db.transaction {
@@ -324,7 +324,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 it.id == oldPlacement.id &&
                     it.startDate.isEqual(oldPlacement.startDate) &&
                     it.endDate.isEqual(newPlacement.startDate.minusDays(1))
-            }
+            },
         )
     }
 
@@ -364,7 +364,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 it.id == oldPlacement.id &&
                     it.startDate.isEqual(oldPlacement.startDate) &&
                     it.endDate.isEqual(newPlacement.startDate.minusDays(1))
-            }
+            },
         )
         assertTrue(
             placements.any {
@@ -372,7 +372,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     it.id != newPlacement.id &&
                     it.startDate.isEqual(newPlacement.endDate.plusDays(1)) &&
                     it.endDate.isEqual(oldPlacement.endDate)
-            }
+            },
         )
     }
 
@@ -445,7 +445,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 it.id == oldPlacement.id &&
                     it.startDate.isEqual(newPlacement.endDate.plusDays(1)) &&
                     it.endDate.isEqual(oldPlacement.endDate)
-            }
+            },
         )
     }
 
@@ -551,7 +551,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 it.id == oldPlacement.id &&
                     it.startDate.isEqual(newPlacement.endDate.plusDays(1)) &&
                     it.endDate.isEqual(oldPlacement.endDate)
-            }
+            },
         )
     }
 
@@ -610,14 +610,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 it.id == oldPlacement.id &&
                     it.endDate.isEqual(newPlacement.startDate.minusDays(1)) &&
                     it.startDate.isEqual(oldPlacement.startDate)
-            }
+            },
         )
         assertTrue(
             placements.any {
                 it.id == old2.id &&
                     it.startDate.isEqual(newPlacement.endDate.plusDays(1)) &&
                     it.endDate.isEqual(old2.endDate)
-            }
+            },
         )
     }
 
@@ -635,7 +635,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 startDate = LocalDate.of(year + 1, 8, 1),
                                 endDate = LocalDate.of(year + 2, 6, 30),
                                 placeGuarantee = false,
-                            )
+                            ),
                         ),
                         tx.insert(
                             DevPlacement(
@@ -645,7 +645,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 startDate = LocalDate.of(year + 2, 7, 1),
                                 endDate = LocalDate.of(year + 2, 7, 31),
                                 placeGuarantee = false,
-                            )
+                            ),
                         ),
                         tx.insert(
                             DevPlacement(
@@ -655,7 +655,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 startDate = LocalDate.of(year + 2, 9, 1),
                                 endDate = LocalDate.of(year + 3, 4, 11),
                                 placeGuarantee = false,
-                            )
+                            ),
                         ),
                     )
                     .map { tx.getPlacement(it)!! }
@@ -672,7 +672,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 FiniteDateRange(
                                     LocalDate.of(year, month, 9),
                                     LocalDate.of(year, month, 19),
-                                ) to PlacementType.CLUB
+                                ) to PlacementType.CLUB,
                             ),
                         placeGuarantee = false,
                         now = now,
@@ -691,7 +691,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 pl.id == oldPlacement.id &&
                     pl.startDate == newPlacement.endDate.plusDays(1) &&
                     pl.endDate == oldPlacement.endDate
-            }
+            },
         )
         assertTrue(placements.contains(futurePreparatoryDaycare))
         assertTrue(placements.contains(futureDaycareInPreparatoryTerm))
@@ -771,7 +771,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     daycareGroupId = groupId,
                     startDate = oldPlacement.startDate,
                     endDate = oldPlacement.endDate,
-                )
+                ),
             )
             val period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate)
             it.insert(
@@ -782,7 +782,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     optionId = snDefaultDaycare.id,
                     confirmedBy = employee.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
 
@@ -801,7 +801,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val groupPlacementEndDates = db.read {
             it.createQuery {
                     sql(
-                        "SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}"
+                        "SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}",
                     )
                 }
                 .toList<LocalDate>()
@@ -812,7 +812,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val serviceNeedEndDates = db.read {
             it.createQuery {
                     sql(
-                        "SELECT end_date FROM service_need WHERE placement_id = ${bind(oldPlacement.id)}"
+                        "SELECT end_date FROM service_need WHERE placement_id = ${bind(oldPlacement.id)}",
                     )
                 }
                 .toList<LocalDate>()
@@ -850,7 +850,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     daycareGroupId = groupId,
                     startDate = oldPlacement.startDate,
                     endDate = oldPlacement.endDate,
-                )
+                ),
             )
             val period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate)
             it.insert(
@@ -861,7 +861,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     optionId = snDefaultDaycare.id,
                     confirmedBy = employee.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
-                )
+                ),
             )
         }
 
@@ -885,7 +885,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val groupPlacements = db.read {
             it.createQuery {
                     sql(
-                        "SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}"
+                        "SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}",
                     )
                 }
                 .toList<QueryResult>()
@@ -898,7 +898,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val serviceNeeds = db.read {
             it.createQuery {
                     sql(
-                        "SELECT start_date, end_date FROM service_need WHERE placement_id = ${bind(oldPlacement.id)}"
+                        "SELECT start_date, end_date FROM service_need WHERE placement_id = ${bind(oldPlacement.id)}",
                     )
                 }
                 .toList<QueryResult>()
@@ -1061,7 +1061,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     source = PlacementSource.MANUAL,
                     modifiedAt = null,
                     modifiedBy = null,
-                )
+                ),
             )
         }
 
@@ -1069,7 +1069,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         assertThat(placements)
             .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
-                "serviceNeedDetail.defaultServiceNeedOption.updated"
+                "serviceNeedDetail.defaultServiceNeedOption.updated",
             )
             .isEqualTo(
                 setOf(
@@ -1110,7 +1110,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     daycarePlacementId = daycarePlacementId,
                                     startDate = daycarePlacementStartDate,
                                     endDate = daycarePlacementEndDate,
-                                )
+                                ),
                             ),
                         terminatedBy = null,
                         terminationRequestedDate = null,
@@ -1124,8 +1124,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         source = PlacementSourceCreatedBy.EMPLOYEE_MANUAL,
                         modifiedAt = null,
                         modifiedBy = null,
-                    )
-                )
+                    ),
+                ),
             )
     }
 
@@ -1150,7 +1150,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     source = PlacementSource.MANUAL,
                     modifiedAt = null,
                     modifiedBy = null,
-                )
+                ),
             )
         }
 
@@ -1178,7 +1178,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycareGroupId = groupId1,
                         startDate = date(startDate),
                         endDate = date(endDate),
-                    )
+                    ),
                 )
             }
         }
@@ -1187,7 +1187,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         assertThat(placements)
             .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
-                "serviceNeedDetail.defaultServiceNeedOption.updated"
+                "serviceNeedDetail.defaultServiceNeedOption.updated",
             )
             .isEqualTo(
                 setOf(
@@ -1306,8 +1306,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         source = PlacementSourceCreatedBy.EMPLOYEE_MANUAL,
                         modifiedAt = null,
                         modifiedBy = null,
-                    )
-                )
+                    ),
+                ),
             )
     }
 
@@ -1326,7 +1326,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         startDate = startDate,
                         endDate = endDate,
                         placeGuarantee = false,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1334,7 +1334,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     daycareGroupId = groupId1,
                     startDate = evakaLaunch,
                     endDate = evakaLaunch.plusMonths(6),
-                )
+                ),
             )
             placementId
         }
@@ -1358,7 +1358,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             evakaLaunch.plusMonths(6).plusDays(1),
                             evakaLaunch.plusYears(1),
                         ),
-                )
+                ),
             ),
             group,
         )
@@ -1377,7 +1377,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE service_need_option SET name_sv = 'Heldag' WHERE id = ${bind(snDefaultDaycare.id)}"
+                    "UPDATE service_need_option SET name_sv = 'Heldag' WHERE id = ${bind(snDefaultDaycare.id)}",
                 )
             }
             tx.insert(option)
@@ -1389,7 +1389,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId = daycare1.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevServiceNeed(
@@ -1398,7 +1398,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     endDate = serviceNeedEnd,
                     optionId = option.id,
                     confirmedBy = employee.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -1411,7 +1411,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     serviceNeedEnd,
                     "Kokopäiväinen, vähintään 35h",
                     "Heldag, minst 35h",
-                )
+                ),
             ),
             group.single().serviceNeeds,
         )
@@ -1434,7 +1434,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         startDate = startDate,
                         endDate = endDate,
                         placeGuarantee = false,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1442,7 +1442,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     daycareGroupId = groupId1,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
@@ -1450,7 +1450,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare2.id,
                     groupId = null,
                     period = FiniteDateRange(evakaLaunch.minusYears(1), evakaLaunch.minusDays(1)),
-                )
+                ),
             )
             tx.insert(
                 DevBackupCare(
@@ -1458,7 +1458,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare2.id,
                     groupId = null,
                     period = FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1)),
-                )
+                ),
             )
         }
 
@@ -1475,7 +1475,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     child1.dateOfBirth,
                     listOf(daycare1.name),
                     FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1)),
-                )
+                ),
             ),
             backup,
         )

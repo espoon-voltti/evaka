@@ -23,7 +23,7 @@ fun Database.Read.findStaffAttendancesBy(
         else
             Predicate {
                 where(
-                    "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && daterange(${bind(period.start)}, ${bind(period.end)}, '[]')"
+                    "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && daterange(${bind(period.start)}, ${bind(period.end)}, '[]')",
                 )
             }
 
@@ -67,7 +67,7 @@ LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_add
 LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
 WHERE ${predicate(employeeIdFilter.forTable("sa"))}
 AND ${predicate(daterangeFilter.forTable("sa"))}
-        """
+        """,
     )
 }
     .toList<RawAttendance>()
@@ -82,7 +82,7 @@ fun Database.Transaction.insertReportRows(
                 INSERT INTO titania_errors (request_time, employee_id, error_type, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends)
                 VALUES (${bind { requestTime} }, ${bind { it.employeeId} }, ${bind { it.errorType} }, ${bind { it.shiftDate} }, ${bind { it.shiftBegins} }, ${bind { it.shiftEnds} }, ${bind { it.overlappingShiftBegins} }, ${bind { it.overlappingShiftEnds} })
             """
-                .trimIndent()
+                .trimIndent(),
         )
     }
 }
@@ -94,7 +94,7 @@ fun Database.Transaction.cleanTitaniaErrors(now: HelsinkiDateTime) {
 		DELETE
 		FROM titania_errors
 		WHERE request_time < ${bind(now)} - interval '30 days'
-	    """
+	    """,
         )
     }
 }

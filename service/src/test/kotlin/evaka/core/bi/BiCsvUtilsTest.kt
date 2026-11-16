@@ -47,7 +47,7 @@ class BiCsvUtilsTest {
                     includePII = false,
                     includeLegacyColumns = true,
                     windowDays = 60,
-                )
+                ),
             )
         assertEquals("id,keep,legacy\r\n", out[0])
         assertEquals("1,K,\r\n", out[1])
@@ -61,7 +61,7 @@ class BiCsvUtilsTest {
                     includePII = true,
                     includeLegacyColumns = false,
                     windowDays = 60,
-                )
+                ),
             )
         assertEquals("id,keep,name\r\n", out[0])
         assertEquals("1,K,Alice\r\n", out[1])
@@ -75,7 +75,7 @@ class BiCsvUtilsTest {
                     includePII = false,
                     includeLegacyColumns = false,
                     windowDays = 60,
-                )
+                ),
             )
         assertEquals("id,keep\r\n", out[0])
         assertEquals("1,K\r\n", out[1])

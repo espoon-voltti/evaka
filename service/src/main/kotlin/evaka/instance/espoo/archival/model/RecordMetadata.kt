@@ -61,11 +61,11 @@ enum class ResourceType(val xmlValue: String) {
 }
 
 enum class MimeType(val xmlValue: String) {
-    APPLICATION_PDF("application/pdf")
+    APPLICATION_PDF("application/pdf"),
 }
 
 enum class FileFormat(val xmlValue: String) {
-    NOT_APPLICABLE("not applicable")
+    NOT_APPLICABLE("not applicable"),
 }
 
 data class Creation(val originatingSystem: String?, val created: LocalDate?)

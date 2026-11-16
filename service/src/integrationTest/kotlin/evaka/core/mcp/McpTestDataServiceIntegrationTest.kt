@@ -94,11 +94,11 @@ class McpTestDataServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT finance_decision_handler IS NULL FROM daycare WHERE id = ${bind(unit.id)}"
+                            "SELECT finance_decision_handler IS NULL FROM daycare WHERE id = ${bind(unit.id)}",
                         )
                     }
                     .exactlyOne<Boolean>()
-            }
+            },
         )
         // the employee's evaka_user row is kept for audit trails, only its link is cleared
         assertEquals(
@@ -106,7 +106,7 @@ class McpTestDataServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT count(*) FROM evaka_user WHERE employee_id = ${bind(handler.id)}"
+                            "SELECT count(*) FROM evaka_user WHERE employee_id = ${bind(handler.id)}",
                         )
                     }
                     .exactlyOne<Int>()
@@ -239,7 +239,7 @@ class McpTestDataServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                             createdAt = now,
                             createdBy = admin.evakaUserId,
                             publishedContent = content,
-                        )
+                        ),
                     ),
             )
         val batchId = db.transaction { tx ->
@@ -258,7 +258,7 @@ class McpTestDataServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT archive_externally FROM document_template WHERE id = ${bind(template.id)}"
+                            "SELECT archive_externally FROM document_template WHERE id = ${bind(template.id)}",
                         )
                     }
                     .exactlyOne<Boolean>()

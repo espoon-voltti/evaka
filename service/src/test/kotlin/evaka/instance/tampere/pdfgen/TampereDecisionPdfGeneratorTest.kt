@@ -96,8 +96,8 @@ class TampereDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                             listOf(
                                 it.children
                                     .first()
-                                    .copy(placementType = PlacementType.PRESCHOOL_CLUB)
-                            )
+                                    .copy(placementType = PlacementType.PRESCHOOL_CLUB),
+                            ),
                     )
                 },
             ),
@@ -110,7 +110,7 @@ class TampereDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                             listOf(
                                 first.copy(placementType = PlacementType.DAYCARE),
                                 first.copy(placementType = PlacementType.PRESCHOOL_CLUB),
-                            )
+                            ),
                     )
                 },
             ),

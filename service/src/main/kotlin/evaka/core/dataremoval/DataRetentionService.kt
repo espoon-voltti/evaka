@@ -145,7 +145,7 @@ fun runDataRetention(
                                         link.otherThan(personId),
                                         dryRun = false,
                                         optimized = optimized,
-                                    )
+                                    ),
                                 ),
                                 retryCount = 3,
                                 runAt = clock.now(),
@@ -159,7 +159,7 @@ fun runDataRetention(
                     duplicateLink,
                     result.copy(
                         childrenFrozenForKoski =
-                            childrenFrozenWithLink + result.childrenFrozenForKoski
+                            childrenFrozenWithLink + result.childrenFrozenForKoski,
                     ),
                 )
             }

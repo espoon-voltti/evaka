@@ -42,7 +42,7 @@ fun Database.Transaction.insertAttendance(
                 INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
                 VALUES (${bind(childId)}, ${bind(unitId)}, ${bind(date)}, ${bind(range.start)}, ${bind(range.end)}, ${bind(now)}, ${bind(createdById)})
                 RETURNING id
-                """
+                """,
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -65,7 +65,7 @@ WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)}
 AND (end_time IS NULL OR (date = ${bind(today)} AND (start_time != '00:00'::time OR (start_time = '00:00'::time AND ${bind(departedThreshold)} < end_time))))
 ORDER BY date, start_time DESC
 LIMIT 1
-"""
+""",
         )
     }
         .exactlyOneOrNull()
@@ -82,7 +82,7 @@ fun Database.Read.getCompletedAttendanceTimesForChild(
         SELECT (start_time, end_time)::timerange
         FROM child_attendance
         WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)} AND date = ${bind(date)} AND end_time IS NOT NULL 
-    """
+    """,
         )
     }
         .toList()
@@ -100,7 +100,7 @@ fun Database.Read.getCompletedAttendanceTimesForChildren(
         SELECT child_id, (start_time, end_time)::timerange as time_range
         FROM child_attendance
         WHERE child_id = ANY (${bind(childIds)}) AND unit_id = ${bind(unitId)} AND date = ${bind(date)} AND end_time IS NOT NULL 
-    """
+    """,
             )
         }
         .toList<ChildAttendance>()
@@ -124,7 +124,7 @@ fun Database.Read.getOngoingAttendanceForChild(
     unitId: DaycareId,
 ): OngoingAttendance? = createQuery {
     sql(
-        "SELECT id, date, start_time FROM child_attendance WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)} AND end_time IS NULL"
+        "SELECT id, date, start_time FROM child_attendance WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)} AND end_time IS NULL",
     )
 }
     .exactlyOneOrNull()
@@ -134,7 +134,7 @@ fun Database.Read.getOngoingAttendanceForChildren(
     unitId: DaycareId,
 ): Map<ChildId, OngoingAttendance> = createQuery {
     sql(
-        "SELECT id, child_id, date, start_time FROM child_attendance WHERE child_id = ANY (${bind(children)}) AND unit_id = ${bind(unitId)} AND end_time IS NULL"
+        "SELECT id, child_id, date, start_time FROM child_attendance WHERE child_id = ANY (${bind(children)}) AND unit_id = ${bind(unitId)} AND end_time IS NULL",
     )
 }
     .toMap { column<ChildId>("child_id") to row<OngoingAttendance>() }
@@ -147,10 +147,10 @@ data class OngoingAttendanceWithUnit(
 )
 
 fun Database.Read.getOngoingAttendanceInAnyUnitForChild(
-    childId: ChildId
+    childId: ChildId,
 ): OngoingAttendanceWithUnit? = createQuery {
     sql(
-        "SELECT id, date, start_time, unit_id FROM child_attendance WHERE child_id = ${bind(childId)} AND end_time IS NULL"
+        "SELECT id, date, start_time, unit_id FROM child_attendance WHERE child_id = ${bind(childId)} AND end_time IS NULL",
     )
 }
     .exactlyOneOrNull()
@@ -302,7 +302,7 @@ LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id AND dst.validity_p
 LEFT JOIN child_images cimg ON pe.id = cimg.child_id
 LEFT JOIN service_need sn ON sn.placement_id = c.placement_id
     AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
-"""
+""",
         )
     }
         .toList { row<ChildBasicsRow>().toChildBasics() }
@@ -331,7 +331,7 @@ SELECT child_id, ca.arrived, ca.departed, ca.modified_at, e.id AS modified_by_id
 FROM child_attendance ca
 JOIN evaka_user e ON ca.modified_by = e.id
 WHERE ca.unit_id = ${bind(unitId)} AND tstzrange(arrived, departed) && ${bind(range)}
-"""
+""",
             )
         }
         .toList<UnitChildAttendancesRow>()
@@ -402,7 +402,7 @@ SELECT
 FROM absence a
 WHERE a.child_id = ANY (SELECT child_id FROM placed_children) AND a.date = ${bind(date)}
 GROUP BY a.child_id
-"""
+""",
     )
 }
     .toMap { column<ChildId>("child_id") to jsonColumn<List<ChildAbsence>>("absences") }
@@ -416,7 +416,7 @@ fun Database.Read.getChildPlacementTypes(
 SELECT child_id, type AS placement_type
 FROM placement p
 WHERE p.child_id = ANY(${bind(childIds)}) AND ${bind(today)} BETWEEN p.start_date AND p.end_date
-"""
+""",
     )
 }
     .toMap { columnPair("child_id", "placement_type") }
@@ -428,7 +428,7 @@ fun Database.Transaction.unsetAttendanceEndTime(
 ) {
     execute {
         sql(
-            "UPDATE child_attendance SET end_time = NULL, modified_at=${bind(now)}, modified_by=${bind(updatedById)} WHERE id = ${bind(attendanceId)}"
+            "UPDATE child_attendance SET end_time = NULL, modified_at=${bind(now)}, modified_by=${bind(updatedById)} WHERE id = ${bind(attendanceId)}",
         )
     }
 }
@@ -441,7 +441,7 @@ fun Database.Transaction.updateAttendanceEnd(
 ) {
     execute {
         sql(
-            "UPDATE child_attendance SET end_time = ${bind(endTime)}, modified_at = ${bind(now)}, modified_by = ${bind(updatedById)} WHERE id = ${bind(attendanceId)}"
+            "UPDATE child_attendance SET end_time = ${bind(endTime)}, modified_at = ${bind(now)}, modified_by = ${bind(updatedById)} WHERE id = ${bind(attendanceId)}",
         )
     }
 }
@@ -452,7 +452,7 @@ fun Database.Transaction.deleteAttendance(id: ChildAttendanceId) {
             """
         DELETE FROM child_attendance
         WHERE id = ${bind(id)}
-        """
+        """,
         )
     }
 }
@@ -465,7 +465,7 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
         DELETE FROM absence
         WHERE child_id = ${bind(childId)} AND date = ${bind(date)}
         RETURNING id
-        """
+        """,
         )
     }
     .executeAndReturnGeneratedKeys()
@@ -477,7 +477,7 @@ fun Database.Transaction.deleteAttendancesByDate(
     date: LocalDate,
 ): List<ChildAttendanceId> = createUpdate {
     sql(
-        "DELETE FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)} RETURNING id"
+        "DELETE FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)} RETURNING id",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -493,7 +493,7 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(
 DELETE FROM absence
 WHERE child_id = ${bind(childId)} AND between_start_and_end(${bind(dateRange)}, date)
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -507,7 +507,7 @@ fun Database.Read.childrenHaveAttendanceInRange(
         sql(
             """
             SELECT EXISTS(SELECT FROM child_attendance WHERE child_id = any(${bind(childIds)}) AND between_start_and_end(${bind(range)}, date))
-            """
+            """,
         )
     }
         .exactlyOne()
@@ -529,7 +529,7 @@ SELECT
 FROM child_attendance ca
 JOIN evaka_user e ON ca.modified_by = e.id
 WHERE ${predicate(where.forTable("ca"))}
-"""
+""",
     )
 }
     .toList()
@@ -549,7 +549,7 @@ $it.child_id IN (
     UNION ALL
     SELECT child_id FROM foster_parent WHERE parent_id = ${bind(guardianId)} AND valid_during @> ${bind(today)}
 )
-"""
+""",
             )
-        }
+        },
     )

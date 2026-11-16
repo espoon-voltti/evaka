@@ -34,7 +34,7 @@ fun Database.Read.getJamixCustomerNumbers(range: FiniteDateRange): Set<Int> = cr
                     WHERE dg.jamix_customer_number IS NOT NULL
                       AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
                       AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
-                """
+                """,
     )
 }
     .toSet()
@@ -72,7 +72,7 @@ JOIN daycare_group dg ON dg.id = rp.group_id
 JOIN person p ON p.id = rp.child_id
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.jamix_customer_number = ${bind(jamixCustomerNumber)}
-                    """
+                    """,
     )
 }
     .toList()

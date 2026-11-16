@@ -76,7 +76,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = daycare.id,
                     startDate = today.minusDays(7),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -84,7 +84,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = daycare2.id,
                     startDate = today.minusDays(7),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             tx.addNewChildrenForVardaUpdate(today)
 

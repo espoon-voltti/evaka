@@ -81,7 +81,7 @@ WHERE application.type = 'PRESCHOOL'
   AND ${predicate(filter.forTable("application_unit"))}
   AND ${bind(preschoolTerm.finnishPreschool)} @> (application.document ->> 'preferredStartDate')::date
     """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .toList<PreschoolApplicationReportRow>()

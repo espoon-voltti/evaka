@@ -244,7 +244,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction { tx ->
             tx.createUpdate {
                     sql(
-                        "UPDATE decision_reasoning_generic SET removed_at = ${bind(now)} WHERE id = ${bind(id)}"
+                        "UPDATE decision_reasoning_generic SET removed_at = ${bind(now)} WHERE id = ${bind(id)}",
                     )
                 }
                 .execute()

@@ -19,7 +19,7 @@ class NoTripleEqualsTest {
                 """
 fun testing(input: Int): Boolean =
     input === 1
-"""
+""",
             )
             .hasLintViolation(line = 3, col = 11, detail = NoTripleEquals.ERROR_MESSAGE)
     }
@@ -30,7 +30,7 @@ fun testing(input: Int): Boolean =
                 """
 fun testing(input: Int): Boolean =
     input !== 1
-"""
+""",
             )
             .hasLintViolation(line = 3, col = 11, detail = NoTripleEquals.ERROR_MESSAGE)
     }
@@ -41,7 +41,7 @@ fun testing(input: Int): Boolean =
                 """
 fun testing(input: Int): Boolean =
     input == 1 || input != 9
-"""
+""",
             )
             .hasNoLintViolations()
     }

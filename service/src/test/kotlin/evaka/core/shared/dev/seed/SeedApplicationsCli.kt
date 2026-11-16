@@ -31,7 +31,7 @@ fun main() {
                 password = dbPassword
                 maximumPoolSize = 2
                 poolName = "evaka-seed-applications"
-            }
+            },
         )
     val jdbi = configureJdbi(Jdbi.create(dataSource))
 
@@ -46,7 +46,7 @@ fun main() {
 
     dataSource.close()
     println(
-        "Seeded ${families.size} families and pushed ${dataset.persons.size} people to dummy-idp."
+        "Seeded ${families.size} families and pushed ${dataset.persons.size} people to dummy-idp.",
     )
 }
 

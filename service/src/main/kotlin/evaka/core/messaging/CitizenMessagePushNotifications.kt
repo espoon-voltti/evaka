@@ -59,7 +59,7 @@ WHERE m.id = ANY(${bind(messages)})
 AND mr.read_at IS NULL
 AND m.content_deleted_at IS NULL
 AND mt.is_copy IS FALSE
-"""
+""",
                 )
             }
             .toList<AsyncJob.SendCitizenMessagePushNotification>()
@@ -134,7 +134,7 @@ data class MessagePushNotification(
 )
 
 fun Database.Read.getMessagePushNotification(
-    recipient: MessageRecipientId
+    recipient: MessageRecipientId,
 ): MessagePushNotification? = createQuery {
     sql(
         """
@@ -159,7 +159,7 @@ LEFT JOIN daycare_group dg ON dg.id = sa.daycare_group_id
 WHERE mr.id = ${bind(recipient)}
 AND mr.read_at IS NULL
 AND m.content_deleted_at IS NULL
-"""
+""",
     )
 }
     .exactlyOneOrNull()

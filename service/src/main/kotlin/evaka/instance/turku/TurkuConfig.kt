@@ -209,7 +209,7 @@ class TurkuConfig {
     @Bean
     fun fileDwExportClient(properties: TurkuEnv): DwExportClient =
         FileDWExportClient(
-            SftpClient(properties.dwExport.sftp.toSftpEnv(), properties.dwExport.sftp.path)
+            SftpClient(properties.dwExport.sftp.toSftpEnv(), properties.dwExport.sftp.path),
         )
 
     @Bean
@@ -245,7 +245,7 @@ class TurkuConfig {
                 minUppers = 1,
                 minDigits = 1,
                 minSymbols = 1,
-            )
+            ),
         )
 
     @Bean

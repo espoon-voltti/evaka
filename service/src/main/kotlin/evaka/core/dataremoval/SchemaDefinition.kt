@@ -240,7 +240,7 @@ class SchemaDefinition(tables: List<Table>) {
                 person.references.isEmpty() &&
                 !person.deletedWithParent &&
                 !person.independentRows &&
-                person.identifiedByCols == listOf("id")
+                person.identifiedByCols == listOf("id"),
         ) {
             "$PERSON_TABLE is deleted in the run of the person it is: it is handled by adult, references nothing, is not deleted with a parent, is evaluated as a whole and is identified by id"
         }
@@ -252,7 +252,7 @@ class SchemaDefinition(tables: List<Table>) {
             child.handledBy == Handler.CHILD &&
                 child.references == listOf(Reference.Primary("id", PERSON_TABLE)) &&
                 !child.independentRows &&
-                child.identifiedByCols == listOf("id")
+                child.identifiedByCols == listOf("id"),
         ) {
             "$CHILD_TABLE is deleted in the run of the child it is: it is handled by child and its only reference is id to $PERSON_TABLE"
         }

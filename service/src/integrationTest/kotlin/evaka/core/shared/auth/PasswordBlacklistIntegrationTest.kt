@@ -20,7 +20,7 @@ class PasswordBlacklistIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private val directory =
         Path.of(
             this.javaClass.classLoader.getResource("password-blacklist")?.toURI()
-                ?: error("Failed to locate password blacklist directory")
+                ?: error("Failed to locate password blacklist directory"),
         )
     private val blacklistedPassword = Sensitive("Password123!")
 

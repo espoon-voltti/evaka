@@ -66,8 +66,8 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         assertThrows<NotFound> {
             deleteVoucherValue(
                 ServiceNeedOptionVoucherValueId(
-                    UUID.fromString("00000000-0000-0000-0000-000000000000")
-                )
+                    UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                ),
             )
         }
     }
@@ -151,8 +151,10 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             addVoucherValue(
                 testVoucherValue.copy(
                     serviceNeedOptionId =
-                        ServiceNeedOptionId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
-                )
+                        ServiceNeedOptionId(
+                            UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                        ),
+                ),
             )
         }
     }
@@ -161,7 +163,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun `should throw when adding a voucher value that starts before the existing latest one`() {
         assertThrows<BadRequest> {
             addVoucherValue(
-                testVoucherValue.copy(range = DateRange(LocalDate.of(2024, 1, 1), null))
+                testVoucherValue.copy(range = DateRange(LocalDate.of(2024, 1, 1), null)),
             )
         }
     }
@@ -172,8 +174,8 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         assertThrows<BadRequest> {
             addVoucherValue(
                 testVoucherValue.copy(
-                    range = DateRange(testVoucherValue.range.end!!.plusDays(2), null)
-                )
+                    range = DateRange(testVoucherValue.range.end!!.plusDays(2), null),
+                ),
             )
         }
     }
@@ -182,7 +184,9 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun `should work when adding a voucher value that starts right after previous one`() {
         addVoucherValue(testVoucherValue)
         addVoucherValue(
-            testVoucherValue.copy(range = DateRange(testVoucherValue.range.end!!.plusDays(1), null))
+            testVoucherValue.copy(
+                range = DateRange(testVoucherValue.range.end!!.plusDays(1), null),
+            ),
         )
     }
 
@@ -205,7 +209,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         DateRange(
                             voucherValuesBefore[1].voucherValues.range.start,
                             LocalDate.of(2024, 5, 31),
-                        )
+                        ),
                 )
         updateVoucherValue(voucherValuesBefore[1].id, endedVoucherValue)
 
@@ -242,7 +246,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         DateRange(
                             voucherValuesBefore[1].voucherValues.range.start.plusWeeks(2),
                             voucherValuesBefore[1].voucherValues.range.end,
-                        )
+                        ),
                 )
 
         updateVoucherValue(voucherValuesBefore[1].id, newVoucherValue)
@@ -269,7 +273,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         DateRange(
                             voucherValuesBefore[1].voucherValues.range.start.minusWeeks(2),
                             voucherValuesBefore[1].voucherValues.range.end,
-                        )
+                        ),
                 )
 
         updateVoucherValue(voucherValuesBefore[1].id, newVoucherValue)
@@ -328,7 +332,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 DELETE FROM service_need_option_voucher_value
                 WHERE service_need_option_id = ${bind(snDefaultDaycare.id)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
     }

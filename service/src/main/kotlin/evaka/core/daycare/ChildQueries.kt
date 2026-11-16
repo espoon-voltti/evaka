@@ -20,7 +20,7 @@ SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, speci
 ) AS nekku_special_diet_choices
 FROM child JOIN person ON child.id = person.id LEFT JOIN special_diet on child.diet_id = special_diet.id LEFT JOIN meal_texture on child.meal_texture_id = meal_texture.id
 WHERE child.id = ${bind(id)}
-"""
+""",
         )
     }
         .exactlyOneOrNull<Child>()
@@ -44,7 +44,7 @@ INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_
     ${bind(child.additionalInformation.nekkuDiet)},
     ${bind(child.additionalInformation.participatesInBreakfast)}
 )
-"""
+""",
         )
     }
     resetNekkuSpecialDietChoices(child, now)
@@ -56,7 +56,7 @@ fun Database.Transaction.upsertChild(child: Child) {
             """
 INSERT INTO child (id, allergies, diet) VALUES (${bind(child.id)}, ${bind(child.additionalInformation.allergies)}, ${bind(child.additionalInformation.diet)}) 
 ON CONFLICT (id) DO UPDATE SET allergies = ${bind(child.additionalInformation.allergies)}, diet = ${bind(child.additionalInformation.diet)}
-"""
+""",
         )
     }
 }
@@ -77,7 +77,7 @@ UPDATE child SET
     nekku_diet = ${bind(child.additionalInformation.nekkuDiet)},
     participates_in_breakfast = ${bind(child.additionalInformation.participatesInBreakfast)}
 WHERE id = ${bind(child.id)}
-"""
+""",
         )
     }
     resetNekkuSpecialDietChoices(child, now)
@@ -88,7 +88,7 @@ fun Database.Transaction.resetNekkuSpecialDietChoices(child: Child, now: Helsink
         sql(
             """
                 DELETE FROM nekku_special_diet_choices WHERE child_id = ${bind(child.id)}
-            """
+            """,
         )
     }
     executeBatch(child.additionalInformation.nekkuSpecialDietChoices) {
@@ -102,7 +102,7 @@ fun Database.Transaction.resetNekkuSpecialDietChoices(child: Child, now: Helsink
                     ${bind { it.value }},
                     ${bind(now)}
                 )
-            """
+            """,
         )
     }
 }

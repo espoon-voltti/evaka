@@ -12,7 +12,7 @@ fun Database.Transaction.insertChildImage(childId: ChildId): ChildImageId = crea
     sql(
         """
         INSERT INTO child_images (child_id) VALUES (${bind(childId)}) RETURNING id
-    """
+    """,
     )
 }
     .exactlyOne()

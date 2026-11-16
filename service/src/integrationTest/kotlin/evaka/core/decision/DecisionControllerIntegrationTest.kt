@@ -196,7 +196,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     """
                     UPDATE decision SET document_contains_contact_info = TRUE
                     WHERE id = ${bind(decisionId)}
-                """
+                """,
                 )
             }
         }

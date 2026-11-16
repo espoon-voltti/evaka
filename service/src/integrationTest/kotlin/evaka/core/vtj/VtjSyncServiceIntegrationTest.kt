@@ -141,7 +141,7 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     headOfChildId = person.id,
                     startDate = clock.today(),
                     endDate = x.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
         }
 
@@ -171,7 +171,7 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     headOfChildId = person.id,
                     startDate = LocalDate.of(2020, 1, 1),
                     endDate = LocalDate.of(2037, 12, 31),
-                )
+                ),
             )
         }
         addToVtj(vtjRecord)
@@ -187,7 +187,7 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 2,
                 tx.createQuery {
                         sql(
-                            "SELECT count(*) FROM async_job WHERE type = 'GenerateFinanceDecisions'"
+                            "SELECT count(*) FROM async_job WHERE type = 'GenerateFinanceDecisions'",
                         )
                     }
                     .exactlyOne<Int>(),
@@ -279,7 +279,7 @@ SELECT g.social_security_number AS guardian, c.social_security_number AS child
 FROM guardian
 JOIN person g ON g.id = guardian.guardian_id
 JOIN person c ON c.id = guardian.child_id
-"""
+""",
                         )
                     }
                     .toSet { column<String>("guardian") to column<String>("child") }

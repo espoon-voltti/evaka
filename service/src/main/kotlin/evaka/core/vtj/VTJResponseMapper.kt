@@ -11,7 +11,7 @@ import evaka.core.vtj.soap.VTJHenkiloVastaussanoma
 import jakarta.xml.bind.JAXBElement
 
 fun mapResponseToHenkilo(
-    response: JAXBElement<HenkiloTunnusKyselyResBody>
+    response: JAXBElement<HenkiloTunnusKyselyResBody>,
 ): VTJHenkiloVastaussanoma.Henkilo? =
     response.value.response
         .let(HenkiloTunnusKyselyResType::mapResponse)

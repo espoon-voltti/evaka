@@ -148,7 +148,7 @@ class McpEmployeeController(
         if (body.codeChallenge.length !in 43..128) throw BadRequest("Invalid code_challenge")
         if (body.validityDays !in 1..McpServerConfig.MAX_VALIDITY_DAYS) {
             throw BadRequest(
-                "validityDays must be between 1 and ${McpServerConfig.MAX_VALIDITY_DAYS}"
+                "validityDays must be between 1 and ${McpServerConfig.MAX_VALIDITY_DAYS}",
             )
         }
         body.scope

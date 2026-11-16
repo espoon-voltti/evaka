@@ -25,7 +25,7 @@ enum class YlojarviScheduledJob(
             enabled = false,
             schedule = JobSchedule.annualOnIsoWeek(isoWeek = 19, dayOfWeek = DayOfWeek.WEDNESDAY),
         ),
-    )
+    ),
 }
 
 class YlojarviScheduledJobs(

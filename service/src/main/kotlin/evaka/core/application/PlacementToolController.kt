@@ -100,7 +100,7 @@ class PlacementToolController(
                         Action.Global.PLACEMENT_TOOL,
                     )
                     listOfNotNull(
-                        placementToolService.findNextPreschoolTerm(date = clock.today(), tx = tx)
+                        placementToolService.findNextPreschoolTerm(date = clock.today(), tx = tx),
                     )
                 }
             }

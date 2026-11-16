@@ -42,7 +42,7 @@ WHERE a.child_id = ${bind(childId)}
   AND daterange(d.start_date, d.end_date, '[]') @> ${bind(date)}
 ORDER BY d.resolved DESC
 LIMIT 1
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -99,7 +99,7 @@ fun createDecisionDrafts(
             """
 INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
 VALUES (${bind(user.evakaUserId)}, ${bind { it.unitId }}, ${bind(application.id)}, ${bind { it.type }}, ${bind { it.startDate }}, ${bind { it.endDate }}, ${bind { it.planned }});
-"""
+""",
         )
     }
 }
@@ -121,7 +121,7 @@ fun updateDecisionDrafts(
             SET unit_id = ${bind { it.unitId }}, start_date = ${bind { it.startDate }}, end_date = ${bind { it.endDate }}, planned = ${bind { it.planned }}
             WHERE id = ${bind { it.id }} AND application_id = ${bind(applicationId)} AND sent_date IS NULL
             RETURNING id, type
-"""
+""",
                 )
             }
             .executeAndReturn()
@@ -155,13 +155,13 @@ fun updateDecisionDrafts(
             if (reasoning.collectionType != applicableCollectionType) {
                 throw BadRequest(
                     "Individual reasoning $reasoningId has collection_type ${reasoning.collectionType}, " +
-                        "which does not apply to decision ${update.id} of type $type"
+                        "which does not apply to decision ${update.id} of type $type",
                 )
             }
             if (reasoning.language != decisionLanguage) {
                 throw BadRequest(
                     "Individual reasoning $reasoningId is in language ${reasoning.language}, " +
-                        "which does not apply to decision ${update.id} made in $decisionLanguage"
+                        "which does not apply to decision ${update.id} made in $decisionLanguage",
                 )
             }
         }
@@ -205,7 +205,7 @@ SELECT
     language
 FROM daycare u
 ORDER BY name
-"""
+""",
             )
         }
         .toList()
@@ -230,7 +230,7 @@ SELECT
     language
 FROM daycare u
 WHERE u.id = ${bind(unitId)}
-"""
+""",
             )
         }
         .exactlyOne()
@@ -244,7 +244,7 @@ private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
             startDate = plan.period.start,
             endDate = plan.period.end,
             planned = true,
-        )
+        ),
     )
 }
 
@@ -264,7 +264,7 @@ private fun planDaycareDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> 
             startDate = plan.period.start,
             endDate = plan.period.end,
             planned = true,
-        )
+        ),
     )
 }
 
@@ -318,7 +318,7 @@ private fun planPreschoolDecisionDrafts(
 fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>) {
     execute {
         sql(
-            "DELETE FROM decision WHERE application_id = ANY(${bind(applicationIds)}) AND sent_date IS NULL"
+            "DELETE FROM decision WHERE application_id = ANY(${bind(applicationIds)}) AND sent_date IS NULL",
         )
     }
 }

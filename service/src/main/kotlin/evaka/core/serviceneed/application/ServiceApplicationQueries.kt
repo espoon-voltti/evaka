@@ -52,7 +52,7 @@ fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplicat
         LEFT JOIN placement pl ON pl.child_id = sa.child_id AND between_start_and_end(daterange(pl.start_date, pl.end_date, '[]'), sa.start_date)
         LEFT JOIN employee dm ON dm.id = sa.decided_by
         WHERE ${predicate(where.forTable("sa"))}
-    """
+    """,
     )
 }
     .toList()
@@ -64,7 +64,7 @@ fun Database.Read.getServiceApplicationsOfChild(childId: ChildId): List<ServiceA
     getServiceApplications(Predicate { where("$it.child_id = ${bind(childId)}") })
 
 fun Database.Read.getUndecidedServiceApplicationsByUnit(
-    unitId: DaycareId
+    unitId: DaycareId,
 ): List<UndecidedServiceApplicationSummary> = createQuery {
     sql(
         """
@@ -89,7 +89,7 @@ fun Database.Read.getUndecidedServiceApplicationsByUnit(
     JOIN service_need_option new_sno ON new_sno.id = sa.service_need_option_id AND NOT new_sno.default_option
     WHERE sa.decision_status IS NULL AND pl.unit_id = ${bind(unitId)}
     ORDER BY sa.sent_at, sa.start_date
-"""
+""",
     )
 }
     .toList()
@@ -107,7 +107,7 @@ fun Database.Transaction.insertServiceApplication(
     INSERT INTO service_application (sent_at, person_id, child_id, start_date, service_need_option_id, additional_info, decision_status, decided_by, decided_at, rejected_reason)
     VALUES (${bind(sentAt)}, ${bind(personId)}, ${bind(childId)}, ${bind(startDate)}, ${bind(serviceNeedOptionId)}, ${bind(additionalInfo)}, NULL, NULL, NULL, NULL)
     RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -118,7 +118,7 @@ fun Database.Transaction.deleteUndecidedServiceApplication(id: ServiceApplicatio
         """
     DELETE FROM service_application
     WHERE id = ${bind(id)} AND decision_status IS NULL 
-"""
+""",
     )
 }
 
@@ -132,7 +132,7 @@ fun Database.Transaction.setServiceApplicationAccepted(
     UPDATE service_application
     SET decision_status = 'ACCEPTED', decided_by = ${bind(user.id)}, decided_at = ${bind(now)}
     WHERE id = ${bind(id)} AND decision_status IS NULL
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -148,7 +148,7 @@ fun Database.Transaction.setServiceApplicationRejected(
     UPDATE service_application
     SET decision_status = 'REJECTED', decided_by = ${bind(user.id)}, decided_at = ${bind(now)}, rejected_reason = ${bind(rejectedReason)}
     WHERE id = ${bind(id)} AND decision_status IS NULL
-"""
+""",
     )
 }
     .updateExactlyOne()

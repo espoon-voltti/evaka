@@ -196,7 +196,7 @@ class McpToolsRows(private val jsonMapper: JsonMapper) {
                         },
             ) { ctx, input ->
                 insertRows(ctx, input)
-            }
+            },
         )
 
     private fun insertRows(ctx: McpToolContext, input: InsertRowsInput): Any {
@@ -208,7 +208,7 @@ class McpToolsRows(private val jsonMapper: JsonMapper) {
             val type =
                 rowTypes[group.type]
                     ?: throw BadRequest(
-                        "Unknown row type '${group.type}' in group $groupIndex. Types: ${rowTypes.keys.joinToString()}"
+                        "Unknown row type '${group.type}' in group $groupIndex. Types: ${rowTypes.keys.joinToString()}",
                     )
             val ids =
                 group.rows.mapIndexed { index, json ->
@@ -217,7 +217,7 @@ class McpToolsRows(private val jsonMapper: JsonMapper) {
                     } catch (e: Exception) {
                         val message = if (e is JdbiException) e.cause?.message else e.message
                         throw BadRequest(
-                            "Row $index of group $groupIndex (${group.type}): $message"
+                            "Row $index of group $groupIndex (${group.type}): $message",
                         )
                     }
                 }
@@ -264,7 +264,7 @@ class McpToolsRows(private val jsonMapper: JsonMapper) {
                     ctx.tx
                         .createQuery {
                             sql(
-                                "SELECT id FROM ${fk.childTable} WHERE ${fk.childColumn} = ANY(${bind(ids)})"
+                                "SELECT id FROM ${fk.childTable} WHERE ${fk.childColumn} = ANY(${bind(ids)})",
                             )
                         }
                         .toList<UUID>()
@@ -291,7 +291,7 @@ class McpToolsRows(private val jsonMapper: JsonMapper) {
                 """
 UPDATE person SET vtj_guardians_queried = ${bind(ctx.now)}, vtj_dependants_queried = ${bind(ctx.now)}
 WHERE id = ANY(${bind(personIds.toList())})
-"""
+""",
             )
         }
 }

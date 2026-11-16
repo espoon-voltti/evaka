@@ -154,7 +154,7 @@ fun sendStaffAttendancesToLinkity(
             HelsinkiDateTime.atStartOfDay(period.start),
             HelsinkiDateTime.atStartOfDay(period.end.plusDays(1)),
             stampings,
-        )
+        ),
     )
     logger.info { "Posted ${stampings.size} stampings to Linkity" }
 }

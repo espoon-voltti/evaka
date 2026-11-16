@@ -77,7 +77,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                             "year" to year,
                             "month" to month,
                             "count" to it.size,
-                        )
+                        ),
                 )
             }
     }
@@ -129,7 +129,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                             "year" to year,
                             "month" to month,
                             "count" to it.size,
-                        )
+                        ),
                 )
             }
     }

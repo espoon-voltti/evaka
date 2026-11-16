@@ -49,7 +49,7 @@ FROM message_draft draft
 WHERE draft.account_id = ${bind(accountId)} AND
     ${predicate(accountAccessPredicate.forTable("draft"))}
 ORDER BY draft.created_at DESC
-"""
+""",
         )
     }
         .toList<DraftContent>()
@@ -65,7 +65,7 @@ fun Database.Transaction.initDraft(
 INSERT INTO message_draft (account_id, modified_at)
 VALUES (${bind(accountId)}, ${bind(now)})
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOne<MessageDraftId>()
@@ -91,7 +91,7 @@ SET
     recipient_names = ${bind(draft.recipientNames)},
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -99,7 +99,7 @@ WHERE id = ${bind(id)}
 fun Database.Transaction.deleteDraft(accountId: MessageAccountId, draftId: MessageDraftId) {
     createUpdate {
         sql(
-            "DELETE FROM message_draft WHERE id = ${bind(draftId)} AND account_id = ${bind(accountId)}"
+            "DELETE FROM message_draft WHERE id = ${bind(draftId)} AND account_id = ${bind(accountId)}",
         )
     }
         .execute()

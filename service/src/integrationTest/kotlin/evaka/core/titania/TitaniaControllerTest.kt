@@ -39,7 +39,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .url("http://localhost:$httpPort/integration/titania/working-time-events")
                 .put(
                     readResource("titania/titania-update-request-valid-example-data.json")
-                        .toRequestBody(jsonMediaType)
+                        .toRequestBody(jsonMediaType),
                 )
                 .asUser(AuthenticatedUser.SystemInternalUser)
                 .build()
@@ -56,7 +56,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .url("http://localhost:$httpPort/integration/titania/working-time-events")
                 .put(
                     readResource("titania/titania-update-request-without-employee-id.json")
-                        .toRequestBody(jsonMediaType)
+                        .toRequestBody(jsonMediaType),
                 )
                 .asUser(AuthenticatedUser.Integration)
                 .build()
@@ -74,7 +74,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .put(
                     jsonMapper
                         .writeValueAsString(titaniaUpdateRequestInvalidExampleData)
-                        .toRequestBody(jsonMediaType)
+                        .toRequestBody(jsonMediaType),
                 )
                 .asUser(AuthenticatedUser.Integration)
                 .build()
@@ -106,7 +106,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .url("http://localhost:$httpPort/integration/titania/stamped-working-time-events")
                 .post(
                     readResource("titania/titania-get-request-valid-example-data.json")
-                        .toRequestBody(jsonMediaType)
+                        .toRequestBody(jsonMediaType),
                 )
                 .asUser(AuthenticatedUser.SystemInternalUser)
                 .build()
@@ -123,7 +123,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .url("http://localhost:$httpPort/integration/titania/stamped-working-time-events")
                 .post(
                     readResource("titania/titania-get-request-without-employee-id.json")
-                        .toRequestBody(jsonMediaType)
+                        .toRequestBody(jsonMediaType),
                 )
                 .asUser(AuthenticatedUser.Integration)
                 .build()
@@ -141,7 +141,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .put(
                     jsonMapper
                         .writeValueAsString(titaniaUpdateRequestValidExampleData)
-                        .toRequestBody(jsonMediaType)
+                        .toRequestBody(jsonMediaType),
                 )
                 .asUser(AuthenticatedUser.Integration)
                 .build()
@@ -160,7 +160,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .put(
                     jsonMapper
                         .writeValueAsString(titaniaUpdateRequestConflictingExampleData)
-                        .toRequestBody(jsonMediaType)
+                        .toRequestBody(jsonMediaType),
                 )
                 .asUser(AuthenticatedUser.Integration)
                 .build()
@@ -194,7 +194,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .put(
                     jsonMapper
                         .writeValueAsString(titaniaUpdateRequestZeroLengthShiftData)
-                        .toRequestBody(jsonMediaType)
+                        .toRequestBody(jsonMediaType),
                 )
                 .asUser(AuthenticatedUser.Integration)
                 .build()

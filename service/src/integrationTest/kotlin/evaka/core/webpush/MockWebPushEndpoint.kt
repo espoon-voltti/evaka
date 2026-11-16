@@ -50,7 +50,7 @@ class MockWebPushEndpoint {
                                 }
                                 .toMap(),
                         body = body.readAllBytes(),
-                    )
+                    ),
                 )
         }
         val queued =

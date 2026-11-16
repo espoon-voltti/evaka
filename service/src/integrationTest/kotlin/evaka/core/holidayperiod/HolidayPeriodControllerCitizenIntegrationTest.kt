@@ -125,7 +125,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     endDate = placement.endDate,
                     optionId = snDefaultDaycare.id,
                     confirmedBy = authenticatedParent.evakaUserId,
-                )
+                ),
             )
         }
     }
@@ -140,7 +140,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         assertEquals(1, response.size)
         assertThat(response[0].eligibleChildren)
             .containsExactlyInAnyOrderEntriesOf(
-                mapOf(child1.id to freePeriodQuestionnaire.periodOptions)
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions),
             )
     }
 
@@ -162,7 +162,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = condition.start,
                     endDate = condition.end.minusDays(1),
-                )
+                ),
             )
             // child4 has two placements that cover the period together
             tx.insert(
@@ -171,7 +171,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = condition.start,
                     endDate = condition.start.plusDays(5),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -179,16 +179,16 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = condition.start.plusDays(6),
                     endDate = condition.end,
-                )
+                ),
             )
         }
         createFixedPeriodQuestionnaire(
             freePeriodQuestionnaire.copy(
                 conditions =
                     QuestionnaireConditions(
-                        continuousPlacement = FiniteDateRange(mockToday, mockToday.plusMonths(1))
-                    )
-            )
+                        continuousPlacement = FiniteDateRange(mockToday, mockToday.plusMonths(1)),
+                    ),
+            ),
         )
 
         val response = getActiveQuestionnaires(mockToday)
@@ -196,7 +196,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         assertEquals(1, response.size)
         assertThat(response[0].eligibleChildren)
             .containsExactlyInAnyOrderEntriesOf(
-                mapOf(child1.id to freePeriodQuestionnaire.periodOptions)
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions),
             )
     }
 
@@ -213,7 +213,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = voucherDaycare.id,
                     startDate = mockToday.minusYears(2),
                     endDate = mockToday.plusYears(1),
-                )
+                ),
             )
         }
 
@@ -224,7 +224,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         assertEquals(1, response.size)
         assertThat(response[0].eligibleChildren)
             .containsExactlyInAnyOrderEntriesOf(
-                mapOf(child1.id to freePeriodQuestionnaire.periodOptions)
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions),
             )
     }
 
@@ -239,7 +239,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = voucherDaycare.id,
                     startDate = mockToday.minusYears(2),
                     endDate = mockToday.minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -247,7 +247,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = mockToday,
                     endDate = mockToday.plusYears(1),
-                )
+                ),
             )
         }
 
@@ -261,7 +261,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 mapOf(
                     child1.id to freePeriodQuestionnaire.periodOptions,
                     child4.id to freePeriodQuestionnaire.periodOptions,
-                )
+                ),
             )
     }
 
@@ -275,10 +275,10 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate =
                         mockToday.plusDays(
-                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong()
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong(),
                         ),
                     endDate = mockToday.plusYears(1),
-                )
+                ),
             )
         }
         createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
@@ -291,7 +291,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 mapOf(
                     child1.id to freePeriodQuestionnaire.periodOptions,
                     child2.id to freePeriodQuestionnaire.periodOptions,
-                )
+                ),
             )
     }
 
@@ -305,10 +305,10 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate =
                         mockToday.plusDays(
-                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong() + 1
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong() + 1,
                         ),
                     endDate = mockToday.plusYears(1),
-                )
+                ),
             )
         }
         createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
@@ -318,7 +318,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         assertEquals(1, response.size)
         assertThat(response[0].eligibleChildren)
             .containsExactlyInAnyOrderEntriesOf(
-                mapOf(child1.id to freePeriodQuestionnaire.periodOptions)
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions),
             )
     }
 
@@ -433,7 +433,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                         shiftCareOperationTimes =
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
                         shiftCareOpenOnHolidays = true,
-                    )
+                    ),
                 )
             tx.insertGuardian(parent.id, child2.id)
 
@@ -453,7 +453,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     confirmedBy = authenticatedParent.evakaUserId,
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -463,7 +463,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = authenticatedParent.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -487,9 +487,9 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     conditions =
                         QuestionnaireConditions(
                             continuousPlacement =
-                                FiniteDateRange(mockToday, mockToday.plusMonths(1))
-                        )
-                )
+                                FiniteDateRange(mockToday, mockToday.plusMonths(1)),
+                        ),
+                ),
             )
 
         val firstOption = freePeriodQuestionnaire.periodOptions[0]
@@ -512,14 +512,14 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = firstOption.start.plusDays(1),
                     endDate = firstOption.end,
-                )
+                ),
             )
         }
         val id =
             createFixedPeriodQuestionnaire(
                 freePeriodQuestionnaire.copy(
-                    conditions = QuestionnaireConditions(continuousPlacement = null)
-                )
+                    conditions = QuestionnaireConditions(continuousPlacement = null),
+                ),
             )
 
         assertThrows<BadRequest> {
@@ -541,14 +541,14 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate = firstOption.start,
                     endDate = firstOption.end.minusDays(1),
-                )
+                ),
             )
         }
         val id =
             createFixedPeriodQuestionnaire(
                 freePeriodQuestionnaire.copy(
-                    conditions = QuestionnaireConditions(continuousPlacement = null)
-                )
+                    conditions = QuestionnaireConditions(continuousPlacement = null),
+                ),
             )
 
         assertThrows<BadRequest> {
@@ -621,7 +621,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                         unitId = daycare.id,
                         startDate = mockToday.minusYears(2),
                         endDate = mockToday.plusYears(1),
-                    )
+                    ),
                 )
             tx.insert(
                 DevServiceNeed(
@@ -630,7 +630,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     endDate = mockToday.plusYears(1),
                     optionId = hourBasedOptionId,
                     confirmedBy = authenticatedParent.evakaUserId,
-                )
+                ),
             )
         }
         whenever(evakaEnv.plannedAbsenceEnabledForHourBasedServiceNeeds).thenReturn(true)
@@ -700,7 +700,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     type = PlacementType.CLUB,
                     startDate = mockToday.minusYears(1),
                     endDate = mockToday.plusYears(1),
-                )
+                ),
             )
         }
 
@@ -730,10 +730,10 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     unitId = daycare.id,
                     startDate =
                         mockToday.plusDays(
-                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong() + 1
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong() + 1,
                         ),
                     endDate = mockToday.plusYears(1),
-                )
+                ),
             )
         }
 
@@ -774,7 +774,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                         freeRangesQuestionnaire.period.end.minusDays(10),
                         freeRangesQuestionnaire.period.end,
                     ),
-                )
+                ),
             ),
         )
         val absences = db.read { it.getAllAbsences() }
@@ -830,7 +830,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                         shiftCareOperationTimes =
                             listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
                         shiftCareOpenOnHolidays = true,
-                    )
+                    ),
                 )
             tx.insertGuardian(parent.id, child2.id)
 
@@ -850,7 +850,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = authenticatedParent.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -858,7 +858,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     }
 
     private fun createFixedPeriodQuestionnaire(
-        body: QuestionnaireBody.FixedPeriodQuestionnaireBody
+        body: QuestionnaireBody.FixedPeriodQuestionnaireBody,
     ) = db.transaction { it.createFixedPeriodQuestionnaire(body) }
 
     private fun reportFreeRanges(

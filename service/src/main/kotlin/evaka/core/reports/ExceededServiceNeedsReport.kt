@@ -86,7 +86,7 @@ class ExceededServiceNeedsReportController(private val accessControl: AccessCont
 data class ExceededServiceNeedReportUnit(val id: DaycareId, val name: String)
 
 private fun Database.Read.getExceededServiceNeedReportUnits(
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<ExceededServiceNeedReportUnit> = createQuery {
     sql(
         """
@@ -94,7 +94,7 @@ private fun Database.Read.getExceededServiceNeedReportUnits(
                 FROM daycare
                 WHERE ${predicate(unitFilter.forTable("daycare"))}
                 ORDER BY name
-                """
+                """,
     )
 }
     .toList()
@@ -201,7 +201,7 @@ private fun Database.Read.getChildren(childIds: Set<ChildId>): List<ReportChild>
                 SELECT id, first_name, last_name
                 FROM person
                 WHERE id = ANY (${bind(childIds)})
-                """
+                """,
     )
 }
     .toList<ReportChild>()
@@ -239,7 +239,7 @@ private fun Database.Read.getServiceNeedsByRange(
                     daterange(sn.start_date, sn.end_date) && ${bind(range)} AND
                     sno.daycare_hours_per_month IS NOT NULL
                 ORDER BY sn.start_date
-                """
+                """,
     )
 }
     .toList<ReportServiceNeed>()
@@ -255,9 +255,9 @@ private fun Database.Read.getAbsencesByRange(
                     """
                         $it.child_id = ANY (${bind(childIds)}) AND
                         between_start_and_end(${bind(range)}, $it.date)
-                        """
+                        """,
                 )
-            }
+            },
         )
         .groupBy({ it.childId to it.date }, { it.absenceType to it.category })
 
@@ -273,9 +273,9 @@ fun Database.Read.getAttendancesByRange(
                     """
                         $it.child_id = ANY (${bind(childIds)}) AND
                         between_start_and_end(${bind(range)}, $it.date)
-                        """
+                        """,
                 )
-            }
+            },
         )
         .groupBy { it.childId to it.date }
 
@@ -289,8 +289,8 @@ fun Database.Read.getReservationsByRange(
                     """
                     $it.child_id = ANY (${bind(childIds)}) AND
                     between_start_and_end(${bind(range)}, $it.date)
-                    """
+                    """,
                 )
-            }
+            },
         )
         .groupBy { it.childId to it.date }

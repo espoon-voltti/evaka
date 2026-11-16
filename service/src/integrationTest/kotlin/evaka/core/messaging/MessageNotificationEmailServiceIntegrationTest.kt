@@ -94,7 +94,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -102,7 +102,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                     daycareGroupId = group.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             testPersons.forEach {
@@ -125,7 +125,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                         employee,
                         clock,
                         Action.MessageAccount.ACCESS,
-                    )
+                    ),
                 )
                 .first()
         }
@@ -183,8 +183,8 @@ class MessageNotificationEmailServiceIntegrationTest :
                 .content
                 .text
                 .startsWith(
-                    "Sinulle on saapunut uusi tiedote eVakaan lähettäjältä Espoon kaupunki - Esbo stad - City of Espoo otsikolla \"Juhannus/Midsommar/Midsummer\"."
-                )
+                    "Sinulle on saapunut uusi tiedote eVakaan lähettäjältä Espoon kaupunki - Esbo stad - City of Espoo otsikolla \"Juhannus/Midsommar/Midsummer\".",
+                ),
         )
 
         assertEquals(
@@ -206,7 +206,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                         employee,
                         clock,
                         Action.MessageAccount.ACCESS,
-                    )
+                    ),
                 )
                 .first()
         }
@@ -237,7 +237,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                         employee,
                         clock,
                         Action.MessageAccount.ACCESS,
-                    )
+                    ),
                 )
                 .first()
         }
@@ -260,7 +260,7 @@ UPDATE message
 SET content_deleted_at = ${bind(clock.now())},
     content_deleted_by_employee_id = ${bind(staffEmployee.id)}
 WHERE content_id = ${bind(contentId)}
-"""
+""",
                 )
             }
         }
@@ -318,8 +318,8 @@ WHERE content_id = ${bind(contentId)}
                 .content
                 .text
                 .contains(
-                    "Sinulle on saapunut uusi hakemustasi koskeva viesti eVakaan lähettäjältä"
-                )
+                    "Sinulle on saapunut uusi hakemustasi koskeva viesti eVakaan lähettäjältä",
+                ),
         )
     }
 
@@ -366,7 +366,7 @@ WHERE mr.id IN (
     FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id
     WHERE ma.person_id = ${bind(person.id)}
 )
-"""
+""",
                 )
             }
         }

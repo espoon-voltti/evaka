@@ -67,8 +67,8 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                                 label = "s1",
                                 questions =
                                     listOf(Question.CheckboxQuestion(id = "q1", label = "q1")),
-                            )
-                        )
+                            ),
+                        ),
                 ),
             endDecisionWhenUnitChanges = true,
         )
@@ -81,7 +81,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
             content =
                 DocumentContent(
                     answers =
-                        listOf(AnsweredQuestion.CheckboxAnswer(questionId = "q1", answer = true))
+                        listOf(AnsweredQuestion.CheckboxAnswer(questionId = "q1", answer = true)),
                 ),
             modifiedAt = clock.now(),
             modifiedBy = supervisor2.evakaUserId,
@@ -106,7 +106,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare1.id,
                     startDate = clock.today().minusMonths(1),
                     endDate = clock.today().plusMonths(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -114,7 +114,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare2.id,
                     startDate = clock.today().minusMonths(1),
                     endDate = clock.today().plusMonths(1),
-                )
+                ),
             )
             tx.insert(template)
             tx.insert(child2Document)
@@ -144,7 +144,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                                 createdAt = clock.now(),
                                 createdBy = supervisor1.evakaUserId,
                                 publishedContent = child2Document.content,
-                            )
+                            ),
                         ),
                     decision =
                         DevChildDocumentDecision(
@@ -154,7 +154,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                             validity = DateRange(clock.today(), null),
                             daycareId = daycare1.id,
                         ),
-                )
+                ),
             )
         }
         assertEquals(0, getNotifications(supervisor1.user))
@@ -215,7 +215,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                                         createdAt = clock.now(),
                                         createdBy = supervisor1.evakaUserId,
                                         publishedContent = child2Document.content,
-                                    )
+                                    ),
                                 ),
                             decision =
                                 DevChildDocumentDecision(
@@ -225,7 +225,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                                     validity = validity,
                                     daycareId = daycare1.id,
                                 ),
-                        )
+                        ),
                     )
                 }
         }
@@ -258,7 +258,7 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                                         createdAt = clock.now(),
                                         createdBy = supervisor1.evakaUserId,
                                         publishedContent = child2Document.content,
-                                    )
+                                    ),
                                 ),
                             decision =
                                 DevChildDocumentDecision(

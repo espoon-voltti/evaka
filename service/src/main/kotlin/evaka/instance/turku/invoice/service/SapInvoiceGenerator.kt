@@ -27,7 +27,7 @@ private const val PARTNER_FIELD_MAX_LENGTH = 35
 @Component
 class SapInvoiceGenerator : StringInvoiceGenerator {
     override fun generateInvoice(
-        invoices: List<InvoiceDetailed>
+        invoices: List<InvoiceDetailed>,
     ): StringInvoiceGenerator.InvoiceGeneratorResult {
         val successList = mutableListOf<InvoiceDetailed>()
         val failedList = mutableListOf<InvoiceDetailed>()
@@ -164,7 +164,7 @@ class SapInvoiceGenerator : StringInvoiceGenerator {
                             invoice.codebtor.mailingPostalCode,
                             invoice.codebtor.mailingPostOffice,
                         ),
-                    )
+                    ),
                 )
             }
         }

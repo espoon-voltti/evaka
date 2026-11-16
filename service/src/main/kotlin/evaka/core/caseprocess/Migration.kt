@@ -108,7 +108,7 @@ private fun migrateApplicationMetadata(
                         WHERE process_id IS NULL AND sentdate IS NOT NULL
                         ORDER BY sentdate
                         LIMIT ${bind(batchSize)}
-                        """
+                        """,
                     )
                 }
                 .toList<ApplicationMigrationData>()
@@ -186,7 +186,7 @@ private fun migrateFeeDecisionMetadata(
                         WHERE process_id IS NULL AND approved_at IS NOT NULL
                         ORDER BY created
                         LIMIT ${bind(batchSize)}
-                        """
+                        """,
                     )
                 }
                 .toList<FeeDecisionMigrationData>()
@@ -262,7 +262,7 @@ private fun migrateVoucherValueDecisionMetadata(
                         WHERE process_id IS NULL AND approved_at IS NOT NULL
                         ORDER BY created
                         LIMIT ${bind(batchSize)}
-                        """
+                        """,
                     )
                 }
                 .toList<VoucherValueDecisionMigrationData>()
@@ -360,7 +360,7 @@ private fun migrateDocuments(
                         t.archive_duration_months IS NOT NULL
                     ORDER BY d.created_at
                     LIMIT ${bind(batchSize)}
-                    """
+                    """,
                     )
                 }
                 .toList<DocumentData>()
@@ -378,7 +378,7 @@ private fun migrateDocuments(
                     .id
             tx.execute {
                 sql(
-                    "UPDATE child_document SET process_id = ${bind(processId)} WHERE id = ${bind(document.id)}"
+                    "UPDATE child_document SET process_id = ${bind(processId)} WHERE id = ${bind(document.id)}",
                 )
             }
             tx.insertCaseProcessHistoryRow(

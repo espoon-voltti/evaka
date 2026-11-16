@@ -48,7 +48,7 @@ class MissingHolidayReservationsReminders(
 
     fun scheduleReminders(tx: Database.Transaction, clock: EvakaClock): Int {
         tx.removeUnclaimedJobs(
-            setOf(AsyncJobType(AsyncJob.SendMissingHolidayReservationsReminder::class))
+            setOf(AsyncJobType(AsyncJob.SendMissingHolidayReservationsReminder::class)),
         )
 
         return tx.getHolidayPeriodsWithReservationDeadline(clock.today().plusDays(2))
@@ -128,7 +128,7 @@ WHERE
         FROM absence a
         WHERE a.child_id = p.child_id AND a.date = ${bind(theDate)}
     )
-"""
+""",
         )
     }
         .mapTo<PersonId>()
@@ -147,7 +147,7 @@ LEFT JOIN foster_parent fp ON fp.child_id = p.id AND fp.valid_during @> ${bind(t
 WHERE p.id = ANY(${bind(childIds)})
  AND (g.guardian_id IS NOT NULL OR fp.parent_id IS NOT NULL)
                     """
-                .trimIndent()
+                .trimIndent(),
         )
     }
         .mapTo<PersonId>()

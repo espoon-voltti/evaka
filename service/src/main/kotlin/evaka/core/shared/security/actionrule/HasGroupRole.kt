@@ -44,7 +44,7 @@ data class HasGroupRole(
         copy(unitProviderTypes = allOf.toEnumSet())
 
     private fun <T : Id<*>> rule(
-        getGroupRoles: GetGroupRoles
+        getGroupRoles: GetGroupRoles,
     ): DatabaseActionRule.Scoped<T, HasGroupRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getGroupRoles))
 
@@ -71,7 +71,7 @@ data class HasGroupRole(
                     FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
                     WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
-                                    .trimIndent()
+                                    .trimIndent(),
                             )
                         }
                         .mapTo<IdRoleFeatures>()
@@ -79,7 +79,7 @@ data class HasGroupRole(
                             rows.fold(
                                 targets.associateTo(linkedMapOf()) {
                                     (it to mutableSetOf<RoleAndFeatures>())
-                                }
+                                },
                             ) { acc, (target, result) ->
                                 acc[target]?.plusAssign(result)
                                 acc
@@ -108,7 +108,7 @@ data class HasGroupRole(
                     AND unit_features @> ${bind(params.unitFeatures.toSet())}
                     ${if (params.unitProviderTypes != null) "AND unit_provider_type = ANY(${bind(params.unitProviderTypes.toSet())})" else ""}
                         """
-                                .trimIndent()
+                                .trimIndent(),
                         )
                     }
                 }
@@ -146,7 +146,7 @@ JOIN daycare ON acl.daycare_id = daycare.id
 JOIN daycare_group ON daycare.id = daycare_group.daycare_id
 JOIN daycare_group_acl group_acl ON daycare_group.id = group_acl.daycare_group_id AND acl.employee_id = group_acl.employee_id
 WHERE acl.employee_id = ${bind(user.id)}
-            """
+            """,
             )
         }
 
@@ -159,7 +159,7 @@ FROM employee_child_group_acl(${bind(now.toLocalDate())}) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -191,7 +191,7 @@ JOIN daycare ON daycare_acl.daycare_id = daycare.id
 WHERE daycare_acl.employee_id = ${bind(user.id)}
   AND bc.end_date > ${bind(pastAccessDate)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -207,7 +207,7 @@ JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
   AND absence_application.start_date BETWEEN placement.start_date AND placement.end_date
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -223,20 +223,20 @@ WHERE employee_id = ${bind(user.id)}
             PredicateSql.allNotNull(
                 PredicateSql {
                     where(
-                        "status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])"
+                        "status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])",
                     )
                 }
                     .takeIf { editable },
                 PredicateSql {
                     where(
-                        "status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)"
+                        "status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)",
                     )
                 }
                     .takeIf { deletable },
                 PredicateSql { where("status <> 'COMPLETED'") }.takeIf { publishable },
                 PredicateSql {
                     where(
-                        "child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'"
+                        "child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'",
                     )
                 }
                     .takeIf { canGoToPrevStatus },
@@ -263,7 +263,7 @@ WHERE daycare_acl.employee_id = ${bind(user.id)}
   AND ${predicate(childDocumentFilters)}
   ${if (deletable) "AND ${predicate(childDocumentTemplateValidityNotEnded(today).forTable("child_document"))}" else ""}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
     }
@@ -283,7 +283,7 @@ WHERE daycare_acl.employee_id = ${bind(user.id)}
   AND bc.start_date <= ${bind(now.toLocalDate())}
   AND bc.end_date >= ${bind(now.toLocalDate())}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 
@@ -323,7 +323,7 @@ WHERE daycare_acl.employee_id = ${bind(user.id)}
   AND bc.start_date <= ${bind(today)}
   AND bc.end_date >= ${bind(today)}
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
 }

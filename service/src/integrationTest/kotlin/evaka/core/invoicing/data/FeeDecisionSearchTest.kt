@@ -101,7 +101,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                             children = listOf(childFixture(child4)),
                         )
                         .copy(decisionNumber = 11_111_111L),
-                )
+                ),
             )
         }
         val testCases =
@@ -121,8 +121,8 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                         headOfFamily = adult1.id,
                         children = listOf(childFixture(child)),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
@@ -147,7 +147,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                         children = listOf(childFixture(child4)),
                         status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
                     ),
-                )
+                ),
             )
         }
         val testCases =
@@ -180,7 +180,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamily = adult2.id,
                         children = listOf(childFixture(child4, daycare2.id)),
                     ),
-                )
+                ),
             )
         }
         val areaTestCases = listOf(area1 to child3, area2 to child4, areaSv to null)
@@ -210,7 +210,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                         period =
                             FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 8, 1)),
                     ),
-                )
+                ),
             )
         }
         val testCases =
@@ -236,8 +236,8 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamily = adult1.id,
                         children = listOf(childFixture(child1, daycare1.id, serviceNeed = null)),
                         period = FiniteDateRange(now.today(), now.today()),
-                    )
-                )
+                    ),
+                ),
             )
         }
         assertEquals(
@@ -261,7 +261,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = daycare1.id,
                     startDate = now.today(),
                     endDate = now.today(),
-                )
+                ),
             )
         }
 
@@ -288,7 +288,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                         period =
                             FiniteDateRange(LocalDate.of(2022, 6, 1), LocalDate.of(2023, 1, 1)),
                     ),
-                )
+                ),
             )
         }
         val overlapTestCases =
@@ -329,7 +329,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamily = adult2.id,
                         children = listOf(childFixture(child2, daycare1.id)),
                     ),
-                )
+                ),
             )
         }
         val testCases = listOf((employee2 to child1), (employee1 to null))
@@ -349,7 +349,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             sql(
                 """
                 UPDATE fee_decision SET created = ${bind(created)}, sent_at = ${bind(sentAt)} WHERE id = ${bind(id)}
-            """
+            """,
             )
         }
         lateinit var decisions: List<FeeDecision>
@@ -449,7 +449,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                         firstName = child.firstName,
                         lastName = child.lastName,
                         ssn = child.ssn,
-                    )
+                    ),
                 ),
                 decision.children,
             )

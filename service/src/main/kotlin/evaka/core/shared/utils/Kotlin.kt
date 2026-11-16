@@ -55,7 +55,7 @@ fun <T, R : Any> memoize(f: (T) -> R): (T) -> R = run {
 }
 
 inline fun <T> Iterable<T>.partitionIndexed(
-    predicate: (index: Int, T) -> Boolean
+    predicate: (index: Int, T) -> Boolean,
 ): Pair<List<T>, List<T>> {
     val first = ArrayList<T>()
     val second = ArrayList<T>()

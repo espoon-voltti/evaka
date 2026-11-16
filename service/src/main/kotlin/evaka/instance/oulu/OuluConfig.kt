@@ -275,7 +275,7 @@ class OuluConfig {
                 minUppers = 1,
                 minDigits = 1,
                 minSymbols = 1,
-            )
+            ),
         )
 
     @Bean

@@ -116,7 +116,7 @@ class FeeAlterationController(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             feeAlteration.personId,
                             DateRange(feeAlteration.validFrom, feeAlteration.validTo),
-                        )
+                        ),
                     ),
                     runAt = clock.now(),
                 )
@@ -166,7 +166,7 @@ class FeeAlterationController(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             feeAlteration.personId,
                             expandedPeriod,
-                        )
+                        ),
                     ),
                     runAt = clock.now(),
                 )
@@ -201,7 +201,7 @@ class FeeAlterationController(
                             AsyncJob.GenerateFinanceDecisions.forChild(
                                 existing.personId,
                                 DateRange(existing.validFrom, existing.validTo),
-                            )
+                            ),
                         ),
                         runAt = clock.now(),
                     )

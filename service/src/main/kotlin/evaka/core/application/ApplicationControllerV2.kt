@@ -78,7 +78,7 @@ enum class ApplicationPreschoolTypeToggle {
 }
 
 enum class ApplicationDistinctions {
-    SECONDARY
+    SECONDARY,
 }
 
 @ConstList("applicationDateTypeOptions")
@@ -175,7 +175,7 @@ class ApplicationControllerV2(
                         existingGuardianId
                             ?: body.guardianToBeCreated?.let { createPerson(tx, it) }
                             ?: throw BadRequest(
-                                "Could not find guardian info from paper application request for ${body.childId}"
+                                "Could not find guardian info from paper application request for ${body.childId}",
                             )
                     guardianId to
                         savePaperApplication(
@@ -204,7 +204,7 @@ class ApplicationControllerV2(
             body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd
         ) {
             throw BadRequest(
-                "Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)"
+                "Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)",
             )
         }
         val audit =
@@ -290,7 +290,7 @@ class ApplicationControllerV2(
                                     individualReasoningCount = stats?.individualReasoningCount ?: 0,
                                     reasoningWarningCount = stats?.reasoningWarningCount ?: 0,
                                 )
-                            }
+                            },
                     )
                 }
             }
@@ -592,7 +592,7 @@ class ApplicationControllerV2(
     }
 
     private fun validateDecisionDrafts(
-        decisionDrafts: List<DecisionDraft>
+        decisionDrafts: List<DecisionDraft>,
     ): Pair<DecisionDraft, DecisionDraft?> {
         if (decisionDrafts.isEmpty()) {
             throw IllegalStateException("At least one decision draft must be provided")
@@ -608,7 +608,7 @@ class ApplicationControllerV2(
                 it.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
             }
                 ?: throw IllegalStateException(
-                    "Found two decision drafts but none of them is of type ${DecisionType.PRESCHOOL} or ${DecisionType.PREPARATORY_EDUCATION}"
+                    "Found two decision drafts but none of them is of type ${DecisionType.PRESCHOOL} or ${DecisionType.PREPARATORY_EDUCATION}",
                 )
 
         val connectedDecision = decisionDrafts.firstOrNull { it.id != primaryDecision.id }
@@ -618,7 +618,7 @@ class ApplicationControllerV2(
                     listOf(DecisionType.PRESCHOOL_DAYCARE, DecisionType.PRESCHOOL_CLUB)
             ) {
                 throw IllegalStateException(
-                    "Found two decision drafts but the connected decision is not of type ${DecisionType.PRESCHOOL_DAYCARE} or ${DecisionType.PRESCHOOL_CLUB}"
+                    "Found two decision drafts but the connected decision is not of type ${DecisionType.PRESCHOOL_DAYCARE} or ${DecisionType.PRESCHOOL_CLUB}",
                 )
             }
         }
@@ -650,7 +650,7 @@ class ApplicationControllerV2(
 
                     if (application.status != ApplicationStatus.WAITING_DECISION) {
                         throw Conflict(
-                            "Cannot get decision drafts for application with status ${application.status}"
+                            "Cannot get decision drafts for application with status ${application.status}",
                         )
                     }
 
@@ -659,7 +659,7 @@ class ApplicationControllerV2(
 
                     val decisionDrafts =
                         tx.fetchDecisionDrafts(applicationId).letIf(
-                            evakaEnv.decisionReasoningEnabled
+                            evakaEnv.decisionReasoningEnabled,
                         ) { drafts ->
                             drafts.map {
                                 it.copy(
@@ -671,7 +671,7 @@ class ApplicationControllerV2(
                                                 tx,
                                                 it.type,
                                                 it.startDate,
-                                            )
+                                            ),
                                 )
                             }
                         }
@@ -1035,7 +1035,7 @@ class ApplicationControllerV2(
                         .observeDate(applications.minOfOrNull { it.preferredStartDate })
                         .observeDate(plans.minOfOrNull { it.period.start })
                         .observeDate(
-                            transferApplications.orEmpty().minOfOrNull { it.preferredStartDate }
+                            transferApplications.orEmpty().minOfOrNull { it.preferredStartDate },
                         )
                     UnitApplications(
                         placementProposals = placementProposals,
@@ -1096,7 +1096,7 @@ data class PlacementProposalConfirmationUpdate(
 )
 
 data class AcceptPlacementProposalRequest(
-    val rejectReasonTranslations: Map<PlacementPlanRejectReason, String>
+    val rejectReasonTranslations: Map<PlacementPlanRejectReason, String>,
 )
 
 data class DaycarePlacementPlan(

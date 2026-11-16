@@ -86,7 +86,7 @@ class DecisionReasoningPdfRenderTest {
                 PdfReasoning(
                     generic = "Yleinen perustelu lapselle",
                     individual = listOf("Erityinen perustelu"),
-                )
+                ),
             )
 
         assertContains(html, "Yleinen perustelu lapselle")
@@ -111,7 +111,7 @@ class DecisionReasoningPdfRenderTest {
                 PdfReasoning(
                     generic = "Yleinen perustelu lapselle",
                     individual = listOf("Erityinen perustelu"),
-                )
+                ),
             )
 
         assertContains(html, "Yleinen perustelu lapselle")
@@ -136,7 +136,7 @@ class DecisionReasoningPdfRenderTest {
                 PdfReasoning(
                     generic = "Yleinen perustelu lapselle",
                     individual = listOf("Erityinen perustelu"),
-                )
+                ),
             )
 
         assertContains(html, "Yleinen perustelu lapselle")
@@ -163,7 +163,7 @@ class DecisionReasoningPdfRenderTest {
                 PdfReasoning(
                     generic = "Yleinen perustelu lapselle",
                     individual = listOf("Erityinen perustelu"),
-                )
+                ),
             )
 
         assertContains(html, "Yleinen perustelu lapselle")
@@ -193,7 +193,7 @@ class DecisionReasoningPdfRenderTest {
                 PdfReasoning(
                     generic = "Yleinen perustelu lapselle",
                     individual = listOf("Erityinen perustelu"),
-                )
+                ),
             )
 
         assertContains(html, "Yleinen perustelu lapselle")
@@ -224,7 +224,7 @@ class DecisionReasoningPdfRenderTest {
                 PdfReasoning(
                     generic = "Yleinen perustelu lapselle",
                     individual = listOf("Erityinen perustelu"),
-                )
+                ),
             )
 
         assertContains(html, "Yleinen perustelu lapselle")

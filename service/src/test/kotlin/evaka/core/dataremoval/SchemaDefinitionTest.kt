@@ -147,7 +147,7 @@ class SchemaDefinitionTest {
                         ),
                     auditIdType = DatabaseTable.Person::class,
                     expirationRule = Always,
-                )
+                ),
             )
         }
         invalid("is identified by several columns") {
@@ -178,7 +178,7 @@ class SchemaDefinitionTest {
                     "child_id" to "child",
                     identifiedByCols = listOf("child_id", "n"),
                     auditIdType = DatabaseTable.Person::class,
-                )
+                ),
             )
         }
     }
@@ -204,7 +204,7 @@ class SchemaDefinitionTest {
                     references = listOf(secondaryReference("child_id", referencedTable = "child")),
                     auditIdType = DatabaseTable.Person::class,
                     expirationRule = Always,
-                )
+                ),
             )
         }
         invalid("a declares 2 primary references, exactly one is required") {
@@ -219,7 +219,7 @@ class SchemaDefinitionTest {
                         ),
                     auditIdType = DatabaseTable.Person::class,
                     expirationRule = Always,
-                )
+                ),
             )
         }
         invalid("a is handled by CHILD, but its primary reference person_id leads to ADULT rows") {
@@ -233,7 +233,7 @@ class SchemaDefinitionTest {
                 ExternalTable(
                     "x",
                     listOf(primaryReference("person_id", referencedTable = "person")),
-                )
+                ),
             )
         }
         val schema =
@@ -283,7 +283,7 @@ class SchemaDefinitionTest {
                     "child_id" to "child",
                     optional =
                         listOf(
-                            optionalReference("account_id", referencedTable = "message_account")
+                            optionalReference("account_id", referencedTable = "message_account"),
                         ),
                 ),
             )
@@ -312,9 +312,9 @@ class SchemaDefinitionTest {
                     "child_id" to "child",
                     orphansToDelete =
                         listOf(
-                            OutsideGraphReference("child_id", "x", DatabaseTable.Decision::class)
+                            OutsideGraphReference("child_id", "x", DatabaseTable.Decision::class),
                         ),
-                )
+                ),
             )
         }
         invalid("several outside graph references on the same column") {
@@ -328,7 +328,7 @@ class SchemaDefinitionTest {
                             OutsideGraphReference("x_id", "x", DatabaseTable.Decision::class),
                             OutsideGraphReference("x_id", "y", DatabaseTable.Decision::class),
                         ),
-                )
+                ),
             )
         }
         valid {
@@ -339,7 +339,7 @@ class SchemaDefinitionTest {
                     "child_id" to "child",
                     orphansToDelete =
                         listOf(OutsideGraphReference("x_id", "x", DatabaseTable.Decision::class)),
-                )
+                ),
             )
         }
     }
@@ -392,7 +392,7 @@ class SchemaDefinitionTest {
         assertEquals(
             listOf(
                 "placement" to
-                    Reference.Optional("source_application_id", "application", listOf("source"))
+                    Reference.Optional("source_application_id", "application", listOf("source")),
             ),
             schema.optionalReferencesInto(application).map { it.referencingTable to it.reference },
         )
@@ -481,7 +481,7 @@ class SchemaDefinitionTest {
                     "child_id" to "child",
                     identifiedByCols = listOf("child_id", "n"),
                     expirationRule = Coalesce(After(oneYear, customSource()), Never),
-                )
+                ),
             )
         }
         invalid("a not while rule needs rows identified by a single column") {
@@ -492,7 +492,7 @@ class SchemaDefinitionTest {
                     "child_id" to "child",
                     identifiedByCols = listOf("child_id", "n"),
                     expirationRule = notWhileRule(),
-                )
+                ),
             )
         }
         valid {
@@ -506,7 +506,7 @@ class SchemaDefinitionTest {
                             Coalesce(After(oneYear, customSource()), Never),
                             notWhileRule(),
                         ),
-                )
+                ),
             )
         }
     }
@@ -626,7 +626,7 @@ class SchemaDefinitionTest {
         }
         invalid("voucher_value_report_decision must be deleted with voucher_value_decision") {
             withOverrides(
-                "voucher_value_report_decision" to TableOverride(Never, deletedWithParent = false)
+                "voucher_value_report_decision" to TableOverride(Never, deletedWithParent = false),
             )
         }
     }

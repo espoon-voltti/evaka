@@ -124,7 +124,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         daycarePlacementId = currentPlacement.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -132,7 +132,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         daycarePlacementId = starterPlacement.id,
                         startDate = today.plusDays(5),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -140,7 +140,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         daycarePlacementId = changerPlacement1.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -148,7 +148,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         daycarePlacementId = changerPlacement2.id,
                         startDate = today.plusDays(31),
                         endDate = today.plusDays(60),
-                    )
+                    ),
                 )
 
                 val currentParentAccountId = tx.getCitizenMessageAccount(currentParent.id)
@@ -265,7 +265,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
     @ParameterizedTest(name = "messagingCategoryList, expectedRecipientCount={0}")
     @FieldSource("placementFilters")
     fun `getMessageAccountsForRecipients returns correct accounts for different placement type categories`(
-        arg: Pair<List<MessagingCategory>, Int>
+        arg: Pair<List<MessagingCategory>, Int>,
     ) {
         val (messagingCategoryList, expectedRecipientCount) = arg
         val today = LocalDate.now()
@@ -331,7 +331,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
                         type = PlacementType.DAYCARE,
-                    )
+                    ),
                 )
             val daycarePlacement2 =
                 tx.insert(
@@ -341,7 +341,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
                         type = PlacementType.DAYCARE_PART_TIME,
-                    )
+                    ),
                 )
             val daycarePlacement3 =
                 tx.insert(
@@ -351,7 +351,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
                         type = PlacementType.DAYCARE,
-                    )
+                    ),
                 )
             val daycarePlacement4 =
                 tx.insert(
@@ -361,7 +361,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
                         type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                    )
+                    ),
                 )
 
             val preschoolPlacement1 =
@@ -372,7 +372,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
                         type = PlacementType.PRESCHOOL,
-                    )
+                    ),
                 )
             val preschoolPlacement2 =
                 tx.insert(
@@ -382,7 +382,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
                         type = PlacementType.PRESCHOOL_DAYCARE,
-                    )
+                    ),
                 )
             val clubPlacement1 =
                 tx.insert(
@@ -392,7 +392,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
                         type = PlacementType.CLUB,
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -401,7 +401,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = daycarePlacement1,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -409,7 +409,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = daycarePlacement2,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -417,7 +417,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = daycarePlacement3,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -425,7 +425,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = daycarePlacement4,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -433,7 +433,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = preschoolPlacement1,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -441,7 +441,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = preschoolPlacement2,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -449,7 +449,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = clubPlacement1,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -518,7 +518,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                             unitId = daycare.id,
                             startDate = today.minusDays(10),
                             endDate = today.plusDays(30),
-                        )
+                        ),
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -526,7 +526,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         daycarePlacementId = placement,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             }
 
@@ -610,7 +610,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementIntermittent =
                 tx.insert(
@@ -619,7 +619,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementNone =
                 tx.insert(
@@ -628,7 +628,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -637,7 +637,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementFull,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -645,7 +645,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementIntermittent,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -653,7 +653,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementNone,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insert(
@@ -664,7 +664,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -674,7 +674,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.INTERMITTENT,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -684,7 +684,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -751,7 +751,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementIntermittent =
                 tx.insert(
@@ -760,7 +760,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementNone =
                 tx.insert(
@@ -769,7 +769,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -778,7 +778,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementFull,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -786,7 +786,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementIntermittent,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -794,7 +794,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementNone,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insert(
@@ -805,7 +805,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -815,7 +815,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.INTERMITTENT,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -825,7 +825,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -892,7 +892,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementIntermittent =
                 tx.insert(
@@ -901,7 +901,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementNone =
                 tx.insert(
@@ -910,7 +910,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -919,7 +919,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementFull,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -927,7 +927,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementIntermittent,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -935,7 +935,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementNone,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insert(
@@ -946,7 +946,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -956,7 +956,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.INTERMITTENT,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -966,7 +966,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -1057,7 +1057,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = familyDaycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementGroupFamily =
                 tx.insert(
@@ -1066,7 +1066,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = groupFamilyDaycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementCentre =
                 tx.insert(
@@ -1075,7 +1075,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = centreDaycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -1084,7 +1084,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementFamily,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1092,7 +1092,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementGroupFamily,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1100,7 +1100,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementCentre,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(familyDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -1177,7 +1177,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement2019NoShift =
                 tx.insert(
@@ -1186,7 +1186,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement2020Shift =
                 tx.insert(
@@ -1195,7 +1195,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             listOf(placement2019Shift, placement2019NoShift, placement2020Shift).forEach { placement
@@ -1206,7 +1206,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         daycarePlacementId = placement,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             }
 
@@ -1218,7 +1218,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -1228,7 +1228,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -1238,7 +1238,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -1304,7 +1304,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementWithout =
                 tx.insert(
@@ -1313,7 +1313,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -1322,7 +1322,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementWith,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1330,7 +1330,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placementWithout,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insert(
@@ -1341,7 +1341,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -1408,7 +1408,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(30),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementPast =
                 tx.insert(
@@ -1417,7 +1417,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(30),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placementFuture =
                 tx.insert(
@@ -1426,7 +1426,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(30),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             listOf(placementOverlapping, placementPast, placementFuture).forEach { placement ->
@@ -1436,7 +1436,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         daycarePlacementId = placement,
                         startDate = today.minusDays(30),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             }
 
@@ -1448,7 +1448,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -1458,7 +1458,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -1468,7 +1468,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -1522,7 +1522,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(60),
                         endDate = today.plusDays(60),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -1531,7 +1531,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement,
                     startDate = today.minusDays(60),
                     endDate = today.plusDays(60),
-                )
+                ),
             )
 
             tx.insert(
@@ -1542,7 +1542,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -1552,7 +1552,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
             tx.insert(
                 DevServiceNeed(
@@ -1562,7 +1562,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     confirmedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -1623,7 +1623,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement2 =
                 tx.insert(
@@ -1632,7 +1632,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -1641,7 +1641,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement1,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1649,7 +1649,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement2,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
@@ -1708,7 +1708,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement2 =
                 tx.insert(
@@ -1717,7 +1717,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -1726,7 +1726,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement1,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1734,7 +1734,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement2,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.createQuery {
@@ -1743,7 +1743,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         INSERT INTO message_account (daycare_group_id, type)
                         VALUES (${bind(group1.id)}, 'GROUP')
                         RETURNING id
-                        """
+                        """,
                     )
                 }
                 .exactlyOne<MessageAccountId>()
@@ -1800,7 +1800,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement2 =
                 tx.insert(
@@ -1809,7 +1809,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -1818,7 +1818,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement1,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1826,7 +1826,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement2,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.createMunicipalMessageAccount()
@@ -1883,7 +1883,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -1892,7 +1892,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -1956,7 +1956,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     validDuring = DateRange(today.minusDays(30), today.plusDays(30)),
                     modifiedAt = HelsinkiDateTime.now(),
                     modifiedBy = EvakaUserId(employee1.id.raw),
-                )
+                ),
             )
 
             val placement =
@@ -1966,7 +1966,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -1975,7 +1975,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2036,7 +2036,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement2 =
                 tx.insert(
@@ -2045,7 +2045,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2054,7 +2054,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement1,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -2062,7 +2062,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement2,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2127,7 +2127,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = primaryDaycare.id,
                         startDate = today.minusDays(30),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2136,7 +2136,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = primaryPlacement,
                     startDate = today.minusDays(30),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insert(
@@ -2145,7 +2145,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     unitId = backupDaycare.id,
                     groupId = backupGroup.id,
                     period = FiniteDateRange(today.minusDays(5), today.plusDays(5)),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(primaryDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2216,7 +2216,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today,
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2225,7 +2225,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement,
                     startDate = today,
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2279,7 +2279,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(30),
                         endDate = today,
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2288,7 +2288,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement,
                     startDate = today.minusDays(30),
                     endDate = today,
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2338,7 +2338,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(60),
                         endDate = today.minusDays(10),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2347,7 +2347,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = pastPlacement,
                     startDate = today.minusDays(60),
                     endDate = today.minusDays(10),
-                )
+                ),
             )
 
             val futurePlacement =
@@ -2357,7 +2357,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.plusDays(10),
                         endDate = today.plusDays(60),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2366,7 +2366,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = futurePlacement,
                     startDate = today.plusDays(10),
                     endDate = today.plusDays(60),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2425,7 +2425,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(60),
                         endDate = today,
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2434,7 +2434,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = returningChildPastPlacement,
                     startDate = today.minusDays(60),
                     endDate = today,
-                )
+                ),
             )
 
             val returningChildFuturePlacement =
@@ -2444,7 +2444,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.plusDays(1),
                         endDate = today.plusDays(60),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2453,7 +2453,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = returningChildFuturePlacement,
                     startDate = today.plusDays(1),
                     endDate = today.plusDays(60),
-                )
+                ),
             )
 
             val newChildFuturePlacement =
@@ -2463,7 +2463,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.plusDays(1),
                         endDate = today.plusDays(60),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2472,7 +2472,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = newChildFuturePlacement,
                     startDate = today.plusDays(1),
                     endDate = today.plusDays(60),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2529,7 +2529,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2538,7 +2538,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2618,7 +2618,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2627,7 +2627,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2682,7 +2682,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                             unitId = daycare.id,
                             startDate = today.minusDays(10),
                             endDate = today.plusDays(30),
-                        )
+                        ),
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
@@ -2690,7 +2690,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         daycarePlacementId = placement,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             }
 
@@ -2782,7 +2782,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare1.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement2 =
                 tx.insert(
@@ -2791,7 +2791,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare2.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement3 =
                 tx.insert(
@@ -2800,7 +2800,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare2.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val placement4 =
                 tx.insert(
@@ -2809,7 +2809,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare1.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2818,7 +2818,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement1,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -2826,7 +2826,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement2,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -2834,7 +2834,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement3,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -2842,7 +2842,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement4,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare1.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2911,7 +2911,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -2920,7 +2920,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -2985,7 +2985,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.minusDays(10),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
             val starterPlacement =
                 tx.insert(
@@ -2994,7 +2994,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                         unitId = daycare.id,
                         startDate = today.plusDays(5),
                         endDate = today.plusDays(30),
-                    )
+                    ),
                 )
 
             tx.insert(
@@ -3003,7 +3003,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = currentPlacement,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -3011,7 +3011,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     daycarePlacementId = starterPlacement,
                     startDate = today.plusDays(5),
                     endDate = today.plusDays(30),
-                )
+                ),
             )
 
             tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)

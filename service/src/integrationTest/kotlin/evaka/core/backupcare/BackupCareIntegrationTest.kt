@@ -69,7 +69,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         unitId = daycare2.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
         }
     }
@@ -139,7 +139,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unit = BackupCareUnit(id = daycare.id, name = daycare.name),
                     group = BackupCareGroup(id = groupId, name = groupName),
                     period = FiniteDateRange(backupCareStart, backupCareEnd),
-                )
+                ),
             ),
             backupCares,
         )
@@ -195,7 +195,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     openingDate = backupCareStart,
                     closingDate = backupCareEnd,
                     areaId = otherArea,
-                )
+                ),
             )
         }
 

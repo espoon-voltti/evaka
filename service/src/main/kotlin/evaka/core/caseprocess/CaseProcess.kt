@@ -90,7 +90,7 @@ fun Database.Transaction.insertCaseProcess(
 ): CaseProcess {
     execute {
         sql(
-            "SELECT pg_advisory_xact_lock(hashtext(${bind(processDefinitionNumber)}), ${bind(year)})"
+            "SELECT pg_advisory_xact_lock(hashtext(${bind(processDefinitionNumber)}), ${bind(year)})",
         )
     }
     return createQuery {
@@ -110,7 +110,7 @@ fun Database.Transaction.insertCaseProcess(
         ${bind(migrated)}
     )
     RETURNING id, case_identifier, process_definition_number, year, number, organization, archive_duration_months, migrated, '[]'::jsonb AS history
-"""
+""",
         )
     }
         .exactlyOne()
@@ -146,7 +146,7 @@ fun Database.Read.getCaseProcess(id: CaseProcessId): CaseProcess? = createQuery 
     ) AS history
     FROM case_process ap
     WHERE ap.id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -176,11 +176,11 @@ fun Database.Read.getCaseProcessByFeeDecisionId(feeDecisionId: FeeDecisionId): C
 }
 
 fun Database.Read.getCaseProcessByVoucherValueDecisionId(
-    voucherValueDecisionId: VoucherValueDecisionId
+    voucherValueDecisionId: VoucherValueDecisionId,
 ): CaseProcess? {
     return createQuery {
         sql(
-            "SELECT process_id FROM voucher_value_decision WHERE id = ${bind(voucherValueDecisionId)}"
+            "SELECT process_id FROM voucher_value_decision WHERE id = ${bind(voucherValueDecisionId)}",
         )
     }
         .exactlyOneOrNull<CaseProcessId?>()
@@ -222,7 +222,7 @@ fun Database.Transaction.insertCaseProcessHistoryRow(
         ${bind(now)},
         ${bind(userId)}
     )
-"""
+""",
         )
     }
 }
@@ -318,7 +318,7 @@ fun Database.Transaction.cancelLastCaseProcessHistoryRow(
             FROM case_process_history
             WHERE process_id = ${bind(processId)}
         )
-"""
+""",
         )
     }
         .updateExactlyOne()

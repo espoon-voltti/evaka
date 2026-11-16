@@ -26,7 +26,7 @@ CASE
     ) THEN ${bind(deletedMessageBody)}
     ELSE n.content
 END AS content
-"""
+""",
     )
 }
 
@@ -46,7 +46,7 @@ FROM application_note n
 LEFT JOIN message m ON m.content_id = n.message_content_id
 WHERE application_id = ${bind(applicationId)}
 ORDER BY n.created_at
-"""
+""",
     )
 }
     .toList()
@@ -66,7 +66,7 @@ FROM application_note n
 WHERE application_id = ${bind(applicationId)}
 AND created_by IN (SELECT employee_id FROM daycare_acl WHERE role = 'SPECIAL_EDUCATION_TEACHER'::user_role)
 ORDER BY n.created
-"""
+""",
     )
 }
     .toList()
@@ -98,7 +98,7 @@ SELECT
     eu.name AS modified_by_name
 FROM new_note n
 LEFT JOIN evaka_user eu ON n.created_by = eu.id
-"""
+""",
     )
 }
     .exactlyOne()
@@ -121,7 +121,7 @@ SELECT
     n.created_at, n.created_by, (SELECT name FROM evaka_user WHERE id = n.created_by) AS created_by_name,
     n.modified_at, n.modified_by, (SELECT name FROM evaka_user WHERE id = n.modified_by) AS modified_by_name
 FROM updated_note n
-"""
+""",
     )
 }
     .exactlyOne()
@@ -150,7 +150,7 @@ fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId): DeletedAp
             """
 DELETE FROM application_note WHERE id = ${bind(id)}
 RETURNING application_id, created_at, created_by, message_content_id
-"""
+""",
         )
     }
     .executeAndReturnGeneratedKeys()

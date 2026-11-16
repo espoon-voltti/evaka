@@ -48,7 +48,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')"
+                    "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')",
                 )
             }
             tx.createChild(
@@ -73,7 +73,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
                 setOf(UserRole.SERVICE_WORKER),
-            )
+            ),
         )
     }
 
@@ -133,9 +133,9 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                 id = "f1",
                                 name = "Field 1",
                                 type = NekkuSpecialDietType.TEXT,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         db.transaction { tx ->
             tx.setSpecialDiets(diets)

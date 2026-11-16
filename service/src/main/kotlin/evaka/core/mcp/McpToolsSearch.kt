@@ -29,7 +29,7 @@ object McpToolsSearch {
 
     data class SearchPersonsInput(
         @McpDoc(
-            "Case-insensitive substring of the person's full name (first names and last name in either order), or an exact social security number"
+            "Case-insensitive substring of the person's full name (first names and last name in either order), or an exact social security number",
         )
         val query: String,
         @McpDoc("Maximum number of results (default 20)") val limit: Int = 20,
@@ -37,7 +37,7 @@ object McpToolsSearch {
 
     data class SearchEmployeesInput(
         @McpDoc(
-            "Case-insensitive substring of the employee's name or email. Omit to list the most recent employees."
+            "Case-insensitive substring of the employee's name or email. Omit to list the most recent employees.",
         )
         val query: String? = null,
         @McpDoc("Only employees with a role in this unit") val unitId: DaycareId? = null,
@@ -107,7 +107,7 @@ WHERE (${bind(query)}::text IS NULL OR d.name ILIKE '%' || ${bind(query)} || '%'
   AND (${bind(input.includeClosed)} OR d.closing_date IS NULL OR d.closing_date >= ${bind(today)})
 ORDER BY d.name
 LIMIT ${bind(limit)}
-"""
+""",
                     )
                 }
                 .toList<UnitInfo>()
@@ -179,7 +179,7 @@ WHERE p.first_name || ' ' || p.last_name ILIKE '%' || ${bind(query)} || '%'
    OR p.social_security_number = upper(${bind(query)})
 ORDER BY p.last_name, p.first_name, p.date_of_birth
 LIMIT ${bind(limit)}
-"""
+""",
                     )
                 }
                 .toList<PersonSearchRow>()
@@ -206,7 +206,7 @@ JOIN person parent ON parent.id = r.parent_id
 JOIN person child ON child.id = r.child_id
 WHERE r.parent_id = ANY(${bind(personIds)}) OR r.child_id = ANY(${bind(personIds)})
 ORDER BY child.date_of_birth, r.relation
-"""
+""",
                     )
                 }
                 .toList<PersonRelationRow>()
@@ -221,7 +221,7 @@ FROM placement pl
 JOIN daycare d ON d.id = pl.unit_id
 WHERE pl.child_id = ANY(${bind(placementChildIds)}) AND pl.end_date >= ${bind(today)}
 ORDER BY pl.start_date
-"""
+""",
                     )
                 }
                 .toList<PlacementSearchRow>()
@@ -235,7 +235,7 @@ FROM daycare_group_placement gp
 JOIN daycare_group g ON g.id = gp.daycare_group_id
 WHERE gp.daycare_placement_id = ANY(${bind(placements.map { it.id })}) AND gp.end_date >= ${bind(today)}
 ORDER BY gp.start_date
-"""
+""",
                     )
                 }
                 .toList<GroupPlacementSearchRow>()
@@ -337,7 +337,7 @@ WHERE (${bind(query)}::text IS NULL OR e.first_name || ' ' || e.last_name ILIKE 
   AND (${bind(input.includeInactive)} OR e.active)
 ORDER BY e.last_login DESC NULLS LAST, e.last_name, e.first_name
 LIMIT ${bind(input.limit.coerceIn(1, 200))}
-"""
+""",
                     )
                 }
                 .toList<EmployeeSearchRow>()

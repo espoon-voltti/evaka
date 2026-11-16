@@ -68,7 +68,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                         targetId = AuditId(childId),
                         meta = mapOf("count" to it.size),
                     )
-                }
+                },
         )
     }
 
@@ -92,7 +92,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                     )
                     if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
                         throw BadRequest(
-                            "The new backup care period is not contained within a placement"
+                            "The new backup care period is not contained within a placement",
                         )
                     }
                     if (!tx.isDaycareOpenForPeriod(body.unitId, body.period)) {
@@ -146,7 +146,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                         )
                     ) {
                         throw BadRequest(
-                            "The new backup care period is not contained within a placement"
+                            "The new backup care period is not contained within a placement",
                         )
                     }
 

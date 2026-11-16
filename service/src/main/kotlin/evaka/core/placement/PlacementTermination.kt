@@ -125,7 +125,7 @@ fun mapToTerminatablePlacements(
                                 it.type
                             }
                         }
-                    }
+                    },
                 )
             }
             acc +
@@ -207,7 +207,7 @@ fun terminateBilledDaycare(
 
                 else -> {
                     throw IllegalStateException(
-                        "Should not be handling any other placement types here"
+                        "Should not be handling any other placement types here",
                     )
                 }
             }

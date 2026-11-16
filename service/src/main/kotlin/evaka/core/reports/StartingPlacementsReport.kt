@@ -47,7 +47,7 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
             }
             .also {
                 Audit.StartingPlacementsReportRead.log(
-                    meta = mapOf("year" to year, "month" to month, "count" to it.size)
+                    meta = mapOf("year" to year, "month" to month, "count" to it.size),
                 )
             }
     }
@@ -90,7 +90,7 @@ JOIN care_area ca ON u.care_area_id = ca.id
 LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
 WHERE between_start_and_end(${bind(range)}, p.start_date) AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
 AND ${predicate(unitFilter.forTable("u"))} 
-"""
+""",
         )
     }
         .toList<StartingPlacementsRow>()

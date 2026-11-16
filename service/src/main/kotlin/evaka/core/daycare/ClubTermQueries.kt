@@ -43,7 +43,7 @@ fun Database.Read.getClubTerms(range: FiniteDateRange?): List<ClubTerm> {
     FROM club_term
     ${if (range != null) "WHERE term && ${bind(range)}" else ""}
     ORDER BY term
-    """
+    """,
         )
     }
         .toList()
@@ -53,7 +53,7 @@ fun Database.Read.getClubTerm(id: ClubTermId): ClubTerm? = createQuery {
     sql(
         """
                SELECT id, term, application_period, term_breaks FROM club_term WHERE id = ${bind(id)}
-            """
+            """,
     )
 }
     .exactlyOneOrNull()
@@ -72,7 +72,7 @@ fun Database.Transaction.insertClubTerm(
         INSERT INTO club_term (term, application_period, term_breaks)
         VALUES (${bind(term)}, ${bind(applicationPeriod)}, ${bind(termBreaks)})
         RETURNING id
-        """
+        """,
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -93,7 +93,7 @@ fun Database.Transaction.updateClubTerm(
                 application_period = ${bind(applicationPeriod)},
                 term_breaks =  ${bind(termBreaks)}
             WHERE id = ${bind(id)}
-            """
+            """,
     )
 }
     .updateExactlyOne()
@@ -104,7 +104,7 @@ fun Database.Transaction.deleteFutureClubTerm(clock: EvakaClock, termId: ClubTer
             """
            DELETE FROM club_term
            WHERE id = ${bind(termId)} AND lower(term) > ${bind(clock.today())}
-        """
+        """,
         )
     }
         .updateExactlyOne()

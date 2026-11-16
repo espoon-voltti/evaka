@@ -146,7 +146,7 @@ class SystemController(
                     "eventCode" to "NEW_DEVICE_LOGIN",
                     "citizenIdHash" to userIdHash,
                     "deviceAuthHistorySize" to deviceAuthHistory.size,
-                )
+                ),
             ) {
                 "Login from new device detected"
             }
@@ -328,7 +328,7 @@ class SystemController(
                             finance = permittedGlobalActions.contains(Action.Global.FINANCE_PAGE),
                             holidayAndTermPeriods =
                                 permittedGlobalActions.contains(
-                                    Action.Global.HOLIDAY_AND_TERM_PERIODS_PAGE
+                                    Action.Global.HOLIDAY_AND_TERM_PERIODS_PAGE,
                                 ),
                             messages = permittedGlobalActions.contains(Action.Global.MESSAGES_PAGE),
                             personSearch =
@@ -337,7 +337,7 @@ class SystemController(
                             settings = permittedGlobalActions.contains(Action.Global.SETTINGS_PAGE),
                             systemNotifications =
                                 permittedGlobalActions.contains(
-                                    Action.Global.READ_SYSTEM_NOTIFICATIONS
+                                    Action.Global.READ_SYSTEM_NOTIFICATIONS,
                                 ),
                             unitFeatures =
                                 permittedGlobalActions.contains(Action.Global.UNIT_FEATURES_PAGE),
@@ -346,16 +346,16 @@ class SystemController(
                                 permittedGlobalActions.contains(Action.Global.CREATE_UNIT),
                             documentTemplates =
                                 permittedGlobalActions.contains(
-                                    Action.Global.DOCUMENT_TEMPLATES_PAGE
+                                    Action.Global.DOCUMENT_TEMPLATES_PAGE,
                                 ),
                             personalMobileDevice =
                                 permittedGlobalActions.contains(
-                                    Action.Global.PERSONAL_MOBILE_DEVICE_PAGE
+                                    Action.Global.PERSONAL_MOBILE_DEVICE_PAGE,
                                 ),
                             pinCode = permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE),
                             createDraftInvoices =
                                 permittedGlobalActions.contains(
-                                    Action.Global.CREATE_DRAFT_INVOICES
+                                    Action.Global.CREATE_DRAFT_INVOICES,
                                 ),
                             createPlacements =
                                 accessControl.isPermittedForSomeTarget(
@@ -376,7 +376,7 @@ class SystemController(
                                 permittedGlobalActions.contains(Action.Global.OUT_OF_OFFICE_PAGE),
                             decisionReasoningManagement =
                                 permittedGlobalActions.contains(
-                                    Action.Global.WRITE_DECISION_REASONINGS
+                                    Action.Global.WRITE_DECISION_REASONINGS,
                                 ),
                             decisionReasoningGenericRemoval =
                                 env.decisionReasoningGenericRemovalEnabled,
@@ -449,7 +449,7 @@ class SystemController(
                                     device.unitIds,
                                     PilotFeature.PUSH_NOTIFICATIONS,
                                 )
-                            }
+                            },
                     )
                 }
             }

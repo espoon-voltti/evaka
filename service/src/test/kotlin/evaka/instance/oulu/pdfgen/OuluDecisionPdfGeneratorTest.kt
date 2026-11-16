@@ -91,7 +91,8 @@ class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "fee_valid_to",
                 customize = {
                     it.copy(
-                        validDuring = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1))
+                        validDuring =
+                            FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
                     )
                 },
             ),
@@ -114,8 +115,13 @@ class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                     it.copy(
                         feeAlterations =
                             listOf(
-                                FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -10800)
-                            )
+                                FeeAlterationWithEffect(
+                                    FeeAlterationType.RELIEF,
+                                    50,
+                                    false,
+                                    -10800,
+                                ),
+                            ),
                     )
                 },
             ),
@@ -126,8 +132,8 @@ class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                     it.copy(
                         feeAlterations =
                             listOf(
-                                FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -100)
-                            )
+                                FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -100),
+                            ),
                     )
                 },
             ),

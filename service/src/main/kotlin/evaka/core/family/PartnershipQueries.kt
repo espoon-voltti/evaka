@@ -42,7 +42,7 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
         JOIN person p2 ON fp2.person_id = p2.id
         LEFT JOIN application a ON fp1.created_from_application = a.id
         WHERE fp1.partnership_id = ${bind(id)}
-        """
+        """,
             )
         }
         .exactlyOneOrNull(toPartnership("p1", "p2"))
@@ -80,7 +80,7 @@ JOIN person p2 ON fp2.person_id = p2.id
 LEFT JOIN application a ON fp1.created_from_application = a.id
 WHERE fp1.person_id = ${bind(personId)} OR fp2.person_id = ${bind(personId)}
 AND (${bind(includeConflicts)} OR fp1.conflict = false)
-"""
+""",
             )
         }
         .toList(toPartnership("p1", "p2"))
@@ -108,7 +108,7 @@ LEFT JOIN application a ON fp.created_from_application = a.id
 WHERE fp.person_id = ${bind(personId)}
 AND daterange(fp.start_date, fp.end_date, '[]') && daterange(${bind(period?.start)}, ${bind(period?.end)}, '[]')
 AND (${bind(includeConflicts)} OR fp.conflict = false)
-"""
+""",
             )
         }
         .toList(toPartner("p"))
@@ -166,7 +166,7 @@ fun Database.Transaction.createPartnership(
         JOIN person p1 ON fp1.person_id = p1.id
         JOIN person p2 ON fp2.person_id = p2.id
         LEFT JOIN application a ON fp1.created_from_application = a.id
-        """
+        """,
             )
         }
         .exactlyOne(toPartnership("p1", "p2"))
@@ -187,7 +187,7 @@ fun Database.Transaction.updatePartnershipDuration(
         UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modify_source = ${bind(modifySource)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
         WHERE partnership_id = ${bind(id)}
         RETURNING partnership_id
-        """
+        """,
         )
     }
         .mapTo<PartnershipId>()
@@ -204,7 +204,7 @@ fun Database.Transaction.retryPartnership(
             """
         UPDATE fridge_partner SET conflict = false, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
         WHERE partnership_id = ${bind(id)}
-    """
+    """,
         )
     }
         .execute()
@@ -214,7 +214,7 @@ fun Database.Transaction.retryPartnership(
 fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
     return createQuery {
         sql(
-            "DELETE FROM fridge_partner WHERE partnership_id = ${bind(id)} RETURNING partnership_id"
+            "DELETE FROM fridge_partner WHERE partnership_id = ${bind(id)} RETURNING partnership_id",
         )
     }
         .mapTo<PartnershipId>()

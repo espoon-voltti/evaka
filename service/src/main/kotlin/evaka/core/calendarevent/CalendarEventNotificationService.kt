@@ -201,7 +201,7 @@ class CalendarEventNotificationService(
                             period = event.period,
                             groupNames = event.groups.map { it.name },
                         )
-                    }
+                    },
                 ),
             )
         }
@@ -349,7 +349,7 @@ class CalendarEventNotificationService(
 }
 
 private fun Database.Read.getDiscussionTimeChildAndSurvey(
-    eventTimeId: CalendarEventTimeId
+    eventTimeId: CalendarEventTimeId,
 ): Pair<PersonId, String> = createQuery {
     sql(
         """
@@ -357,7 +357,7 @@ SELECT cet.child_id, ce.title
 FROM calendar_event_time cet
 JOIN calendar_event ce ON cet.calendar_event_id = ce.id
 WHERE cet.id = ${bind(eventTimeId)}
-"""
+""",
     )
 }
     .exactlyOne { column<PersonId>("child_id") to column<String>("title") }

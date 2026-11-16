@@ -191,7 +191,7 @@ fun validateServiceNeed(
                 WHERE pl.id = ${bind(placementId)} AND sno.id = ${bind(optionId)} 
                     AND daterange(sno.valid_from, sno.valid_to, '[]') @> ${bind(FiniteDateRange(startDate, endDate))}
                     AND (sno.part_week IS NULL OR sno.part_week = ${bind(partWeek)})
-                """
+                """,
             )
         }
         .toList<Int>()
@@ -205,7 +205,7 @@ fun validateServiceNeed(
                 WHERE
                     pl.id = ${bind(placementId)} AND
                     daterange(pl.start_date, pl.end_date, '[]') @> daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
-                """
+                """,
             )
         }
         .toList<Int>()
@@ -251,7 +251,7 @@ SELECT EXISTS (
           '{}'
       )
 )
-"""
+""",
                 )
             }
             .exactlyOne<Boolean>()
@@ -428,7 +428,7 @@ fun notifyServiceNeedUpdated(
             AsyncJob.GenerateFinanceDecisions.forChild(
                 childRange.childId,
                 childRange.dateRange.asDateRange(),
-            )
+            ),
         ),
         runAt = clock.now(),
     )

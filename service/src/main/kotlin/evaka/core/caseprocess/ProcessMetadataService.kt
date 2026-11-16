@@ -59,7 +59,7 @@ class ProcessMetadataService(
                                     else Action.Decision.DOWNLOAD_PDF,
                                     decisionId,
                                 )
-                            }
+                            },
                     )
                 },
         )
@@ -67,7 +67,7 @@ class ProcessMetadataService(
 }
 
 private fun applicationProcessNameAndType(
-    applicationType: ApplicationType
+    applicationType: ApplicationType,
 ): Pair<String, ProcessType> =
     when (applicationType) {
         ApplicationType.CLUB -> "Kerhohakemus" to ProcessType.APPLICATION_CLUB

@@ -109,7 +109,7 @@ class MockVtjSoapTransport : VtjSoapTransport {
         }
 
         private fun devPersonToVTJHenkiloVastaussanomaHenkilo(
-            person: DevPerson
+            person: DevPerson,
         ): VTJHenkiloVastaussanoma.Henkilo =
             VTJHenkiloVastaussanoma.Henkilo().also {
                 it.henkilotunnus =

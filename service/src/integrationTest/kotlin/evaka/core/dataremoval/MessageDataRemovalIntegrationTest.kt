@@ -181,7 +181,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         unitId = daycare.id,
                         startDate = period.start,
                         endDate = period.end,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -189,7 +189,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     daycareGroupId = daycareGroup.id,
                     startDate = period.start,
                     endDate = period.end,
-                )
+                ),
             )
             placementId
         }
@@ -306,7 +306,7 @@ UPDATE message_thread
 SET created = ${bind(sentAt)}
 WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(contentId)})
 RETURNING id
-"""
+""",
                 )
             }
             .executeAndReturnGeneratedKeys()
@@ -346,7 +346,7 @@ RETURNING id
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE message_draft SET created_at = ${bind(createdAt)} WHERE id = ${bind(draftId)}"
+                    "UPDATE message_draft SET created_at = ${bind(createdAt)} WHERE id = ${bind(draftId)}",
                 )
             }
         }
@@ -386,7 +386,7 @@ RETURNING id
 UPDATE message_thread
 SET message_type = 'MESSAGE'
 WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.contentId)})
-"""
+""",
                 )
             }
         }
@@ -396,7 +396,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "UPDATE message_thread SET application_id = ${bind(applicationId)} WHERE id = ${bind(threadId)}"
+                    "UPDATE message_thread SET application_id = ${bind(applicationId)} WHERE id = ${bind(threadId)}",
                 )
             }
         }
@@ -503,7 +503,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
                     validDuring = leftCareOverTenYearsAgo.asDateRange(),
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
         }
         return fosterParent.id
@@ -574,7 +574,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
     private fun setCreatedLongAgo(vararg ids: PersonId) = db.transaction { tx ->
         tx.execute {
             sql(
-                "UPDATE person SET created = ${bind(now.minusYears(20))} WHERE id = ANY(${bind(ids.toList())})"
+                "UPDATE person SET created = ${bind(now.minusYears(20))} WHERE id = ANY(${bind(ids.toList())})",
             )
         }
     }
@@ -1233,7 +1233,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
                     validDuring = ongoingPlacementPeriod.asDateRange(),
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
         }
         insertGroupPlacement(child.id, ongoingPlacementPeriod)
@@ -1259,7 +1259,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
                     headOfChild = headOfFamily.id,
                     startDate = ongoingPlacementPeriod.start,
                     endDate = ongoingPlacementPeriod.end,
-                )
+                ),
             )
         }
         insertGroupPlacement(childInFamily.id, ongoingPlacementPeriod)
@@ -1286,7 +1286,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
                     headOfChild = partner.id,
                     startDate = ongoingPlacementPeriod.start,
                     endDate = ongoingPlacementPeriod.end,
-                )
+                ),
             )
             tx.insert(
                 DevFridgePartnership(
@@ -1294,7 +1294,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
                     second = guardian.id,
                     startDate = ongoingPlacementPeriod.start,
                     createdAt = now,
-                )
+                ),
             )
         }
         insertGroupPlacement(partnersChild.id, ongoingPlacementPeriod)
@@ -1322,7 +1322,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
                     headOfChild = partner.id,
                     startDate = ongoingPlacementPeriod.start,
                     endDate = partnershipStart.minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevFridgePartnership(
@@ -1330,7 +1330,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
                     second = guardian.id,
                     startDate = partnershipStart,
                     createdAt = now,
-                )
+                ),
             )
         }
         insertGroupPlacement(partnersFormerChild.id, ongoingPlacementPeriod)
@@ -1532,7 +1532,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
         assertEquals(0, rowCount("message"))
         assertEquals(0, rowCount("message_content"))
         assertTrue(
-            scheduledAttachmentDeletionIds().containsAll(sent.attachmentIds.map { it.toString() })
+            scheduledAttachmentDeletionIds().containsAll(sent.attachmentIds.map { it.toString() }),
         )
     }
 
@@ -1568,7 +1568,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
         assertEquals(0, rowCount("message"))
         assertEquals(0, rowCount("message_content"))
         assertTrue(
-            scheduledAttachmentDeletionIds().containsAll(sent.attachmentIds.map { it.toString() })
+            scheduledAttachmentDeletionIds().containsAll(sent.attachmentIds.map { it.toString() }),
         )
     }
 
@@ -1636,7 +1636,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
         assertEquals(0, rowCount("message_thread"))
         assertEquals(0, rowCount("message_content"))
         assertTrue(
-            scheduledAttachmentDeletionIds().containsAll(sent.attachmentIds.map { it.toString() })
+            scheduledAttachmentDeletionIds().containsAll(sent.attachmentIds.map { it.toString() }),
         )
     }
 
@@ -1668,7 +1668,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
                     unitId = daycare.id,
                     startDate = applicationExpireDate.minusYears(1),
                     endDate = applicationExpireDate.minusDays(1),
-                )
+                ),
             )
         }
         return insertApplication(applicationChild.id)
@@ -1696,7 +1696,7 @@ WHERE id = ANY(SELECT thread_id FROM message WHERE content_id = ${bind(sent.cont
         db.read { tx ->
                 tx.createQuery {
                         sql(
-                            "SELECT payload::json->>'attachmentId' FROM async_job WHERE type = 'DeleteAttachment'"
+                            "SELECT payload::json->>'attachmentId' FROM async_job WHERE type = 'DeleteAttachment'",
                         )
                     }
                     .toList<String>()

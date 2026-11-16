@@ -26,7 +26,7 @@ VALUES (
     ${bindJson(jobParams.payload)}
 )
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -39,7 +39,7 @@ fun Database.Transaction.upsertPermit(pool: AsyncJobPool.Id<*>) {
 INSERT INTO async_job_work_permit (pool_id, available_at)
 VALUES (${bind(pool.toString())}, '-infinity')
 ON CONFLICT DO NOTHING
-"""
+""",
         )
     }
         .execute()
@@ -52,7 +52,7 @@ SELECT available_at
 FROM async_job_work_permit
 WHERE pool_id = ${bind(pool.toString())}
 FOR UPDATE
-"""
+""",
     )
 }
     .exactlyOne()
@@ -64,7 +64,7 @@ fun Database.Transaction.updatePermit(pool: AsyncJobPool.Id<*>, availableAt: Hel
 UPDATE async_job_work_permit
 SET available_at = ${bind(availableAt)}
 WHERE pool_id = ${bind(pool.toString())}
-"""
+""",
         )
     }
     .updateExactlyOne()
@@ -94,7 +94,7 @@ SET
   claimed_by = txid_current()
 WHERE id = (SELECT id FROM claimed_job)
 RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts, initial_retry_count AS initialRetryCount
-        """
+        """,
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -126,7 +126,7 @@ UPDATE async_job
 SET started_at = ${bind(now)}
 WHERE id = (SELECT id FROM started_job)
 RETURNING payload
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -143,7 +143,7 @@ fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTim
 UPDATE async_job
 SET completed_at = ${bind(now)}
 WHERE id = ${bind(job.jobId)}
-"""
+""",
     )
 }
     .execute()
@@ -156,7 +156,7 @@ SET retry_count = 0
 WHERE id = ${bind(job.jobId)}
 AND claimed_by = ${bind(job.txId)}
 AND completed_at IS NULL
-"""
+""",
     )
 }
     .updateNoneOrOne()
@@ -168,7 +168,7 @@ fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime):
             """
 DELETE FROM async_job
 WHERE completed_at < ${bind(completedBefore)}
-"""
+""",
         )
     }
     .executeAndReturnCount()
@@ -180,7 +180,7 @@ DELETE FROM async_job
 WHERE completed_at IS NULL
 AND claimed_at IS NULL
 AND type = ANY(${bind(jobTypes.map { it.name })})
-    """
+    """,
     )
 }
     .execute()
@@ -192,7 +192,7 @@ fun Database.Transaction.removeUncompletedJobs(runBefore: HelsinkiDateTime): Int
 DELETE FROM async_job
 WHERE completed_at IS NULL
 AND run_at < ${bind(runBefore)}
-"""
+""",
     )
 }
     .executeAndReturnCount()

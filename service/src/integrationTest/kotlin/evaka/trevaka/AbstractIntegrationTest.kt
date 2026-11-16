@@ -105,7 +105,7 @@ abstract class AbstractIntegrationTest(private val municipality: String) {
                 DeleteObjectsRequest.builder()
                     .bucket(bucket)
                     .delete(Delete.builder().objects(objectIdList).build())
-                    .build()
+                    .build(),
             )
         }
     }

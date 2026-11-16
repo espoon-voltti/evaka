@@ -104,7 +104,7 @@ class FamilyInitializerServiceIntegrationTest : FullApplicationTest(resetDbBefor
                         DateRange(clock.today().minusMonths(1), clock.today().plusMonths(1)),
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     modifiedAt = clock.now(),
-                )
+                ),
             )
         }
 
@@ -160,7 +160,7 @@ class FamilyInitializerServiceIntegrationTest : FullApplicationTest(resetDbBefor
                         DateRange(clock.today().minusMonths(1), clock.today().plusMonths(1)),
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     modifiedAt = clock.now(),
-                )
+                ),
             )
         }
 
@@ -186,7 +186,7 @@ class FamilyInitializerServiceIntegrationTest : FullApplicationTest(resetDbBefor
                                     firstName = child2.firstName,
                                     lastName = child2.lastName,
                                     socialSecurityNumber = child2.ssn ?: "",
-                                )
+                                ),
                             ),
                     ),
             )
@@ -296,7 +296,7 @@ class FamilyInitializerServiceIntegrationTest : FullApplicationTest(resetDbBefor
                                 firstName = otherPartner.firstName,
                                 lastName = otherPartner.lastName,
                                 socialSecurityNumber = otherPartner.ssn ?: "",
-                            )
+                            ),
                         ),
                 ),
         )

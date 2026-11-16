@@ -68,7 +68,7 @@ class McpOAuthRedirectUriTest {
         assertFalse(redirectUriMatches("http://localhost:53000/cb", "http://localhost:61000/other"))
         assertFalse(redirectUriMatches("http://localhost:53000/cb", "https://localhost:53000/cb"))
         assertFalse(
-            redirectUriMatches("https://example.com:8443/cb", "https://example.com:9443/cb")
+            redirectUriMatches("https://example.com:8443/cb", "https://example.com:9443/cb"),
         )
         assertFalse(redirectUriMatches("http://localhost:53000/cb", "not a url"))
     }

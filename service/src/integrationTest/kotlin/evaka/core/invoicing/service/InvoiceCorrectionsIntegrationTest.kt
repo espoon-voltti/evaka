@@ -428,7 +428,7 @@ class InvoiceCorrectionsIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         periodStart = month.atDay(1),
                         periodEnd = month.atEndOfMonth(),
                         product = productProvider.mapToProduct(PlacementType.DAYCARE),
-                    )
+                    ),
                 ),
         )
 
@@ -463,7 +463,7 @@ class InvoiceCorrectionsIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 product = productProvider.mapToProduct(PlacementType.DAYCARE),
                 description = "",
                 note = "",
-            )
+            ),
         )
     }
 

@@ -91,7 +91,7 @@ class OkHttpExtensionsTest {
     @Test
     fun `getRetryAfterSeconds returns null for non-numeric Retry-After header`() {
         mockWebServer.enqueue(
-            MockResponse().setResponseCode(429).addHeader("Retry-After", "invalid")
+            MockResponse().setResponseCode(429).addHeader("Retry-After", "invalid"),
         )
 
         val request = Request.Builder().url(mockWebServer.url("/test")).build()
@@ -228,7 +228,7 @@ class OkHttpExtensionsTest {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(429)
-                .addHeader("Retry-After", "1") // 1 second retry delay
+                .addHeader("Retry-After", "1"), // 1 second retry delay
         )
         mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("Success after retry"))
 
@@ -246,7 +246,7 @@ class OkHttpExtensionsTest {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(429)
-                .addHeader("Retry-After", "700") // Exceeds default maxRetryAfterWaitSeconds (600)
+                .addHeader("Retry-After", "700"), // Exceeds default maxRetryAfterWaitSeconds (600)
         )
 
         val request = Request.Builder().url(mockWebServer.url("/test")).build()
@@ -374,7 +374,7 @@ class OkHttpExtensionsTest {
         // OkHttp URL-encodes special characters in query parameter values
         assertTrue(url.startsWith("https://example.com/api/data?"))
         assertTrue(
-            url.contains("filename=report%202024.csv") || url.contains("filename=report+2024.csv")
+            url.contains("filename=report%202024.csv") || url.contains("filename=report+2024.csv"),
         )
         assertTrue(url.contains("filter=a%26b%3Dc"))
     }
@@ -493,7 +493,7 @@ class OkHttpExtensionsTest {
             MockResponse()
                 .setResponseCode(200)
                 .setBody(json)
-                .addHeader("Content-Type", "application/json")
+                .addHeader("Content-Type", "application/json"),
         )
 
         val configuredClient = configuredClient(jsonMapper)
@@ -545,7 +545,7 @@ class OkHttpExtensionsTest {
             MockResponse()
                 .setResponseCode(200)
                 .setBody("""{"id":1,"name":"test"}""")
-                .addHeader("Content-Type", "application/json")
+                .addHeader("Content-Type", "application/json"),
         )
 
         val configuredClient = configuredClient(jsonMapper)

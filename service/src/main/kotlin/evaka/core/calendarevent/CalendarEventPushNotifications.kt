@@ -49,7 +49,7 @@ class CalendarEventPushNotifications(
     )
 
     private fun Database.Read.getNotification(
-        job: AsyncJob.SendCalendarEventReservationPushNotification
+        job: AsyncJob.SendCalendarEventReservationPushNotification,
     ): CalendarEventReservationNotification? = createQuery {
         sql(
             """
@@ -62,7 +62,7 @@ JOIN daycare d ON d.id = dg.daycare_id
 WHERE md.id = ${bind(job.device)} AND md.employee_id IS NULL AND dg.id = ${bind(job.groupId)}
 AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
 AND 'CALENDAR_EVENT_RESERVATION' = ANY(md.push_notification_categories)
-"""
+""",
         )
     }
         .exactlyOneOrNull {
@@ -137,11 +137,11 @@ AND 'CALENDAR_EVENT_RESERVATION' = ANY(md.push_notification_categories)
                                         }
                                     } keskusteluajan ${job.date.format(dateFormat)} klo ${
                                         job.startTime.format(
-                                            timeFormat
+                                            timeFormat,
                                         )
-                                    } - ${job.endTime.format(timeFormat)}"
-                                )
-                            )
+                                    } - ${job.endTime.format(timeFormat)}",
+                                ),
+                            ),
                         ),
                 ),
             )
@@ -182,7 +182,7 @@ AND EXISTS (
       AND dgp.daycare_group_id = cea.group_id
       AND daterange(dgp.start_date, dgp.end_date, '[]') @> cet.date
 )
-        """
+        """,
     )
 }
     .toSet<GroupDevice>()

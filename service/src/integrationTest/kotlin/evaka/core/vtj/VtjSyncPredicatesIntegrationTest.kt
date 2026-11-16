@@ -113,7 +113,7 @@ class VtjSyncPredicatesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     headOfChildId = adult.id,
                     startDate = startDate,
                     endDate = endDate,
-                )
+                ),
             )
         }
     }
@@ -131,7 +131,7 @@ class VtjSyncPredicatesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     startDate = startDate,
                     endDate = endDate,
                     conflict = conflict,
-                )
+                ),
             )
         }
     }

@@ -18,7 +18,7 @@ fun Database.Transaction.storeDvvModificationToken(
             """
 INSERT INTO dvv_modification_token (token, next_token, ssns_sent, modifications_received) 
 VALUES (${bind(token)}, ${bind(nextToken)}, ${bind(ssnsSent)}, ${bind(modificationsReceived)})
-"""
+""",
         )
     }
         .execute()
@@ -32,7 +32,7 @@ SELECT next_token
 FROM dvv_modification_token
 ORDER BY created DESC
 LIMIT 1
-"""
+""",
         )
     }
         .exactlyOneOrNull<String>()
@@ -45,7 +45,7 @@ fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken {
 SELECT token, next_token, ssns_sent, modifications_received
 FROM dvv_modification_token
 WHERE token = ${bind(token)}
-"""
+""",
         )
     }
         .exactlyOne<DvvModificationToken>()
@@ -62,7 +62,7 @@ fun Database.Read.getSsnsOfPersons(ids: Collection<PersonId>): List<String> = cr
 SELECT social_security_number
 FROM person
 WHERE id = ANY (${bind(ids)}) AND social_security_number IS NOT NULL
-"""
+""",
     )
 }
     .toList()

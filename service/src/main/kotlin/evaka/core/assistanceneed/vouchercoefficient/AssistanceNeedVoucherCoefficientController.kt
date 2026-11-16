@@ -65,7 +65,7 @@ class AssistanceNeedVoucherCoefficientController(
                                     AsyncJob.GenerateFinanceDecisions.forChild(
                                         childId,
                                         body.validityPeriod.asDateRange(),
-                                    )
+                                    ),
                                 ),
                                 runAt = clock.now(),
                             )
@@ -157,7 +157,7 @@ class AssistanceNeedVoucherCoefficientController(
                                     AsyncJob.GenerateFinanceDecisions.forChild(
                                         existing.childId,
                                         combinedRange,
-                                    )
+                                    ),
                                 ),
                                 runAt = clock.now(),
                             )
@@ -195,7 +195,7 @@ class AssistanceNeedVoucherCoefficientController(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             existing.childId,
                             existing.validityPeriod.asDateRange(),
-                        )
+                        ),
                     ),
                     runAt = clock.now(),
                 )

@@ -131,12 +131,12 @@ class ApplicationControllerCitizen(
                     .add(
                         applications.flatMap { a ->
                             a.applicationSummaries.map { it.applicationId }
-                        }
+                        },
                     )
                     .observeDate(
                         applications
                             .flatMap { a -> a.applicationSummaries.mapNotNull { it.startDate } }
-                            .minOrNull()
+                            .minOrNull(),
                     )
                 audit.log(Audit.ApplicationRead, clock)
             }
@@ -428,7 +428,7 @@ class ApplicationControllerCitizen(
                     val application =
                         tx.fetchApplicationDetails(applicationId)
                             ?: throw NotFound(
-                                "Application $applicationId of guardian ${user.id} not found"
+                                "Application $applicationId of guardian ${user.id} not found",
                             )
                     audit.add(application.childId).add(application.guardianId)
 
@@ -465,7 +465,7 @@ class ApplicationControllerCitizen(
 
                         else -> {
                             throw BadRequest(
-                                "Only applications which are not yet being processed can be cancelled"
+                                "Only applications which are not yet being processed can be cancelled",
                             )
                         }
                     }
@@ -787,7 +787,7 @@ class ApplicationControllerCitizen(
                                         childInfo.id,
                                         childInfo.firstName,
                                         childInfo.lastName,
-                                    )
+                                    ),
                                 ),
                             validFrom = row.validFrom,
                             validTo = row.validTo,
@@ -915,7 +915,7 @@ class ApplicationControllerCitizen(
             FROM application a
             JOIN decision d ON d.application_id = a.id
             WHERE a.id = ANY(${bind(canAccept.intersect(canReject))}) AND d.status = 'PENDING'
-        """
+        """,
                 )
             }
             .toSet()
@@ -992,7 +992,7 @@ data class FinanceDecisionCitizenInfo(
 )
 
 private fun hideCriticalApplicationInfoFromOtherGuardian(
-    application: ApplicationDetails
+    application: ApplicationDetails,
 ): ApplicationDetails =
     application.copy(
         form =
@@ -1019,10 +1019,10 @@ private fun hideCriticalApplicationInfoFromOtherGuardian(
                                 siblingName = "",
                                 siblingSsn = "",
                                 siblingUnit = "",
-                            )
+                            ),
                     ),
                 otherPartner = null,
                 otherChildren = emptyList(),
                 otherInfo = "",
-            )
+            ),
     )

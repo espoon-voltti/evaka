@@ -69,7 +69,7 @@ class SoftwareAuthenticator(
                         clientDataJSON = base64Url.encodeToString(clientData),
                         attestationObject = base64Url.encodeToString(attestationObject),
                     ),
-            )
+            ),
         )
     }
 
@@ -99,7 +99,7 @@ class SoftwareAuthenticator(
                         signature = base64Url.encodeToString(signature),
                         userHandle = userHandle?.let { base64Url.encodeToString(it) },
                     ),
-            )
+            ),
         )
     }
 

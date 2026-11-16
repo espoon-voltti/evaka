@@ -50,7 +50,7 @@ JOIN LATERAL (
 ) pl ON true
 JOIN special_diet ON child.diet_id = special_diet.id
 WHERE child.diet_id != ALL (${bind(newSpecialDietIds)})
-        """
+        """,
         )
     }
         .toList<NulledSpecialDiet>()
@@ -64,12 +64,12 @@ WHERE child.diet_id != ALL (${bind(newSpecialDietIds)})
 
 @IgnorableReturnValue
 fun Database.Transaction.resetMealTexturesNotContainedWithin(
-    mealTextureList: List<MealTexture>
+    mealTextureList: List<MealTexture>,
 ): Int {
     val newMealTextureIds = mealTextureList.map { it.id }
     val affectedRows = executeAndReturnCount {
         sql(
-            "UPDATE child SET meal_texture_id = null WHERE meal_texture_id != ALL (${bind(newMealTextureIds)})"
+            "UPDATE child SET meal_texture_id = null WHERE meal_texture_id != ALL (${bind(newMealTextureIds)})",
         )
     }
     return affectedRows
@@ -92,7 +92,7 @@ VALUES (
 )
 ON CONFLICT (id) DO UPDATE SET
   abbreviation = excluded.abbreviation
-"""
+""",
         )
     }
     return deletedDietCount
@@ -114,7 +114,7 @@ VALUES (
 )
 ON CONFLICT (id) DO UPDATE SET
   name = excluded.name
-"""
+""",
         )
     }
     return deletedTextureCount

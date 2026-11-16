@@ -104,7 +104,8 @@ class TurkuDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "fee_valid_to",
                 customize = {
                     it.copy(
-                        validDuring = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1))
+                        validDuring =
+                            FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
                     )
                 },
             ),
@@ -129,7 +130,12 @@ class TurkuDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                         fee = 28500,
                         feeAlterations =
                             listOf(
-                                FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -14250)
+                                FeeAlterationWithEffect(
+                                    FeeAlterationType.RELIEF,
+                                    50,
+                                    false,
+                                    -14250,
+                                ),
                             ),
                     )
                 },
@@ -163,8 +169,13 @@ class TurkuDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                     it.copy(
                         feeAlterations =
                             listOf(
-                                FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -10800)
-                            )
+                                FeeAlterationWithEffect(
+                                    FeeAlterationType.RELIEF,
+                                    50,
+                                    false,
+                                    -10800,
+                                ),
+                            ),
                     )
                 },
             ),
@@ -175,8 +186,8 @@ class TurkuDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                     it.copy(
                         feeAlterations =
                             listOf(
-                                FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -100)
-                            )
+                                FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -100),
+                            ),
                     )
                 },
             ),
@@ -204,6 +215,6 @@ class TurkuDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                         feeAlterations = feeAlterations,
                         finalFee = fee + feeAlterations.sumOf { it.effect },
                     )
-                }
+                },
         )
 }

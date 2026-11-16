@@ -111,7 +111,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementUnitId = daycare.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
             createFeeDecisionFixture(
@@ -127,7 +127,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementUnitId = daycare.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        )
+                        ),
                     ),
             ),
         )
@@ -217,7 +217,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 placementUnitId = unit.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                            )
+                            ),
                         ),
                 )
 
@@ -375,10 +375,10 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     placementUnitId = daycare.id,
                                     placementType = PlacementType.DAYCARE,
                                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                                )
+                                ),
                             ),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
@@ -405,7 +405,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 placementUnitId = daycare.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                            )
+                            ),
                         ),
                 )
             }
@@ -477,7 +477,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     worksAtECHA = false,
                                 ),
                         ),
-                )
+                ),
             )
             val ids = tx.createQuery { sql("SELECT id FROM fee_decision") }.toList<FeeDecisionId>()
             tx.getDetailedFeeDecisionsByIds(ids)
@@ -542,7 +542,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 placementUnitId = daycare.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                            )
+                            ),
                         ),
                 )
             }
@@ -568,7 +568,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             headOfFamilyId = adult4.id,
                             difference = setOf(FeeDecisionDifference.FEE_ALTERATIONS),
                         ),
-                )
+                ),
             )
         }
 
@@ -617,7 +617,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 placementUnitId = daycare.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                            )
+                            ),
                         ),
                 )
             }
@@ -641,7 +641,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             headOfFamilyId = adult3.id,
                             headOfFamilyIncome = null,
                         ),
-                )
+                ),
             )
         }
 

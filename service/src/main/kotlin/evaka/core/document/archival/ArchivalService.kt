@@ -81,7 +81,7 @@ class ArchivalService(
         val caseProcess = db.read { tx ->
             tx.getCaseProcessByApplicationId(decision.applicationId)
                 ?: throw NotFound(
-                    "Case process not found for application ${decision.applicationId}"
+                    "Case process not found for application ${decision.applicationId}",
                 )
         }
         val documentKey =
@@ -156,13 +156,13 @@ class ArchivalService(
         val caseProcess = db.read { tx ->
             tx.getCaseProcessByVoucherValueDecisionId(decision.id)
                 ?: throw NotFound(
-                    "Case process not found for voucher value decision ${decision.id}"
+                    "Case process not found for voucher value decision ${decision.id}",
                 )
         }
         val documentKey =
             decision.documentKey
                 ?: throw NotFound(
-                    "Document key not found for voucher value decision ${decision.id}"
+                    "Document key not found for voucher value decision ${decision.id}",
                 )
         val document = getDocument(DocumentKey.VoucherValueDecision(documentKey))
 
@@ -201,7 +201,7 @@ class ArchivalService(
 
         if (publishedVersion.documentKey == null) {
             throw IllegalStateException(
-                "Latest version ${publishedVersion.versionNumber} of document $documentId has no PDF generated yet"
+                "Latest version ${publishedVersion.versionNumber} of document $documentId has no PDF generated yet",
             )
         }
 

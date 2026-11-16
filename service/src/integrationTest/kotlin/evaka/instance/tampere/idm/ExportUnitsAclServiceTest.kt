@@ -38,7 +38,7 @@ class ExportUnitsAclServiceTest : AbstractTampereIntegrationTest() {
                         name = "Sammon koulun esiopetus",
                         areaId = AreaId(UUID.fromString("6529f5a2-9777-11eb-ba89-cfcda122ed3b")),
                         ophUnitOid = "5.4.3.2.1",
-                    )
+                    ),
                 )
             val employeeId =
                 tx.insert(
@@ -47,7 +47,7 @@ class ExportUnitsAclServiceTest : AbstractTampereIntegrationTest() {
                         lastName = "Testi",
                         email = "leena.testi@tampere.fi",
                         employeeNumber = "356751",
-                    )
+                    ),
                 )
             tx.insertDaycareAclRow(
                 daycareId = unitId,

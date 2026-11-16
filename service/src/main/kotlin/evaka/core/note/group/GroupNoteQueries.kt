@@ -20,7 +20,7 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
 SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires, gn.created_at
 FROM group_note gn
 WHERE group_id = ANY(${bind(groupIds)})
-"""
+""",
         )
     }
     .toList<GroupNote>()
@@ -32,7 +32,7 @@ fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody):
 INSERT INTO group_note (group_id, note, expires)
 VALUES (${bind(groupId)}, ${bind(note.note)}, ${bind(note.expires)})
 RETURNING id
-        """
+        """,
         )
     }
         .executeAndReturnGeneratedKeys()
@@ -54,7 +54,7 @@ UPDATE group_note SET
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
 RETURNING *
-        """
+        """,
         )
     }
         .executeAndReturnGeneratedKeys()

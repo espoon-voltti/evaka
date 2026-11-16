@@ -40,7 +40,7 @@ SELECT
     temporary_fee_sibling_part_day
 FROM fee_thresholds
 WHERE valid_during && daterange(${bind(from)}, null)
-"""
+""",
         )
     }
         .toList<FeeThresholds>()

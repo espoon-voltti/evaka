@@ -132,7 +132,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         extendedTerm = monday.toFiniteDateRange(),
                         applicationPeriod = monday.toFiniteDateRange(),
                         termBreaks = DateSet.empty(),
-                    )
+                    ),
                 )
 
                 tx.insert(area)
@@ -152,7 +152,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             mode = EnumSource.Mode.EXCLUDE,
         )
         fun `postReservations with 10 minutes Reservations should insert OTHER_ABSENCE`(
-            placementType: PlacementType
+            placementType: PlacementType,
         ) {
             db.transaction { tx ->
                 tx.insert(
@@ -162,7 +162,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = unit.id,
                         startDate = monday,
                         endDate = monday,
-                    )
+                    ),
                 )
             }
 
@@ -173,14 +173,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         childId = child.id,
                         date = monday,
                         reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 10)),
-                    )
+                    ),
                 ),
             )
 
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrderElementsOf(
-                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) }
+                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) },
                 )
         }
 
@@ -191,7 +191,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             mode = EnumSource.Mode.EXCLUDE,
         )
         fun `postReservations with Absent should insert OTHER_ABSENCE`(
-            placementType: PlacementType
+            placementType: PlacementType,
         ) {
             db.transaction { tx ->
                 tx.insert(
@@ -201,7 +201,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = unit.id,
                         startDate = monday,
                         endDate = monday,
-                    )
+                    ),
                 )
             }
 
@@ -213,7 +213,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrderElementsOf(
-                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) }
+                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) },
                 )
         }
 
@@ -224,7 +224,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             mode = EnumSource.Mode.EXCLUDE,
         )
         fun `postAbsences with OTHER_ABSENCE should insert OTHER_ABSENCE`(
-            placementType: PlacementType
+            placementType: PlacementType,
         ) {
             db.transaction { tx ->
                 tx.insert(
@@ -234,7 +234,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = unit.id,
                         startDate = monday,
                         endDate = monday,
-                    )
+                    ),
                 )
             }
 
@@ -250,7 +250,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrderElementsOf(
-                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) }
+                    placementType.absenceCategories().map { Tuple(it, AbsenceType.OTHER_ABSENCE) },
                 )
         }
 
@@ -261,7 +261,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             mode = EnumSource.Mode.EXCLUDE,
         )
         fun `postAbsences with PLANNED_ABSENCE should insert PLANNED_ABSENCE`(
-            placementType: PlacementType
+            placementType: PlacementType,
         ) {
             db.transaction { tx ->
                 tx.insert(
@@ -271,7 +271,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = unit.id,
                         startDate = monday,
                         endDate = monday,
-                    )
+                    ),
                 )
             }
 
@@ -287,7 +287,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrderElementsOf(
-                    placementType.absenceCategories().map { Tuple(it, AbsenceType.PLANNED_ABSENCE) }
+                    placementType.absenceCategories().map {
+                        Tuple(it, AbsenceType.PLANNED_ABSENCE)
+                    },
                 )
         }
 
@@ -302,7 +304,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = monday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -313,7 +315,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
             }
 
@@ -324,7 +326,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         childId = child.id,
                         date = monday,
                         reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 10)),
-                    )
+                    ),
                 ),
             )
 
@@ -347,7 +349,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = monday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -358,7 +360,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
             }
 
@@ -386,7 +388,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = monday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -397,7 +399,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
             }
 
@@ -429,7 +431,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = monday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -440,7 +442,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
             }
 
@@ -451,7 +453,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         childId = child.id,
                         date = monday,
                         reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 10)),
-                    )
+                    ),
                 ),
             )
 
@@ -474,7 +476,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = monday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -485,7 +487,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
             }
 
@@ -513,7 +515,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = monday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -524,7 +526,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
             }
 
@@ -552,7 +554,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 // PLANNED_ABSENCE
                 tx.execute {
                     sql(
-                        "UPDATE service_need_option SET daycare_hours_per_month = 85 WHERE id = '${snDefaultDaycare.id}'"
+                        "UPDATE service_need_option SET daycare_hours_per_month = 85 WHERE id = '${snDefaultDaycare.id}'",
                     )
                 }
 
@@ -564,7 +566,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = wednesday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -575,7 +577,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -587,7 +589,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
             }
 
@@ -604,21 +606,21 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE),
                 )
 
             // check default service need absence
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, tuesday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                 )
 
             // check new service need absence
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, wednesday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE),
                 )
         }
 
@@ -627,7 +629,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             db.transaction { tx ->
                 tx.execute {
                     sql(
-                        "UPDATE service_need_option SET daycare_hours_per_month = 85 WHERE id = '${snDefaultDaycare.id}'"
+                        "UPDATE service_need_option SET daycare_hours_per_month = 85 WHERE id = '${snDefaultDaycare.id}'",
                     )
                 }
 
@@ -638,7 +640,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = unit.id,
                         startDate = monday,
                         endDate = wednesday,
-                    )
+                    ),
                 )
             }
 
@@ -654,19 +656,19 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                 )
 
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, tuesday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                 )
 
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, wednesday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                 )
         }
 
@@ -677,7 +679,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             db.transaction { tx ->
                 tx.execute {
                     sql(
-                        "UPDATE service_need_option SET daycare_hours_per_month = 84 WHERE id = '${snDefaultPartDayDaycare.id}'"
+                        "UPDATE service_need_option SET daycare_hours_per_month = 84 WHERE id = '${snDefaultPartDayDaycare.id}'",
                     )
                 }
 
@@ -689,7 +691,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = wednesday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -700,7 +702,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -710,7 +712,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = unit.id,
                         startDate = thursday,
                         endDate = friday,
-                    )
+                    ),
                 )
             }
 
@@ -726,13 +728,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, thursday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                 )
 
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, friday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                 )
         }
 
@@ -747,7 +749,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             unitId = unit.id,
                             startDate = monday,
                             endDate = wednesday,
-                        )
+                        ),
                     )
                 tx.insert(
                     DevServiceNeed(
@@ -758,7 +760,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
 
                 tx.insert(
@@ -770,7 +772,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         shiftCare = ShiftCareType.NONE,
                         confirmedBy = employee.evakaUserId,
                         confirmedAt = HelsinkiDateTime.now(),
-                    )
+                    ),
                 )
             }
 
@@ -787,21 +789,21 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                 )
 
             // check default service need absence
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, tuesday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE),
                 )
 
             // check new service need absence
             assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, wednesday) })
                 .extracting({ it.category }, { it.absenceType })
                 .containsExactlyInAnyOrder(
-                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                 )
         }
     }
@@ -843,7 +845,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = localMonday,
                     endDate = localTuesday,
-                )
+                ),
             )
             tx.insert(
                     DevPlacement(
@@ -852,7 +854,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = localFridayLastWeek,
                         endDate = localTuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     // contract days on monday and tuesday
@@ -866,7 +868,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             shiftCare = ShiftCareType.NONE,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
 
@@ -878,7 +880,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = localMonday,
                     endDate = localThursday,
-                )
+                ),
             )
 
             // child4 has no placement
@@ -1043,7 +1045,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = roundTheClockDaycare.id,
                         startDate = localSundayLastWeek,
                         endDate = localTuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1054,7 +1056,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             endDate = localTuesday,
                             optionId = snDaycareFullDay35.id,
                             shiftCare = ShiftCareType.FULL,
-                        )
+                        ),
                     )
                 }
 
@@ -1066,7 +1068,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = localSundayLastWeek,
                         endDate = localWednesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     val period = FiniteDateRange(localSundayLastWeek, localTuesday)
@@ -1079,7 +1081,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             shiftCare = ShiftCareType.INTERMITTENT,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
         }
@@ -1144,7 +1146,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                             reservableTimeRange =
                                                 ReservableTimeRange.IntermittentShiftCare(
                                                     // Placement unit is not open on Sundays
-                                                    null
+                                                    null,
                                                 ),
                                         ),
                                     )
@@ -1168,7 +1170,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                             reservableTimeRange =
                                                 ReservableTimeRange.IntermittentShiftCare(
                                                     // Placement unit is not open on holidays
-                                                    null
+                                                    null,
                                                 ),
                                         ),
                                     )
@@ -1190,7 +1192,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                             shiftCare = true,
                                             reservableTimeRange =
                                                 ReservableTimeRange.IntermittentShiftCare(
-                                                    daycare.operationTimes[1]!!
+                                                    daycare.operationTimes[1]!!,
                                                 ),
                                         ),
                                     )
@@ -1202,7 +1204,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             children =
                                 listOf(
                                     // Intermittent shift care ended on Tuesday
-                                    dayChild(child2.id, shiftCare = false)
+                                    dayChild(child2.id, shiftCare = false),
                                 ),
                         ),
                     ),
@@ -1240,7 +1242,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = friday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     val period = FiniteDateRange(monday, friday)
@@ -1252,7 +1254,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snDaycareHours120.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
             // child2 will not be present in response because placement is too far into the future
@@ -1265,7 +1267,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = calendarNotOpenDate,
                         endDate = calendarNotOpenDate.plusMonths(1),
-                    )
+                    ),
                 )
                 .also {
                     val period =
@@ -1278,7 +1280,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snDaycareHours120.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
 
@@ -1352,7 +1354,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                             false,
                                             now,
                                             adult.evakaUser(),
-                                        )
+                                        ),
                                     ),
                                 attendances =
                                     listOf(TimeInterval(LocalTime.of(9, 15), LocalTime.of(15, 55))),
@@ -1362,10 +1364,10 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         usedServiceMinutes = 420,
                                         usedServiceRanges =
                                             listOf(
-                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0))
+                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
                                             ),
                                     ),
-                            )
+                            ),
                         ),
                 ),
                 ReservationResponseDay(
@@ -1382,7 +1384,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                             false,
                                             now,
                                             adult.evakaUser(),
-                                        )
+                                        ),
                                     ),
                                 attendances =
                                     listOf(TimeInterval(LocalTime.of(8, 45), LocalTime.of(16, 20))),
@@ -1391,10 +1393,10 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         reservedMinutes = 420,
                                         usedServiceMinutes = 455,
                                         listOf(
-                                            TimeRange(LocalTime.of(8, 45), LocalTime.of(16, 20))
+                                            TimeRange(LocalTime.of(8, 45), LocalTime.of(16, 20)),
                                         ),
                                     ),
-                            )
+                            ),
                         ),
                 ),
                 ReservationResponseDay(
@@ -1413,7 +1415,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         usedServiceMinutes = 480,
                                         listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
                                     ),
-                            )
+                            ),
                         ),
                 ),
                 ReservationResponseDay(
@@ -1431,7 +1433,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         usedServiceMinutes = (120.0 * 60 / 21).toLong(),
                                         usedServiceRanges = emptyList(),
                                     ),
-                            )
+                            ),
                         ),
                 ),
             )
@@ -1452,7 +1454,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         expectedReservationDays.sumOf { d ->
                             d.children.sumOf { child -> child.usedService?.usedServiceMinutes ?: 0 }
                         },
-                )
+                ),
             ),
             res.children.single().monthSummaries,
         )
@@ -1485,7 +1487,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     period = FiniteDateRange(thursday, thursday),
                     reservationsOpenOn = tuesday,
                     reservationDeadline = wednesday,
-                )
+                ),
             )
 
             tx.insert(
@@ -1495,7 +1497,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = wednesday,
                         endDate = thursday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1506,7 +1508,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snDaycareFullDay35.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
 
@@ -1519,7 +1521,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = thursday,
                         endDate = thursday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     tx.insert(
@@ -1530,7 +1532,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snDaycareFullDay35.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
         }
@@ -1566,7 +1568,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 ),
                             )
                             .sortedBy { it.childId },
-                )
+                ),
             ),
             resOnMonday.days,
         )
@@ -1594,7 +1596,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 ),
                             )
                             .sortedBy { it.childId },
-                )
+                ),
             ),
             resOnTuesday.days,
         )
@@ -1619,7 +1621,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 dayChild(child2.id, holidayPeriodEffect = null),
                             )
                             .sortedBy { it.childId },
-                )
+                ),
             ),
             resOnThursday.days,
         )
@@ -1652,7 +1654,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     period = FiniteDateRange(placementStart, placementStart),
                     reservationsOpenOn = tuesday,
                     reservationDeadline = reservationDeadline,
-                )
+                ),
             )
 
             tx.insert(
@@ -1662,7 +1664,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementStart,
-                )
+                ),
             )
         }
 
@@ -1725,7 +1727,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = firstOfMonth1,
                         endDate = lastOfMonth2,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     val period = FiniteDateRange(firstOfMonth1, lastOfMonth1)
@@ -1737,7 +1739,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snDaycareHours120.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                     val period1 = FiniteDateRange(firstOfMonth2, lastOfMonth2)
                     tx.insert(
@@ -1748,7 +1750,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snDaycareHours147.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
         }
@@ -1811,7 +1813,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = monday,
                     endDate = tuesday,
-                )
+                ),
             )
         }
 
@@ -1856,7 +1858,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             monthSummaries = emptyList(),
                             upcomingPlacementStartDate = monday,
                             upcomingPlacementUnitName = daycare.name,
-                        )
+                        ),
                     ),
                 days =
                     listOf(
@@ -1872,7 +1874,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                                 AbsenceType.OTHER_ABSENCE,
                                                 editable = false,
                                             ),
-                                    )
+                                    ),
                                 ),
                         ),
                         ReservationResponseDay(
@@ -1915,7 +1917,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = monday,
                     endDate = tuesday,
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -1924,7 +1926,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = fridayLastWeek,
                     endDate = tuesday,
-                )
+                ),
             )
         }
 
@@ -1995,7 +1997,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         false,
                                         now,
                                         adult.evakaUser(),
-                                    )
+                                    ),
                                 ),
                         ),
                         dayChild(
@@ -2007,7 +2009,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         false,
                                         now,
                                         adult.evakaUser(),
-                                    )
+                                    ),
                                 ),
                         ),
                     )
@@ -2029,7 +2031,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         false,
                                         now,
                                         adult.evakaUser(),
-                                    )
+                                    ),
                                 ),
                         ),
                         dayChild(
@@ -2041,7 +2043,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         false,
                                         now,
                                         adult.evakaUser(),
-                                    )
+                                    ),
                                 ),
                         ),
                     )
@@ -2080,7 +2082,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = monday,
                     endDate = tuesday,
-                )
+                ),
             )
         }
 
@@ -2115,9 +2117,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     false,
                                     now,
                                     adult.evakaUser(),
-                                )
+                                ),
                             ),
-                    )
+                    ),
                 ),
                 day.children,
             )
@@ -2131,7 +2133,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             child.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                        )
+                        ),
                     )
                     .sortedBy { it.childId },
                 day.children,
@@ -2170,7 +2172,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = monday,
                     endDate = tuesday,
-                )
+                ),
             )
         }
 
@@ -2221,7 +2223,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = monday,
                     endDate = tuesday,
-                )
+                ),
             )
             tx.insert(
                     DevPlacement(
@@ -2230,7 +2232,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = fridayLastWeek,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .also { placementId ->
                     // contract days on monday
@@ -2244,7 +2246,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             shiftCare = ShiftCareType.NONE,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                     // hour based service need on tuesday
                     val period1 = FiniteDateRange(tuesday, tuesday)
@@ -2257,7 +2259,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             shiftCare = ShiftCareType.NONE,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
         }
@@ -2285,7 +2287,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         child2.id,
                         // no contract days or hour based service need -> OTHER_ABSENCE was kept
                         absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                    )
+                    ),
                 ),
                 day.children,
             )
@@ -2381,7 +2383,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = mockToday.minusYears(1),
                     endDate = mockToday.plusYears(1),
-                )
+                ),
             )
         }
 
@@ -2456,7 +2458,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .let { placementId ->
                     val period = FiniteDateRange(monday, tuesday)
@@ -2468,7 +2470,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snDaycareContractDays10.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
 
@@ -2479,7 +2481,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -2503,7 +2505,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             child.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = false),
-                        )
+                        ),
                     )
                     .sortedBy { it.childId },
                 day.children,
@@ -2519,7 +2521,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             absence =
                                 // contract days -> OTHER_ABSENCE changed to PLANNED_ABSENCE
                                 AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = true),
-                        )
+                        ),
                     )
                     .sortedBy { it.childId },
                 day.children,
@@ -2555,7 +2557,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .let { placementId ->
                     val period = FiniteDateRange(monday, tuesday)
@@ -2567,7 +2569,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snPreschoolDaycareContractDays13.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
 
@@ -2578,7 +2580,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -2587,7 +2589,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -2602,7 +2604,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         )
 
         assertThat(
-                db.read { tx -> tx.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+                db.read { tx ->
+                    tx.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+                },
             )
             .extracting({ it.date }, { it.absenceType }, { it.category })
             .containsExactlyInAnyOrder(
@@ -2639,7 +2643,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday,
-                    )
+                    ),
                 )
                 .let { placementId ->
                     val period = FiniteDateRange(monday, tuesday)
@@ -2651,7 +2655,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             optionId = snPreschoolDaycareContractDays13.id,
                             confirmedBy = employee.evakaUserId,
                             confirmedAt = HelsinkiDateTime.now(),
-                        )
+                        ),
                     )
                 }
 
@@ -2662,7 +2666,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
-                )
+                ),
             )
             tx.insert(
                 DevAbsence(
@@ -2671,7 +2675,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -2686,7 +2690,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         )
 
         assertThat(
-                db.read { tx -> tx.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+                db.read { tx ->
+                    tx.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+                },
             )
             .extracting({ it.date }, { it.absenceType }, { it.category })
             .containsExactlyInAnyOrder(
@@ -2718,14 +2724,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = mockToday.minusYears(1),
                     endDate = mockToday.plusYears(1),
-                )
+                ),
             )
             tx.insert(
                 DevHolidayPeriod(
                     period = FiniteDateRange(tuesday, wednesday),
                     reservationsOpenOn = mockToday.plusDays(1),
                     reservationDeadline = monday,
-                )
+                ),
             )
         }
 
@@ -2808,7 +2814,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = monday,
                     endDate = monday,
-                )
+                ),
             )
 
             tx.insert(
@@ -2818,7 +2824,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.BILLABLE,
-                )
+                ),
             )
         }
 
@@ -2829,7 +2835,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     child.id,
                     monday,
                     TimeRange(startTime, endTime),
-                )
+                ),
             ),
             mockNow = beforeThreshold,
         )
@@ -2863,7 +2869,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = monday,
                     endDate = monday,
-                )
+                ),
             )
 
             tx.insert(
@@ -2873,7 +2879,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     startTime = startTime,
                     endTime = endTime,
                     createdBy = adult.evakaUserId(),
-                )
+                ),
             )
         }
 
@@ -2917,7 +2923,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     unitId = daycare.id,
                     startDate = monday,
                     endDate = monday,
-                )
+                ),
             )
 
             tx.insert(
@@ -2927,7 +2933,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     startTime = startTime,
                     endTime = endTime,
                     createdBy = adult.evakaUserId(),
-                )
+                ),
             )
         }
 
@@ -2949,7 +2955,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         childId: ChildId,
         reservableTimeRange: ReservableTimeRange =
             ReservableTimeRange.Normal(
-                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
+                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
             ),
         scheduleType: ScheduleType = ScheduleType.RESERVATION_REQUIRED,
         shiftCare: Boolean = false,
@@ -3024,7 +3030,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             child_id = ${bind(childId)}
                             GROUP BY date
                             ORDER BY date
-                            """
+                            """,
                     )
                 }
                 .toList<QueryResult>()
@@ -3046,7 +3052,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             WHERE child_id = ${bind(childId)}
                             GROUP BY date
                             ORDER BY date
-                            """
+                            """,
                     )
                 }
                 .toList<QueryResult>()

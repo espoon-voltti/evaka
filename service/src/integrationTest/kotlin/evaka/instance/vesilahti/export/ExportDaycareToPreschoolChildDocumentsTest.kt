@@ -57,7 +57,7 @@ class ExportDaycareToPreschoolChildDocumentsTest : AbstractVesilahtiIntegrationT
                     name = "Tiedonsiirto varhaiskasvatuksesta esiopetukseen 2024-2025",
                     validity = DateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
         }
 
@@ -87,28 +87,28 @@ class ExportDaycareToPreschoolChildDocumentsTest : AbstractVesilahtiIntegrationT
                     name = "Tiedonsiirto varhaiskasvatuksesta esiopetukseen 2023-2024",
                     validity = DateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
                     name = "Tiedonsiirto varhaiskasvatuksesta esiopetukseen 2024-2025",
                     validity = DateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
                     name = "Tiedonsiirto varhaiskasvatuksesta esiopetukseen 2025-2026",
                     validity = DateRange(LocalDate.of(2025, 8, 1), LocalDate.of(2026, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
             tx.insert(
                 DevDocumentTemplate(
                     name = "Tiedonsiirto esiopetuksesta perusopetukseen 2024-2025",
                     validity = DateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31)),
                     content = DocumentTemplateContent(sections = emptyList()),
-                )
+                ),
             )
         }
 
@@ -152,10 +152,10 @@ class ExportDaycareToPreschoolChildDocumentsTest : AbstractVesilahtiIntegrationT
                                             id = "1",
                                             label = "section",
                                             questions = listOf(TextQuestion(questionId, "kysymys")),
-                                        )
-                                    )
+                                        ),
+                                    ),
                             ),
-                    )
+                    ),
                 )
             tx.insert(
                 DevChildDocument(
@@ -174,9 +174,9 @@ class ExportDaycareToPreschoolChildDocumentsTest : AbstractVesilahtiIntegrationT
                                 createdAt = timestamp,
                                 createdBy = employee.evakaUserId,
                                 publishedContent = content,
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         }
 

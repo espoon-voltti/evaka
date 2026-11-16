@@ -28,7 +28,7 @@ FROM mobile_device md
 LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
 WHERE id = ${bind(id)}
 GROUP BY md.id, md.name, md.employee_id
-"""
+""",
         )
     }
         .exactlyOneOrNull<MobileDeviceDetails>() ?: throw NotFound("Device $id not found")
@@ -49,7 +49,7 @@ SELECT EXISTS (
         )
     )
 )
-"""
+""",
         )
     }
     .exactlyOne<Boolean>()
@@ -83,7 +83,7 @@ fun Database.Transaction.updateDeviceTracking(
 UPDATE mobile_device
 SET last_seen = ${bind(lastSeen)}, user_agent = ${bind(tracking.userAgent)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .execute()

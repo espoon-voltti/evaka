@@ -45,7 +45,7 @@ WHERE id = ANY(${bind(childIds)})
 AND koski_data_first_removed_at IS NULL
 AND ${predicate(childSentToKoski.forTable("child"))}
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -64,7 +64,7 @@ AND (
         WHERE p.id = $it.id AND p.date_of_birth > ${bind(today.minusYears(SAFE_DATA_REMOVAL_AGE))}
     )
 )
-"""
+""",
     )
 }
 
@@ -75,7 +75,7 @@ private fun Database.Read.isKoskiSyncActive(childId: ChildId, today: LocalDate):
 SELECT ${predicate(syncActive(today).forTable("child"))}
 FROM child
 WHERE id = ${bind(childId)}
-"""
+""",
         )
     }
     .exactlyOne()
@@ -122,7 +122,7 @@ FROM koski_voided_study_right(${bind(today)}) kvsr
 JOIN child ch ON ch.id = kvsr.child_id
 WHERE kvsr.void_date IS NULL
 AND ${predicate(syncActive(today).forTable("ch"))}
-"""
+""",
         )
     }
         .toList<KoskiStudyRightKey>()
@@ -142,7 +142,7 @@ SELECT
     child_id, unit_id, type,
     input_data AS preschool_input_data, NULL::koski_preparatory_input_data AS preparatory_input_data
 FROM koski_active_preschool_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
-"""
+""",
                 )
             }
 
@@ -153,7 +153,7 @@ SELECT
     child_id, unit_id, type,
     NULL::koski_preschool_input_data AS preschool_input_data, input_data AS preparatory_input_data
 FROM koski_active_preparatory_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
-"""
+""",
                 )
             }
         }
@@ -181,7 +181,7 @@ DO UPDATE SET
     data_version = excluded.data_version,
     study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
-"""
+""",
         )
     }
         .exactlyOne { columnPair<KoskiStudyRightId, Boolean>("id", "voided") }
@@ -212,7 +212,7 @@ fun Database.Transaction.beginKoskiUpload(
             JOIN koski_unit d ON ksr.unit_id = d.id
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
-                    """
+                    """,
                 )
             }
             .exactlyOneOrNull<KoskiVoidedDataRaw>()
@@ -234,7 +234,7 @@ fun Database.Transaction.beginKoskiUpload(
             JOIN koski_unit d ON ksr.unit_id = d.id
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
-                    """
+                    """,
                     )
                 }
                     .exactlyOneOrNull<KoskiActivePreschoolDataRaw>()
@@ -255,7 +255,7 @@ fun Database.Transaction.beginKoskiUpload(
             JOIN koski_unit d ON ksr.unit_id = d.id
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
-                    """
+                    """,
                     )
                 }
                     .exactlyOneOrNull<KoskiActivePreparatoryDataRaw>()
@@ -282,7 +282,7 @@ FROM (
 ) params
 LEFT JOIN koski_study_right ksr
 USING (child_id, unit_id, type)
-"""
+""",
         )
     }
     .exactlyOne<Boolean>()
@@ -294,7 +294,7 @@ UPDATE koski_study_right
 SET study_right_oid = ${bind(response.studyRightOid)}, person_oid = ${bind(response.personOid)},
     version = ${bind(response.version)}, payload = ${bind(response.payload)}::jsonb
 WHERE id = ${bind(response.id)}
-"""
+""",
     )
 }
     .execute()
@@ -311,7 +311,7 @@ INSERT INTO koski_upload_error (child_id, unit_id, type, error, status_code, err
 VALUES (${bind(key.childId)}, ${bind(key.unitId)}, ${bind(key.type)}, ${bind(error)}, ${bind(statusCode)}, ${bind(now)}, ${bind(now)})
 ON CONFLICT (child_id, unit_id, type)
 DO UPDATE SET error = excluded.error, status_code = excluded.status_code, errored_at = excluded.errored_at
-"""
+""",
     )
 }
     .execute()
@@ -321,7 +321,7 @@ fun Database.Transaction.deleteKoskiUploadError(key: KoskiStudyRightKey) = creat
         """
 DELETE FROM koski_upload_error
 WHERE (child_id, unit_id, type) = (${bind(key.childId)}, ${bind(key.unitId)}, ${bind(key.type)})
-"""
+""",
     )
 }
     .execute()
@@ -339,7 +339,7 @@ WHERE NOT EXISTS (
     ) AS p (child_id, unit_id, type)
     WHERE (p.child_id, p.unit_id, p.type) = (e.child_id, e.unit_id, e.type)
 )
-"""
+""",
         )
     }
     .execute()

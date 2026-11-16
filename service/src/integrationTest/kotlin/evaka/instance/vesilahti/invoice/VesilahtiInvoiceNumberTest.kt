@@ -45,7 +45,7 @@ class VesilahtiInvoiceNumberTest : AbstractVesilahtiIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("d297bf95-dea7-4e9a-8ecb-5d6c9a85b850")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)
@@ -82,7 +82,7 @@ class VesilahtiInvoiceNumberTest : AbstractVesilahtiIntegrationTest() {
                     periodEnd = LocalDate.of(2024, 11, 30),
                     headOfFamilyId = headOfFamilyId,
                     areaId = AreaId(UUID.fromString("d297bf95-dea7-4e9a-8ecb-5d6c9a85b850")),
-                )
+                ),
             )
             val draftInvoice1 =
                 tx.insert(
@@ -95,7 +95,7 @@ class VesilahtiInvoiceNumberTest : AbstractVesilahtiIntegrationTest() {
                         periodEnd = LocalDate.of(2024, 12, 31),
                         headOfFamilyId = headOfFamilyId,
                         areaId = AreaId(UUID.fromString("d297bf95-dea7-4e9a-8ecb-5d6c9a85b850")),
-                    )
+                    ),
                 )
             val invoiceIds = listOf(draftInvoice1)
             val invoiceDate = LocalDate.of(2025, 1, 7)

@@ -78,7 +78,7 @@ WHERE m.sender_id = (SELECT id FROM message_account WHERE type = 'MUNICIPAL')
 GROUP BY m.content_id, mt.is_copy
 HAVING COUNT(*) > 1
 LIMIT 1
-"""
+""",
         )
     }
     .exactlyOneOrNull()
@@ -94,7 +94,7 @@ WHERE mt.message_type = 'BULLETIN' AND mt.is_copy
 GROUP BY m.content_id
 HAVING COUNT(*) > 1
 LIMIT 1
-"""
+""",
         )
     }
     .exactlyOneOrNull()
@@ -126,7 +126,7 @@ FROM message_thread mt
 JOIN message m ON m.thread_id = mt.id
 WHERE m.content_id = ${bind(contentId)} AND ${predicate(isCopyPredicate.forTable("mt"))}
 ORDER BY mt.is_copy, mt.id
-"""
+""",
         )
     }
         .toList<ThreadAndMessage>()
@@ -153,7 +153,7 @@ ORDER BY mt.is_copy, mt.id
 UPDATE message_recipients
 SET message_id = ${bind(toKeep.messageId)}
 WHERE message_id = ANY(${bind(messageIdsToDelete)})
-"""
+""",
             )
         }
 
@@ -180,7 +180,7 @@ WHERE thread_id = ANY(${bind(threadIdsToDelete)})
       SELECT participant_id FROM message_thread_participant WHERE thread_id = ${bind(toKeep.threadId)}
     )
   )
-"""
+""",
             )
         }
 
@@ -193,7 +193,7 @@ SET thread_id = ${bind(toKeep.threadId)}
 WHERE
     thread_id = ANY(${bind(threadIdsToDelete)}) AND
     last_received_timestamp IS NOT NULL
-"""
+""",
             )
         }
 
@@ -205,7 +205,7 @@ DELETE FROM message_thread_participant
 WHERE
     thread_id = ANY(${bind(threadIdsToDelete)}) AND
     last_sent_timestamp IS NOT NULL
-"""
+""",
             )
         }
 
@@ -216,7 +216,7 @@ WHERE
                 """
 DELETE FROM message_thread_children
 WHERE thread_id = ANY(${bind(group.map { it.threadId })})
-"""
+""",
             )
         }
 
@@ -225,7 +225,7 @@ WHERE thread_id = ANY(${bind(group.map { it.threadId })})
                 """
 DELETE FROM message
 WHERE id = ANY(${bind(messageIdsToDelete)})
-"""
+""",
             )
         }
 
@@ -234,7 +234,7 @@ WHERE id = ANY(${bind(messageIdsToDelete)})
                 """
 DELETE FROM message_thread
 WHERE id = ANY(${bind(threadIdsToDelete)})
-"""
+""",
             )
         }
 

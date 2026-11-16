@@ -32,38 +32,38 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.execute {
                 sql(
-                    "INSERT INTO care_area (id, name, short_name) VALUES ('$careAreaId', 'foo', 'foo')"
+                    "INSERT INTO care_area (id, name, short_name) VALUES ('$careAreaId', 'foo', 'foo')",
                 )
             }
             tx.execute {
                 sql(
-                    "INSERT INTO daycare (id, name, care_area_id) VALUES ('$daycareId', 'foo', '$careAreaId')"
+                    "INSERT INTO daycare (id, name, care_area_id) VALUES ('$daycareId', 'foo', '$careAreaId')",
                 )
             }
             tx.execute {
                 sql(
-                    "INSERT INTO daycare (id, name, care_area_id) VALUES ('$daycareId2', 'empty daycare', '$careAreaId')"
+                    "INSERT INTO daycare (id, name, care_area_id) VALUES ('$daycareId2', 'empty daycare', '$careAreaId')",
                 )
             }
 
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId1', 'foo', '$daycareId', '2000-01-01', '9999-01-01')"
+                    "INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId1', 'foo', '$daycareId', '2000-01-01', '9999-01-01')",
                 )
             }
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId2', 'bar', '$daycareId', '2000-01-01', '9999-01-01')"
+                    "INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId2', 'bar', '$daycareId', '2000-01-01', '9999-01-01')",
                 )
             }
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId3', 'baz', '$daycareId', '2000-01-01', '9999-01-01')"
+                    "INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId3', 'baz', '$daycareId', '2000-01-01', '9999-01-01')",
                 )
             }
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId4', 'empty', '$daycareId', '2000-01-01', '9999-01-01')"
+                    "INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId4', 'empty', '$daycareId', '2000-01-01', '9999-01-01')",
                 )
             }
 
@@ -76,44 +76,44 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 3, '2000-01-01', '2000-02-01')"
+                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 3, '2000-01-01', '2000-02-01')",
                 )
             }
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 5, '2000-02-02', '2000-03-01')"
+                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 5, '2000-02-02', '2000-03-01')",
                 )
             }
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 4, '2000-03-02', '9999-01-01')"
-                )
-            }
-
-            tx.execute {
-                sql(
-                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 3, '2000-01-01', '2000-02-05')"
-                )
-            }
-            tx.execute {
-                sql(
-                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 1, '2000-02-06', '2000-03-03')"
-                )
-            }
-            tx.execute {
-                sql(
-                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 3, '2000-03-04', '9999-01-01')"
+                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 4, '2000-03-02', '9999-01-01')",
                 )
             }
 
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 4, '2000-01-01', '2000-05-05')"
+                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 3, '2000-01-01', '2000-02-05')",
                 )
             }
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 6, '2000-05-06', '2000-09-03')"
+                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 1, '2000-02-06', '2000-03-03')",
+                )
+            }
+            tx.execute {
+                sql(
+                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 3, '2000-03-04', '9999-01-01')",
+                )
+            }
+
+            tx.execute {
+                sql(
+                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 4, '2000-01-01', '2000-05-05')",
+                )
+            }
+            tx.execute {
+                sql(
+                    "INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 6, '2000-05-06', '2000-09-03')",
                 )
             }
         }

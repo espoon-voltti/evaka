@@ -43,7 +43,7 @@ internal fun transform(
                         val mimeType = mimeTypes.forName(document.contentType)
                         name = "$title${mimeType.extension}"
                         this.originalId = originalId
-                    }
+                    },
                 )
             }
     } to mapOf(originalId to document)

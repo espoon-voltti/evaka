@@ -181,11 +181,11 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                         group1.id,
                         now.minusDays(1),
                         occupancyCoefficientSeven,
-                    )
+                    ),
                 )
                 .let {
                     tx.markExternalStaffDeparture(
-                        ExternalStaffDeparture(it, now.minusDays(1).plusHours(8))
+                        ExternalStaffDeparture(it, now.minusDays(1).plusHours(8)),
                     )
                 }
             tx.markExternalStaffArrival(
@@ -194,7 +194,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     group1.id,
                     now.minusDays(1),
                     occupancyCoefficientSeven,
-                )
+                ),
             )
         }
         val externalAttendances = db.read { it.getExternalStaffAttendances(daycare.id) }
@@ -262,7 +262,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = arrival,
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
@@ -301,7 +301,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = arrival,
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(startOfToday, systemUser.evakaUserId)
@@ -338,7 +338,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = arrival,
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
@@ -375,7 +375,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = arrival,
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
@@ -412,7 +412,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = arrival,
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
@@ -449,7 +449,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = arrival,
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
@@ -486,7 +486,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = arrival.plusMinutes(1),
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
@@ -520,7 +520,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = arrival,
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
@@ -599,7 +599,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     employeeId = employee1.id,
                     startTime = plannedArrival,
                     endTime = plannedDeparture,
-                )
+                ),
             )
 
             tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
@@ -687,7 +687,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                         unitId,
                         clock.today().let { FiniteDateRange(it, it) },
                     )
-                }
+                },
             )
             .extracting(
                 { it.id },
@@ -729,7 +729,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                         unitId,
                         clock.today().let { FiniteDateRange(it, it) },
                     )
-                }
+                },
             )
             .extracting(
                 { it.id },
@@ -757,7 +757,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     departed = null,
                     modifiedAt = arrivalAddedAt,
                     modifiedBy = user.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -783,7 +783,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                         unitId,
                         clock.today().let { FiniteDateRange(it, it) },
                     )
-                }
+                },
             )
             .extracting(
                 { it.id },
@@ -811,7 +811,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     departed = null,
                     modifiedAt = arrivalAddedAt,
                     modifiedBy = user.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -838,7 +838,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                         unitId,
                         clock.today().let { FiniteDateRange(it, it) },
                     )
-                }
+                },
             )
             .extracting(
                 { it.id },
@@ -854,7 +854,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     arrivalAddedAt,
                     departureAddedAt,
                     departureAddedAt,
-                )
+                ),
             )
     }
 
@@ -875,7 +875,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     departed = departure,
                     modifiedAt = addedAt,
                     modifiedBy = user.evakaUserId,
-                )
+                ),
             )
         }
 
@@ -901,7 +901,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                         unitId,
                         clock.today().let { FiniteDateRange(it, it) },
                     )
-                }
+                },
             )
             .extracting(
                 { it.id },
@@ -928,7 +928,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                     departed = null,
                     modifiedAt = null,
                     modifiedBy = null,
-                )
+                ),
             )
         }
 
@@ -955,7 +955,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                         unitId,
                         clock.today().let { FiniteDateRange(it, it) },
                     )
-                }
+                },
             )
             .extracting(
                 { it.id },
@@ -1006,7 +1006,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                         unitId,
                         clock.today().let { FiniteDateRange(it, it) },
                     )
-                }
+                },
             )
             .extracting(
                 { it.id },
@@ -1024,7 +1024,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             db.transaction { tx ->
                 val areaId =
                     tx.insert(
-                        DevCareArea(name = "Upsert Test Area", shortName = "upsert_test_area")
+                        DevCareArea(name = "Upsert Test Area", shortName = "upsert_test_area"),
                     )
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))

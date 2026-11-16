@@ -196,7 +196,7 @@ class VardaUpdateService(
         if (job.dryRun) {
             dryRunClient.operationsHumanReadable.also { ops ->
                 logger.info(
-                    mapOf("operations" to ops.joinToString("\n").takeIf { it.isNotBlank() })
+                    mapOf("operations" to ops.joinToString("\n").takeIf { it.isNotBlank() }),
                 ) {
                     "Varda dry run for ${job.childId}: ${ops.size} operations (see meta.operations field)"
                 }
@@ -339,7 +339,7 @@ class VardaUpdater(
                                 )
                         }
                     }
-                }
+                },
             )
             .removeAll(decisionFeeData.map { it.validDuring })
             .entries()
@@ -396,7 +396,7 @@ class VardaUpdater(
                                 FiniteDateRange(
                                     serviceNeedsOfLapsi.minOf { it.range.start },
                                     serviceNeedsOfLapsi.maxOf { it.range.end },
-                                )
+                                ),
                             )
 
                         EvakaLapsiNode(
@@ -445,7 +445,7 @@ class VardaUpdater(
                     henkilotunnus = evakaHenkilo.henkilotunnus,
                     henkilo_oid =
                         evakaHenkilo.henkilo_oid.takeIf { evakaHenkilo.henkilotunnus == null },
-                )
+                ),
             )
         return VardaHenkiloNode(
             henkilo = henkilo,
@@ -589,7 +589,7 @@ class VardaUpdater(
     /** Returns true if the varhaiskasvatuspaatos and associated data were deleted */
     @IgnorableReturnValue
     private fun VardaWriteClient.deleteVarhaiskasvatuspaatosDeep(
-        vardaVarhaiskasvatuspaatos: VardaVarhaiskasvatuspaatosNode
+        vardaVarhaiskasvatuspaatos: VardaVarhaiskasvatuspaatosNode,
     ): Boolean {
         val deletePaatos =
             vardaVarhaiskasvatuspaatos.varhaiskasvatussuhteet.allSucceed { suhde ->
@@ -603,7 +603,7 @@ class VardaUpdater(
                         DateRange(
                             vardaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.alkamis_pvm,
                             vardaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.paattymis_pvm,
-                        )
+                        ),
                     ))
         ) {
             false
@@ -616,7 +616,7 @@ class VardaUpdater(
     /** Returns true if the varhaiskasvatussuhde was deleted */
     @IgnorableReturnValue
     private fun VardaWriteClient.deleteVarhaiskasvatussuhde(
-        vardaVarhaiskasvatussuhde: VardaReadClient.VarhaiskasvatussuhdeResponse
+        vardaVarhaiskasvatussuhde: VardaReadClient.VarhaiskasvatussuhdeResponse,
     ): Boolean =
         if (
             vardaVarhaiskasvatussuhde.lahdejarjestelma != lahdejarjestelma ||
@@ -624,7 +624,7 @@ class VardaUpdater(
                     DateRange(
                         vardaVarhaiskasvatussuhde.alkamis_pvm,
                         vardaVarhaiskasvatussuhde.paattymis_pvm,
-                    )
+                    ),
                 )
         ) {
             false
@@ -636,12 +636,12 @@ class VardaUpdater(
     /** Returns true if the maksutieto was deleted */
     @IgnorableReturnValue
     private fun VardaWriteClient.deleteMaksutieto(
-        vardaMaksutieto: VardaReadClient.MaksutietoResponse
+        vardaMaksutieto: VardaReadClient.MaksutietoResponse,
     ): Boolean =
         if (
             vardaMaksutieto.lahdejarjestelma != lahdejarjestelma ||
                 !vardaEnabledRange.contains(
-                    DateRange(vardaMaksutieto.alkamis_pvm, vardaMaksutieto.paattymis_pvm)
+                    DateRange(vardaMaksutieto.alkamis_pvm, vardaMaksutieto.paattymis_pvm),
                 )
         ) {
             false
@@ -667,7 +667,7 @@ class VardaUpdater(
                     evakaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.toVarda(
                         lahdejarjestelma,
                         lapsiUrl,
-                    )
+                    ),
                 )
                 .url
         evakaVarhaiskasvatuspaatos.varhaiskasvatussuhteet.forEach { suhde ->
@@ -794,28 +794,28 @@ class DryRunClient : VardaWriteClient {
     }
 
     override fun createLapsi(
-        body: VardaWriteClient.CreateLapsiRequest
+        body: VardaWriteClient.CreateLapsiRequest,
     ): VardaWriteClient.CreateResponse {
         create("lapsi", body)
         return VardaWriteClient.CreateResponse(url = nextUri("lapsi"))
     }
 
     override fun createVarhaiskasvatuspaatos(
-        body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest
+        body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest,
     ): VardaWriteClient.CreateResponse {
         create("varhaiskasvatuspaatos", body)
         return VardaWriteClient.CreateResponse(url = nextUri("varhaiskasvatuspaatos"))
     }
 
     override fun createVarhaiskasvatussuhde(
-        body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest
+        body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest,
     ): VardaWriteClient.CreateResponse {
         create("varhaiskasvatussuhde", body)
         return VardaWriteClient.CreateResponse(url = nextUri("varhaiskasvatussuhde"))
     }
 
     override fun createMaksutieto(
-        body: VardaWriteClient.CreateMaksutietoRequest
+        body: VardaWriteClient.CreateMaksutietoRequest,
     ): VardaWriteClient.CreateResponse {
         create("maksutieto", body)
         return VardaWriteClient.CreateResponse(url = nextUri("maksutieto"))

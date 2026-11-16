@@ -80,7 +80,7 @@ WHERE placement.place_guarantee = TRUE
   AND (${bind(unitId)} IS NULL OR ${bind(unitId)} = placement.unit_id)
   AND NOT EXISTS (SELECT FROM placement WHERE child_id = child.id AND ${bind(date)} BETWEEN start_date AND end_date)
     """
-            .trimIndent()
+            .trimIndent(),
     )
 }
     .toList<PlacementGuaranteeReportRow>()

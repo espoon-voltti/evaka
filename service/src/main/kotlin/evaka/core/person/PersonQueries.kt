@@ -82,7 +82,7 @@ SELECT id, first_name, last_name, preferred_name, street_address, postal_code, p
 FROM person
 LEFT JOIN citizen_user USING (id)
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -95,7 +95,7 @@ SELECT
 $commaSeparatedPersonColumns
 FROM person
 WHERE id = ${bind(id)}
-        """
+        """,
             )
         }
         .bind("id", id)
@@ -112,7 +112,7 @@ SELECT
 id, first_name, last_name
 FROM person
 WHERE id = ANY(${bind(personIds)})
-        """
+        """,
         )
     }
         .toList<PersonNameDetails>()
@@ -130,7 +130,7 @@ $commaSeparatedPersonColumns
 FROM person
 WHERE social_security_number = ${bind(ssn)}
 FOR UPDATE
-    """
+    """,
     )
 }
     .exactlyOneOrNull(toPerson)
@@ -144,7 +144,7 @@ fun Database.Read.getPersonIdsBySsns(ssns: List<Ssn>): GetPersonIdsBySsnsResult 
 SELECT id, social_security_number
 FROM person
 WHERE social_security_number = ANY(${bind(ssns)})
-"""
+""",
         )
     }
         .toMap { column<Ssn>("social_security_number") to column<PersonId>("id") }
@@ -160,7 +160,7 @@ SELECT
 $commaSeparatedPersonColumns
 FROM person
 WHERE social_security_number = ${bind(ssn)}
-        """
+        """,
             )
         }
         .exactlyOneOrNull(toPerson)
@@ -226,7 +226,7 @@ fun Database.Read.searchPeople(
         if (restricted)
             PredicateSql {
                 where(
-                    "id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = ${bind(user.id)})"
+                    "id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = ${bind(user.id)})",
                 )
             }
         else {
@@ -252,7 +252,7 @@ fun Database.Read.searchPeople(
             ${predicate(restrictedPredicate)}
         ORDER BY $orderBy
         LIMIT 100
-    """
+    """,
         )
     }
         .toList()
@@ -265,7 +265,7 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
 INSERT INTO person (first_name, last_name, date_of_birth, street_address, postal_code, post_office, mailing_street_address, mailing_postal_code, mailing_post_office, phone, email)
 VALUES (${bind(person.firstName)}, ${bind(person.lastName)}, ${bind(person.dateOfBirth)}, ${bind(person.streetAddress)}, ${bind(person.postalCode)}, ${bind(person.postOffice)}, ${bind(person.streetAddress)}, ${bind(person.postalCode)}, ${bind(person.postOffice)}, ${bind(person.phone)}, ${bind(person.email)})
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOne<PersonId>()
@@ -333,7 +333,7 @@ SELECT
     id AS duplicate_of
 FROM person WHERE id = ${bind(id)}
 RETURNING id
-"""
+""",
     )
 }
     .executeAndReturnGeneratedKeys()
@@ -365,7 +365,7 @@ UPDATE person SET
     updated_from_vtj = ${bind(p.updatedFromVtj)}
 WHERE id = ${bind(p.id)}
 RETURNING *
-"""
+""",
             )
         }
         .exactlyOne(toPerson)
@@ -385,7 +385,7 @@ UPDATE person SET
     phone = ${bind(phone)}
 WHERE id = ${bind(id)}
 RETURNING id
-"""
+""",
         )
     }
         .exactlyOneOrNull<PersonId>() != null
@@ -408,7 +408,7 @@ UPDATE person SET
     oph_person_oid = coalesce(${bind(patch.ophPersonOid)}, oph_person_oid)
 WHERE id = ${bind(id)}
 RETURNING id
-"""
+""",
         )
     }
 }
@@ -439,7 +439,7 @@ UPDATE person SET
     oph_person_oid = coalesce(${bind(patch.ophPersonOid)}, oph_person_oid)
 WHERE id = ${bind(id)} AND social_security_number IS NULL
 RETURNING id
-"""
+""",
         )
     }
 }
@@ -494,7 +494,7 @@ fun Database.Transaction.updateCitizenOnLogin(now: HelsinkiDateTime, id: PersonI
 UPDATE person 
 SET last_login = ${bind(now)}
 WHERE id = ${bind(id)}
-"""
+""",
     )
 }
     .updateExactlyOne()
@@ -515,7 +515,7 @@ where const.contype = 'f'
     and source.relname not in ('person', 'child', 'child_images', 'guardian', 'guardian_blocklist', 'message_account', 'citizen_user', 'citizen_passkey_registration', 'koski_upload_error', 'person_address_period')
     and source.relname not like 'old_%'
 order by source.relname, attr.attname
-"""
+""",
         )
     }
         .toList<PersonReference>()
@@ -528,7 +528,7 @@ SELECT
 $commaSeparatedPersonColumns
 FROM person
 WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = ${bind(personId)})
-        """
+        """,
     )
 }
     .toList(toPerson)
@@ -540,7 +540,7 @@ SELECT
 $commaSeparatedPersonColumns
 FROM person
 WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = ${bind(personId)})
-        """
+        """,
     )
 }
     .toList(toPerson)

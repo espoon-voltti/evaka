@@ -124,7 +124,7 @@ private fun Database.Read.readOwnNodes(
                         table,
                         Predicate {
                             where(
-                                "$it.${primaryReference.referenceColumn} = ANY(${bind(parentIds)})"
+                                "$it.${primaryReference.referenceColumn} = ANY(${bind(parentIds)})",
                             )
                         },
                         knownToStay,
@@ -169,7 +169,7 @@ private fun Database.Read.readForeignNodes(
                 Predicate.all(
                     Predicate {
                         where(
-                            "$it.${secondaryReference.referenceColumn} = ANY(${bind(referencedIds)})"
+                            "$it.${secondaryReference.referenceColumn} = ANY(${bind(referencedIds)})",
                         )
                     },
                     notAnOwnRow,
@@ -180,7 +180,7 @@ private fun Database.Read.readForeignNodes(
 SELECT DISTINCT ${secondaryReference.referenceColumn}
 FROM ${table.name}
 WHERE ${predicate(foreignRowsPredicate.forTable(table.name))}
-"""
+""",
                 )
             }
                 .toSet<UUID>()
@@ -208,7 +208,7 @@ private fun notAnOwnRowPredicate(
 
 /** The sent conditions are the ones the freezes and the sync refusals use */
 private fun Database.Read.readIntegrationFacts(
-    personIds: Set<PersonId>
+    personIds: Set<PersonId>,
 ): Map<PersonId, IntegrationFacts> {
     if (personIds.isEmpty()) return emptyMap()
     return createQuery {
@@ -221,7 +221,7 @@ SELECT
   ${predicate(childSentToVarda.forTable("p"))} AS sent_to_varda
 FROM person p
 WHERE p.id = ANY(${bind(personIds)})
-"""
+""",
         )
     }
         .toList {
@@ -257,7 +257,7 @@ private fun Database.Read.readOwnRows(
 SELECT ${columnsToSelect.joinToString()}
 FROM ${table.name}
 WHERE ${predicate(where.forTable(table.name))}
-"""
+""",
         )
     }
         .toList {
@@ -342,7 +342,7 @@ fun Database.Transaction.executeDeletionPlan(
                 (listOf(clearing.column) + clearing.alsoNull).joinToString { "$it = NULL" }
             val count = executeAndReturnCount {
                 sql(
-                    "UPDATE ${clearing.table} SET $setNullClauses WHERE ${clearing.column} = ANY(${bind(clearing.referencedIds)})"
+                    "UPDATE ${clearing.table} SET $setNullClauses WHERE ${clearing.column} = ANY(${bind(clearing.referencedIds)})",
                 )
             }
             if (count > 0) clearedRowCountsByTable.merge(clearing.table, count, Int::plus)
@@ -351,7 +351,7 @@ fun Database.Transaction.executeDeletionPlan(
         // Delete the rows in the table
         val deletedRows = createUpdate {
             sql(
-                "DELETE FROM ${table.name} WHERE ${idPredicate(table.identifiedByCols, deletion.node.rows.map { it.id })} RETURNING ${table.identifiedByCols.joinToString()}"
+                "DELETE FROM ${table.name} WHERE ${idPredicate(table.identifiedByCols, deletion.node.rows.map { it.id })} RETURNING ${table.identifiedByCols.joinToString()}",
             )
         }
             .executeAndReturnGeneratedKeys()
@@ -366,7 +366,7 @@ fun Database.Transaction.executeDeletionPlan(
         for (orphan in deletion.orphanDeletions) {
             val deletedOrphans = createUpdate {
                 sql(
-                    "DELETE FROM ${orphan.table} WHERE ${orphan.idColumn} = ANY(${bind(orphan.ids)}) RETURNING ${orphan.idColumn}"
+                    "DELETE FROM ${orphan.table} WHERE ${orphan.idColumn} = ANY(${bind(orphan.ids)}) RETURNING ${orphan.idColumn}",
                 )
             }
                 .executeAndReturnGeneratedKeys()
@@ -419,7 +419,7 @@ SELECT id
 FROM person
 ORDER BY data_retention_last_attempted_at NULLS FIRST, created, id
 LIMIT ${bind(count)}
-"""
+""",
         )
     }
     .toList<PersonId>()
@@ -430,7 +430,7 @@ fun Database.Transaction.setDataRetentionLastAttemptedAt(
 ) {
     execute {
         sql(
-            "UPDATE person SET data_retention_last_attempted_at = ${bind(now)} WHERE id = ${bind(personId)}"
+            "UPDATE person SET data_retention_last_attempted_at = ${bind(now)} WHERE id = ${bind(personId)}",
         )
     }
 }

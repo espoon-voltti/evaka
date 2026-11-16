@@ -88,7 +88,7 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         unitId = daycare1.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
                 tx.insertGuardian(adult3.id, child3.id)
 
@@ -135,11 +135,11 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                                                         name =
                                                             "${child1.lastName} ${child2.firstName}",
                                                         startDate = null,
-                                                    )
+                                                    ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
                 ),
                 SelectableRecipientsResponse(
@@ -156,9 +156,9 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                                             id = child1.id,
                                             name = "${child1.lastName} ${child1.firstName}",
                                             startDate = null,
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
                 ),
             ),
@@ -194,13 +194,13 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                                                         name =
                                                             "${child2.lastName} ${child2.firstName}",
                                                         startDate = null,
-                                                    )
+                                                    ),
                                                 ),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
-                )
+                ),
             ),
             recipients2.toSet(),
         )
@@ -312,7 +312,7 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         unitId = unitId,
                         startDate = placementStart,
                         endDate = placementEnd.minusDays(10),
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -320,7 +320,7 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycareGroupId = groupId,
                     startDate = placementStart,
                     endDate = placementEnd.minusDays(10),
-                )
+                ),
             )
             val daycarePlacementId2 =
                 tx.insert(
@@ -329,7 +329,7 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         unitId = unitId,
                         startDate = placementEnd.minusDays(9),
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -337,7 +337,7 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycareGroupId = groupId,
                     startDate = placementEnd.minusDays(9),
                     endDate = placementEnd,
-                )
+                ),
             )
             tx.insert(supervisor)
             tx.upsertEmployeeMessageAccount(supervisor.id)
@@ -379,7 +379,7 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = unitId,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         tx.insert(
             DevDaycareGroupPlacement(
@@ -387,7 +387,7 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 daycareGroupId = groupId,
                 startDate = placementStart,
                 endDate = placementEnd,
-            )
+            ),
         )
     }
 }

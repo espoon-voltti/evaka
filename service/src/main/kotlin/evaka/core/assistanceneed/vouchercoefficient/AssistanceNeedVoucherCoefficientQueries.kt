@@ -37,13 +37,13 @@ WITH a AS (
     VALUES (${bind(childId)}, ${bind(data.coefficient)}, ${bind(data.validityPeriod)}, ${bind(now)}, ${bind(user.evakaUserId)})
     RETURNING id, child_id, coefficient, validity_period, modified_at, modified_by
 ) SELECT $anvcSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
-"""
+""",
     )
 }
     .exactlyOne()
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientById(
-    id: AssistanceNeedVoucherCoefficientId
+    id: AssistanceNeedVoucherCoefficientId,
 ): AssistanceNeedVoucherCoefficient =
     createQuery {
         sql(
@@ -52,13 +52,13 @@ SELECT $anvcSelectFields
 FROM assistance_need_voucher_coefficient a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE a.id = ${bind(id)}
-"""
+""",
         )
     }
         .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
-    childId: ChildId
+    childId: ChildId,
 ): List<AssistanceNeedVoucherCoefficient> = createQuery {
     sql(
         """
@@ -66,7 +66,7 @@ SELECT $anvcSelectFields
 FROM assistance_need_voucher_coefficient a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE a.child_id = ${bind(childId)}
-"""
+""",
     )
 }
     .toList()
@@ -90,14 +90,14 @@ WITH a AS (
     WHERE id = ${bind(id)}
     RETURNING id, child_id, coefficient, validity_period, modified_at, modified_by
 ) SELECT $anvcSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
-"""
+""",
         )
     }
         .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
 @IgnorableReturnValue
 fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
-    id: AssistanceNeedVoucherCoefficientId
+    id: AssistanceNeedVoucherCoefficientId,
 ): AssistanceNeedVoucherCoefficient? = createQuery {
     sql(
         """
@@ -106,7 +106,7 @@ WITH a AS (
     WHERE id = ${bind(id)}
     RETURNING id, child_id, coefficient, validity_period, modified_at, modified_by
 ) SELECT $anvcSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
-"""
+""",
     )
 }
     .exactlyOneOrNull()
@@ -122,7 +122,7 @@ FROM assistance_need_voucher_coefficient a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE a.child_id = ${bind(childId)}
   AND ${bind(range)} && a.validity_period
-"""
+""",
     )
 }
     .toList()
@@ -156,7 +156,7 @@ WHERE
             pl_new.child_id = a.child_id AND
             pl_new.unit_id = pl.unit_id
     )
-"""
+""",
         )
     }
 }

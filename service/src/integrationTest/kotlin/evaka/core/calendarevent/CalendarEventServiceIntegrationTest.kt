@@ -180,12 +180,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                 unitId = daycare.id,
                                 startDate = placementStart,
                                 endDate = placementEnd,
-                            )
+                            ),
                         ),
                     daycareGroupId = group1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
     }
@@ -301,10 +301,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
 
         calendarEventController.setCalendarEventTimeReservation(
@@ -362,10 +362,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
 
         calendarEventController.setCalendarEventTimeReservation(
@@ -423,10 +423,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
 
         calendarEventController.setCalendarEventTimeReservation(
@@ -484,10 +484,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
 
         val updateForm =
@@ -506,9 +506,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     description = updateForm.description,
                     individualChildren =
                         setOf(
-                            IndividualChild(child1.id, child1.firstName, child1.lastName, group1.id)
+                            IndividualChild(
+                                child1.id,
+                                child1.firstName,
+                                child1.lastName,
+                                group1.id,
+                            ),
                         ),
-                )
+                ),
             )
     }
 
@@ -529,10 +534,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
@@ -560,9 +565,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     description = updateForm.description,
                     individualChildren =
                         setOf(
-                            IndividualChild(child2.id, child2.firstName, child2.lastName, group1.id)
+                            IndividualChild(
+                                child2.id,
+                                child2.firstName,
+                                child2.lastName,
+                                group1.id,
+                            ),
                         ),
-                )
+                ),
             )
         assertThat(getReservableCalendarEventTimes(created.id, child2.id))
             .extracting({ it.date }, { it.startTime }, { it.endTime })
@@ -586,10 +596,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
         val calendarEventTimeId = event.times.first().id
 
@@ -742,7 +752,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(4),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
     }
 
@@ -907,7 +917,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today.minusDays(10),
                     today.plusDays(10),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
     }
 
@@ -933,7 +943,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today.minusDays(10),
                     today.plusDays(10),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
     }
 
@@ -959,7 +969,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today.minusDays(10),
                     today.plusDays(10),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
     }
 
@@ -997,7 +1007,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     placementStart.minusDays(50),
                     placementStart.plusDays(50),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
     }
 
@@ -1014,7 +1024,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1022,7 +1032,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group1.id,
                     startDate = placementStart,
                     endDate = backupCareStart.minusDays(1),
-                )
+                ),
             )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1030,7 +1040,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group1.id,
                     startDate = backupCareEnd.plusDays(1),
                     endDate = placementEnd,
-                )
+                ),
             )
         }
         this.backupCareController.createBackupCare(
@@ -1132,7 +1142,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1166,7 +1176,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1200,7 +1210,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1228,7 +1238,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1262,7 +1272,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1296,7 +1306,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isNotEmpty()
+                .isNotEmpty(),
         )
     }
 
@@ -1333,7 +1343,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1371,7 +1381,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isNotEmpty()
+                .isNotEmpty(),
         )
     }
 
@@ -1415,7 +1425,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1460,7 +1470,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1505,7 +1515,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare2.id) })
     }
@@ -1550,7 +1560,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare2.id) })
     }
@@ -1594,7 +1604,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare2.id) })
     }
@@ -1633,7 +1643,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today,
                     today.plusDays(5),
                 )
-                .isEmpty()
+                .isEmpty(),
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(daycare.id) })
     }
@@ -1664,7 +1674,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1751,9 +1761,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             description = "uwe",
                             period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
                             groupNames = emptyList(),
-                        )
-                    )
-                )
+                        ),
+                    ),
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -1801,7 +1811,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     LocalTime.of(9, 0),
                     childName = "${child1.firstName} ${child1.lastName}",
                     surveyTitle = "Group survey",
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -1826,9 +1836,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         val eventTimeId = event.times.first().id
 
@@ -1873,7 +1883,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     LocalTime.of(9, 0),
                     childName = "${child1.firstName} ${child1.lastName}",
                     surveyTitle = "Group survey",
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -1901,7 +1911,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -1909,7 +1919,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -1926,7 +1936,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         CalendarEventTimeForm(
                             date = today.plusDays(1),
                             timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                        )
+                        ),
                     ),
             )
 
@@ -1943,7 +1953,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         CalendarEventTimeForm(
                             date = today.plusDays(1),
                             timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                        )
+                        ),
                     ),
             )
 
@@ -2018,7 +2028,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         CalendarEventTimeForm(
                             date = today.plusDays(1),
                             timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                        )
+                        ),
                     ),
             )
 
@@ -2074,9 +2084,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
@@ -2128,9 +2138,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
@@ -2189,7 +2199,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare2.id,
                     groupId = group2.id,
                     period = FiniteDateRange(placementStart, placementEnd),
-                )
+                ),
             )
         }
 
@@ -2206,7 +2216,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         CalendarEventTimeForm(
                             date = today.plusDays(1),
                             timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                        )
+                        ),
                     ),
             )
 
@@ -2359,7 +2369,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val pendingReminderJobs = db.read { tx ->
             tx.createQuery {
                     sql(
-                        "SELECT count(*) FROM async_job WHERE type = 'SendDiscussionReservationReminderEmail' AND completed_at IS NULL"
+                        "SELECT count(*) FROM async_job WHERE type = 'SendDiscussionReservationReminderEmail' AND completed_at IS NULL",
                     )
                 }
                 .exactlyOne<Int>()
@@ -2538,7 +2548,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val deletedTimeEventData = readCalendarEvent(newEventData.id)
 
         assertThat(
-            employeeReservedEventData.contentModifiedAt < deletedTimeEventData.contentModifiedAt
+            employeeReservedEventData.contentModifiedAt < deletedTimeEventData.contentModifiedAt,
         )
     }
 
@@ -2573,7 +2583,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         CalendarEventTimeForm(
                             date = today.plusDays(1),
                             timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                        )
+                        ),
                     ),
             )
         val id =
@@ -2598,7 +2608,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         CalendarEventTimeForm(
                             today.plusDays(1),
                             timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
-                        )
+                        ),
                     ),
             )
         this.calendarEventController.createCalendarEvent(
@@ -2696,7 +2706,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         isHoliday = false,
                         isOperationalDay = true,
                     ),
-                )
+                ),
             )
     }
 
@@ -2711,7 +2721,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
             val placementId3 =
                 tx.insert(
@@ -2720,7 +2730,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -2728,7 +2738,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
         val expectedRecipients = listOf(adult2, adult3)
@@ -2746,10 +2756,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
         val calendarEventTimeForm = event.times.first()
 
@@ -2776,7 +2786,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
                         childId = reservationForm.childId,
-                    )
+                    ),
             )
 
         val reservationEmailContent =
@@ -2843,7 +2853,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
             val placementId3 =
                 tx.insert(
@@ -2852,7 +2862,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -2860,7 +2870,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
         val expectedRecipients = listOf(adult2, adult3)
@@ -2877,10 +2887,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
         val calendarEventTimeForm = event.times.first()
 
@@ -2907,7 +2917,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
                         childId = reservationForm.childId,
-                    )
+                    ),
             )
 
         val reservationEmailContent =
@@ -2962,7 +2972,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
             val placementId3 =
                 tx.insert(
@@ -2971,7 +2981,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -2979,7 +2989,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
         val expectedRecipients = listOf(adult2, adult3)
@@ -2996,10 +3006,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
                                 timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
-                            )
+                            ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
         val calendarEventTimeForm = event.times.first()
 
@@ -3028,7 +3038,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
                         childId = reservationForm.childId,
-                    )
+                    ),
             )
 
         val cancellationEmailContent =
@@ -3062,7 +3072,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
             val placementId4 =
                 tx.insert(
@@ -3071,7 +3081,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -3079,7 +3089,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             val placementId3 =
@@ -3089,7 +3099,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -3097,7 +3107,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
         }
 
@@ -3127,7 +3137,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             ),
                         ),
                     eventType = CalendarEventType.DISCUSSION_SURVEY,
-                )
+                ),
             )
 
         val child4EventTime = event.times.last()
@@ -3234,7 +3244,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     groupId = group1.id,
                     calendarEventId = event.id,
-                )
+                ),
             )
             tx.insert(eventTime)
         }
@@ -3306,7 +3316,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -3314,7 +3324,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
+                ),
             )
 
             tx.insert(event)
@@ -3323,7 +3333,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = daycare.id,
                     groupId = group1.id,
                     calendarEventId = event.id,
-                )
+                ),
             )
             tx.insert(pastEventTime)
             tx.insert(futureEventTime)
@@ -3348,7 +3358,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = futureEventTime.start,
                         endTime = futureEventTime.end,
                         childId = child3.id,
-                    )
+                    ),
             )
 
         val cancellationEmailContent =
@@ -3437,7 +3447,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
-                )
+                ),
             )
 
             val placementId1 =
@@ -3447,7 +3457,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = unit.id,
                         startDate = today,
                         endDate = today.plusMonths(2),
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -3455,7 +3465,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group.id,
                     startDate = today,
                     endDate = today.plusMonths(2),
-                )
+                ),
             )
 
             val placementId2 =
@@ -3465,7 +3475,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         unitId = unit.id,
                         startDate = today,
                         endDate = today.plusMonths(2),
-                    )
+                    ),
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
@@ -3473,7 +3483,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycareGroupId = group.id,
                     startDate = today,
                     endDate = today.plusMonths(2),
-                )
+                ),
             )
 
             tx.insert(event)

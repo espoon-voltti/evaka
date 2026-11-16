@@ -180,7 +180,7 @@ WITH pd AS (
     e.name AS modified_by_name,
     e.type AS modified_by_type
 FROM pd LEFT JOIN evaka_user ce ON pd.created_by = ce.id LEFT JOIN evaka_user e ON pd.modified_by = e.id
-"""
+""",
         )
     }
         .exactlyOne<PedagogicalDocument>()
@@ -215,14 +215,14 @@ WITH pd AS (
     e.name AS modified_by_name,
     e.type AS modified_by_type
 FROM pd LEFT JOIN evaka_user ce ON pd.created_by = ce.id LEFT JOIN evaka_user e ON pd.modified_by = e.id
-"""
+""",
         )
     }
         .exactlyOne<PedagogicalDocument>()
 }
 
 private fun Database.Read.findPedagogicalDocumentsByChild(
-    childId: ChildId
+    childId: ChildId,
 ): List<PedagogicalDocument> {
     return createQuery {
         sql(
@@ -243,7 +243,7 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
                 LEFT JOIN evaka_user ce ON pd.created_by = ce.id
                 LEFT JOIN evaka_user e ON pd.modified_by = e.id
                 WHERE child_id = ${bind(childId)}
-                """
+                """,
         )
     }
         .toList<PedagogicalDocument>()
@@ -253,7 +253,7 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
 private fun Database.Transaction.deleteDocument(documentId: PedagogicalDocumentId) {
     createUpdate {
         sql(
-            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ${bind(documentId)}"
+            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ${bind(documentId)}",
         )
     }
         .execute()

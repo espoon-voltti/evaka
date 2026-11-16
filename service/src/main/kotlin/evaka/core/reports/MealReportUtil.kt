@@ -130,7 +130,7 @@ fun mealReportData(
                             childInfo.placementType.fixedScheduleRange(
                                 childInfo.dailyPreschoolTime,
                                 childInfo.dailyPreparatoryTime,
-                            )
+                            ),
                         )
                     else childInfo.reservations ?: emptyList()
 

@@ -203,7 +203,7 @@ LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date
 LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
 LEFT JOIN daycare_group dg ON dg.id = bc.group_id
 WHERE bc.unit_id = ${bind(unitId)} AND (${bind(groupIds)}::uuid[] IS NULL OR dg.id = ANY(${bind(groupIds)}));
-"""
+""",
         )
     }
         .toList<PlacementInfoRow>()
@@ -223,7 +223,7 @@ private fun Database.Read.getChildInfo(children: Set<ChildId>): List<ChildRow> {
 SELECT p.id as child_id, p.date_of_birth, p.last_name, p.first_name
 FROM person p
 WHERE p.id = ANY(${bind(children)})
-"""
+""",
         )
     }
         .toList<ChildRow>()
@@ -255,7 +255,7 @@ FROM service_need sn
 JOIN placement pl on pl.id = sn.placement_id
 LEFT JOIN service_need_option sno ON sno.id = sn.option_id
 WHERE pl.child_id = ANY(${bind(children)}) AND daterange(sn.start_date, sn.end_date, '[]') && daterange(${bind(start)}, ${bind(end)}, '[]');
-    """
+    """,
         )
     }
         .toList<ServiceNeedRow>()
@@ -279,7 +279,7 @@ SELECT
     capacity_factor
 FROM assistance_factor af
 WHERE child_id = ANY(${bind(children)}) AND valid_during && ${bind(range)}
-"""
+""",
     )
 }
     .toList<AssistanceNeedRow>()
@@ -303,7 +303,7 @@ FROM attendance_reservation ar
 JOIN placement pl on ar.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
 WHERE pl.child_id = ANY(${bind(children)}) AND between_start_and_end(${bind(range)}, ar.date)
 AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
-    """
+    """,
             )
         }
         .toList<ReservationRow>()
@@ -329,7 +329,7 @@ SELECT child_id, date, start_time, end_time
 FROM child_attendance
 WHERE child_id = ANY(${bind(children)}) AND between_start_and_end(${bind(range)}, date)
 AND end_time IS NOT NULL
-    """
+    """,
             )
         }
         .toList<ReservationRow>()
@@ -509,7 +509,7 @@ fun getAttendanceReservationReport(
                 }
                 .filter {
                     (daycare.shiftCareOperationDays ?: daycare.operationDays).contains(
-                        it.dayOfWeek.value
+                        it.dayOfWeek.value,
                     )
                 }
                 .map { intervalStart ->
@@ -678,7 +678,7 @@ fun getAttendanceReservationReportByChild(
                 groupId = null,
                 groupName = null,
                 items = toItems(rows, childInfoMap),
-            )
+            ),
         )
     } else {
         rows

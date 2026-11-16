@@ -196,7 +196,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = adult1.id,
                     startDate = child1.dateOfBirth,
                     endDate = child1.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             tx.insertTestPartnership(adult1 = adult1.id, adult2 = adult2.id)
         }
@@ -378,7 +378,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = headOfFamily.id,
                     startDate = child2.dateOfBirth,
                     endDate = child2.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = headOfFamily.id, adult2 = adult7.id)
             it.insertTestCitizenPushSubscription(headOfFamily.id, mockWebPushEndpoint(httpPort))
@@ -395,7 +395,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     decisionId = decisionId,
                     childName = "${child2.firstName} ${child2.lastName}",
                     unitName = voucherDaycare.name,
-                )
+                ),
             ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
@@ -463,7 +463,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = optInAdult.id,
                     startDate = child2.dateOfBirth,
                     endDate = child2.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = optInAdult.id, adult2 = adult7.id)
         }
@@ -475,7 +475,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailContent =
             emailMessageProvider.financeDecisionNotification(
-                FinanceDecisionType.VOUCHER_VALUE_DECISION
+                FinanceDecisionType.VOUCHER_VALUE_DECISION,
             )
 
         assertEquals(
@@ -498,7 +498,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = adult3.id,
                     startDate = child2.dateOfBirth,
                     endDate = child2.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = adult3.id, adult2 = adult4.id)
         }
@@ -515,7 +515,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailContent =
             emailMessageProvider.financeDecisionNotification(
-                FinanceDecisionType.VOUCHER_VALUE_DECISION
+                FinanceDecisionType.VOUCHER_VALUE_DECISION,
             )
 
         assertEquals(
@@ -549,7 +549,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = optOutAdult.id,
                     startDate = child2.dateOfBirth,
                     endDate = child2.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = optOutAdult.id, adult2 = adult7.id)
         }
@@ -673,7 +673,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     extendedTerm = preschoolTerm,
                     applicationPeriod = preschoolTerm,
                     termBreaks = DateSet.empty(),
-                )
+                ),
             )
         }
         createPlacement(newStartDate, endDate, type = PlacementType.PRESCHOOL)
@@ -744,7 +744,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE placement SET start_date = ${bind(now.toLocalDate())} WHERE id = ${bind(placementId)}"
+                    "UPDATE placement SET start_date = ${bind(now.toLocalDate())} WHERE id = ${bind(placementId)}",
                 )
             }
         }
@@ -782,7 +782,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = adult7.id,
                     startDate = child2.dateOfBirth,
                     endDate = child2.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = adult7.id, adult2 = adult3.id)
         }
@@ -826,7 +826,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = adult3.id,
                     startDate = childRestricted.dateOfBirth,
                     endDate = childRestricted.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
         }
         createPlacement(startDate, endDate, childId = childRestricted.id)
@@ -845,7 +845,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = adult7.id,
                     startDate = child2.dateOfBirth,
                     endDate = child2.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = adult7.id, adult2 = adult3.id)
         }
@@ -876,7 +876,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = adult3.id,
                     startDate = childRestricted.dateOfBirth,
                     endDate = childRestricted.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
         }
         createPlacement(startDate, endDate, childId = childRestricted.id)
@@ -894,7 +894,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     headOfChildId = adult7.id,
                     startDate = child2.dateOfBirth,
                     endDate = child2.dateOfBirth.plusYears(18).minusDays(1),
-                )
+                ),
             )
             it.insertTestPartnership(adult1 = adult7.id, adult2 = adult3.id)
         }
@@ -924,7 +924,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction {
             it.execute {
                 sql(
-                    "UPDATE voucher_value_decision SET decision_type='RELIEF_ACCEPTED' WHERE id = ${bind(decision.id)}"
+                    "UPDATE voucher_value_decision SET decision_type='RELIEF_ACCEPTED' WHERE id = ${bind(decision.id)}",
                 )
             }
         }
@@ -1103,7 +1103,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         UPDATE voucher_value_decision
         SET document_contains_contact_info = TRUE
         WHERE id = ${bind(id)}
-    """
+    """,
             )
         }
 

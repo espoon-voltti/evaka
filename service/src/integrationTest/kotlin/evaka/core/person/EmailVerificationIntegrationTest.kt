@@ -65,7 +65,7 @@ class EmailVerificationIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             PersonalDataControllerCitizen.EmailVerificationRequest(
                 verification.id,
                 verificationCode,
-            )
+            ),
         )
         getStatus().let { status ->
             assertEquals(email, status.email)
@@ -101,7 +101,7 @@ class EmailVerificationIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 PersonalDataControllerCitizen.EmailVerificationRequest(
                     verification.id,
                     verificationCode,
-                )
+                ),
             )
         }
 

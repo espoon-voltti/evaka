@@ -117,7 +117,7 @@ GROUP BY ROLLUP ((a.id, a.name), (d.id, d.name), (p.id, p.first_name, p.last_nam
 ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
 
             """
-                    .trimIndent()
+                    .trimIndent(),
             )
         }
             .toList<FamilyDaycareMealReportRow>()
@@ -145,7 +145,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                         breakfastCount = row.breakfastCount,
                         lunchCount = row.lunchCount,
                         snackCount = row.snackCount,
-                    )
+                    ),
                 )
             } else if (row.daycareId != null && row.daycareName != null) {
                 val daycareList = daycaresByArea.getOrPut(row.areaId.toString()) { mutableListOf() }
@@ -157,7 +157,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                         lunchCount = row.lunchCount,
                         snackCount = row.snackCount,
                         childResults = childrenByDaycare[row.daycareId.toString()].orEmpty(),
-                    )
+                    ),
                 )
             } else if (row.areaId != null && row.areaName != null) {
                 collectedAreaResults.add(
@@ -168,7 +168,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                         lunchCount = row.lunchCount,
                         snackCount = row.snackCount,
                         daycareResults = daycaresByArea[row.areaId.toString()].orEmpty(),
-                    )
+                    ),
                 )
             } else {
                 totalResult =

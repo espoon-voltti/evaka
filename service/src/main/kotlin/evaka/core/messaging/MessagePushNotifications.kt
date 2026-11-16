@@ -78,7 +78,7 @@ AND CASE
         )
     )
 END
-"""
+""",
         )
     }
 
@@ -92,7 +92,7 @@ END
 SELECT recipient, device
 FROM (${subquery(getPendingPushNotifications())}) notification
 WHERE notification.message = ANY(${bind(messages)})
-"""
+""",
                 )
             }
             .toList<AsyncJob.SendMessagePushNotification>()
@@ -115,7 +115,7 @@ FROM (${subquery(getPendingPushNotifications())}) notification
 JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
 WHERE notification.recipient = ${bind(messageRecipient)}
 AND notification.device = ${bind(device)}
-"""
+""",
         )
     }
         .exactlyOneOrNull {
@@ -169,9 +169,9 @@ AND notification.device = ${bind(device)}
                             listOf(
                                 WebPushPayload.NotificationV1(
                                     title =
-                                        "Uusi viesti ryhmälle ${notification.groupName}${notification.senderName?.let { " ($it)" } ?: ""}"
-                                )
-                            )
+                                        "Uusi viesti ryhmälle ${notification.groupName}${notification.senderName?.let { " ($it)" } ?: ""}",
+                                ),
+                            ),
                         ),
                 ),
             )

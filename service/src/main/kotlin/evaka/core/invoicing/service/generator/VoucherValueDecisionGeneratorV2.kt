@@ -132,7 +132,7 @@ fun generateVoucherValueDecisionsDrafts(
                         newDrafts = newDrafts,
                         existingActiveDecisions = activeDecisions,
                         getDifferences = VoucherValueDecisionDifference::getDifference,
-                    )
+                    ),
             )
         }
 }
@@ -221,7 +221,7 @@ private fun getVoucherBases(
         val feeThresholds =
             allFeeThresholds.find { it.range.contains(range) }?.thresholds
                 ?: error(
-                    "Missing prices for period ${range.start} - ${range.end}, cannot generate fee decision"
+                    "Missing prices for period ${range.start} - ${range.end}, cannot generate fee decision",
                 )
 
         val headOfFamilyIncome =
@@ -248,7 +248,7 @@ private fun getVoucherBases(
                 .sortedWith(
                     compareByDescending<Child> { it.dateOfBirth }
                         .thenByDescending { it.ssn }
-                        .thenBy { it.id }
+                        .thenBy { it.id },
                 )
                 .filter { child ->
                     placementDetailsByChild[child.id]?.any { it.range.contains(range) } ?: false
@@ -328,7 +328,7 @@ data class VoucherBasis(
                 }
             }
                 ?: error(
-                    "Voucher value coefficient missing for service need ${placement.serviceNeedOption.id} during $range"
+                    "Voucher value coefficient missing for service need ${placement.serviceNeedOption.id} during $range",
                 )
 
         val parentIncomes =
@@ -479,7 +479,7 @@ private fun Database.Read.getHeadOfChildRelations(childId: ChildId): List<HeadOf
             SELECT head_of_child, daterange(start_date, end_date, '[]') as finite_range
             FROM fridge_child
             WHERE child_id = ${bind(childId)} AND NOT conflict
-        """
+        """,
         )
     }
         .toList<HeadOfChildRelation>()
@@ -492,7 +492,7 @@ private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
             SELECT id, date_of_birth
             FROM person
             WHERE id = ${bind(childId)}
-        """
+        """,
         )
     }
         .exactlyOne<ChildWithDateOfBirth>()

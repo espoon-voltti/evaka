@@ -110,7 +110,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                     unitId = daycare.id,
                     startDate = today,
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             tx.insert(
                 DevPlacement(
@@ -119,7 +119,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                     unitId = daycare.id,
                     startDate = today.plusYears(1).plusDays(1),
                     endDate = today.plusYears(2),
-                )
+                ),
             )
         }
     }
@@ -198,7 +198,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                     lateDocId.toString(),
                     lateAnnulledDocId.toString(),
                     lateRejectedDocId.toString(),
-                )
+                ),
             )
     }
 
@@ -649,7 +649,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                     UPDATE child_document
                     SET archived_at = ${bind(now)}
                     WHERE id = ${bind(documentId)}
-                    """
+                    """,
                 )
             }
         }
@@ -663,7 +663,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                     UPDATE fee_decision
                     SET archived_at = ${bind(now)}
                     WHERE id = ${bind(feeDecisionId)}
-                    """
+                    """,
                 )
             }
         }
@@ -677,7 +677,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                     UPDATE voucher_value_decision
                     SET archived_at = ${bind(now)}
                     WHERE id = ${bind(voucherDecisionId)}
-                    """
+                    """,
                 )
             }
         }
@@ -691,7 +691,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                     UPDATE decision
                     SET archived_at = ${bind(now)}
                     WHERE id = ${bind(decisionId)}
-                    """
+                    """,
                 )
             }
         }
@@ -707,7 +707,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                     WHERE id = (SELECT decision_id from child_document
                         WHERE id = ${bind(documentId)}
                         LIMIT 1)
-                    """
+                    """,
                 )
             }
         }
@@ -734,7 +734,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                         archiveDurationMonths = if (archiveExternally) 120 else null,
                         endDecisionWhenUnitChanges =
                             if (type == ChildDocumentType.OTHER_DECISION) true else null,
-                    )
+                    ),
                 )
 
             var docId: ChildDocumentId
@@ -758,9 +758,9 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                                         createdBy = user.evakaUserId,
                                         publishedContent = emptyContent,
                                         documentKey = documentKey,
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     )
             } else {
                 docId =
@@ -794,9 +794,9 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                                         createdBy = user.evakaUserId,
                                         publishedContent = emptyContent,
                                         documentKey = documentKey,
-                                    )
+                                    ),
                                 ),
-                        )
+                        ),
                     )
             }
             return@transaction docId
@@ -815,7 +815,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                 validDuring = FiniteDateRange(today, today.plusMonths(1)),
                 approvedAt = approvedAt,
                 documentKey = documentKey,
-            )
+            ),
         )
     }
 
@@ -834,7 +834,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                 childId = childId,
                 placementUnitId = daycare.id,
                 documentKey = documentKey,
-            )
+            ),
         )
     }
 
@@ -885,7 +885,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                 resolved = resolvedAt,
                 resolvedBy = user.evakaUserId.raw,
                 documentKey = documentKey,
-            )
+            ),
         )
     }
 
@@ -897,7 +897,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                         FROM async_job
                         WHERE type = 'ArchiveDecision'
                         ORDER BY id
-                        """
+                        """,
                 )
             }
             .toList<AsyncJobInfo>()
@@ -911,7 +911,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                         FROM async_job
                         WHERE type = 'ArchiveFeeDecision'
                         ORDER BY id
-                        """
+                        """,
                 )
             }
             .toList<AsyncJobInfo>()
@@ -925,7 +925,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                         FROM async_job
                         WHERE type = 'ArchiveVoucherValueDecision'
                         ORDER BY id
-                        """
+                        """,
                 )
             }
             .toList<AsyncJobInfo>()
@@ -939,7 +939,7 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
                         FROM async_job
                         WHERE type = 'ArchiveChildDocument'
                         ORDER BY id
-                        """
+                        """,
                 )
             }
             .toList<AsyncJobInfo>()

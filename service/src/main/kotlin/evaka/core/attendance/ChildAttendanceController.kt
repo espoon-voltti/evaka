@@ -292,7 +292,7 @@ class ChildAttendanceController(
     )
 
     data class ExpectedAbsencesOnDeparturesResponse(
-        val categoriesByChild: Map<ChildId, Set<AbsenceCategory>?>
+        val categoriesByChild: Map<ChildId, Set<AbsenceCategory>?>,
     )
 
     @PostMapping("/employee-mobile/attendances/units/{unitId}/departure/expected-absences")
@@ -327,7 +327,7 @@ class ChildAttendanceController(
 
                             attendanceTimesToday.getOrDefault(childId, emptyList()) +
                                 ongoingAttendance.toTimeRange(
-                                    HelsinkiDateTime.of(today, body.departed)
+                                    HelsinkiDateTime.of(today, body.departed),
                                 )
                         }
 
@@ -337,7 +337,7 @@ class ChildAttendanceController(
                                 tx = tx,
                                 date = today,
                                 attendanceTimesByChild = attendanceTimesByChild,
-                            )
+                            ),
                     )
                 }
             }
@@ -569,7 +569,7 @@ class ChildAttendanceController(
     }
 
     @DeleteMapping(
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/full-day-absence"
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/full-day-absence",
     )
     fun cancelFullDayAbsence(
         db: Database,
@@ -715,7 +715,7 @@ JOIN realized_placement_all(${bind(today)}) rp
 ON c.id = rp.child_id
 WHERE c.id = ${bind(childId)} AND rp.unit_id = ${bind(unitId)}
 LIMIT 1
-"""
+""",
         )
     }
         .exactlyOneOrNull<ChildPlacementBasics>()
@@ -735,7 +735,7 @@ SELECT DISTINCT d::date AS date, placement_type
 FROM generate_series(${bind(startDate)}, ${bind(endDate)}, '1 day') d
 JOIN realized_placement_all(d::date) rp ON true
 WHERE rp.child_id = ${bind(childId)} AND rp.unit_id = ${bind(unitId)}
-"""
+""",
     )
 }
     .toList()

@@ -82,7 +82,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     default.rulesOf(action)
 
                 override fun <T> rulesOf(
-                    action: Action.ScopedAction<in T>
+                    action: Action.ScopedAction<in T>,
                 ): Sequence<ScopedActionRule<in T>> =
                     if (action == Action.Child.READ_SERVICE_NEEDS) emptySequence()
                     else default.rulesOf(action)
@@ -168,7 +168,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placement.id,
                     daycareGroupId = group.id,
-                )
+                ),
             )
         }
 
@@ -190,7 +190,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare.id,
                     groupId = group.id,
                     period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)),
-                )
+                ),
             )
         }
 
@@ -258,7 +258,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycareGroupId = group1.id,
                     startDate = today.minusDays(10),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
 
             // Terminated
@@ -269,7 +269,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycareGroupId = group1.id,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(14),
-                )
+                ),
             )
         }
 
@@ -421,7 +421,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycareGroupId = group.id,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(14),
-                )
+                ),
             )
 
             // Connected daycare placement is terminated, preschool continues
@@ -432,7 +432,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycareGroupId = group.id,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(15),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -441,7 +441,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare.id,
                     startDate = today.plusDays(16),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
 
             // Active transfer application
@@ -452,7 +452,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycareGroupId = group.id,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(20),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -460,7 +460,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare2.id,
                     startDate = today.plusDays(21),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             it.insertTestApplication(
                     type = ApplicationType.DAYCARE,
@@ -486,7 +486,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             createdBy = supervisor.evakaUserId,
                             applicationId = applicationId,
                             type = DecisionType.DAYCARE,
-                        )
+                        ),
                     )
                 }
 
@@ -498,7 +498,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare2.id,
                     startDate = today.plusDays(22),
                     endDate = today.plusYears(1),
-                )
+                ),
             )
             it.insertTestApplication(
                     type = ApplicationType.DAYCARE,
@@ -524,7 +524,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             createdBy = supervisor.evakaUserId,
                             applicationId = applicationId,
                             type = DecisionType.DAYCARE,
-                        )
+                        ),
                     )
                 }
 
@@ -535,7 +535,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare2.id,
                     startDate = today.minusYears(1),
                     endDate = today.minusDays(11),
-                )
+                ),
             )
             it.insert(
                 DevPlacement(
@@ -543,7 +543,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycare.id,
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(21),
-                )
+                ),
             )
             it.insertTestApplication(
                     type = ApplicationType.DAYCARE,
@@ -570,7 +570,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             createdBy = supervisor.evakaUserId,
                             applicationId = applicationId,
                             type = DecisionType.DAYCARE,
-                        )
+                        ),
                     )
                 }
         }
@@ -829,7 +829,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycareGroupId = group.id,
                     startDate = today,
                     endDate = groupPlacementEnd,
-                )
+                ),
             )
         }
 
@@ -979,7 +979,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 SELECT EXISTS(
     SELECT * FROM message_account WHERE daycare_group_id = ${bind(groupId)} AND active = true
 )
-"""
+""",
                     )
                 }
             }

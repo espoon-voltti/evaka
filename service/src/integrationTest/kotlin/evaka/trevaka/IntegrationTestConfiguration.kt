@@ -39,8 +39,8 @@ class IntegrationTestConfiguration {
                     .buildWithDefaults(
                         AttributeMap.builder()
                             .put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true)
-                            .build()
-                    )
+                            .build(),
+                    ),
             )
             .region(Region.EU_WEST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
@@ -50,8 +50,8 @@ class IntegrationTestConfiguration {
                     AwsBasicCredentials.create(
                         bucketEnv.localS3AccessKeyId,
                         bucketEnv.localS3SecretAccessKey,
-                    )
-                )
+                    ),
+                ),
             )
             .build()
             .also { client -> createBucketsIfNeeded(client, bucketEnv.allBuckets()) }
@@ -67,8 +67,8 @@ class IntegrationTestConfiguration {
                     AwsBasicCredentials.create(
                         bucketEnv.localS3AccessKeyId,
                         bucketEnv.localS3SecretAccessKey,
-                    )
-                )
+                    ),
+                ),
             )
             .build()
 

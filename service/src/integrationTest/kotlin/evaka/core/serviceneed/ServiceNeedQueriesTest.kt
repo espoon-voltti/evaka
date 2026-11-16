@@ -41,7 +41,7 @@ class ServiceNeedQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 """
 UPDATE service_need_option SET show_for_citizen=FALSE
 WHERE id=${bind(snPreschoolDaycare45.id)} OR id=${bind(snPreparatoryDaycare50.id)}
-"""
+""",
             )
         }
     }
