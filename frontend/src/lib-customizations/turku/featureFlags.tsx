@@ -28,7 +28,8 @@ const features: Features = {
     },
     preschoolApplication: {
       connectedDaycarePreferredStartDate: true,
-      serviceNeedOption: false
+      serviceNeedOption: false,
+      siblingBasis: true
     },
     decisionDraftMultipleUnits: false,
     preschool: true,
@@ -66,7 +67,8 @@ const features: Features = {
     },
     preschoolApplication: {
       connectedDaycarePreferredStartDate: true,
-      serviceNeedOption: false
+      serviceNeedOption: false,
+      siblingBasis: true
     },
     decisionDraftMultipleUnits: false,
     preschool: true,
@@ -106,7 +108,8 @@ const features: Features = {
     },
     preschoolApplication: {
       connectedDaycarePreferredStartDate: true,
-      serviceNeedOption: false
+      serviceNeedOption: false,
+      siblingBasis: true
     },
     decisionDraftMultipleUnits: false,
     preschool: true,

@@ -47,6 +47,10 @@ interface BaseFeatureFlags {
      * Citizen must select a service need option on preschool application
      */
     serviceNeedOption: boolean
+    /**
+     * Show the sibling basis option in the unit preference section of preschool application
+     */
+    siblingBasis: boolean
   }
 
   /**

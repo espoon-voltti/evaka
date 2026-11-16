@@ -36,7 +36,12 @@ export type UnitPreferenceSectionCommonProps = {
 export default React.memo(function UnitPreferenceSection(
   props: UnitPreferenceSectionCommonProps
 ) {
-  const { translations: t, applicationUnitsQuery, infoDialog } = props.deps
+  const {
+    translations: t,
+    applicationUnitsQuery,
+    infoDialog,
+    featureFlags
+  } = props.deps
 
   const {
     updateFormData,
@@ -45,6 +50,10 @@ export default React.memo(function UnitPreferenceSection(
     preferredStartDate,
     shiftCare
   } = props
+
+  const showSiblingBasis =
+    applicationType !== 'PRESCHOOL' ||
+    featureFlags.preschoolApplication.siblingBasis
 
   const { data: units = null } = useQuery(
     preferredStartDate
@@ -102,8 +111,12 @@ export default React.memo(function UnitPreferenceSection(
       }
       data-qa="unitPreference-section"
     >
-      <SiblingBasisSubSection {...props} />
-      <HorizontalLine />
+      {showSiblingBasis && (
+        <>
+          <SiblingBasisSubSection {...props} />
+          <HorizontalLine />
+        </>
+      )}
       <UnitsSubSection {...props} units={units} />
     </EditorSection>
   )
