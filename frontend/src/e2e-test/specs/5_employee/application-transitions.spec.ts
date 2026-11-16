@@ -169,6 +169,7 @@ test.describe('Application transitions', () => {
     await applicationListView.searchButton.click()
     await applicationListView.applicationRow(applicationId).checkbox.check()
     await applicationListView.actionBar.sendDecisionsWithoutProposal.click()
+    await expect(applicationListView.applicationRow(applicationId)).toBeHidden()
 
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
@@ -202,6 +203,7 @@ test.describe('Application transitions', () => {
     await applicationListView
       .applicationRow(applicationId)
       .actionsMenuItems.sendDecisionsWithoutProposal.click()
+    await expect(applicationListView.applicationRow(applicationId)).toBeHidden()
 
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
@@ -251,6 +253,7 @@ test.describe('Application transitions', () => {
     await expect(applicationReadView.confidentialRadioNo).toBeHidden()
 
     await applicationReadView.setVerifiedButton.click()
+    await expect(applicationReadView.setVerifiedButton).toBeHidden()
     await page.goBack()
 
     const placementDraftPage = await applicationListView
@@ -304,6 +307,7 @@ test.describe('Application transitions', () => {
 
     await applicationReadView.setVerifiedButton.assertDisabled(false)
     await applicationReadView.setVerifiedButton.click()
+    await expect(applicationReadView.setVerifiedButton).toBeHidden()
     await page.goBack()
 
     const placementDraftPage = await applicationListView
@@ -744,6 +748,7 @@ test.describe('Application transitions', () => {
     await placementProposals.assertAcceptButtonDisabled()
     await placementProposals.clickProposalAccept(applicationId)
     await placementProposals.clickAcceptButton()
+    await placementProposals.assertPlacementProposalRowCount(1)
 
     // service worker withdraws application2 proposal, mails application1 decision
     await employeeLogin(page, serviceWorker)
@@ -754,6 +759,9 @@ test.describe('Application transitions', () => {
     await applicationListView.searchButton.click()
     await applicationListView.applicationRow(applicationId2).checkbox.check()
     await applicationListView.actionBar.withdrawPlacementProposal.click()
+    await expect(
+      applicationListView.applicationRow(applicationId2)
+    ).toBeHidden()
     await execSimpleApplicationActions(
       applicationId,
       ['CONFIRM_DECISION_MAILED'],
@@ -808,6 +816,7 @@ test.describe('Application transitions', () => {
     await placementProposals.selectProposalRejectionReason(0)
     await placementProposals.submitProposalRejectionReason()
     await placementProposals.clickAcceptButton()
+    await placementProposals.assertPlacementProposalRowCount(0)
 
     // service worker
     await employeeLogin(page, serviceWorker)
