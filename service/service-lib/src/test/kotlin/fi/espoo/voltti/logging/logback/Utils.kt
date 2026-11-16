@@ -91,6 +91,7 @@ val UUIDWithSSNs =
         "e1130765-b9b5-4549-b395-922222a8208a",
         "5c0250a8-a3fa-449c-a188-6010108a000a",
     )
+const val hexIdWithSSN = "130105a087a1b2c3"
 
 fun TestLoggers.assertAudit() =
     assertThat(audit.appender.list.map { it.toJson(audit.encoder).asMap(mapper) })
