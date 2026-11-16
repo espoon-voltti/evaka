@@ -10,7 +10,11 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 export const API_URL = '/api'
 
 export const client = axios.create({
-  baseURL: API_URL
+  baseURL: API_URL,
+  // CSRF protection is the x-evaka-csrf header. Otherwise axios reads an XSRF-TOKEN cookie
+  // asynchronously before every request, so the request is not sent within the triggering
+  // event and is lost if the page navigates away right after it.
+  withXSRFToken: false
 })
 client.defaults.headers.common['x-evaka-csrf'] = '1'
 
