@@ -762,6 +762,9 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_DECISION)
+        if (tx.fetchDecisionDrafts(application.id).none { it.planned }) {
+            throw BadRequest("Application ${application.id} has no planned decisions")
+        }
         decisionService.freezeGenericDecisionReasonings(tx, application.id)
         tx.setDecisionDecidedBy(application.id, user.evakaUserId)
         tx.syncApplicationOtherGuardians(application.id, clock.today()).also { audit.add(it) }
