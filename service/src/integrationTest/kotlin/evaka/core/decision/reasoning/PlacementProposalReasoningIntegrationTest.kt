@@ -239,7 +239,11 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `an unplanned draft does not block sendPlacementProposal and gets no link`() {
-        val fixture = createWaitingDecisionApplication()
+        insertGenericReasoning(
+            ready = true,
+            collectionType = DecisionReasoningCollectionType.PRESCHOOL,
+        )
+        val fixture = createWaitingDecisionApplication(type = DecisionType.PRESCHOOL_DAYCARE)
         db.transaction { tx ->
             tx.execute {
                 sql("UPDATE decision SET planned = false WHERE id = ${bind(fixture.decisionId)}")
