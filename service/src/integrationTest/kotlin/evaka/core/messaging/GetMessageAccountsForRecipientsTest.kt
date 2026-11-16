@@ -2189,6 +2189,363 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
+    fun `getMessageAccountsForRecipients returns child with a future backup care as starter of the backup unit`() {
+        val today = LocalDate.of(2021, 5, 1)
+        val area = DevCareArea()
+        val primaryDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val backupDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val unrelatedDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+
+        val primaryGroup = DevDaycareGroup(daycareId = primaryDaycare.id)
+        val backupGroup = DevDaycareGroup(daycareId = backupDaycare.id)
+        val otherBackupUnitGroup = DevDaycareGroup(daycareId = backupDaycare.id)
+
+        val unrelatedSupervisor = DevEmployee()
+        val child = DevPerson()
+        val parent = DevPerson()
+
+        data class AccountIds(
+            val backupSupervisor: MessageAccountId,
+            val backupGroup: MessageAccountId,
+            val otherBackupUnitGroup: MessageAccountId,
+            val unrelatedSupervisor: MessageAccountId,
+        )
+
+        val senders = db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(primaryDaycare)
+            tx.insert(backupDaycare)
+            tx.insert(unrelatedDaycare)
+            tx.insert(primaryGroup)
+            tx.insert(backupGroup)
+            tx.insert(otherBackupUnitGroup)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(parent, DevPersonType.ADULT)
+            tx.insertGuardian(guardianId = parent.id, childId = child.id)
+
+            val primaryPlacement =
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = primaryDaycare.id,
+                        startDate = today.minusDays(30),
+                        endDate = today.plusDays(30),
+                    ),
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = primaryGroup.id,
+                    daycarePlacementId = primaryPlacement,
+                    startDate = today.minusDays(30),
+                    endDate = today.plusDays(30),
+                ),
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = backupDaycare.id,
+                    groupId = backupGroup.id,
+                    period = FiniteDateRange(today.plusDays(10), today.plusDays(20)),
+                ),
+            )
+
+            tx.insert(unrelatedSupervisor)
+            tx.insertDaycareAclRow(backupDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(
+                unrelatedDaycare.id,
+                unrelatedSupervisor.id,
+                UserRole.UNIT_SUPERVISOR,
+            )
+            AccountIds(
+                backupSupervisor = tx.upsertEmployeeMessageAccount(employee1.id),
+                backupGroup = tx.createDaycareGroupMessageAccount(backupGroup.id),
+                otherBackupUnitGroup = tx.createDaycareGroupMessageAccount(otherBackupUnitGroup.id),
+                unrelatedSupervisor = tx.upsertEmployeeMessageAccount(unrelatedSupervisor.id),
+            )
+        }
+
+        val parentAccountId = db.read { tx -> tx.getCitizenMessageAccount(parent.id) }
+        val parentOfChild = setOf(parentAccountId to child.id)
+
+        fun resolve(sender: MessageAccountId, recipient: MessageRecipient) = db.read { tx ->
+            tx.getMessageAccountsForRecipients(
+                senderAccount = tx.getSenderAccount(sender),
+                recipients = setOf(recipient),
+                filters = null,
+                date = today,
+            )
+        }
+
+        assertEquals(
+            parentOfChild,
+            resolve(senders.backupSupervisor, MessageRecipient.Unit(backupDaycare.id, true)),
+        )
+        assertEquals(
+            parentOfChild,
+            resolve(senders.backupSupervisor, MessageRecipient.Group(backupGroup.id, true)),
+        )
+        assertEquals(
+            parentOfChild,
+            resolve(senders.backupSupervisor, MessageRecipient.Child(child.id, true)),
+        )
+        assertEquals(
+            parentOfChild,
+            resolve(senders.backupGroup, MessageRecipient.Group(backupGroup.id, true)),
+        )
+        assertEquals(
+            parentOfChild,
+            resolve(senders.backupGroup, MessageRecipient.Child(child.id, true)),
+        )
+
+        // The backup care has not started yet, so the child is not among the current children of
+        // the backup unit
+        assertEquals(
+            emptySet(),
+            resolve(senders.backupSupervisor, MessageRecipient.Unit(backupDaycare.id)),
+        )
+        assertEquals(
+            emptySet(),
+            resolve(senders.backupGroup, MessageRecipient.Group(backupGroup.id)),
+        )
+
+        // Senders outside the backup care group or unit cannot reach the child as a starter
+        assertEquals(
+            emptySet(),
+            resolve(senders.otherBackupUnitGroup, MessageRecipient.Child(child.id, true)),
+        )
+        assertEquals(
+            emptySet(),
+            resolve(senders.unrelatedSupervisor, MessageRecipient.Child(child.id, true)),
+        )
+    }
+
+    @Test
+    fun `getMessageAccountsForRecipients does not return child with a future backup care without a group as starter`() {
+        val today = LocalDate.of(2021, 5, 1)
+        val area = DevCareArea()
+        val primaryDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val backupDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val primaryGroup = DevDaycareGroup(daycareId = primaryDaycare.id)
+
+        val child = DevPerson()
+        val parent = DevPerson()
+
+        val supervisorAccountId = db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(primaryDaycare)
+            tx.insert(backupDaycare)
+            tx.insert(primaryGroup)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(parent, DevPersonType.ADULT)
+            tx.insertGuardian(guardianId = parent.id, childId = child.id)
+
+            val primaryPlacement =
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = primaryDaycare.id,
+                        startDate = today.minusDays(30),
+                        endDate = today.plusDays(30),
+                    ),
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = primaryGroup.id,
+                    daycarePlacementId = primaryPlacement,
+                    startDate = today.minusDays(30),
+                    endDate = today.plusDays(30),
+                ),
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = backupDaycare.id,
+                    groupId = null,
+                    period = FiniteDateRange(today.plusDays(10), today.plusDays(20)),
+                ),
+            )
+
+            tx.insertDaycareAclRow(backupDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+            tx.upsertEmployeeMessageAccount(employee1.id)
+        }
+
+        val starterAccounts = db.read { tx ->
+            tx.getMessageAccountsForRecipients(
+                senderAccount = tx.getSenderAccount(supervisorAccountId),
+                recipients =
+                    setOf(
+                        MessageRecipient.Unit(backupDaycare.id, starter = true),
+                        MessageRecipient.Child(child.id, starter = true),
+                    ),
+                filters = null,
+                date = today,
+            )
+        }
+
+        assertEquals(emptySet(), starterAccounts)
+    }
+
+    @Test
+    fun `getMessageAccountsForRecipients does not return child as starter when backup care continues in the same group`() {
+        val today = LocalDate.of(2021, 5, 1)
+        val area = DevCareArea()
+        val primaryDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val backupDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val primaryGroup = DevDaycareGroup(daycareId = primaryDaycare.id)
+        val backupGroup = DevDaycareGroup(daycareId = backupDaycare.id)
+
+        val child = DevPerson()
+        val parent = DevPerson()
+
+        val supervisorAccountId = db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(primaryDaycare)
+            tx.insert(backupDaycare)
+            tx.insert(primaryGroup)
+            tx.insert(backupGroup)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(parent, DevPersonType.ADULT)
+            tx.insertGuardian(guardianId = parent.id, childId = child.id)
+
+            val primaryPlacement =
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = primaryDaycare.id,
+                        startDate = today.minusDays(30),
+                        endDate = today.plusDays(30),
+                    ),
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = primaryGroup.id,
+                    daycarePlacementId = primaryPlacement,
+                    startDate = today.minusDays(30),
+                    endDate = today.plusDays(30),
+                ),
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = backupDaycare.id,
+                    groupId = backupGroup.id,
+                    period = FiniteDateRange(today.minusDays(5), today.plusDays(5)),
+                ),
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = backupDaycare.id,
+                    groupId = backupGroup.id,
+                    period = FiniteDateRange(today.plusDays(8), today.plusDays(12)),
+                ),
+            )
+
+            tx.insertDaycareAclRow(backupDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+            tx.upsertEmployeeMessageAccount(employee1.id)
+        }
+
+        val parentAccountId = db.read { tx -> tx.getCitizenMessageAccount(parent.id) }
+
+        fun resolve(recipient: MessageRecipient) = db.read { tx ->
+            tx.getMessageAccountsForRecipients(
+                senderAccount = tx.getSenderAccount(supervisorAccountId),
+                recipients = setOf(recipient),
+                filters = null,
+                date = today,
+            )
+        }
+
+        assertEquals(
+            setOf(parentAccountId to child.id),
+            resolve(MessageRecipient.Unit(backupDaycare.id)),
+        )
+        assertEquals(emptySet(), resolve(MessageRecipient.Unit(backupDaycare.id, starter = true)))
+    }
+
+    @Test
+    fun `getMessageAccountsForRecipients filters backup care starters by the placement type at the start of the backup care`() {
+        val today = LocalDate.of(2021, 5, 1)
+        val area = DevCareArea()
+        val primaryDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val backupDaycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val backupGroup = DevDaycareGroup(daycareId = backupDaycare.id)
+
+        val child = DevPerson()
+        val parent = DevPerson()
+
+        val supervisorAccountId = db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(primaryDaycare)
+            tx.insert(backupDaycare)
+            tx.insert(backupGroup)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(parent, DevPersonType.ADULT)
+            tx.insertGuardian(guardianId = parent.id, childId = child.id)
+
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = primaryDaycare.id,
+                    type = PlacementType.PRESCHOOL,
+                    startDate = today.minusDays(30),
+                    endDate = today.plusDays(5),
+                ),
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = primaryDaycare.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = today.plusDays(6),
+                    endDate = today.plusDays(30),
+                ),
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = backupDaycare.id,
+                    groupId = backupGroup.id,
+                    period = FiniteDateRange(today.plusDays(10), today.plusDays(20)),
+                ),
+            )
+
+            tx.insertDaycareAclRow(backupDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+            tx.upsertEmployeeMessageAccount(employee1.id)
+        }
+
+        val parentAccountId = db.read { tx -> tx.getCitizenMessageAccount(parent.id) }
+
+        fun resolve(category: MessagingCategory) = db.read { tx ->
+            tx.getMessageAccountsForRecipients(
+                senderAccount = tx.getSenderAccount(supervisorAccountId),
+                recipients = setOf(MessageRecipient.Unit(backupDaycare.id, starter = true)),
+                filters = MessageController.PostMessageFilters(placementTypes = listOf(category)),
+                date = today,
+            )
+        }
+
+        assertEquals(
+            setOf(parentAccountId to child.id),
+            resolve(MessagingCategory.MESSAGING_DAYCARE),
+        )
+        assertEquals(emptySet(), resolve(MessagingCategory.MESSAGING_PRESCHOOL))
+    }
+
+    @Test
     fun `getMessageAccountsForRecipients includes placement starting exactly on query date`() {
         val today = LocalDate.of(2021, 5, 1)
         val area = DevCareArea()

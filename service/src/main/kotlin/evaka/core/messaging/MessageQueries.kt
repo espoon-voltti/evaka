@@ -1624,13 +1624,31 @@ WITH group_accounts AS (
                 earlier_dgp.end_date < dgp.start_date AND
                 earlier_dgp.end_date >= ${bind(today)}
         )
+
+    UNION ALL
+
+    -- starting backup placements
+    SELECT a.id AS account_id, bc.child_id, a.group_id, a.group_name, bc.start_date
+    FROM group_accounts a
+    JOIN backup_care bc ON bc.group_id = a.group_id
+    WHERE
+        bc.start_date > ${bind(today)} AND
+        NOT EXISTS (
+            SELECT
+            FROM backup_care earlier_bc
+            WHERE
+                earlier_bc.child_id = bc.child_id AND
+                earlier_bc.group_id = bc.group_id AND
+                earlier_bc.end_date < bc.start_date AND
+                earlier_bc.end_date >= ${bind(today)}
+        )
 )
-SELECT DISTINCT
+SELECT
     c.account_id,
     c.group_id,
     c.group_name,
     c.child_id,
-    c.start_date,
+    min(c.start_date) AS start_date,
     p.first_name,
     p.last_name
 FROM children c
@@ -1644,6 +1662,9 @@ OR EXISTS (
     FROM foster_parent fp
     WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)}
 )
+GROUP BY
+    c.account_id, c.group_id, c.group_name, c.child_id, p.first_name, p.last_name,
+    c.start_date IS NULL
 ORDER BY c.group_name
 """,
         )
@@ -1725,15 +1746,34 @@ WITH personal_accounts AS (
                 earlier_dgp.end_date < dgp.start_date AND
                 earlier_dgp.end_date >= ${bind(today)}
         )
+
+    UNION ALL
+
+    -- starting backup placements
+    SELECT a.id AS account_id, bc.child_id, a.unit_id, a.unit_name, bc.group_id, g.name AS group_name, bc.start_date
+    FROM personal_accounts a
+    JOIN backup_care bc ON bc.unit_id = a.unit_id
+    JOIN daycare_group g ON g.id = bc.group_id
+    WHERE
+        bc.start_date > ${bind(today)} AND
+        NOT EXISTS (
+            SELECT
+            FROM backup_care earlier_bc
+            WHERE
+                earlier_bc.child_id = bc.child_id AND
+                earlier_bc.group_id = bc.group_id AND
+                earlier_bc.end_date < bc.start_date AND
+                earlier_bc.end_date >= ${bind(today)}
+        )
 )
-SELECT DISTINCT
+SELECT
     c.account_id,
     c.unit_id,
     c.unit_name,
     c.group_id,
     c.group_name,
     c.child_id,
-    c.start_date,
+    min(c.start_date) AS start_date,
     p.first_name,
     p.last_name
 FROM children c
@@ -1747,6 +1787,9 @@ OR EXISTS (
     FROM foster_parent fp
     WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)}
 )
+GROUP BY
+    c.account_id, c.unit_id, c.unit_name, c.group_id, c.group_name, c.child_id, p.first_name, p.last_name,
+    c.start_date IS NULL
 ORDER BY c.unit_name, c.group_name
 """,
         )
@@ -1911,45 +1954,28 @@ fun Database.Read.getMessageAccountsForRecipients(
             .toSet { column<MessageAccountId>("account_id") to null }
     }
 
-    val currentRecipientsPredicate =
+    fun recipientsPredicate(recipients: List<MessageRecipient>) =
         PredicateSql.anyNotNull(
-            currentRecipients
+            recipients
                 .areaIds()
                 .takeIf { it.isNotEmpty() }
                 ?.let { PredicateSql { where("d.care_area_id = ANY(${bind(it)})") } },
-            currentRecipients
+            recipients
                 .unitIds()
                 .takeIf { it.isNotEmpty() }
                 ?.let { PredicateSql { where("pl.unit_id = ANY(${bind(it)})") } },
-            currentRecipients
+            recipients
                 .groupIds()
                 .takeIf { it.isNotEmpty() }
                 ?.let { PredicateSql { where("pl.group_id = ANY(${bind(it)})") } },
-            currentRecipients
+            recipients
                 .childIds()
                 .takeIf { it.isNotEmpty() }
                 ?.let { PredicateSql { where("pl.child_id = ANY(${bind(it)})") } },
         )
 
-    val starterRecipientsPredicate =
-        PredicateSql.anyNotNull(
-            starterRecipients
-                .areaIds()
-                .takeIf { it.isNotEmpty() }
-                ?.let { PredicateSql { where("d.care_area_id = ANY(${bind(it)})") } },
-            starterRecipients
-                .unitIds()
-                .takeIf { it.isNotEmpty() }
-                ?.let { PredicateSql { where("pl.unit_id = ANY(${bind(it)})") } },
-            starterRecipients
-                .groupIds()
-                .takeIf { it.isNotEmpty() }
-                ?.let { PredicateSql { where("dgp.daycare_group_id = ANY(${bind(it)})") } },
-            starterRecipients
-                .childIds()
-                .takeIf { it.isNotEmpty() }
-                ?.let { PredicateSql { where("pl.child_id = ANY(${bind(it)})") } },
-        )
+    val currentRecipientsPredicate = recipientsPredicate(currentRecipients)
+    val starterRecipientsPredicate = recipientsPredicate(starterRecipients)
 
     val yearOfBirthFilter =
         if (filters?.yearsOfBirth?.isNotEmpty() == true) {
@@ -1982,13 +2008,12 @@ fun Database.Read.getMessageAccountsForRecipients(
         PredicateSql.allNotNull(yearOfBirthFilter, shiftCareFilter, familyDaycareFilter)
     val starterFilterPredicates = PredicateSql.allNotNull(yearOfBirthFilter, familyDaycareFilter)
 
-    val placementPredicate = { col: String ->
+    val placementTypePredicate =
         if (filters?.placementTypes?.isNotEmpty() == true) {
             val placementTypesInCategory =
                 PlacementType.fromMessagingCategories(filters.placementTypes)
-            PredicateSql { where("pl.$col = ANY(${bind(placementTypesInCategory)})") }
+            PredicateSql { where("pl.placement_type = ANY(${bind(placementTypesInCategory)})") }
         } else PredicateSql.alwaysTrue()
-    }
 
     val currentSenderPredicate =
         when (senderAccount.type) {
@@ -2026,16 +2051,14 @@ fun Database.Read.getMessageAccountsForRecipients(
             }
 
             AccountType.GROUP -> {
-                PredicateSql {
-                    where("dgp.daycare_group_id = ${bind(senderAccount.daycareGroupId)}")
-                }
+                PredicateSql { where("pl.group_id = ${bind(senderAccount.daycareGroupId)}") }
             }
 
             AccountType.PERSONAL -> {
                 PredicateSql {
                     where(
                         """
-                        dgp.daycare_group_id IS NOT NULL AND
+                        pl.group_id IS NOT NULL AND
                         EXISTS (
                             SELECT FROM daycare_acl acl
                             WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
@@ -2062,15 +2085,13 @@ WITH current_children AS (
     WHERE
         ${predicate(currentRecipientsPredicate)} AND
         ${predicate(currentFilterPredicates)} AND
-        ${predicate(placementPredicate("placement_type"))} AND
+        ${predicate(placementTypePredicate)} AND
         ${predicate(currentSenderPredicate)} AND
         'MESSAGING' = ANY(d.enabled_pilot_features)
-), starting_children AS (
-    SELECT DISTINCT pl.child_id
+), starting_placements AS (
+    SELECT pl.child_id, pl.unit_id, pl.type AS placement_type, dgp.daycare_group_id AS group_id
     FROM placement pl
-    JOIN daycare d ON pl.unit_id = d.id
     LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id
-    LEFT JOIN person p ON p.id = pl.child_id
     WHERE
         (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)}) AND
         NOT EXISTS (
@@ -2082,10 +2103,33 @@ WITH current_children AS (
                 earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
                 earlier_dgp.end_date < dgp.start_date AND
                 earlier_dgp.end_date >= ${bind(date)}
-        ) AND
+        )
+
+    UNION ALL
+
+    SELECT bc.child_id, bc.unit_id, pl.type AS placement_type, bc.group_id
+    FROM backup_care bc
+    JOIN placement pl ON pl.child_id = bc.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> bc.start_date
+    WHERE
+        bc.start_date > ${bind(date)} AND
+        NOT EXISTS (
+            SELECT
+            FROM backup_care earlier_bc
+            WHERE
+                earlier_bc.child_id = bc.child_id AND
+                earlier_bc.group_id = bc.group_id AND
+                earlier_bc.end_date < bc.start_date AND
+                earlier_bc.end_date >= ${bind(date)}
+        )
+), starting_children AS (
+    SELECT DISTINCT pl.child_id
+    FROM starting_placements pl
+    JOIN daycare d ON pl.unit_id = d.id
+    LEFT JOIN person p ON p.id = pl.child_id
+    WHERE
         ${predicate(starterRecipientsPredicate)} AND
         ${predicate(starterFilterPredicates)} AND
-        ${predicate(placementPredicate("type"))} AND
+        ${predicate(placementTypePredicate)} AND
         ${predicate(starterSenderPredicate)} AND
         'MESSAGING' = ANY(d.enabled_pilot_features)
 ), children AS (
