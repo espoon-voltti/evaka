@@ -1877,7 +1877,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `acceptPlacementProposal - if no decisions are marked for sending do nothing`() {
+    fun `sendPlacementProposal - fails if no decisions are planned`() {
         db.transaction { tx ->
             // given
             tx.insertApplication(
@@ -1921,68 +1921,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         decisionReasoningEnabled = true,
                     )
                 }
-            service.sendPlacementProposal(tx, serviceWorker, clock, AuditContext(), applicationId)
-        }
-        db.transaction { tx ->
             // when
-            service.respondToPlacementProposal(
-                tx,
-                serviceWorker,
-                clock,
-                AuditContext(),
-                applicationId,
-                PlacementPlanConfirmationStatus.ACCEPTED,
-            )
-            service.confirmPlacementProposalChanges(
-                tx,
-                serviceWorker,
-                clock,
-                AuditContext(),
-                daycare.id,
-                rejectReasonTranslations =
-                    enumEntries<PlacementPlanRejectReason>().associateBy({ it }, { it.name }),
-            )
+            assertThrows<BadRequest> {
+                service.sendPlacementProposal(
+                    tx,
+                    serviceWorker,
+                    clock,
+                    AuditContext(),
+                    applicationId,
+                )
+            }
         }
-        asyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
-            assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
-
-            val notes =
-                tx.getApplicationNotes(
-                    applicationId,
-                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
-                )
-            assertEquals(emptyList(), notes)
-
-            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
-            assertEquals(2, decisionDrafts.size)
-
-            val decisionsByApplication =
-                tx.getSentDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
-            assertEquals(0, decisionsByApplication.size)
-
-            val messages = MockSfiMessagesClient.getMessages()
-            assertEquals(0, messages.size)
-
-            assertThat(MockEmailClient.emails)
-                .extracting({ it.toAddress }, { it.content.subject })
-                .containsExactly(
-                    Tuple(
-                        "abc@espoo.fi",
-                        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-                    ),
-                )
-
-            val placementPlan = tx.getPlacementPlan(applicationId)
-            assertNotNull(placementPlan)
-
-            val placements = tx.getPlacementsForChild(child2.id)
-            assertEquals(0, placements.size)
-
-            assertEquals(1, tx.getParentships(adult1.id, child2.id).size)
-            assertEquals(0, tx.getParentships(adult2.id, child2.id).size)
+            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
         }
     }
 

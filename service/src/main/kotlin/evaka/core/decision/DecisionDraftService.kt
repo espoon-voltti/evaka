@@ -277,8 +277,9 @@ private fun planPreschoolDecisionDrafts(
             DecisionType.PREPARATORY_EDUCATION
         else DecisionType.PRESCHOOL
 
+    // The primary decision can be left unsent only when the connected decision is sent instead
     val primaryPlanned =
-        if (existingDecision == null) {
+        if (existingDecision == null || !plan.type.hasConnectedDaycare()) {
             true
         } else {
             val existingPrimaryType =

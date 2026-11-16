@@ -37,6 +37,8 @@ import evaka.core.decision.reasoning.setDecisionReasoningIndividualSelections
 import evaka.core.person.blockGuardian
 import evaka.core.placement.PlacementPlanUnit
 import evaka.core.placement.PlacementType
+import evaka.core.placement.cancelPlacement
+import evaka.core.placement.getPlacementsForChild
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionGenericReasoningId
@@ -1052,6 +1054,43 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val plannedByType = drafts.associate { it.type to it.planned }
         assertEquals(false, plannedByType[DecisionType.PRESCHOOL])
         assertEquals(true, plannedByType[DecisionType.PRESCHOOL_DAYCARE])
+    }
+
+    @Test
+    fun testPreschoolOnlyAgainInSameUnitAfterPlacementRemoved() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
+        }
+
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 5, 31))
+
+        val firstAppId =
+            insertInitialData(
+                type = PlacementType.PRESCHOOL,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
+        acceptDecisions(firstAppId, createDecisions(firstAppId), guardian)
+        db.transaction { tx ->
+            tx.getPlacementsForChild(child.id).forEach {
+                tx.cancelPlacement(clock.now(), employee.evakaUserId, it.id)
+            }
+        }
+
+        val secondAppId =
+            insertInitialData(
+                type = PlacementType.PRESCHOOL,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
+        assertEquals(listOf(true), getDecisionDrafts(secondAppId).map { it.planned })
+        assertEquals(1, createDecisions(secondAppId).size)
     }
 
     @Test
