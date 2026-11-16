@@ -735,6 +735,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         queryRange.copy(end = unlockedDate.plusDays(2)),
                     )
                 }
+                .sortedBy { it.date }
                 .map { absence -> absence.date to absence.absenceType }
 
         assertEquals(
@@ -892,6 +893,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // then 3 non-editable absences are left
         val absences =
             db.read { it.getAbsencesCitizen(monday, adult.id, queryRange) }
+                .sortedBy { it.date }
                 .map { absence ->
                     Triple(absence.date, absence.absenceType, absence.editableByCitizen())
                 }
@@ -1332,7 +1334,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // then
         val allReservations = db.read { it.getReservationsCitizen(monday, adult.id, holidayPeriod) }
         val absenceDates =
-            db.read { it.getAbsencesCitizen(monday, adult.id, holidayPeriod) }.map { it.date }
+            db.read { it.getAbsencesCitizen(monday, adult.id, holidayPeriod) }
+                .map { it.date }
+                .sorted()
         assertEquals(0, allReservations.size)
         assertEquals(listOf(holidayPeriodStart, holidayPeriodStart.plusDays(1)), absenceDates)
     }
