@@ -1,0 +1,65 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "110670-9687",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "muutosattribuutti": "LISATTY",
+          "kuollut": true,
+          "kuolinpv": {
+            "arvo": "2019-06-06",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ],
+      "muutospv": "2019-06-27T11:54:13.568Z"
+    },
+    {
+      "henkilotunnus": "240364-906M",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "SIVIILISAATY",
+          "muutosattribuutti": "MUUTETTU",
+          "siviilisaaty": "LESKI",
+          "edellinenSiviilisaaty": "AVIOLIITOSSA",
+          "siviilisaadynMuutospv": {
+            "arvo": "2019-06-06",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "AVIOLIITTO",
+          "muutosattribuutti": "MUUTETTU",
+          "puoliso": {
+            "henkilotunnus": "110670-9687",
+            "etunimet": "Sten",
+            "sukunimi": "Larsson",
+            "etunimetUTF8": "Sten",
+            "sukunimiUTF8": "Larsson",
+            "syntymapv": {
+              "arvo": "1908-06-27",
+              "tarkkuus": "PAIVA"
+            },
+            "sukupuoli": "MIES"
+          },
+          "voimassaolo": "PASSIIVI",
+          "vihkipv": {
+            "arvo": "2016-06-06",
+            "tarkkuus": "PAIVA"
+          },
+          "vihkitapa": "SIVIILIVIHKIMINEN",
+          "jarjestysnumero": 7,
+          "purkautumispv": {
+            "arvo": "2019-06-06",
+            "tarkkuus": "PAIVA"
+          },
+          "purkutapa": "PUOLISON_KUOLEMA"
+        }
+      ],
+      "muutospv": "2019-06-27T11:54:13.568Z"
+    }
+  ],
+  "ajanTasalla": true
+}

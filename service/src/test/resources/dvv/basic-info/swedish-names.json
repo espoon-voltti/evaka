@@ -1,0 +1,123 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "150752-999Y",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "AIDINKIELI",
+          "kielikoodi": "sv",
+          "kielikoodiISO6392": "swe",
+          "alkupv": {
+            "arvo": "2012-12-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Stig Arne",
+          "sukunimi": "Forsell",
+          "etunimiUTF8": "Stig Arne",
+          "sukunimiUTF8": "Forsell"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Laivastokatu",
+            "sv": "Maringatan"
+          },
+          "katunumero": "14",
+          "huoneistokirjain": "C",
+          "huoneistonumero": "012",
+          "postinumero": "00640",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "9000000389",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2006-09-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2006-09-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000000389",
+          "osoitenumero": 1,
+          "huoneistonumero": "012",
+          "huoneistokirjain": "C",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2006-09-20",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000003891C012 "
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "160185-980N",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Susanna Mikaela",
+          "sukunimi": "Sandell Tes",
+          "etunimiUTF8": "Susanna Mikaela",
+          "sukunimiUTF8": "Sandell Tes"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "sv": "Norrbölevägen"
+          },
+          "katunumero": "1",
+          "huoneistonumero": "106",
+          "postinumero": "22100",
+          "postitoimipaikka": {
+            "fi": "MARIEHAMN",
+            "sv": "MARIEHAMN"
+          },
+          "jakokirjain": "t",
+          "rakennustunnus": "9000000312",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2000-09-20",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2003-04-30",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "9000000312",
+          "osoitenumero": 1,
+          "jakokirjain": "t",
+          "huoneistonumero": "106",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2000-09-20",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000003121 106t"
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

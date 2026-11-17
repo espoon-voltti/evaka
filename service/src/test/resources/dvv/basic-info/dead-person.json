@@ -1,0 +1,88 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "030117-999B",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Nils-Eric",
+          "sukunimi": "Forsberg Tes",
+          "etunimiUTF8": "Nils-Eric",
+          "sukunimiUTF8": "Forsberg Tes"
+        },
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "kuollut": true,
+          "kuolinpv": {
+            "arvo": "2020-04-14",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Öljymäki",
+            "sv": "Oljebacka"
+          },
+          "katunumero": "11",
+          "huoneistokirjain": "C",
+          "huoneistonumero": "003",
+          "postinumero": "00780",
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "rakennustunnus": "900000759J",
+          "osoitenumero": 1,
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1986-06-02",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-05-04",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000759J",
+          "osoitenumero": 1,
+          "huoneistonumero": "003",
+          "huoneistokirjain": "C",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "1986-06-02",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000759J1C003 "
+        }
+      ]
+    },
+    {
+      "henkilotunnus": "110670-9687",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Sten",
+          "sukunimi": "Larsson",
+          "etunimiUTF8": "Sten",
+          "sukunimiUTF8": "Larsson"
+        },
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "kuollut": true,
+          "kuolinpv": {
+            "arvo": "2019-06-06",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

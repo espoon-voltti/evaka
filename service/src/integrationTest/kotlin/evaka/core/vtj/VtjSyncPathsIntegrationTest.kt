@@ -930,7 +930,7 @@ class VtjSyncPathsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     .copy(url = "http://localhost:$httpPort/mock-integration/dvv/api/v1"),
             )
 
-        DvvModificationsService(client, asyncJobRunner)
+        DvvModificationsService(client, asyncJobRunner, evakaEnv)
             .updatePersonsFromDvv(db, clock, listOf(person.ssn!!))
         asyncJobRunner.runPendingJobsSync(clock)
     }

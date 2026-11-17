@@ -1,0 +1,114 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "240582-9477",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "TURVAKIELTO",
+          "muutosattribuutti": "LISATTY",
+          "turvaLoppuPv": {
+            "arvo": "2024-10-01",
+            "tarkkuus": "PAIVA"
+          },
+          "turvakieltoAktiivinen": true
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "katunimi",
+            "katunumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "postinumero",
+            "postitoimipaikka",
+            "rakennustunnus",
+            "osoitenumero",
+            "kuntakoodi"
+          ],
+          "muutosattribuutti": "MUUTETTU"
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "katunimi",
+            "katunumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "postinumero",
+            "postitoimipaikka",
+            "rakennustunnus",
+            "osoitenumero",
+            "kuntakoodi"
+          ],
+          "muutosattribuutti": "MUUTETTU"
+        },
+        {
+          "tietoryhma": "KOTIMAINEN_POSTIOSOITE",
+          "turvakiellonAlaisetKentat": [
+            "postiosoite",
+            "postinumero",
+            "postitoimipaikka"
+          ],
+          "muutosattribuutti": "MUUTETTU"
+        },
+        {
+          "tietoryhma": "TILAPAINEN_ULKOMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "lahiosoite",
+            "paikkakunta",
+            "valtiokoodi",
+            "valtionimi"
+          ],
+          "muutosattribuutti": "MUUTETTU"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "turvakiellonAlaisetKentat": [
+            "rakennustunnus",
+            "osoitenumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "kuntakoodi",
+            "asuinpaikantunnus"
+          ],
+          "muutosattribuutti": "MUUTETTU"
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "turvakiellonAlaisetKentat": [
+            "rakennustunnus",
+            "osoitenumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "kuntakoodi",
+            "asuinpaikantunnus"
+          ],
+          "muutosattribuutti": "MUUTETTU"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_ULKOMAILLA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "valtiokoodi",
+            "asuinpaikantunnus"
+          ],
+          "muutosattribuutti": "MUUTETTU"
+        },
+        {
+          "tietoryhma": "TILAPAINEN_ULKOMAILLA_ASUMINEN",
+          "turvakiellonAlaisetKentat": [
+            "valtiokoodi",
+            "asuinpaikantunnus"
+          ],
+          "muutosattribuutti": "MUUTETTU"
+        }
+      ],
+      "muutospv": "2019-07-09T12:29:56.353Z"
+    }
+  ],
+  "ajanTasalla": true
+}

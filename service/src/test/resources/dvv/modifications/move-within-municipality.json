@@ -1,0 +1,125 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "260582-9631",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "LISATTY",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000046J",
+          "katunumero": "32",
+          "osoitenumero": 1,
+          "huoneistokirjain": "B",
+          "huoneistonumero": "023",
+          "kuntakoodi": "091",
+          "postinumero": "00200",
+          "katunimi": {
+            "fi": "Lauttasaarentie",
+            "sv": "Drumsövägen"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "MUUTETTU",
+          "alkupv": {
+            "arvo": "2019-02-17",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000051P",
+          "katunumero": "11",
+          "osoitenumero": 1,
+          "huoneistokirjain": "C",
+          "huoneistonumero": "003",
+          "kuntakoodi": "091",
+          "postinumero": "00780",
+          "katunimi": {
+            "fi": "Öljymäki",
+            "sv": "Oljebacka"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "muutosattribuutti": "LISATIETO"
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "LISATTY",
+          "rakennustunnus": "900000046J",
+          "osoitenumero": 1,
+          "huoneistonumero": "023",
+          "huoneistokirjain": "B",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000046J1B023 "
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "MUUTETTU",
+          "rakennustunnus": "900000051P",
+          "osoitenumero": 1,
+          "huoneistonumero": "003",
+          "huoneistokirjain": "C",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2019-02-17",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000051P1C003 "
+        },
+        {
+          "tietoryhma": "USKONTOKUNTA",
+          "muutosattribuutti": "LISATTY",
+          "uskontokunta": 620,
+          "alkupv": {
+            "arvo": "2019-06-27",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "HISTORIAA_USKONTOKUNNASTA",
+          "muutosattribuutti": "MUUTETTU",
+          "uskontokunta": 621,
+          "alkupv": {
+            "arvo": "2019-01-01",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-06-26",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ],
+      "muutospv": "2019-06-27T08:58:54.142Z"
+    }
+  ],
+  "ajanTasalla": true
+}

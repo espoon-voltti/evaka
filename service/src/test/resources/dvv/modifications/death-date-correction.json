@@ -1,0 +1,30 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "010978-9932",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "muutosattribuutti": "KORJATTAVA",
+          "kuollut": true,
+          "kuolinpv": {
+            "arvo": "2018-11-08",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KUOLINPAIVA",
+          "muutosattribuutti": "KORJATTU",
+          "kuollut": true,
+          "kuolinpv": {
+            "arvo": "2018-10-28",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ],
+      "muutospv": "2019-08-01T11:23:28.276Z"
+    }
+  ],
+  "ajanTasalla": true
+}

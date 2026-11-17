@@ -1,0 +1,19 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "010192-912L",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILOTUNNUS_KORJAUS",
+          "aktiivinenHenkilotunnus": "010192-921W",
+          "edellisetHenkilotunnukset": [
+            "010192-912L"
+          ],
+          "muutettuHenkilotunnus": "010192-912L",
+          "voimassaolo": "AKTIIVI"
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

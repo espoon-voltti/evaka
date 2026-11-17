@@ -1,0 +1,232 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "031057-999X",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "POISTETTU",
+          "alkupv": {
+            "arvo": "2019-03-18",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "9000000013",
+          "katunumero": "00110",
+          "osoitenumero": 3,
+          "huoneistokirjain": "A",
+          "huoneistonumero": "002",
+          "kuntakoodi": "091",
+          "postinumero": "00120",
+          "katunimi": {
+            "fi": "St'Mariankatu",
+            "sv": "St'Mariagatan"
+          },
+          "postitoimipaikka": {
+            "fi": "HELSINKI",
+            "sv": "HELSINGFORS"
+          },
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+              "katunimi": {
+                "fi": "Kristiinankatu",
+                "sv": "Kristinagatan"
+              },
+              "katunumero": "12",
+              "huoneistonumero": "000",
+              "postinumero": "64100",
+              "postitoimipaikka": {
+                "fi": "KRISTIINANKAUPUNKI",
+                "sv": "KRISTINESTAD"
+              },
+              "rakennustunnus": "900000242V",
+              "osoitenumero": 1,
+              "kuntakoodi": "287",
+              "alkupv": {
+                "arvo": "2018-06-18",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "KORJATTAVA",
+          "alkupv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-03-17",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000242V",
+          "katunumero": "12",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "287",
+          "postinumero": "64100",
+          "katunimi": {
+            "fi": "Kristiinankatu",
+            "sv": "Kristinagatan"
+          },
+          "postitoimipaikka": {
+            "fi": "KRISTIINANKAUPUNKI",
+            "sv": "KRISTINESTAD"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "muutosattribuutti": "KORJATTU",
+          "alkupv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          },
+          "rakennustunnus": "900000242V",
+          "katunumero": "12",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "287",
+          "postinumero": "64100",
+          "katunimi": {
+            "fi": "Kristiinankatu",
+            "sv": "Kristinagatan"
+          },
+          "postitoimipaikka": {
+            "fi": "KRISTIINANKAUPUNKI",
+            "sv": "KRISTINESTAD"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "POISTETTU",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-03-18",
+            "tarkkuus": "PAIVA"
+          },
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "KOTIKUNTA",
+              "kuntakoodi": "287",
+              "kuntaanMuuttopv": {
+                "arvo": "2018-06-18",
+                "tarkkuus": "PAIVA"
+              }
+            }
+          ]
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "muutosattribuutti": "LISATIETO",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "muutosattribuutti": "KORJATTAVA",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          },
+          "kunnastaPoisMuuttopv": {
+            "arvo": "2019-03-17",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "EDELLINEN_KOTIKUNTA",
+          "muutosattribuutti": "KORJATTU",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "KORJATTAVA",
+          "kuntakoodi": "091",
+          "kuntaanMuuttopv": {
+            "arvo": "2019-03-18",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAESTOKIRJANPITOKUNTA",
+          "muutosattribuutti": "KORJATTU",
+          "kuntakoodi": "287",
+          "kuntaanMuuttopv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "POISTETTU",
+          "rakennustunnus": "9000000013",
+          "osoitenumero": 3,
+          "huoneistonumero": "002",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "091",
+          "alkupv": {
+            "arvo": "2019-03-18",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "90000000133A002 ",
+          "voimassaolevatTiedot": [
+            {
+              "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+              "rakennustunnus": "900000242V",
+              "osoitenumero": 1,
+              "huoneistonumero": "000",
+              "kuntakoodi": "287",
+              "alkupv": {
+                "arvo": "2018-06-18",
+                "tarkkuus": "PAIVA"
+              },
+              "asuinpaikantunnus": "900000242V1 000 "
+            }
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "KORJATTAVA",
+          "rakennustunnus": "900000242V",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "287",
+          "alkupv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2019-03-17",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000242V1 000 "
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "muutosattribuutti": "KORJATTU",
+          "rakennustunnus": "900000242V",
+          "osoitenumero": 1,
+          "huoneistonumero": "000",
+          "kuntakoodi": "287",
+          "alkupv": {
+            "arvo": "2018-06-18",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000242V1 000 "
+        }
+      ],
+      "muutospv": "2019-06-27T10:21:50.431Z"
+    }
+  ],
+  "ajanTasalla": true
+}

@@ -4,6 +4,7 @@
 
 package evaka.core.dvv
 
+import evaka.core.vtj.Muutosattribuutti
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -31,7 +32,7 @@ class DvvModificationsServiceClientIntegrationTest :
             dvvModificationsServiceClient.getModifications("100000000", listOf("020180-999Y"))
         assertEquals(true, response.muutokset[0].tietoryhmat.size == 2)
         assertEquals("TURVAKIELTO", response.muutokset[0].tietoryhmat[0].tietoryhma)
-        val restrictedInfo = response.muutokset[0].tietoryhmat[0] as RestrictedInfoDvvInfoGroup
+        val restrictedInfo = response.muutokset[0].tietoryhmat[0] as Turvakielto
         assertEquals(true, restrictedInfo.turvakieltoAktiivinen)
     }
 
@@ -42,7 +43,7 @@ class DvvModificationsServiceClientIntegrationTest :
         assertEquals(true, response.muutokset[0].tietoryhmat.size == 3)
         assertEquals("TURVAKIELTO", response.muutokset[0].tietoryhmat[0].tietoryhma)
 
-        val restrictedInfo = response.muutokset[0].tietoryhmat[0] as RestrictedInfoDvvInfoGroup
+        val restrictedInfo = response.muutokset[0].tietoryhmat[0] as Turvakielto
         assertEquals(false, restrictedInfo.turvakieltoAktiivinen)
         assertEquals("2030-01-01", restrictedInfo.turvaLoppuPv?.arvo)
     }
@@ -52,7 +53,7 @@ class DvvModificationsServiceClientIntegrationTest :
         val response: DvvModificationsResponse =
             dvvModificationsServiceClient.getModifications("100000000", listOf("010180-999A"))
         assertEquals("KUOLINPAIVA", response.muutokset[0].tietoryhmat[0].tietoryhma)
-        val dead = response.muutokset[0].tietoryhmat[0] as DeathDvvInfoGroup
+        val dead = response.muutokset[0].tietoryhmat[0] as Kuolinpaiva
         assertEquals(true, dead.kuollut)
         assertEquals("2019-07-30", dead.kuolinpv?.arvo)
     }
@@ -82,7 +83,7 @@ class DvvModificationsServiceClientIntegrationTest :
         val response: DvvModificationsResponse =
             dvvModificationsServiceClient.getModifications("100000000", listOf("huoltaja"))
         assertEquals("HUOLTAJA_SUPPEA", response.muutokset[0].tietoryhmat[0].tietoryhma)
-        val caretaker = response.muutokset[0].tietoryhmat[0] as CaretakerLimitedDvvInfoGroup
+        val caretaker = response.muutokset[0].tietoryhmat[0] as HuoltajaSuppea
         assertEquals("010579-9999", caretaker.huoltaja.henkilotunnus)
         assertEquals("2020-09-08", caretaker.huoltosuhteenAlkupv?.arvo)
     }
@@ -92,11 +93,10 @@ class DvvModificationsServiceClientIntegrationTest :
         val response: DvvModificationsResponse =
             dvvModificationsServiceClient.getModifications("100000000", listOf("010181-999K"))
         assertEquals("HENKILOTUNNUS_KORJAUS", response.muutokset[0].tietoryhmat[0].tietoryhma)
-        val ssnModified = response.muutokset[0].tietoryhmat[0] as SsnDvvInfoGroup
-        assertEquals("LISATTY", ssnModified.muutosattribuutti)
-        assertEquals("AKTIIVI", ssnModified.voimassaolo)
+        val ssnModified = response.muutokset[0].tietoryhmat[0] as HenkilotunnusKorjaus
+        assertEquals(Muutosattribuutti.LISATTY, ssnModified.muutosattribuutti)
         assertEquals("010281-999C", ssnModified.aktiivinenHenkilotunnus)
-        assertEquals("010181-999K", ssnModified.edellisetHenkilotunnukset[0])
+        assertEquals(listOf("010181-999K"), ssnModified.edellisetHenkilotunnukset)
     }
 
     @Test

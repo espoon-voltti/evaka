@@ -1,0 +1,52 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "150895-903S",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "katunimi": {
+            "fi": "Porotie"
+          },
+          "katunumero": "4-6",
+          "huoneistokirjain": "A",
+          "huoneistonumero": "001",
+          "postinumero": "99980",
+          "postitoimipaikka": {
+            "fi": "UTSJOKI",
+            "sv": "UTSJOKI"
+          },
+          "rakennustunnus": "900000630C",
+          "osoitenumero": 3,
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2017-10-09",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "KOTIKUNTA",
+          "kuntakoodi": "890",
+          "kuntaanMuuttopv": {
+            "arvo": "2017-10-09",
+            "tarkkuus": "PAIVA"
+          }
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "rakennustunnus": "900000630C",
+          "osoitenumero": 3,
+          "huoneistonumero": "001",
+          "huoneistokirjain": "A",
+          "kuntakoodi": "890",
+          "alkupv": {
+            "arvo": "2017-10-09",
+            "tarkkuus": "PAIVA"
+          },
+          "asuinpaikantunnus": "900000630C3A001 "
+        }
+      ]
+    }
+  ],
+  "ajanTasalla": true
+}

@@ -1,0 +1,31 @@
+{
+  "viimeisinKirjausavain": 1000000980,
+  "muutokset": [
+    {
+      "henkilotunnus": "310188-903M",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "KOTIMAINEN_YHTEYSOSOITE",
+          "muutosattribuutti": "LISATTY",
+          "postiosoite": {
+            "fi": "Vihtaniityn puistokuja 2 as 007"
+          },
+          "postinumero": "83100",
+          "postitoimipaikka": {
+            "fi": "LIPERI"
+          },
+          "alkupv": {
+            "arvo": "2019-10-04",
+            "tarkkuus": "PAIVA"
+          },
+          "loppupv": {
+            "arvo": "2032-10-10",
+            "tarkkuus": "PAIVA"
+          }
+        }
+      ],
+      "muutospv": "2020-05-12T08:41:30.934Z"
+    }
+  ],
+  "ajanTasalla": true
+}

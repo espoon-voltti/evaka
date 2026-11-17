@@ -11,6 +11,7 @@ import evaka.core.application.PlacementToolData
 import evaka.core.calendarevent.CalendarEventTime
 import evaka.core.daycare.domain.Language
 import evaka.core.document.childdocument.ChildDocumentNotificationType
+import evaka.core.dvv.DvvModification
 import evaka.core.invoicing.service.IncomeNotificationType
 import evaka.core.koski.KoskiStudyRightKey
 import evaka.core.nekku.NekkuSpecialDietChoices
@@ -292,11 +293,22 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class UpdateFromVtj(val ssn: String) : AsyncJob {
+    /**
+     * With [modifications], the job also compares the result of the VTJ refresh with the result of
+     * applying the modifications.
+     */
+    data class UpdateFromVtj(
+        val ssn: String,
+        val modifications: List<DvvModification>? = null,
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    /** Unlike [UpdateFromVtj], this does not add children to fridge families. */
+    data class SyncMissingVtjRelations(val personIds: List<PersonId>) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    /** Retries one person of a [SyncMissingVtjRelations] batch that could not be saved. */
     data class SyncMissingVtjRelationsOfPerson(val personId: PersonId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -604,6 +616,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SyncNekkuCustomers::class,
                     SyncNekkuProducts::class,
                     SyncNekkuSpecialDiets::class,
+                    SyncMissingVtjRelations::class,
                     SyncMissingVtjRelationsOfPerson::class,
                     CleanNekkuOrdersReport::class,
                     UpdateFromVtj::class,

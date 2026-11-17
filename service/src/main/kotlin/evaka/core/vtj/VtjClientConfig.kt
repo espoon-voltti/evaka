@@ -5,6 +5,8 @@
 package evaka.core.vtj
 
 import evaka.core.EvakaEnv
+import evaka.core.VtjDvvMode
+import evaka.core.dvv.DvvModificationsServiceClient
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -18,7 +20,17 @@ class VtjClientConfig {
         ctx: ApplicationContext,
     ): VtjClient =
         when (evakaEnv.vtjEnabled) {
-            true -> SoapVtjClient(ctx.getBean(XroadVtjSoapTransport::class.java))
+            true -> {
+                val soapClient = SoapVtjClient(ctx.getBean(XroadVtjSoapTransport::class.java))
+                when (evakaEnv.vtjDvvMode) {
+                    VtjDvvMode.OFF -> soapClient
+                    VtjDvvMode.COMPARE ->
+                        ComparingVtjClient(
+                            soapClient,
+                            DvvVtjClient(ctx.getBean(DvvModificationsServiceClient::class.java)),
+                        )
+                }
+            }
             false -> DummyIdpVtjClient(evakaEnv.vtjMockUrl, jsonMapper)
         }
 }

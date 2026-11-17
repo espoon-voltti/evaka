@@ -848,11 +848,11 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/persons/{person}/force-full-vtj-refresh")
     fun forceFullVtjRefresh(db: Database, clock: EvakaClock, @PathVariable person: PersonId) {
         db.connect { dbc ->
-            vtjSyncService.refreshPerson(
+            vtjSyncService.refreshPersons(
                 dbc,
                 AuthenticatedUser.SystemInternalUser.evakaUserId,
                 clock,
-                person,
+                listOf(person),
             )
         }
     }

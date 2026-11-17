@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import evaka.core.DvvModificationsEnv
 import evaka.core.KeystoreEnv
 import evaka.core.VtjXroadEnv
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.buildHttpClient
 import evaka.core.shared.utils.basicAuthInterceptor
 import evaka.core.shared.utils.get
@@ -18,6 +19,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.security.SecureRandom
 import java.time.LocalDate
+import java.util.UUID
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
@@ -112,6 +114,30 @@ class DvvModificationsServiceClient(
             }
             throw e
         }
+    }
+
+    fun getBasicInfo(
+        ssns: List<String>,
+        infoGroups: List<String>,
+        dvvTraceId: UUID,
+        externalId: EvakaUserId,
+    ): DvvBasicInfoResponse {
+        require(ssns.size <= 1000) { "Too many SSNs for one DVV basic info query: ${ssns.size}" }
+        logger.info {
+            "Fetching the basic info of ${ssns.size} persons from DVV modifications service from $serviceUrl/perustiedot (DVV Trace-ID $dvvTraceId)"
+        }
+        val response =
+            httpClient.post<DvvBasicInfoResponse>(
+                "perustiedot",
+                jsonBody = DvvBasicInfoRequest(hetulista = ssns, tietoryhmat = infoGroups),
+                headers =
+                    mapOf(
+                        "Trace-ID" to dvvTraceId.toString(),
+                        "External-ID" to externalId.toString(),
+                    ),
+            )
+        check(response.ajanTasalla != false) { "DVV basic info response is not up to date" }
+        return response
     }
 }
 

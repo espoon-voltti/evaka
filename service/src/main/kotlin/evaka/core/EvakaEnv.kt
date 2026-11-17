@@ -39,6 +39,7 @@ data class EvakaEnv(
     val sfiEnabled: Boolean,
     val vtjEnabled: Boolean,
     val vtjMockUrl: String,
+    val vtjDvvMode: VtjDvvMode,
     val webPushEnabled: Boolean,
     val jamixEnabled: Boolean,
     val aromiEnabled: Boolean,
@@ -79,6 +80,7 @@ data class EvakaEnv(
                 vtjEnabled = env.lookup("evaka.integration.vtj.enabled") ?: false,
                 vtjMockUrl =
                     env.lookup("evaka.integration.vtj.mock_url") ?: "http://localhost:9090",
+                vtjDvvMode = env.lookup("evaka.integration.vtj.dvv_mode") ?: VtjDvvMode.OFF,
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 aromiEnabled = env.lookup("evaka.integration.aromi.enabled") ?: false,
@@ -754,6 +756,16 @@ data class DataRemovalEnv(
         fun fromEnvironment(env: Environment) =
             DataRemovalEnv(limit = env.lookup("evaka.data_removal.limit") ?: 0)
     }
+}
+
+/** How eVaka uses the basic info query of the DVV modifications service instead of VTJ SOAP */
+enum class VtjDvvMode {
+    OFF,
+    /**
+     * Queries use SOAP, and their results are compared with the basic info query. A refresh caused
+     * by DVV modifications is compared with the result of applying the modifications.
+     */
+    COMPARE,
 }
 
 data class VtjSyncEnv(

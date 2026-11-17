@@ -1,0 +1,89 @@
+{
+  "perustiedot": [
+    {
+      "henkilotunnus": "020275-9862",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Sisko Pauliina",
+          "sukunimi": "Kurkimoisio Tes",
+          "etunimiUTF8": "Sisko Pauliina",
+          "sukunimiUTF8": "Kurkimoisio Tes",
+          "alkupv": {
+            "tarkkuus": "PAIVA",
+            "arvo": "1997-04-21"
+          }
+        },
+        {
+          "tietoryhma": "TURVAKIELTO",
+          "turvaLoppuPv": {
+            "arvo": "2120-02-28",
+            "tarkkuus": "PAIVA"
+          },
+          "turvakieltoAktiivinen": true
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "katunimi",
+            "katunumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "postinumero",
+            "postitoimipaikka",
+            "rakennustunnus",
+            "osoitenumero",
+            "kuntakoodi"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_KOTIMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "katunimi",
+            "katunumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "postinumero",
+            "postitoimipaikka",
+            "rakennustunnus",
+            "osoitenumero",
+            "kuntakoodi"
+          ]
+        },
+        {
+          "tietoryhma": "KOTIMAINEN_POSTIOSOITE",
+          "turvakiellonAlaisetKentat": [
+            "postiosoite",
+            "postinumero",
+            "postitoimipaikka"
+          ]
+        },
+        {
+          "tietoryhma": "TILAPAINEN_ULKOMAINEN_OSOITE",
+          "turvakiellonAlaisetKentat": [
+            "lahiosoite",
+            "paikkakunta",
+            "valtiokoodi",
+            "valtionimi"
+          ]
+        },
+        {
+          "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+          "turvakiellonAlaisetKentat": [
+            "rakennustunnus",
+            "osoitenumero",
+            "huoneistokirjain",
+            "huoneistonumero",
+            "jakokirjain",
+            "kuntakoodi",
+            "asuinpaikantunnus"
+          ]
+        }
+      ],
+      "kotikunta": "000"
+    }
+  ],
+  "ajanTasalla": true
+}
