@@ -100,17 +100,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                 rangeIncludingFollowingDay,
                                 clock.today(),
                             )
-                            .groupBy(
-                                { it.employeeId },
-                                {
-                                    OtherUnitStaffAttendance(
-                                        it.unitId,
-                                        it.unitName,
-                                        it.arrived,
-                                        it.departed,
-                                    )
-                                },
-                            )
+                            .groupBy { it.employeeId }
 
                     val staffWithAttendance =
                         attendancesByEmployee.entries.map { (employeeId, data) ->

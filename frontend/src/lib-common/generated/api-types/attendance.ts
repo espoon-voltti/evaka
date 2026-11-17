@@ -314,6 +314,7 @@ export interface OpenGroupAttendanceResponse {
 export interface OtherUnitStaffAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
+  employeeId: EmployeeId
   unitId: DaycareId
   unitName: string
 }

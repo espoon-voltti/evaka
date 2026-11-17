@@ -135,19 +135,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         operationalDays = unitOperationalDays,
                         otherUnitAttendances =
                             tx.getStaffAttendancesInOtherUnits(
-                                    unitId,
-                                    setOf(employeeId),
-                                    FiniteDateRange(from, to).asHelsinkiDateTimeRange(),
-                                    clock.today(),
-                                )
-                                .map {
-                                    OtherUnitStaffAttendance(
-                                        it.unitId,
-                                        it.unitName,
-                                        it.arrived,
-                                        it.departed,
-                                    )
-                                },
+                                unitId,
+                                setOf(employeeId),
+                                FiniteDateRange(from, to).asHelsinkiDateTimeRange(),
+                                clock.today(),
+                            ),
                     )
                 }
             }

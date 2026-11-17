@@ -1813,6 +1813,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         assertEquals(
             listOf(
                 OtherUnitStaffAttendance(
+                    employeeId,
                     daycare2.id,
                     daycare2.name,
                     now.minusHours(5),

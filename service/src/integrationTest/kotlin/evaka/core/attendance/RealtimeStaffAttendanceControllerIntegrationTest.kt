@@ -203,6 +203,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         assertEquals(
             listOf(
                 OtherUnitStaffAttendance(
+                    staff.id,
                     daycare2.id,
                     daycare2.name,
                     now.minusHours(5),

@@ -558,20 +558,12 @@ WHERE sa.employee_id = ANY(${bind(employeeIds)}) AND sa.group_id IS NULL AND tst
         .toList()
 }
 
-data class OtherUnitStaffAttendanceRow(
-    val employeeId: EmployeeId,
-    val unitId: DaycareId,
-    val unitName: String,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?,
-)
-
 fun Database.Read.getStaffAttendancesInOtherUnits(
     unitId: DaycareId,
     employeeIds: Set<EmployeeId>,
     range: HelsinkiDateTimeRange,
     today: LocalDate,
-): List<OtherUnitStaffAttendanceRow> = createQuery {
+): List<OtherUnitStaffAttendance> = createQuery {
     sql(
         """
 SELECT sa.employee_id, d.id AS unit_id, d.name AS unit_name, sa.arrived, sa.departed

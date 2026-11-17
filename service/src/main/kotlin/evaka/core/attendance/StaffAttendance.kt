@@ -149,6 +149,7 @@ data class EmployeeAttendance(
 )
 
 data class OtherUnitStaffAttendance(
+    val employeeId: EmployeeId,
     val unitId: DaycareId,
     val unitName: String,
     val arrived: HelsinkiDateTime,
