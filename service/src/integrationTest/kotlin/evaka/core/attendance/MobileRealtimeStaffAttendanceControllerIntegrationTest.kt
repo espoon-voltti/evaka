@@ -1676,6 +1676,175 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         assertEquals("Unknown id was given", exception.message)
     }
 
+    private fun addEmployeeToBothDaycares(): EmployeeId {
+        val employeeId = addEmployee()
+        db.transaction { tx ->
+            tx.insertDaycareAclRow(daycareId = daycare2.id, employeeId = employeeId, UserRole.STAFF)
+        }
+        return employeeId
+    }
+
+    private fun insertAttendance(
+        employeeId: EmployeeId,
+        groupId: GroupId,
+        arrived: HelsinkiDateTime,
+        departed: HelsinkiDateTime?,
+    ) = db.transaction { tx ->
+        tx.insert(
+            DevStaffAttendance(
+                employeeId = employeeId,
+                groupId = groupId,
+                arrived = arrived,
+                departed = departed,
+                modifiedAt = now,
+                modifiedBy = null,
+            ),
+        )
+    }
+
+    private fun setAttendances(
+        employeeId: EmployeeId,
+        date: LocalDate,
+        rows: List<RealtimeStaffAttendanceController.StaffAttendanceUpsert>,
+    ) =
+        mobileRealtimeStaffAttendanceController.setAttendances(
+            dbInstance(),
+            mobileUser,
+            MockEvakaClock(now),
+            daycare.id,
+            MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                employeeId = employeeId,
+                pinCode = "1122",
+                date = date,
+                rows = rows,
+            ),
+        )
+
+    private fun presentRow(arrived: HelsinkiDateTime, departed: HelsinkiDateTime?) =
+        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+            id = null,
+            groupId = group.id,
+            arrived = arrived,
+            departed = departed,
+            type = StaffAttendanceType.PRESENT,
+            hasStaffOccupancyEffect = true,
+        )
+
+    @Test
+    fun `set attendances cannot overlap with an attendance in another unit`() {
+        val employeeId = addEmployeeToBothDaycares()
+        insertAttendance(employeeId, group2.id, now.minusHours(5), now.minusHours(3))
+
+        val exception =
+            assertThrows<BadRequest> {
+                setAttendances(
+                    employeeId,
+                    today,
+                    listOf(presentRow(now.minusHours(4), now.minusHours(1))),
+                )
+            }
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
+
+        setAttendances(employeeId, today, listOf(presentRow(now.minusHours(3), now.minusHours(1))))
+    }
+
+    @Test
+    fun `set attendances cannot overlap with an attendance on the next day in the same unit`() {
+        val employeeId = addEmployee()
+        val yesterday = today.minusDays(1)
+        insertAttendance(
+            employeeId,
+            group.id,
+            HelsinkiDateTime.of(today, LocalTime.of(6, 0)),
+            HelsinkiDateTime.of(today, LocalTime.of(7, 0)),
+        )
+
+        val exception =
+            assertThrows<BadRequest> {
+                setAttendances(
+                    employeeId,
+                    yesterday,
+                    listOf(
+                        presentRow(
+                            HelsinkiDateTime.of(yesterday, LocalTime.of(23, 0)),
+                            HelsinkiDateTime.of(today, LocalTime.of(6, 30)),
+                        ),
+                    ),
+                )
+            }
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
+    }
+
+    @Test
+    fun `set attendances rows cannot overlap each other`() {
+        val employeeId = addEmployee()
+
+        val exception =
+            assertThrows<BadRequest> {
+                setAttendances(
+                    employeeId,
+                    today,
+                    listOf(
+                        presentRow(now.minusHours(5), now.minusHours(3)),
+                        presentRow(now.minusHours(4), now.minusHours(2)),
+                    ),
+                )
+            }
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
+    }
+
+    @Test
+    fun `employee attendances include attendances in other units`() {
+        val employeeId = addEmployeeToBothDaycares()
+        insertAttendance(employeeId, group2.id, now.minusHours(5), now.minusHours(3))
+        insertAttendance(employeeId, group2.id, now.plusDays(2), now.plusDays(2).plusHours(1))
+
+        val response =
+            mobileRealtimeStaffAttendanceController.getEmployeeAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                daycare.id,
+                employeeId,
+                today,
+                today.plusDays(1),
+            )
+
+        assertEquals(
+            listOf(
+                OtherUnitStaffAttendance(
+                    employeeId,
+                    daycare2.id,
+                    daycare2.name,
+                    now.minusHours(5),
+                    now.minusHours(3),
+                ),
+            ),
+            response.otherUnitAttendances,
+        )
+    }
+
+    @Test
+    fun `employee attendances can be fetched for at most six weeks`() {
+        val employeeId = addEmployee()
+        fun fetch(from: LocalDate, to: LocalDate = today) =
+            mobileRealtimeStaffAttendanceController.getEmployeeAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                daycare.id,
+                employeeId,
+                from,
+                to,
+            )
+
+        fetch(today.minusWeeks(6).plusDays(1))
+        val tooLong = assertThrows<BadRequest> { fetch(today.minusWeeks(6)) }
+        assertEquals("Only 6 weeks of staff attendances may be fetched at once", tooLong.message)
+        val reversed = assertThrows<BadRequest> { fetch(today, today.minusDays(1)) }
+        assertEquals("Start must be before or equal to the end", reversed.message)
+    }
+
     private fun fetchRealtimeStaffAttendances(
         unitId: DaycareId,
         user: AuthenticatedUser.MobileDevice,

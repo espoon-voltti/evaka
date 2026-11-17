@@ -92,6 +92,7 @@ data class StaffMember(
 data class StaffMemberWithOperationalDays(
     val staffMember: StaffMember,
     val operationalDays: List<LocalDate>,
+    val otherUnitAttendances: List<OtherUnitStaffAttendance>,
 )
 
 data class StaffMemberAttendance(
@@ -143,7 +144,16 @@ data class EmployeeAttendance(
     val currentOccupancyCoefficient: BigDecimal,
     val attendances: List<Attendance>,
     val plannedAttendances: List<PlannedStaffAttendance>,
+    val otherUnitAttendances: List<OtherUnitStaffAttendance>,
     val allowedToEdit: Boolean,
+)
+
+data class OtherUnitStaffAttendance(
+    val employeeId: EmployeeId,
+    val unitId: DaycareId,
+    val unitName: String,
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?,
 )
 
 data class StaffAttendanceResponse(

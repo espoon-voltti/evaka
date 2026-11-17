@@ -180,6 +180,7 @@ export interface EmployeeAttendance {
   firstName: string
   groups: GroupId[]
   lastName: string
+  otherUnitAttendances: OtherUnitStaffAttendance[]
   plannedAttendances: PlannedStaffAttendance[]
 }
 
@@ -305,6 +306,17 @@ export interface OpenGroupAttendance {
 */
 export interface OpenGroupAttendanceResponse {
   openGroupAttendance: OpenGroupAttendance | null
+}
+
+/**
+* Generated from evaka.core.attendance.OtherUnitStaffAttendance
+*/
+export interface OtherUnitStaffAttendance {
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+  employeeId: EmployeeId
+  unitId: DaycareId
+  unitName: string
 }
 
 /**
@@ -452,6 +464,7 @@ export interface StaffMemberAttendance {
 */
 export interface StaffMemberWithOperationalDays {
   operationalDays: LocalDate[]
+  otherUnitAttendances: OtherUnitStaffAttendance[]
   staffMember: StaffMember
 }
 
@@ -564,6 +577,7 @@ export function deserializeJsonEmployeeAttendance(json: JsonOf<EmployeeAttendanc
   return {
     ...json,
     attendances: json.attendances.map(e => deserializeJsonAttendance(e)),
+    otherUnitAttendances: json.otherUnitAttendances.map(e => deserializeJsonOtherUnitStaffAttendance(e)),
     plannedAttendances: json.plannedAttendances.map(e => deserializeJsonPlannedStaffAttendance(e))
   }
 }
@@ -653,6 +667,15 @@ export function deserializeJsonOpenGroupAttendanceResponse(json: JsonOf<OpenGrou
 }
 
 
+export function deserializeJsonOtherUnitStaffAttendance(json: JsonOf<OtherUnitStaffAttendance>): OtherUnitStaffAttendance {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
 export function deserializeJsonPlannedStaffAttendance(json: JsonOf<PlannedStaffAttendance>): PlannedStaffAttendance {
   return {
     ...json,
@@ -738,6 +761,7 @@ export function deserializeJsonStaffMemberWithOperationalDays(json: JsonOf<Staff
   return {
     ...json,
     operationalDays: json.operationalDays.map(e => LocalDate.parseIso(e)),
+    otherUnitAttendances: json.otherUnitAttendances.map(e => deserializeJsonOtherUnitStaffAttendance(e)),
     staffMember: deserializeJsonStaffMember(json.staffMember)
   }
 }

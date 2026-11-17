@@ -6,10 +6,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import initial from 'lodash/initial'
 import last from 'lodash/last'
 import orderBy from 'lodash/orderBy'
+import uniq from 'lodash/uniq'
 import React, { Fragment, useCallback, useId, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
+import type { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import type { ErrorKey } from 'lib-common/form-validation'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
@@ -35,6 +37,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalCloseButton,
@@ -67,6 +70,13 @@ export interface ModalAttendance {
   occupancyCoefficient: number
 }
 
+export interface ModalOtherAttendance {
+  unitName: string | null
+  groupId: GroupId | null
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+}
+
 export interface ModalPlannedAttendance {
   start: HelsinkiDateTime
   end: HelsinkiDateTime
@@ -82,11 +92,12 @@ interface Props<
   staffOccupancyEffectDefault: boolean
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]
+  otherAttendances: ModalOtherAttendance[]
   isExternal: boolean
   groups: DaycareGroup[]
   defaultGroupId: GroupId | null
   validate: (a: EditedAttendance[]) => [undefined | T[], ValidationError[]]
-  onSave: (body: T[]) => void
+  onSave: (body: T[]) => Promise<Result<unknown>> | void
   onSuccess: () => void
   onClose: () => void
   unitId: string
@@ -106,6 +117,7 @@ export interface ValidationError {
   departed?: ErrorKey
   groupId?: ErrorKey
   type?: ErrorKey
+  overlappingAttendances?: ModalOtherAttendance[]
 }
 
 export default React.memo(
@@ -121,6 +133,7 @@ function StaffAttendanceDetailsModal<
   staffOccupancyEffectDefault,
   attendances,
   plannedAttendances,
+  otherAttendances,
   isExternal,
   groups,
   defaultGroupId,
@@ -179,24 +192,27 @@ function StaffAttendanceDetailsModal<
     })
   }
 
+  const [overlapSaveError, setOverlapSaveError] = useState(false)
+
   const updateAttendance = useCallback(
-    (index: number, data: Omit<EditedAttendance, 'id'>) =>
+    (index: number, data: Omit<EditedAttendance, 'id'>) => {
+      setOverlapSaveError(false)
       setEditState(({ editState, editStateDate }) => ({
         editStateDate,
         editState: editState.map((row, i) =>
           index === i ? { ...row, ...data } : row
         )
-      })),
+      }))
+    },
     []
   )
-  const removeAttendance = useCallback(
-    (index: number) =>
-      setEditState(({ editState, editStateDate }) => ({
-        editStateDate,
-        editState: editState.filter((_att, i) => index !== i)
-      })),
-    []
-  )
+  const removeAttendance = useCallback((index: number) => {
+    setOverlapSaveError(false)
+    setEditState(({ editState, editStateDate }) => ({
+      editStateDate,
+      editState: editState.filter((_att, i) => index !== i)
+    }))
+  }, [])
   const addNewAttendance = useCallback(
     () =>
       setEditState(({ editState, editStateDate }) => ({
@@ -221,8 +237,14 @@ function StaffAttendanceDetailsModal<
   )
   const save = useCallback(() => {
     if (!requestBody) return
+    setOverlapSaveError(false)
     return onSave(requestBody)
   }, [onSave, requestBody])
+  const onSaveFailure = useCallback(
+    ({ errorCode }: { errorCode?: string }) =>
+      setOverlapSaveError(errorCode === 'overlappingAttendance'),
+    []
+  )
 
   const gaplessAttendances = useMemo(
     () =>
@@ -364,6 +386,31 @@ function StaffAttendanceDetailsModal<
 
   const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
 
+  const otherUnitAttendancesOnDate = useMemo(() => {
+    const startOfDay = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
+    const endOfDay = HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
+    return orderBy(
+      otherAttendances.filter(
+        (a) =>
+          a.unitName !== null &&
+          a.arrived.isBefore(endOfDay) &&
+          (a.departed === null || a.departed.isAfter(startOfDay))
+      ),
+      ({ arrived }) => arrived
+    )
+  }, [otherAttendances, date])
+
+  const overlappingAttendancesOnOtherDates = useMemo(
+    () =>
+      orderBy(
+        uniq(errors.flatMap((e) => e.overlappingAttendances ?? [])).filter(
+          (a) => !otherUnitAttendancesOnDate.includes(a)
+        ),
+        ({ arrived }) => arrived
+      ),
+    [errors, otherUnitAttendancesOnDate]
+  )
+
   const saveDisabled = useMemo(
     () =>
       !requestBody ||
@@ -483,6 +530,22 @@ function StaffAttendanceDetailsModal<
         ) : null}
 
         <H3>{i18n.unit.staffAttendance.dailyAttendances}</H3>
+        {otherUnitAttendancesOnDate.length > 0 && (
+          <InfoBox
+            wide
+            data-qa="attendances-in-other-units"
+            message={
+              <>
+                {i18n.unit.staffAttendance.attendancesInOtherUnits}
+                <OtherUnitAttendanceList
+                  attendances={otherUnitAttendancesOnDate}
+                  groups={groups}
+                  date={date}
+                />
+              </>
+            }
+          />
+        )}
         {!!arrivalWithoutDeparture && (
           <FullGridWidth>
             <FixedSpaceRow
@@ -740,6 +803,24 @@ function StaffAttendanceDetailsModal<
               )
             }
           )}
+          {overlappingAttendancesOnOtherDates.length > 0 && (
+            <FullGridWidth>
+              <AlertBox
+                wide
+                noMargin
+                data-qa="overlapping-attendance-warning"
+                message={
+                  <>
+                    {i18n.unit.staffAttendance.overlappingAttendanceNextDay}
+                    <OtherUnitAttendanceList
+                      attendances={overlappingAttendancesOnOtherDates}
+                      groups={groups}
+                    />
+                  </>
+                }
+              />
+            </FullGridWidth>
+          )}
           <NewAttendance>
             <Button
               appearance="inline"
@@ -752,6 +833,13 @@ function StaffAttendanceDetailsModal<
           </NewAttendance>
         </ListGrid>
         <Gap $size="L" />
+        {overlapSaveError && (
+          <AlertBox
+            wide
+            data-qa="overlapping-attendance-save-error"
+            message={i18n.unit.staffAttendance.overlappingAttendanceSaveError}
+          />
+        )}
         <ModalActions>
           <Button text={i18n.common.cancel} onClick={onClose} />
           <AsyncButton
@@ -759,6 +847,7 @@ function StaffAttendanceDetailsModal<
             text={i18n.unit.staffAttendance.saveChanges}
             onClick={save}
             onSuccess={onSuccess}
+            onFailure={onSaveFailure}
             disabled={saveDisabled}
             data-qa="save"
           />
@@ -772,6 +861,44 @@ function StaffAttendanceDetailsModal<
     </PlainModal>
   )
 }
+
+const OtherUnitAttendanceList = React.memo(function OtherUnitAttendanceList({
+  attendances,
+  groups,
+  date
+}: {
+  attendances: ModalOtherAttendance[]
+  groups: DaycareGroup[]
+  date?: LocalDate
+}) {
+  const { i18n } = useTranslation()
+  return (
+    <OtherUnitAttendanceUl>
+      {attendances.map(({ unitName, groupId, arrived, departed }, i) => {
+        const currentDate = date ?? arrived.toLocalDate()
+        return (
+          <li key={i}>
+            {unitName ??
+              groups.find((g) => g.id === groupId)?.name ??
+              i18n.unit.staffAttendance.noGroup}
+            :{' '}
+            <strong>
+              {arrived.toLocalDate().isBefore(currentDate)
+                ? LocalTime.MIN.format()
+                : arrived.toLocalTime().format()}{' '}
+              – {departed ? formatDate(departed, currentDate) : ''}
+            </strong>
+          </li>
+        )
+      })}
+    </OtherUnitAttendanceUl>
+  )
+})
+
+const OtherUnitAttendanceUl = styled.ul`
+  margin: ${defaultMargins.xs} 0 0;
+  padding-left: ${defaultMargins.m};
+`
 
 const formatDate = (time: HelsinkiDateTime, currentDate: LocalDate) =>
   time.toLocalDate().isEqual(currentDate) ? time.toLocalTime().format() : '→'

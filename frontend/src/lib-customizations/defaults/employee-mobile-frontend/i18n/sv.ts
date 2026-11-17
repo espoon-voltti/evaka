@@ -361,6 +361,7 @@ export const sv: typeof fi = {
         timeFormat: 'Kontrollera',
         future: 'Kommande',
         overlap: 'Överlappande markeringar',
+        overlapWithOtherAttendance: 'Överlappande anteckning',
         dateTooEarly: 'Kontrollera',
         dateTooLate: 'Kontrollera'
       },
@@ -368,6 +369,11 @@ export const sv: typeof fi = {
       openAttendanceInAnotherUnitWarning: 'Öppen anteckning',
       openAttendanceInAnotherUnitWarningCont:
         '. Avsluta anteckning innan du lägger till en ny.',
+      attendancesInOtherUnits:
+        'För denna dag har det gjorts anteckningar i en annan enhet',
+      overlappingAttendanceNextDay: 'Överlappande anteckning följande dag',
+      overlappingAttendanceSaveError:
+        'Anteckningen överlappar en annan anteckning. Gå tillbaka och kontrollera anteckningarna.',
       noPlan: 'Ingen planerad arbetstur',
       planWarnings: {
         maybeInOtherUnit: 'Arbetsturen kan vara i en annan enhet',

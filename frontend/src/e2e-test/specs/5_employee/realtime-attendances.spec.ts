@@ -735,6 +735,146 @@ test.describe('Realtime staff attendances', () => {
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await expect(modal.openAttendanceInAnotherUnitWarning).toBeVisible()
     })
+
+    test('Overnight entry overlapping with next day attendance in the same unit is warned about', async () => {
+      const date = mockedToday.subDays(1)
+      await Fixture.realtimeStaffAttendance({
+        employeeId: groupStaff.id,
+        groupId,
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(6, 45)),
+        departed: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+      }).save()
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup('staff')
+      staffAttendances = calendarPage.staffAttendances
+
+      const modal = await staffAttendances.openDetails(1, date)
+      await modal.addNewAttendance()
+      await modal.setGroup(0, groupId2)
+      await modal.setArrivalTime(0, '23:00')
+      await modal.setDepartureTime(0, '06:50')
+      await expect(modal.departureTimeInfo(0)).toHaveText('Tarkista')
+      await expect(modal.overlappingAttendanceWarning).toContainText(
+        'Testailijat: 06:45 – 07:00'
+      )
+      await modal.saveButton.assertDisabled(true)
+
+      await modal.setDepartureTime(0, '06:45')
+      await modal.save()
+    })
+
+    test('Overlap not visible in the modal is reported when saving', async () => {
+      const sunday = mockedToday.subDays(3)
+      await Fixture.realtimeStaffAttendance({
+        employeeId: groupStaff.id,
+        groupId,
+        arrived: sunday.toHelsinkiDateTime(LocalTime.of(10, 0)),
+        departed: sunday.toHelsinkiDateTime(LocalTime.of(12, 0))
+      }).save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: groupStaff.id,
+        groupId,
+        arrived: mockedToday.subDays(2).toHelsinkiDateTime(LocalTime.of(7, 0)),
+        departed: mockedToday.subDays(2).toHelsinkiDateTime(LocalTime.of(9, 0))
+      }).save()
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup('staff')
+      await calendarPage.changeWeekToDate(sunday)
+      staffAttendances = calendarPage.staffAttendances
+
+      const modal = await staffAttendances.openDetails(1, sunday)
+      await modal.addNewAttendance()
+      await modal.setGroup(1, groupId)
+      await modal.setArrivalTime(1, '22:00')
+      await modal.setDepartureTime(1, '08:00')
+      await expect(modal.overlappingAttendanceSaveError).toBeHidden()
+      await modal.saveButton.click()
+      await expect(modal.overlappingAttendanceSaveError).toBeVisible()
+
+      await modal.setDepartureTime(1, '07:00')
+      await expect(modal.overlappingAttendanceSaveError).toBeHidden()
+      await modal.save()
+    })
+
+    test.describe('Attendances in another unit', () => {
+      let anotherDaycare: DevDaycare
+      const anotherGroupId = randomId<GroupId>()
+
+      test.beforeEach(async () => {
+        anotherDaycare = await Fixture.daycare({
+          ...testDaycare,
+          areaId: careArea.id,
+          enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+        }).save()
+        await Fixture.daycareGroup({
+          id: anotherGroupId,
+          daycareId: anotherDaycare.id,
+          name: 'Toiset testailijat'
+        }).save()
+      })
+
+      test('Attendances in another unit are shown and overlapping entry cannot be saved', async () => {
+        const date = mockedToday.subWeeks(1)
+        await Fixture.realtimeStaffAttendance({
+          employeeId: groupStaff.id,
+          groupId: anotherGroupId,
+          arrived: date.toHelsinkiDateTime(LocalTime.of(7, 0)),
+          departed: date.toHelsinkiDateTime(LocalTime.of(9, 0))
+        }).save()
+        calendarPage = await openCalendar()
+        await calendarPage.selectGroup('staff')
+        await calendarPage.changeWeekToDate(date)
+        staffAttendances = calendarPage.staffAttendances
+
+        const modal = await staffAttendances.openDetails(1, date)
+        await expect(modal.attendancesInOtherUnits).toContainText(
+          `${anotherDaycare.name}: 07:00 – 09:00`
+        )
+
+        await modal.addNewAttendance()
+        await modal.setGroup(0, groupId)
+        await modal.setArrivalTime(0, '08:00')
+        await modal.setDepartureTime(0, '12:00')
+        await expect(modal.arrivalTimeInfo(0)).toHaveText('Tarkista')
+        await modal.saveButton.assertDisabled(true)
+        await expect(modal.overlappingAttendanceWarning).toBeHidden()
+
+        await modal.setArrivalTime(0, '09:00')
+        await modal.save()
+
+        await staffAttendances.assertTableRow({
+          rowIx: 1,
+          nth: 2,
+          attendances: [['09:00', '12:00']]
+        })
+      })
+
+      test('Overnight entry overlapping with next day attendance in another unit is warned about', async () => {
+        const date = mockedToday.subDays(1)
+        await Fixture.realtimeStaffAttendance({
+          employeeId: groupStaff.id,
+          groupId: anotherGroupId,
+          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+          departed: mockedToday.toHelsinkiDateTime(LocalTime.of(9, 0))
+        }).save()
+        calendarPage = await openCalendar()
+        await calendarPage.selectGroup('staff')
+        staffAttendances = calendarPage.staffAttendances
+
+        const modal = await staffAttendances.openDetails(1, date)
+        await expect(modal.attendancesInOtherUnits).toBeHidden()
+
+        await modal.addNewAttendance()
+        await modal.setGroup(0, groupId)
+        await modal.setArrivalTime(0, '22:00')
+        await modal.setDepartureTime(0, '08:00')
+        await expect(modal.departureTimeInfo(0)).toHaveText('Tarkista')
+        await expect(modal.overlappingAttendanceWarning).toContainText(
+          `${anotherDaycare.name}: 07:00 – 09:00`
+        )
+        await modal.saveButton.assertDisabled(true)
+      })
+    })
   })
 
   test.describe('Staff count sums in the table', () => {

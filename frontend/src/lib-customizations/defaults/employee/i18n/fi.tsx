@@ -2611,6 +2611,11 @@ export const fi = {
       openAttendanceInAnotherUnitWarning: 'Avoin kirjaus ',
       openAttendanceInAnotherUnitWarningCont:
         '. Kirjaus on päätettävä ennen uuden lisäystä.',
+      attendancesInOtherUnits:
+        'Tälle päivälle on tehty kirjauksia toisessa yksikössä',
+      overlappingAttendanceNextDay: 'Päällekkäinen kirjaus seuraavana päivänä',
+      overlappingAttendanceSaveError:
+        'Kirjaus on päällekkäinen toisen kirjauksen kanssa. Päivitä näkymä ja tarkista kirjaukset.',
       personCount: 'Läsnäolleiden yhteismäärä',
       personCountAbbr: 'hlö',
       unlinkOvernight: 'Erota yön yli menevä läsnäolo',

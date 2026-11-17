@@ -496,6 +496,26 @@ export class StaffAttendanceEditPage {
     await field.fill(time)
   }
 
+  arrivedInfo(index: number) {
+    return this.page.findAllByDataQa('arrived-info').nth(index)
+  }
+
+  departedInfo(index: number) {
+    return this.page.findAllByDataQa('departed-info').nth(index)
+  }
+
+  get attendancesInOtherUnits() {
+    return this.page.findByDataQa('attendances-in-other-units')
+  }
+
+  get rowsInfo() {
+    return this.page.findByDataQa('rows-info')
+  }
+
+  get overlappingAttendanceWarning() {
+    return this.page.findByDataQa('overlapping-attendance-warning')
+  }
+
   async remove(index: number) {
     const icon = this.page.findAllByDataQa('remove').nth(index)
     await icon.click()

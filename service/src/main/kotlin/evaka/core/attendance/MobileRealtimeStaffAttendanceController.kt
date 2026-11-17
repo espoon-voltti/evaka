@@ -99,6 +99,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         @RequestParam from: LocalDate,
         @RequestParam to: LocalDate,
     ): StaffMemberWithOperationalDays {
+        if (from.isAfter(to)) {
+            throw BadRequest("Start must be before or equal to the end")
+        }
+        if (FiniteDateRange(from, to).durationInDays() > 6 * 7) {
+            throw BadRequest("Only 6 weeks of staff attendances may be fetched at once")
+        }
         return db.connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
@@ -127,6 +133,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     StaffMemberWithOperationalDays(
                         staffMember = staffMember,
                         operationalDays = unitOperationalDays,
+                        otherUnitAttendances =
+                            tx.getStaffAttendancesInOtherUnits(
+                                unitId,
+                                setOf(employeeId),
+                                FiniteDateRange(from, to).asHelsinkiDateTimeRange(),
+                                clock.today(),
+                            ),
                     )
                 }
             }
@@ -326,50 +339,67 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     throw BadRequest("Attendances outside given date")
                 if (body.rows.any { !it.departsAfterArrival() })
                     throw BadRequest("Departure time must be after arrival time")
+                requireNoOverlapsBetween(body.rows)
 
-                dbc.transaction { tx ->
-                    val groupIds = body.rows.mapNotNull { it.groupId }.distinct()
-                    if (!groupIds.all { groupId -> tx.getDaycareIdByGroup(groupId) == unitId }) {
-                        throw BadRequest("Group is not in unit")
-                    }
-
-                    val existing =
-                        tx.getEmployeeAttendancesByArrivalDateDate(
-                            unitId,
-                            body.employeeId,
-                            body.date,
-                        )
-
-                    val ids = body.rows.mapNotNull { it.id }
-                    if (ids.any { id -> !existing.map { it.id }.contains(id) }) {
-                        throw BadRequest("Unknown id was given")
-                    }
-
-                    val deletedIds = existing.map { it.id }
-                    val deleted = deletedIds.map { tx.deleteStaffAttendance(it) }
-
-                    val updated =
-                        body.rows.mapNotNull { attendance ->
-                            tx.upsertStaffAttendance(
-                                attendanceId = null,
-                                employeeId = body.employeeId,
-                                groupId = attendance.groupId,
-                                arrivalTime = attendance.arrived,
-                                departureTime = attendance.departed,
-                                occupancyCoefficient =
-                                    if (attendance.hasStaffOccupancyEffect)
-                                        occupancyCoefficientSeven
-                                    else occupancyCoefficientZero,
-                                type = attendance.type,
-                                departedAutomatically = false,
-                                modifiedAt = clock.now(),
-                                modifiedBy = user.evakaUserId,
-                            )
+                try {
+                    dbc.transaction { tx ->
+                        val groupIds = body.rows.mapNotNull { it.groupId }.distinct()
+                        if (
+                            !groupIds.all { groupId -> tx.getDaycareIdByGroup(groupId) == unitId }
+                        ) {
+                            throw BadRequest("Group is not in unit")
                         }
 
-                    val updates = updated + deleted.map { StaffAttendanceRealtimeChange(old = it) }
-                    updates to
-                        updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
+                        val existing =
+                            tx.getEmployeeAttendancesByArrivalDateDate(
+                                unitId,
+                                body.employeeId,
+                                body.date,
+                            )
+
+                        val ids = body.rows.mapNotNull { it.id }
+                        if (ids.any { id -> !existing.map { it.id }.contains(id) }) {
+                            throw BadRequest("Unknown id was given")
+                        }
+
+                        val deletedIds = existing.map { it.id }
+                        val deleted = deletedIds.map { tx.deleteStaffAttendance(it) }
+
+                        requireNoOverlapsWithExistingStaffAttendances(
+                            tx,
+                            body.employeeId,
+                            body.rows,
+                            emptySet(),
+                        )
+
+                        val updated =
+                            body.rows.mapNotNull { attendance ->
+                                tx.upsertStaffAttendance(
+                                    attendanceId = null,
+                                    employeeId = body.employeeId,
+                                    groupId = attendance.groupId,
+                                    arrivalTime = attendance.arrived,
+                                    departureTime = attendance.departed,
+                                    occupancyCoefficient =
+                                        if (attendance.hasStaffOccupancyEffect)
+                                            occupancyCoefficientSeven
+                                        else occupancyCoefficientZero,
+                                    type = attendance.type,
+                                    departedAutomatically = false,
+                                    modifiedAt = clock.now(),
+                                    modifiedBy = user.evakaUserId,
+                                )
+                            }
+
+                        val updates =
+                            updated + deleted.map { StaffAttendanceRealtimeChange(old = it) }
+                        updates to
+                            updates.map {
+                                changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields)
+                            }
+                    }
+                } catch (e: JdbiException) {
+                    throw mapStaffAttendanceWriteException(e)
                 }
             }
             .also { (updates, changes) ->

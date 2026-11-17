@@ -39,7 +39,11 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { formatPersonName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
-import { presentInGroup } from 'lib-common/staff-attendance'
+import {
+  attendancesOverlap,
+  isDuringAttendance,
+  presentInGroup
+} from 'lib-common/staff-attendance'
 import type { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -63,6 +67,7 @@ import {
 import type {
   EditedAttendance,
   ModalAttendance,
+  ModalOtherAttendance,
   ModalPlannedAttendance,
   ValidationError
 } from './StaffAttendanceDetailsModal'
@@ -313,6 +318,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
   modalData: {
     attendances: ModalAttendance[]
     plannedAttendances: ModalPlannedAttendance[]
+    otherAttendances: ModalOtherAttendance[]
   }
   unitId: DaycareId
   groups: DaycareGroup[]
@@ -359,12 +365,16 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       isExternal={false}
       onSave={onSaveStaff}
       staffOccupancyEffectDefault={target.hasOccupancyEffect}
-      validate={staffAttendanceValidator(detailsModalConfig)}
+      validate={staffAttendanceValidator({
+        ...detailsModalConfig,
+        otherAttendances: modalData.otherAttendances
+      })}
       name={detailsModalConfig.name}
       employeeId={target.employeeId}
       date={detailsModalConfig.date}
       attendances={modalData.attendances}
       plannedAttendances={modalData.plannedAttendances}
+      otherAttendances={modalData.otherAttendances}
       groups={groups}
       defaultGroupId={defaultGroupId}
       onClose={onClose}
@@ -384,6 +394,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       date={detailsModalConfig.date}
       attendances={modalData.attendances}
       plannedAttendances={modalData.plannedAttendances}
+      otherAttendances={[]}
       groups={groups}
       defaultGroupId={defaultGroupId}
       onClose={onClose}
@@ -924,6 +935,7 @@ function computeModalAttendances(
 ): {
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]
+  otherAttendances: ModalOtherAttendance[]
 } {
   const startOfDay = HelsinkiDateTime.fromLocal(
     detailsModalConfig.date,
@@ -963,7 +975,33 @@ function computeModalAttendances(
     )
       .filter(({ start, end }) => start <= endOfDay && startOfDay <= end)
       .map(({ start, end, description }) => ({ start, end, description }))
-    return { attendances, plannedAttendances }
+    const sameUnitAttendancesOnLaterDays: ModalOtherAttendance[] = uniqBy(
+      combined.flatMap((employee) => employee.attendances),
+      (attendance) => attendance.id
+    )
+      .filter(({ arrived }) => !arrived.isBefore(endOfDay))
+      .map(({ groupId, arrived, departed }) => ({
+        unitName: null,
+        groupId,
+        arrived,
+        departed
+      }))
+    const otherUnitAttendances: ModalOtherAttendance[] = combined
+      .flatMap((employee) => employee.otherUnitAttendances)
+      .map(({ unitName, arrived, departed }) => ({
+        unitName,
+        groupId: null,
+        arrived,
+        departed
+      }))
+    return {
+      attendances,
+      plannedAttendances,
+      otherAttendances: [
+        ...otherUnitAttendances,
+        ...sameUnitAttendancesOnLaterDays
+      ]
+    }
   } else {
     const name = detailsModalConfig.target.name
     const attendances: ModalAttendance[] = externalAttendances.filter(
@@ -972,14 +1010,18 @@ function computeModalAttendances(
         attendance.arrived <= endOfDay &&
         (attendance.departed === null || startOfDay <= attendance.departed)
     )
-    return { attendances, plannedAttendances: [] }
+    return { attendances, plannedAttendances: [], otherAttendances: [] }
   }
 }
 
 type ValidatorConfig = Pick<DetailsModalConfig, 'date' | 'attendances'>
 
+type StaffValidatorConfig = ValidatorConfig & {
+  otherAttendances: ModalOtherAttendance[]
+}
+
 const staffAttendanceValidator =
-  (config: ValidatorConfig) =>
+  (config: StaffValidatorConfig) =>
   (
     state: EditedAttendance[]
   ): [undefined | StaffAttendanceUpsert[], ValidationError[]] => {
@@ -1011,10 +1053,32 @@ const staffAttendanceValidator =
       )
       const [groupId, groupIdError] = validateGroupId(item)
 
+      const overlappingAttendances =
+        arrived !== undefined && departed !== undefined
+          ? config.otherAttendances.filter((other) =>
+              attendancesOverlap({ arrived, departed }, other)
+            )
+          : []
+      const arrivalOverlaps = overlappingAttendances.some(
+        (other) => arrived && isDuringAttendance(arrived, other)
+      )
+
+      errors[i] = {
+        arrived: arrivedError ?? (arrivalOverlaps ? 'generic' : undefined),
+        departed:
+          departedError ??
+          (overlappingAttendances.length > 0 && !arrivalOverlaps
+            ? 'generic'
+            : undefined),
+        groupId: groupIdError,
+        overlappingAttendances
+      }
+
       if (
         arrived !== undefined &&
         departed !== undefined &&
-        groupId !== undefined
+        groupId !== undefined &&
+        overlappingAttendances.length === 0
       ) {
         body[i] = {
           id: item.id as StaffAttendanceRealtimeId | null,
@@ -1024,12 +1088,6 @@ const staffAttendanceValidator =
           groupId,
           hasStaffOccupancyEffect: item.hasStaffOccupancyEffect
         }
-      }
-
-      errors[i] = {
-        arrived: arrivedError,
-        departed: departedError,
-        groupId: groupIdError
       }
     }
 
