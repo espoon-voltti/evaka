@@ -5,12 +5,14 @@
 package evaka.core.bi
 
 import evaka.core.PureJdbiTest
+import evaka.core.allDayTimeRange
 import evaka.core.application.ApplicationType
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.CareDetails
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.clubTerm2024
 import evaka.core.invoicing.data.upsertFeeDecisions
 import evaka.core.invoicing.data.upsertValueDecisions
 import evaka.core.invoicing.domain.ChildWithDateOfBirth
@@ -29,6 +31,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionServiceNeed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.placement.PlacementType
+import evaka.core.preschoolTerm2023
 import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.VoucherValueDecisionId
@@ -54,10 +57,11 @@ import java.time.LocalTime
 import java.time.Month
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.fail
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import org.springframework.core.io.ClassPathResource
 
 class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val clock =
@@ -70,28 +74,52 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
     }
 
     @TestFactory
-    fun `each BiTable exports a non-empty CSV with full export config`() =
-        exportTests(BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60))
-
-    @TestFactory
-    fun `each BiTable exports a non-empty CSV with PII and legacy columns stripped`() =
+    fun `each BiTable keeps its pinned columns at the start of the CSV with full export config`() =
         exportTests(
-            BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 60),
+            BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60),
+            "bi/pinned-columns-full.txt",
         )
 
-    private fun exportTests(config: BiExportConfig) =
-        BiTable.entries.map { table ->
+    @TestFactory
+    fun `each BiTable keeps its pinned columns at the start of the CSV with PII and legacy columns stripped`() =
+        exportTests(
+            BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 60),
+            "bi/pinned-columns-stripped.txt",
+        )
+
+    private fun exportTests(config: BiExportConfig, pinnedColumnsFile: String): List<DynamicTest> {
+        val pinnedColumns =
+            ClassPathResource(pinnedColumnsFile)
+                .inputStream
+                .bufferedReader()
+                .readLines()
+                .associate { it.substringBefore(": ") to it.substringAfter(": ").split(",") }
+        return BiTable.entries.map { table ->
             DynamicTest.dynamicTest("${table.name} export") {
+                val pinned =
+                    pinnedColumns[table.fileName]
+                        ?: fail("Add the columns of ${table.fileName} to $pinnedColumnsFile")
                 val client = CapturingBiExportClient()
                 BiExportJob(client, config).sendBiTable(db, clock, table)
                 assertEquals(listOf(table.fileName), client.captured.keys.toList())
-                val csv = client.captured.getValue(table.fileName).toString(CSV_CHARSET)
-                assertTrue(
-                    csv.lineSequence().first().isNotBlank(),
-                    "${table.fileName} produced an empty CSV header",
+                val columns =
+                    client.captured
+                        .getValue(table.fileName)
+                        .toString(CSV_CHARSET)
+                        .lineSequence()
+                        .first()
+                        .split(",")
+                assertEquals(
+                    pinned,
+                    columns,
+                    "The existing columns of ${table.fileName} changed. Add a new property only " +
+                        "to the end of its class and update $pinnedColumnsFile. To remove the data of a column, " +
+                        "keep the column with an empty value. Do not add @LegacyColumn or @Pii to an existing " +
+                        "column, because they remove the column from some exports.",
                 )
             }
         }
+    }
 
     private fun insertCriticalTestData() {
         db.transaction { tx ->
@@ -116,9 +144,13 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE),
+                        shiftCareOperationTimes = List(7) { allDayTimeRange },
+                        shiftCareOpenOnHolidays = true,
                     ),
                 )
             tx.insert(DevDaycareGroup(daycareId = daycareId))
+            tx.insert(preschoolTerm2023)
+            tx.insert(clubTerm2024)
             val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
             val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(DevPlacement(childId = childId, unitId = daycareId))

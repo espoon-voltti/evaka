@@ -16,7 +16,10 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevStaffAttendance
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.domain.europeHelsinki
 import java.time.LocalDate
 import java.time.LocalTime
@@ -53,7 +56,7 @@ class BiSnapshotQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             setOf(firstDay.id.toString(), lastDay.id.toString()),
-            exportedIds(BiQueries.getAbsencesSnapshot),
+            exportedColumn(BiQueries.getAbsencesSnapshot, "id"),
         )
     }
 
@@ -88,15 +91,29 @@ class BiSnapshotQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             setOf(firstDay.id.toString(), lastDay.id.toString()),
-            exportedIds(BiQueries.getStaffAttendanceRealtimeSnapshot),
+            exportedColumn(BiQueries.getStaffAttendanceRealtimeSnapshot, "id"),
         )
     }
 
-    private fun exportedIds(query: BiQueries.CsvQuery): Set<String> = db.read { tx ->
-        query(tx, config) { records ->
+    @Test
+    fun `getHolidayDates covers the years from 2019 to the end of next year`() {
+        val clock = MockEvakaClock(2026, 11, 13, 12, 0)
+
+        val dates = exportedColumn(BiQueries.getHolidayDates, "date", clock).map(LocalDate::parse)
+
+        assertEquals(LocalDate.of(2019, 1, 1), dates.min())
+        assertEquals(LocalDate.of(2027, 12, 26), dates.max())
+    }
+
+    private fun exportedColumn(
+        query: BiQueries.CsvQuery,
+        column: String,
+        clock: EvakaClock = RealEvakaClock(),
+    ): Set<String> = db.read { tx ->
+        query(tx, clock, config) { records ->
             val rows = records.map { it.trimEnd().split(',') }.toList()
-            val idColumn = rows.first().indexOf("id")
-            rows.drop(1).map { it[idColumn].removeSurrounding("\"") }.toSet()
+            val columnIndex = rows.first().indexOf(column)
+            rows.drop(1).map { it[columnIndex].removeSurrounding("\"") }.toSet()
         }
     }
 }

@@ -16,6 +16,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
@@ -157,13 +158,13 @@ class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
             BiQueries.StreamingCsvQuery(A::class) { tx2, _ ->
                     tx2.createQuery { sql(typedSql) }.mapTo<A>()
                 }
-                .invoke(tx, config) { it.toList() }
+                .invoke(tx, RealEvakaClock(), config) { it.toList() }
         }
         val textCsv = db.read { tx ->
             BiQueries.StreamingCsvQuery(B::class) { tx2, _ ->
                     tx2.createQuery { sql(textSql) }.mapTo<B>()
                 }
-                .invoke(tx, config) { it.toList() }
+                .invoke(tx, RealEvakaClock(), config) { it.toList() }
         }
         assertEquals(typedCsv, textCsv)
     }
