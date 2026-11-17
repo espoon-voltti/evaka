@@ -39,7 +39,7 @@ internal class VtjClientIntegrationTest : AbstractTampereIntegrationTest() {
 
         val ssn = Ssn.from("070644-937X")
         val persons =
-            vtjClient.fetchPersons(AuthenticatedUser.SystemInternalUser.evakaUserId, listOf(ssn))
+            vtjClient.fetchPersons(AuthenticatedUser.SystemInternalUser.evakaUserId, setOf(ssn))
 
         assertThat(persons.getValue(ssn)).returns("070644-937X", { it.ssn.value })
         verify(

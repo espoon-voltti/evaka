@@ -36,9 +36,9 @@ class ComparingVtjClientTest {
 
     @Test
     fun `the calls are compared with one DVV query for each query type`() {
-        assertEquals(mapOf(ssn to person), client.fetchPersons(user, listOf(ssn)))
-        val _ = client.fetchPersons(user, listOf(ssn))
-        val _ = client.fetchWithGuardians(user, listOf(ssn))
+        assertEquals(mapOf(ssn to person), client.fetchPersons(user, setOf(ssn)))
+        val _ = client.fetchPersons(user, setOf(ssn))
+        val _ = client.fetchWithGuardians(user, setOf(ssn))
         client.compareQueued()
 
         assertEquals(listOf("fetchPersons", "fetchWithGuardians"), dvvClient.calls)
@@ -47,8 +47,8 @@ class ComparingVtjClientTest {
     @Test
     fun `a failed DVV query pauses the comparison, and the calls of the round are tried again after the pause`() {
         dvvClient.fails = true
-        val _ = client.fetchPersons(user, listOf(ssn))
-        val _ = client.fetchWithGuardians(user, listOf(ssn))
+        val _ = client.fetchPersons(user, setOf(ssn))
+        val _ = client.fetchWithGuardians(user, setOf(ssn))
         client.compareQueued()
         dvvClient.fails = false
         client.compareQueued()
@@ -63,7 +63,7 @@ class ComparingVtjClientTest {
     @Test
     fun `a call is tried at most three times`() {
         dvvClient.fails = true
-        val _ = client.fetchPersons(user, listOf(ssn))
+        val _ = client.fetchPersons(user, setOf(ssn))
         repeat(4) {
             client.compareQueued()
             clock.tick(Duration.ofMinutes(1))
@@ -74,7 +74,7 @@ class ComparingVtjClientTest {
 
     @Test
     fun `a call without comparison is not queued`() {
-        val _ = ComparingVtjClient.withoutComparison { client.fetchPersons(user, listOf(ssn)) }
+        val _ = ComparingVtjClient.withoutComparison { client.fetchPersons(user, setOf(ssn)) }
         client.compareQueued()
 
         assertEquals(emptyList(), dvvClient.calls)
@@ -87,7 +87,7 @@ class ComparingVtjClientTest {
                 val _ =
                     client.fetchPersons(
                         user,
-                        listOf(ssn, Ssn.from("150385-9013"), Ssn.from("200687-903A")),
+                        setOf(ssn, Ssn.from("150385-9013"), Ssn.from("200687-903A")),
                     )
                 client.compareQueued()
             }
@@ -101,16 +101,16 @@ private class FixedVtjClient(private val person: VtjPerson) : VtjClient {
     val calls = mutableListOf<String>()
     val requestedSsns = mutableListOf<List<Ssn>>()
 
-    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch("fetchPersons", ssns) { person }
 
-    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch("fetchWithGuardians", ssns) { VtjPersonAndGuardians(person, emptyList()) }
 
-    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch("fetchWithDependants", ssns) { VtjPersonAndDependants(person, emptyList()) }
 
-    private fun <T> fetch(name: String, ssns: Collection<Ssn>, result: () -> T): Map<Ssn, T> {
+    private fun <T> fetch(name: String, ssns: Set<Ssn>, result: () -> T): Map<Ssn, T> {
         calls += name
         requestedSsns += ssns.toList()
         if (fails) error("DVV failed")

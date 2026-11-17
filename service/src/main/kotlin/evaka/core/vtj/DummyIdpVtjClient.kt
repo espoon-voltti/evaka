@@ -50,10 +50,10 @@ class DummyIdpVtjClient(baseUrl: String, private val jsonMapper: JsonMapper) : V
             interceptors = listOf(headerInterceptor("Accept", "application/json")),
         )
 
-    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch(ssns) { it.toVtjPerson() }
 
-    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch(ssns) { person ->
             VtjPersonAndGuardians(
                 person.toVtjPerson(),
@@ -61,7 +61,7 @@ class DummyIdpVtjClient(baseUrl: String, private val jsonMapper: JsonMapper) : V
             )
         }
 
-    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch(ssns) { person ->
             VtjPersonAndDependants(
                 person.toVtjPerson(),
@@ -81,9 +81,8 @@ class DummyIdpVtjClient(baseUrl: String, private val jsonMapper: JsonMapper) : V
         httpClient.post<Unit>("idp/test-mode/exit", jsonBody = emptyMap<String, String>())
     }
 
-    private fun <T> fetch(ssns: Collection<Ssn>, map: (DummyIdpVtjPerson) -> T): Map<Ssn, T> =
+    private fun <T> fetch(ssns: Set<Ssn>, map: (DummyIdpVtjPerson) -> T): Map<Ssn, T> =
         ssns
-            .distinct()
             .mapNotNull { ssn ->
                 httpClient
                     .get<DummyIdpVtjPerson?>("idp/users/${ssn.value}") { response ->

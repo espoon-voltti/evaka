@@ -12,15 +12,15 @@ import evaka.core.shared.EvakaUserId
  * no key. For a corrected SSN, the person in the value has the active SSN.
  */
 interface VtjClient {
-    fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>): Map<Ssn, VtjPerson>
+    fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>): Map<Ssn, VtjPerson>
 
     fun fetchWithGuardians(
         requestingUser: EvakaUserId,
-        ssns: Collection<Ssn>,
+        ssns: Set<Ssn>,
     ): Map<Ssn, VtjPersonAndGuardians>
 
     fun fetchWithDependants(
         requestingUser: EvakaUserId,
-        ssns: Collection<Ssn>,
+        ssns: Set<Ssn>,
     ): Map<Ssn, VtjPersonAndDependants>
 }

@@ -50,10 +50,10 @@ abstract class VtjClientContract {
     protected fun ssn(person: DevPerson) = Ssn.from(person.ssn!!)
 
     protected fun fetchWithDependants(client: VtjClient, person: DevPerson) =
-        client.fetchWithDependants(requestingUser, listOf(ssn(person))).getValue(ssn(person))
+        client.fetchWithDependants(requestingUser, setOf(ssn(person))).getValue(ssn(person))
 
     protected fun fetchWithGuardians(client: VtjClient, person: DevPerson) =
-        client.fetchWithGuardians(requestingUser, listOf(ssn(person))).getValue(ssn(person))
+        client.fetchWithGuardians(requestingUser, setOf(ssn(person))).getValue(ssn(person))
 
     @Test
     fun `dependants are SSNs`() {

@@ -53,17 +53,17 @@ class ComparingVtjClient(
         )
     }
 
-    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         soapClient.fetchPersons(requestingUser, ssns).also {
             enqueue(personsComparison, requestingUser, ssns, it)
         }
 
-    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         soapClient.fetchWithGuardians(requestingUser, ssns).also {
             enqueue(guardiansComparison, requestingUser, ssns, it)
         }
 
-    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         soapClient.fetchWithDependants(requestingUser, ssns).also {
             enqueue(dependantsComparison, requestingUser, ssns, it)
         }
@@ -97,15 +97,14 @@ class ComparingVtjClient(
     private fun <T : Any> enqueue(
         comparison: Comparison<T>,
         requestingUser: EvakaUserId,
-        ssns: Collection<Ssn>,
+        ssns: Set<Ssn>,
         soap: Map<Ssn, T>,
     ) {
         if (skipComparison.get()) return
-        val distinct = ssns.distinct()
-        logger.info(mapOf("queryType" to comparison.name, "batchSize" to distinct.size)) {
-            "VTJ call ${comparison.name} with ${distinct.size} SSNs"
+        logger.info(mapOf("queryType" to comparison.name, "batchSize" to ssns.size)) {
+            "VTJ call ${comparison.name} with ${ssns.size} SSNs"
         }
-        distinct.forEach { ssn -> offer(Pending(comparison, ssn, requestingUser, soap[ssn])) }
+        ssns.forEach { ssn -> offer(Pending(comparison, ssn, requestingUser, soap[ssn])) }
     }
 
     private fun offer(pending: Pending<*>) {
@@ -120,7 +119,7 @@ class ComparingVtjClient(
                 comparison.fetch(
                     dvvClient,
                     AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    pending.map { it.ssn }.distinct(),
+                    pending.map { it.ssn }.toSet(),
                 )
             } catch (e: Exception) {
                 logger.error(e) { "DVV basic info query for the VTJ comparison failed" }
@@ -190,7 +189,7 @@ enum class ComparisonResult {
 
 private class Comparison<T : Any>(
     val name: String,
-    val fetch: (VtjClient, EvakaUserId, Collection<Ssn>) -> Map<Ssn, T>,
+    val fetch: (VtjClient, EvakaUserId, Set<Ssn>) -> Map<Ssn, T>,
     val compare: (T, T) -> List<VtjFieldDifference>,
 )
 

@@ -140,12 +140,12 @@ class MockDataServiceTest {
     }
 
     private fun fetchInFull(relatives: List<Ssn>) = relatives.map {
-        mockDetailsService.fetchPersons(requestingUser, listOf(it)).getValue(it)
+        mockDetailsService.fetchPersons(requestingUser, setOf(it)).getValue(it)
     }
 
     private fun fetchWithDependants(ssn: String): VtjPersonAndDependants {
         val key = Ssn.from(ssn)
-        return mockDetailsService.fetchWithDependants(requestingUser, listOf(key)).getValue(key)
+        return mockDetailsService.fetchWithDependants(requestingUser, setOf(key)).getValue(key)
     }
 
     private fun testDataset() =

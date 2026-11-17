@@ -135,7 +135,7 @@ FOR UPDATE
 }
     .exactlyOneOrNull(toPerson)
 
-data class GetPersonIdsBySsnsResult(val found: Map<Ssn, PersonId>, val notFound: List<Ssn>)
+data class GetPersonIdsBySsnsResult(val found: Map<Ssn, PersonId>, val notFound: Set<Ssn>)
 
 fun Database.Read.getPersonIdsBySsns(ssns: List<Ssn>): GetPersonIdsBySsnsResult {
     val found = createQuery {
@@ -148,7 +148,7 @@ WHERE social_security_number = ANY(${bind(ssns)})
         )
     }
         .toMap { column<Ssn>("social_security_number") to column<PersonId>("id") }
-    val notFound = ssns.filterNot { found.containsKey(it) }
+    val notFound = ssns.filterNot { found.containsKey(it) }.toSet()
     return GetPersonIdsBySsnsResult(found, notFound)
 }
 

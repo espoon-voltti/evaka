@@ -257,7 +257,7 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val vtjClientReturningAnotherSsn =
         object : VtjClient {
-            override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+            override fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
                 ssns.associateWith {
                     VtjPerson(
                         firstNames = "Johannes",
@@ -269,7 +269,7 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             override fun fetchWithGuardians(
                 requestingUser: EvakaUserId,
-                ssns: Collection<Ssn>,
+                ssns: Set<Ssn>,
             ): Map<Ssn, VtjPersonAndGuardians> {
                 check(ssns.isEmpty())
                 return emptyMap()
@@ -277,7 +277,7 @@ class VtjSyncServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             override fun fetchWithDependants(
                 requestingUser: EvakaUserId,
-                ssns: Collection<Ssn>,
+                ssns: Set<Ssn>,
             ): Map<Ssn, VtjPersonAndDependants> {
                 check(ssns.isEmpty())
                 return emptyMap()

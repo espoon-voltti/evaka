@@ -14,27 +14,26 @@ import evaka.core.vtj.VtjSoapTransport.VTJQuery
 import evaka.core.vtj.soap.VTJHenkiloVastaussanoma.Henkilo
 
 class SoapVtjClient(private val vtjSoapTransport: VtjSoapTransport) : VtjClient {
-    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         query(requestingUser, ssns, PERUSSANOMA3) { it.mapToVtjPerson() }
 
-    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         query(requestingUser, ssns, HUOLLETTAVA_HUOLTAJAT) {
             VtjPersonAndGuardians(person = it.mapToVtjPerson(), guardians = it.mapGuardians())
         }
 
-    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         query(requestingUser, ssns, HUOLTAJA_HUOLLETTAVA) {
             VtjPersonAndDependants(person = it.mapToVtjPerson(), dependants = it.mapDependants())
         }
 
     private fun <T> query(
         requestingUser: EvakaUserId,
-        ssns: Collection<Ssn>,
+        ssns: Set<Ssn>,
         type: RequestType,
         map: (Henkilo) -> T,
     ): Map<Ssn, T> =
         ssns
-            .distinct()
             .mapNotNull { ssn ->
                 vtjSoapTransport
                     .query(

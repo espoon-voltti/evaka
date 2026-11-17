@@ -23,7 +23,7 @@ class DvvVtjClientIntegrationTest :
 
     @Test
     fun `a person that DVV does not find has no key`() {
-        val persons = client().fetchPersons(user, listOf(activeSsn, unknownSsn))
+        val persons = client().fetchPersons(user, setOf(activeSsn, unknownSsn))
 
         assertEquals(setOf(activeSsn), persons.keys)
         val person = persons.getValue(activeSsn)
@@ -34,7 +34,7 @@ class DvvVtjClientIntegrationTest :
 
     @Test
     fun `a corrected SSN gives the person of the active SSN`() {
-        val persons = client().fetchPersons(user, listOf(correctedSsn))
+        val persons = client().fetchPersons(user, setOf(correctedSsn))
 
         assertEquals(setOf(correctedSsn), persons.keys)
         assertEquals(activeSsn, persons.getValue(correctedSsn).ssn)
@@ -45,11 +45,11 @@ class DvvVtjClientIntegrationTest :
     fun `dependants come only from the query with the dependants`() {
         assertEquals(
             listOf(Ssn.from("120514A9501")),
-            client().fetchWithDependants(user, listOf(activeSsn)).getValue(activeSsn).dependants,
+            client().fetchWithDependants(user, setOf(activeSsn)).getValue(activeSsn).dependants,
         )
         assertEquals(
             emptyList(),
-            client().fetchWithGuardians(user, listOf(activeSsn)).getValue(activeSsn).guardians,
+            client().fetchWithGuardians(user, setOf(activeSsn)).getValue(activeSsn).guardians,
         )
     }
 
@@ -57,7 +57,7 @@ class DvvVtjClientIntegrationTest :
     fun `the rate limit of DVV fails the call`() {
         assertThrows<IllegalStateException> {
             client()
-                .fetchPersons(user, listOf(Ssn.from(MockDvvModificationsService.RATE_LIMITED_SSN)))
+                .fetchPersons(user, setOf(Ssn.from(MockDvvModificationsService.RATE_LIMITED_SSN)))
         }
     }
 }

@@ -26,17 +26,17 @@ class DvvVtjClient(
     private val client: DvvModificationsServiceClient,
     private val clock: EvakaClock = RealEvakaClock(),
 ) : VtjClient {
-    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch(requestingUser, ssns, dvvPersonInfoGroups) { ssn, groups, today ->
             mapDvvPerson(ssn, groups, today)
         }
 
-    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch(requestingUser, ssns, dvvPersonInfoGroups + HUOLTAJA_SUPPEA) { ssn, groups, today ->
             VtjPersonAndGuardians(mapDvvPerson(ssn, groups, today), mapDvvGuardians(groups, today))
         }
 
-    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch(requestingUser, ssns, dvvPersonInfoGroups + HUOLLETTAVA_SUPPEA) { ssn, groups, today
             ->
             VtjPersonAndDependants(
@@ -47,18 +47,18 @@ class DvvVtjClient(
 
     private fun <T> fetch(
         requestingUser: EvakaUserId,
-        ssns: Collection<Ssn>,
+        ssns: Set<Ssn>,
         infoGroups: List<String>,
         map: (Ssn, List<Tietoryhma>, LocalDate) -> T,
     ): Map<Ssn, T> {
         val today = clock.today()
-        val rows = query(requestingUser, ssns.distinct(), infoGroups)
+        val rows = query(requestingUser, ssns, infoGroups)
 
         // For a corrected SSN, DVV returns only the SSN correction, so the data comes from a second
         // query with the active SSN.
         val activeSsns =
             rows.mapNotNull { (ssn, row) -> row.correctedToSsn()?.let { ssn to it } }.toMap()
-        val activeRows = query(requestingUser, activeSsns.values.distinct(), infoGroups)
+        val activeRows = query(requestingUser, activeSsns.values.toSet(), infoGroups)
 
         return rows
             .mapNotNull { (ssn, row) ->
@@ -71,7 +71,7 @@ class DvvVtjClient(
 
     private fun query(
         requestingUser: EvakaUserId,
-        ssns: List<Ssn>,
+        ssns: Set<Ssn>,
         infoGroups: List<String>,
     ): Map<Ssn, DvvBasicInfo> =
         ssns

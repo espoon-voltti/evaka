@@ -110,17 +110,17 @@ class VtjRelativeStubIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 }
 
 private class StubRelativeVtjClient(private vararg val persons: DevPerson) : VtjClient {
-    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         ssns.associateWith { ssn ->
             persons.single { it.ssn == ssn.value }.toFullVtjPerson()
         }
 
-    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetchPersons(requestingUser, ssns).mapValues { (ssn, person) ->
             VtjPersonAndDependants(person, relativesOf(ssn))
         }
 
-    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetchPersons(requestingUser, ssns).mapValues { (ssn, person) ->
             VtjPersonAndGuardians(person, relativesOf(ssn))
         }

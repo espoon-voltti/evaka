@@ -174,20 +174,20 @@ class MockVtjClient : VtjClient {
         }
     }
 
-    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchPersons(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch("fetchPersons", ssns) { it }
 
-    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithGuardians(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch("fetchWithGuardians", ssns) { VtjPersonAndGuardians(it, getGuardians(it.ssn.value)) }
 
-    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Collection<Ssn>) =
+    override fun fetchWithDependants(requestingUser: EvakaUserId, ssns: Set<Ssn>) =
         fetch("fetchWithDependants", ssns) {
             VtjPersonAndDependants(it, getDependants(it.ssn.value))
         }
 
     private fun <T> fetch(
         function: String,
-        ssns: Collection<Ssn>,
+        ssns: Set<Ssn>,
         map: (VtjPerson) -> T,
     ): Map<Ssn, T> {
         if (ssns.isEmpty()) return emptyMap()

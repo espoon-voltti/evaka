@@ -164,7 +164,7 @@ class VtjSyncService(
             }
         }
         val vtjPerson =
-            vtjClient.fetchPersons(requestingUserId, listOf(ssn))[ssn]
+            vtjClient.fetchPersons(requestingUserId, setOf(ssn))[ssn]
                 ?: throw NotFound("VTJ person not found")
         if (vtjPerson.ssn != ssn) {
             throw BadRequest("VTJ returned a different SSN than the one being added")
@@ -185,7 +185,7 @@ class VtjSyncService(
 
     fun previewPerson(requestingUserId: EvakaUserId, ssn: Ssn): VtjPersonPreview {
         val person =
-            vtjClient.fetchPersons(requestingUserId, listOf(ssn))[ssn]
+            vtjClient.fetchPersons(requestingUserId, setOf(ssn))[ssn]
                 ?: throw NotFound("VTJ person not found")
         return VtjPersonPreview(
             socialSecurityNumber = person.ssn.value,
@@ -323,17 +323,17 @@ class VtjSyncService(
         val basic =
             vtjClient.fetchPersons(
                 requestingUserId,
-                targets.filter { !it.guardians && !it.dependants }.map { it.ssn },
+                targets.filter { !it.guardians && !it.dependants }.map { it.ssn }.toSet(),
             )
         val withGuardians =
             vtjClient.fetchWithGuardians(
                 requestingUserId,
-                targets.filter { it.guardians }.map { it.ssn },
+                targets.filter { it.guardians }.map { it.ssn }.toSet(),
             )
         val withDependants =
             vtjClient.fetchWithDependants(
                 requestingUserId,
-                targets.filter { it.dependants }.map { it.ssn },
+                targets.filter { it.dependants }.map { it.ssn }.toSet(),
             )
         val fetched =
             basic +
@@ -361,7 +361,7 @@ class VtjSyncService(
                         .distinct(),
                 )
             }
-        val missingRelatives = relativesNotInEvaka.filterNot { it in fetched }
+        val missingRelatives = relativesNotInEvaka - fetched.keys
         val newRelatives = vtjClient.fetchPersons(requestingUserId, missingRelatives)
         val relativesNotFound = missingRelatives.filterNot { it in newRelatives }.toSet()
         val failures =
