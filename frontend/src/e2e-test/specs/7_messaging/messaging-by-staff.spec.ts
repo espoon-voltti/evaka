@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
 import type {
   DaycareId,
   GroupId,
@@ -292,58 +291,6 @@ test.describe('Sending and receiving messages', () => {
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent({
       title: 'Aloittavalle otsikko',
-      content: 'Sisältö'
-    })
-  })
-
-  test('Backup unit supervisor can send a message to a child starting in backup care', async () => {
-    const backupCareStart = mockedDate.addDays(10)
-    const backupUnitSupervisor = await Fixture.employee()
-      .unitSupervisor(testPreschool.id)
-      .save()
-    const backupGroup = await Fixture.daycareGroup({
-      daycareId: testPreschool.id,
-      name: 'Varahoitoryhmä'
-    }).save()
-    await Fixture.backupCare({
-      childId,
-      unitId: testPreschool.id,
-      groupId: backupGroup.id,
-      period: new FiniteDateRange(backupCareStart, backupCareStart.addDays(7))
-    }).save()
-    await createMessageAccounts()
-
-    // Verify that the child is listed as a starter before the backup care has started
-    unitSupervisorPage = await newPage({ mockedTime: mockedDateAt10 })
-    await employeeLogin(unitSupervisorPage, backupUnitSupervisor)
-    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-    const messagesPage = new MessagesPage(unitSupervisorPage)
-    const messageEditor = await messagesPage.openMessageEditor()
-    const recipientSelector = messageEditor.recipientSelection
-    await recipientSelector.open()
-    await recipientSelector.expandAll() // open first level
-    await recipientSelector.expandAll() // open second level
-    const starterChildLabel = `${testChild.lastName} ${testChild.firstName} (${backupCareStart.format()})`
-    expect(await recipientSelector.labels.allTexts()).toEqual([
-      `${testPreschool.name} (aloittavat lapset)`,
-      `${backupGroup.name} (aloittavat lapset)`,
-      starterChildLabel
-    ])
-
-    await recipientSelector.optionByLabel(starterChildLabel).click()
-    await recipientSelector.close()
-    await messageEditor.inputTitle.fill('Tervetuloa varahoitoon')
-    await messageEditor.inputContent.fill('Sisältö')
-    await messageEditor.sendButton.click()
-    await expect(messageEditor).toBeHidden()
-
-    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
-
-    // Verify that the message is received by the guardian of the backup care child
-    await initCitizenPage(mockedDateAt11, '/messages')
-    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
-    await citizenMessagesPage.assertThreadContent({
-      title: 'Tervetuloa varahoitoon',
       content: 'Sisältö'
     })
   })

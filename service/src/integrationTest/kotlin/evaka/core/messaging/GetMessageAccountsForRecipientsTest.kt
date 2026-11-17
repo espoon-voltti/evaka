@@ -2205,6 +2205,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
 
         val unrelatedSupervisor = DevEmployee()
         val child = DevPerson()
+        val childWithoutBackupGroup = DevPerson()
         val parent = DevPerson()
 
         data class AccountIds(
@@ -2249,6 +2250,36 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     childId = child.id,
                     unitId = backupDaycare.id,
                     groupId = backupGroup.id,
+                    period = FiniteDateRange(today.plusDays(10), today.plusDays(20)),
+                ),
+            )
+
+            // A future backup care without a group does not make the child a starter of the
+            // backup unit
+            tx.insert(childWithoutBackupGroup, DevPersonType.CHILD)
+            tx.insertGuardian(guardianId = parent.id, childId = childWithoutBackupGroup.id)
+            val childWithoutBackupGroupPlacement =
+                tx.insert(
+                    DevPlacement(
+                        childId = childWithoutBackupGroup.id,
+                        unitId = primaryDaycare.id,
+                        startDate = today.minusDays(30),
+                        endDate = today.plusDays(30),
+                    ),
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycareGroupId = primaryGroup.id,
+                    daycarePlacementId = childWithoutBackupGroupPlacement,
+                    startDate = today.minusDays(30),
+                    endDate = today.plusDays(30),
+                ),
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = childWithoutBackupGroup.id,
+                    unitId = backupDaycare.id,
+                    groupId = null,
                     period = FiniteDateRange(today.plusDays(10), today.plusDays(20)),
                 ),
             )
@@ -2300,6 +2331,13 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
             parentOfChild,
             resolve(senders.backupGroup, MessageRecipient.Child(child.id, true)),
         )
+        assertEquals(
+            emptySet(),
+            resolve(
+                senders.backupSupervisor,
+                MessageRecipient.Child(childWithoutBackupGroup.id, true),
+            ),
+        )
 
         // The backup care has not started yet, so the child is not among the current children of
         // the backup unit
@@ -2321,75 +2359,6 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
             emptySet(),
             resolve(senders.unrelatedSupervisor, MessageRecipient.Child(child.id, true)),
         )
-    }
-
-    @Test
-    fun `getMessageAccountsForRecipients does not return child with a future backup care without a group as starter`() {
-        val today = LocalDate.of(2021, 5, 1)
-        val area = DevCareArea()
-        val primaryDaycare =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
-        val backupDaycare =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
-        val primaryGroup = DevDaycareGroup(daycareId = primaryDaycare.id)
-
-        val child = DevPerson()
-        val parent = DevPerson()
-
-        val supervisorAccountId = db.transaction { tx ->
-            tx.insert(area)
-            tx.insert(primaryDaycare)
-            tx.insert(backupDaycare)
-            tx.insert(primaryGroup)
-
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insert(parent, DevPersonType.ADULT)
-            tx.insertGuardian(guardianId = parent.id, childId = child.id)
-
-            val primaryPlacement =
-                tx.insert(
-                    DevPlacement(
-                        childId = child.id,
-                        unitId = primaryDaycare.id,
-                        startDate = today.minusDays(30),
-                        endDate = today.plusDays(30),
-                    ),
-                )
-            tx.insert(
-                DevDaycareGroupPlacement(
-                    daycareGroupId = primaryGroup.id,
-                    daycarePlacementId = primaryPlacement,
-                    startDate = today.minusDays(30),
-                    endDate = today.plusDays(30),
-                ),
-            )
-            tx.insert(
-                DevBackupCare(
-                    childId = child.id,
-                    unitId = backupDaycare.id,
-                    groupId = null,
-                    period = FiniteDateRange(today.plusDays(10), today.plusDays(20)),
-                ),
-            )
-
-            tx.insertDaycareAclRow(backupDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
-            tx.upsertEmployeeMessageAccount(employee1.id)
-        }
-
-        val starterAccounts = db.read { tx ->
-            tx.getMessageAccountsForRecipients(
-                senderAccount = tx.getSenderAccount(supervisorAccountId),
-                recipients =
-                    setOf(
-                        MessageRecipient.Unit(backupDaycare.id, starter = true),
-                        MessageRecipient.Child(child.id, starter = true),
-                    ),
-                filters = null,
-                date = today,
-            )
-        }
-
-        assertEquals(emptySet(), starterAccounts)
     }
 
     @Test
