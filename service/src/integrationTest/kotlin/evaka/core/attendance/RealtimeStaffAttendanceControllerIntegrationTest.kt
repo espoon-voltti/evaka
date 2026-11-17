@@ -7,6 +7,7 @@ package evaka.core.attendance
 import evaka.core.FullApplicationTest
 import evaka.core.shared.DaycareId
 import evaka.core.shared.GroupId
+import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
@@ -586,6 +587,57 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             ),
         )
         assertEquals(0, getAttendances(daycare.id).staff[0].attendances.size)
+    }
+
+    @Test
+    fun `Adjacent attendances can be shifted in both directions`() {
+        fun save(vararg rows: Triple<StaffAttendanceRealtimeId?, Int, Int>) =
+            realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
+                dbInstance(),
+                unitSupervisor,
+                MockEvakaClock(now),
+                RealtimeStaffAttendanceController.StaffAttendanceBody(
+                    unitId = daycare.id,
+                    date = now.toLocalDate(),
+                    employeeId = staff.id,
+                    entries =
+                        rows.map { (id, arrivalHour, departureHour) ->
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = id,
+                                groupId = group1.id,
+                                arrived = now.withTime(LocalTime.of(arrivalHour, 0)),
+                                departed = now.withTime(LocalTime.of(departureHour, 0)),
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true,
+                            )
+                        },
+                ),
+            )
+
+        save(Triple(null, 7, 9), Triple(null, 9, 11))
+        val (firstId, secondId) =
+            getAttendances(daycare.id)
+                .staff
+                .first()
+                .attendances
+                .sortedBy { it.arrived }
+                .map { it.id }
+
+        save(Triple(firstId, 8, 10), Triple(secondId, 10, 12))
+        save(Triple(firstId, 7, 9), Triple(secondId, 9, 11))
+
+        assertEquals(
+            listOf(
+                firstId to now.withTime(LocalTime.of(7, 0)),
+                secondId to now.withTime(LocalTime.of(9, 0)),
+            ),
+            getAttendances(daycare.id)
+                .staff
+                .first()
+                .attendances
+                .sortedBy { it.arrived }
+                .map { it.id to it.arrived },
+        )
     }
 
     @Test

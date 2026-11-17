@@ -255,6 +255,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             Action.Unit.UPDATE_STAFF_ATTENDANCES,
                             body.unitId,
                         )
+                        tx.execute { sql("SET CONSTRAINTS staff_attendance_no_overlaps DEFERRED") }
                         val deleted =
                             tx.deleteStaffAttendancesOnDateExcept(
                                 body.unitId,
