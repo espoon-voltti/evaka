@@ -295,10 +295,11 @@ export class UnitStaffAttendancesTable extends Element {
   async assertArrivalTimeTooltip(
     row: number,
     date: LocalDate,
-    expectedTooltipText: string
+    expectedTooltipText: string,
+    nth = 0
   ): Promise<void> {
     const cell = this.#attendanceCell(date, row)
-    const arrivalTime = cell.findByDataQa('arrival-time')
+    const arrivalTime = cell.findAllByDataQa('arrival-time').nth(nth)
     await arrivalTime.hover()
 
     await expect(this.page.findByDataQa('arrival-time-tooltip')).toHaveText(

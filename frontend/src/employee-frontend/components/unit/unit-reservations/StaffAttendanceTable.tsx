@@ -4,7 +4,6 @@
 
 import classNames from 'classnames'
 import groupBy from 'lodash/groupBy'
-import isEqual from 'lodash/isEqual'
 import mapValues from 'lodash/mapValues'
 import sortBy from 'lodash/sortBy'
 import uniq from 'lodash/uniq'
@@ -52,7 +51,7 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { fontWeights, Italic, P } from 'lib-components/typography'
+import { fontWeights, P } from 'lib-components/typography'
 import type { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
@@ -80,6 +79,14 @@ import {
   NameTd,
   NameWrapper
 } from './attendance-elements'
+import type { MarkingMetadata } from './attendance-marking'
+import {
+  arrivedMetadata,
+  departedMetadata,
+  hasMarkingMetadata,
+  isRetroactive,
+  MarkingTooltipContent
+} from './attendance-marking'
 
 type GroupFilter = (ids: UUID[]) => boolean
 
@@ -604,53 +611,21 @@ const AttendanceRow = React.memo(function AttendanceRow({
   const isHovered = (date: LocalDate) =>
     hovered !== null && hovered.isEqual(date)
 
-  const timeTooltipText = ({
-    addedAt,
-    addedBy,
-    modifiedAt,
-    modifiedBy
-  }: {
-    addedAt: HelsinkiDateTime | null
-    addedBy: EvakaUser | null
-    modifiedAt: HelsinkiDateTime | null
-    modifiedBy: EvakaUser | null
-  }) => {
-    if (
-      addedAt === null &&
-      addedBy === null &&
-      modifiedAt === null &&
-      modifiedBy === null
-    ) {
-      return undefined
-    }
-    return (
-      <>
-        {addedAt !== null && addedBy !== null && (
-          <P>
-            {i18n.unit.staffAttendance.addedAt} {addedAt.format()},{' '}
-            <Italic>{addedBy.name}</Italic>
-          </P>
-        )}
-        {modifiedAt !== null &&
-          modifiedBy !== null &&
-          (addedAt === null ||
-            !addedAt.isEqual(modifiedAt) ||
-            !isEqual(addedBy, modifiedBy)) && (
-            <P>
-              {i18n.unit.staffAttendance.modifiedAt} {modifiedAt.format()},{' '}
-              <Italic>{modifiedBy.name}</Italic>
-            </P>
-          )}
-      </>
-    )
-  }
+  const timeTooltipText = (
+    metadata: MarkingMetadata,
+    time: HelsinkiDateTime | null
+  ) =>
+    hasMarkingMetadata(metadata) ? (
+      <MarkingTooltipContent
+        metadata={metadata}
+        date={time?.toLocalDate() ?? null}
+      />
+    ) : undefined
   const departureTooltipText = (attendance: AttendanceRowAttendance) => {
-    const timeTooltip = timeTooltipText({
-      addedAt: attendance.departedAddedAt,
-      addedBy: attendance.departedAddedBy,
-      modifiedAt: attendance.departedModifiedAt,
-      modifiedBy: attendance.departedModifiedBy
-    })
+    const timeTooltip = timeTooltipText(
+      departedMetadata(attendance),
+      attendance.departed
+    )
 
     return timeTooltip !== undefined || attendance.departedAutomatically ? (
       <div>
@@ -661,6 +636,16 @@ const AttendanceRow = React.memo(function AttendanceRow({
       </div>
     ) : undefined
   }
+  const arrivalTooltipText = (
+    attendance: AttendanceRowAttendance,
+    date: LocalDate
+  ) =>
+    attendance.arrived.toLocalDate().isEqual(date)
+      ? timeTooltipText(
+          arrivedMetadata(attendance),
+          endOfAttendance(attendance)
+        )
+      : departureTooltipText(attendance)
 
   return (
     <DayTr data-qa={`attendance-row-${rowIndex}`}>
@@ -762,15 +747,16 @@ const AttendanceRow = React.memo(function AttendanceRow({
                         >
                           <AttendanceTime data-qa="arrival-time">
                             <Tooltip
-                              tooltip={timeTooltipText({
-                                addedAt: attendance.arrivedAddedAt,
-                                addedBy: attendance.arrivedAddedBy,
-                                modifiedAt: attendance.arrivedModifiedAt,
-                                modifiedBy: attendance.arrivedModifiedBy
-                              })}
+                              tooltip={arrivalTooltipText(attendance, date)}
                               data-qa="arrival-time-tooltip"
                             >
                               {renderTime(attendance.arrived, date)}
+                              {attendance.arrived.toLocalDate().isEqual(date) &&
+                                isRetroactive(
+                                  arrivedMetadata(attendance),
+                                  endOfAttendance(attendance).toLocalDate()
+                                ) &&
+                                '*'}
                             </Tooltip>
                           </AttendanceTime>
                           <AttendanceTime data-qa="departure-time">
@@ -783,6 +769,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
                                 date,
                                 attendance.departedAutomatically
                               )}
+                              {attendance.departed
+                                ?.toLocalDate()
+                                .isEqual(date) &&
+                                isRetroactive(
+                                  departedMetadata(attendance),
+                                  attendance.departed.toLocalDate()
+                                ) &&
+                                '*'}
                             </Tooltip>
                           </AttendanceTime>
                           {isLast ? (
@@ -908,6 +902,9 @@ function getPlannedAttendancesForDate(
       plannedAttendance.end.toLocalDate().isEqual(date)
   )
 }
+
+const endOfAttendance = (attendance: AttendanceRowAttendance) =>
+  attendance.departed ?? attendance.arrived
 
 function renderTime(
   timestamp: HelsinkiDateTime | null,

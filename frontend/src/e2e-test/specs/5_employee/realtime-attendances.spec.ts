@@ -7,7 +7,7 @@ import type {
   PlacementId
 } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -347,6 +347,11 @@ test.describe('Realtime staff attendances', () => {
         modifiedBy: null
       }).save()
 
+      const markedTodayBySupervisor = {
+        modifiedAt: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        modifiedBy: evakaUserId(unitSupervisor.id)
+      }
+
       await Fixture.realtimeStaffAttendance({
         employeeId: otherGroupStaff.id,
         groupId,
@@ -354,8 +359,17 @@ test.describe('Realtime staff attendances', () => {
         arrived: yesterday.toHelsinkiDateTime(LocalTime.of(8, 0)),
         departed: yesterday.toHelsinkiDateTime(LocalTime.of(16, 0)),
         departedAutomatically: false,
-        modifiedAt: null,
-        modifiedBy: null
+        ...markedTodayBySupervisor
+      }).save()
+
+      await Fixture.realtimeStaffAttendance({
+        employeeId: otherGroupStaff.id,
+        groupId,
+        type: 'OVERTIME',
+        arrived: yesterday.subDays(1).toHelsinkiDateTime(LocalTime.of(20, 0)),
+        departed: yesterday.toHelsinkiDateTime(LocalTime.of(6, 0)),
+        departedAutomatically: false,
+        ...markedTodayBySupervisor
       }).save()
 
       await Fixture.realtimeStaffAttendance({
@@ -384,8 +398,26 @@ test.describe('Realtime staff attendances', () => {
         rowIx: 1,
         nth: 1,
         name: staffName(otherGroupStaff),
-        attendances: [['08:00', '16:00']]
+        attendances: [
+          ['→', '06:00*'],
+          ['08:00*', '16:00*']
+        ]
       })
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        nth: 0,
+        name: staffName(otherGroupStaff),
+        attendances: [
+          ['09:00', '15:00'],
+          ['20:00*', '→']
+        ]
+      })
+      await staffAttendances.assertArrivalTimeTooltip(
+        1,
+        yesterday,
+        '*Merkintä luotu 30.03.2022 07:00, Esimies Essi',
+        1
+      )
 
       await staffAttendances.assertTableRow({
         rowIx: 0,
@@ -418,12 +450,12 @@ test.describe('Realtime staff attendances', () => {
         rowIx: 0,
         nth: 1,
         name: staffName(groupStaff),
-        attendances: [['07:00', '15:00']]
+        attendances: [['07:00', '15:00*']]
       })
       await staffAttendances.assertDepartureTimeTooltip(
         0,
         yesterday,
-        'Muokattu 30.03.2022 18:00, Esimies Essi'
+        '*Muokattu 30.03.2022 18:00, Esimies Essi'
       )
     })
 
@@ -484,16 +516,21 @@ test.describe('Realtime staff attendances', () => {
 
     async function prepareTest({
       arrived,
-      attendedGroupId = groupId
+      attendedGroupId = groupId,
+      markedAt
     }: {
       arrived: HelsinkiDateTime
       attendedGroupId?: GroupId
+      markedAt?: HelsinkiDateTime
     }) {
       await Fixture.realtimeStaffAttendance({
         employeeId: groupStaff.id,
         groupId: attendedGroupId,
         arrived,
-        departed: null
+        departed: null,
+        ...(markedAt
+          ? { modifiedAt: markedAt, modifiedBy: evakaUserId(unitSupervisor.id) }
+          : {})
       }).save()
       calendarPage = await openCalendar()
       await calendarPage.selectGroup('staff')
@@ -530,8 +567,10 @@ test.describe('Realtime staff attendances', () => {
     })
 
     test('An existing overnight entry can only be edited through arrival date', async () => {
+      // Arrival recorded on the date the attendance ends, so it is not a late marking
       await prepareTest({
-        arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(21, 0))
+        arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(21, 0)),
+        markedAt: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
       })
 
       let modal = await staffAttendances.openDetails(1, mockedToday.subDays(1))
@@ -559,6 +598,11 @@ test.describe('Realtime staff attendances', () => {
         nth: 2,
         attendances: [['→', '09:00']]
       })
+      await staffAttendances.assertArrivalTimeTooltip(
+        1,
+        mockedToday,
+        `Merkintä luotu 30.03.2022 18:00, ${staffName(unitSupervisor)}`
+      )
 
       modal = await staffAttendances.openDetails(1, mockedToday)
       await expect
@@ -845,7 +889,7 @@ test.describe('Realtime staff attendances', () => {
         await staffAttendances.assertTableRow({
           rowIx: 1,
           nth: 2,
-          attendances: [['09:00', '12:00']]
+          attendances: [['09:00*', '12:00*']]
         })
       })
 
