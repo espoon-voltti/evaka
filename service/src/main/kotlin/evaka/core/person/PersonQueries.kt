@@ -137,7 +137,7 @@ FOR UPDATE
 
 data class GetPersonIdsBySsnsResult(val found: Map<Ssn, PersonId>, val notFound: Set<Ssn>)
 
-fun Database.Read.getPersonIdsBySsns(ssns: List<Ssn>): GetPersonIdsBySsnsResult {
+fun Database.Read.getPersonIdsBySsns(ssns: Set<Ssn>): GetPersonIdsBySsnsResult {
     val found = createQuery {
         sql(
             """
@@ -148,7 +148,7 @@ WHERE social_security_number = ANY(${bind(ssns)})
         )
     }
         .toMap { column<Ssn>("social_security_number") to column<PersonId>("id") }
-    val notFound = ssns.filterNot { found.containsKey(it) }.toSet()
+    val notFound = ssns - found.keys
     return GetPersonIdsBySsnsResult(found, notFound)
 }
 

@@ -358,12 +358,12 @@ class VtjSyncService(
             dbc.read {
                 it.getPersonIdsBySsns(
                     (fetchedGuardians.values.flatten() + fetchedDependants.values.flatten())
-                        .distinct(),
+                        .toSet(),
                 )
             }
         val missingRelatives = relativesNotInEvaka - fetched.keys
         val newRelatives = vtjClient.fetchPersons(requestingUserId, missingRelatives)
-        val relativesNotFound = missingRelatives.filterNot { it in newRelatives }.toSet()
+        val relativesNotFound = missingRelatives - newRelatives.keys
         val failures =
             fetchFailures +
                 listOf(fetchedGuardians, fetchedDependants)

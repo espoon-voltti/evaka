@@ -71,9 +71,7 @@ class DvvModificationsService(
         ssnCount: Int,
     ) {
         val personIds = db.read { tx ->
-            tx.getPersonIdsBySsns(
-                    page.muutokset.mapNotNull { Ssn.parse(it.henkilotunnus) }.distinct(),
-                )
+            tx.getPersonIdsBySsns(page.muutokset.mapNotNull { Ssn.parse(it.henkilotunnus) }.toSet())
                 .found
                 .mapKeys { it.key.value }
         }
@@ -131,9 +129,7 @@ class DvvModificationsService(
                 if (evakaEnv.vtjDvvMode == VtjDvvMode.COMPARE) {
                     val personIdsAfterCorrections =
                         tx.getPersonIdsBySsns(
-                                page.muutokset
-                                    .mapNotNull { Ssn.parse(it.henkilotunnus) }
-                                    .distinct(),
+                                page.muutokset.mapNotNull { Ssn.parse(it.henkilotunnus) }.toSet(),
                             )
                             .found
                             .mapKeys { it.key.value }

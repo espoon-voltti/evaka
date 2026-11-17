@@ -193,7 +193,6 @@ class MockVtjClient : VtjClient {
         if (ssns.isEmpty()) return emptyMap()
         callCounts.merge(function, 1, Int::plus)
         return ssns
-            .distinct()
             .mapNotNull { ssn ->
                 readCounts.merge(ssn.value, 1, Int::plus)
                 persons[ssn.value]?.let { ssn to map(it.toVtjPerson()) }
