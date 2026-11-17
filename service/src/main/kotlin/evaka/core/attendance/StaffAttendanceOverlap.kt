@@ -22,14 +22,15 @@ fun requireNoOverlapsBetween(
     }
 }
 
-fun Database.Read.requireNoOverlapsWithExistingStaffAttendances(
+fun requireNoOverlapsWithExistingStaffAttendances(
+    tx: Database.Read,
     employeeId: EmployeeId,
     entries: List<RealtimeStaffAttendanceController.StaffAttendanceUpsert>,
     excludeIds: Set<StaffAttendanceRealtimeId>,
 ) {
     if (
         entries.any {
-            hasOverlappingStaffAttendance(employeeId, it.arrived, it.departed, excludeIds)
+            tx.hasOverlappingStaffAttendance(employeeId, it.arrived, it.departed, excludeIds)
         }
     ) {
         throw BadRequest(

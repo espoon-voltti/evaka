@@ -272,7 +272,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         )
 
                         requireNoOverlapsBetween(body.entries)
-                        tx.requireNoOverlapsWithExistingStaffAttendances(
+                        requireNoOverlapsWithExistingStaffAttendances(
+                            tx,
                             body.employeeId,
                             body.entries,
                             body.entries.mapNotNull { it.id }.toSet(),

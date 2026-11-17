@@ -365,7 +365,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         val deletedIds = existing.map { it.id }
                         val deleted = deletedIds.map { tx.deleteStaffAttendance(it) }
 
-                        tx.requireNoOverlapsWithExistingStaffAttendances(
+                        requireNoOverlapsWithExistingStaffAttendances(
+                            tx,
                             body.employeeId,
                             body.rows,
                             emptySet(),
