@@ -1221,8 +1221,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         ),
                 ),
             )
-        assertThat(updateResponse.deleted).containsExactly(staffAttendanceId)
-        assertThat(updateResponse.inserted).hasSize(1)
+        assertThat(updateResponse.deleted).isEmpty()
+        assertThat(updateResponse.inserted).containsExactly(staffAttendanceId)
         val attendances2 =
             mobileRealtimeStaffAttendanceController.getAttendancesByUnit(
                 dbInstance(),
@@ -1324,9 +1324,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         ),
                 ),
             )
-        assertThat(response.deleted)
+        assertThat(response.deleted).isEmpty()
+        assertThat(response.inserted)
             .containsExactlyInAnyOrder(staffAttendance1Id, staffAttendance2Id)
-        assertThat(response.inserted).hasSize(2)
     }
 
     @Test

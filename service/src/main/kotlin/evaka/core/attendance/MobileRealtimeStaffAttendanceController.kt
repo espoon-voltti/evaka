@@ -362,20 +362,23 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             throw BadRequest("Unknown id was given")
                         }
 
-                        val deletedIds = existing.map { it.id }
-                        val deleted = deletedIds.map { tx.deleteStaffAttendance(it) }
+                        val deleted =
+                            existing
+                                .filterNot { ids.contains(it.id) }
+                                .map { tx.deleteStaffAttendance(it.id) }
 
                         requireNoOverlapsWithExistingStaffAttendances(
                             tx,
                             body.employeeId,
                             body.rows,
-                            emptySet(),
+                            ids.toSet(),
                         )
 
+                        tx.execute { sql("SET CONSTRAINTS staff_attendance_no_overlaps DEFERRED") }
                         val updated =
                             body.rows.mapNotNull { attendance ->
                                 tx.upsertStaffAttendance(
-                                    attendanceId = null,
+                                    attendanceId = attendance.id,
                                     employeeId = body.employeeId,
                                     groupId = attendance.groupId,
                                     arrivalTime = attendance.arrived,
