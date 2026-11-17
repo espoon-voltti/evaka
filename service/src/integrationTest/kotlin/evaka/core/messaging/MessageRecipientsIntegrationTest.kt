@@ -472,18 +472,16 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
-    fun `child with a future backup care and a future placement in the same group shows in starters once`() {
+    fun `child returning to the same group in backup care does not show in starters`() {
         val today = LocalDate.now()
         val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
-        val backupCarePeriod = FiniteDateRange(today.plusDays(5), today.plusDays(10))
-        val futurePlacementPeriod = FiniteDateRange(today.plusDays(20), today.plusDays(60))
 
         val area = DevCareArea()
-        val currentDaycare =
+        val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
-        val futureDaycare =
+        val nextDaycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
-        val futureGroup = DevDaycareGroup(daycareId = futureDaycare.id)
+        val group = DevDaycareGroup(daycareId = daycare.id)
         val supervisor = DevEmployee()
         val adult = DevPerson()
         val child = DevPerson()
@@ -491,150 +489,59 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val (supervisorAccount, groupAccount) =
             db.transaction { tx ->
                 tx.insert(area)
-                tx.insert(currentDaycare)
-                tx.insert(futureDaycare)
-                tx.insert(futureGroup)
+                tx.insert(daycare)
+                tx.insert(nextDaycare)
+                tx.insert(group)
                 tx.insert(adult, DevPersonType.ADULT)
                 tx.insert(child, DevPersonType.CHILD)
                 tx.insertGuardian(adult.id, child.id)
 
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = daycare.id,
+                            startDate = placementStart,
+                            endDate = today.plusDays(3),
+                        ),
+                    )
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = group.id,
+                        startDate = placementStart,
+                        endDate = today.plusDays(3),
+                    ),
+                )
                 tx.insert(
                     DevPlacement(
                         childId = child.id,
-                        unitId = currentDaycare.id,
-                        startDate = placementStart,
-                        endDate = futurePlacementPeriod.start.minusDays(1),
+                        unitId = nextDaycare.id,
+                        startDate = today.plusDays(4),
+                        endDate = placementEnd,
                     ),
                 )
                 tx.insert(
                     DevBackupCare(
                         childId = child.id,
-                        unitId = futureDaycare.id,
-                        groupId = futureGroup.id,
-                        period = backupCarePeriod,
-                    ),
-                )
-                val futurePlacementId =
-                    tx.insert(
-                        DevPlacement(
-                            childId = child.id,
-                            unitId = futureDaycare.id,
-                            startDate = futurePlacementPeriod.start,
-                            endDate = futurePlacementPeriod.end,
-                        ),
-                    )
-                tx.insert(
-                    DevDaycareGroupPlacement(
-                        daycarePlacementId = futurePlacementId,
-                        daycareGroupId = futureGroup.id,
-                        startDate = futurePlacementPeriod.start,
-                        endDate = futurePlacementPeriod.end,
+                        unitId = daycare.id,
+                        groupId = group.id,
+                        period = FiniteDateRange(today.plusDays(6), today.plusDays(9)),
                     ),
                 )
 
                 tx.insert(supervisor)
-                tx.insertDaycareAclRow(futureDaycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
+                tx.insertDaycareAclRow(daycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
                 Pair(
                     tx.upsertEmployeeMessageAccount(supervisor.id),
-                    tx.createDaycareGroupMessageAccount(futureGroup.id),
-                )
-            }
-
-        val starterGroup =
-            SelectableRecipient.Group(
-                id = futureGroup.id,
-                name = futureGroup.name,
-                hasStarters = true,
-                receivers =
-                    listOf(
-                        SelectableRecipient.Child(
-                            id = child.id,
-                            name = "${child.lastName} ${child.firstName}",
-                            startDate = backupCarePeriod.start,
-                        ),
-                    ),
-            )
-        assertEquals(
-            setOf(
-                SelectableRecipientsResponse(
-                    accountId = supervisorAccount,
-                    receivers =
-                        listOf(
-                            SelectableRecipient.Unit(
-                                id = futureDaycare.id,
-                                name = futureDaycare.name,
-                                hasStarters = true,
-                                receivers = listOf(starterGroup),
-                            ),
-                        ),
-                ),
-                SelectableRecipientsResponse(
-                    accountId = groupAccount,
-                    receivers = listOf(starterGroup),
-                ),
-            ),
-            messageController.getSelectableRecipients(dbInstance(), supervisor.user, clock).toSet(),
-        )
-    }
-
-    @Test
-    fun `child continuing in backup care in the same group does not show in starters`() {
-        val today = LocalDate.now()
-        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
-
-        val area = DevCareArea()
-        val primaryDaycare =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
-        val backupDaycare =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
-        val primaryGroup = DevDaycareGroup(daycareId = primaryDaycare.id)
-        val backupGroup = DevDaycareGroup(daycareId = backupDaycare.id)
-        val backupSupervisor = DevEmployee()
-        val adult = DevPerson()
-        val child = DevPerson()
-
-        val (supervisorAccount, backupGroupAccount) =
-            db.transaction { tx ->
-                tx.insert(area)
-                tx.insert(primaryDaycare)
-                tx.insert(backupDaycare)
-                tx.insert(primaryGroup)
-                tx.insert(backupGroup)
-                tx.insert(adult, DevPersonType.ADULT)
-                tx.insert(child, DevPersonType.CHILD)
-
-                insertChildToGroup(tx, child.id, adult.id, primaryGroup.id, primaryDaycare.id)
-                listOf(
-                        FiniteDateRange(today.minusDays(2), today.plusDays(2)),
-                        FiniteDateRange(today.plusDays(5), today.plusDays(9)),
-                    )
-                    .forEach { period ->
-                        tx.insert(
-                            DevBackupCare(
-                                childId = child.id,
-                                unitId = backupDaycare.id,
-                                groupId = backupGroup.id,
-                                period = period,
-                            ),
-                        )
-                    }
-
-                tx.insert(backupSupervisor)
-                tx.insertDaycareAclRow(
-                    backupDaycare.id,
-                    backupSupervisor.id,
-                    UserRole.UNIT_SUPERVISOR,
-                )
-                Pair(
-                    tx.upsertEmployeeMessageAccount(backupSupervisor.id),
-                    tx.createDaycareGroupMessageAccount(backupGroup.id),
+                    tx.createDaycareGroupMessageAccount(group.id),
                 )
             }
 
         val currentGroup =
             SelectableRecipient.Group(
-                id = backupGroup.id,
-                name = backupGroup.name,
+                id = group.id,
+                name = group.name,
                 hasStarters = false,
                 receivers =
                     listOf(
@@ -652,21 +559,19 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     receivers =
                         listOf(
                             SelectableRecipient.Unit(
-                                id = backupDaycare.id,
-                                name = backupDaycare.name,
+                                id = daycare.id,
+                                name = daycare.name,
                                 hasStarters = false,
                                 receivers = listOf(currentGroup),
                             ),
                         ),
                 ),
                 SelectableRecipientsResponse(
-                    accountId = backupGroupAccount,
+                    accountId = groupAccount,
                     receivers = listOf(currentGroup),
                 ),
             ),
-            messageController
-                .getSelectableRecipients(dbInstance(), backupSupervisor.user, clock)
-                .toSet(),
+            messageController.getSelectableRecipients(dbInstance(), supervisor.user, clock).toSet(),
         )
     }
 

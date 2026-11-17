@@ -1562,6 +1562,59 @@ LIMIT 1
     return null
 }
 
+/**
+ * Group placements and backup cares that start after [today], as rows of `child_id`, `unit_id`,
+ * `group_id`, `placement_type` and `start_date`. `group_id` is null for a backup care without a
+ * group. A row is left out when an earlier group placement or backup care of the child in the same
+ * group ends on or after [today], because then the child is not new in the group.
+ *
+ * [scope] filters the rows by the same columns.
+ */
+private fun startingPlacements(today: LocalDate, scope: Predicate) = QuerySql {
+    sql(
+        """
+SELECT sp.child_id, sp.unit_id, sp.group_id, sp.placement_type, sp.start_date
+FROM (
+    SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, p.type AS placement_type, dgp.start_date
+    FROM daycare_group_placement dgp
+    JOIN placement p ON p.id = dgp.daycare_placement_id
+    WHERE dgp.start_date > ${bind(today)}
+
+    UNION ALL
+
+    SELECT bc.child_id, bc.unit_id, bc.group_id, p.type AS placement_type, bc.start_date
+    FROM backup_care bc
+    JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> bc.start_date
+    WHERE bc.start_date > ${bind(today)}
+) sp
+WHERE
+    -- A plain filter such as = ANY(ARRAY(SELECT ...)) is applied inside each part of the UNION,
+    -- so only the starting placements in the scope are read. A join or IN (SELECT ...) is applied
+    -- only after every starting placement in the municipality has been read.
+    ${predicate(scope.forTable("sp"))} AND
+    NOT EXISTS (
+        SELECT
+        FROM daycare_group_placement earlier_dgp
+        JOIN placement earlier_p ON earlier_p.id = earlier_dgp.daycare_placement_id
+        WHERE
+            earlier_p.child_id = sp.child_id AND
+            earlier_dgp.daycare_group_id = sp.group_id AND
+            earlier_dgp.end_date < sp.start_date AND
+            earlier_dgp.end_date >= ${bind(today)}
+    ) AND
+    NOT EXISTS (
+        SELECT
+        FROM backup_care earlier_bc
+        WHERE
+            earlier_bc.child_id = sp.child_id AND
+            earlier_bc.group_id = sp.group_id AND
+            earlier_bc.end_date < sp.start_date AND
+            earlier_bc.end_date >= ${bind(today)}
+    )
+""",
+    )
+}
+
 fun Database.Read.getSelectableRecipients(
     idFilter: AccessControlFilter<MessageAccountId>,
     today: LocalDate,
@@ -1608,47 +1661,16 @@ WITH group_accounts AS (
     UNION ALL
 
     -- starting children
-    SELECT a.id AS account_id, p.child_id, a.group_id, a.group_name, dgp.start_date
+    SELECT a.id AS account_id, sp.child_id, a.group_id, a.group_name, sp.start_date
     FROM group_accounts a
-    JOIN daycare_group_placement dgp ON dgp.daycare_group_id = a.group_id
-    JOIN placement p ON p.id = dgp.daycare_placement_id
-    WHERE
-        dgp.start_date > ${bind(today)} AND
-        NOT EXISTS (
-            SELECT
-            FROM daycare_group_placement earlier_dgp
-            JOIN placement earlier_p ON earlier_dgp.daycare_placement_id = earlier_p.id
-            WHERE
-                earlier_p.child_id = p.child_id AND
-                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
-                earlier_dgp.end_date < dgp.start_date AND
-                earlier_dgp.end_date >= ${bind(today)}
-        )
-
-    UNION ALL
-
-    -- starting backup placements
-    SELECT a.id AS account_id, bc.child_id, a.group_id, a.group_name, bc.start_date
-    FROM group_accounts a
-    JOIN backup_care bc ON bc.group_id = a.group_id
-    WHERE
-        bc.start_date > ${bind(today)} AND
-        NOT EXISTS (
-            SELECT
-            FROM backup_care earlier_bc
-            WHERE
-                earlier_bc.child_id = bc.child_id AND
-                earlier_bc.group_id = bc.group_id AND
-                earlier_bc.end_date < bc.start_date AND
-                earlier_bc.end_date >= ${bind(today)}
-        )
+    JOIN (${subquery(startingPlacements(today, Predicate { table -> where("$table.group_id = ANY(ARRAY(SELECT group_id FROM group_accounts))") }))}) sp ON sp.group_id = a.group_id
 )
-SELECT
+SELECT DISTINCT
     c.account_id,
     c.group_id,
     c.group_name,
     c.child_id,
-    min(c.start_date) AS start_date,
+    c.start_date,
     p.first_name,
     p.last_name
 FROM children c
@@ -1662,9 +1684,6 @@ OR EXISTS (
     FROM foster_parent fp
     WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)}
 )
-GROUP BY
-    c.account_id, c.group_id, c.group_name, c.child_id, p.first_name, p.last_name,
-    c.start_date IS NULL
 ORDER BY c.group_name
 """,
         )
@@ -1729,51 +1748,19 @@ WITH personal_accounts AS (
     UNION ALL
 
     -- starting children
-    SELECT a.id AS account_id, p.child_id, a.unit_id, a.unit_name, dgp.daycare_group_id AS group_id, g.name AS group_name, p.start_date
+    SELECT a.id AS account_id, sp.child_id, a.unit_id, a.unit_name, sp.group_id, g.name AS group_name, sp.start_date
     FROM personal_accounts a
-    JOIN placement p ON p.unit_id = a.unit_id
-    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
-    JOIN daycare_group g ON g.id = dgp.daycare_group_id
-    WHERE
-        dgp.start_date > ${bind(today)} AND
-        NOT EXISTS (
-            SELECT
-            FROM placement earlier_p
-            JOIN daycare_group_placement earlier_dgp ON earlier_dgp.daycare_placement_id = earlier_p.id
-            WHERE
-                earlier_p.child_id = p.child_id AND
-                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
-                earlier_dgp.end_date < dgp.start_date AND
-                earlier_dgp.end_date >= ${bind(today)}
-        )
-
-    UNION ALL
-
-    -- starting backup placements
-    SELECT a.id AS account_id, bc.child_id, a.unit_id, a.unit_name, bc.group_id, g.name AS group_name, bc.start_date
-    FROM personal_accounts a
-    JOIN backup_care bc ON bc.unit_id = a.unit_id
-    JOIN daycare_group g ON g.id = bc.group_id
-    WHERE
-        bc.start_date > ${bind(today)} AND
-        NOT EXISTS (
-            SELECT
-            FROM backup_care earlier_bc
-            WHERE
-                earlier_bc.child_id = bc.child_id AND
-                earlier_bc.group_id = bc.group_id AND
-                earlier_bc.end_date < bc.start_date AND
-                earlier_bc.end_date >= ${bind(today)}
-        )
+    JOIN (${subquery(startingPlacements(today, Predicate { table -> where("$table.group_id = ANY(ARRAY(SELECT dg.id FROM personal_accounts pa JOIN daycare_group dg ON dg.daycare_id = pa.unit_id))") }))}) sp ON sp.unit_id = a.unit_id
+    JOIN daycare_group g ON g.id = sp.group_id
 )
-SELECT
+SELECT DISTINCT
     c.account_id,
     c.unit_id,
     c.unit_name,
     c.group_id,
     c.group_name,
     c.child_id,
-    min(c.start_date) AS start_date,
+    c.start_date,
     p.first_name,
     p.last_name
 FROM children c
@@ -1787,9 +1774,6 @@ OR EXISTS (
     FROM foster_parent fp
     WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)}
 )
-GROUP BY
-    c.account_id, c.unit_id, c.unit_name, c.group_id, c.group_name, c.child_id, p.first_name, p.last_name,
-    c.start_date IS NULL
 ORDER BY c.unit_name, c.group_name
 """,
         )
@@ -2015,7 +1999,7 @@ fun Database.Read.getMessageAccountsForRecipients(
             PredicateSql { where("pl.placement_type = ANY(${bind(placementTypesInCategory)})") }
         } else PredicateSql.alwaysTrue()
 
-    val currentSenderPredicate =
+    fun senderPredicate(personalAccountAccess: PredicateSql) =
         when (senderAccount.type) {
             AccountType.MUNICIPAL -> {
                 PredicateSql.alwaysTrue()
@@ -2026,52 +2010,44 @@ fun Database.Read.getMessageAccountsForRecipients(
             }
 
             AccountType.PERSONAL -> {
-                PredicateSql {
-                    where(
-                        """
-                        pl.group_id IS NOT NULL AND
-                        EXISTS (
-                            SELECT FROM employee_child_daycare_acl(${bind(date)}) acl
-                            WHERE acl.child_id = pl.child_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
-                        )
-                        """,
-                    )
-                }
+                PredicateSql.all(
+                    PredicateSql { where("pl.group_id IS NOT NULL") },
+                    personalAccountAccess,
+                )
             }
 
             else -> {
                 PredicateSql.alwaysFalse()
             }
         }
+
+    val currentSenderPredicate =
+        senderPredicate(
+            PredicateSql {
+                where(
+                    """
+                    EXISTS (
+                        SELECT FROM employee_child_daycare_acl(${bind(date)}) acl
+                        WHERE acl.child_id = pl.child_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
+                    )
+                    """,
+                )
+            },
+        )
 
     val starterSenderPredicate =
-        when (senderAccount.type) {
-            AccountType.MUNICIPAL -> {
-                PredicateSql.alwaysTrue()
-            }
-
-            AccountType.GROUP -> {
-                PredicateSql { where("pl.group_id = ${bind(senderAccount.daycareGroupId)}") }
-            }
-
-            AccountType.PERSONAL -> {
-                PredicateSql {
-                    where(
-                        """
-                        pl.group_id IS NOT NULL AND
-                        EXISTS (
-                            SELECT FROM daycare_acl acl
-                            WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
-                        )
-                        """,
+        senderPredicate(
+            PredicateSql {
+                where(
+                    """
+                    EXISTS (
+                        SELECT FROM daycare_acl acl
+                        WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
                     )
-                }
-            }
-
-            else -> {
-                PredicateSql.alwaysFalse()
-            }
-        }
+                    """,
+                )
+            },
+        )
 
     return createQuery {
         sql(
@@ -2089,38 +2065,16 @@ WITH current_children AS (
         ${predicate(currentSenderPredicate)} AND
         'MESSAGING' = ANY(d.enabled_pilot_features)
 ), starting_placements AS (
-    SELECT pl.child_id, pl.unit_id, pl.type AS placement_type, dgp.daycare_group_id AS group_id
-    FROM placement pl
-    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id
-    WHERE
-        (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)}) AND
-        NOT EXISTS (
-            SELECT
-            FROM daycare_group_placement earlier_dgp
-            JOIN placement earlier_pl ON earlier_dgp.daycare_placement_id = earlier_pl.id
-            WHERE
-                earlier_pl.child_id = pl.child_id AND
-                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
-                earlier_dgp.end_date < dgp.start_date AND
-                earlier_dgp.end_date >= ${bind(date)}
-        )
+    ${subquery(startingPlacements(date, Predicate.alwaysTrue()))}
 
     UNION ALL
 
-    SELECT bc.child_id, bc.unit_id, pl.type AS placement_type, bc.group_id
-    FROM backup_care bc
-    JOIN placement pl ON pl.child_id = bc.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> bc.start_date
+    -- placements without a group placement, which only municipal accounts reach
+    SELECT p.child_id, p.unit_id, NULL::uuid AS group_id, p.type AS placement_type, p.start_date
+    FROM placement p
     WHERE
-        bc.start_date > ${bind(date)} AND
-        NOT EXISTS (
-            SELECT
-            FROM backup_care earlier_bc
-            WHERE
-                earlier_bc.child_id = bc.child_id AND
-                earlier_bc.group_id = bc.group_id AND
-                earlier_bc.end_date < bc.start_date AND
-                earlier_bc.end_date >= ${bind(date)}
-        )
+        p.start_date > ${bind(date)} AND
+        NOT EXISTS (SELECT FROM daycare_group_placement dgp WHERE dgp.daycare_placement_id = p.id)
 ), starting_children AS (
     SELECT DISTINCT pl.child_id
     FROM starting_placements pl
