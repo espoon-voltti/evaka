@@ -27,7 +27,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 
 class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -222,72 +221,23 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(group1)
             tx.insert(group2)
 
-            val result = tx.getNekkuOpenDaycareGroupDates(LocalDate.of(2025, 6, 15))
+            val result = tx.getNekkuGroups(LocalDate.of(2025, 6, 15))
 
             assertEquals(
                 listOf(
-                        GroupDates(group1.id, group1.startDate, daycare1.closingDate),
-                        GroupDates(group2.id, daycare2.openingDate, group2.endDate),
+                        Triple(group1.id, group1.startDate, daycare1.closingDate),
+                        Triple(group2.id, daycare2.openingDate, group2.endDate),
                     )
-                    .sortedBy { it.id },
-                result.sortedBy { it.id },
+                    .sortedBy { it.first },
+                result.map { Triple(it.id, it.validFrom, it.validTo) }.sortedBy { it.first },
             )
         }
     }
 
     @Test
-    fun `fetching groups opening during the next week should work`() {
+    fun `fetching group operating days and customer weekdays should work`() {
 
         insertCustomerNumbers(db)
-
-        val today = LocalDate.of(2025, 5, 5)
-
-        val area = DevCareArea()
-        val daycare = DevDaycare(areaId = area.id)
-        val group1 =
-            DevDaycareGroup(
-                daycareId = daycare.id,
-                startDate = today.minusMonths(1),
-                nekkuCustomerNumber = "1234",
-            )
-        val group2 =
-            DevDaycareGroup(
-                daycareId = daycare.id,
-                startDate = today.plusDays(2),
-                nekkuCustomerNumber = "5678",
-            )
-        val group3 =
-            DevDaycareGroup(
-                daycareId = daycare.id,
-                startDate = today.plusDays(6),
-                nekkuCustomerNumber = "5678",
-            )
-        val group4 =
-            DevDaycareGroup(
-                daycareId = daycare.id,
-                startDate = today.plusWeeks(2),
-                nekkuCustomerNumber = "5678",
-            )
-
-        db.transaction { tx ->
-            tx.insert(area)
-            tx.insert(daycare)
-            tx.insert(group1)
-            tx.insert(group2)
-            tx.insert(group3)
-            tx.insert(group4)
-
-            val result = tx.findNekkuGroupsOpeningInNextWeek(today)
-
-            assertEquals(
-                listOf(group2.id, group3.id).sortedBy { it },
-                result.sortedBy { it.id }.map { it.id },
-            )
-        }
-    }
-
-    @Test
-    fun `fetching group operating days should work`() {
 
         val area = DevCareArea()
 
@@ -318,19 +268,51 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 nekkuNoWeekendMealOrders = true,
             )
 
-        val group = DevDaycareGroup(daycareId = daycare.id)
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "1234")
 
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
             tx.insert(group)
+            // The customer has one customer type for weekdays and another for weekends and
+            // holidays. The group must come back as one row that has the weekdays of both types.
+            tx.setNekkuCustomerTypes(
+                listOf(
+                    NekkuCustomer(
+                        number = "1234",
+                        name = "Lönnrotinkadun päiväkoti",
+                        group = "Varhaiskasvatus",
+                        customerType =
+                            listOf(
+                                CustomerType(
+                                    listOf(
+                                        NekkuCustomerWeekday.MONDAY,
+                                        NekkuCustomerWeekday.TUESDAY,
+                                        NekkuCustomerWeekday.WEDNESDAY,
+                                        NekkuCustomerWeekday.THURSDAY,
+                                        NekkuCustomerWeekday.FRIDAY,
+                                    ),
+                                    "100-lasta",
+                                ),
+                                CustomerType(
+                                    listOf(
+                                        NekkuCustomerWeekday.SATURDAY,
+                                        NekkuCustomerWeekday.SUNDAY,
+                                        NekkuCustomerWeekday.WEEKDAYHOLIDAY,
+                                    ),
+                                    "Palvelu-Ovelle-viikonloppu",
+                                ),
+                            ),
+                    ),
+                ),
+            )
 
-            val result = tx.getGroupOperationDays(group.id)
-            assertNotNull(result)
+            val result = tx.getNekkuGroups(group.startDate).single()
 
-            assertEquals(7, result.combinedDays.size)
-            assertEquals(true, result.noWeekendMealOrders)
+            assertEquals((1..7).toSet(), result.combinedOperationDays)
+            assertEquals(false, result.weekendMealOrders)
             assertEquals(true, result.shiftCareOpenOnHolidays)
+            assertEquals(NekkuCustomerWeekday.entries.toSet(), result.weekdays)
         }
     }
 

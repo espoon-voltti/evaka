@@ -71,7 +71,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Tuesday
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
 
-        planNekkuOrderJobs(db, asyncJobRunner, now)
+        planNekkuWeeklyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(emptyList(), getNekkuJobs(db))
     }
@@ -112,7 +112,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Friday
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 21), LocalTime.of(2, 25))
 
-        planNekkuOrderJobs(db, asyncJobRunner, now)
+        planNekkuWeeklyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(7, getNekkuJobs(db).count())
     }
@@ -152,7 +152,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 21), LocalTime.of(2, 25))
 
-        planNekkuOrderJobs(db, asyncJobRunner, now)
+        planNekkuWeeklyOrderJobs(db, asyncJobRunner, now)
 
         // Customer only has Mon-Fri, so Saturday and Sunday should be skipped
         assertEquals(5, getNekkuJobs(db).count())
@@ -196,7 +196,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val nowPlusThreeWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 7), LocalTime.of(2, 25))
 
-        planNekkuOrderJobs(db, asyncJobRunner, now)
+        planNekkuWeeklyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(
             nowPlusThreeWeeks.toLocalDate().toString(),
@@ -234,7 +234,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val nowPlusThreeWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
 
-        planNekkuOrderJobs(db, asyncJobRunner, now)
+        planNekkuWeeklyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(
             nowPlusThreeWeeks.toLocalDate().toString(),
@@ -283,7 +283,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val nowPlusThreeWeeks = HelsinkiDateTime.of(LocalDate.of(2025, 4, 14), LocalTime.of(2, 25))
 
-        planNekkuOrderJobs(db, asyncJobRunner, now)
+        planNekkuWeeklyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(
             nowPlusThreeWeeks.toLocalDate().toString(),
@@ -319,7 +319,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Tuesday
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 1), LocalTime.of(2, 25))
 
-        planNekkuDailyOrderJobs(db, asyncJobRunner, now)
+        planNekkuDayBeforeOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(0, getNekkuJobs(db).count())
     }
@@ -411,13 +411,13 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val tomorrow = HelsinkiDateTime.of(LocalDate.of(2025, 4, 15), LocalTime.of(2, 25))
 
-        planNekkuDailyOrderJobs(db, asyncJobRunner, now)
+        planNekkuDayBeforeOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(tomorrow.toLocalDate().toString(), getNekkuJobs(db).single().date.toString())
     }
 
     @Test
-    fun `daily meal order jobs are not re-planned for days without nekku customer weekday mapping`() {
+    fun `day-before meal order jobs are not re-planned for days without nekku customer weekday mapping`() {
 
         val client = TestNekkuClient(customers = weekdayOnlyTestClientCustomers)
         fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
@@ -458,7 +458,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Friday → daycareOpenNextTime is Saturday
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 28), LocalTime.of(2, 25))
 
-        planNekkuDailyOrderJobs(db, asyncJobRunner, now)
+        planNekkuDayBeforeOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(0, getNekkuJobs(db).count())
     }
@@ -497,7 +497,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Friday
         val toFourDays = HelsinkiDateTime.of(LocalDate.of(2025, 3, 28), LocalTime.of(2, 25))
 
-        planNekkuSpecifyOrderJobs(db, asyncJobRunner, now)
+        planNekku4daySpecifyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(toFourDays.toLocalDate().toString(), getNekkuJobs(db).single().date.toString())
     }
@@ -538,7 +538,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Wednesday
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 26), LocalTime.of(2, 25))
 
-        planNekkuSpecifyOrderJobs(db, asyncJobRunner, now)
+        planNekku4daySpecifyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(0, getNekkuJobs(db).count())
     }
@@ -588,7 +588,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Sunday
         val deliveryDate = HelsinkiDateTime.of(LocalDate.of(2025, 3, 30), LocalTime.of(2, 25))
 
-        planNekkuSpecifyOrderJobs(db, asyncJobRunner, now)
+        planNekku4daySpecifyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(
             deliveryDate.toLocalDate().toString(),
@@ -643,7 +643,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Tuesday: the deadline for all three seeded delivery dates
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 25), LocalTime.of(2, 25))
 
-        planNekkuSpecifyOrderJobs(db, asyncJobRunner, now)
+        planNekku4daySpecifyOrderJobs(db, asyncJobRunner, now)
 
         // the customer takes orders on MON-FRI only, so the weekend delivery dates are dropped
         assertEquals(monday.toString(), getNekkuJobs(db).single().date.toString())
@@ -701,7 +701,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Tuesday: the deadline for all three seeded delivery dates
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 25), LocalTime.of(2, 25))
 
-        planNekkuSpecifyOrderJobs(db, asyncJobRunner, now)
+        planNekku4daySpecifyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(listOf(sunday, monday), getNekkuJobs(db).map { it.date }.sorted())
     }
@@ -753,7 +753,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         // Tuesday
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 25), LocalTime.of(2, 25))
 
-        planNekkuSpecifyOrderJobs(db, asyncJobRunner, now)
+        planNekku4daySpecifyOrderJobs(db, asyncJobRunner, now)
 
         // the group is not open on the Saturday, so only the other two are specified
         assertEquals(listOf(sunday, monday), getNekkuJobs(db).map { it.date }.sorted())
@@ -3379,7 +3379,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 groupInClosingDaycare.id to listOf(monday, tuesday, wednesday),
             )
 
-        planNekkuOrderJobs(
+        planNekkuWeeklyOrderJobs(
             db,
             asyncJobRunner,
             HelsinkiDateTime.of(LocalDateTime.of(2025, 3, 20, 12, 34, 56)),
@@ -3394,7 +3394,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `should make daily order for a newly opened group on its previous operating day`() {
+    fun `should make day-before orders for groups that open on or end before their next operating day`() {
 
         val client =
             TestNekkuClient(
@@ -3424,60 +3424,80 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                     ),
             )
-        val group =
+        val openingGroup =
             DevDaycareGroup(
                 daycareId = daycare.id,
                 startDate = LocalDate.of(2025, 6, 30),
                 nekkuCustomerNumber = "2501K6089",
             )
-        val child = DevPerson()
+        // The group ends on Friday, but an order for the next operating day, Tuesday, was sent
+        // before the end date was set
+        val endingGroup =
+            DevDaycareGroup(
+                daycareId = daycare.id,
+                startDate = LocalDate.of(2025, 6, 2),
+                endDate = LocalDate.of(2025, 6, 27),
+                nekkuCustomerNumber = "2501K6089",
+            )
+        val openingGroupChild = DevPerson()
+        val endingGroupChild = DevPerson()
 
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
-            tx.insert(group)
-            tx.insert(child, DevPersonType.CHILD)
-
-            tx.insert(
-                    DevPlacement(
-                        childId = child.id,
-                        unitId = group.daycareId,
-                        startDate = LocalDate.of(2025, 6, 30),
-                        endDate = LocalDate.of(2025, 7, 4),
-                    ),
+            tx.insert(openingGroup)
+            tx.insert(endingGroup)
+            listOf(
+                    Triple(openingGroupChild, openingGroup, LocalDate.of(2025, 6, 30)),
+                    Triple(endingGroupChild, endingGroup, LocalDate.of(2025, 6, 2)),
                 )
-                .also { placementId ->
+                .forEach { (child, group, placementStart) ->
+                    tx.insert(child, DevPersonType.CHILD)
                     tx.insert(
-                        DevDaycareGroupPlacement(
-                            daycarePlacementId = placementId,
-                            daycareGroupId = group.id,
-                            startDate = LocalDate.of(2025, 6, 30),
-                            endDate = LocalDate.of(2025, 7, 4),
-                        ),
-                    )
+                            DevPlacement(
+                                childId = child.id,
+                                unitId = group.daycareId,
+                                startDate = placementStart,
+                                endDate = LocalDate.of(2025, 7, 4),
+                            ),
+                        )
+                        .also { placementId ->
+                            tx.insert(
+                                DevDaycareGroupPlacement(
+                                    daycarePlacementId = placementId,
+                                    daycareGroupId = group.id,
+                                    startDate = placementStart,
+                                    endDate = LocalDate.of(2025, 7, 4),
+                                ),
+                            )
+                        }
                 }
         }
 
-        createAndSendNekkuOrder(
-            client,
-            db,
-            group.id,
-            LocalDate.of(2025, 7, 1),
-            asyncJobRunner,
-            now,
-            remainingAttempts = 3,
-        )
+        listOf(openingGroup, endingGroup).forEach { group ->
+            createAndSendNekkuOrder(
+                client,
+                db,
+                group.id,
+                LocalDate.of(2025, 7, 1),
+                asyncJobRunner,
+                now,
+                remainingAttempts = 3,
+            )
+        }
 
-        planNekkuDailyOrderJobs(
+        planNekkuDayBeforeOrderJobs(
             db,
             asyncJobRunner,
             HelsinkiDateTime.of(LocalDate.of(2025, 6, 27), LocalTime.of(12, 34, 56)),
         )
 
-        val plannedJobs = getNekkuJobs(db)
         assertEquals(
-            listOf(AsyncJob.SendNekkuOrder(group.id, LocalDate.of(2025, 7, 1))),
-            plannedJobs,
+            setOf(
+                AsyncJob.SendNekkuOrder(openingGroup.id, LocalDate.of(2025, 7, 1)),
+                AsyncJob.SendNekkuOrder(endingGroup.id, LocalDate.of(2025, 7, 1)),
+            ),
+            getNekkuJobs(db).toSet(),
         )
     }
 
@@ -3658,7 +3678,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 4, 10), LocalTime.of(2, 25))
 
-        planNekkuOrderJobs(db, asyncJobRunner, now)
+        planNekkuWeeklyOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(4, getNekkuJobs(db).count())
     }

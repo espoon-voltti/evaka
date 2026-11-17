@@ -41,6 +41,9 @@ import evaka.core.jamix.JamixService
 import evaka.core.koski.KoskiUpdateService
 import evaka.core.messaging.upsertEmployeeMessageAccount
 import evaka.core.nekku.NekkuService
+import evaka.core.nekku.planNekku4daySpecifyOrderJobs
+import evaka.core.nekku.planNekkuDayBeforeOrderJobs
+import evaka.core.nekku.planNekkuWeeklyOrderJobs
 import evaka.core.note.child.daily.deleteExpiredNotes
 import evaka.core.person.cleanUpInactivePeople
 import evaka.core.person.deleteExpiredEmailVerifications
@@ -188,24 +191,24 @@ enum class ScheduledJob(
         ),
     ),
     SendNekkuOrders(
-        ScheduledJobs::sendNekkuOrders,
+        ScheduledJobs::sendNekkuWeeklyOrders,
         ScheduledJobSettings(
             enabled = false,
             schedule = JobSchedule.cron("0 0 3 * * 5"), // fri @ 3:00
         ),
     ),
-    SendNekkuDailyOrders(
-        ScheduledJobs::sendNekkuDailyOrders,
-        ScheduledJobSettings(
-            enabled = false,
-            schedule = JobSchedule.cron("0 30 9 * * *"), // daily 9:30 am
-        ),
-    ),
     SendNekkuSpecifyOrders(
-        ScheduledJobs::sendNekkuSpecifyOrders,
+        ScheduledJobs::sendNekku4daySpecifyOrders,
         ScheduledJobSettings(
             enabled = false,
             schedule = JobSchedule.cron("0 0 5 * * *"), // daily 5:00 am
+        ),
+    ),
+    SendNekkuDailyOrders(
+        ScheduledJobs::sendNekkuDayBeforeOrders,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.cron("0 30 9 * * *"), // daily 9:30 am
         ),
     ),
     CleanNekkuOrdersReport(
@@ -533,16 +536,16 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         nekkuService.planNekkuProductsSync(db, clock)
     }
 
-    fun sendNekkuOrders(db: Database.Connection, clock: EvakaClock) {
-        nekkuService.planNekkuOrders(db, clock)
+    fun sendNekkuWeeklyOrders(db: Database.Connection, clock: EvakaClock) {
+        planNekkuWeeklyOrderJobs(db, asyncJobRunner, clock.now())
     }
 
-    fun sendNekkuDailyOrders(db: Database.Connection, clock: EvakaClock) {
-        nekkuService.planNekkuDailyOrders(db, clock)
+    fun sendNekku4daySpecifyOrders(db: Database.Connection, clock: EvakaClock) {
+        planNekku4daySpecifyOrderJobs(db, asyncJobRunner, clock.now())
     }
 
-    fun sendNekkuSpecifyOrders(db: Database.Connection, clock: EvakaClock) {
-        nekkuService.planNekkuSpecifyOrders(db, clock)
+    fun sendNekkuDayBeforeOrders(db: Database.Connection, clock: EvakaClock) {
+        planNekkuDayBeforeOrderJobs(db, asyncJobRunner, clock.now())
     }
 
     fun cleanNekkuOrdersReport(db: Database.Connection, clock: EvakaClock) {
