@@ -7,7 +7,7 @@ ARG NGINX_VERSION=1.31.3
 
 # ---------- Base ----------
 
-FROM node:24.22.2-trixie-slim AS base
+FROM node:26.13.1-trixie-slim AS base
 ARG CACHE_BUST
 
 USER root
@@ -18,6 +18,14 @@ RUN apt-get update \
  && apt-get -y dist-upgrade \
  && apt-get -y install ca-certificates \
  && rm -rf /var/lib/apt/lists/*
+
+RUN printf '%s\n' \
+      '#!/bin/sh' \
+      'set -e' \
+      'yarn_path=$(sed -n "s/^yarnPath: *//p" /project/.yarnrc.yml)' \
+      'exec node "/project/$yarn_path" "$@"' \
+      > /usr/local/bin/yarn \
+ && chmod +x /usr/local/bin/yarn
 
 COPY ./.yarn ./.yarn
 COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
