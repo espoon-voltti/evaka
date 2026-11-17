@@ -19,6 +19,14 @@ RUN apt-get update \
  && apt-get -y install ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
+RUN printf '%s\n' \
+      '#!/bin/sh' \
+      'set -e' \
+      'yarn_path=$(sed -n "s/^yarnPath: *//p" /project/.yarnrc.yml)' \
+      'exec node "/project/$yarn_path" "$@"' \
+      > /usr/local/bin/yarn \
+ && chmod +x /usr/local/bin/yarn
+
 COPY ./.yarn ./.yarn
 COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
 RUN yarn install --immutable

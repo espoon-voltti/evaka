@@ -30,6 +30,14 @@ RUN apt-get update \
  && apt-get remove --auto-remove -y curl \
  && rm -rf /var/lib/apt/lists/*
 
+RUN printf '%s\n' \
+      '#!/bin/sh' \
+      'set -e' \
+      'yarn_path=$(sed -n "s/^yarnPath: *//p" /project/.yarnrc.yml)' \
+      'exec node "/project/$yarn_path" "$@"' \
+      > /usr/local/bin/yarn \
+ && chmod +x /usr/local/bin/yarn
+
 FROM base AS builder
 
 COPY ./.yarn ./.yarn
