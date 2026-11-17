@@ -266,6 +266,69 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `addMissingStaffAttendanceDeparture does not keep the added marking of a removed departure`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
+        val trainingArrival = now.atStartOfDay().plusHours(8)
+        val plannedDeparture = trainingArrival.plusHours(8)
+        val presentArrival = now.minusDays(1).minusMinutes(1)
+        db.transaction { tx ->
+            listOf(
+                    Triple(employee1.id, trainingArrival, StaffAttendanceType.TRAINING),
+                    Triple(employee2.id, presentArrival, StaffAttendanceType.PRESENT),
+                )
+                .forEach { (employeeId, arrival, type) ->
+                    val id =
+                        tx.upsertStaffAttendance(
+                                attendanceId = null,
+                                employeeId = employeeId,
+                                groupId = group1.id,
+                                arrivalTime = arrival,
+                                departureTime = arrival.plusHours(1),
+                                occupancyCoefficient = BigDecimal(7.0),
+                                type = type,
+                                modifiedAt = arrival,
+                                modifiedBy = employee1.evakaUserId,
+                            )!!
+                            .new
+                            .id
+                    tx.upsertStaffAttendance(
+                        attendanceId = id,
+                        employeeId = employeeId,
+                        groupId = group1.id,
+                        arrivalTime = arrival,
+                        departureTime = null,
+                        occupancyCoefficient = BigDecimal(7.0),
+                        type = type,
+                        modifiedAt = arrival.plusHours(2),
+                        modifiedBy = employee1.evakaUserId,
+                    )
+                }
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1.id,
+                    startTime = trainingArrival,
+                    endTime = plannedDeparture,
+                ),
+            )
+            tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
+        }
+
+        assertThat(
+                db.read { tx ->
+                    tx.getStaffAttendancesForDateRange(
+                        daycare.id,
+                        FiniteDateRange(today.minusDays(1), today),
+                    )
+                },
+            )
+            .extracting({ it.departed }, { it.departedAddedAt })
+            .containsExactlyInAnyOrder(
+                Tuple(plannedDeparture, null),
+                Tuple(presentArrival.plusHours(12), null),
+            )
+    }
+
+    @Test
     fun `addMissingStaffAttendanceDeparture adds departure for today's TRAINING arrival with a planned departure in the past`() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
         val arrival = now.atStartOfDay().plusHours(8)
@@ -885,7 +948,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `upsertStaffAttendance sets departure modified on remove`() {
+    fun `upsertStaffAttendance sets departure modified on remove and adds a departure entered again anew`() {
         val (unitId, groupId, user) = initUpsertStaffAttendanceTestData()
         val clock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 12, 20), LocalTime.of(8, 0)))
@@ -937,6 +1000,33 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 { it.departedModifiedAt },
             )
             .containsExactly(Tuple(attendanceId, addedAt, addedAt, addedAt, departureModifiedAt))
+
+        val reEnteredAt = departureModifiedAt.plusMinutes(5)
+        db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = attendanceId,
+                employeeId = user.id,
+                groupId = groupId,
+                arrivalTime = arrival,
+                departureTime = departure,
+                occupancyCoefficient = BigDecimal.ZERO,
+                type = StaffAttendanceType.PRESENT,
+                departedAutomatically = false,
+                modifiedAt = reEnteredAt,
+                modifiedBy = user.evakaUserId,
+            )
+        }
+
+        assertThat(
+                db.read { tx ->
+                    tx.getStaffAttendancesForDateRange(
+                        unitId,
+                        clock.today().let { FiniteDateRange(it, it) },
+                    )
+                },
+            )
+            .extracting({ it.departedAddedAt }, { it.departedModifiedAt })
+            .containsExactly(Tuple(reEnteredAt, reEnteredAt))
     }
 
     @Test
@@ -1042,6 +1132,69 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 { it.departedModifiedAt },
             )
             .containsExactly(Tuple(attendanceId, arrivalAddedAt, arrivalAddedAt, null, null))
+    }
+
+    @Test
+    fun `upsertStaffAttendance keeps an automatic departure as added when a person corrects it`() {
+        val (unitId, groupId, user) = initUpsertStaffAttendanceTestData()
+        val arrivalTime = HelsinkiDateTime.of(LocalDate.of(2024, 12, 20), LocalTime.of(8, 0))
+        val automaticDepartureAt = arrivalTime.plusHours(12).plusMinutes(55)
+        val correctedAt = automaticDepartureAt.plusMinutes(30)
+        val attendanceId = db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                    attendanceId = null,
+                    employeeId = user.id,
+                    groupId = groupId,
+                    arrivalTime = arrivalTime,
+                    departureTime = null,
+                    occupancyCoefficient = BigDecimal.ZERO,
+                    type = StaffAttendanceType.PRESENT,
+                    modifiedAt = arrivalTime,
+                    modifiedBy = user.evakaUserId,
+                )!!
+                .new
+                .id!!
+        }
+        db.transaction { tx ->
+            tx.addMissingStaffAttendanceDepartures(automaticDepartureAt, systemUser.evakaUserId)
+        }
+
+        db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = attendanceId,
+                employeeId = user.id,
+                groupId = groupId,
+                arrivalTime = arrivalTime,
+                departureTime = arrivalTime.plusHours(8),
+                occupancyCoefficient = BigDecimal.ZERO,
+                type = StaffAttendanceType.PRESENT,
+                modifiedAt = correctedAt,
+                modifiedBy = user.evakaUserId,
+            )
+        }
+
+        assertThat(
+                db.read { tx ->
+                    tx.getStaffAttendancesForDateRange(
+                        unitId,
+                        FiniteDateRange(arrivalTime.toLocalDate(), arrivalTime.toLocalDate()),
+                    )
+                },
+            )
+            .extracting(
+                { it.departedAddedAt },
+                { it.departedAddedBy?.id },
+                { it.departedModifiedAt },
+                { it.departedModifiedBy?.id },
+            )
+            .containsExactly(
+                Tuple(
+                    automaticDepartureAt,
+                    systemUser.evakaUserId,
+                    correctedAt,
+                    user.evakaUserId,
+                ),
+            )
     }
 
     private fun initUpsertStaffAttendanceTestData():

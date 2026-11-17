@@ -243,8 +243,8 @@ SET group_id = ${bind(groupId)},
     departed_automatically = ${bind(departedAutomatically)},
     arrived_modified_at = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE old.arrived_modified_at END,
     arrived_modified_by = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE old.arrived_modified_by END,
-    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_at, ${bind(modifiedAt)}) ELSE old.departed_added_at END,
-    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_by, ${bind(modifiedBy)}) ELSE old.departed_added_by END,
+    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN CASE WHEN old.departed IS NULL THEN ${bind(modifiedAt)} ELSE coalesce(old.departed_added_at, old.departed_modified_at, ${bind(modifiedAt)}) END ELSE old.departed_added_at END,
+    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN CASE WHEN old.departed IS NULL THEN ${bind(modifiedBy)} ELSE coalesce(old.departed_added_by, old.departed_modified_by, ${bind(modifiedBy)}) END ELSE old.departed_added_by END,
     departed_modified_at = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE old.departed_modified_at END,
     departed_modified_by = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE old.departed_modified_by END
 FROM staff_attendance_realtime old
@@ -682,6 +682,8 @@ WITH missing_planned_departures AS (
 UPDATE staff_attendance_realtime realtime
 SET departed = missing_planned_departures.planned_departure,
     departed_automatically = true,
+    departed_added_at = NULL,
+    departed_added_by = NULL,
     departed_modified_at = ${bind(now)},
     departed_modified_by = ${bind(modifiedBy)}
 FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.id
@@ -695,6 +697,8 @@ FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.i
 UPDATE staff_attendance_realtime a
 SET departed = a.arrived + interval '12 hours',
     departed_automatically = true,
+    departed_added_at = NULL,
+    departed_added_by = NULL,
     departed_modified_at = ${bind(now)},
     departed_modified_by = ${bind(modifiedBy)}
 WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
