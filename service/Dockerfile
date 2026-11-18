@@ -79,12 +79,16 @@ LABEL maintainer="https://github.com/espoon-voltti/evaka"
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV LANGUAGE=C.UTF-8
+# The base image pins zulu25 to the version it ships with, so dist-upgrade does not update the JDK.
+# An explicit version overrides the pin. Once the base image ships a newer JDK, this becomes a
+# downgrade and the build fails, which is the signal to remove the explicit version.
 RUN apt-get update \
  && apt-get -y dist-upgrade \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       tzdata \
       ca-certificates \
       curl \
+      zulu25-ca-jre-headless=25.0.5.1-1 \
  && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
  && dpkg-reconfigure --frontend noninteractive tzdata \
  && rm -rf /var/lib/apt/lists/*
