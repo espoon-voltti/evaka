@@ -1563,14 +1563,21 @@ LIMIT 1
 }
 
 /**
- * Group placements and backup cares that start after [today], as rows of `child_id`, `unit_id`,
- * `group_id`, `placement_type` and `start_date`. `group_id` is null for a backup care without a
- * group. A row is left out when an earlier group placement or backup care of the child in the same
- * group ends on or after [today], because then the child is not new in the group.
+ * Group placements and backup cares with a group that start after [today], as rows of `child_id`,
+ * `unit_id`, `group_id`, `placement_type` and `start_date`. A row is left out when a group
+ * placement or backup care of the child in the same group starts before it and ends on or after
+ * [today], because then the child is not new in the group.
  *
- * [scope] filters the rows by the same columns.
+ * [groupIds] is a subquery of group ids that limits the rows to those groups, or null for all
+ * groups.
  */
-private fun startingPlacements(today: LocalDate, scope: Predicate) = QuerySql {
+private fun startingPlacements(today: LocalDate, groupIds: QuerySql?) = QuerySql {
+    // Why = ANY(ARRAY(...)), not IN (...) or a join:
+    // - Documented: the subquery runs once, and = ANY can be an index condition.
+    // - Observed: used in both UNION parts; IN or a join read every starting placement first.
+    val inGroups =
+        groupIds?.let { PredicateSql { where("sp.group_id = ANY(ARRAY(${subquery(it)}))") } }
+            ?: PredicateSql.alwaysTrue()
     sql(
         """
 SELECT sp.child_id, sp.unit_id, sp.group_id, sp.placement_type, sp.start_date
@@ -1585,13 +1592,10 @@ FROM (
     SELECT bc.child_id, bc.unit_id, bc.group_id, p.type AS placement_type, bc.start_date
     FROM backup_care bc
     JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> bc.start_date
-    WHERE bc.start_date > ${bind(today)}
+    WHERE bc.start_date > ${bind(today)} AND bc.group_id IS NOT NULL
 ) sp
 WHERE
-    -- A plain filter such as = ANY(ARRAY(SELECT ...)) is applied inside each part of the UNION,
-    -- so only the starting placements in the scope are read. A join or IN (SELECT ...) is applied
-    -- only after every starting placement in the municipality has been read.
-    ${predicate(scope.forTable("sp"))} AND
+    ${predicate(inGroups)} AND
     NOT EXISTS (
         SELECT
         FROM daycare_group_placement earlier_dgp
@@ -1599,7 +1603,7 @@ WHERE
         WHERE
             earlier_p.child_id = sp.child_id AND
             earlier_dgp.daycare_group_id = sp.group_id AND
-            earlier_dgp.end_date < sp.start_date AND
+            earlier_dgp.start_date < sp.start_date AND
             earlier_dgp.end_date >= ${bind(today)}
     ) AND
     NOT EXISTS (
@@ -1608,7 +1612,7 @@ WHERE
         WHERE
             earlier_bc.child_id = sp.child_id AND
             earlier_bc.group_id = sp.group_id AND
-            earlier_bc.end_date < sp.start_date AND
+            earlier_bc.start_date < sp.start_date AND
             earlier_bc.end_date >= ${bind(today)}
     )
 """,
@@ -1663,7 +1667,7 @@ WITH group_accounts AS (
     -- starting children
     SELECT a.id AS account_id, sp.child_id, a.group_id, a.group_name, sp.start_date
     FROM group_accounts a
-    JOIN (${subquery(startingPlacements(today, Predicate { table -> where("$table.group_id = ANY(ARRAY(SELECT group_id FROM group_accounts))") }))}) sp ON sp.group_id = a.group_id
+    JOIN (${subquery(startingPlacements(today, QuerySql { sql("SELECT group_id FROM group_accounts") }))}) sp ON sp.group_id = a.group_id
 )
 SELECT DISTINCT
     c.account_id,
@@ -1750,7 +1754,7 @@ WITH personal_accounts AS (
     -- starting children
     SELECT a.id AS account_id, sp.child_id, a.unit_id, a.unit_name, sp.group_id, g.name AS group_name, sp.start_date
     FROM personal_accounts a
-    JOIN (${subquery(startingPlacements(today, Predicate { table -> where("$table.group_id = ANY(ARRAY(SELECT dg.id FROM personal_accounts pa JOIN daycare_group dg ON dg.daycare_id = pa.unit_id))") }))}) sp ON sp.unit_id = a.unit_id
+    JOIN (${subquery(startingPlacements(today, QuerySql { sql("SELECT dg.id FROM personal_accounts pa JOIN daycare_group dg ON dg.daycare_id = pa.unit_id") }))}) sp ON sp.unit_id = a.unit_id
     JOIN daycare_group g ON g.id = sp.group_id
 )
 SELECT DISTINCT
@@ -2049,6 +2053,33 @@ fun Database.Read.getMessageAccountsForRecipients(
             },
         )
 
+    // The sender predicate allows only these groups. Passing them to startingPlacements lets it
+    // read the starting placements through the group indexes, which the recipient predicates
+    // cannot do when they mix units, groups and children.
+    val senderGroupIds =
+        when (senderAccount.type) {
+            AccountType.GROUP -> {
+                QuerySql { sql("SELECT ${bind(senderAccount.daycareGroupId)}") }
+            }
+
+            AccountType.PERSONAL -> {
+                QuerySql {
+                    sql(
+                        """
+SELECT dg.id
+FROM daycare_acl acl
+JOIN daycare_group dg ON dg.daycare_id = acl.daycare_id
+WHERE acl.employee_id = ${bind(senderAccount.employeeId)}
+""",
+                    )
+                }
+            }
+
+            else -> {
+                null
+            }
+        }
+
     return createQuery {
         sql(
             """
@@ -2065,16 +2096,7 @@ WITH current_children AS (
         ${predicate(currentSenderPredicate)} AND
         'MESSAGING' = ANY(d.enabled_pilot_features)
 ), starting_placements AS (
-    ${subquery(startingPlacements(date, Predicate.alwaysTrue()))}
-
-    UNION ALL
-
-    -- placements without a group placement, which only municipal accounts reach
-    SELECT p.child_id, p.unit_id, NULL::uuid AS group_id, p.type AS placement_type, p.start_date
-    FROM placement p
-    WHERE
-        p.start_date > ${bind(date)} AND
-        NOT EXISTS (SELECT FROM daycare_group_placement dgp WHERE dgp.daycare_placement_id = p.id)
+    ${subquery(startingPlacements(date, senderGroupIds))}
 ), starting_children AS (
     SELECT DISTINCT pl.child_id
     FROM starting_placements pl
