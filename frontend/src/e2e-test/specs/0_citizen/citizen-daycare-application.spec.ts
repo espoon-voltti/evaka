@@ -39,6 +39,7 @@ import {
 } from '../../utils/application-forms'
 import { getVerificationCodeFromEmail } from '../../utils/email'
 import type { Page } from '../../utils/page'
+import { emulateRunningInstalled, iosUserAgent } from '../../utils/pwa'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 const testFileName = 'test_file.png'
@@ -292,6 +293,23 @@ test.describe('Citizen daycare applications', () => {
     await editorPage.markApplicationUrgentAndAddAttachment(testFilePath)
     await editorPage.goToVerification()
     await editorPage.assertUrgencyFileDownload()
+  })
+
+  test.describe('in the installed iOS app', () => {
+    test.use({ userAgent: iosUserAgent, hasTouch: true })
+
+    test('Urgent application attachment opens in a separate view', async () => {
+      await emulateRunningInstalled(page)
+      await page.reload()
+      const editorPage = await applicationsPage.createApplication(
+        testChildRestricted.id,
+        'DAYCARE'
+      )
+      await editorPage.fillData(minimalDaycareForm().form)
+      await editorPage.markApplicationUrgentAndAddAttachment(testFilePath)
+      await editorPage.goToVerification()
+      await editorPage.assertUrgencyFileOpensAsBlob()
+    })
   })
 
   test('Other guardian can see an application after it has been sent, and cannot see person details or attachments', async ({

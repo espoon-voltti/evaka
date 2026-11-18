@@ -566,6 +566,17 @@ class CitizenApplicationEditor {
     await popup.waitForSelector('img:not([src=""])')
   }
 
+  async assertUrgencyFileOpensAsBlob() {
+    const [popup] = await Promise.all([
+      this.page.waitForPopup(),
+      this.page
+        .find('[data-qa="service-need-urgency-attachment-download"]')
+        .click()
+    ])
+    await popup.waitForURL(/^blob:/)
+    await popup.waitForSelector('img:not([src=""])')
+  }
+
   async assertVerifiedReadOnlyEmail(email: string) {
     await expect(this.page.findByDataQa('verified-email')).toHaveText(email)
     await expect(this.page.findByDataQa('guardianEmail-input')).toBeHidden()

@@ -86,6 +86,7 @@ const sv: Translations = {
       }
     },
     openExpandingInfo: 'Öppna detaljer',
+    openingFile: 'Öppnar filen…',
     errors: {
       genericGetError: 'Datahämtningen misslyckades',
       genericGetErrorInfo:

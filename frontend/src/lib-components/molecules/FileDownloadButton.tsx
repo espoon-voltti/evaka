@@ -11,6 +11,7 @@ import type { Attachment } from 'lib-common/generated/api-types/attachment'
 import type { AttachmentId } from 'lib-common/generated/api-types/shared'
 
 import { FixedSpaceRow } from '../layout/flex-helpers'
+import { useOpenFile } from '../utils/openFile'
 
 import { fileIcon } from './FileUpload'
 
@@ -43,11 +44,13 @@ export default React.memo(function FileDownloadButton({
   text
 }: FileDownloadButtonProps) {
   const url = getFileUrl(file.id, file.name)
+  const openFile = useOpenFile()
 
   const handleClick = useCallback(() => {
-    window.open(url)
-    afterOpen?.()
-  }, [url, afterOpen])
+    void openFile(url).then((opened) => {
+      if (opened) afterOpen?.()
+    })
+  }, [openFile, url, afterOpen])
 
   return (
     <DownloadButton onClick={handleClick} data-qa={dataQa}>
