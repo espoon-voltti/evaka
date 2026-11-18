@@ -1044,13 +1044,13 @@ test.describe('Realtime staff attendances', () => {
         rowIx: 1,
         nth: 0,
         name: 'Sijainen Saija',
-        attendances: [['11:00', '13:00']],
+        attendances: [['11:00*', '13:00*']],
         hasStaffOccupancyEffect: false
       })
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 1,
-        attendances: [['08:00', '12:30']]
+        attendances: [['08:00*', '12:30*']]
       })
       await staffAttendances.assertTableRow({
         rowIx: 1,

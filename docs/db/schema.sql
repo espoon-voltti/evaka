@@ -4052,6 +4052,14 @@ CREATE TABLE public.staff_attendance_external (
     departed_automatically boolean DEFAULT false NOT NULL,
     created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
     updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
+    arrived_added_at timestamp with time zone,
+    arrived_added_by uuid,
+    arrived_modified_at timestamp with time zone,
+    arrived_modified_by uuid,
+    departed_added_at timestamp with time zone,
+    departed_added_by uuid,
+    departed_modified_at timestamp with time zone,
+    departed_modified_by uuid,
     CONSTRAINT staff_attendance_external_start_before_end CHECK ((arrived < departed))
 );
 
@@ -5571,6 +5579,22 @@ CREATE INDEX "fk$sfi_message_guardian_id" ON public.sfi_message USING btree (gua
 -- Name: fk$sfi_message_voucher_value_decision_id_guardian_id; Type: INDEX; Schema: public
 
 CREATE UNIQUE INDEX "fk$sfi_message_voucher_value_decision_id_guardian_id" ON public.sfi_message USING btree (voucher_value_decision_id, guardian_id) WHERE (voucher_value_decision_id IS NOT NULL);
+
+-- Name: fk$staff_attendance_external_arrived_added_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$staff_attendance_external_arrived_added_by" ON public.staff_attendance_external USING btree (arrived_added_by);
+
+-- Name: fk$staff_attendance_external_arrived_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$staff_attendance_external_arrived_modified_by" ON public.staff_attendance_external USING btree (arrived_modified_by);
+
+-- Name: fk$staff_attendance_external_departed_added_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$staff_attendance_external_departed_added_by" ON public.staff_attendance_external USING btree (departed_added_by);
+
+-- Name: fk$staff_attendance_external_departed_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$staff_attendance_external_departed_modified_by" ON public.staff_attendance_external USING btree (departed_modified_by);
 
 -- Name: fk$staff_attendance_realtime_arrived_added_by; Type: INDEX; Schema: public
 
@@ -8430,6 +8454,26 @@ ALTER TABLE ONLY public.sfi_message
 
 ALTER TABLE ONLY public.sfi_message
     ADD CONSTRAINT sfi_message_voucher_value_decision_id_fkey FOREIGN KEY (voucher_value_decision_id) REFERENCES public.voucher_value_decision(id) ON DELETE CASCADE;
+
+-- Name: staff_attendance_external staff_attendance_external_arrived_added_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.staff_attendance_external
+    ADD CONSTRAINT staff_attendance_external_arrived_added_by_fkey FOREIGN KEY (arrived_added_by) REFERENCES public.evaka_user(id);
+
+-- Name: staff_attendance_external staff_attendance_external_arrived_modified_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.staff_attendance_external
+    ADD CONSTRAINT staff_attendance_external_arrived_modified_by_fkey FOREIGN KEY (arrived_modified_by) REFERENCES public.evaka_user(id);
+
+-- Name: staff_attendance_external staff_attendance_external_departed_added_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.staff_attendance_external
+    ADD CONSTRAINT staff_attendance_external_departed_added_by_fkey FOREIGN KEY (departed_added_by) REFERENCES public.evaka_user(id);
+
+-- Name: staff_attendance_external staff_attendance_external_departed_modified_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.staff_attendance_external
+    ADD CONSTRAINT staff_attendance_external_departed_modified_by_fkey FOREIGN KEY (departed_modified_by) REFERENCES public.evaka_user(id);
 
 -- Name: staff_attendance_external staff_attendance_external_group_id_fkey; Type: FK CONSTRAINT; Schema: public
 

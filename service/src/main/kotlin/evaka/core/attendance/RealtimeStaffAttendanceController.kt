@@ -412,6 +412,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
                         else occupancyCoefficientZero,
                         false,
+                        clock.now(),
+                        user.evakaUserId,
                     )
                 }
             }

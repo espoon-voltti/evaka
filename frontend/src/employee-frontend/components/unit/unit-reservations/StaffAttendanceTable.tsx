@@ -242,17 +242,7 @@ export default React.memo(function StaffAttendanceTable({
               }
               name={row.name}
               operationalDays={operationalDays}
-              attendances={row.attendances.map((attendance) => ({
-                ...attendance,
-                arrivedAddedAt: null,
-                arrivedAddedBy: null,
-                arrivedModifiedAt: null,
-                arrivedModifiedBy: null,
-                departedAddedAt: null,
-                departedAddedBy: null,
-                departedModifiedAt: null,
-                departedModifiedBy: null
-              }))}
+              attendances={row.attendances}
               groupFilter={groupFilter}
               openDetails={(date: LocalDate) => {
                 setDetailsModalConfig({

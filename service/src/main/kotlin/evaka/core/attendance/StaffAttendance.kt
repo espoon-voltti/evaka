@@ -114,6 +114,14 @@ data class ExternalAttendance(
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
     val departedAutomatically: Boolean,
+    val arrivedAddedAt: HelsinkiDateTime?,
+    @Nested("arrived_added_by") val arrivedAddedBy: EvakaUser?,
+    val arrivedModifiedAt: HelsinkiDateTime?,
+    @Nested("arrived_modified_by") val arrivedModifiedBy: EvakaUser?,
+    val departedAddedAt: HelsinkiDateTime?,
+    @Nested("departed_added_by") val departedAddedBy: EvakaUser?,
+    val departedModifiedAt: HelsinkiDateTime?,
+    @Nested("departed_modified_by") val departedModifiedBy: EvakaUser?,
 ) {
     val type = StaffAttendanceType.PRESENT
 }

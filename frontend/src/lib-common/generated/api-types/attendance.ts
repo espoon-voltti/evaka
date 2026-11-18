@@ -204,8 +204,16 @@ export interface ExpectedAbsencesOnDeparturesResponse {
 */
 export interface ExternalAttendance {
   arrived: HelsinkiDateTime
+  arrivedAddedAt: HelsinkiDateTime | null
+  arrivedAddedBy: EvakaUser | null
+  arrivedModifiedAt: HelsinkiDateTime | null
+  arrivedModifiedBy: EvakaUser | null
   departed: HelsinkiDateTime | null
+  departedAddedAt: HelsinkiDateTime | null
+  departedAddedBy: EvakaUser | null
   departedAutomatically: boolean
+  departedModifiedAt: HelsinkiDateTime | null
+  departedModifiedBy: EvakaUser | null
   groupId: GroupId
   id: StaffAttendanceExternalId
   name: string
@@ -595,7 +603,11 @@ export function deserializeJsonExternalAttendance(json: JsonOf<ExternalAttendanc
   return {
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    arrivedAddedAt: (json.arrivedAddedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedAddedAt) : null,
+    arrivedModifiedAt: (json.arrivedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedModifiedAt) : null,
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null,
+    departedAddedAt: (json.departedAddedAt != null) ? HelsinkiDateTime.parseIso(json.departedAddedAt) : null,
+    departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null
   }
 }
 
