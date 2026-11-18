@@ -206,6 +206,32 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `upsertExternalStaffAttendance updates the group`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        val attendanceId = db.transaction { tx ->
+            tx.markExternalStaffArrival(
+                ExternalStaffArrival("Foo Present", group1.id, now, occupancyCoefficientSeven),
+            )
+        }
+
+        db.transaction { tx ->
+            tx.upsertExternalStaffAttendance(
+                attendanceId,
+                "Foo Present",
+                group2.id,
+                now,
+                null,
+                occupancyCoefficientSeven,
+            )
+        }
+
+        assertEquals(
+            listOf(group2.id),
+            db.read { it.getExternalStaffAttendances(daycare.id) }.map { it.groupId },
+        )
+    }
+
+    @Test
     fun `addMissingStaffAttendanceDeparture adds departures for yesterday's arrivals without a plan`() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         db.transaction { tx ->

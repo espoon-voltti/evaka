@@ -360,7 +360,7 @@ RETURNING id
             sql(
                 """
 UPDATE staff_attendance_external
-SET name = ${bind(name)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, 
+SET name = ${bind(name)}, group_id = ${bind(groupId)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, 
     occupancy_coefficient = ${bind(occupancyCoefficient)}, departed_automatically = ${bind(departedAutomatically)}
 WHERE id = ${bind(attendanceId)}
 """,
