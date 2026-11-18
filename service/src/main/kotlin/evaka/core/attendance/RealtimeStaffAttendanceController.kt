@@ -6,6 +6,7 @@ package evaka.core.attendance
 
 import evaka.core.Audit
 import evaka.core.AuditId
+import evaka.core.absence.getDaycareIdByGroup
 import evaka.core.changes
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
@@ -255,6 +256,35 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             Action.Unit.UPDATE_STAFF_ATTENDANCES,
                             body.unitId,
                         )
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Employee.UPDATE_STAFF_ATTENDANCES,
+                            body.employeeId,
+                        )
+                        val groupIds = body.entries.mapNotNull { it.groupId }.distinct()
+                        if (
+                            !groupIds.all { groupId ->
+                                tx.getDaycareIdByGroup(groupId) == body.unitId
+                            }
+                        ) {
+                            throw BadRequest("Group is not in unit")
+                        }
+                        val existingIds =
+                            tx.getEmployeeAttendancesByArrivalDateDate(
+                                    body.unitId,
+                                    body.employeeId,
+                                    body.date,
+                                )
+                                .map { it.id }
+                        if (
+                            body.entries
+                                .mapNotNull { it.id }
+                                .any { id -> !existingIds.contains(id) }
+                        ) {
+                            throw BadRequest("Unknown id was given")
+                        }
                         tx.execute { sql("SET CONSTRAINTS staff_attendance_no_overlaps DEFERRED") }
                         val deleted =
                             tx.deleteStaffAttendancesOnDateExcept(
@@ -263,14 +293,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                 body.date,
                                 body.entries.mapNotNull { it.id },
                             )
-
-                        accessControl.requirePermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Employee.UPDATE_STAFF_ATTENDANCES,
-                            body.employeeId,
-                        )
 
                         requireNoOverlapsBetween(body.entries)
                         requireNoOverlapsWithExistingStaffAttendances(
@@ -360,7 +382,22 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     Action.Unit.UPDATE_STAFF_ATTENDANCES,
                     body.unitId,
                 )
+                val groupIds = body.entries.map { it.groupId }.distinct()
+                if (!groupIds.all { groupId -> tx.getDaycareIdByGroup(groupId) == body.unitId }) {
+                    throw BadRequest("Group is not in unit")
+                }
+                val existingIds =
+                    tx.getExternalStaffAttendancesByDateRange(
+                            body.unitId,
+                            FiniteDateRange(body.date, body.date),
+                        )
+                        .filter { it.name == body.name && it.arrived.toLocalDate() == body.date }
+                        .map { it.id }
+                if (body.entries.mapNotNull { it.id }.any { id -> !existingIds.contains(id) }) {
+                    throw BadRequest("Unknown id was given")
+                }
                 tx.deleteExternalAttendancesOnDateExcept(
+                    body.unitId,
                     body.name,
                     body.date,
                     body.entries.mapNotNull { it.id },

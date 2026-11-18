@@ -802,6 +802,7 @@ RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, t
     .toList<StaffAttendanceRealtimeAudit>()
 
 fun Database.Transaction.deleteExternalAttendancesOnDateExcept(
+    unitId: DaycareId,
     name: String,
     arrivalDate: LocalDate,
     exceptIds: List<StaffAttendanceExternalId>,
@@ -810,6 +811,7 @@ fun Database.Transaction.deleteExternalAttendancesOnDateExcept(
         """
 DELETE FROM staff_attendance_external
 WHERE 
+    group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = ${bind(unitId)}) AND
     name = ${bind(name)} AND 
     between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND 
     NOT id = ANY(${bind(exceptIds)})
