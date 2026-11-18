@@ -959,8 +959,24 @@ fun Database.Transaction.insertTestChildAttendance(
     executeBatch(attendances) {
         sql(
             """
-INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
-VALUES (${bind(childId)}, ${bind(unitId)}, ${bind { (date, _, _) -> date }}, ${bind { (_, startTime, _) -> startTime.withSecond(0).withNano(0) }}, ${bind { (_, _, endTime) -> endTime?.withSecond(0)?.withNano(0) }}, ${bind(modifiedAt)}, ${bind(modifiedBy)})
+INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by, departed_added_at, departed_added_by, departed_modified_at, departed_modified_by)
+VALUES (
+    ${bind(childId)},
+    ${bind(unitId)},
+    ${bind { (date, _, _) -> date }},
+    ${bind { (_, startTime, _) -> startTime.withSecond(0).withNano(0) }},
+    ${bind { (_, _, endTime) -> endTime?.withSecond(0)?.withNano(0) }},
+    ${bind(modifiedAt)},
+    ${bind(modifiedBy)},
+    ${bind(modifiedAt)},
+    ${bind(modifiedBy)},
+    ${bind(modifiedAt)},
+    ${bind(modifiedBy)},
+    ${bind { (_, _, endTime) -> modifiedAt.takeIf { endTime != null } }},
+    ${bind { (_, _, endTime) -> modifiedBy.takeIf { endTime != null } }},
+    ${bind { (_, _, endTime) -> modifiedAt.takeIf { endTime != null } }},
+    ${bind { (_, _, endTime) -> modifiedBy.takeIf { endTime != null } }}
+)
 """,
         )
     }
@@ -1633,8 +1649,24 @@ VALUES (${bind(row.id)}, ${bind(row.sentAt)}, ${bind(row.personId)}, ${bind(row.
 fun Database.Transaction.insert(row: DevChildAttendance): ChildAttendanceId = createUpdate {
     sql(
         """
-INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
-VALUES (${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.date)}, ${bind(row.arrived)}, ${bind(row.departed)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
+INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by, departed_added_at, departed_added_by, departed_modified_at, departed_modified_by)
+VALUES (
+    ${bind(row.childId)},
+    ${bind(row.unitId)},
+    ${bind(row.date)},
+    ${bind(row.arrived)},
+    ${bind(row.departed)},
+    ${bind(row.modifiedAt)},
+    ${bind(row.modifiedBy)},
+    ${bind(row.arrivedAddedAt)},
+    ${bind(row.arrivedAddedBy)},
+    ${bind(row.arrivedModifiedAt)},
+    ${bind(row.arrivedModifiedBy)},
+    ${bind(row.departedAddedAt)},
+    ${bind(row.departedAddedBy)},
+    ${bind(row.departedModifiedAt)},
+    ${bind(row.departedModifiedBy)}
+)
 """,
     )
 }

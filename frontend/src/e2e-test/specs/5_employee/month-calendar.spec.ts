@@ -536,7 +536,15 @@ test.describe('Employee - Unit month calendar', () => {
               arrived: LocalTime.of(8, 15),
               departed: LocalTime.of(16, 30),
               modifiedAt: HelsinkiDateTime.now(),
-              modifiedBy: systemInternalUser.id
+              modifiedBy: systemInternalUser.id,
+              arrivedAddedAt: null,
+              arrivedAddedBy: null,
+              arrivedModifiedAt: null,
+              arrivedModifiedBy: null,
+              departedAddedAt: null,
+              departedAddedBy: null,
+              departedModifiedAt: null,
+              departedModifiedBy: null
             }))
       )
     })

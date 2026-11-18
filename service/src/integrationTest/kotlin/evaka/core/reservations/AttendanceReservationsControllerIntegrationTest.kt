@@ -23,6 +23,7 @@ import evaka.core.preschoolTerm2020
 import evaka.core.preschoolTerm2021
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.serviceneed.insertServiceNeed
+import evaka.core.shared.ChildAttendanceId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
@@ -66,6 +67,7 @@ import evaka.core.snDaycareContractDays10
 import evaka.core.snDaycareContractDays15
 import evaka.core.snDaycareFullDay35
 import evaka.core.snDefaultPreschool
+import evaka.core.user.EvakaUser
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDate
@@ -456,7 +458,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                 ),
                             attendances =
                                 listOf(
-                                    AttendanceTimesForDate(
+                                    attendanceTimes(
+                                        childId = child1.id,
                                         date = mon, // TODO not sure
                                         interval =
                                             TimeInterval(
@@ -834,7 +837,8 @@ class AttendanceReservationsControllerIntegrationTest :
                         ),
                     attendances =
                         listOf(
-                            AttendanceTimesForDate(
+                            attendanceTimes(
+                                child1.id,
                                 mon,
                                 TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59)),
                                 now,
@@ -877,13 +881,15 @@ class AttendanceReservationsControllerIntegrationTest :
                         ),
                     attendances =
                         listOf(
-                            AttendanceTimesForDate(
+                            attendanceTimes(
+                                child1.id,
                                 tue,
                                 TimeInterval(LocalTime.of(0, 0), LocalTime.of(10, 30)),
                                 now,
                                 employee.evakaUser,
                             ),
-                            AttendanceTimesForDate(
+                            attendanceTimes(
+                                child1.id,
                                 tue,
                                 TimeInterval(LocalTime.of(17, 0), null),
                                 now,
@@ -1676,7 +1682,8 @@ class AttendanceReservationsControllerIntegrationTest :
                     ),
                 attendances =
                     listOf(
-                        AttendanceTimesForDate(
+                        attendanceTimes(
+                            child1.id,
                             wed,
                             TimeInterval(start = LocalTime.of(12, 30), end = null),
                             testNow,
@@ -1752,7 +1759,8 @@ class AttendanceReservationsControllerIntegrationTest :
                     ),
                 attendances =
                     listOf(
-                        AttendanceTimesForDate(
+                        attendanceTimes(
+                            child1.id,
                             wed,
                             TimeInterval(start = LocalTime.of(12, 30), end = LocalTime.of(17, 0)),
                             testNow,
@@ -2809,4 +2817,35 @@ class AttendanceReservationsControllerIntegrationTest :
             }
         return childId
     }
+
+    private fun attendanceTimes(
+        childId: ChildId,
+        date: LocalDate,
+        interval: TimeInterval,
+        modifiedAt: HelsinkiDateTime,
+        modifiedBy: EvakaUser,
+    ) =
+        AttendanceTimesForDate(
+            id =
+                db.read { tx ->
+                    tx.createQuery {
+                            sql(
+                                "SELECT id FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)} AND start_time = ${bind(interval.start)}",
+                            )
+                        }
+                        .exactlyOne<ChildAttendanceId>()
+                },
+            date = date,
+            interval = interval,
+            modifiedAt = modifiedAt,
+            modifiedBy = modifiedBy,
+            arrivedAddedAt = modifiedAt,
+            arrivedAddedBy = modifiedBy,
+            arrivedModifiedAt = modifiedAt,
+            arrivedModifiedBy = modifiedBy,
+            departedAddedAt = modifiedAt.takeIf { interval.end != null },
+            departedAddedBy = modifiedBy.takeIf { interval.end != null },
+            departedModifiedAt = modifiedAt.takeIf { interval.end != null },
+            departedModifiedBy = modifiedBy.takeIf { interval.end != null },
+        )
 }

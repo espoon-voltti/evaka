@@ -1007,6 +1007,14 @@ export class Fixture {
       departed: null,
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser.id,
+      arrivedAddedAt: null,
+      arrivedAddedBy: null,
+      arrivedModifiedAt: null,
+      arrivedModifiedBy: null,
+      departedAddedAt: null,
+      departedAddedBy: null,
+      departedModifiedAt: null,
+      departedModifiedBy: null,
       ...initial
     }
     return {

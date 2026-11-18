@@ -39,8 +39,24 @@ fun Database.Transaction.insertAttendance(
     return createUpdate {
         sql(
             """
-                INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
-                VALUES (${bind(childId)}, ${bind(unitId)}, ${bind(date)}, ${bind(range.start)}, ${bind(range.end)}, ${bind(now)}, ${bind(createdById)})
+                INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by, departed_added_at, departed_added_by, departed_modified_at, departed_modified_by)
+                VALUES (
+                    ${bind(childId)},
+                    ${bind(unitId)},
+                    ${bind(date)},
+                    ${bind(range.start)},
+                    ${bind(range.end)},
+                    ${bind(now)},
+                    ${bind(createdById)},
+                    ${bind(now)},
+                    ${bind(createdById)},
+                    ${bind(now)},
+                    ${bind(createdById)},
+                    ${bind(now.takeIf { range.end != null })},
+                    ${bind(createdById.takeIf { range.end != null })},
+                    ${bind(now.takeIf { range.end != null })},
+                    ${bind(createdById.takeIf { range.end != null })}
+                )
                 RETURNING id
                 """,
         )
@@ -428,7 +444,17 @@ fun Database.Transaction.unsetAttendanceEndTime(
 ) {
     execute {
         sql(
-            "UPDATE child_attendance SET end_time = NULL, modified_at=${bind(now)}, modified_by=${bind(updatedById)} WHERE id = ${bind(attendanceId)}",
+            """
+UPDATE child_attendance
+SET end_time = NULL,
+    modified_at = ${bind(now)},
+    modified_by = ${bind(updatedById)},
+    departed_added_at = NULL,
+    departed_added_by = NULL,
+    departed_modified_at = NULL,
+    departed_modified_by = NULL
+WHERE id = ${bind(attendanceId)}
+""",
         )
     }
 }
@@ -441,7 +467,17 @@ fun Database.Transaction.updateAttendanceEnd(
 ) {
     execute {
         sql(
-            "UPDATE child_attendance SET end_time = ${bind(endTime)}, modified_at = ${bind(now)}, modified_by = ${bind(updatedById)} WHERE id = ${bind(attendanceId)}",
+            """
+UPDATE child_attendance
+SET end_time = ${bind(endTime)},
+    modified_at = ${bind(now)},
+    modified_by = ${bind(updatedById)},
+    departed_added_at = ${bind(now)},
+    departed_added_by = ${bind(updatedById)},
+    departed_modified_at = ${bind(now)},
+    departed_modified_by = ${bind(updatedById)}
+WHERE id = ${bind(attendanceId)}
+""",
         )
     }
 }

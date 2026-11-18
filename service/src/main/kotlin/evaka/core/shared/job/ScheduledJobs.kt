@@ -449,7 +449,12 @@ WITH attendances_to_end AS (
         (p.unit_id IS DISTINCT FROM u.id AND bc.unit_id IS DISTINCT FROM u.id)
     )
 )
-UPDATE child_attendance SET end_time = '23:59'::time
+UPDATE child_attendance
+SET end_time = '23:59'::time,
+    departed_added_at = ${bind(clock.now())},
+    departed_added_by = ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)},
+    departed_modified_at = ${bind(clock.now())},
+    departed_modified_by = ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}
 WHERE id IN (SELECT id FROM attendances_to_end)
 """,
                     )

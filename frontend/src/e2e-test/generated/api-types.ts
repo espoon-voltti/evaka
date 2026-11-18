@@ -370,9 +370,17 @@ export interface DevChild {
 */
 export interface DevChildAttendance {
   arrived: LocalTime
+  arrivedAddedAt: HelsinkiDateTime | null
+  arrivedAddedBy: EvakaUserId | null
+  arrivedModifiedAt: HelsinkiDateTime | null
+  arrivedModifiedBy: EvakaUserId | null
   childId: PersonId
   date: LocalDate
   departed: LocalTime | null
+  departedAddedAt: HelsinkiDateTime | null
+  departedAddedBy: EvakaUserId | null
+  departedModifiedAt: HelsinkiDateTime | null
+  departedModifiedBy: EvakaUserId | null
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUserId
   unitId: DaycareId
@@ -1375,8 +1383,12 @@ export function deserializeJsonDevChildAttendance(json: JsonOf<DevChildAttendanc
   return {
     ...json,
     arrived: LocalTime.parseIso(json.arrived),
+    arrivedAddedAt: (json.arrivedAddedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedAddedAt) : null,
+    arrivedModifiedAt: (json.arrivedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedModifiedAt) : null,
     date: LocalDate.parseIso(json.date),
     departed: (json.departed != null) ? LocalTime.parseIso(json.departed) : null,
+    departedAddedAt: (json.departedAddedAt != null) ? HelsinkiDateTime.parseIso(json.departedAddedAt) : null,
+    departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }

@@ -5,6 +5,8 @@
 package evaka.core.attendance
 
 import evaka.core.FullApplicationTest
+import evaka.core.shared.EvakaUserId
+import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevBackupCare
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
@@ -71,6 +73,10 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
         assertEquals(LocalTime.of(23, 59), attendanceEndTimes.first())
+        assertEquals(
+            listOf(listOf(clock.now(), systemUserId, clock.now(), systemUserId)),
+            getDepartureMetadata(),
+        )
     }
 
     @Test
@@ -235,6 +241,24 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
         assertEquals(LocalTime.of(23, 59), attendanceEndTimes.first())
+    }
+
+    private val systemUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
+
+    private fun getDepartureMetadata() = db.read {
+        it.createQuery {
+                sql(
+                    "SELECT departed_added_at, departed_added_by, departed_modified_at, departed_modified_by FROM child_attendance",
+                )
+            }
+            .toList {
+                listOf(
+                    column<HelsinkiDateTime>("departed_added_at"),
+                    column<EvakaUserId>("departed_added_by"),
+                    column<HelsinkiDateTime>("departed_modified_at"),
+                    column<EvakaUserId>("departed_modified_by"),
+                )
+            }
     }
 
     private fun getAttendanceEndTimes() = db.read {

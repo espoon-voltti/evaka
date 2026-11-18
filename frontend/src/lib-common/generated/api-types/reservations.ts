@@ -6,6 +6,7 @@
 
 import type { AbsenceCategory } from './absence'
 import type { AbsenceType } from './absence'
+import type { ChildAttendanceId } from './shared'
 import type { ChildImageId } from './shared'
 import type { ChildServiceNeedInfo } from './absence'
 import type { DailyServiceTimesValue } from './dailyservicetimes'
@@ -60,7 +61,16 @@ export interface AbsenceTypeResponse {
 * Generated from evaka.core.reservations.AttendanceTimesForDate
 */
 export interface AttendanceTimesForDate {
+  arrivedAddedAt: HelsinkiDateTime | null
+  arrivedAddedBy: EvakaUser | null
+  arrivedModifiedAt: HelsinkiDateTime | null
+  arrivedModifiedBy: EvakaUser | null
   date: LocalDate
+  departedAddedAt: HelsinkiDateTime | null
+  departedAddedBy: EvakaUser | null
+  departedModifiedAt: HelsinkiDateTime | null
+  departedModifiedBy: EvakaUser | null
+  id: ChildAttendanceId
   interval: TimeInterval
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
@@ -480,7 +490,11 @@ export function deserializeJsonAbsenceTypeResponse(json: JsonOf<AbsenceTypeRespo
 export function deserializeJsonAttendanceTimesForDate(json: JsonOf<AttendanceTimesForDate>): AttendanceTimesForDate {
   return {
     ...json,
+    arrivedAddedAt: (json.arrivedAddedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedAddedAt) : null,
+    arrivedModifiedAt: (json.arrivedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedModifiedAt) : null,
     date: LocalDate.parseIso(json.date),
+    departedAddedAt: (json.departedAddedAt != null) ? HelsinkiDateTime.parseIso(json.departedAddedAt) : null,
+    departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null,
     interval: TimeInterval.parseJson(json.interval),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }

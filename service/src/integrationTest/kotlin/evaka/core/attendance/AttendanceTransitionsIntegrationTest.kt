@@ -10,6 +10,7 @@ import evaka.core.absence.AbsenceType
 import evaka.core.placement.PlacementType
 import evaka.core.preschoolTerm2023
 import evaka.core.shared.ChildId
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevAbsence
@@ -54,6 +55,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private val mockClock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(17, 19, 30)))
     private val roundedNow = mockClock.now().toLocalTime().withSecond(0).withNano(0)
+    private val systemUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
 
     @BeforeEach
     fun beforeEach() {
@@ -280,6 +282,35 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         val child = expectOneAttendanceStatus()
         assertEquals(AttendanceStatus.COMING, child.status)
+        val arrivalMarkedAt =
+            HelsinkiDateTime.of(mockClock.today().minusDays(1), LocalTime.of(20, 50))
+        assertEquals(
+            listOf(
+                AttendanceMetadata(
+                    LocalTime.of(20, 50),
+                    arrivalMarkedAt,
+                    systemUserId,
+                    arrivalMarkedAt,
+                    systemUserId,
+                    mockClock.now(),
+                    mobileUser.evakaUserId,
+                    mockClock.now(),
+                    mobileUser.evakaUserId,
+                ),
+                AttendanceMetadata(
+                    LocalTime.of(0, 0),
+                    mockClock.now(),
+                    mobileUser.evakaUserId,
+                    mockClock.now(),
+                    mobileUser.evakaUserId,
+                    mockClock.now(),
+                    mobileUser.evakaUserId,
+                    mockClock.now(),
+                    mobileUser.evakaUserId,
+                ),
+            ),
+            getAttendanceMetadata(),
+        )
     }
 
     @Test
@@ -303,6 +334,23 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances[0].arrived)
         assertNull(child.attendances[0].departed)
         assertTrue(child.absences.isEmpty())
+        val arrivalMarkedAt = mockClock.now().withTime(roundedNow.minusHours(1))
+        assertEquals(
+            listOf(
+                AttendanceMetadata(
+                    roundedNow.minusHours(1),
+                    arrivalMarkedAt,
+                    systemUserId,
+                    arrivalMarkedAt,
+                    systemUserId,
+                    null,
+                    null,
+                    null,
+                    null,
+                ),
+            ),
+            getAttendanceMetadata(),
+        )
     }
 
     @Test
@@ -425,6 +473,32 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertThrows<Conflict> { markFullDayAbsence(AbsenceType.SICKLEAVE) }
     }
 
+    private data class AttendanceMetadata(
+        val startTime: LocalTime,
+        val arrivedAddedAt: HelsinkiDateTime?,
+        val arrivedAddedBy: EvakaUserId?,
+        val arrivedModifiedAt: HelsinkiDateTime?,
+        val arrivedModifiedBy: EvakaUserId?,
+        val departedAddedAt: HelsinkiDateTime?,
+        val departedAddedBy: EvakaUserId?,
+        val departedModifiedAt: HelsinkiDateTime?,
+        val departedModifiedBy: EvakaUserId?,
+    )
+
+    private fun getAttendanceMetadata() = db.read {
+        it.createQuery {
+                sql(
+                    """
+SELECT start_time, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by,
+    departed_added_at, departed_added_by, departed_modified_at, departed_modified_by
+FROM child_attendance
+ORDER BY date, start_time
+""",
+                )
+            }
+            .toList<AttendanceMetadata>()
+    }
+
     private fun givenChildPlacement(placementType: PlacementType) {
         val placement =
             DevPlacement(
@@ -465,6 +539,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 unitId = daycare.id,
                 arrived = HelsinkiDateTime.of(date, arrived),
                 departed = null,
+                modifiedAt = HelsinkiDateTime.of(date, arrived),
             )
         }
         val child = expectOneAttendanceStatus()
@@ -481,6 +556,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 unitId = daycare.id,
                 arrived = mockClock.now().withTime(arrived),
                 departed = mockClock.now().withTime(departed),
+                modifiedAt = mockClock.now().withTime(arrived),
             )
         }
         val child = expectOneAttendanceStatus()
