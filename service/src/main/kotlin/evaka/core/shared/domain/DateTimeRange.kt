@@ -9,6 +9,9 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
+fun orMax(value: HelsinkiDateTime?): HelsinkiDateTime = value ?: HelsinkiDateTime.MAX
+
+/** A datetime range with an inclusive start and an exclusive end */
 data class FiniteDateTimeRange(
     override val start: HelsinkiDateTime,
     override val end: HelsinkiDateTime,
@@ -130,6 +133,8 @@ data class FiniteDateTimeRange(
 
     fun getDuration(): Duration = Duration.between(start.toInstant(), end.toInstant())
 
+    fun asDateTimeRange(): DateTimeRange = DateTimeRange(start, end)
+
     companion object {
         fun tryCreate(start: HelsinkiDateTime, end: HelsinkiDateTime): FiniteDateTimeRange? =
             if (start < end) FiniteDateTimeRange(start, end) else null
@@ -139,5 +144,47 @@ data class FiniteDateTimeRange(
                 HelsinkiDateTime.of(date, startTime),
                 HelsinkiDateTime.of(date, endTime),
             )
+    }
+}
+
+/** A datetime range with an inclusive start and an exclusive end. A null end means no end. */
+data class DateTimeRange(val start: HelsinkiDateTime, val end: HelsinkiDateTime?) {
+    init {
+        require(start <= orMax(end)) {
+            "Attempting to initialize invalid datetime range with start: $start, end: $end"
+        }
+    }
+
+    fun asFiniteDateTimeRange(): FiniteDateTimeRange? = end?.let { FiniteDateTimeRange(start, it) }
+
+    fun asFiniteDateTimeRange(defaultEnd: HelsinkiDateTime): FiniteDateTimeRange =
+        FiniteDateTimeRange(start, end ?: defaultEnd)
+
+    fun contains(other: DateTimeRange) =
+        this.start <= other.start && orMax(other.end) <= orMax(this.end)
+
+    fun contains(other: FiniteDateTimeRange) = contains(other.asDateTimeRange())
+
+    fun includes(value: HelsinkiDateTime) = this.start <= value && value < orMax(this.end)
+
+    fun overlaps(other: DateTimeRange) =
+        this.start < orMax(other.end) && other.start < orMax(this.end)
+
+    fun overlaps(other: FiniteDateTimeRange) = overlaps(other.asDateTimeRange())
+
+    fun intersection(other: DateTimeRange): DateTimeRange? {
+        val start = maxOf(this.start, other.start)
+        val end =
+            if (this.end != null && other.end != null) {
+                minOf(this.end, other.end)
+            } else {
+                this.end ?: other.end
+            }
+        return if (end == null || start < end) DateTimeRange(start, end) else null
+    }
+
+    fun intersection(other: FiniteDateTimeRange): FiniteDateTimeRange? {
+        val result = intersection(other.asDateTimeRange())
+        return if (result == null) null else FiniteDateTimeRange(result.start, result.end!!)
     }
 }

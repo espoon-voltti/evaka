@@ -136,6 +136,8 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
     override fun toString(): String = toZonedDateTime().toString()
 
     companion object {
+        val MAX = of(LocalDate.MAX, LocalTime.MAX)
+
         /**
          * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time
          * matches the given values

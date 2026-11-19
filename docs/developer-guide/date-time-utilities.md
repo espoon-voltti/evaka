@@ -11,7 +11,7 @@ Quick reference for eVaka's date and time utilities - custom classes that provid
 **Key principles:**
 - Always use these utilities instead of JavaScript Date
 - Date ranges (DateRange, FiniteDateRange) use **inclusive end** semantics (end date is included in the range)
-- Time ranges (TimeRange, TimeInterval, FiniteDateTimeRange) use **exclusive end** semantics (end time is not included)
+- Time ranges (TimeRange, TimeInterval, FiniteDateTimeRange, DateTimeRange) use **exclusive end** semantics (end time is not included)
 - All date/time utilities are immutable - operations return new instances
 
 ## Core Types
@@ -130,6 +130,19 @@ Date and time range with both start and end required.
 
 **Type-Specific Methods (backend only):**
 - `getDuration()` - length of the range as a `Duration`
+- `asDateTimeRange()` - converts to DateTimeRange
+
+### DateTimeRange
+
+Date and time range with finite start and nullable end. A null end means that the range has no end.
+
+**Files:**
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateTimeRange.kt` (data class)
+
+**Structure:** `DateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime?)`
+
+**Type-Specific Methods:**
+- `asFiniteDateTimeRange()` - converts to FiniteDateTimeRange if end is non-null
 
 ## Range Operations
 
@@ -162,7 +175,7 @@ The following operations are only available on the backend and are part of the `
 - `subtract()` - removes one range from another
 - `relationTo()` - determines spatial relationship between ranges
 
-**Available on:** FiniteDateRange, TimeRange, and FiniteDateTimeRange (types with required start and end). Not available on DateRange or TimeInterval (types with nullable end).
+**Available on:** FiniteDateRange, TimeRange, and FiniteDateTimeRange (types with required start and end). Not available on DateRange, TimeInterval or DateTimeRange (types with nullable end).
 
 Additionally, `FiniteDateRange` has a `complement()` method that finds the inverse of a range (delegates to `subtract`).
 
