@@ -1741,7 +1741,6 @@ export const fi = {
         time: 'Ajalle',
         sum: 'Yhteensä',
         entrepreneur: 'Yrittäjä',
-        echa: 'Euroopan kemikaalivirasto',
         source: 'Lähde',
         createdFromApplication: 'Luotu automaattisesti hakemukselta',
         application: 'Hakemus',

@@ -615,7 +615,6 @@ data class DevIncome(
     @Json val data: Map<String, IncomeValue> = mapOf(),
     val effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
     val isEntrepreneur: Boolean = false,
-    val worksAtEcha: Boolean = false,
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUserId,
 )
@@ -624,8 +623,8 @@ data class DevIncome(
 fun Database.Transaction.insert(row: DevIncome): IncomeId = createUpdate {
     sql(
         """
-INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, created_at, created_by, modified_at, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bindJson(row.data)}, ${bind(row.effect)}::income_effect, ${bind(row.isEntrepreneur)}, ${bind(row.worksAtEcha)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
+INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, created_at, created_by, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bindJson(row.data)}, ${bind(row.effect)}::income_effect, ${bind(row.isEntrepreneur)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 """,
     )
 }

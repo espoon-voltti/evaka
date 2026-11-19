@@ -1749,7 +1749,6 @@ export const sv: typeof fi = {
         time: 'För tiden',
         sum: 'Totalt',
         entrepreneur: 'Företagare',
-        echa: 'Europeiska kemikaliemyndigheten',
         source: 'Källa',
         createdFromApplication: 'Skapad automatiskt från ansökan',
         application: 'Ansökan',

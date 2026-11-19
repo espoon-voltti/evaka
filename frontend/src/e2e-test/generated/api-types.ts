@@ -724,7 +724,6 @@ export interface DevIncome {
   personId: PersonId
   validFrom: LocalDate
   validTo: LocalDate | null
-  worksAtEcha: boolean
 }
 
 /**

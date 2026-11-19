@@ -9,7 +9,6 @@ import evaka.core.ConstList
 import evaka.core.placement.PlacementType
 import evaka.core.shared.*
 import evaka.core.shared.db.DatabaseEnum
-import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.europeHelsinki
@@ -458,17 +457,3 @@ fun feeAlterationEffect(fee: Int, type: FeeAlterationType, amount: Int, absolute
     // This so that the effect of absolute discounts (eg. -10€) on 0€ fees is 0€ as well
     return max(0, fee + effect) - fee
 }
-
-// Current flat increase for children with a parent working at ECHA
-const val ECHAIncrease = 93
-
-fun getECHAIncrease(childId: ChildId, period: DateRange) =
-    FeeAlteration(
-        personId = childId,
-        type = FeeAlterationType.INCREASE,
-        amount = ECHAIncrease,
-        isAbsolute = true,
-        notes = "ECHA",
-        validFrom = period.start,
-        validTo = period.end,
-    )

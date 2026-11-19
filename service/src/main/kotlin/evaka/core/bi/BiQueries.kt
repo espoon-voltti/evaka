@@ -349,7 +349,7 @@ object BiQueries {
         csvQuery<BiIncome> { _ ->
             sql(
                 """
-            select id, person_id, data::text, valid_from, valid_to, notes, modified_at::text AS updated_at, effect, is_entrepreneur, works_at_echa, application_id, modified_by AS updated_by
+            select id, person_id, data::text, valid_from, valid_to, notes, modified_at::text AS updated_at, effect, is_entrepreneur, false AS works_at_echa, application_id, modified_by AS updated_by
             FROM income
         """,
             )

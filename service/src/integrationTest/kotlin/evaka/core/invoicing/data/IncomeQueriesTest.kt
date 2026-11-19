@@ -65,7 +65,6 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             effect = IncomeEffect.INCOME,
             data = testIncomeData,
             isEntrepreneur = true,
-            worksAtECHA = true,
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
             notes = "",

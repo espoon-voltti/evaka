@@ -117,7 +117,6 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                     totalIncome = 0,
                                     totalExpenses = 0,
                                     total = 0,
-                                    worksAtECHA = false,
                                 ),
                         ),
                     baseDecision(child3)
@@ -132,7 +131,6 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                     totalIncome = 0,
                                     totalExpenses = 0,
                                     total = 0,
-                                    worksAtECHA = false,
                                 ),
                         ),
                     baseDecision(child4)
@@ -145,7 +143,6 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                     totalIncome = 200000,
                                     totalExpenses = 0,
                                     total = 200000,
-                                    worksAtECHA = false,
                                 ),
                         ),
                     baseDecision(child5)
@@ -158,7 +155,6 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                     totalIncome = 200000,
                                     totalExpenses = 0,
                                     total = 200000,
-                                    worksAtECHA = false,
                                 ),
                             partnerId = adult7.id,
                             partnerIncome =
@@ -168,7 +164,6 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                     totalIncome = 0,
                                     totalExpenses = 0,
                                     total = 0,
-                                    worksAtECHA = false,
                                 ),
                         ),
                 ),

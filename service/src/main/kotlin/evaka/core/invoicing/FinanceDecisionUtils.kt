@@ -53,7 +53,6 @@ fun mapIncomeToDecisionIncome(
         totalIncome = calculateTotalIncome(income.data, coefficientMultiplierProvider),
         totalExpenses = calculateTotalExpense(income.data, coefficientMultiplierProvider),
         total = calculateIncomeTotal(income.data, coefficientMultiplierProvider),
-        worksAtECHA = income.worksAtECHA,
     )
 
 fun calculateIncomeTotal(
