@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,7 +11,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
-class TimeTest {
+class DateRangeTest {
     @Test
     fun `asDistinctPeriods works in basic case`() {
         val periods = listOf(FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 3)))
@@ -76,9 +76,7 @@ class TimeTest {
             result,
         )
     }
-}
 
-class DateRangeTest {
     @Test
     fun `intersection and overlaps return null and false if there is no overlap`() {
         //   1234

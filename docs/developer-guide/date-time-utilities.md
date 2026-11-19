@@ -22,15 +22,15 @@ Immutable date without timezone (year, month, day). Frontend uses a TypeScript c
 
 **Files:**
 - Frontend: `frontend/src/lib-common/local-date.ts`
-- Backend: `java.time.LocalDate` with extensions in `service/src/main/kotlin/evaka/core/shared/domain/Time.kt`
+- Backend: `java.time.LocalDate` with extensions in `service/src/main/kotlin/evaka/core/shared/domain/DateRange.kt`
 
 ### LocalTime
 
-Time of day (hour:minute:second.nanosecond) without date or timezone. Frontend uses a TypeScript class, backend uses `java.time.LocalTime` with Kotlin extensions.
+Time of day (hour:minute:second.nanosecond) without date or timezone. Frontend uses a TypeScript class, backend uses `java.time.LocalTime`.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/local-time.ts`
-- Backend: `java.time.LocalTime` with extensions in `service/src/main/kotlin/evaka/core/shared/domain/Time.kt`
+- Backend: `java.time.LocalTime`
 
 ### YearMonth
 
@@ -60,7 +60,7 @@ Date range with finite start and nullable end.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/date-range.ts`
-- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateRange.kt` (data class)
 
 **Structure:** `DateRange(start: LocalDate, end: LocalDate | null)`
 
@@ -73,7 +73,7 @@ Date range with both start and end required.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/finite-date-range.ts`
-- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class implementing `BoundedRange`)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateRange.kt` (data class implementing `BoundedRange`)
 
 **Structure:** `FiniteDateRange(start: LocalDate, end: LocalDate)`
 
@@ -124,7 +124,7 @@ Date and time range with both start and end required.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/generated/api-types/shared.ts` (generated interface)
-- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/HelsinkiDateTime.kt` (data class implementing `BoundedRange`)
 
 **Structure:** `HelsinkiDateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime)`
 
