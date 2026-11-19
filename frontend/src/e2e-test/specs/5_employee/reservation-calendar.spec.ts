@@ -851,7 +851,8 @@ test.describe('Unit group calendar for shift care unit', () => {
       unitId: testDaycare2.id,
       date: startDate,
       arrived,
-      departed
+      departed,
+      modifiedAt: startDate.toHelsinkiDateTime(LocalTime.of(14, 0))
     }).save()
 
     await Fixture.childAttendance({
@@ -895,6 +896,13 @@ test.describe('Unit group calendar for shift care unit', () => {
     await expect
       .poll(() => childReservations.getAttendance(startDate, 0))
       .toEqual(['08:30', '13:30'])
+    // an attendance from before the per-time markings shows its row-level modification
+    await childReservations.assertAttendanceStartTooltip(
+      child1Fixture.id,
+      startDate,
+      0,
+      `Viimeksi muokattu ${startDate.format()} 14:00; muokkaaja: eVaka`
+    )
     await expect
       .poll(() => childReservations.getAttendance(startDate, 1))
       .toEqual(['18:15', '23:59'])

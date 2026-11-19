@@ -113,6 +113,21 @@ export class UnitChildReservationsTable extends Element {
     return new ReservationModal(this.page.findByDataQa('modal'))
   }
 
+  async assertAttendanceStartTooltip(
+    childId: UUID,
+    date: LocalDate,
+    nth: number,
+    expectedTooltipText: string
+  ): Promise<void> {
+    await this.attendanceCells(childId, date)
+      .nth(nth)
+      .findByDataQa('attendance-start')
+      .hover()
+    await expect(this.page.findByDataQa('attendance-start-tooltip')).toHaveText(
+      expectedTooltipText
+    )
+  }
+
   async assertCannotOpenChildDateModal(
     childId: UUID,
     date: LocalDate

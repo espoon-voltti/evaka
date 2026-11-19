@@ -8,6 +8,7 @@ import React from 'react'
 import type { EvakaUser } from 'lib-common/generated/api-types/user'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { Italic, P } from 'lib-components/typography'
 
 import { useTranslation } from '../../../state/i18n'
@@ -106,6 +107,32 @@ export function isRetroactive(
     isAddedOnLaterDate(metadata, date)
   )
 }
+
+/**
+ * Like `isRetroactive`, but a child arrival at 00:00 or departure at 23:59 is
+ * only retroactive when a person modified it after adding it.
+ */
+export function isChildMarkingRetroactive(
+  metadata: MarkingMetadata,
+  time: LocalTime,
+  endpoint: 'arrival' | 'departure',
+  date: LocalDate
+): boolean {
+  return isOvernightBoundary(time, endpoint)
+    ? isModifiedByPersonAfterAdding(metadata)
+    : isRetroactive(metadata, date)
+}
+
+// Marking a departure on a later day splits the attendance into per-date rows
+// ending at 23:59 and starting at 00:00, so their later added date is not a
+// late marking.
+export const isOvernightBoundary = (
+  time: LocalTime,
+  endpoint: 'arrival' | 'departure'
+) =>
+  endpoint === 'arrival'
+    ? time.isEqual(LocalTime.of(0, 0))
+    : time.isEqual(LocalTime.of(23, 59))
 
 /**
  * Tooltip lines for one attendance time. The "added" line is marked with an

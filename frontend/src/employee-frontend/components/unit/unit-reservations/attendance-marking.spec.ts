@@ -7,10 +7,12 @@ import { describe, expect, it } from 'vitest'
 import type { EvakaUser } from 'lib-common/generated/api-types/user'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid } from 'lib-common/id-type'
+import LocalTime from 'lib-common/local-time'
 
 import type { MarkingMetadata } from './attendance-marking'
 import {
   isAddedOnLaterDate,
+  isChildMarkingRetroactive,
   isModifiedAfterAdding,
   isModifiedByPersonAfterAdding,
   isRetroactive
@@ -106,5 +108,73 @@ describe('isRetroactive', () => {
     expect(isRetroactive({ ...addedOnTime, modifiedBy: other }, date)).toBe(
       true
     )
+  })
+})
+
+describe('isChildMarkingRetroactive', () => {
+  const nextDay = HelsinkiDateTime.of(2026, 10, 29, 8, 0)
+  const addedNextDay: MarkingMetadata = {
+    addedAt: nextDay,
+    addedBy: person,
+    modifiedAt: nextDay,
+    modifiedBy: person
+  }
+  it('is false for a 23:59 departure added the next day', () => {
+    expect(
+      isChildMarkingRetroactive(
+        addedNextDay,
+        LocalTime.of(23, 59),
+        'departure',
+        date
+      )
+    ).toBe(false)
+  })
+  it('is false for a 00:00 arrival added the next day', () => {
+    expect(
+      isChildMarkingRetroactive(
+        addedNextDay,
+        LocalTime.of(0, 0),
+        'arrival',
+        date
+      )
+    ).toBe(false)
+  })
+  it('is true for a 23:59 departure that a person modified afterwards', () => {
+    expect(
+      isChildMarkingRetroactive(
+        { ...addedNextDay, modifiedAt: nextDay.addHours(1), modifiedBy: other },
+        LocalTime.of(23, 59),
+        'departure',
+        date
+      )
+    ).toBe(true)
+  })
+  it('is true for a departure added the next day', () => {
+    expect(
+      isChildMarkingRetroactive(
+        addedNextDay,
+        LocalTime.of(16, 0),
+        'departure',
+        date
+      )
+    ).toBe(true)
+  })
+  it('compares an arrival with the date the attendance ends', () => {
+    expect(
+      isChildMarkingRetroactive(
+        addedNextDay,
+        LocalTime.of(20, 0),
+        'arrival',
+        date
+      )
+    ).toBe(true)
+    expect(
+      isChildMarkingRetroactive(
+        addedNextDay,
+        LocalTime.of(20, 0),
+        'arrival',
+        nextDay.toLocalDate()
+      )
+    ).toBe(false)
   })
 })

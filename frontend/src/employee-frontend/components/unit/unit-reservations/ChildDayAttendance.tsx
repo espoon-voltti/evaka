@@ -21,6 +21,7 @@ import type {
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import type LocalDate from 'lib-common/local-date'
+import type LocalTime from 'lib-common/local-time'
 import { reservationHasTimes } from 'lib-common/reservations'
 import type TimeRange from 'lib-common/time-range'
 import type TimeRangeEndpoint from 'lib-common/time-range-endpoint'
@@ -34,6 +35,14 @@ import { faExclamationTriangle } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 
 import { DateCell, DetailsToggle, TimeCell, TimesRow } from './ChildDayCommons'
+import {
+  arrivedMetadata,
+  departedMetadata,
+  hasMarkingMetadata,
+  isChildMarkingRetroactive,
+  isOvernightBoundary,
+  MarkingTooltipContent
+} from './attendance-marking'
 
 interface Props {
   date: LocalDate
@@ -110,68 +119,121 @@ export default React.memo(function ChildDayAttendance({
     unitIsNotOpenOnReservation &&
     !inOtherUnit
 
+  const endpointMarking = (
+    attendance: AttendanceTimesForDate,
+    endpoint: 'arrival' | 'departure',
+    time: LocalTime
+  ) => {
+    const metadata =
+      endpoint === 'arrival'
+        ? arrivedMetadata(attendance)
+        : departedMetadata(attendance)
+    const lateAfter =
+      endpoint === 'arrival' ? attendance.endDate : attendance.date
+    return {
+      tooltip: hasMarkingMetadata(metadata) ? (
+        <MarkingTooltipContent
+          metadata={metadata}
+          date={isOvernightBoundary(time, endpoint) ? null : lateAfter}
+        />
+      ) : (
+        i18n.unit.attendanceReservations.lastModified(
+          attendance.modifiedAt.format(),
+          attendance.modifiedBy.name
+        )
+      ),
+      retroactive: isChildMarkingRetroactive(
+        metadata,
+        time,
+        endpoint,
+        lateAfter
+      )
+    }
+  }
+
+  const arrival = attendance
+    ? endpointMarking(
+        attendance,
+        'arrival',
+        attendance.interval.start.asLocalTime()
+      )
+    : null
+  const departure = attendance?.interval.end
+    ? endpointMarking(
+        attendance,
+        'departure',
+        attendance.interval.end.asLocalTime()
+      )
+    : null
+
   return (
     <AttendanceDateCell>
-      <Tooltip
-        tooltip={
-          attendance &&
-          i18n.unit.attendanceReservations.lastModified(
-            attendance.modifiedAt.format(),
-            attendance.modifiedBy.name
-          )
-        }
-      >
-        {!inOtherUnit && !isInBackupGroup ? (
-          <TimesRow
-            data-qa={`attendance-${date.formatIso()}-${attendanceIndex}`}
-          >
-            {requiresBackupCare ? (
-              <TimeCell data-qa="backup-care-required-warning" $warning>
-                {i18n.unit.attendanceReservations.requiresBackupCare}{' '}
-                <FontAwesomeIcon
-                  icon={faExclamationTriangle}
-                  color={colors.status.warning}
-                />
-              </TimeCell>
-            ) : (
-              <>
-                <AttendanceTime
-                  data-qa="attendance-start"
-                  $warning={
-                    attendance
-                      ? !isWithinExpectedTimes(attendance.interval.start)
-                      : false
-                  }
-                >
-                  {attendance?.interval?.formatStart() ?? '-'}
-                </AttendanceTime>
-                <AttendanceTime
-                  data-qa="attendance-end"
-                  $warning={
-                    attendance?.interval?.end
-                      ? !isWithinExpectedTimes(attendance.interval.end)
-                      : false
-                  }
-                >
-                  {attendance?.interval?.end
-                    ? attendance.interval.formatEnd()
-                    : '-'}
-                </AttendanceTime>
-              </>
-            )}
-          </TimesRow>
-        ) : null}
-        {!inOtherUnit && !isInBackupGroup && scheduleType !== 'TERM_BREAK' && (
-          <DetailsToggle>
-            <IconOnlyButton
-              icon={faCircleEllipsis}
-              onClick={onStartEdit}
-              data-qa="open-details"
-              aria-label={i18n.common.open}
-            />
-          </DetailsToggle>
-        )}
-      </Tooltip>
+      {!inOtherUnit && !isInBackupGroup ? (
+        <TimesRow data-qa={`attendance-${date.formatIso()}-${attendanceIndex}`}>
+          {requiresBackupCare ? (
+            <TimeCell data-qa="backup-care-required-warning" $warning>
+              {i18n.unit.attendanceReservations.requiresBackupCare}{' '}
+              <FontAwesomeIcon
+                icon={faExclamationTriangle}
+                color={colors.status.warning}
+              />
+            </TimeCell>
+          ) : (
+            <>
+              <AttendanceTime
+                data-qa="attendance-start"
+                $warning={
+                  attendance
+                    ? !isWithinExpectedTimes(attendance.interval.start)
+                    : false
+                }
+              >
+                {attendance && arrival ? (
+                  <Tooltip
+                    tooltip={arrival.tooltip}
+                    data-qa="attendance-start-tooltip"
+                  >
+                    {attendance.interval.formatStart()}
+                    {arrival.retroactive && '*'}
+                  </Tooltip>
+                ) : (
+                  '-'
+                )}
+              </AttendanceTime>
+              <AttendanceTime
+                data-qa="attendance-end"
+                $warning={
+                  attendance?.interval?.end
+                    ? !isWithinExpectedTimes(attendance.interval.end)
+                    : false
+                }
+              >
+                {attendance && departure ? (
+                  <Tooltip
+                    tooltip={departure.tooltip}
+                    data-qa="attendance-end-tooltip"
+                  >
+                    {attendance.interval.formatEnd()}
+                    {departure.retroactive && '*'}
+                  </Tooltip>
+                ) : (
+                  '-'
+                )}
+              </AttendanceTime>
+            </>
+          )}
+        </TimesRow>
+      ) : null}
+      {!inOtherUnit && !isInBackupGroup && scheduleType !== 'TERM_BREAK' && (
+        <DetailsToggle>
+          <IconOnlyButton
+            icon={faCircleEllipsis}
+            onClick={onStartEdit}
+            data-qa="open-details"
+            aria-label={i18n.common.open}
+          />
+        </DetailsToggle>
+      )}
     </AttendanceDateCell>
   )
 })
