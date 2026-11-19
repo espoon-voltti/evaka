@@ -42,7 +42,7 @@ export default React.memo(function AbsenceDay({ absences }: Props) {
   const first = absences[0]
   if (first === undefined) return null
 
-  const { absenceType, staffCreated } = first.absence
+  const { absenceType } = first.absence
   return (
     <FixedSpaceRow $spacing="xs" $alignItems="center" data-qa="absence">
       <AbsenceTooltip
@@ -55,10 +55,7 @@ export default React.memo(function AbsenceDay({ absences }: Props) {
           color={absenceColors[absenceType]}
           size="m"
         />
-        <span>
-          {i18n.absences.absenceTypesShort[absenceType]}
-          {staffCreated && '*'}
-        </span>
+        <span>{i18n.absences.absenceTypesShort[absenceType]}</span>
       </AbsenceTooltip>
     </FixedSpaceRow>
   )

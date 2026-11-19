@@ -52,12 +52,6 @@ const AttendanceTime = styled(Time)`
   background: ${colors.grayscale.g4};
 `
 
-const Footnote = styled.div`
-  color: ${colors.grayscale.g70};
-  font-size: 14px;
-  margin-top: -24px;
-`
-
 interface Props {
   unitId: DaycareId
   selectedGroup: AttendanceGroupFilter
@@ -188,9 +182,6 @@ export default React.memo(function UnitAttendanceReservationsView({
               selectedDate={selectedDate}
               selectedGroup={selectedGroup}
             />
-            <Footnote data-qa="created-by-employee-footnote">
-              {i18n.unit.attendanceReservations.createdByEmployee}
-            </Footnote>
             <div>
               <FixedSpaceRow $alignItems="center">
                 <Label id="legend-title-label">

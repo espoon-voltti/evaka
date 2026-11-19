@@ -2594,7 +2594,7 @@ export const sv: typeof fi = {
       doesNotAffectOccupancy: 'Räknas inte i belastningsgraden',
       inOtherUnit: 'I annan enhet',
       inOtherGroup: 'I annan grupp',
-      createdByEmployee: '*Anteckning gjord av personal'
+      createdByEmployee: 'Anteckning gjord av personal'
     },
     staffAttendance: {
       startTime: 'ankomst',

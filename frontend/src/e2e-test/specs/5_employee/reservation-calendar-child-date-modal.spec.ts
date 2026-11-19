@@ -123,10 +123,10 @@ test.describe('Reservation calendar child date modal', () => {
 
     let reservations = reservationsTable.reservationCells(childId, date)
     await expect(reservations).toHaveCount(2)
-    await expect(reservations.nth(0)).toHaveText('09:00\n16:00*', {
+    await expect(reservations.nth(0)).toHaveText('09:00\n16:00', {
       useInnerText: true
     })
-    await expect(reservations.nth(1)).toHaveText('20:30\n23:59 *', {
+    await expect(reservations.nth(1)).toHaveText('20:30\n23:59', {
       useInnerText: true
     })
     await expect(
@@ -141,7 +141,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     reservations = reservationsTable.reservationCells(childId, date)
     await expect(reservations).toHaveCount(1)
-    await expect(reservations.nth(0)).toHaveText('10:15\n16:00*', {
+    await expect(reservations.nth(0)).toHaveText('10:15\n16:00', {
       useInnerText: true
     })
   })
@@ -244,7 +244,7 @@ test.describe('Reservation calendar child date modal', () => {
     // billable absence has precedence
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Sairaus*')
+    ).toHaveText('Sairaus')
 
     await reservationsTable.openChildDateModal(childId, date)
     await modal.nonbillableAbsenceRemove.click()
@@ -253,7 +253,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*')
+    ).toHaveText('Poissaolo')
 
     // reservation times are shown if partially absent
     await reservationsTable.openChildDateModal(childId, date)
@@ -266,10 +266,10 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('09:00\n13:00*', { useInnerText: true })
+    ).toHaveText('09:00\n13:00', { useInnerText: true })
     await expect(
       reservationsTable.reservationCells(childId, date).nth(1)
-    ).toHaveText('14:00\n17:00*', { useInnerText: true })
+    ).toHaveText('14:00\n17:00', { useInnerText: true })
 
     // reservation times are not shown if fully absent
     await reservationsTable.openChildDateModal(childId, date)
@@ -278,7 +278,7 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*')
+    ).toHaveText('Poissaolo')
     await expect(
       reservationsTable.reservationCells(childId, date).nth(1)
     ).toHaveText('')
@@ -299,7 +299,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*')
+    ).toHaveText('Poissaolo')
   })
 
   test('Add absence for child in daycare for yesterday', async () => {
@@ -319,7 +319,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*')
+    ).toHaveText('Poissaolo')
   })
 
   test('Absence warnings for child in daycare', async () => {
