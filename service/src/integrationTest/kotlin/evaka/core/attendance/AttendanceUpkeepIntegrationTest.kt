@@ -5,11 +5,13 @@
 package evaka.core.attendance
 
 import evaka.core.FullApplicationTest
+import evaka.core.shared.ChildAttendanceId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevBackupCare
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
@@ -18,6 +20,7 @@ import evaka.core.shared.dev.insertTestChildAttendance
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.TimeInterval
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.job.ScheduledJobs
 import java.time.LocalDate
@@ -75,6 +78,38 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(LocalTime.of(23, 59), attendanceEndTimes.first())
         assertEquals(
             listOf(listOf(clock.now(), systemUserId, clock.now(), systemUserId)),
+            getDepartureMetadata(),
+        )
+    }
+
+    @Test
+    fun `a person correcting the 2359 departure keeps the job as the one who added it`() {
+        val arrived = HelsinkiDateTime.of(LocalDate.of(2020, 10, 25), LocalTime.of(9, 0))
+        val employee = DevEmployee()
+        db.transaction {
+            it.insert(employee)
+            it.insertTestChildAttendance(
+                childId = child.id,
+                unitId = daycare.id,
+                arrived = arrived,
+                departed = null,
+            )
+        }
+        scheduledJobs.endOfDayAttendanceUpkeep(db, clock)
+
+        val correctedAt = clock.now().plusHours(8)
+        db.transaction { tx ->
+            tx.updateAttendance(
+                tx.createQuery { sql("SELECT id FROM child_attendance") }
+                    .exactlyOne<ChildAttendanceId>(),
+                TimeInterval(LocalTime.of(9, 0), LocalTime.of(16, 0)),
+                correctedAt,
+                employee.evakaUserId,
+            )
+        }
+
+        assertEquals(
+            listOf(listOf(clock.now(), systemUserId, correctedAt, employee.evakaUserId)),
             getDepartureMetadata(),
         )
     }

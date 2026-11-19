@@ -507,17 +507,58 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
     .executeAndReturnGeneratedKeys()
     .toList()
 
-@IgnorableReturnValue
-fun Database.Transaction.deleteAttendancesByDate(
+fun Database.Read.getChildAttendanceIdsOnDate(
     childId: ChildId,
     date: LocalDate,
+): List<ChildAttendanceId> = createQuery {
+    sql(
+        "SELECT id FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)}",
+    )
+}
+    .toList()
+
+fun Database.Transaction.deleteAttendancesOnDateExcept(
+    childId: ChildId,
+    date: LocalDate,
+    exceptIds: List<ChildAttendanceId>,
 ): List<ChildAttendanceId> = createUpdate {
     sql(
-        "DELETE FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)} RETURNING id",
+        "DELETE FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)} AND NOT id = ANY(${bind(exceptIds)}) RETURNING id",
     )
 }
     .executeAndReturnGeneratedKeys()
     .toList()
+
+fun Database.Transaction.updateAttendance(
+    id: ChildAttendanceId,
+    range: TimeInterval,
+    now: HelsinkiDateTime,
+    modifiedById: EvakaUserId,
+): ChildAttendanceId? = createUpdate {
+    sql(
+        """
+UPDATE child_attendance new
+SET start_time = ${bind(range.start)},
+    end_time = ${bind(range.end)},
+    modified_at = ${bind(now)},
+    modified_by = ${bind(modifiedById)},
+    arrived_modified_at = CASE WHEN old.start_time != ${bind(range.start)} THEN ${bind(now)} ELSE old.arrived_modified_at END,
+    arrived_modified_by = CASE WHEN old.start_time != ${bind(range.start)} THEN ${bind(modifiedById)} ELSE old.arrived_modified_by END,
+    -- Unlike in the staff queries, no departed_modified_* fallback: the nightly job sets departed_added_* itself
+    departed_added_at = CASE WHEN old.end_time IS NULL AND old.end_time IS DISTINCT FROM ${bind(range.end)} THEN ${bind(now)} ELSE old.departed_added_at END,
+    departed_added_by = CASE WHEN old.end_time IS NULL AND old.end_time IS DISTINCT FROM ${bind(range.end)} THEN ${bind(modifiedById)} ELSE old.departed_added_by END,
+    departed_modified_at = CASE WHEN old.end_time IS DISTINCT FROM ${bind(range.end)} THEN ${bind(now)} ELSE old.departed_modified_at END,
+    departed_modified_by = CASE WHEN old.end_time IS DISTINCT FROM ${bind(range.end)} THEN ${bind(modifiedById)} ELSE old.departed_modified_by END
+FROM child_attendance old
+WHERE new.id = ${bind(id)}
+  AND new.id = old.id
+  AND (old.start_time != ${bind(range.start)} OR old.end_time IS DISTINCT FROM ${bind(range.end)})
+RETURNING new.id
+""",
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull()
 
 @IgnorableReturnValue
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(

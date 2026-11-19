@@ -4409,7 +4409,7 @@ ALTER TABLE ONLY public.daily_service_time
 -- Name: child_attendance child_attendance_no_overlap; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.child_attendance
-    ADD CONSTRAINT child_attendance_no_overlap EXCLUDE USING gist (child_id WITH =, tsrange((date + start_time), (date + end_time)) WITH &&);
+    ADD CONSTRAINT child_attendance_no_overlap EXCLUDE USING gist (child_id WITH =, tsrange((date + start_time), (date + end_time)) WITH &&) DEFERRABLE;
 
 -- Name: child_attendance child_attendance_pkey; Type: CONSTRAINT; Schema: public
 

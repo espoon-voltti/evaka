@@ -627,3 +627,4 @@ V628__deferrable_staff_attendance_no_overlaps.sql
 V629__staff_attendance_external_modified.sql
 V630__child_attendance_modified.sql
 V631__child_attendance_modified_indexes.sql
+V632__deferrable_child_attendance_no_overlap.sql

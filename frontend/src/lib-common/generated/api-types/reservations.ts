@@ -96,12 +96,20 @@ export interface Child {
 }
 
 /**
+* Generated from evaka.core.reservations.ChildAttendanceUpsert
+*/
+export interface ChildAttendanceUpsert {
+  id: ChildAttendanceId | null
+  interval: TimeInterval
+}
+
+/**
 * Generated from evaka.core.reservations.ChildDatePresence
 */
 export interface ChildDatePresence {
   absenceBillable: AbsenceType | null
   absenceNonbillable: AbsenceType | null
-  attendances: TimeInterval[]
+  attendances: ChildAttendanceUpsert[]
   childId: PersonId
   date: LocalDate
   reservations: Reservation[]
@@ -510,10 +518,18 @@ export function deserializeJsonChild(json: JsonOf<Child>): Child {
 }
 
 
+export function deserializeJsonChildAttendanceUpsert(json: JsonOf<ChildAttendanceUpsert>): ChildAttendanceUpsert {
+  return {
+    ...json,
+    interval: TimeInterval.parseJson(json.interval)
+  }
+}
+
+
 export function deserializeJsonChildDatePresence(json: JsonOf<ChildDatePresence>): ChildDatePresence {
   return {
     ...json,
-    attendances: json.attendances.map(e => TimeInterval.parseJson(e)),
+    attendances: json.attendances.map(e => deserializeJsonChildAttendanceUpsert(e)),
     date: LocalDate.parseIso(json.date),
     reservations: json.reservations.map(e => deserializeJsonReservation(e))
   }

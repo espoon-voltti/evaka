@@ -1656,7 +1656,13 @@ class AttendanceReservationsControllerIntegrationTest :
                         Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))),
                         Reservation.Times(TimeRange(LocalTime.of(22, 0), LocalTime.of(23, 59))),
                     ),
-                attendances = listOf(TimeInterval(start = LocalTime.of(12, 30), null)),
+                attendances =
+                    listOf(
+                        ChildAttendanceUpsert(
+                            id = null,
+                            TimeInterval(start = LocalTime.of(12, 30), null),
+                        ),
+                    ),
                 absenceBillable = AbsenceType.OTHER_ABSENCE,
                 absenceNonbillable = AbsenceType.OTHER_ABSENCE,
             ),
@@ -1717,6 +1723,9 @@ class AttendanceReservationsControllerIntegrationTest :
             getAttendanceReservations(testClock).days[2].children.first(),
         )
 
+        val attendanceId =
+            getAttendanceReservations(testClock).days[2].children.first().attendances.single().id
+
         // updating as a different user
 
         attendanceReservationController.postChildDatePresence(
@@ -1733,7 +1742,12 @@ class AttendanceReservationsControllerIntegrationTest :
                         Reservation.Times(TimeRange(LocalTime.of(21, 30), LocalTime.of(23, 59))),
                     ),
                 attendances =
-                    listOf(TimeInterval(start = LocalTime.of(12, 30), LocalTime.of(17, 0))),
+                    listOf(
+                        ChildAttendanceUpsert(
+                            attendanceId,
+                            TimeInterval(start = LocalTime.of(12, 30), LocalTime.of(17, 0)),
+                        ),
+                    ),
                 absenceBillable = AbsenceType.FORCE_MAJEURE,
                 absenceNonbillable = AbsenceType.OTHER_ABSENCE,
             ),
@@ -1760,12 +1774,19 @@ class AttendanceReservationsControllerIntegrationTest :
                 attendances =
                     listOf(
                         attendanceTimes(
-                            child1.id,
-                            wed,
-                            TimeInterval(start = LocalTime.of(12, 30), end = LocalTime.of(17, 0)),
-                            testNow,
-                            employee2.evakaUser,
-                        ),
+                                child1.id,
+                                wed,
+                                TimeInterval(
+                                    start = LocalTime.of(12, 30),
+                                    end = LocalTime.of(17, 0),
+                                ),
+                                testNow,
+                                employee2.evakaUser,
+                            )
+                            .copy(
+                                arrivedAddedBy = employee.evakaUser,
+                                arrivedModifiedBy = employee.evakaUser,
+                            ),
                     ),
                 absenceBillable =
                     AbsenceTypeResponse(
@@ -1840,6 +1861,243 @@ class AttendanceReservationsControllerIntegrationTest :
             ),
             getAttendanceReservations(testClock).days[2].children.first(),
         )
+    }
+
+    @Test
+    fun `post child date presence - editing one time keeps the metadata of the other`() {
+        val firstSave = HelsinkiDateTime.of(tue, LocalTime.of(18, 0))
+        val edit = HelsinkiDateTime.of(wed, LocalTime.of(9, 0))
+        val unchangedSave = HelsinkiDateTime.of(thu, LocalTime.of(9, 0))
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                ),
+            )
+        }
+        postChildAttendances(
+            employee,
+            MockEvakaClock(firstSave),
+            tue,
+            listOf(
+                ChildAttendanceUpsert(null, TimeInterval(LocalTime.of(8, 0), LocalTime.of(16, 0))),
+            ),
+        )
+        val id = getChildAttendances(tue).single().id
+        val editedAttendance =
+            listOf(
+                ChildAttendanceUpsert(id, TimeInterval(LocalTime.of(7, 45), LocalTime.of(16, 0))),
+            )
+        postChildAttendances(employee2, MockEvakaClock(edit), tue, editedAttendance)
+        val expected =
+            listOf(
+                attendanceTimes(
+                        child1.id,
+                        tue,
+                        TimeInterval(LocalTime.of(7, 45), LocalTime.of(16, 0)),
+                        firstSave,
+                        employee.evakaUser,
+                    )
+                    .copy(
+                        modifiedAt = edit,
+                        modifiedBy = employee2.evakaUser,
+                        arrivedModifiedAt = edit,
+                        arrivedModifiedBy = employee2.evakaUser,
+                    ),
+            )
+        assertEquals(expected, getChildAttendances(tue))
+
+        // saving again without changes writes nothing
+        postChildAttendances(employee, MockEvakaClock(unchangedSave), tue, editedAttendance)
+        assertEquals(expected, getChildAttendances(tue))
+    }
+
+    @Test
+    fun `post child date presence - the first departure of an attendance from before the metadata sets added`() {
+        val departureSave = HelsinkiDateTime.of(wed, LocalTime.of(9, 0))
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                ),
+            )
+        }
+        postChildAttendances(
+            employee,
+            MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(8, 0))),
+            tue,
+            listOf(ChildAttendanceUpsert(null, TimeInterval(LocalTime.of(8, 0), null))),
+        )
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE child_attendance SET arrived_added_at = NULL, arrived_added_by = NULL, arrived_modified_at = NULL, arrived_modified_by = NULL",
+                )
+            }
+        }
+
+        postChildAttendances(
+            employee2,
+            MockEvakaClock(departureSave),
+            tue,
+            listOf(
+                ChildAttendanceUpsert(
+                    getChildAttendances(tue).single().id,
+                    TimeInterval(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                ),
+            ),
+        )
+
+        val attendance = getChildAttendances(tue).single()
+        assertEquals(
+            listOf(departureSave, employee2.evakaUser, departureSave, employee2.evakaUser),
+            listOf(
+                attendance.departedAddedAt,
+                attendance.departedAddedBy,
+                attendance.departedModifiedAt,
+                attendance.departedModifiedBy,
+            ),
+        )
+    }
+
+    @Test
+    fun `post child date presence - a departure entered again after removal is added anew`() {
+        val reEntry = HelsinkiDateTime.of(wed, LocalTime.of(9, 0))
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                ),
+            )
+        }
+        postChildAttendances(
+            employee,
+            MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(16, 0))),
+            tue,
+            listOf(
+                ChildAttendanceUpsert(null, TimeInterval(LocalTime.of(8, 0), LocalTime.of(16, 0))),
+            ),
+        )
+        val id = getChildAttendances(tue).single().id
+        postChildAttendances(
+            employee,
+            MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(17, 0))),
+            tue,
+            listOf(ChildAttendanceUpsert(id, TimeInterval(LocalTime.of(8, 0), null))),
+        )
+
+        postChildAttendances(
+            employee2,
+            MockEvakaClock(reEntry),
+            tue,
+            listOf(
+                ChildAttendanceUpsert(id, TimeInterval(LocalTime.of(8, 0), LocalTime.of(16, 0))),
+            ),
+        )
+
+        val attendance = getChildAttendances(tue).single()
+        assertEquals(
+            listOf(reEntry, employee2.evakaUser),
+            listOf(attendance.departedAddedAt, attendance.departedAddedBy),
+        )
+    }
+
+    @Test
+    fun `post child date presence - adjacent attendances can be shifted in one save`() {
+        val testClock = MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(18, 0)))
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                ),
+            )
+        }
+        postChildAttendances(
+            employee,
+            testClock,
+            tue,
+            listOf(
+                ChildAttendanceUpsert(null, TimeInterval(LocalTime.of(8, 0), LocalTime.of(10, 0))),
+                ChildAttendanceUpsert(null, TimeInterval(LocalTime.of(10, 0), LocalTime.of(12, 0))),
+            ),
+        )
+        val ids = getChildAttendances(tue).map { it.id }
+
+        postChildAttendances(
+            employee,
+            testClock,
+            tue,
+            listOf(
+                ChildAttendanceUpsert(
+                    ids[0],
+                    TimeInterval(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                ),
+                ChildAttendanceUpsert(
+                    ids[1],
+                    TimeInterval(LocalTime.of(11, 0), LocalTime.of(13, 0)),
+                ),
+            ),
+        )
+
+        assertEquals(
+            listOf(
+                ids[0] to TimeInterval(LocalTime.of(9, 0), LocalTime.of(11, 0)),
+                ids[1] to TimeInterval(LocalTime.of(11, 0), LocalTime.of(13, 0)),
+            ),
+            getChildAttendances(tue).map { it.id to it.interval },
+        )
+    }
+
+    @Test
+    fun `post child date presence - an attendance id of another child is rejected`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                ),
+            )
+            tx.insertTestChildAttendance(
+                childId = child2.id,
+                unitId = daycare.id,
+                arrived = HelsinkiDateTime.of(tue, LocalTime.of(8, 0)),
+                departed = HelsinkiDateTime.of(tue, LocalTime.of(16, 0)),
+            )
+        }
+        val otherChildAttendanceId = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT id FROM child_attendance WHERE child_id = ${bind(child2.id)}")
+                }
+                .exactlyOne<ChildAttendanceId>()
+        }
+
+        assertThrows<BadRequest> {
+            postChildAttendances(
+                employee,
+                MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(18, 0))),
+                tue,
+                listOf(
+                    ChildAttendanceUpsert(
+                        otherChildAttendanceId,
+                        TimeInterval(LocalTime.of(9, 0), LocalTime.of(16, 0)),
+                    ),
+                ),
+            )
+        }
     }
 
     @Test
@@ -2817,6 +3075,30 @@ class AttendanceReservationsControllerIntegrationTest :
             }
         return childId
     }
+
+    private fun postChildAttendances(
+        user: DevEmployee,
+        clock: EvakaClock,
+        date: LocalDate,
+        attendances: List<ChildAttendanceUpsert>,
+    ) =
+        attendanceReservationController.postChildDatePresence(
+            dbInstance(),
+            AuthenticatedUser.Employee(user.id, setOf(UserRole.STAFF)),
+            clock,
+            ChildDatePresence(
+                date = date,
+                childId = child1.id,
+                unitId = daycare.id,
+                reservations = emptyList(),
+                attendances = attendances,
+                absenceBillable = null,
+                absenceNonbillable = null,
+            ),
+        )
+
+    private fun getChildAttendances(date: LocalDate) =
+        getAttendanceReservations().days.single { it.date == date }.children.single().attendances
 
     private fun attendanceTimes(
         childId: ChildId,
