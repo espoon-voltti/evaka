@@ -137,7 +137,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             tx.getStaffAttendancesInOtherUnits(
                                 unitId,
                                 setOf(employeeId),
-                                FiniteDateRange(from, to).asHelsinkiDateTimeRange(),
+                                FiniteDateRange(from, to).asFiniteDateTimeRange(),
                                 clock.today(),
                             ),
                     )

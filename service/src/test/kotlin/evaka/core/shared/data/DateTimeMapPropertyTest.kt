@@ -5,9 +5,9 @@
 package evaka.core.shared.data
 
 import evaka.core.shared.dateTimeMap
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
-import evaka.core.shared.helsinkiDateTimeRange
+import evaka.core.shared.finiteDateTimeRange
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
@@ -20,17 +20,17 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
 class DateTimeMapPropertyTest :
-    RangeBasedMapPropertyTest<HelsinkiDateTime, HelsinkiDateTimeRange, DateTimeMap<Int>>() {
+    RangeBasedMapPropertyTest<HelsinkiDateTime, FiniteDateTimeRange, DateTimeMap<Int>>() {
     override fun emptyMap(): DateTimeMap<Int> = DateTimeMap.empty()
 
     override fun arbitraryMap(value: Arb<Int>): Arb<DateTimeMap<Int>> = Arb.dateTimeMap(value)
 
-    override fun arbitraryRange(duration: Arb<Int>): Arb<HelsinkiDateTimeRange> =
-        Arb.helsinkiDateTimeRange(duration = duration.map { Duration.ofNanos(it.toLong() * 1000L) })
+    override fun arbitraryRange(duration: Arb<Int>): Arb<FiniteDateTimeRange> =
+        Arb.finiteDateTimeRange(duration = duration.map { Duration.ofNanos(it.toLong() * 1000L) })
 
     override fun defaultDuration(): Arb<Int> = Arb.positiveInt(max = 48 * 60 * 60)
 
-    override fun pointsOfRange(range: HelsinkiDateTimeRange): Sequence<HelsinkiDateTime> =
+    override fun pointsOfRange(range: FiniteDateTimeRange): Sequence<HelsinkiDateTime> =
         if (range.start == range.end) emptySequence()
         else
             generateSequence(range.start) { t ->

@@ -11,7 +11,7 @@ Quick reference for eVaka's date and time utilities - custom classes that provid
 **Key principles:**
 - Always use these utilities instead of JavaScript Date
 - Date ranges (DateRange, FiniteDateRange) use **inclusive end** semantics (end date is included in the range)
-- Time ranges (TimeRange, TimeInterval, HelsinkiDateTimeRange) use **exclusive end** semantics (end time is not included)
+- Time ranges (TimeRange, TimeInterval, FiniteDateTimeRange) use **exclusive end** semantics (end time is not included)
 - All date/time utilities are immutable - operations return new instances
 
 ## Core Types
@@ -118,15 +118,18 @@ Start/End endpoint markers for time ranges. Supports inclusive/exclusive semanti
 - Frontend: `frontend/src/lib-common/time-range-endpoint.ts` (namespace with functions)
 - Backend: `service/src/main/kotlin/evaka/core/shared/domain/TimeRangeEndpoint.kt` (sealed interface)
 
-### HelsinkiDateTimeRange
+### FiniteDateTimeRange
 
 Date and time range with both start and end required.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/generated/api-types/shared.ts` (generated interface)
-- Backend: `service/src/main/kotlin/evaka/core/shared/domain/HelsinkiDateTime.kt` (data class implementing `BoundedRange`)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateTimeRange.kt` (data class implementing `BoundedRange`)
 
-**Structure:** `HelsinkiDateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime)`
+**Structure:** `FiniteDateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime)`
+
+**Type-Specific Methods (backend only):**
+- `getDuration()` - length of the range as a `Duration`
 
 ## Range Operations
 
@@ -134,11 +137,11 @@ This section documents operations that are shared across multiple range types.
 
 ### includes()
 
-Checks if a single point (date/time/timestamp) is within the range. Not implemented for TimeInterval frontend or HelsinkiDateTimeRange frontend.
+Checks if a single point (date/time/timestamp) is within the range. Not implemented for TimeInterval frontend or FiniteDateTimeRange frontend.
 
 ### overlaps()
 
-Checks if two ranges have any overlap. Not implemented for TimeRange frontend and HelsinkiDateTimeRange frontend.
+Checks if two ranges have any overlap. Not implemented for TimeRange frontend and FiniteDateTimeRange frontend.
 
 **Naming inconsistency:** Frontend `DateRange` uses `overlapsWith()` while other types use `overlaps()`. Backend consistently uses `overlaps()`. This is planned to be fixed.
 
@@ -148,7 +151,7 @@ Checks if one range fully contains another range. Not implemented for TimeInterv
 
 ### intersection()
 
-Returns the overlapping portion of two ranges, or null if no overlap. Not implemented for TimeInterval backend and HelsinkiDateTimeRange frontend.
+Returns the overlapping portion of two ranges, or null if no overlap. Not implemented for TimeInterval backend and FiniteDateTimeRange frontend.
 
 ### Backend-Only Operations
 
@@ -159,7 +162,7 @@ The following operations are only available on the backend and are part of the `
 - `subtract()` - removes one range from another
 - `relationTo()` - determines spatial relationship between ranges
 
-**Available on:** FiniteDateRange, TimeRange, and HelsinkiDateTimeRange (types with required start and end). Not available on DateRange or TimeInterval (types with nullable end).
+**Available on:** FiniteDateRange, TimeRange, and FiniteDateTimeRange (types with required start and end). Not available on DateRange or TimeInterval (types with nullable end).
 
 Additionally, `FiniteDateRange` has a `complement()` method that finds the inverse of a range (delegates to `subtract`).
 

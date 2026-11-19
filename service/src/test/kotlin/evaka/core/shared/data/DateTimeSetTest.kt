@@ -4,8 +4,8 @@
 
 package evaka.core.shared.data
 
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -146,5 +146,5 @@ class DateTimeSetTest {
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))
 
     private fun testRange(from: Int, to: Int) =
-        HelsinkiDateTimeRange(testDateTime(from), testDateTime(to))
+        FiniteDateTimeRange(testDateTime(from), testDateTime(to))
 }

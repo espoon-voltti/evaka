@@ -15,7 +15,7 @@ import evaka.core.placement.getPlacementsForChildrenAt
 import evaka.core.shared.ChildId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
-import evaka.core.shared.domain.HelsinkiDateTimeRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.TimeRange
 import java.time.Duration
 import java.time.LocalDate
@@ -78,7 +78,7 @@ fun getExpectedAbsenceCategories(
     dailyPreparatoryTime: TimeRange?,
     preschoolTerm: PreschoolTerm?,
 ): Set<AbsenceCategory>? {
-    val presences = attendanceTimes.map { it.asHelsinkiDateTimeRange(date) }
+    val presences = attendanceTimes.map { it.asFiniteDateTimeRange(date) }
 
     val preschoolEducationOnGoing =
         preschoolTerm != null &&
@@ -89,15 +89,15 @@ fun getExpectedAbsenceCategories(
 
     val preschoolTime =
         (dailyPreschoolTime ?: TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)))
-            .asHelsinkiDateTimeRange(date)
+            .asFiniteDateTimeRange(date)
     val beforePreschoolTime =
-        HelsinkiDateTimeRange.of(
+        FiniteDateTimeRange.of(
             date = date,
             startTime = LocalTime.of(0, 0),
             endTime = preschoolTime.start.toLocalTime(),
         )
     val afterPreschoolTime =
-        HelsinkiDateTimeRange.of(
+        FiniteDateTimeRange.of(
             date = date,
             startTime = preschoolTime.end.toLocalTime(),
             endTime = LocalTime.of(23, 59),
@@ -105,15 +105,15 @@ fun getExpectedAbsenceCategories(
 
     val preparatoryTime =
         (dailyPreparatoryTime ?: TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)))
-            .asHelsinkiDateTimeRange(date)
+            .asFiniteDateTimeRange(date)
     val beforePreparatoryTime =
-        HelsinkiDateTimeRange.of(
+        FiniteDateTimeRange.of(
             date = date,
             startTime = LocalTime.of(0, 0),
             endTime = preparatoryTime.start.toLocalTime(),
         )
     val afterPreparatoryTime =
-        HelsinkiDateTimeRange.of(
+        FiniteDateTimeRange.of(
             date = date,
             startTime = preparatoryTime.end.toLocalTime(),
             endTime = LocalTime.of(23, 59),
@@ -216,10 +216,10 @@ fun getExpectedAbsenceCategories(
     }
 }
 
-private fun totalTime(times: List<HelsinkiDateTimeRange>): Duration =
+private fun totalTime(times: List<FiniteDateTimeRange>): Duration =
     times.fold(Duration.ZERO) { totalDuration, range -> totalDuration + range.getDuration() }
 
 private fun overlapTime(
-    times: List<HelsinkiDateTimeRange>,
-    schedule: HelsinkiDateTimeRange,
+    times: List<FiniteDateTimeRange>,
+    schedule: FiniteDateTimeRange,
 ): Duration = totalTime(times.mapNotNull { it.intersection(schedule) })

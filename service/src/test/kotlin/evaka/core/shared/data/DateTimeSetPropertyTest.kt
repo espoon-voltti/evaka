@@ -5,23 +5,23 @@
 package evaka.core.shared.data
 
 import evaka.core.shared.dateTimeSet
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
-import evaka.core.shared.helsinkiDateTimeRange
+import evaka.core.shared.finiteDateTimeRange
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.positiveInt
 import java.time.Duration
 
 class DateTimeSetPropertyTest :
-    RangeBasedSetPropertyTest<HelsinkiDateTime, HelsinkiDateTimeRange, DateTimeSet>() {
+    RangeBasedSetPropertyTest<HelsinkiDateTime, FiniteDateTimeRange, DateTimeSet>() {
 
     override fun emptySet(): DateTimeSet = DateTimeSet.empty()
 
     override fun arbitrarySet(): Arb<DateTimeSet> = Arb.dateTimeSet()
 
-    override fun arbitraryRange(duration: Arb<Int>): Arb<HelsinkiDateTimeRange> =
-        Arb.helsinkiDateTimeRange(duration = duration.map { Duration.ofNanos(it.toLong() * 1000L) })
+    override fun arbitraryRange(duration: Arb<Int>): Arb<FiniteDateTimeRange> =
+        Arb.finiteDateTimeRange(duration = duration.map { Duration.ofNanos(it.toLong() * 1000L) })
 
     override fun defaultDuration(): Arb<Int> = Arb.positiveInt(max = 48 * 60 * 60)
 }

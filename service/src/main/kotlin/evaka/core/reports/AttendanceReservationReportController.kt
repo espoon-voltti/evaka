@@ -23,8 +23,8 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
@@ -294,7 +294,7 @@ private data class ReservationRow(
 private fun Database.Read.getReservations(
     range: FiniteDateRange,
     children: Set<ChildId>,
-): Map<ChildId, List<HelsinkiDateTimeRange>> {
+): Map<ChildId, List<FiniteDateTimeRange>> {
     return createQuery {
             sql(
                 """
@@ -309,19 +309,14 @@ AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
         .toList<ReservationRow>()
         .groupBy(
             keySelector = { it.childId },
-            valueTransform = {
-                HelsinkiDateTimeRange(
-                    start = HelsinkiDateTime.of(it.date, it.startTime),
-                    end = HelsinkiDateTime.of(it.date, it.endTime),
-                )
-            },
+            valueTransform = { FiniteDateTimeRange.of(it.date, it.startTime, it.endTime) },
         )
 }
 
 private fun Database.Read.getRealizations(
     range: FiniteDateRange,
     children: Set<ChildId>,
-): Map<ChildId, List<HelsinkiDateTimeRange>> {
+): Map<ChildId, List<FiniteDateTimeRange>> {
     return createQuery {
             sql(
                 """
@@ -335,12 +330,7 @@ AND end_time IS NOT NULL
         .toList<ReservationRow>()
         .groupBy(
             keySelector = { it.childId },
-            valueTransform = {
-                HelsinkiDateTimeRange(
-                    start = HelsinkiDateTime.of(it.date, it.startTime),
-                    end = HelsinkiDateTime.of(it.date, it.endTime),
-                )
-            },
+            valueTransform = { FiniteDateTimeRange.of(it.date, it.startTime, it.endTime) },
         )
 }
 
@@ -358,11 +348,11 @@ data class DailyChildData(
     val age: Int,
     val capacityFactor: Double,
     val serviceTimes: ServiceTimesPresenceStatus?,
-    val reservations: List<HelsinkiDateTimeRange>,
+    val reservations: List<FiniteDateTimeRange>,
     val fullDayAbsence: Boolean,
     val hasShiftCare: Boolean,
 ) {
-    fun isPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15): PresenceStatus {
+    fun isPresent(during: FiniteDateTimeRange, bufferMinutes: Long = 15): PresenceStatus {
         if (fullDayAbsence) return PresenceStatus.ABSENT
         if (reservations.isNotEmpty()) {
             val hasReservation = reservations.any {
@@ -372,7 +362,7 @@ data class DailyChildData(
         } else if (serviceTimes != null) {
             when (serviceTimes) {
                 is ServiceTimesPresenceStatus.Present -> {
-                    val range = serviceTimes.times.asHelsinkiDateTimeRange(date)
+                    val range = serviceTimes.times.asFiniteDateTimeRange(date)
                     val isServiceTimesOverlapping =
                         range.copy(end = range.end.plusMinutes(bufferMinutes)).overlaps(during)
                     return if (isServiceTimesOverlapping) PresenceStatus.PRESENT
@@ -391,7 +381,7 @@ data class DailyChildData(
         return PresenceStatus.UNKNOWN
     }
 
-    fun wasPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15) = reservations.any {
+    fun wasPresent(during: FiniteDateTimeRange, bufferMinutes: Long = 15) = reservations.any {
         it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during)
     }
 }
@@ -513,8 +503,7 @@ fun getAttendanceReservationReport(
                     )
                 }
                 .map { intervalStart ->
-                    val interval =
-                        HelsinkiDateTimeRange(intervalStart, intervalStart.plusMinutes(15))
+                    val interval = FiniteDateTimeRange(intervalStart, intervalStart.plusMinutes(15))
                     val presentChildren =
                         when (reservationType) {
                             ReservationType.RESERVATION -> {
@@ -550,8 +539,7 @@ fun getAttendanceReservationReport(
                             }
                             .filter {
                                 if (it.departed != null)
-                                    HelsinkiDateTimeRange(it.arrived, it.departed)
-                                        .overlaps(interval)
+                                    FiniteDateTimeRange(it.arrived, it.departed).overlaps(interval)
                                 else it.arrived < interval.end
                             }
 

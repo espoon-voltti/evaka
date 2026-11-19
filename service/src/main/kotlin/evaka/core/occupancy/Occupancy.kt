@@ -32,8 +32,9 @@ import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
+import evaka.core.shared.domain.asFiniteDateTimeRange
 import evaka.core.shared.domain.getHolidays
 import evaka.core.shared.domain.getOperationalDatesForChildren
 import evaka.core.shared.domain.toFiniteDateRange
@@ -296,7 +297,7 @@ sealed interface GroupPredicate {
  */
 private fun Database.Read.getRealtimeStaffAttendancesForGroups(
     groups: Collection<GroupId>,
-    range: HelsinkiDateTimeRange,
+    range: FiniteDateTimeRange,
 ): Map<GroupId, DateTimeMap<BigDecimal>> {
     data class StaffAttendance(
         val groupId: GroupId,
@@ -331,7 +332,7 @@ AND tstzrange(arrived, departed) && ${bind(range)}
                 .fold(DateTimeMap.empty()) { countsForGroup, row ->
                     // This intersection is needed because the raw rows are only guaranteed to
                     // *overlap*, and may extend outside the input range
-                    HelsinkiDateTimeRange(row.arrived, row.departed).intersection(range)?.let {
+                    FiniteDateTimeRange(row.arrived, row.departed).intersection(range)?.let {
                         countsForGroup.update(it, row.occupancyCoefficient) { _, old, new ->
                             old + new
                         }
@@ -371,7 +372,7 @@ private fun Database.Read.getRealizedCaretakersForGroups(
     range: FiniteDateRange,
 ): Map<GroupId, DateMap<BigDecimal>> {
     val occupancyCoefficientSumsPerGroup =
-        getRealtimeStaffAttendancesForGroups(groups, range.asHelsinkiDateTimeRange())
+        getRealtimeStaffAttendancesForGroups(groups, range.asFiniteDateTimeRange())
     val staffCountsByGroup = getStaffCountsForGroups(groups, range)
     return groups
         .asSequence()
@@ -382,11 +383,7 @@ private fun Database.Read.getRealizedCaretakersForGroups(
             val data =
                 DateMap.of(
                     range.dates().map { date ->
-                        val wholeDate =
-                            HelsinkiDateTimeRange(
-                                HelsinkiDateTime.atStartOfDay(date),
-                                HelsinkiDateTime.atStartOfDay(date.plusDays(1)),
-                            )
+                        val wholeDate = date.asFiniteDateTimeRange()
                         val occupancyBasedSum =
                             occupancyCoefficientSums
                                 .intersectEntries(wholeDate)

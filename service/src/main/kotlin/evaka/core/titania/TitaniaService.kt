@@ -10,8 +10,8 @@ import evaka.core.employee.getEmployeeIdsByNumbers
 import evaka.core.employee.getEmployeeIdsByNumbersMapById
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalTime
@@ -70,8 +70,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
             unmergedPlans
                 .filter { it.employeeId == next.employeeId }
                 .filter {
-                    HelsinkiDateTimeRange(next.startTime, next.endTime)
-                        .overlaps(HelsinkiDateTimeRange(it.startTime, it.endTime))
+                    FiniteDateTimeRange(next.startTime, next.endTime)
+                        .overlaps(FiniteDateTimeRange(it.startTime, it.endTime))
                 }
                 .map {
                     TitaniaErrorRow(
@@ -145,7 +145,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                     else -> null
                                 }
                             // a reversed shift cannot be compared for overlaps
-                            // (HelsinkiDateTimeRange requires start <= end);
+                            // (FiniteDateTimeRange requires start <= end);
                             // identical shifts are deduplicated later, ignore them here
                             if (
                                 invalidShiftType != TitaniaErrorType.REVERSED_SHIFT &&
@@ -448,8 +448,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                 listOf(
                     event to
                         plans?.find { plan ->
-                            HelsinkiDateTimeRange(plan.startTime, plan.endTime)
-                                .contains(HelsinkiDateTimeRange(event, event))
+                            FiniteDateTimeRange(plan.startTime, plan.endTime).includes(event)
                         },
                 )
             }
@@ -471,8 +470,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
 
     private fun isInPlan(attendance: RawAttendance, plan: StaffAttendancePlan) =
         attendance.departed != null &&
-            HelsinkiDateTimeRange(plan.startTime, plan.endTime)
-                .contains(HelsinkiDateTimeRange(attendance.arrived, attendance.departed))
+            FiniteDateTimeRange(plan.startTime, plan.endTime)
+                .contains(FiniteDateTimeRange(attendance.arrived, attendance.departed))
 }
 
 data class TitaniaUpdateResponse(

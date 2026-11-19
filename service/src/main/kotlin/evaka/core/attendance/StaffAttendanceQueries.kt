@@ -12,9 +12,9 @@ import evaka.core.shared.StaffAttendanceExternalId
 import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
-import evaka.core.shared.domain.asHelsinkiDateTimeRange
+import evaka.core.shared.domain.asFiniteDateTimeRange
 import evaka.core.user.EvakaUser
 import java.math.BigDecimal
 import java.time.Duration
@@ -29,7 +29,7 @@ fun Database.Read.getStaffAttendances(
     now: HelsinkiDateTime,
     employeeId: EmployeeId? = null,
 ): List<StaffMember> {
-    val range = dateRange.asHelsinkiDateTimeRange()
+    val range = dateRange.asFiniteDateTimeRange()
 
     return createQuery {
         sql(
@@ -501,7 +501,7 @@ LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_add
 LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
 WHERE (dg.daycare_id IS NULL OR dg.daycare_id = ${bind(unitId)}) 
     AND emp.id = ${bind(employeeId)} 
-    AND between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, sa.arrived)
+    AND ${bind(arrivalDate.asFiniteDateTimeRange())} @> sa.arrived
 """,
         )
     }
@@ -561,7 +561,7 @@ WHERE sa.employee_id = ANY(${bind(employeeIds)}) AND sa.group_id IS NULL AND tst
 fun Database.Read.getStaffAttendancesInOtherUnits(
     unitId: DaycareId,
     employeeIds: Set<EmployeeId>,
-    range: HelsinkiDateTimeRange,
+    range: FiniteDateTimeRange,
     today: LocalDate,
 ): List<OtherUnitStaffAttendance> = createQuery {
     sql(
@@ -792,7 +792,7 @@ DELETE FROM staff_attendance_realtime
 WHERE
     (group_id IS NULL OR group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = ${bind(unitId)})) AND
     employee_id = ${bind(employeeId)} AND
-    between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND
+    ${bind(arrivalDate.asFiniteDateTimeRange())} @> arrived AND
     NOT id = ANY(${bind(exceptIds)})
 RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 """,
@@ -811,7 +811,7 @@ fun Database.Transaction.deleteExternalAttendancesOnDateExcept(
 DELETE FROM staff_attendance_external
 WHERE 
     name = ${bind(name)} AND 
-    between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND 
+    ${bind(arrivalDate.asFiniteDateTimeRange())} @> arrived AND 
     NOT id = ANY(${bind(exceptIds)})
 """,
     )

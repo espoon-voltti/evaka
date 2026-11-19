@@ -11,7 +11,7 @@ import { useLocation } from 'wouter'
 import { combine } from 'lib-common/api'
 import type {
   EmployeeId,
-  HelsinkiDateTimeRange
+  FiniteDateTimeRange
 } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -88,7 +88,7 @@ export default React.memo(function StaffMemberPage({
   }
 
   const spanningPlans = useMemo(() => {
-    function getInfo(range: HelsinkiDateTimeRange) {
+    function getInfo(range: FiniteDateTimeRange) {
       const plans = employeeResponse.isSuccess
         ? (
             employeeResponse.value.staffMember?.plannedAttendances.filter(

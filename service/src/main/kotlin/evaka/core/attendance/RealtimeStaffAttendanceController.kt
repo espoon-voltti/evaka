@@ -18,7 +18,6 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import java.math.BigDecimal
@@ -89,10 +88,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         )
 
                     val rangeIncludingFollowingDay =
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.atStartOfDay(start),
-                            HelsinkiDateTime.atStartOfDay(end.plusDays(2)),
-                        )
+                        FiniteDateRange(start, end.plusDays(1)).asFiniteDateTimeRange()
                     val otherUnitAttendances =
                         tx.getStaffAttendancesInOtherUnits(
                                 unitId,

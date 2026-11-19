@@ -80,7 +80,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(externalIdArgumentFactory)
     jdbi.registerArgument(idArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
-    jdbi.registerArgument(helsinkiDateTimeRangeArgumentFactory)
+    jdbi.registerArgument(finiteDateTimeRangeArgumentFactory)
     jdbi.registerArgument(yearMonthArgumentFactory)
     jdbi.registerArgument(productKeyArgumentFactory)
     jdbi.registerArgument(databaseEnumArgumentFactory)

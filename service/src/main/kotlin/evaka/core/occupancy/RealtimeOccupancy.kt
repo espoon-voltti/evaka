@@ -11,8 +11,8 @@ import evaka.core.shared.GroupId
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.Predicate
 import evaka.core.shared.db.PredicateSql
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 
 data class RealtimeOccupancy(
     val childAttendances: List<ChildOccupancyAttendance>,
@@ -124,7 +124,7 @@ data class OccupancyPoint(
 
 fun Database.Read.getChildOccupancyAttendances(
     unitId: DaycareId,
-    timeRange: HelsinkiDateTimeRange,
+    timeRange: FiniteDateTimeRange,
     groupIds: List<GroupId>? = null,
 ): List<ChildOccupancyAttendance> {
     val groupFilter =
@@ -176,7 +176,7 @@ WHERE
 
 fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
-    timeRange: HelsinkiDateTimeRange,
+    timeRange: FiniteDateTimeRange,
     groupIds: List<GroupId>? = null,
 ): List<StaffOccupancyAttendance> {
     val groupFilter =

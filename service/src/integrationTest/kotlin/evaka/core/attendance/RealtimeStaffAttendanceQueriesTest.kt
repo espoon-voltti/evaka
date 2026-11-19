@@ -18,8 +18,8 @@ import evaka.core.shared.dev.DevStaffAttendance
 import evaka.core.shared.dev.DevStaffAttendancePlan
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.domain.toFiniteDateRange
@@ -165,7 +165,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             val occupancyAttendances =
                 it.getStaffOccupancyAttendances(
                     daycare.id,
-                    HelsinkiDateTimeRange(now.atStartOfDay(), now.atEndOfDay()),
+                    FiniteDateTimeRange(now.atStartOfDay(), now.atEndOfDay()),
                 )
             assertEquals(listOf(0.0, 0.0, 3.5, 3.5), occupancyAttendances.map { a -> a.capacity })
         }

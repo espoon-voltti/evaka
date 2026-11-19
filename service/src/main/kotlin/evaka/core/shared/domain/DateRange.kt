@@ -34,8 +34,8 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
 
     fun asDateRange(): DateRange = DateRange(start, end)
 
-    fun asHelsinkiDateTimeRange(): HelsinkiDateTimeRange =
-        HelsinkiDateTimeRange(
+    fun asFiniteDateTimeRange(): FiniteDateTimeRange =
+        FiniteDateTimeRange(
             HelsinkiDateTime.atStartOfDay(start),
             // date time range is exclusive, so we need first date time *not* in range
             HelsinkiDateTime.atStartOfDay(end.plusDays(1)),
@@ -293,5 +293,5 @@ fun LocalDate.isWeekendOrHoliday() = this.isWeekend() || this.isHoliday()
 
 fun LocalDate.toFiniteDateRange(): FiniteDateRange = FiniteDateRange(this, this)
 
-fun LocalDate.asHelsinkiDateTimeRange(): HelsinkiDateTimeRange =
-    toFiniteDateRange().asHelsinkiDateTimeRange()
+fun LocalDate.asFiniteDateTimeRange(): FiniteDateTimeRange =
+    toFiniteDateRange().asFiniteDateTimeRange()

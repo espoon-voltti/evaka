@@ -13,8 +13,8 @@ import evaka.core.shared.data.DateSet
 import evaka.core.shared.domain.Coordinate
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.domain.TimeRangeEndpoint
 import java.lang.reflect.Type
@@ -122,8 +122,8 @@ val helsinkiDateTimeArgumentFactory =
         CustomObjectArgument(it.toZonedDateTime().toOffsetDateTime())
     }
 
-val helsinkiDateTimeRangeArgumentFactory =
-    pgObjectArgumentFactory<HelsinkiDateTimeRange> {
+val finiteDateTimeRangeArgumentFactory =
+    pgObjectArgumentFactory<FiniteDateTimeRange> {
         PGobject().apply {
             type = "tstzrange"
             if (it != null) {

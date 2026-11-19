@@ -322,8 +322,7 @@ fun Database.Read.getUnitChildAttendances(
 ): Map<ChildId, List<AttendanceTimes>> {
     // get attendances for last week to include possible overnight stays
     val range =
-        FiniteDateRange(now.toLocalDate().minusWeeks(1), now.toLocalDate())
-            .asHelsinkiDateTimeRange()
+        FiniteDateRange(now.toLocalDate().minusWeeks(1), now.toLocalDate()).asFiniteDateTimeRange()
     return createQuery {
             sql(
                 """

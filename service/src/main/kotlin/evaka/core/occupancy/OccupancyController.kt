@@ -24,13 +24,12 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.domain.NotFound
+import evaka.core.shared.domain.asFiniteDateTimeRange
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
-import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -184,11 +183,7 @@ class OccupancyController(
                     Action.Unit.READ_OCCUPANCIES,
                     unitId,
                 )
-                val queryTimeRange =
-                    HelsinkiDateTimeRange(
-                        HelsinkiDateTime.of(body.date, LocalTime.MIN),
-                        HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.MIN),
-                    )
+                val queryTimeRange = body.date.asFiniteDateTimeRange()
                 RealtimeOccupancy(
                     childAttendances =
                         tx.getChildOccupancyAttendances(unitId, queryTimeRange, body.groupIds),

@@ -182,6 +182,14 @@ export type FeeThresholdsId = Id<'FeeThresholds'>
 
 export type FinanceNoteId = Id<'FinanceNote'>
 
+/**
+* Generated from evaka.core.shared.domain.FiniteDateTimeRange
+*/
+export interface FiniteDateTimeRange {
+  end: HelsinkiDateTime
+  start: HelsinkiDateTime
+}
+
 export type FosterParentId = Id<'FosterParent'>
 
 export type GroupId = Id<'Group'>
@@ -189,14 +197,6 @@ export type GroupId = Id<'Group'>
 export type GroupNoteId = Id<'GroupNote'>
 
 export type GroupPlacementId = Id<'GroupPlacement'>
-
-/**
-* Generated from evaka.core.shared.domain.HelsinkiDateTimeRange
-*/
-export interface HelsinkiDateTimeRange {
-  end: HelsinkiDateTime
-  start: HelsinkiDateTime
-}
 
 export type HolidayPeriodId = Id<'HolidayPeriod'>
 
@@ -377,7 +377,7 @@ export function deserializeJsonDaycareAclRow(json: JsonOf<DaycareAclRow>): Dayca
 }
 
 
-export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {
+export function deserializeJsonFiniteDateTimeRange(json: JsonOf<FiniteDateTimeRange>): FiniteDateTimeRange {
   return {
     ...json,
     end: HelsinkiDateTime.parseIso(json.end),

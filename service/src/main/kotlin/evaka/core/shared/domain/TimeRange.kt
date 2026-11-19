@@ -159,9 +159,9 @@ data class TimeRange(
                 Duration.ofNanos((end.nano - start.nano).toLong())
         }
 
-    fun asHelsinkiDateTimeRange(date: LocalDate): HelsinkiDateTimeRange {
+    fun asFiniteDateTimeRange(date: LocalDate): FiniteDateTimeRange {
         val endDate = if (this.end.isMidnight()) date.plusDays(1) else date
-        return HelsinkiDateTimeRange(
+        return FiniteDateTimeRange(
             HelsinkiDateTime.of(date, this.start.inner),
             HelsinkiDateTime.of(endDate, this.end.inner),
         )

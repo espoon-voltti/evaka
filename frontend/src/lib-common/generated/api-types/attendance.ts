@@ -14,9 +14,9 @@ import type { DaycareId } from './shared'
 import type { EmployeeId } from './shared'
 import type { EvakaUser } from './user'
 import FiniteDateRange from '../../finite-date-range'
+import type { FiniteDateTimeRange } from './shared'
 import type { GroupId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import type { HelsinkiDateTimeRange } from './shared'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
@@ -31,7 +31,7 @@ import type { StaffAttendanceRealtimeId } from './shared'
 import { deserializeJsonChildDailyNote } from './note'
 import { deserializeJsonChildStickyNote } from './note'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
-import { deserializeJsonHelsinkiDateTimeRange } from './shared'
+import { deserializeJsonFiniteDateTimeRange } from './shared'
 import { deserializeJsonReservationResponse } from './reservations'
 
 /**
@@ -441,7 +441,7 @@ export interface StaffMember {
   occupancyEffect: boolean
   plannedAttendances: PlannedStaffAttendance[]
   present: GroupId | null
-  spanningPlans: HelsinkiDateTimeRange[]
+  spanningPlans: FiniteDateTimeRange[]
   unitIds: DaycareId[]
 }
 
@@ -743,7 +743,7 @@ export function deserializeJsonStaffMember(json: JsonOf<StaffMember>): StaffMemb
     attendances: json.attendances.map(e => deserializeJsonStaffMemberAttendance(e)),
     latestCurrentDayAttendance: (json.latestCurrentDayAttendance != null) ? deserializeJsonStaffMemberAttendance(json.latestCurrentDayAttendance) : null,
     plannedAttendances: json.plannedAttendances.map(e => deserializeJsonPlannedStaffAttendance(e)),
-    spanningPlans: json.spanningPlans.map(e => deserializeJsonHelsinkiDateTimeRange(e))
+    spanningPlans: json.spanningPlans.map(e => deserializeJsonFiniteDateTimeRange(e))
   }
 }
 

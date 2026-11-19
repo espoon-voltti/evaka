@@ -431,7 +431,7 @@ fun getGroupMonthCalendar(
                                 it.endTime?.let { endTime ->
                                     TimeRange(it.startTime, endTime)
                                         .fixMidnightEndTime()
-                                        .asHelsinkiDateTimeRange(it.date)
+                                        .asFiniteDateTimeRange(it.date)
                                 }
                             }
                             .let { sumOfHours(DateTimeSet.of(it), placementDateRanges, range) },
@@ -613,7 +613,7 @@ private fun supplementReservationsWithDailyServiceTimes(
                             is Reservation.Times -> {
                                 res.reservation.range
                                     .fixMidnightEndTime()
-                                    .asHelsinkiDateTimeRange(date)
+                                    .asFiniteDateTimeRange(date)
                             }
 
                             // Reserved but no times -> use daily service times
@@ -651,13 +651,11 @@ private fun dailyServiceTimesToPerDateTimeRanges(
 
             when (dailyServiceTimes) {
                 is DailyServiceTimesValue.RegularTimes -> {
-                    dailyServiceTimes.regularTimes.asHelsinkiDateTimeRange(date)
+                    dailyServiceTimes.regularTimes.asFiniteDateTimeRange(date)
                 }
 
                 is DailyServiceTimesValue.IrregularTimes -> {
-                    dailyServiceTimes
-                        .timesForDayOfWeek(date.dayOfWeek)
-                        ?.asHelsinkiDateTimeRange(date)
+                    dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)?.asFiniteDateTimeRange(date)
                 }
 
                 is DailyServiceTimesValue.VariableTimes -> {
@@ -674,8 +672,8 @@ private fun sumOfHours(
     spanningDateRange: FiniteDateRange,
 ): Int {
     return dateTimeRanges
-        .intersection(DateTimeSet.of(placementDateRanges.map { it.asHelsinkiDateTimeRange() }))
-        .intersectRanges(spanningDateRange.asHelsinkiDateTimeRange())
+        .intersection(DateTimeSet.of(placementDateRanges.map { it.asFiniteDateTimeRange() }))
+        .intersectRanges(spanningDateRange.asFiniteDateTimeRange())
         .sumOf { it.getDuration().toMinutes() }
         .let { minutes ->
             BigDecimal(minutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt()

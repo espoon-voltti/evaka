@@ -12,8 +12,8 @@ import evaka.core.shared.StaffAttendanceExternalId
 import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.data.DateTimeSet
 import evaka.core.shared.db.DatabaseEnum
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.user.EvakaUser
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -80,10 +80,10 @@ data class StaffMember(
                 ?.takeIf { it.departed == null && it.type.presentInGroup() }
                 ?.groupId
 
-    val spanningPlans: List<HelsinkiDateTimeRange>
+    val spanningPlans: List<FiniteDateTimeRange>
         get() =
             plannedAttendances
-                .map { HelsinkiDateTimeRange(it.start, it.end) }
+                .map { FiniteDateTimeRange(it.start, it.end) }
                 .let { DateTimeSet.of(it) } // merge adjacent
                 .ranges()
                 .toList()
