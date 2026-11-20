@@ -1562,6 +1562,63 @@ LIMIT 1
     return null
 }
 
+/**
+ * Group placements and backup cares with a group that start after [today], as rows of `child_id`,
+ * `unit_id`, `group_id`, `placement_type` and `start_date`. A row is left out when a group
+ * placement or backup care of the child in the same group starts before it and ends on or after
+ * [today], because then the child is not new in the group.
+ *
+ * [groupIds] is a subquery of group ids that limits the rows to those groups, or null for all
+ * groups.
+ */
+private fun startingPlacements(today: LocalDate, groupIds: QuerySql?) = QuerySql {
+    // Why = ANY(ARRAY(...)), not IN (...) or a join:
+    // - Documented: the subquery runs once, and = ANY can be an index condition.
+    // - Observed: used in both UNION parts; IN or a join read every starting placement first.
+    val inGroups =
+        groupIds?.let { PredicateSql { where("sp.group_id = ANY(ARRAY(${subquery(it)}))") } }
+            ?: PredicateSql.alwaysTrue()
+    sql(
+        """
+SELECT sp.child_id, sp.unit_id, sp.group_id, sp.placement_type, sp.start_date
+FROM (
+    SELECT p.child_id, p.unit_id, dgp.daycare_group_id AS group_id, p.type AS placement_type, dgp.start_date
+    FROM daycare_group_placement dgp
+    JOIN placement p ON p.id = dgp.daycare_placement_id
+    WHERE dgp.start_date > ${bind(today)}
+
+    UNION ALL
+
+    SELECT bc.child_id, bc.unit_id, bc.group_id, p.type AS placement_type, bc.start_date
+    FROM backup_care bc
+    JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> bc.start_date
+    WHERE bc.start_date > ${bind(today)} AND bc.group_id IS NOT NULL
+) sp
+WHERE
+    ${predicate(inGroups)} AND
+    NOT EXISTS (
+        SELECT
+        FROM daycare_group_placement earlier_dgp
+        JOIN placement earlier_p ON earlier_p.id = earlier_dgp.daycare_placement_id
+        WHERE
+            earlier_p.child_id = sp.child_id AND
+            earlier_dgp.daycare_group_id = sp.group_id AND
+            earlier_dgp.start_date < sp.start_date AND
+            earlier_dgp.end_date >= ${bind(today)}
+    ) AND
+    NOT EXISTS (
+        SELECT
+        FROM backup_care earlier_bc
+        WHERE
+            earlier_bc.child_id = sp.child_id AND
+            earlier_bc.group_id = sp.group_id AND
+            earlier_bc.start_date < sp.start_date AND
+            earlier_bc.end_date >= ${bind(today)}
+    )
+""",
+    )
+}
+
 fun Database.Read.getSelectableRecipients(
     idFilter: AccessControlFilter<MessageAccountId>,
     today: LocalDate,
@@ -1608,22 +1665,9 @@ WITH group_accounts AS (
     UNION ALL
 
     -- starting children
-    SELECT a.id AS account_id, p.child_id, a.group_id, a.group_name, dgp.start_date
+    SELECT a.id AS account_id, sp.child_id, a.group_id, a.group_name, sp.start_date
     FROM group_accounts a
-    JOIN daycare_group_placement dgp ON dgp.daycare_group_id = a.group_id
-    JOIN placement p ON p.id = dgp.daycare_placement_id
-    WHERE
-        dgp.start_date > ${bind(today)} AND
-        NOT EXISTS (
-            SELECT
-            FROM daycare_group_placement earlier_dgp
-            JOIN placement earlier_p ON earlier_dgp.daycare_placement_id = earlier_p.id
-            WHERE
-                earlier_p.child_id = p.child_id AND
-                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
-                earlier_dgp.end_date < dgp.start_date AND
-                earlier_dgp.end_date >= ${bind(today)}
-        )
+    JOIN (${subquery(startingPlacements(today, QuerySql { sql("SELECT group_id FROM group_accounts") }))}) sp ON sp.group_id = a.group_id
 )
 SELECT DISTINCT
     c.account_id,
@@ -1708,23 +1752,10 @@ WITH personal_accounts AS (
     UNION ALL
 
     -- starting children
-    SELECT a.id AS account_id, p.child_id, a.unit_id, a.unit_name, dgp.daycare_group_id AS group_id, g.name AS group_name, p.start_date
+    SELECT a.id AS account_id, sp.child_id, a.unit_id, a.unit_name, sp.group_id, g.name AS group_name, sp.start_date
     FROM personal_accounts a
-    JOIN placement p ON p.unit_id = a.unit_id
-    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
-    JOIN daycare_group g ON g.id = dgp.daycare_group_id
-    WHERE
-        dgp.start_date > ${bind(today)} AND
-        NOT EXISTS (
-            SELECT
-            FROM placement earlier_p
-            JOIN daycare_group_placement earlier_dgp ON earlier_dgp.daycare_placement_id = earlier_p.id
-            WHERE
-                earlier_p.child_id = p.child_id AND
-                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
-                earlier_dgp.end_date < dgp.start_date AND
-                earlier_dgp.end_date >= ${bind(today)}
-        )
+    JOIN (${subquery(startingPlacements(today, QuerySql { sql("SELECT dg.id FROM personal_accounts pa JOIN daycare_group dg ON dg.daycare_id = pa.unit_id") }))}) sp ON sp.unit_id = a.unit_id
+    JOIN daycare_group g ON g.id = sp.group_id
 )
 SELECT DISTINCT
     c.account_id,
@@ -1911,45 +1942,28 @@ fun Database.Read.getMessageAccountsForRecipients(
             .toSet { column<MessageAccountId>("account_id") to null }
     }
 
-    val currentRecipientsPredicate =
+    fun recipientsPredicate(recipients: List<MessageRecipient>) =
         PredicateSql.anyNotNull(
-            currentRecipients
+            recipients
                 .areaIds()
                 .takeIf { it.isNotEmpty() }
                 ?.let { PredicateSql { where("d.care_area_id = ANY(${bind(it)})") } },
-            currentRecipients
+            recipients
                 .unitIds()
                 .takeIf { it.isNotEmpty() }
                 ?.let { PredicateSql { where("pl.unit_id = ANY(${bind(it)})") } },
-            currentRecipients
+            recipients
                 .groupIds()
                 .takeIf { it.isNotEmpty() }
                 ?.let { PredicateSql { where("pl.group_id = ANY(${bind(it)})") } },
-            currentRecipients
+            recipients
                 .childIds()
                 .takeIf { it.isNotEmpty() }
                 ?.let { PredicateSql { where("pl.child_id = ANY(${bind(it)})") } },
         )
 
-    val starterRecipientsPredicate =
-        PredicateSql.anyNotNull(
-            starterRecipients
-                .areaIds()
-                .takeIf { it.isNotEmpty() }
-                ?.let { PredicateSql { where("d.care_area_id = ANY(${bind(it)})") } },
-            starterRecipients
-                .unitIds()
-                .takeIf { it.isNotEmpty() }
-                ?.let { PredicateSql { where("pl.unit_id = ANY(${bind(it)})") } },
-            starterRecipients
-                .groupIds()
-                .takeIf { it.isNotEmpty() }
-                ?.let { PredicateSql { where("dgp.daycare_group_id = ANY(${bind(it)})") } },
-            starterRecipients
-                .childIds()
-                .takeIf { it.isNotEmpty() }
-                ?.let { PredicateSql { where("pl.child_id = ANY(${bind(it)})") } },
-        )
+    val currentRecipientsPredicate = recipientsPredicate(currentRecipients)
+    val starterRecipientsPredicate = recipientsPredicate(starterRecipients)
 
     val yearOfBirthFilter =
         if (filters?.yearsOfBirth?.isNotEmpty() == true) {
@@ -1982,15 +1996,14 @@ fun Database.Read.getMessageAccountsForRecipients(
         PredicateSql.allNotNull(yearOfBirthFilter, shiftCareFilter, familyDaycareFilter)
     val starterFilterPredicates = PredicateSql.allNotNull(yearOfBirthFilter, familyDaycareFilter)
 
-    val placementPredicate = { col: String ->
+    val placementTypePredicate =
         if (filters?.placementTypes?.isNotEmpty() == true) {
             val placementTypesInCategory =
                 PlacementType.fromMessagingCategories(filters.placementTypes)
-            PredicateSql { where("pl.$col = ANY(${bind(placementTypesInCategory)})") }
+            PredicateSql { where("pl.placement_type = ANY(${bind(placementTypesInCategory)})") }
         } else PredicateSql.alwaysTrue()
-    }
 
-    val currentSenderPredicate =
+    fun senderPredicate(personalAccountAccess: PredicateSql) =
         when (senderAccount.type) {
             AccountType.MUNICIPAL -> {
                 PredicateSql.alwaysTrue()
@@ -2001,17 +2014,10 @@ fun Database.Read.getMessageAccountsForRecipients(
             }
 
             AccountType.PERSONAL -> {
-                PredicateSql {
-                    where(
-                        """
-                        pl.group_id IS NOT NULL AND
-                        EXISTS (
-                            SELECT FROM employee_child_daycare_acl(${bind(date)}) acl
-                            WHERE acl.child_id = pl.child_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
-                        )
-                        """,
-                    )
-                }
+                PredicateSql.all(
+                    PredicateSql { where("pl.group_id IS NOT NULL") },
+                    personalAccountAccess,
+                )
             }
 
             else -> {
@@ -2019,34 +2025,58 @@ fun Database.Read.getMessageAccountsForRecipients(
             }
         }
 
-    val starterSenderPredicate =
-        when (senderAccount.type) {
-            AccountType.MUNICIPAL -> {
-                PredicateSql.alwaysTrue()
-            }
+    val currentSenderPredicate =
+        senderPredicate(
+            PredicateSql {
+                where(
+                    """
+                    EXISTS (
+                        SELECT FROM employee_child_daycare_acl(${bind(date)}) acl
+                        WHERE acl.child_id = pl.child_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
+                    )
+                    """,
+                )
+            },
+        )
 
+    val starterSenderPredicate =
+        senderPredicate(
+            PredicateSql {
+                where(
+                    """
+                    EXISTS (
+                        SELECT FROM daycare_acl acl
+                        WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
+                    )
+                    """,
+                )
+            },
+        )
+
+    // The sender predicate allows only these groups. Passing them to startingPlacements lets it
+    // read the starting placements through the group indexes, which the recipient predicates
+    // cannot do when they mix units, groups and children.
+    val senderGroupIds =
+        when (senderAccount.type) {
             AccountType.GROUP -> {
-                PredicateSql {
-                    where("dgp.daycare_group_id = ${bind(senderAccount.daycareGroupId)}")
-                }
+                QuerySql { sql("SELECT ${bind(senderAccount.daycareGroupId)}") }
             }
 
             AccountType.PERSONAL -> {
-                PredicateSql {
-                    where(
+                QuerySql {
+                    sql(
                         """
-                        dgp.daycare_group_id IS NOT NULL AND
-                        EXISTS (
-                            SELECT FROM daycare_acl acl
-                            WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
-                        )
-                        """,
+SELECT dg.id
+FROM daycare_acl acl
+JOIN daycare_group dg ON dg.daycare_id = acl.daycare_id
+WHERE acl.employee_id = ${bind(senderAccount.employeeId)}
+""",
                     )
                 }
             }
 
             else -> {
-                PredicateSql.alwaysFalse()
+                null
             }
         }
 
@@ -2062,30 +2092,20 @@ WITH current_children AS (
     WHERE
         ${predicate(currentRecipientsPredicate)} AND
         ${predicate(currentFilterPredicates)} AND
-        ${predicate(placementPredicate("placement_type"))} AND
+        ${predicate(placementTypePredicate)} AND
         ${predicate(currentSenderPredicate)} AND
         'MESSAGING' = ANY(d.enabled_pilot_features)
+), starting_placements AS (
+    ${subquery(startingPlacements(date, senderGroupIds))}
 ), starting_children AS (
     SELECT DISTINCT pl.child_id
-    FROM placement pl
+    FROM starting_placements pl
     JOIN daycare d ON pl.unit_id = d.id
-    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id
     LEFT JOIN person p ON p.id = pl.child_id
     WHERE
-        (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)}) AND
-        NOT EXISTS (
-            SELECT
-            FROM daycare_group_placement earlier_dgp
-            JOIN placement earlier_pl ON earlier_dgp.daycare_placement_id = earlier_pl.id
-            WHERE
-                earlier_pl.child_id = pl.child_id AND
-                earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
-                earlier_dgp.end_date < dgp.start_date AND
-                earlier_dgp.end_date >= ${bind(date)}
-        ) AND
         ${predicate(starterRecipientsPredicate)} AND
         ${predicate(starterFilterPredicates)} AND
-        ${predicate(placementPredicate("type"))} AND
+        ${predicate(placementTypePredicate)} AND
         ${predicate(starterSenderPredicate)} AND
         'MESSAGING' = ANY(d.enabled_pilot_features)
 ), children AS (

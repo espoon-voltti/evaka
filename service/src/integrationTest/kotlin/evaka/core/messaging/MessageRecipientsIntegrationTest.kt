@@ -17,6 +17,7 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.*
+import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
@@ -291,17 +292,22 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `child staying in the same group but with different placement does not show in starters`() {
+        val today = LocalDate.now()
         val area = DevCareArea()
         val daycare1 =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val daycare2 =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
         val group = DevDaycareGroup(daycareId = daycare1.id, name = "Testaajat")
         val supervisor = DevEmployee()
         val adult1 = DevPerson()
         val child1 = DevPerson()
+        val child2 = DevPerson()
 
-        db.transaction { tx ->
+        val groupAccount = db.transaction { tx ->
             tx.insert(area)
             val unitId = tx.insert(daycare1)
+            tx.insert(daycare2)
             val groupId = tx.insert(group)
             val childId = tx.insert(child1, DevPersonType.CHILD)
             val adultId = tx.insert(adult1, DevPersonType.ADULT)
@@ -339,19 +345,57 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     endDate = placementEnd,
                 ),
             )
+
+            // Child 2 moves to another unit and then returns to the same group in backup care
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insertGuardian(adultId, child2.id)
+            val child2PlacementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child2.id,
+                        unitId = unitId,
+                        startDate = placementStart,
+                        endDate = today.plusDays(3),
+                    ),
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = child2PlacementId,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = today.plusDays(3),
+                ),
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare2.id,
+                    startDate = today.plusDays(4),
+                    endDate = placementEnd,
+                ),
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = child2.id,
+                    unitId = unitId,
+                    groupId = groupId,
+                    period = FiniteDateRange(today.plusDays(6), today.plusDays(9)),
+                ),
+            )
+
             tx.insert(supervisor)
             tx.upsertEmployeeMessageAccount(supervisor.id)
             tx.insertDaycareAclRow(daycare1.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
             tx.insertEmployeeToDaycareGroupAcl(groupId, supervisor.id)
-            tx.createDaycareGroupMessageAccount(group.id)
             tx.insertGuardian(adultId, childId)
+            tx.createDaycareGroupMessageAccount(group.id)
         }
 
         val recipients =
             messageController.getSelectableRecipients(
                 dbInstance(),
                 AuthenticatedUser.Employee(supervisor.id, setOf()),
-                RealEvakaClock(),
+                MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0))),
             )
         assertTrue {
             recipients.all { a ->
@@ -362,6 +406,220 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 }
             }
         }
+        assertEquals(
+            setOf(child1.id, child2.id),
+            recipients
+                .single { it.accountId == groupAccount }
+                .receivers
+                .filterIsInstance<SelectableRecipient.Group>()
+                .flatMap { it.receivers }
+                .map { it.id }
+                .toSet(),
+        )
+    }
+
+    @Test
+    fun `child moving to another group of the unit shows in starters of the new group from the move date`() {
+        val today = LocalDate.now()
+        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
+        val moveDate = today.plusDays(10)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val currentGroup = DevDaycareGroup(daycareId = daycare.id, name = "Group 1")
+        val nextGroup = DevDaycareGroup(daycareId = daycare.id, name = "Group 2")
+        val supervisor = DevEmployee()
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        val (supervisorAccount, nextGroupAccount) =
+            db.transaction { tx ->
+                tx.insert(area)
+                tx.insert(daycare)
+                tx.insert(currentGroup)
+                tx.insert(nextGroup)
+                tx.insert(adult, DevPersonType.ADULT)
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insertGuardian(adult.id, child.id)
+                insertChildMovingToGroup(
+                    tx,
+                    child.id,
+                    daycare.id,
+                    currentGroup.id,
+                    nextGroup.id,
+                    moveDate,
+                )
+
+                tx.insert(supervisor)
+                tx.insertDaycareAclRow(daycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
+                Pair(
+                    tx.upsertEmployeeMessageAccount(supervisor.id),
+                    tx.createDaycareGroupMessageAccount(nextGroup.id),
+                )
+            }
+
+        val childName = "${child.lastName} ${child.firstName}"
+        val starterGroup =
+            SelectableRecipient.Group(
+                id = nextGroup.id,
+                name = nextGroup.name,
+                hasStarters = true,
+                receivers =
+                    listOf(
+                        SelectableRecipient.Child(
+                            id = child.id,
+                            name = childName,
+                            startDate = moveDate,
+                        ),
+                    ),
+            )
+        assertEquals(
+            setOf(
+                SelectableRecipientsResponse(
+                    accountId = supervisorAccount,
+                    receivers =
+                        listOf(
+                            SelectableRecipient.Unit(
+                                id = daycare.id,
+                                name = daycare.name,
+                                hasStarters = false,
+                                receivers =
+                                    listOf(
+                                        SelectableRecipient.Group(
+                                            id = currentGroup.id,
+                                            name = currentGroup.name,
+                                            hasStarters = false,
+                                            receivers =
+                                                listOf(
+                                                    SelectableRecipient.Child(
+                                                        id = child.id,
+                                                        name = childName,
+                                                        startDate = null,
+                                                    ),
+                                                ),
+                                        ),
+                                    ),
+                            ),
+                            SelectableRecipient.Unit(
+                                id = daycare.id,
+                                name = daycare.name,
+                                hasStarters = true,
+                                receivers = listOf(starterGroup),
+                            ),
+                        ),
+                ),
+                SelectableRecipientsResponse(
+                    accountId = nextGroupAccount,
+                    receivers = listOf(starterGroup),
+                ),
+            ),
+            messageController.getSelectableRecipients(dbInstance(), supervisor.user, clock).toSet(),
+        )
+    }
+
+    @Test
+    fun `child in backup care in the next group before moving there shows in its starters once`() {
+        val today = LocalDate.now()
+        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
+        val backupCarePeriod = FiniteDateRange(today.plusDays(5), today.plusDays(15))
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val currentGroup = DevDaycareGroup(daycareId = daycare.id)
+        val nextGroup = DevDaycareGroup(daycareId = daycare.id)
+        val supervisor = DevEmployee()
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        val nextGroupAccount = db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(currentGroup)
+            tx.insert(nextGroup)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+            insertChildMovingToGroup(
+                tx,
+                child.id,
+                daycare.id,
+                currentGroup.id,
+                nextGroup.id,
+                moveDate = today.plusDays(10),
+            )
+            // The backup care overlaps the start of the group placement in the same group
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    groupId = nextGroup.id,
+                    period = backupCarePeriod,
+                ),
+            )
+
+            tx.insert(supervisor)
+            tx.insertDaycareAclRow(daycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
+            tx.createDaycareGroupMessageAccount(nextGroup.id)
+        }
+
+        assertEquals(
+            listOf(
+                SelectableRecipient.Group(
+                    id = nextGroup.id,
+                    name = nextGroup.name,
+                    hasStarters = true,
+                    receivers =
+                        listOf(
+                            SelectableRecipient.Child(
+                                id = child.id,
+                                name = "${child.lastName} ${child.firstName}",
+                                startDate = backupCarePeriod.start,
+                            ),
+                        ),
+                ),
+            ),
+            messageController
+                .getSelectableRecipients(dbInstance(), supervisor.user, clock)
+                .single { it.accountId == nextGroupAccount }
+                .receivers,
+        )
+    }
+
+    private fun insertChildMovingToGroup(
+        tx: Database.Transaction,
+        childId: ChildId,
+        unitId: DaycareId,
+        fromGroupId: GroupId,
+        toGroupId: GroupId,
+        moveDate: LocalDate,
+    ) {
+        val daycarePlacementId =
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                ),
+            )
+        tx.insert(
+            DevDaycareGroupPlacement(
+                daycarePlacementId = daycarePlacementId,
+                daycareGroupId = fromGroupId,
+                startDate = placementStart,
+                endDate = moveDate.minusDays(1),
+            ),
+        )
+        tx.insert(
+            DevDaycareGroupPlacement(
+                daycarePlacementId = daycarePlacementId,
+                daycareGroupId = toGroupId,
+                startDate = moveDate,
+                endDate = placementEnd,
+            ),
+        )
     }
 
     private fun insertChildToGroup(
