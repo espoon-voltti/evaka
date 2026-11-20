@@ -178,7 +178,6 @@ val testDecisionIncome =
         totalIncome = 314100,
         totalExpenses = 0,
         total = 314100,
-        worksAtECHA = false,
     )
 
 fun createFeeDecisionAlterationFixture(

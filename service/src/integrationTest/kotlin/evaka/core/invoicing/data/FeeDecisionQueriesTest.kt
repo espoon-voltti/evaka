@@ -423,7 +423,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     totalIncome = 0,
                                     totalExpenses = 0,
                                     total = 0,
-                                    worksAtECHA = false,
                                 ),
                         ),
                     baseDecision(child3)
@@ -438,7 +437,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     totalIncome = 0,
                                     totalExpenses = 0,
                                     total = 0,
-                                    worksAtECHA = false,
                                 ),
                         ),
                     baseDecision(child4)
@@ -451,7 +449,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     totalIncome = 200000,
                                     totalExpenses = 0,
                                     total = 200000,
-                                    worksAtECHA = false,
                                 ),
                         ),
                     baseDecision(child5)
@@ -464,7 +461,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     totalIncome = 200000,
                                     totalExpenses = 0,
                                     total = 200000,
-                                    worksAtECHA = false,
                                 ),
                             partnerId = adult7.id,
                             partnerIncome =
@@ -474,7 +470,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     totalIncome = 0,
                                     totalExpenses = 0,
                                     total = 0,
-                                    worksAtECHA = false,
                                 ),
                         ),
                 ),

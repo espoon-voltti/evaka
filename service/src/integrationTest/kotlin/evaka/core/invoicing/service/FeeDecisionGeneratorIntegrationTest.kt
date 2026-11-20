@@ -2573,56 +2573,6 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `echa increase is applied only once with changing family compositions`() {
-        val firstPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        val secondPeriod = FiniteDateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 12, 31))
-        val combinedPeriod = firstPeriod.copy(end = secondPeriod.end)
-        insertFamilyRelations(adult1.id, listOf(child1.id), firstPeriod)
-        insertFamilyRelations(adult1.id, listOf(child1.id, child2.id), secondPeriod)
-        insertPlacement(child1.id, combinedPeriod, DAYCARE, daycare.id)
-        insertEchaIncome(adult1.id, combinedPeriod.asDateRange())
-
-        db.transaction { generator.generateNewDecisionsForAdult(it, today, adult1.id) }
-
-        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
-        assertEquals(2, decisions.size)
-        decisions[0].let { decision ->
-            assertEquals(2, decision.familySize)
-            assertEquals(firstPeriod.start, decision.validFrom)
-            assertEquals(firstPeriod.end, decision.validTo)
-            assertEquals(38200, decision.totalFee)
-            assertEquals(1, decision.children.size)
-            decision.children[0].let { child ->
-                assertEquals(child1.id, child.child.id)
-                assertEquals(28900, child.baseFee)
-                assertEquals(DAYCARE, child.placement.type)
-                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
-                assertEquals(0, child.siblingDiscount)
-                assertEquals(28900, child.fee)
-                assertEquals(38200, child.finalFee)
-                assertEquals(listOf(9300), child.feeAlterations.map { it.effect })
-            }
-        }
-        decisions[1].let { decision ->
-            assertEquals(3, decision.familySize)
-            assertEquals(secondPeriod.start, decision.validFrom)
-            assertEquals(secondPeriod.end, decision.validTo)
-            assertEquals(38200, decision.totalFee)
-            assertEquals(1, decision.children.size)
-            decision.children[0].let { child ->
-                assertEquals(child1.id, child.child.id)
-                assertEquals(28900, child.baseFee)
-                assertEquals(DAYCARE, child.placement.type)
-                assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
-                assertEquals(0, child.siblingDiscount)
-                assertEquals(28900, child.fee)
-                assertEquals(38200, child.finalFee)
-                assertEquals(listOf(9300), child.feeAlterations.map { it.effect })
-            }
-        }
-    }
-
-    @Test
     fun `active fee decisions are not updated on changed past placement end date`() {
         val originalPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val sentDecision =
@@ -2797,7 +2747,6 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         totalIncome = 0,
                         totalExpenses = 0,
                         total = 0,
-                        worksAtECHA = false,
                     ),
                 children =
                     listOf(
@@ -3410,22 +3359,6 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     ),
                                 ),
                         ),
-                    modifiedBy = employee.evakaUserId,
-                ),
-            )
-        }
-    }
-
-    private fun insertEchaIncome(adultId: PersonId, period: DateRange) {
-        db.transaction { tx ->
-            tx.insert(
-                DevIncome(
-                    personId = adultId,
-                    validFrom = period.start,
-                    validTo = period.end,
-                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                    data = mapOf(),
-                    worksAtEcha = true,
                     modifiedBy = employee.evakaUserId,
                 ),
             )

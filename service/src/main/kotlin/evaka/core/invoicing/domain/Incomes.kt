@@ -24,7 +24,6 @@ data class Income(
     val effect: IncomeEffect,
     val data: Map<String, IncomeValue>,
     @get:JsonProperty("isEntrepreneur") val isEntrepreneur: Boolean = false,
-    val worksAtECHA: Boolean = false,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
@@ -45,7 +44,6 @@ data class IncomeRequest(
     val effect: IncomeEffect,
     val data: Map<String, IncomeValue>,
     @get:JsonProperty("isEntrepreneur") val isEntrepreneur: Boolean = false,
-    val worksAtECHA: Boolean = false,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
@@ -60,7 +58,6 @@ data class DecisionIncome(
     val totalIncome: Int,
     val totalExpenses: Int,
     val total: Int,
-    val worksAtECHA: Boolean,
 )
 
 fun decisionIncomesEqual(income1: DecisionIncome?, income2: DecisionIncome?): Boolean {

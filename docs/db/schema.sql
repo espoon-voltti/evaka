@@ -3149,7 +3149,6 @@ CREATE TABLE public.income (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     effect public.income_effect DEFAULT 'INCOME'::public.income_effect NOT NULL,
     is_entrepreneur boolean DEFAULT false NOT NULL,
-    works_at_echa boolean DEFAULT false NOT NULL,
     application_id uuid,
     modified_by uuid CONSTRAINT income_updated_by_not_null NOT NULL,
     modified_at timestamp with time zone NOT NULL,

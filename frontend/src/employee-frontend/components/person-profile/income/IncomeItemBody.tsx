@@ -59,8 +59,6 @@ const IncomeItemBody = React.memo(function IncomeItemBody({
         <span>
           {i18n.personProfile.income.details.effectOptions[income.effect]}
         </span>
-        <Label>{i18n.personProfile.income.details.echa}</Label>
-        <span>{income.worksAtECHA ? i18n.common.yes : i18n.common.no}</span>
         <Label>{i18n.personProfile.income.details.entrepreneur}</Label>
         <span>{income.isEntrepreneur ? i18n.common.yes : i18n.common.no}</span>
         <Label>{i18n.personProfile.income.details.notes}</Label>

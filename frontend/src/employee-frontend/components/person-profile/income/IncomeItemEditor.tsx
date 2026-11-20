@@ -60,7 +60,6 @@ export interface IncomeForm {
   effect: IncomeEffect
   data: IncomeTableData
   isEntrepreneur: boolean
-  worksAtECHA: boolean
   validFrom: LocalDate | null
   validTo: LocalDate | null
   notes: string
@@ -75,7 +74,6 @@ const emptyIncome: IncomeForm = {
   effect: 'INCOME',
   data: {},
   isEntrepreneur: false,
-  worksAtECHA: false,
   notes: '',
   validFrom: null,
   validTo: null,
@@ -313,16 +311,6 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
       <Label>{i18n.personProfile.income.details.miscTitle}</Label>
       <Gap $size="m" />
       <FixedSpaceColumn>
-        <Checkbox
-          label={i18n.personProfile.income.details.echa}
-          checked={editedIncome.worksAtECHA}
-          onChange={() =>
-            setEditedIncome((prev) => ({
-              ...prev,
-              worksAtECHA: !prev.worksAtECHA
-            }))
-          }
-        />
         <Checkbox
           label={i18n.personProfile.income.details.entrepreneur}
           checked={editedIncome.isEntrepreneur}

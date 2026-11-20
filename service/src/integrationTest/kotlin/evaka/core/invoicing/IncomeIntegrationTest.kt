@@ -53,7 +53,6 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         effect = it.effect,
                         data = it.data,
                         isEntrepreneur = it.isEntrepreneur,
-                        worksAtECHA = it.worksAtECHA,
                         validFrom = it.validFrom,
                         validTo = it.validTo,
                         notes = it.notes,

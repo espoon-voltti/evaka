@@ -26,7 +26,6 @@ import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.domain.IncomeEffect
 import evaka.core.invoicing.domain.calculateBaseFee
 import evaka.core.invoicing.domain.calculateFeeBeforeFeeAlterations
-import evaka.core.invoicing.domain.getECHAIncrease
 import evaka.core.invoicing.domain.toFeeAlterationsWithEffects
 import evaka.core.invoicing.mapIncomeToDecisionIncome
 import evaka.core.invoicing.service.IncomeCoefficientMultiplierProvider
@@ -247,18 +246,13 @@ private fun getFeeBases(
                                 ?.filter { it.range.contains(range) }
                                 ?.map { it.feeAlteration } ?: emptyList()
 
-                        val echaAlteration =
-                            getECHAIncrease(child.id, range).takeIf {
-                                parentIncomes.any { it?.worksAtECHA == true }
-                            }
-
                         ChildFeeBasis(
                             child = child,
                             siblingIndex = siblingIndex,
                             placement = placement,
                             serviceNeedOptionFee = serviceNeedOptionFee,
                             income = income,
-                            feeAlterations = feeAlterations + listOfNotNull(echaAlteration),
+                            feeAlterations = feeAlterations,
                         )
                     },
             familySize = familySize,

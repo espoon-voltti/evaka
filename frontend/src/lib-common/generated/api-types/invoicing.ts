@@ -59,7 +59,6 @@ export interface DecisionIncome {
   total: number
   totalExpenses: number
   totalIncome: number
-  worksAtECHA: boolean
 }
 
 /**
@@ -420,7 +419,6 @@ export interface Income {
   totalIncome: number
   validFrom: LocalDate
   validTo: LocalDate | null
-  worksAtECHA: boolean
 }
 
 /**
@@ -488,7 +486,6 @@ export interface IncomeRequest {
   personId: PersonId
   validFrom: LocalDate
   validTo: LocalDate | null
-  worksAtECHA: boolean
 }
 
 /**
