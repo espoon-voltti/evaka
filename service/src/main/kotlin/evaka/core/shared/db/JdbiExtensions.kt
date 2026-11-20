@@ -12,6 +12,7 @@ import evaka.core.shared.Id
 import evaka.core.shared.data.DateSet
 import evaka.core.shared.domain.Coordinate
 import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -128,6 +129,16 @@ val finiteDateTimeRangeArgumentFactory =
             type = "tstzrange"
             if (it != null) {
                 value = "[${it.start.toInstant()},${it.end.toInstant()})"
+            }
+        }
+    }
+
+val dateTimeRangeArgumentFactory =
+    pgObjectArgumentFactory<DateTimeRange> {
+        PGobject().apply {
+            type = "tstzrange"
+            if (it != null) {
+                value = "[${it.start.toInstant()},${it.end?.toInstant() ?: ""})"
             }
         }
     }

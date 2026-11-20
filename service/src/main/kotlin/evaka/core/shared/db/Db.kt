@@ -7,7 +7,10 @@ package evaka.core.shared.db
 import evaka.core.identity.Ssn
 import evaka.core.shared.Id
 import evaka.core.shared.config.defaultJsonMapperBuilder
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.TimeRange
 import java.lang.reflect.Type
 import java.time.LocalDate
@@ -81,6 +84,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(idArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
     jdbi.registerArgument(finiteDateTimeRangeArgumentFactory)
+    jdbi.registerArgument(dateTimeRangeArgumentFactory)
     jdbi.registerArgument(yearMonthArgumentFactory)
     jdbi.registerArgument(productKeyArgumentFactory)
     jdbi.registerArgument(databaseEnumArgumentFactory)
@@ -110,6 +114,24 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
         PGobject().apply {
             type = "daterange"
             value = "[${it.start},${it.end}]"
+        }
+    }
+    jdbi.registerArrayType(DateRange::class.java, "daterange") {
+        PGobject().apply {
+            type = "daterange"
+            value = "[${it.start},${it.end ?: ""}]"
+        }
+    }
+    jdbi.registerArrayType(FiniteDateTimeRange::class.java, "tstzrange") {
+        PGobject().apply {
+            type = "tstzrange"
+            value = "[${it.start.toInstant()},${it.end.toInstant()})"
+        }
+    }
+    jdbi.registerArrayType(DateTimeRange::class.java, "tstzrange") {
+        PGobject().apply {
+            type = "tstzrange"
+            value = "[${it.start.toInstant()},${it.end?.toInstant() ?: ""})"
         }
     }
     jdbi.registerArrayType(TimeRange::class.java, "timerange") { tr -> tr?.toDbString() }

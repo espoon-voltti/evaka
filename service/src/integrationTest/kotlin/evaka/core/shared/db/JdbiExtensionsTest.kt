@@ -11,7 +11,9 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.data.DateSet
 import evaka.core.shared.domain.Coordinate
 import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.europeHelsinki
 import java.time.LocalDate
@@ -448,5 +450,113 @@ SELECT ${bind(input)} = datemultirange(
         }
         val expected = ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(10, 59), utc)
         assertEquals(expected, result.jsonb.value.toZonedDateTime().withZoneSameInstant(utc))
+    }
+
+    @Test
+    fun testDateTimeRange() {
+        val input =
+            DateTimeRange(
+                HelsinkiDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59)),
+                HelsinkiDateTime.of(LocalDate.of(2020, 5, 8), LocalTime.of(8, 0)),
+            )
+
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql(
+                        "SELECT ${bind(input)} = tstzrange('2020-05-07T10:59Z', '2020-05-08T05:00Z', '[)')",
+                    )
+                },
+                input,
+            )
+        }
+        assertTrue(match)
+    }
+
+    @Test
+    fun testDateTimeRangeWithoutEnd() {
+        val input =
+            DateTimeRange(HelsinkiDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59)), null)
+
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql("SELECT ${bind(input)} = tstzrange('2020-05-07T10:59Z', NULL, '[)')")
+                },
+                input,
+            )
+        }
+        assertTrue(match)
+    }
+
+    @Test
+    fun testDateRangeArray() {
+        val input =
+            listOf(
+                DateRange(LocalDate.of(2020, 1, 2), LocalDate.of(2020, 3, 4)),
+                DateRange(LocalDate.of(2020, 6, 7), null),
+            )
+
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql(
+                        "SELECT ${bind(input)} = ARRAY[daterange('2020-01-02', '2020-03-04', '[]'), daterange('2020-06-07', NULL, '[]')]",
+                    )
+                },
+                input,
+            )
+        }
+        assertTrue(match)
+    }
+
+    @Test
+    fun testFiniteDateTimeRangeArray() {
+        val input =
+            listOf(
+                FiniteDateTimeRange(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59)),
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 8), LocalTime.of(8, 0)),
+                ),
+            )
+
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql(
+                        "SELECT ${bind(input)} = ARRAY[tstzrange('2020-05-07T10:59Z', '2020-05-08T05:00Z', '[)')]",
+                    )
+                },
+                input,
+            )
+        }
+        assertTrue(match)
+    }
+
+    @Test
+    fun testDateTimeRangeArray() {
+        val input =
+            listOf(
+                DateTimeRange(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59)),
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 8), LocalTime.of(8, 0)),
+                ),
+                DateTimeRange(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59)),
+                    null,
+                ),
+            )
+
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql(
+                        "SELECT ${bind(input)} = ARRAY[tstzrange('2020-05-07T10:59Z', '2020-05-08T05:00Z', '[)'), tstzrange('2020-05-07T10:59Z', NULL, '[)')]",
+                    )
+                },
+                input,
+            )
+        }
+        assertTrue(match)
     }
 }
