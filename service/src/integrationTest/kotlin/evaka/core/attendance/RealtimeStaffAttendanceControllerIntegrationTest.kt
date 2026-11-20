@@ -493,6 +493,19 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             }
         assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
 
+        // The overlapping entry is not the first entry of the request
+        val exceptionForSecondEntry =
+            assertThrows<BadRequest> {
+                upsertStaffAttendancesOnDate(
+                    now.toLocalDate(),
+                    listOf(
+                        presentEntry(group1.id, now.minusHours(8), now.minusHours(6)),
+                        presentEntry(group1.id, now.minusHours(4), now.minusHours(1)),
+                    ),
+                )
+            }
+        assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exceptionForSecondEntry.errorCode)
+
         upsertDailyStaffAttendances(
             daycare.id,
             group1.id,

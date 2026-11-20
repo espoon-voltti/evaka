@@ -587,7 +587,7 @@ ORDER BY sa.arrived
 
 fun Database.Read.hasOverlappingStaffAttendance(
     employeeId: EmployeeId,
-    period: DateTimeRange,
+    attendances: List<DateTimeRange>,
     excludeIds: Set<StaffAttendanceRealtimeId>,
 ): Boolean = createQuery {
     sql(
@@ -595,7 +595,7 @@ fun Database.Read.hasOverlappingStaffAttendance(
 SELECT EXISTS (
     SELECT FROM staff_attendance_realtime
     WHERE employee_id = ${bind(employeeId)}
-      AND tstzrange(arrived, departed) && ${bind(period)}
+      AND tstzrange(arrived, departed) && ANY(${bind(attendances)})
       AND NOT id = ANY(${bind(excludeIds)})
 )
 """,
