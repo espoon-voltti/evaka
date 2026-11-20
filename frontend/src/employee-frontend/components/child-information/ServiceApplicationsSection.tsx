@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
@@ -427,8 +428,10 @@ export default React.memo(function ServiceApplications({
     const undecidedApplication = applications.find(
       (a) => a.data.decision === null
     )
-    const decidedApplications = applications.filter(
-      (a) => a.data.decision !== null
+    const decidedApplications = orderBy(
+      applications.filter((a) => a.data.decision !== null),
+      [(a) => a.data.sentAt.timestamp],
+      ['desc']
     )
     return (
       <div>
