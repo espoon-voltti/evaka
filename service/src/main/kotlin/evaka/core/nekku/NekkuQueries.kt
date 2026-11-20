@@ -20,6 +20,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.TimeRange
+import evaka.core.shared.domain.isHoliday
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
@@ -648,34 +649,51 @@ data class NekkuDaycareCustomerMapping(
     val customerType: String,
 )
 
-data class GroupDates(val id: GroupId, val validFrom: LocalDate?, val validTo: LocalDate?)
+data class NekkuGroup(
+    val id: GroupId,
+    val daycareId: DaycareId,
+    val combinedOperationDays: Set<Int>,
+    val shiftCareOpenOnHolidays: Boolean,
+    val weekendMealOrders: Boolean,
+    val validFrom: LocalDate?,
+    val validTo: LocalDate?,
+    val weekdays: Set<NekkuCustomerWeekday>,
+) {
+    fun isValidOn(date: LocalDate): Boolean =
+        (validFrom == null || date >= validFrom) && (validTo == null || date <= validTo)
 
-fun Database.Read.getNekkuCustomerWeekdaysByGroups(
-    groupIds: List<GroupId>,
-): Map<GroupId, Set<NekkuCustomerWeekday>> = createQuery {
+    fun isOperationDate(date: LocalDate): Boolean =
+        date.dayOfWeek.value in combinedOperationDays &&
+            (shiftCareOpenOnHolidays || !isHoliday(date))
+
+    fun nextOperationDateAfter(date: LocalDate): LocalDate {
+        if (combinedOperationDays.isEmpty()) {
+            throw IllegalStateException(
+                "Päiväkodin aukioloaikoja ei olla asetettu Nekku-tilausta luotaessa",
+            )
+        }
+        return (1L..7L).map { date.plusDays(it) }.firstOrNull { isOperationDate(it) }
+            ?: throw IllegalStateException("Päiväkodin seuraavaa aukioloa ei löydetty")
+    }
+}
+
+fun Database.Read.getNekkuGroups(date: LocalDate): List<NekkuGroup> =
+    getNekkuGroups(FiniteDateRange(date, date))
+
+fun Database.Read.getNekkuGroups(range: FiniteDateRange): List<NekkuGroup> = createQuery {
     sql(
         """
-SELECT dg.id AS group_id, unnest(nct.weekdays) AS weekday
-FROM daycare_group dg
-    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
-    JOIN nekku_customer_type nct ON nc.number = nct.customer_number
-WHERE dg.id = ANY(${bind(groupIds)})
-                """,
-    )
-}
-    .toList { column<GroupId>("group_id") to column<NekkuCustomerWeekday>("weekday") }
-    .groupBy({ it.first }, { it.second })
-    .mapValues { it.value.toSet() }
-
-fun Database.Read.getNekkuOpenDaycareGroupDates(date: LocalDate): List<GroupDates> =
-    getNekkuOpenDaycareGroupDates(FiniteDateRange(date, date))
-
-fun Database.Read.getNekkuOpenDaycareGroupDates(range: FiniteDateRange): List<GroupDates> =
-    createQuery {
-        sql(
-            """
-SELECT 
+SELECT
     dg.id as id,
+    dg.daycare_id as daycare_id,
+    coalesce(d.operation_days, '{}') || coalesce(d.shift_care_operation_days, '{}') as combined_operation_days,
+    d.shift_care_open_on_holidays,
+    NOT d.nekku_no_weekend_meal_orders AS weekend_meal_orders,
+    ARRAY(
+        SELECT DISTINCT unnest(nct.weekdays)
+        FROM nekku_customer_type nct
+        WHERE nct.customer_number = nc.number
+    ) AS weekdays,
     GREATEST(d.opening_date, dg.start_date) as valid_from,
     LEAST(d.closing_date, dg.end_date) as valid_to
 FROM daycare_group dg
@@ -684,30 +702,10 @@ FROM daycare_group dg
 WHERE dg.nekku_customer_number IS NOT NULL
     AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
     AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
-                """,
-        )
-    }
-    .toList<GroupDates>()
-
-fun Database.Read.findNekkuGroupsOpeningInNextWeek(date: LocalDate): List<GroupDates> =
-    createQuery {
-        sql(
-            """
-SELECT
-    dg.id as id,
-    GREATEST(d.opening_date, dg.start_date) as valid_from,
-    LEAST(d.closing_date, dg.end_date) as valid_to
-FROM daycare_group dg
-    JOIN daycare d ON d.id = dg.daycare_id
-    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
-WHERE dg.nekku_customer_number IS NOT NULL
-    AND GREATEST(d.opening_date, dg.start_date) > ${bind(date)}
-    AND GREATEST(d.opening_date, dg.start_date) <= ${bind(date.plusDays(7))}
-            """
-                .trimIndent(),
-        )
-    }
-    .toList<GroupDates>()
+""",
+    )
+}
+    .toList<NekkuGroup>()
 
 fun Database.Read.mealTypesForChildren(
     childIds: Set<ChildId>,
@@ -953,32 +951,6 @@ fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> = crea
     sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}")
 }
     .toList()
-
-fun Database.Read.getGroupOperationDays(groupId: GroupId): NekkuDaycareOperationInfo? =
-    createQuery {
-        sql(
-            """
-SELECT ARRAY(
-    SELECT DISTINCT unnest(
-        COALESCE(d.operation_days, '{}')::int[] || 
-        COALESCE(d.shift_care_operation_days, '{}')::int[]
-        )
-    ) AS combined_days,
-    d.shift_care_open_on_holidays,
-    d.nekku_no_weekend_meal_orders as no_weekend_meal_orders
-FROM daycare_group dcg
-    JOIN daycare d ON d.id = dcg.daycare_id
-WHERE dcg.id = ${bind(groupId)}
-                """,
-        )
-    }
-    .exactlyOneOrNull<NekkuDaycareOperationInfo>()
-
-data class NekkuDaycareOperationInfo(
-    val combinedDays: List<Int>,
-    val shiftCareOpenOnHolidays: Boolean,
-    val noWeekendMealOrders: Boolean,
-)
 
 fun Database.Read.getNekkuOrderReductionForDaycareByGroup(groupId: GroupId) = createQuery {
     sql(
