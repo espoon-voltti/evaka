@@ -62,6 +62,7 @@ class NekkuService(
     private val emailClient: EmailClient,
 ) {
     private val client = env?.let { NekkuHttpClient(it, jsonMapper) }
+    private val orderFreeze = env?.orderFreeze
 
     init {
         asyncJobRunner.registerHandler(::syncNekkuCustomers)
@@ -157,6 +158,7 @@ class NekkuService(
             asyncJobRunner = asyncJobRunner,
             clock.now(),
             remainingAttempts,
+            orderFreeze,
         )
     }
 
@@ -337,10 +339,15 @@ fun planNekkuManualOrderJob(
     now: HelsinkiDateTime,
     groupId: GroupId,
     date: LocalDate,
+    orderFreeze: NekkuOrderFreeze?,
 ) {
     val today = now.toLocalDate()
     if (date.isOnOrBefore(today))
         throw BadRequest("Can only make a manual order beginning tomorrow")
+    if (orderFreeze?.isFrozen(now, date) == true)
+        throw BadRequest(
+            "Nekku orders for delivery dates before ${orderFreeze.deliveryDatesBefore} are frozen",
+        )
     // this week we have made the orders for up to the week after next
     if (date.isAfter(today.nextWeeksSunday().plusDays(14)))
         throw BadRequest(
@@ -421,7 +428,15 @@ fun createAndSendNekkuOrder(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     now: HelsinkiDateTime,
     remainingAttempts: Int,
+    orderFreeze: NekkuOrderFreeze?,
 ) {
+    if (orderFreeze?.isFrozen(now, date) == true) {
+        logger.info {
+            "Skipped Nekku order for date $date groupId=$groupId because orders for delivery dates before ${orderFreeze.deliveryDatesBefore} are frozen"
+        }
+        return
+    }
+
     try {
 
         val (preschoolTerm, children) =
@@ -798,6 +813,11 @@ fun perChildCalendarEventReductions(
     calendarEventReductions.groupWide.union(
         calendarEventReductions.childSpecific[childId] ?: setOf(),
     )
+
+data class NekkuOrderFreeze(val startsAt: HelsinkiDateTime, val deliveryDatesBefore: LocalDate) {
+    fun isFrozen(now: HelsinkiDateTime, deliveryDate: LocalDate): Boolean =
+        now >= startsAt && deliveryDate < deliveryDatesBefore
+}
 
 data class NekkuCustomer(
     val number: String,
