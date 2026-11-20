@@ -335,7 +335,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 }
                 ac.verifyPinCodeAndThrow(dbc, unitId, body.employeeId, body.pinCode, clock)
 
-                if (body.rows.any { it.arrived.toLocalDate() != body.date })
+                if (body.rows.any { it.period.start.toLocalDate() != body.date })
                     throw BadRequest("Attendances outside given date")
                 if (body.rows.any { !it.departsAfterArrival() })
                     throw BadRequest("Departure time must be after arrival time")
@@ -373,18 +373,17 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         )
 
                         val updated =
-                            body.rows.mapNotNull { attendance ->
+                            body.rows.mapNotNull { row ->
                                 tx.upsertStaffAttendance(
                                     attendanceId = null,
                                     employeeId = body.employeeId,
-                                    groupId = attendance.groupId,
-                                    arrivalTime = attendance.arrived,
-                                    departureTime = attendance.departed,
+                                    groupId = row.groupId,
+                                    arrivalTime = row.period.start,
+                                    departureTime = row.period.end,
                                     occupancyCoefficient =
-                                        if (attendance.hasStaffOccupancyEffect)
-                                            occupancyCoefficientSeven
+                                        if (row.hasStaffOccupancyEffect) occupancyCoefficientSeven
                                         else occupancyCoefficientZero,
-                                    type = attendance.type,
+                                    type = row.type,
                                     departedAutomatically = false,
                                     modifiedAt = clock.now(),
                                     modifiedBy = user.evakaUserId,

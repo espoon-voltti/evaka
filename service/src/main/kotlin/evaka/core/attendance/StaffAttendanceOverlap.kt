@@ -28,11 +28,7 @@ fun requireNoOverlapsWithExistingStaffAttendances(
     entries: List<RealtimeStaffAttendanceController.StaffAttendanceUpsert>,
     excludeIds: Set<StaffAttendanceRealtimeId>,
 ) {
-    if (
-        entries.any {
-            tx.hasOverlappingStaffAttendance(employeeId, it.arrived, it.departed, excludeIds)
-        }
-    ) {
+    if (entries.any { tx.hasOverlappingStaffAttendance(employeeId, it.period, excludeIds) }) {
         throw BadRequest(
             "Attendance overlaps with an existing attendance",
             OVERLAPPING_STAFF_ATTENDANCE,

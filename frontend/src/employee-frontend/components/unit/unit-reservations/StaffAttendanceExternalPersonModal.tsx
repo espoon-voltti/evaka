@@ -9,6 +9,7 @@ import styled from 'styled-components'
 
 import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import DateTimeRange from 'lib-common/date-time-range'
 import { boolean, localDate, localTime, string } from 'lib-common/form/fields'
 import {
   object,
@@ -103,8 +104,7 @@ const externalPersonForm = transformed(
       entries: [
         {
           id: null,
-          arrived,
-          departed,
+          period: new DateTimeRange(arrived, departed),
           groupId: group,
           hasStaffOccupancyEffect: hasStaffOccupancyEffect
         }

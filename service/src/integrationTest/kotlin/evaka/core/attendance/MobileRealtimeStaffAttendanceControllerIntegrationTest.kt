@@ -26,6 +26,7 @@ import evaka.core.shared.dev.DevStaffAttendancePlan
 import evaka.core.shared.dev.createMobileDeviceToUnit
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -1166,8 +1167,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = null,
                                 groupId = group.id,
-                                arrived = now,
-                                departed = null,
+                                period = DateTimeRange(now, null),
                                 type = StaffAttendanceType.PRESENT,
                                 hasStaffOccupancyEffect = true,
                             ),
@@ -1213,8 +1213,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = staffAttendanceId,
                                 groupId = group.id,
-                                arrived = now.minusHours(1),
-                                departed = now,
+                                period = DateTimeRange(now.minusHours(1), now),
                                 type = StaffAttendanceType.JUSTIFIED_CHANGE,
                                 hasStaffOccupancyEffect = false,
                             ),
@@ -1308,16 +1307,22 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = staffAttendance1Id,
                                 groupId = group.id,
-                                arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
-                                departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
+                                period =
+                                    DateTimeRange(
+                                        HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
+                                        HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
+                                    ),
                                 type = StaffAttendanceType.PRESENT,
                                 hasStaffOccupancyEffect = false,
                             ),
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = staffAttendance2Id,
                                 groupId = group.id,
-                                arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 0)),
-                                departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
+                                period =
+                                    DateTimeRange(
+                                        HelsinkiDateTime.of(today, LocalTime.of(16, 0)),
+                                        HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
+                                    ),
                                 type = StaffAttendanceType.PRESENT,
                                 hasStaffOccupancyEffect = true,
                             ),
@@ -1342,8 +1347,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = null,
                             groupId = null,
-                            arrived = now,
-                            departed = null,
+                            period = DateTimeRange(now, null),
                             type = StaffAttendanceType.TRAINING,
                             hasStaffOccupancyEffect = false,
                         ),
@@ -1390,8 +1394,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = null,
                                 groupId = group.id,
-                                arrived = now.minusHours(2),
-                                departed = now,
+                                period = DateTimeRange(now.minusHours(2), now),
                                 type = StaffAttendanceType.PRESENT,
                                 hasStaffOccupancyEffect = true,
                             ),
@@ -1416,8 +1419,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = null,
                                 groupId = group2.id,
-                                arrived = now,
-                                departed = now.plusHours(2),
+                                period = DateTimeRange(now, now.plusHours(2)),
                                 type = StaffAttendanceType.PRESENT,
                                 hasStaffOccupancyEffect = false,
                             ),
@@ -1441,8 +1443,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = StaffAttendanceRealtimeId(UUID.randomUUID()),
                             groupId = group.id,
-                            arrived = now,
-                            departed = null,
+                            period = DateTimeRange(now, null),
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
                         ),
@@ -1475,8 +1476,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = StaffAttendanceRealtimeId(UUID.randomUUID()),
                             groupId = group.id,
-                            arrived = now,
-                            departed = null,
+                            period = DateTimeRange(now, null),
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
                         ),
@@ -1541,8 +1541,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = null,
                             groupId = group.id,
-                            arrived = now,
-                            departed = null,
+                            period = DateTimeRange(now, null),
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
                         ),
@@ -1587,8 +1586,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = StaffAttendanceRealtimeId(UUID.randomUUID()),
                             groupId = group.id,
-                            arrived = now.plusDays(1),
-                            departed = null,
+                            period = DateTimeRange(now.plusDays(1), null),
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
                         ),
@@ -1621,8 +1619,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = null,
                             groupId = group.id,
-                            arrived = now.minusMinutes(1),
-                            departed = now.minusMinutes(1),
+                            period = DateTimeRange(now.minusMinutes(1), now.minusMinutes(1)),
                             type = StaffAttendanceType.TRAINING,
                             hasStaffOccupancyEffect = false,
                         ),
@@ -1655,8 +1652,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = StaffAttendanceRealtimeId(UUID.randomUUID()),
                             groupId = group.id,
-                            arrived = now,
-                            departed = null,
+                            period = DateTimeRange(now, null),
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = true,
                         ),
@@ -1724,8 +1720,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
             id = null,
             groupId = group.id,
-            arrived = arrived,
-            departed = departed,
+            period = DateTimeRange(arrived, departed),
             type = StaffAttendanceType.PRESENT,
             hasStaffOccupancyEffect = true,
         )

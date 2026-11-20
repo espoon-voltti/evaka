@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { useLocation, useSearchParams } from 'wouter'
 
 import { combine, Success } from 'lib-common/api'
+import DateTimeRange from 'lib-common/date-time-range'
 import { boolean, localDate, localTime, string } from 'lib-common/form/fields'
 import {
   array,
@@ -140,11 +141,9 @@ const staffAttendanceForm = mapped(
     id: output.id,
     type: output.type,
     groupId: output.groupId,
-    arrived: HelsinkiDateTime.fromLocal(output.arrivedDate, output.arrivedTime),
-    departed: getDeparted(
-      output.arrivedDate,
-      output.arrivedTime,
-      output.departedTime
+    period: new DateTimeRange(
+      HelsinkiDateTime.fromLocal(output.arrivedDate, output.arrivedTime),
+      getDeparted(output.arrivedDate, output.arrivedTime, output.departedTime)
     ),
     hasStaffOccupancyEffect: typesWithoutGroup.has(output.type)
       ? false
@@ -159,18 +158,26 @@ interface OtherAttendance {
   departed: HelsinkiDateTime | null
 }
 
+const attendanceTimes = ({ period }: StaffAttendanceUpsert) => ({
+  arrived: period.start,
+  departed: period.end
+})
+
 const staffAttendancesForm = (otherAttendances: OtherAttendance[]) =>
   object({
     rows: validated(array(staffAttendanceForm), (output) =>
       output.some((row, index, array) =>
         array.some(
           (other, otherIndex) =>
-            index !== otherIndex && attendancesOverlap(row, other)
+            index !== otherIndex &&
+            attendancesOverlap(attendanceTimes(row), attendanceTimes(other))
         )
       )
         ? 'overlap'
         : output.some((row) =>
-              otherAttendances.some((other) => attendancesOverlap(row, other))
+              otherAttendances.some((other) =>
+                attendancesOverlap(attendanceTimes(row), other)
+              )
             )
           ? 'overlapWithOtherAttendance'
           : undefined
@@ -238,39 +245,44 @@ const initialRowState = (
   i18n: Translations,
   groups: GroupInfo[],
   attendance: StaffMemberAttendance | StaffAttendanceUpsert
-): StateOf<typeof staffAttendanceForm> => ({
-  id: attendance.id,
-  type: {
-    domValue: attendance.type,
-    options: staffAttendanceTypes.map((type) => ({
-      domValue: type,
-      value: type,
-      label: i18n.attendances.staffTypes[type]
-    }))
-  },
-  groupEditMode: false,
-  groupId: {
-    domValue: attendance.groupId || emptyGroupIdDomValue,
-    options: [
-      {
-        domValue: emptyGroupIdDomValue,
-        value: null,
-        label: i18n.attendances.noGroup
-      },
-      ...groups.map((group) => ({
-        domValue: group.id,
-        value: group.id,
-        label: group.name
+): StateOf<typeof staffAttendanceForm> => {
+  const { arrived, departed } = isUpsert(attendance)
+    ? attendanceTimes(attendance)
+    : attendance
+  return {
+    id: attendance.id,
+    type: {
+      domValue: attendance.type,
+      options: staffAttendanceTypes.map((type) => ({
+        domValue: type,
+        value: type,
+        label: i18n.attendances.staffTypes[type]
       }))
-    ]
-  },
-  arrivedDate: localDate.fromDate(attendance.arrived.toLocalDate()),
-  arrivedTime: attendance.arrived.toLocalTime().format(),
-  departedTime: attendance.departed?.toLocalTime().format() ?? '',
-  occupancyEffect: isUpsert(attendance)
-    ? attendance.hasStaffOccupancyEffect
-    : attendance.occupancyCoefficient > 0
-})
+    },
+    groupEditMode: false,
+    groupId: {
+      domValue: attendance.groupId || emptyGroupIdDomValue,
+      options: [
+        {
+          domValue: emptyGroupIdDomValue,
+          value: null,
+          label: i18n.attendances.noGroup
+        },
+        ...groups.map((group) => ({
+          domValue: group.id,
+          value: group.id,
+          label: group.name
+        }))
+      ]
+    },
+    arrivedDate: localDate.fromDate(arrived.toLocalDate()),
+    arrivedTime: arrived.toLocalTime().format(),
+    departedTime: departed?.toLocalTime().format() ?? '',
+    occupancyEffect: isUpsert(attendance)
+      ? attendance.hasStaffOccupancyEffect
+      : attendance.occupancyCoefficient > 0
+  }
+}
 
 const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
   pinCode: EMPTY_PIN
@@ -428,7 +440,7 @@ const StaffAttendancesEditor = ({
   const overlappingAttendancesOnNextDay = otherAttendances.filter(
     (other) =>
       !other.arrived.isBefore(nextDayStart) &&
-      rowValues.some((row) => attendancesOverlap(row, other))
+      rowValues.some((row) => attendancesOverlap(attendanceTimes(row), other))
   )
 
   const continuationAttendance = useMemo(
@@ -682,7 +694,7 @@ const StaffAttendancesEditor = ({
                   .reduce<StaffAttendanceUpsert | null>(
                     (latest, attendance) =>
                       latest !== null &&
-                      latest.arrived.isAfter(attendance.arrived)
+                      latest.period.start.isAfter(attendance.period.start)
                         ? latest
                         : attendance,
                     null
@@ -693,13 +705,14 @@ const StaffAttendancesEditor = ({
                     id: null,
                     type: latest?.type ?? 'PRESENT',
                     groupId: latest?.groupId ?? null,
-                    arrived:
-                      latest?.departed ??
-                      HelsinkiDateTime.fromLocal(
-                        date,
-                        LocalTime.nowInHelsinkiTz()
-                      ),
-                    departed: null,
+                    period: new DateTimeRange(
+                      latest?.period.end ??
+                        HelsinkiDateTime.fromLocal(
+                          date,
+                          LocalTime.nowInHelsinkiTz()
+                        ),
+                      null
+                    ),
                     hasStaffOccupancyEffect: staffMember.occupancyEffect
                   })
                 ])

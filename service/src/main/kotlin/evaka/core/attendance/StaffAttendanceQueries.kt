@@ -11,6 +11,7 @@ import evaka.core.shared.GroupId
 import evaka.core.shared.StaffAttendanceExternalId
 import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -338,8 +339,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     attendanceId: StaffAttendanceExternalId?,
     name: String?,
     groupId: GroupId?,
-    arrivalTime: HelsinkiDateTime,
-    departureTime: HelsinkiDateTime?,
+    period: DateTimeRange,
     occupancyCoefficient: BigDecimal,
     departedAutomatically: Boolean = false,
 ): StaffAttendanceExternalId {
@@ -348,7 +348,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             sql(
                 """
 INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient, departed_automatically)
-VALUES (${bind(name)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(departureTime)}, ${bind(occupancyCoefficient)}, ${bind(departedAutomatically)})
+VALUES (${bind(name)}, ${bind(groupId)}, ${bind(period.start)}, ${bind(period.end)}, ${bind(occupancyCoefficient)}, ${bind(departedAutomatically)})
 RETURNING id
 """,
             )
@@ -360,7 +360,7 @@ RETURNING id
             sql(
                 """
 UPDATE staff_attendance_external
-SET name = ${bind(name)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, 
+SET name = ${bind(name)}, arrived = ${bind(period.start)}, departed = ${bind(period.end)}, 
     occupancy_coefficient = ${bind(occupancyCoefficient)}, departed_automatically = ${bind(departedAutomatically)}
 WHERE id = ${bind(attendanceId)}
 """,
@@ -587,8 +587,7 @@ ORDER BY sa.arrived
 
 fun Database.Read.hasOverlappingStaffAttendance(
     employeeId: EmployeeId,
-    arrived: HelsinkiDateTime,
-    departed: HelsinkiDateTime?,
+    period: DateTimeRange,
     excludeIds: Set<StaffAttendanceRealtimeId>,
 ): Boolean = createQuery {
     sql(
@@ -596,7 +595,7 @@ fun Database.Read.hasOverlappingStaffAttendance(
 SELECT EXISTS (
     SELECT FROM staff_attendance_realtime
     WHERE employee_id = ${bind(employeeId)}
-      AND tstzrange(arrived, departed) && tstzrange(${bind(arrived)}, ${bind(departed)})
+      AND tstzrange(arrived, departed) && ${bind(period)}
       AND NOT id = ANY(${bind(excludeIds)})
 )
 """,

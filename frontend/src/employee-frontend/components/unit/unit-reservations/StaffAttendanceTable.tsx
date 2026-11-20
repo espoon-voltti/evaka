@@ -14,6 +14,7 @@ import type { JSX } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
+import DateTimeRange from 'lib-common/date-time-range'
 import type { ErrorKey } from 'lib-common/form-validation'
 import type {
   Attendance,
@@ -1039,7 +1040,7 @@ const staffAttendanceValidator =
       const isLastAttendance = i === state.length - 1
 
       const previousDeparted =
-        i === 0 ? continuationAttendance?.departed : body[i - 1]?.departed
+        i === 0 ? continuationAttendance?.departed : body[i - 1]?.period.end
       const [arrived, arrivedError] = validateArrived(
         config,
         item,
@@ -1083,8 +1084,7 @@ const staffAttendanceValidator =
         body[i] = {
           id: item.id as StaffAttendanceRealtimeId | null,
           type: item.type,
-          arrived,
-          departed,
+          period: new DateTimeRange(arrived, departed),
           groupId,
           hasStaffOccupancyEffect: item.hasStaffOccupancyEffect
         }
@@ -1118,7 +1118,7 @@ const externalAttendanceValidator =
       const isLastAttendance = i === state.length - 1
 
       const previousDeparted =
-        i === 0 ? continuationAttendance?.departed : body[i - 1]?.departed
+        i === 0 ? continuationAttendance?.departed : body[i - 1]?.period.end
       const [arrived, arrivedError] = validateArrived(
         config,
         item,
@@ -1140,11 +1140,10 @@ const externalAttendanceValidator =
         groupId !== undefined
       ) {
         body[i] = {
-          ...item,
           id: item.id as StaffAttendanceExternalId | null,
-          arrived,
-          departed,
-          groupId
+          period: new DateTimeRange(arrived, departed),
+          groupId,
+          hasStaffOccupancyEffect: item.hasStaffOccupancyEffect
         }
       }
 

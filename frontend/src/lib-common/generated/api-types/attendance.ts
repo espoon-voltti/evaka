@@ -10,6 +10,7 @@ import type { ChildAttendanceId } from './shared'
 import type { ChildDailyNote } from './note'
 import type { ChildStickyNote } from './note'
 import type { DailyServiceTimesValue } from './dailyservicetimes'
+import DateTimeRange from '../../date-time-range'
 import type { DaycareId } from './shared'
 import type { EmployeeId } from './shared'
 import type { EvakaUser } from './user'
@@ -226,11 +227,10 @@ export interface ExternalAttendanceBody {
 * Generated from evaka.core.attendance.RealtimeStaffAttendanceController.ExternalAttendanceUpsert
 */
 export interface ExternalAttendanceUpsert {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   groupId: GroupId
   hasStaffOccupancyEffect: boolean
   id: StaffAttendanceExternalId | null
+  period: DateTimeRange
 }
 
 /**
@@ -407,11 +407,10 @@ export interface StaffAttendanceUpdateResponse {
 * Generated from evaka.core.attendance.RealtimeStaffAttendanceController.StaffAttendanceUpsert
 */
 export interface StaffAttendanceUpsert {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   groupId: GroupId | null
   hasStaffOccupancyEffect: boolean
   id: StaffAttendanceRealtimeId | null
+  period: DateTimeRange
   type: StaffAttendanceType
 }
 
@@ -611,8 +610,7 @@ export function deserializeJsonExternalAttendanceBody(json: JsonOf<ExternalAtten
 export function deserializeJsonExternalAttendanceUpsert(json: JsonOf<ExternalAttendanceUpsert>): ExternalAttendanceUpsert {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -722,8 +720,7 @@ export function deserializeJsonStaffAttendanceUpdateRequest(json: JsonOf<StaffAt
 export function deserializeJsonStaffAttendanceUpsert(json: JsonOf<StaffAttendanceUpsert>): StaffAttendanceUpsert {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 

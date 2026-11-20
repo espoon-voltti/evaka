@@ -18,6 +18,7 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevStaffAttendance
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -78,15 +79,13 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         upsertDailyStaffAttendances(
             unitId = daycare.id,
             groupId = group1.id,
-            arrived = now.minusHours(3),
-            departed = now.minusHours(2),
+            period = DateTimeRange(now.minusHours(3), now.minusHours(2)),
             hasStaffOccupancyEffect = true,
         )
         upsertDailyStaffAttendances(
             unitId = daycare2.id,
             groupId = group2.id,
-            arrived = now.minusHours(1),
-            departed = null,
+            period = DateTimeRange(now.minusHours(1), null),
             hasStaffOccupancyEffect = false,
         )
 
@@ -141,40 +140,61 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             upsertDailyStaffAttendances(
                 daycare.id,
                 group1.id,
-                now.minusHours(3),
-                now.plusMinutes(1),
+                DateTimeRange(now.minusHours(3), now.plusMinutes(1)),
             )
         }
         assertThrows<BadRequest> {
-            upsertDailyStaffAttendances(daycare.id, group1.id, now.plusMinutes(3), null)
+            upsertDailyStaffAttendances(
+                daycare.id,
+                group1.id,
+                DateTimeRange(now.plusMinutes(3), null),
+            )
         }
         assertThrows<BadRequest> {
-            upsertDailyStaffAttendances(daycare.id, group1.id, now.plusHours(22), now.plusHours(23))
+            upsertDailyStaffAttendances(
+                daycare.id,
+                group1.id,
+                DateTimeRange(now.plusHours(22), now.plusHours(23)),
+            )
         }
-        upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(7), now.minusHours(3))
-        upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(2), null)
+        upsertDailyStaffAttendances(
+            daycare.id,
+            group1.id,
+            DateTimeRange(now.minusHours(7), now.minusHours(3)),
+        )
+        upsertDailyStaffAttendances(daycare.id, group1.id, DateTimeRange(now.minusHours(2), null))
 
         assertThrows<BadRequest> {
             upsertDailyExternalAttendances(
                 daycare.id,
                 group1.id,
-                now.minusHours(3),
-                now.plusMinutes(1),
+                DateTimeRange(now.minusHours(3), now.plusMinutes(1)),
             )
-        }
-        assertThrows<BadRequest> {
-            upsertDailyExternalAttendances(daycare.id, group1.id, now.plusMinutes(3), null)
         }
         assertThrows<BadRequest> {
             upsertDailyExternalAttendances(
                 daycare.id,
                 group1.id,
-                now.plusHours(22),
-                now.plusHours(23),
+                DateTimeRange(now.plusMinutes(3), null),
             )
         }
-        upsertDailyExternalAttendances(daycare.id, group1.id, now.minusHours(7), now.minusHours(3))
-        upsertDailyExternalAttendances(daycare.id, group1.id, now.minusHours(2), null)
+        assertThrows<BadRequest> {
+            upsertDailyExternalAttendances(
+                daycare.id,
+                group1.id,
+                DateTimeRange(now.plusHours(22), now.plusHours(23)),
+            )
+        }
+        upsertDailyExternalAttendances(
+            daycare.id,
+            group1.id,
+            DateTimeRange(now.minusHours(7), now.minusHours(3)),
+        )
+        upsertDailyExternalAttendances(
+            daycare.id,
+            group1.id,
+            DateTimeRange(now.minusHours(2), null),
+        )
     }
 
     @Test
@@ -184,19 +204,19 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 upsertDailyStaffAttendances(
                     daycare.id,
                     group1.id,
-                    now.minusHours(1),
-                    now.minusHours(1),
+                    DateTimeRange(now.minusHours(1), now.minusHours(1)),
                 )
             }
         assertEquals("Departure time must be after arrival time", exception.message)
-        assertThrows<BadRequest> {
-            upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(1), now.minusHours(2))
-        }
     }
 
     @Test
     fun `Attendances in other units are returned`() {
-        upsertDailyStaffAttendances(daycare2.id, group2.id, now.minusHours(5), now.minusHours(3))
+        upsertDailyStaffAttendances(
+            daycare2.id,
+            group2.id,
+            DateTimeRange(now.minusHours(5), now.minusHours(3)),
+        )
 
         val attendance = getAttendances(daycare.id).staff.single()
         assertEquals(listOf(), attendance.attendances)
@@ -233,7 +253,11 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 ),
             )
         }
-        upsertDailyStaffAttendances(daycare2.id, group2.id, now.minusHours(5), now.minusHours(3))
+        upsertDailyStaffAttendances(
+            daycare2.id,
+            group2.id,
+            DateTimeRange(now.minusHours(5), now.minusHours(3)),
+        )
 
         val staffUser = AuthenticatedUser.Employee(staff.id, setOf())
         val response =
@@ -453,33 +477,39 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
 
     @Test
     fun `Attendance cannot overlap with an attendance in another unit`() {
-        upsertDailyStaffAttendances(daycare2.id, group2.id, now.minusHours(5), now.minusHours(3))
+        upsertDailyStaffAttendances(
+            daycare2.id,
+            group2.id,
+            DateTimeRange(now.minusHours(5), now.minusHours(3)),
+        )
 
         val exception =
             assertThrows<BadRequest> {
                 upsertDailyStaffAttendances(
                     daycare.id,
                     group1.id,
-                    now.minusHours(4),
-                    now.minusHours(1),
+                    DateTimeRange(now.minusHours(4), now.minusHours(1)),
                 )
             }
         assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
 
-        upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(3), now.minusHours(1))
+        upsertDailyStaffAttendances(
+            daycare.id,
+            group1.id,
+            DateTimeRange(now.minusHours(3), now.minusHours(1)),
+        )
     }
 
     @Test
     fun `Attendance cannot overlap with an open attendance in another unit`() {
-        upsertDailyStaffAttendances(daycare2.id, group2.id, now.minusHours(5), null)
+        upsertDailyStaffAttendances(daycare2.id, group2.id, DateTimeRange(now.minusHours(5), null))
 
         val exception =
             assertThrows<BadRequest> {
                 upsertDailyStaffAttendances(
                     daycare.id,
                     group1.id,
-                    now.minusHours(2),
-                    now.minusHours(1),
+                    DateTimeRange(now.minusHours(2), now.minusHours(1)),
                 )
             }
         assertEquals(OVERLAPPING_STAFF_ATTENDANCE, exception.errorCode)
@@ -510,7 +540,11 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
 
     @Test
     fun `Existing attendance can be modified without overlap error`() {
-        upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(5), now.minusHours(3))
+        upsertDailyStaffAttendances(
+            daycare.id,
+            group1.id,
+            DateTimeRange(now.minusHours(5), now.minusHours(3)),
+        )
         val existing = getAttendances(daycare.id).staff.single().attendances.single()
 
         realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
@@ -550,8 +584,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = null,
                             groupId = null,
-                            arrived = now.minusHours(3),
-                            departed = now.minusHours(2),
+                            period = DateTimeRange(now.minusHours(3), now.minusHours(2)),
                             type = StaffAttendanceType.TRAINING,
                             hasStaffOccupancyEffect = false,
                         ),
@@ -605,8 +638,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = null,
                                 groupId = null,
-                                arrived = now.minusHours(3),
-                                departed = now.minusHours(2),
+                                period = DateTimeRange(now.minusHours(3), now.minusHours(2)),
                                 type = StaffAttendanceType.TRAINING,
                                 hasStaffOccupancyEffect = false,
                             ),
@@ -632,8 +664,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = null,
                             groupId = group1.id.takeIf { type.presentInGroup() },
-                            arrived = now.minusHours(3),
-                            departed = now.minusHours(2),
+                            period = DateTimeRange(now.minusHours(3), now.minusHours(2)),
                             type = type,
                             hasStaffOccupancyEffect = false,
                         ),
@@ -656,8 +687,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     private fun upsertDailyStaffAttendances(
         unitId: DaycareId,
         groupId: GroupId,
-        arrived: HelsinkiDateTime,
-        departed: HelsinkiDateTime?,
+        period: DateTimeRange,
         hasStaffOccupancyEffect: Boolean = true,
     ) {
         realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
@@ -673,8 +703,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = null,
                             groupId = groupId,
-                            arrived = arrived,
-                            departed = departed,
+                            period = period,
                             type = StaffAttendanceType.PRESENT,
                             hasStaffOccupancyEffect = hasStaffOccupancyEffect,
                         ),
@@ -708,8 +737,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
             id = null,
             groupId = groupId,
-            arrived = arrived,
-            departed = departed,
+            period = DateTimeRange(arrived, departed),
             type = StaffAttendanceType.PRESENT,
             hasStaffOccupancyEffect = true,
         )
@@ -717,8 +745,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     private fun upsertDailyExternalAttendances(
         unitId: DaycareId,
         groupId: GroupId,
-        arrived: HelsinkiDateTime,
-        departed: HelsinkiDateTime?,
+        period: DateTimeRange,
     ) {
         realtimeStaffAttendanceController.upsertDailyExternalRealtimeAttendances(
             dbInstance(),
@@ -734,8 +761,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             id = null,
                             groupId = groupId,
                             hasStaffOccupancyEffect = false,
-                            arrived = arrived,
-                            departed = departed,
+                            period = period,
                         ),
                     ),
             ),

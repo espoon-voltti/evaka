@@ -13,6 +13,7 @@ import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import type DateTimeRange from 'lib-common/date-time-range'
 import type { ErrorKey } from 'lib-common/form-validation'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
@@ -83,9 +84,7 @@ export interface ModalPlannedAttendance {
   description: string | null
 }
 
-interface Props<
-  T extends { arrived: HelsinkiDateTime; departed: HelsinkiDateTime | null }
-> {
+interface Props<T extends { period: DateTimeRange }> {
   date: LocalDate
   name: string
   employeeId?: EmployeeId
@@ -124,9 +123,7 @@ export default React.memo(
   StaffAttendanceDetailsModal
 ) as typeof StaffAttendanceDetailsModal
 
-function StaffAttendanceDetailsModal<
-  T extends { arrived: HelsinkiDateTime; departed: HelsinkiDateTime | null }
->({
+function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
   date,
   name,
   employeeId,
@@ -364,8 +361,8 @@ function StaffAttendanceDetailsModal<
       const previousDeparted =
         i === 0
           ? continuationAttendance?.departed
-          : requestBody[i - 1]?.departed
-      const arrived = requestBody[i].arrived
+          : requestBody[i - 1]?.period.end
+      const arrived = requestBody[i].period.start
       if (!previousDeparted || !arrived) return undefined
 
       if (arrived.isAfter(previousDeparted.addHours(8))) {
