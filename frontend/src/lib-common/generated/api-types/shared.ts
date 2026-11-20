@@ -5,7 +5,6 @@
 // GENERATED FILE: no manual modifications
 
 import type { DecisionType } from './decision'
-import HelsinkiDateTime from '../../helsinki-date-time'
 import type { Id } from '../../id-type'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
@@ -181,14 +180,6 @@ export type FeeDecisionId = Id<'FeeDecision'>
 export type FeeThresholdsId = Id<'FeeThresholds'>
 
 export type FinanceNoteId = Id<'FinanceNote'>
-
-/**
-* Generated from evaka.core.shared.domain.FiniteDateTimeRange
-*/
-export interface FiniteDateTimeRange {
-  end: HelsinkiDateTime
-  start: HelsinkiDateTime
-}
 
 export type FosterParentId = Id<'FosterParent'>
 
@@ -373,15 +364,6 @@ export function deserializeJsonDaycareAclRow(json: JsonOf<DaycareAclRow>): Dayca
   return {
     ...json,
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
-  }
-}
-
-
-export function deserializeJsonFiniteDateTimeRange(json: JsonOf<FiniteDateTimeRange>): FiniteDateTimeRange {
-  return {
-    ...json,
-    end: HelsinkiDateTime.parseIso(json.end),
-    start: HelsinkiDateTime.parseIso(json.start)
   }
 }
 

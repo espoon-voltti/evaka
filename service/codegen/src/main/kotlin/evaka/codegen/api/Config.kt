@@ -13,7 +13,9 @@ import evaka.core.pairing.MobileDeviceDetails
 import evaka.core.shared.Id
 import evaka.core.shared.data.DateSet
 import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.TimeInterval
 import evaka.core.shared.domain.TimeRange
@@ -56,6 +58,9 @@ object Imports {
         TsImport.Default(LibCommon / "helsinki-date-time.ts", name = "HelsinkiDateTime")
     val finiteDateRange = TsImport.Default(LibCommon / "finite-date-range.ts", "FiniteDateRange")
     val dateRange = TsImport.Default(LibCommon / "date-range.ts", "DateRange")
+    val finiteDateTimeRange =
+        TsImport.Default(LibCommon / "finite-date-time-range.ts", "FiniteDateTimeRange")
+    val dateTimeRange = TsImport.Default(LibCommon / "date-time-range.ts", "DateTimeRange")
     val timeInterval = TsImport.Default(LibCommon / "time-interval.ts", "TimeInterval")
     val timeRange = TsImport.Default(LibCommon / "time-range.ts", "TimeRange")
     val yearMonth = TsImport.Default(LibCommon / "year-month.ts", "YearMonth")
@@ -152,6 +157,28 @@ val defaultMetadata =
                 serializePathVariable = null,
                 serializeRequestParam = null,
                 Imports.dateRange,
+            ),
+        FiniteDateTimeRange::class to
+            TsExternalTypeRef(
+                "FiniteDateTimeRange",
+                keyRepresentation = null,
+                deserializeJson = { json ->
+                    TsCode { "${ref(Imports.finiteDateTimeRange)}.parseJson(${inline(json)})" }
+                },
+                serializePathVariable = null,
+                serializeRequestParam = null,
+                Imports.finiteDateTimeRange,
+            ),
+        DateTimeRange::class to
+            TsExternalTypeRef(
+                "DateTimeRange",
+                keyRepresentation = null,
+                deserializeJson = { json ->
+                    TsCode { "${ref(Imports.dateTimeRange)}.parseJson(${inline(json)})" }
+                },
+                serializePathVariable = null,
+                serializeRequestParam = null,
+                Imports.dateTimeRange,
             ),
         DateSet::class to
             TsExternalTypeRef(

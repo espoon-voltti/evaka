@@ -9,10 +9,8 @@ import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
-import type {
-  EmployeeId,
-  FiniteDateTimeRange
-} from 'lib-common/generated/api-types/shared'
+import type FiniteDateTimeRange from 'lib-common/finite-date-time-range'
+import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'

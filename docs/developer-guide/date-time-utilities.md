@@ -123,25 +123,28 @@ Start/End endpoint markers for time ranges. Supports inclusive/exclusive semanti
 Date and time range with both start and end required.
 
 **Files:**
-- Frontend: `frontend/src/lib-common/generated/api-types/shared.ts` (generated interface)
+- Frontend: `frontend/src/lib-common/finite-date-time-range.ts`
 - Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateTimeRange.kt` (data class implementing `BoundedRange`)
 
 **Structure:** `FiniteDateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime)`
 
-**Type-Specific Methods (backend only):**
-- `getDuration()` - length of the range as a `Duration`
+**Type-Specific Methods:**
+- `getDuration()` (backend) or `durationInMinutes()` (frontend) - length of the range
 - `asDateTimeRange()` - converts to DateTimeRange
+- `tryCreate(start, end)` - returns null (backend) or undefined (frontend) if start is not before end
+- `ofDate(date)` (frontend) or `LocalDate.asFiniteDateTimeRange()` (backend) - the range from the start of the date to the start of the next date
 
 ### DateTimeRange
 
 Date and time range with finite start and nullable end. A null end means that the range has no end.
 
 **Files:**
+- Frontend: `frontend/src/lib-common/date-time-range.ts`
 - Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateTimeRange.kt` (data class)
 
-**Structure:** `DateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime?)`
+**Structure:** `DateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime | null)`
 
-**Type-Specific Methods:**
+**Type-Specific Methods (backend only):**
 - `asFiniteDateTimeRange()` - converts to FiniteDateTimeRange if end is non-null
 
 ## Range Operations
@@ -150,11 +153,11 @@ This section documents operations that are shared across multiple range types.
 
 ### includes()
 
-Checks if a single point (date/time/timestamp) is within the range. Not implemented for TimeInterval frontend or FiniteDateTimeRange frontend.
+Checks if a single point (date/time/timestamp) is within the range. Not implemented for TimeInterval frontend.
 
 ### overlaps()
 
-Checks if two ranges have any overlap. Not implemented for TimeRange frontend and FiniteDateTimeRange frontend.
+Checks if two ranges have any overlap. Not implemented for TimeRange frontend.
 
 **Naming inconsistency:** Frontend `DateRange` uses `overlapsWith()` while other types use `overlaps()`. Backend consistently uses `overlaps()`. This is planned to be fixed.
 
@@ -164,7 +167,7 @@ Checks if one range fully contains another range. Not implemented for TimeInterv
 
 ### intersection()
 
-Returns the overlapping portion of two ranges, or null if no overlap. Not implemented for TimeInterval backend and FiniteDateTimeRange frontend.
+Returns the overlapping portion of two ranges, or null if no overlap. Not implemented for TimeInterval backend.
 
 ### Backend-Only Operations
 
