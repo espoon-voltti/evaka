@@ -564,6 +564,7 @@ class CitizenApplicationEditor {
         .click()
     ])
     await popup.waitForSelector('img:not([src=""])')
+    expect(popup.url()).not.toMatch(/^blob:/)
   }
 
   async assertUrgencyFileOpensAsBlob() {

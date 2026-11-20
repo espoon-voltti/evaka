@@ -39,7 +39,11 @@ import {
 } from '../../utils/application-forms'
 import { getVerificationCodeFromEmail } from '../../utils/email'
 import type { Page } from '../../utils/page'
-import { emulateRunningInstalled, iosUserAgent } from '../../utils/pwa'
+import {
+  androidUserAgent,
+  emulateRunningInstalled,
+  iosUserAgent
+} from '../../utils/pwa'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 const testFileName = 'test_file.png'
@@ -309,6 +313,23 @@ test.describe('Citizen daycare applications', () => {
       await editorPage.markApplicationUrgentAndAddAttachment(testFilePath)
       await editorPage.goToVerification()
       await editorPage.assertUrgencyFileOpensAsBlob()
+    })
+  })
+
+  test.describe('in the installed Android app', () => {
+    test.use({ userAgent: androidUserAgent, hasTouch: true })
+
+    test('Urgent application attachment opens in a new tab', async () => {
+      await emulateRunningInstalled(page)
+      await page.reload()
+      const editorPage = await applicationsPage.createApplication(
+        testChildRestricted.id,
+        'DAYCARE'
+      )
+      await editorPage.fillData(minimalDaycareForm().form)
+      await editorPage.markApplicationUrgentAndAddAttachment(testFilePath)
+      await editorPage.goToVerification()
+      await editorPage.assertUrgencyFileDownload()
     })
   })
 
