@@ -86,6 +86,7 @@ const en: Translations = {
       }
     },
     openExpandingInfo: 'Open the details',
+    openingFile: 'Opening the file…',
     errors: {
       genericGetError: 'Error fetching the requested information',
       genericGetErrorInfo:

@@ -347,6 +347,7 @@ test.describe('Citizen application decisions', () => {
       newEvakaPage
     )
     await citizenDecisionsPage.viewDecisionMetadata(decision.id)
+    await citizenDecisionsPage.openDecisionPdf(decision.id)
   })
 
   test('Citizen cannot open or view decision metadata when feature flag is disabled', async ({

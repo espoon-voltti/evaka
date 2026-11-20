@@ -86,6 +86,7 @@ export default {
       }
     },
     openExpandingInfo: 'Avaa lisätietokenttä',
+    openingFile: 'Avataan tiedostoa…',
     errors: {
       genericGetError: 'Tietojen hakeminen ei onnistunut',
       genericGetErrorInfo:

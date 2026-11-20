@@ -38,6 +38,7 @@ import { PushSuggestion } from './pwa/PushSuggestion'
 import { useAppBadge } from './pwa/appBadge'
 import { useStandaloneLayout } from './pwa/installed'
 import { useNotificationClickRouting } from './pwa/notificationRouting'
+import { OpenFileProvider } from './pwa/openFile'
 import { queryClient, QueryClientProvider } from './query'
 
 // Scrolling an element into view must leave it clear of the sticky header and
@@ -76,9 +77,11 @@ export function App({ children }: { children: React.ReactNode }) {
               <OverlayContextProvider>
                 <NotificationsContextProvider>
                   <MessageDraftsProvider>
-                    <MobileHeaderBackButtonProvider>
-                      <Content>{children}</Content>
-                    </MobileHeaderBackButtonProvider>
+                    <OpenFileProvider>
+                      <MobileHeaderBackButtonProvider>
+                        <Content>{children}</Content>
+                      </MobileHeaderBackButtonProvider>
+                    </OpenFileProvider>
                     <GlobalDialog />
                     <LoginErrorModal />
                     <div id="modal-container" />

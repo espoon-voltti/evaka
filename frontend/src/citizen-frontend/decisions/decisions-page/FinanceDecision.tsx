@@ -13,6 +13,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H3, Label } from 'lib-components/typography'
+import { useOpenFile } from 'lib-components/utils/openFile'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { faFileAlt } from 'lib-icons'
@@ -56,6 +57,7 @@ export default React.memo(function FinanceDecision({
   scrollIntoView = false
 }: Props) {
   const t = useTranslation()
+  const openFile = useOpenFile()
   const ref = useScrollIntoView<HTMLDivElement>(scrollIntoView)
   const [open, setOpen] = useState(startOpen)
   const toggleOpen = useCallback(() => setOpen((o) => !o), [])
@@ -129,11 +131,7 @@ export default React.memo(function FinanceDecision({
           icon={faFileAlt}
           text={t.decisions.financeDecisions.loadDecisionPDF}
           onClick={() =>
-            window.open(
-              getDecisionUrl(decisionData.id, decisionData.type),
-              '_blank',
-              'noopener,noreferrer'
-            )
+            openFile(getDecisionUrl(decisionData.id, decisionData.type))
           }
         />
         {featureFlags.showMetadataToCitizen && (

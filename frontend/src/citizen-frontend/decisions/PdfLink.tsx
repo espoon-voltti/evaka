@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
 import { InlineExternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
+import { useOpenFile } from 'lib-components/utils/openFile'
 import { faFileAlt } from 'lib-icons'
 
 import { downloadDecisionPdf } from '../generated/api-clients/application'
@@ -24,13 +25,19 @@ export const PdfLink = React.memo(function PdfLink({
   text?: string
 }) {
   const t = useTranslation()
+  const openFile = useOpenFile()
+  const url = downloadDecisionPdf({ id: decisionId }).url.toString()
 
   return (
     <WrappingLinkButton
-      href={downloadDecisionPdf({ id: decisionId }).url.toString()}
+      href={url}
       icon={faFileAlt}
       text={text ?? t.decisions.applicationDecisions.openPdf}
       newTab={true}
+      onClick={(e) => {
+        e.preventDefault()
+        void openFile(url)
+      }}
       data-qa="button-open-pdf"
     />
   )
