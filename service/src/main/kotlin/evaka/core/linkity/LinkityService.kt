@@ -11,7 +11,6 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.utils.partitionIndexed
 import evaka.instance.espoo.EspooAsyncJob
 import evaka.instance.espoo.LinkityEnv
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -114,12 +113,20 @@ private fun filterValidShifts(
     }
     val sortedShifts =
         validTimesShifts.sortedWith(compareBy<Shift> { it.sarastiaId }.thenBy { it.startDateTime })
-    val (validShifts, overlappingShifts) =
-        sortedShifts.partitionIndexed { i, shift ->
-            i == 0 ||
-                shift.sarastiaId != sortedShifts[i - 1].sarastiaId ||
-                shift.startDateTime >= sortedShifts[i - 1].endDateTime
+    val validShifts = mutableListOf<Shift>()
+    val overlappingShifts = mutableListOf<Shift>()
+    sortedShifts.forEach { shift ->
+        val previous = validShifts.lastOrNull()
+        if (
+            previous != null &&
+                shift.sarastiaId == previous.sarastiaId &&
+                shift.startDateTime < previous.endDateTime
+        ) {
+            overlappingShifts += shift
+        } else {
+            validShifts += shift
         }
+    }
     if (overlappingShifts.isNotEmpty()) {
         logger.info {
             "Got overlapping shifts from Linkity: ${overlappingShifts.map { it.workShiftId }}"

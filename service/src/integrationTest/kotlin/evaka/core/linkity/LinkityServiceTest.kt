@@ -159,14 +159,25 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     ShiftType.PRESENT,
                     "Päällekkäin",
                 ),
+                // Overlaps only the ignored second shift
+                Shift(
+                    sarastiaId,
+                    "WORK_SHIFT_3",
+                    HelsinkiDateTime.of(today.atTime(17, 0)),
+                    HelsinkiDateTime.of(today.atTime(20, 0)),
+                    ShiftType.PRESENT,
+                    "Ilta",
+                ),
             )
         val client = MockLinkityClient(shifts)
         updateStaffAttendancePlansFromLinkity(period, db, client)
 
         val plans = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
-        // Only the first shift will be added
-        assertEquals(1, plans.size)
-        assertTrue { plans.any { it.description == "Uusi" && it.startTime.hour == 8 } }
+        // The second shift is ignored
+        assertEquals(
+            listOf("Uusi" to 8, "Ilta" to 17),
+            plans.sortedBy { it.startTime }.map { it.description to it.startTime.hour },
+        )
     }
 
     @Test
