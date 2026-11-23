@@ -20,8 +20,13 @@ import evaka.core.document.childdocument.AnsweredQuestion
 import evaka.core.document.childdocument.CheckboxGroupAnswerContent
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.shared.ChildId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.db.Database
+import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevChildDocument
 import evaka.core.shared.dev.DevChildDocumentPublishedVersion
+import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDocumentTemplate
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
@@ -38,6 +43,7 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -258,6 +264,114 @@ class TampereExportPreschoolChildDocumentsServiceTest : AbstractTampereIntegrati
         }
         assertEquals("application/json", contentType)
     }
+
+    @ParameterizedTest
+    @CsvSource(
+        nullValues = ["NULL"],
+        value =
+            [
+                "NULL, 1.2.246.562.24.00000000001",
+                "'', 1.2.246.562.24.00000000001",
+                "1.2.246.562.24.00000000002, 1.2.246.562.24.00000000002",
+            ],
+    )
+    fun `oid comes from person or else from Koski`(personOid: String?, expectedOid: String) {
+        db.transaction { tx ->
+            val childId = tx.insert(DevPerson(ophPersonOid = personOid), DevPersonType.CHILD)
+            val areaId = tx.insert(DevCareArea())
+            tx.insertKoskiStudyRight(
+                childId,
+                tx.insert(DevDaycare(areaId = areaId, name = "Toinen")),
+                null,
+            )
+            tx.insertKoskiStudyRight(
+                childId,
+                tx.insert(DevDaycare(areaId = areaId, name = "Kolmas")),
+                "",
+            )
+            tx.insertKoskiStudyRight(
+                childId,
+                tx.insert(DevDaycare(areaId = areaId)),
+                "1.2.246.562.24.00000000001",
+            )
+            tx.insertCompletedTransferDocument(childId)
+        }
+
+        assertEquals(expectedExportJson("\"$expectedOid\""), exportJson())
+    }
+
+    private fun exportJson(): String {
+        val (bucket, key) =
+            db.read { tx ->
+                exportPreschoolChildDocumentsService.exportPreschoolChildDocuments(
+                    tx,
+                    timestamp,
+                    properties.bucket.export,
+                )
+            }
+        return getS3Object(bucket, key).use { it.readAllBytes().toString(Charsets.UTF_8) }
+    }
+}
+
+private fun expectedExportJson(oid: String) =
+    "[{\"child\": {\"oid\": $oid, \"last_name\": \"Person\", \"first_name\": \"Test\", \"date_of_birth\": \"1980-01-01\"}, \"document\": {\"kysymys\": \"vastaus\"}}]"
+
+private fun Database.Transaction.insertKoskiStudyRight(
+    childId: ChildId,
+    unitId: DaycareId,
+    personOid: String?,
+) = execute {
+    sql(
+        """
+INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_version, person_oid)
+VALUES (${bind(childId)}, ${bind(unitId)}, 'PRESCHOOL', '{}', 0, 1, ${bind(personOid)})
+""",
+    )
+}
+
+private fun Database.Transaction.insertCompletedTransferDocument(childId: ChildId) {
+    val employee = DevEmployee().also { insert(it) }
+    val answer = AnsweredQuestion.TextAnswer("1.1", answer = "vastaus")
+    val templateId =
+        insert(
+            DevDocumentTemplate(
+                name = "Tiedonsiirto esiopetuksesta perusopetukseen 2024-2025",
+                validity = DateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31)),
+                content =
+                    DocumentTemplateContent(
+                        sections =
+                            listOf(
+                                Section(
+                                    id = "1",
+                                    label = "osio",
+                                    questions = listOf(answer.toQuestion("kysymys")),
+                                ),
+                            ),
+                    ),
+            ),
+        )
+    val content = DocumentContent(answers = listOf(answer))
+    insert(
+        DevChildDocument(
+            status = DocumentStatus.COMPLETED,
+            childId = childId,
+            templateId = templateId,
+            content = content,
+            modifiedAt = timestamp,
+            modifiedBy = employee.evakaUserId,
+            contentLockedAt = timestamp,
+            contentLockedBy = null,
+            publishedVersions =
+                listOf(
+                    DevChildDocumentPublishedVersion(
+                        versionNumber = 1,
+                        createdAt = timestamp,
+                        createdBy = employee.evakaUserId,
+                        publishedContent = content,
+                    ),
+                ),
+        ),
+    )
 }
 
 private fun AnsweredQuestion<*>.toQuestion(label: String) =

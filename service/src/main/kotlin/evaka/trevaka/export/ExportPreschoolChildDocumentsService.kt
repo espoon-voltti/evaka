@@ -153,7 +153,13 @@ WITH question AS (SELECT question
      answer AS (SELECT document.child_id, answer
                 FROM document
                 CROSS JOIN jsonb_array_elements(document.published_content -> 'answers') answer),
-     child_and_document AS (SELECT jsonb_build_object('child', jsonb_build_object('oid', person.oph_person_oid,
+     child_and_document AS (SELECT jsonb_build_object('child', jsonb_build_object('oid', coalesce(nullif(person.oph_person_oid, ''),
+                                                                                                  (SELECT ksr.person_oid
+                                                                                                   FROM koski_study_right ksr
+                                                                                                   WHERE ksr.child_id = person.id
+                                                                                                     AND nullif(ksr.person_oid, '') IS NOT NULL
+                                                                                                   ORDER BY ksr.id
+                                                                                                   LIMIT 1)),
                                                                                   'date_of_birth', person.date_of_birth,
                                                                                   'first_name', person.first_name,
                                                                                   'last_name', person.last_name),
