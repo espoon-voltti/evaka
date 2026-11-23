@@ -13,7 +13,8 @@ import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import type DateTimeRange from 'lib-common/date-time-range'
+import DateTimeRange from 'lib-common/date-time-range'
+import FiniteDateTimeRange from 'lib-common/finite-date-time-range'
 import type { ErrorKey } from 'lib-common/form-validation'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
@@ -291,23 +292,20 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
         arrived: HelsinkiDateTime
         departed: HelsinkiDateTime | null
       }[]
-    ) =>
-      attendances.reduce((prev, { arrived, departed }) => {
-        const minTime = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
-        const maxTime = date.isToday()
-          ? HelsinkiDateTime.now()
-          : HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
-
-        const arrivedWithinDate = arrived.isBefore(minTime) ? minTime : arrived
-        const departedWithinDate =
-          !departed || departed.isAfter(maxTime) ? maxTime : departed
-
-        return (
-          prev + (departedWithinDate.timestamp - arrivedWithinDate.timestamp)
-        )
-      }, 0) /
-      1000 /
-      60,
+    ) => {
+      const wholeDate = FiniteDateTimeRange.ofDate(date)
+      const range = date.isToday()
+        ? new FiniteDateTimeRange(wholeDate.start, HelsinkiDateTime.now())
+        : wholeDate
+      return attendances.reduce(
+        (total, { arrived, departed }) =>
+          total +
+          (range
+            .intersection(new DateTimeRange(arrived, departed))
+            ?.durationInMinutes() ?? 0),
+        0
+      )
+    },
     [date]
   )
 

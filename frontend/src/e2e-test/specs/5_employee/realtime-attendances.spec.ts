@@ -229,6 +229,14 @@ test.describe('Realtime staff attendances', () => {
         description: 'Iltavuoro'
       }).save()
 
+      // Starts after the current time, so it is not counted in the planned hours
+      await Fixture.staffAttendancePlan({
+        id: randomId<StaffAttendancePlanId>(),
+        employeeId: groupStaff.id,
+        startTime: mockedToday.toHelsinkiDateTime(LocalTime.of(19, 0)),
+        endTime: mockedToday.toHelsinkiDateTime(LocalTime.of(21, 0))
+      }).save()
+
       await Fixture.realtimeStaffAttendance({
         employeeId: groupStaff.id,
         groupId,
@@ -247,7 +255,8 @@ test.describe('Realtime staff attendances', () => {
         name: staffName(groupStaff),
         plannedAttendances: [
           ['07:00', '12:00'],
-          ['14:00', '15:00']
+          ['14:00', '15:00'],
+          ['19:00', '21:00']
         ],
         attendances: [['07:03', '–']]
       })
@@ -257,7 +266,7 @@ test.describe('Realtime staff attendances', () => {
       await expect
         .poll(() => modal.summary())
         .toEqual({
-          plan: '07:00 – 12:00\n14:00 – 15:00 (Iltavuoro)',
+          plan: '07:00 – 12:00\n14:00 – 15:00 (Iltavuoro)\n19:00 – 21:00',
           realized: '07:03 –',
           hours: '10:57 (+4:57)'
         })
