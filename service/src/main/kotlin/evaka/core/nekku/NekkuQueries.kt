@@ -190,24 +190,6 @@ WHERE dg.id = ${bind(groupId)}
 }
     .exactlyOneOrNull<NekkuDaycareCustomerMapping>()
 
-fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
-    return createQuery {
-        sql(
-            """
-SELECT
-    nc.number,
-    nc.name,
-    nc.customer_group AS "group",
-    JSON_AGG(JSON_BUILD_OBJECT('weekdays', nct.weekdays, 'type', nct.type)) AS customerType
-FROM nekku_customer nc
-LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
-GROUP BY nc.number, nc.name, nc.customer_group
-                    """,
-        )
-    }
-        .toList<NekkuCustomer>()
-}
-
 fun Database.Read.getNekkuUnitNumbers(): List<NekkuUnitNumber> {
     return createQuery { sql("SELECT number, name FROM nekku_customer ORDER BY name ASC") }
         .toList<NekkuUnitNumber>()
