@@ -356,7 +356,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     departedAutomatically: Boolean = false,
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId,
-): StaffAttendanceExternalId {
+): StaffAttendanceExternalId? {
     if (attendanceId == null) {
         return createUpdate {
             sql(
@@ -405,11 +405,12 @@ WHERE id = ${bind(attendanceId)}
     OR occupancy_coefficient != ${bind(occupancyCoefficient)}
     OR departed_automatically != ${bind(departedAutomatically)}
   )
+RETURNING id
 """,
             )
         }
-            .updateNoneOrOne()
-            .let { attendanceId }
+            .executeAndReturnGeneratedKeys()
+            .exactlyOneOrNull<StaffAttendanceExternalId>()
     }
 }
 
@@ -883,7 +884,7 @@ fun Database.Transaction.deleteExternalAttendancesOnDateExcept(
     name: String,
     arrivalDate: LocalDate,
     exceptIds: List<StaffAttendanceExternalId>,
-) = execute {
+): List<StaffAttendanceExternalId> = createUpdate {
     sql(
         """
 DELETE FROM staff_attendance_external
@@ -892,9 +893,12 @@ WHERE
     name = ${bind(name)} AND 
     between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND 
     NOT id = ANY(${bind(exceptIds)})
+RETURNING id
 """,
     )
 }
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 data class OpenGroupAttendance(
     val unitName: String,

@@ -445,7 +445,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                             occupancyCoefficientSeven,
                             modifiedAt = arrival,
                             modifiedBy = employee1.evakaUserId,
-                        )
+                        )!!
                         .also { id ->
                             tx.upsertExternalStaffAttendance(
                                 id,
