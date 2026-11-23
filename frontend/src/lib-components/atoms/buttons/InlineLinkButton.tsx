@@ -33,6 +33,7 @@ export type InlineButtonLinkProps = BaseLinkProps & {
 export type InlineButtonHrefProps = BaseLinkProps & {
   href: string
   newTab?: boolean
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void
 }
 
 // Shared styles matching the appearance="inline" button from button-visuals.tsx
@@ -130,6 +131,7 @@ export const InlineExternalLinkButton = React.memo(
     className,
     href,
     newTab,
+    onClick,
     'data-qa': dataQa,
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledby
@@ -148,6 +150,7 @@ export const InlineExternalLinkButton = React.memo(
     return (
       <StyledAnchor
         href={href}
+        onClick={onClick}
         $hasText={!!text}
         $size={size}
         className={className}

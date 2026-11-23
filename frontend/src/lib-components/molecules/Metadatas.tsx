@@ -16,6 +16,7 @@ import type { Translations } from '../i18n'
 import { useTranslations } from '../i18n'
 import { FixedSpaceColumn, FixedSpaceRow } from '../layout/flex-helpers'
 import { H3 } from '../typography'
+import { useOpenFile } from '../utils/openFile'
 import { Gap } from '../white-space'
 
 import LabelValueList from './LabelValueList'
@@ -39,6 +40,7 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
   document: DocumentMetadata
 }) {
   const i18n = useTranslations()
+  const openFile = useOpenFile()
 
   const documentName = getDocumentName(document, i18n.metadata)
 
@@ -58,13 +60,7 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
           appearance="inline"
           icon={faArrowDownToLine}
           text={i18n.metadata.downloadPdf}
-          onClick={() => {
-            window.open(
-              `/api${document.downloadPath}`,
-              '_blank',
-              'noopener,noreferrer'
-            )
-          }}
+          onClick={() => void openFile(`/api${document.downloadPath}`)}
         />
       )}
       <Gap $size="xxs" />
@@ -117,13 +113,9 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
                                   appearance="inline"
                                   icon={faArrowDownToLine}
                                   text={i18n.metadata.downloadPdf}
-                                  onClick={() => {
-                                    window.open(
-                                      `/api${version.downloadPath}`,
-                                      '_blank',
-                                      'noopener,noreferrer'
-                                    )
-                                  }}
+                                  onClick={() =>
+                                    void openFile(`/api${version.downloadPath}`)
+                                  }
                                 />
                               )}
                             </FixedSpaceRow>

@@ -156,6 +156,16 @@ export default class CitizenDecisionsPage {
     ).toHaveText('Päätös varhaiskasvatuksesta')
   }
 
+  async openDecisionPdf(decisionId: DecisionId) {
+    await Promise.all([
+      this.page.waitForPopup(),
+      this.page
+        .findByDataQa(`application-decision-${decisionId}`)
+        .findByDataQa('button-open-pdf')
+        .click()
+    ])
+  }
+
   async viewDecisionWithoutMetadata(decisionId: DecisionId) {
     const decisionSection = this.page.findByDataQa(
       `application-decision-${decisionId}`

@@ -42,6 +42,7 @@ import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2, Label } from 'lib-components/typography'
+import { useOpenFile } from 'lib-components/utils/openFile'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine, faCheck, faPrint } from 'lib-icons'
@@ -119,6 +120,7 @@ export default React.memo(function ChildDocumentPage() {
     childDocumentDetailsQuery({ documentId: id })
   )
   const i18n = useTranslation()
+  const openFile = useOpenFile()
 
   return (
     <>
@@ -138,13 +140,11 @@ export default React.memo(function ChildDocumentPage() {
                 appearance="inline"
                 icon={faArrowDownToLine}
                 text={i18n.common.download}
-                onClick={() => {
-                  window.open(
-                    downloadChildDocument({ documentId: id }).url.toString(),
-                    '_blank',
-                    'noopener,noreferrer'
+                onClick={() =>
+                  openFile(
+                    downloadChildDocument({ documentId: id }).url.toString()
                   )
-                }}
+                }
               />
             )}
           </FixedSpaceRow>
