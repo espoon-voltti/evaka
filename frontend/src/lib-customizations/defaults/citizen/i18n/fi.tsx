@@ -188,7 +188,7 @@ export default {
     cityLabel: '© Espoon kaupunki',
     privacyPolicyLink: (
       <a
-        href="https://www.espoo.fi/fi/espoon-kaupunki/tietosuoja"
+        href="https://www.espoo.fi/fi/kaupunki-ja-paatoksenteko/tietosuoja/tietosuojaselosteet#varhaiskasvatus-ja-esiopetus-91379"
         data-qa="footer-policy-link"
         style={{ color: colors.main.m2 }}
       >

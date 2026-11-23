@@ -189,7 +189,7 @@ const en: Translations = {
     cityLabel: '© City of Espoo',
     privacyPolicyLink: (
       <a
-        href="https://www.espoo.fi/en/city-espoo/data-protection"
+        href="https://www.espoo.fi/en/city-and-decision-making/data-protection/privacy-notices#early-childhood-education-and-pre-primary-education-91379"
         data-qa="footer-policy-link"
         style={{ color: colors.main.m2 }}
       >

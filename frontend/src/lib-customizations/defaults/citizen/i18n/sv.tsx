@@ -189,7 +189,7 @@ const sv: Translations = {
     cityLabel: '© Esbo stad',
     privacyPolicyLink: (
       <a
-        href="https://www.esbo.fi/esbo-stad/dataskydd"
+        href="https://www.espoo.fi/sv/staden-och-beslutsfattandet/dataskydd/dataskyddsbeskrivningar#smbarnspedagogik-och-frskoleundervisning-91379"
         data-qa="footer-policy-link"
         style={{ color: colors.main.m2 }}
       >
