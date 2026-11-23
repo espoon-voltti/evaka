@@ -177,20 +177,6 @@ export default React.memo(function ReservationModal({
     [calendarDays]
   )
 
-  const overlappingClosedHolidayPeriods = useMemo(
-    () =>
-      dateRange.isValid()
-        ? holidayPeriods
-            .filter(
-              (hp) =>
-                hp.period.overlaps(dateRange.value()) &&
-                hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz())
-            )
-            .map((hp) => hp.period)
-        : [],
-    [holidayPeriods, dateRange]
-  )
-
   const incompletelyAnsweredHolidayPeriods = useMemo(() => {
     if (!dateRange.isValid()) {
       return []
@@ -326,15 +312,6 @@ export default React.memo(function ReservationModal({
                 required
                 ariaId="reservation-daterange-label"
               />
-
-              {overlappingClosedHolidayPeriods.length > 0 && (
-                <InfoBox
-                  title={i18n.calendar.closedHolidayPeriodAbsence.title(
-                    overlappingClosedHolidayPeriods
-                  )}
-                  message={i18n.calendar.closedHolidayPeriodAbsence.infoMessage}
-                />
-              )}
 
               <Gap $size="m" />
 
