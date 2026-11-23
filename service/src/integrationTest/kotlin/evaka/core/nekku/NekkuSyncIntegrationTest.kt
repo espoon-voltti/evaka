@@ -10,6 +10,7 @@ import evaka.core.emailclient.MockEmailClient
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
@@ -1654,4 +1655,21 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             assertEquals(NekkuProductMealType.VEGAN, products[0].mealType)
         }
     }
+
+    private fun Database.Read.getNekkuCustomers(): List<NekkuCustomer> = createQuery {
+        sql(
+            """
+SELECT
+    nc.number,
+    nc.name,
+    nc.customer_group AS "group",
+    JSON_AGG(JSON_BUILD_OBJECT('weekdays', nct.weekdays, 'type', nct.type) ORDER BY nct.weekdays, nct.type) AS customerType
+FROM nekku_customer nc
+LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
+GROUP BY nc.number, nc.name, nc.customer_group
+ORDER BY nc.number
+""",
+        )
+    }
+        .toList<NekkuCustomer>()
 }
