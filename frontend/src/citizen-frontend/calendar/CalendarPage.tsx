@@ -244,7 +244,6 @@ const CalendarPage = React.memo(function CalendarPage() {
                   }}
                   openAbsenceModal={(date) => openAbsenceModal(date, true)}
                   events={events}
-                  holidayPeriods={holidayPeriods}
                 />
               )}
               {modalState?.type === 'pickAction' && (
@@ -283,7 +282,6 @@ const CalendarPage = React.memo(function CalendarPage() {
                   }
                   initialDate={modalState.initialDate}
                   reservationsResponse={response}
-                  holidayPeriods={holidayPeriods}
                 />
               )}
               {featureFlags.discussionReservations &&
