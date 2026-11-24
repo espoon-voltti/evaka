@@ -74,7 +74,7 @@ VALUES (
     ${bind(person.residentialAddress?.postalCode ?: "")},
     ${bind(person.residentialAddress?.postOfficeByLanguage(person.prefersSwedish()) ?: "")},
     ${bind(person.residenceCode ?: "")},
-    ${bind(person.municipalityOfResidenceByLanguage())},
+    ${bind(person.municipalityOfResidence ?: "")},
     ${bind(person.restrictedDetails?.enabled ?: false)},
     ${bind(person.restrictedDetails?.endDate)},
     ${bind(now)}
@@ -137,7 +137,7 @@ UPDATE person SET
     postal_code = ${bind(person.residentialAddress?.postalCode ?: "")},
     post_office = ${bind(person.residentialAddress?.postOfficeByLanguage(person.prefersSwedish()) ?: "")},
     residence_code = ${bind(person.residenceCode ?: "")},
-    municipality_of_residence = ${bind(person.municipalityOfResidenceByLanguage())},
+    municipality_of_residence = ${bind(person.municipalityOfResidence ?: "")},
     restricted_details_enabled = ${bind(person.restrictedDetails?.enabled ?: false)},
     restricted_details_end_date = ${bind(person.restrictedDetails?.endDate)},
     updated_from_vtj = ${bind(now)}
@@ -517,8 +517,3 @@ fun PersonAddress.streetAddressByLanguage(swedish: Boolean): String =
 
 fun PersonAddress.postOfficeByLanguage(swedish: Boolean): String =
     postOfficeSe?.takeIf { swedish && it.isNotEmpty() } ?: postOffice ?: ""
-
-private fun VtjPerson.municipalityOfResidenceByLanguage(): String =
-    municipalityOfResidenceSe?.takeIf { prefersSwedish() && it.isNotEmpty() }
-        ?: municipalityOfResidence
-        ?: ""

@@ -20,7 +20,6 @@ data class VtjPerson(
     val dateOfDeath: LocalDate? = null,
     val residenceCode: String? = null,
     val municipalityOfResidence: String? = null,
-    val municipalityOfResidenceSe: String? = null,
 )
 
 data class VtjPersonAndGuardians(val person: VtjPerson, val guardians: List<Ssn>)

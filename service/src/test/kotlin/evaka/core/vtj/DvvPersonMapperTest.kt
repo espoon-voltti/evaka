@@ -40,7 +40,6 @@ class DvvPersonMapperTest {
         )
         assertEquals("900000242V1 000 ", withoutStair.residenceCode)
         assertEquals("Kristiinankaupunki", withoutStair.municipalityOfResidence)
-        assertEquals("Kristinestad", withoutStair.municipalityOfResidenceSe)
 
         assertEquals(
             "Pohjanpellonkuja 2 C",
@@ -77,7 +76,6 @@ class DvvPersonMapperTest {
         val swedishSpeaker = person(rows, "150752-999Y")
         assertEquals("sv", swedishSpeaker.nativeLanguage?.code)
         assertEquals("Maringatan 14 C 12", swedishSpeaker.residentialAddress?.streetAddressSe)
-        assertEquals("Helsingfors", swedishSpeaker.municipalityOfResidenceSe)
 
         val swedishStreet = person(rows, "160185-980N").residentialAddress
         assertEquals("Norrbölevägen 1 106t", swedishStreet?.streetAddress)

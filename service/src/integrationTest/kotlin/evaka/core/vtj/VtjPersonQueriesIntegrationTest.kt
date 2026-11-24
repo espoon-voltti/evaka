@@ -51,7 +51,6 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             restrictedDetails = RestrictedDetails(enabled = false),
             residenceCode = "abc123",
             municipalityOfResidence = "Helsinki",
-            municipalityOfResidenceSe = "Helsingfors",
         )
 
     private val logAppender = ListAppender<ILoggingEvent>()
@@ -99,7 +98,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person = db.read { it.getPersonById(result.id) }!!
         assertEquals("Någonvägen 66", person.streetAddress)
         assertEquals("Helsingfors", person.postOffice)
-        assertEquals("Helsingfors", person.municipalityOfResidence)
+        assertEquals("Helsinki", person.municipalityOfResidence)
     }
 
     @Test
@@ -114,7 +113,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person = db.read { it.getPersonById(existing.id) }!!
         assertEquals("Någonvägen 66", person.streetAddress)
         assertEquals("Helsingfors", person.postOffice)
-        assertEquals("Helsingfors", person.municipalityOfResidence)
+        assertEquals("Helsinki", person.municipalityOfResidence)
     }
 
     @Test
@@ -144,7 +143,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val updated = db.read { it.getPersonById(person.id) }!!
         assertEquals("Någonvägen 66", updated.streetAddress)
         assertEquals("Helsingfors", updated.postOffice)
-        assertEquals("Helsingfors", updated.municipalityOfResidence)
+        assertEquals("Helsinki", updated.municipalityOfResidence)
     }
 
     @Test
@@ -154,7 +153,6 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 vtjPerson.copy(
                     nativeLanguage = NativeLanguage(code = "sv"),
                     residentialAddress = PersonAddress("Jokutie 66", "00100", "Helsinki", "", ""),
-                    municipalityOfResidenceSe = "",
                 ),
                 now,
             )

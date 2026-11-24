@@ -117,7 +117,6 @@ fun mapDvvPerson(ssn: Ssn, groups: List<Tietoryhma>, today: LocalDate): VtjPerso
                 }
                 ?.asuinpaikantunnus,
         municipalityOfResidence = municipality?.fi,
-        municipalityOfResidenceSe = municipality?.sv,
     )
 }
 

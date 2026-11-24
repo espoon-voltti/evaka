@@ -226,7 +226,6 @@ private val annaPopov =
             ),
         residenceCode = "90000130991H045 ",
         municipalityOfResidence = "Vaasa",
-        municipalityOfResidenceSe = "Vasa",
         restrictedDetails = RestrictedDetails(false),
     )
 
