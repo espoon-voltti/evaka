@@ -193,12 +193,16 @@ private fun PersonAddress.isBlank() =
 
 data class MunicipalityName(val fi: String, val sv: String)
 
-/** Null for an artificial code, for example 198 (no home municipality in Finland) */
+/**
+ * Null for a code that is not in the municipality list, for example the code of a municipality that
+ * has merged into another.
+ */
 fun municipalityByCode(code: String): MunicipalityName? = municipalities[code]
 
 /**
- * The municipality classification 2026 of Statistics Finland. When municipalities merge, update
- * `vtj/municipalities.csv` with `bin/update-municipalities.sh`.
+ * The municipality classification 2026 of Statistics Finland, and the artificial municipality codes
+ * of VTJ. When municipalities merge, update `vtj/municipalities.csv` with
+ * `bin/update-municipalities.sh`.
  */
 private val municipalities: Map<String, MunicipalityName> by lazy {
     ClassPathResource("vtj/municipalities.csv").inputStream.bufferedReader().useLines { lines ->

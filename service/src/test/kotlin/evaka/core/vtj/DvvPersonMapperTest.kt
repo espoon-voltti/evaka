@@ -106,11 +106,11 @@ class DvvPersonMapperTest {
     }
 
     @Test
-    fun `language code 98 is kept, and an artificial municipality code has no name`() {
+    fun `language code 98 is kept, and an artificial municipality code has the VTJ name`() {
         val person = person(basicInfo("native-language-98.json"), "100349-988C")
 
         assertEquals("98", person.nativeLanguage?.code)
-        assertNull(person.municipalityOfResidence)
+        assertEquals("Ei kotikuntaa Suomessa", person.municipalityOfResidence)
     }
 
     @Test
