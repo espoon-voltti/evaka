@@ -4,6 +4,7 @@
 
 package evaka.core.family
 
+import evaka.core.AuditContext
 import evaka.core.person.PersonJSON
 import evaka.core.person.getPersonById
 import evaka.core.shared.ChildId
@@ -56,9 +57,14 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         id: ParentshipId,
         startDate: LocalDate,
         endDate: LocalDate,
+        audit: AuditContext,
     ): Parentship {
         val oldParentship =
             tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
+        audit
+            .add(oldParentship.childId)
+            .add(oldParentship.headOfChildId)
+            .observeDate(oldParentship.startDate)
         validateDates(oldParentship.child.dateOfBirth, startDate, endDate)
         try {
             val success =
@@ -89,11 +95,13 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         id: ParentshipId,
+        audit: AuditContext,
     ) {
         try {
             tx.getParentship(id)
                 ?.takeIf { it.conflict }
                 ?.let {
+                    audit.add(it.childId).add(it.headOfChildId).observeDate(it.startDate)
                     tx.retryParentship(id = it.id, now = clock.now(), userId = user.evakaUserId)
                     tx.sendFamilyUpdatedMessage(
                         clock,
@@ -107,10 +115,21 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    fun deleteParentship(tx: Database.Transaction, clock: EvakaClock, id: ParentshipId) {
+    fun deleteParentship(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        id: ParentshipId,
+        audit: AuditContext,
+    ) {
         val parentship = tx.getParentship(id)
         val success = tx.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
+        audit
+            .add(parentship.childId)
+            .add(parentship.headOfChildId)
+            .observeDate(parentship.startDate)
+            .addMeta("startDate", parentship.startDate)
+            .addMeta("endDate", parentship.endDate)
 
         with(parentship) { tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate) }
     }
