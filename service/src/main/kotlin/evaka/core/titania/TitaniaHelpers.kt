@@ -7,32 +7,17 @@ package evaka.core.titania
 import evaka.core.attendance.RawAttendance
 import evaka.core.attendance.StaffAttendanceType
 import evaka.core.shared.domain.FiniteDateRange
-import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.FiniteDateTimeRange
 import java.time.LocalTime
 
 fun splitOvernight(attendance: RawAttendance): List<RawAttendance> {
-    if (attendance.period.end == null) {
-        return listOf(attendance)
-    }
-    val arrivedDate = attendance.period.start.toLocalDate()
-    val departedDate = attendance.period.end.toLocalDate()
-    if (arrivedDate == departedDate) {
-        return listOf(attendance)
-    }
-    return FiniteDateRange(arrivedDate, departedDate)
+    val range = attendance.period.asFiniteDateTimeRange() ?: return listOf(attendance)
+    return FiniteDateRange(range.start.toLocalDate(), range.end.toLocalDate())
         .dates()
-        .map { date ->
-            attendance.copy(
-                period =
-                    attendance.period.copy(
-                        start =
-                            if (date == arrivedDate) attendance.period.start
-                            else HelsinkiDateTime.of(date, LocalTime.MIN),
-                        end =
-                            if (date == departedDate) attendance.period.end
-                            else HelsinkiDateTime.of(date, LocalTime.MAX),
-                    ),
-            )
+        .mapNotNull { date ->
+            range.intersection(FiniteDateTimeRange.of(date, LocalTime.MIN, LocalTime.MAX))?.let {
+                attendance.copy(period = it.asDateTimeRange())
+            }
         }
         .toList()
 }

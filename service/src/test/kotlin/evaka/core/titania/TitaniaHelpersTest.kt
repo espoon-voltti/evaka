@@ -61,6 +61,19 @@ class TitaniaHelpersTest {
                 ),
             )
     }
+
+    @Test
+    fun `splitOvernight should not return an attendance for the departure date when departed is at midnight`() {
+        val attendance =
+            testAttendance.copy(
+                period = DateTimeRange(testArrived, testArrived.plusDays(1).atStartOfDay()),
+            )
+
+        Assertions.assertThat(splitOvernight(attendance))
+            .containsExactly(
+                attendance.copy(period = DateTimeRange(testArrived, testArrived.atEndOfDay())),
+            )
+    }
 }
 
 private val testArrived = HelsinkiDateTime.of(LocalDate.of(2022, 6, 6), LocalTime.of(7, 31))
