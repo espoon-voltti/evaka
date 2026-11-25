@@ -45,6 +45,7 @@ import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { useTitle } from '../../utils/useTitle'
+import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'
 import { renderResult } from '../async-rendering'
 import {
   childDocumentQuery,
@@ -181,6 +182,7 @@ const ChildDocumentEditViewInner = React.memo(
     const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
     const [lastSavedContent, setLastSavedContent] = useState(document.content)
     const [error, setError] = useState<'lock' | 'other' | null>(null)
+    const [templateValidityEnded, setTemplateValidityEnded] = useState(false)
 
     const { mutateAsync: updateChildDocumentContent, isPending: submitting } =
       useMutationResult(updateChildDocumentContentMutation)
@@ -208,15 +210,13 @@ const ChildDocumentEditViewInner = React.memo(
           setLastSavedContent(content)
         } else if (result.isFailure) {
           if (result.errorCode === 'template-validity-ended') {
-            navigate(
-              `/child-documents/${document.id}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
-            )
+            setTemplateValidityEnded(true)
           } else {
             setError(result.errorCode === 'invalid-lock' ? 'lock' : 'other')
           }
         }
       },
-      [updateChildDocumentContent, document.id, navigate, childIdFromUrl]
+      [updateChildDocumentContent, document.id]
     )
 
     const saved = useMemo(
@@ -232,13 +232,21 @@ const ChildDocumentEditViewInner = React.memo(
     useEffect(() => {
       if (
         error === null &&
+        !templateValidityEnded &&
         debouncedValidContent !== null &&
         !isEqual(lastSavedContent, debouncedValidContent) &&
         !submitting
       ) {
         void save(debouncedValidContent)
       }
-    }, [error, debouncedValidContent, lastSavedContent, save, submitting])
+    }, [
+      error,
+      templateValidityEnded,
+      debouncedValidContent,
+      lastSavedContent,
+      save,
+      submitting
+    ])
 
     useEffect(() => {
       if (error === 'other') {
@@ -247,6 +255,22 @@ const ChildDocumentEditViewInner = React.memo(
       }
       return undefined
     }, [error])
+
+    const hasPendingChanges =
+      !saved && error !== 'lock' && !templateValidityEnded
+    useWarnOnUnsavedChanges(
+      hasPendingChanges,
+      i18n.childInformation.childDocuments.editor.unsavedChangesWarning
+    )
+
+    // Navigating from an effect lets the unsaved changes guard be released first
+    useEffect(() => {
+      if (templateValidityEnded) {
+        navigate(
+          `/child-documents/${document.id}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+        )
+      }
+    }, [templateValidityEnded, navigate, document.id, childIdFromUrl])
 
     const goBack = () =>
       navigate(`/child-information/${childIdFromUrl ?? document.child.id}`)
@@ -277,10 +301,11 @@ const ChildDocumentEditViewInner = React.memo(
                 <Button
                   text={i18n.common.goBack}
                   onClick={goBack}
-                  // disable while debounce is pending to avoid leaving before saving
+                  // disable while debounce or save is pending to avoid leaving before saving
                   disabled={
-                    bind.isValid() &&
-                    !isEqual(bind.value(), debouncedValidContent)
+                    submitting ||
+                    (bind.isValid() &&
+                      !isEqual(bind.value(), debouncedValidContent))
                   }
                   data-qa="return-button"
                 />
@@ -297,7 +322,7 @@ const ChildDocumentEditViewInner = React.memo(
                     />
                   )}
                   {error === 'other' && (
-                    <span>
+                    <span data-qa="save-error">
                       <FontAwesomeIcon
                         icon={faExclamationTriangle}
                         color={colors.status.warning}

@@ -320,6 +320,81 @@ test.describe('Employee - Child documents', () => {
     await expect(childDocument.editButton).toBeVisible()
   })
 
+  test('Leaving the edit view after a failed save asks for confirmation', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id
+    }).save()
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-documents/${document.id}/edit`)
+    const childDocument = new ChildDocumentPage(page)
+
+    await page.page.route(
+      `**/api/employee/child-documents/${document.id}/content`,
+      (route) => route.abort()
+    )
+    await childDocument.getTextQuestion('osio 1', 'kysymys 1').fill('vastaus')
+    await expect(childDocument.saveError).toBeVisible()
+
+    let dialogMessage: string | undefined
+    page.page.once('dialog', (dialog) => {
+      dialogMessage = dialog.message()
+      void dialog.dismiss()
+    })
+    await childDocument.returnButton.click()
+
+    await expect
+      .poll(() => dialogMessage)
+      .toBe('Kaikkia muutoksia ei ole tallennettu. Haluatko varmasti poistua?')
+    await expect(page.page).toHaveURL(
+      `${config.employeeUrl}/child-documents/${document.id}/edit`
+    )
+
+    page.page.once('dialog', (dialog) => void dialog.accept())
+    await childDocument.returnButton.click()
+    await expect(page.page).toHaveURL(
+      `${config.employeeUrl}/child-information/${testChild2.id}`
+    )
+  })
+
+  test('Edit view can be left without confirmation when saving fails because of the lock', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id
+    }).save()
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-documents/${document.id}/edit`)
+    const childDocument = new ChildDocumentPage(page)
+
+    await page.page.route(
+      `**/api/employee/child-documents/${document.id}/content`,
+      (route) =>
+        route.fulfill({ status: 409, json: { errorCode: 'invalid-lock' } })
+    )
+    await childDocument.getTextQuestion('osio 1', 'kysymys 1').fill('vastaus')
+    await childDocument.closeConcurrentEditErrorModal()
+
+    await expect(page.page).toHaveURL(
+      `${config.employeeUrl}/child-documents/${document.id}`
+    )
+  })
+
   test('Pending decision proposal of an ended template cannot be decided', async ({
     newEvakaPage
   }) => {

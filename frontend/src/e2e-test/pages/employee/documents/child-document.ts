@@ -18,6 +18,7 @@ import {
 export class ChildDocumentPage {
   status: Element
   savingIndicator: Element
+  saveError: Element
   previewButton: Element
   editButton: Element
   publishButton: Element
@@ -37,6 +38,7 @@ export class ChildDocumentPage {
   constructor(private readonly page: Page) {
     this.status = page.findByDataQa('document-state-chip')
     this.savingIndicator = page.findByDataQa('saving-spinner')
+    this.saveError = page.findByDataQa('save-error')
     this.previewButton = page.findByDataQa('preview-button')
     this.editButton = page.findByDataQa('edit-button')
     this.publishButton = page.findByDataQa('publish-button')

@@ -1024,6 +1024,8 @@ export const sv: typeof fi = {
         lockedErrorDetailed: (modifiedByName: string, opensAt: string) =>
           `Användaren ${modifiedByName} redigerar dokumentet. Dokumentlåset frigörs ${opensAt} om redigeringen inte fortsätts. Försök igen senare.`,
         saveError: 'Det gick inte att spara dokumentet.',
+        unsavedChangesWarning:
+          'Alla ändringar har inte sparats. Vill du verkligen lämna sidan?',
         preview: 'Förhandsgranska',
         publish: 'Publicera för vårdnadshavare',
         publishConfirmTitle: 'Vill du verkligen publicera för vårdnadshavaren?',
