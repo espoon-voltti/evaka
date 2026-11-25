@@ -1014,8 +1014,7 @@ const staffAttendanceValidator =
     const continuationAttendance = config.attendances.find(
       (a) =>
         a.period.start.toLocalDate().isEqual(config.date.subDays(1)) &&
-        (a.period.end == null ||
-          a.period.end.toLocalDate().isEqual(config.date))
+        FiniteDateTimeRange.ofDate(config.date).overlaps(a.period)
     )
 
     for (let i = 0; i < state.length; i++) {
@@ -1093,8 +1092,7 @@ const externalAttendanceValidator =
     const continuationAttendance = config.attendances.find(
       (a) =>
         a.period.start.toLocalDate().isEqual(config.date.subDays(1)) &&
-        (a.period.end == null ||
-          a.period.end.toLocalDate().isEqual(config.date))
+        FiniteDateTimeRange.ofDate(config.date).overlaps(a.period)
     )
 
     for (let i = 0; i < state.length; i++) {

@@ -151,7 +151,7 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
       sortedAttendances.find(
         (a) =>
           a.period.start.toLocalDate().isEqual(date.subDays(1)) &&
-          (a.period.end === null || a.period.end.toLocalDate().isEqual(date))
+          FiniteDateTimeRange.ofDate(date).overlaps(a.period)
       ),
     [sortedAttendances, date]
   )
