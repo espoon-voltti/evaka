@@ -10,6 +10,7 @@ import { useLocation, useSearchParams } from 'wouter'
 
 import { combine, Success } from 'lib-common/api'
 import DateTimeRange from 'lib-common/date-time-range'
+import FiniteDateTimeRange from 'lib-common/finite-date-time-range'
 import { boolean, localDate, localTime, string } from 'lib-common/form/fields'
 import {
   array,
@@ -417,13 +418,11 @@ const StaffAttendancesEditor = ({
   const rowsInputInfo = rows.inputInfo()
 
   const otherUnitAttendancesOnDate = useMemo(() => {
-    const startOfDay = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
-    const endOfDay = HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
+    const day = FiniteDateTimeRange.ofDate(date)
     return otherAttendances.filter(
       (a) =>
         a.unitName !== null &&
-        a.arrived.isBefore(endOfDay) &&
-        (a.departed === null || a.departed.isAfter(startOfDay))
+        day.overlaps(new DateTimeRange(a.arrived, a.departed))
     )
   }, [otherAttendances, date])
 
@@ -442,7 +441,9 @@ const StaffAttendancesEditor = ({
       staffMember.attendances.find(
         (a) =>
           a.arrived.toLocalDate().isEqual(date.subDays(1)) &&
-          (a.departed === null || a.departed.toLocalDate().isEqual(date))
+          FiniteDateTimeRange.ofDate(date).overlaps(
+            new DateTimeRange(a.arrived, a.departed)
+          )
       ),
     [staffMember, date]
   )

@@ -272,6 +272,50 @@ test.describe('Realtime staff attendances', () => {
         })
     })
 
+    test('An attendance and a plan that end at midnight are shown only on their start date', async () => {
+      const monday = mockedToday.subDays(2)
+      await Fixture.staffAttendancePlan({
+        id: randomId<StaffAttendancePlanId>(),
+        employeeId: groupStaff.id,
+        startTime: monday.toHelsinkiDateTime(LocalTime.of(16, 0)),
+        endTime: monday.addDays(1).startOfDay()
+      }).save()
+
+      await Fixture.realtimeStaffAttendance({
+        employeeId: groupStaff.id,
+        groupId,
+        arrived: monday.toHelsinkiDateTime(LocalTime.of(17, 0)),
+        departed: monday.addDays(1).startOfDay()
+      }).save()
+
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup(groupId)
+      const staffAttendances = calendarPage.staffAttendances
+
+      await staffAttendances.assertTableRow({
+        rowIx: 0,
+        nth: 0,
+        plannedAttendances: [['16:00', '00:00']],
+        attendances: [['17:00', '00:00']]
+      })
+      const tuesdayCell = staffAttendances.findByDataQa(
+        `attendance-${monday.addDays(1).formatIso()}-0`
+      )
+      await expect(
+        tuesdayCell.findAllByDataQa('planned-attendance-start')
+      ).toHaveCount(0)
+      await expect(tuesdayCell.findAllByDataQa('arrival-time')).toHaveCount(0)
+
+      const modal = await staffAttendances.openDetails(0, monday)
+      await expect
+        .poll(() => modal.summary())
+        .toEqual({
+          plan: '16:00 – 00:00',
+          realized: '17:00 – 00:00',
+          hours: '7:00 (-1:00)'
+        })
+    })
+
     test('Employee without group ACL is shown if they have attendances', async () => {
       await Fixture.realtimeStaffAttendance({
         employeeId: nonGroupStaff.id,

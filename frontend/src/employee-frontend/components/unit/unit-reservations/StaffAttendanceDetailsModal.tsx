@@ -22,7 +22,6 @@ import type { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { presentInGroup } from 'lib-common/staff-attendance'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -333,15 +332,15 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
       : undefined
   }, [gaplessAttendances])
 
+  // Assumes that `plannedAttendances` is already filtered to contain only `date`'s
+  // plan
   const plannedAttendancesToday = useMemo(
     () =>
-      plannedAttendances
-        .filter(
-          ({ end, start }) =>
-            end.toLocalDate().isEqual(date) || start.toLocalDate().isEqual(date)
-        )
-        .map(({ start, end }) => ({ arrived: start, departed: end })),
-    [plannedAttendances, date]
+      plannedAttendances.map(({ start, end }) => ({
+        arrived: start,
+        departed: end
+      })),
+    [plannedAttendances]
   )
 
   const diffPlannedTotalMinutes = useMemo(
@@ -382,14 +381,12 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
   const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
 
   const otherUnitAttendancesOnDate = useMemo(() => {
-    const startOfDay = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
-    const endOfDay = HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
+    const day = FiniteDateTimeRange.ofDate(date)
     return orderBy(
       otherAttendances.filter(
         (a) =>
           a.unitName !== null &&
-          a.arrived.isBefore(endOfDay) &&
-          (a.departed === null || a.departed.isAfter(startOfDay))
+          day.overlaps(new DateTimeRange(a.arrived, a.departed))
       ),
       ({ arrived }) => arrived
     )
@@ -448,8 +445,10 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
                 {plannedAttendances.length > 0
                   ? plannedAttendances.map(({ end, start, description }, i) => (
                       <div key={i}>
-                        {formatDate(start, date)} –{' '}
-                        {end ? formatDate(end, date) : ''}
+                        {formatRange({
+                          date,
+                          range: new DateTimeRange(start, end)
+                        })}
                         {description ? <i> ({description})</i> : null}
                       </div>
                     ))
@@ -462,21 +461,22 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
                       ({ arrived, departed, departedAutomatically }, i) => (
                         <div key={i}>
                           <div>
-                            {arrived ? formatDate(arrived, date) : ''} –{' '}
-                            {departed ? (
-                              <DepartedTime
-                                $automaticDeparture={departedAutomatically}
-                                data-qa={
-                                  departedAutomatically
-                                    ? 'departed-automatically-time'
-                                    : undefined
-                                }
-                              >
-                                {formatDate(departed, date)}
-                              </DepartedTime>
-                            ) : (
-                              ''
-                            )}
+                            {formatRange({
+                              date,
+                              range: new DateTimeRange(arrived, departed),
+                              renderEnd: (value) => (
+                                <DepartedTime
+                                  $automaticDeparture={departedAutomatically}
+                                  data-qa={
+                                    departedAutomatically
+                                      ? 'departed-automatically-time'
+                                      : undefined
+                                  }
+                                >
+                                  {value}
+                                </DepartedTime>
+                              )
+                            })}
                           </div>
                           {departedAutomatically && (
                             <AutomaticDepartureLabel data-qa="departed-automatically-label">
@@ -878,10 +878,15 @@ const OtherUnitAttendanceList = React.memo(function OtherUnitAttendanceList({
               i18n.unit.staffAttendance.noGroup}
             :{' '}
             <strong>
-              {arrived.toLocalDate().isBefore(currentDate)
-                ? LocalTime.MIN.format()
-                : arrived.toLocalTime().format()}{' '}
-              – {departed ? formatDate(departed, currentDate) : ''}
+              {formatRange({
+                date: currentDate,
+                range: new DateTimeRange(
+                  arrived.toLocalDate().isBefore(currentDate)
+                    ? currentDate.startOfDay()
+                    : arrived,
+                  departed
+                )
+              })}
             </strong>
           </li>
         )
@@ -895,8 +900,31 @@ const OtherUnitAttendanceUl = styled.ul`
   padding-left: ${defaultMargins.m};
 `
 
-const formatDate = (time: HelsinkiDateTime, currentDate: LocalDate) =>
-  time.toLocalDate().isEqual(currentDate) ? time.toLocalTime().format() : '→'
+function formatRange(options: {
+  date: LocalDate
+  range: DateTimeRange
+  renderEnd?: (value: string) => React.ReactNode
+}): React.ReactNode {
+  const day = FiniteDateTimeRange.ofDate(options.date)
+  const range = options.range
+  const renderEnd = options?.renderEnd ?? ((value) => value)
+
+  const start = day.includes(range.start)
+    ? range.start.toLocalTime().format()
+    : '→'
+  const end =
+    range.end == null
+      ? ''
+      : renderEnd(
+          range.end.isAfter(day.end) ? '→' : range.end.toLocalTime().format()
+        )
+
+  return (
+    <>
+      {start} – {end}
+    </>
+  )
+}
 
 function formatMinutes(minutes: number) {
   return `${Math.floor(minutes / 60)}:${Math.floor(minutes % 60)
