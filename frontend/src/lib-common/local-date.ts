@@ -34,7 +34,7 @@ import {
 import type { DateFormat, DateFormatWithWeekday } from './date'
 import { locales } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
-import type LocalTime from './local-time'
+import LocalTime from './local-time'
 import type { Ordered } from './ordered'
 import { isAutomatedTest } from './utils/helpers'
 import YearMonth from './year-month'
@@ -122,6 +122,9 @@ export default class LocalDate implements Ordered<LocalDate> {
   }
   lastDayOfMonth(): LocalDate {
     return LocalDate.fromSystemTzDate(lastDayOfMonth(this.toSystemTzDate()))
+  }
+  startOfDay(): HelsinkiDateTime {
+    return this.toHelsinkiDateTime(LocalTime.MIN)
   }
   isBefore(other: LocalDate): boolean {
     return isBefore(this.toSystemTzDate(), other.toSystemTzDate())

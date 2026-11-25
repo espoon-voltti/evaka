@@ -23,7 +23,6 @@ import type {
 } from 'lib-common/generated/api-types/messaging'
 import type { MessageContentId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalTime from 'lib-common/local-time'
 import type { TypedMessageAccount } from 'lib-common/messaging'
 import { formatAccountNames } from 'lib-common/messaging'
 import {
@@ -159,10 +158,7 @@ function SingleMessage({
     isOwnMessage &&
     !isDeleted &&
     HelsinkiDateTime.now().isBefore(
-      message.sentAt
-        .toLocalDate()
-        .addDays(deletionWindowDays)
-        .toHelsinkiDateTime(LocalTime.MIN)
+      message.sentAt.toLocalDate().addDays(deletionWindowDays).startOfDay()
     )
 
   return (

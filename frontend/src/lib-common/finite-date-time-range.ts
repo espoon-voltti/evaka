@@ -6,7 +6,6 @@ import DateTimeRange from './date-time-range'
 import HelsinkiDateTime from './helsinki-date-time'
 import type { JsonOf } from './json'
 import type LocalDate from './local-date'
-import LocalTime from './local-time'
 import { maxOf, minOf } from './ordered'
 
 /** A datetime range with an inclusive start and an exclusive end */
@@ -33,8 +32,8 @@ export default class FiniteDateTimeRange {
   /** Returns the range from the start of the date to the start of the next date */
   static ofDate(date: LocalDate): FiniteDateTimeRange {
     return new FiniteDateTimeRange(
-      HelsinkiDateTime.fromLocal(date, LocalTime.MIN),
-      HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
+      date.startOfDay(),
+      date.addDays(1).startOfDay()
     )
   }
 

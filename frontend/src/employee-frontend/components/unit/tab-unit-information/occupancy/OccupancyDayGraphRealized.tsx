@@ -293,7 +293,7 @@ function graphData(
     ? shiftCareUnit
       ? now.subHours(16)
       : now.withTime(LocalTime.of(0, 0))
-    : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(0, 0))
+    : queryDate.startOfDay()
   const filterData = (p: { time: HelsinkiDateTime }) =>
     !p.time.isBefore(minTime)
 
@@ -352,7 +352,7 @@ function graphData(
   const xMin = shiftCareUnit
     ? (queryDateIsCurrent
         ? now.subHours(16)
-        : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(0, 0))
+        : queryDate.startOfDay()
       ).toSystemTzDate()
     : min(
         [

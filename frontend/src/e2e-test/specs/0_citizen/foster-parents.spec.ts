@@ -441,7 +441,7 @@ test.describe('Foster parents', () => {
       title: 'Group-wide event',
       description: 'Whole group',
       period: new FiniteDateRange(mockedDate, mockedDate),
-      modifiedAt: HelsinkiDateTime.fromLocal(mockedDate, LocalTime.MIN)
+      modifiedAt: mockedDate.startOfDay()
     }).save()
     await Fixture.calendarEventAttendee({
       calendarEventId: groupEventId,

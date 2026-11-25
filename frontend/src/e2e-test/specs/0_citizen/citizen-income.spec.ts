@@ -119,7 +119,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         validFrom: placementStart,
         validTo: incomeEndDate,
         modifiedBy: evakaUserId(financeAdminId),
-        modifiedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+        modifiedAt: placementStart.startOfDay()
       }).save()
 
       await Fixture.fridgeChild({

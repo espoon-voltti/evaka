@@ -191,11 +191,8 @@ const getOtherAttendances = (
   attendances: StaffMemberAttendance[],
   otherUnitAttendances: OtherUnitStaffAttendance[]
 ): OtherAttendance[] => {
-  const dayStart = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
-  const nextDayStart = HelsinkiDateTime.fromLocal(
-    date.addDays(1),
-    LocalTime.MIN
-  )
+  const dayStart = date.startOfDay()
+  const nextDayStart = date.addDays(1).startOfDay()
   return [
     ...otherUnitAttendances.map(({ unitName, arrived, departed }) => ({
       unitName,
@@ -433,10 +430,7 @@ const StaffAttendancesEditor = ({
   const rowValues = boundRows.flatMap((row) =>
     row.isValid() ? [row.value()] : []
   )
-  const nextDayStart = HelsinkiDateTime.fromLocal(
-    date.addDays(1),
-    LocalTime.MIN
-  )
+  const nextDayStart = date.addDays(1).startOfDay()
   const overlappingAttendancesOnNextDay = otherAttendances.filter(
     (other) =>
       !other.arrived.isBefore(nextDayStart) &&
