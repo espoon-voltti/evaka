@@ -88,13 +88,12 @@ export default React.memo(function StaffMemberPage({
   const spanningPlans = useMemo(() => {
     function getInfo(range: FiniteDateTimeRange) {
       const plans = employeeResponse.isSuccess
-        ? (
+        ? sortBy(
             employeeResponse.value.staffMember?.plannedAttendances.filter(
-              (plan) =>
-                plan.start.isEqualOrAfter(range.start) &&
-                plan.end.isEqualOrBefore(range.end)
-            ) ?? []
-          ).sort((a, b) => a.start.timestamp - b.start.timestamp)
+              (plan) => range.contains(plan.period)
+            ) ?? [],
+            (a) => a.period.start
+          )
         : []
       if (
         plans.length > 1 ||
@@ -104,10 +103,10 @@ export default React.memo(function StaffMemberPage({
         return (
           <InfoListContainer>
             {plans.map((plan) => (
-              <li key={plan.start.formatIso()}>
+              <li key={plan.period.start.formatIso()}>
                 <div>
                   <div>
-                    {`${i18n.attendances.staffTypes[plan.type]} ${formatTime(plan.start)} – ${formatTime(plan.end)}`}
+                    {`${i18n.attendances.staffTypes[plan.type]} ${formatTime(plan.period.start)} – ${formatTime(plan.period.end)}`}
                   </div>
                   {plan.description ? <i>({plan.description})</i> : null}
                 </div>

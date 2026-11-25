@@ -83,7 +83,7 @@ data class StaffMember(
     val spanningPlans: List<FiniteDateTimeRange>
         get() =
             plannedAttendances
-                .map { FiniteDateTimeRange(it.start, it.end) }
+                .map { it.period }
                 .let { DateTimeSet.of(it) } // merge adjacent
                 .ranges()
                 .toList()
@@ -162,8 +162,7 @@ data class StaffAttendanceResponse(
 )
 
 data class PlannedStaffAttendance(
-    val start: HelsinkiDateTime,
-    val end: HelsinkiDateTime,
+    val period: FiniteDateTimeRange,
     val type: StaffAttendanceType,
     val description: String?,
 )

@@ -79,8 +79,7 @@ export interface ModalOtherAttendance {
 }
 
 export interface ModalPlannedAttendance {
-  start: HelsinkiDateTime
-  end: HelsinkiDateTime
+  period: FiniteDateTimeRange
   description: string | null
 }
 
@@ -336,9 +335,9 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
   // plan
   const plannedAttendancesToday = useMemo(
     () =>
-      plannedAttendances.map(({ start, end }) => ({
-        arrived: start,
-        departed: end
+      plannedAttendances.map(({ period }) => ({
+        arrived: period.start,
+        departed: period.end
       })),
     [plannedAttendances]
   )
@@ -443,12 +442,9 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
               <LabelLike>{i18n.unit.staffAttendance.plan}</LabelLike>
               <FixedSpaceColumn data-qa="staff-attendance-summary-plan">
                 {plannedAttendances.length > 0
-                  ? plannedAttendances.map(({ end, start, description }, i) => (
+                  ? plannedAttendances.map(({ period, description }, i) => (
                       <div key={i}>
-                        {formatRange({
-                          date,
-                          range: new DateTimeRange(start, end)
-                        })}
+                        {formatRange({ date, range: period })}
                         {description ? <i> ({description})</i> : null}
                       </div>
                     ))
@@ -902,7 +898,7 @@ const OtherUnitAttendanceUl = styled.ul`
 
 function formatRange(options: {
   date: LocalDate
-  range: DateTimeRange
+  range: DateTimeRange | FiniteDateTimeRange
   renderEnd?: (value: string) => React.ReactNode
 }): React.ReactNode {
   const day = FiniteDateTimeRange.ofDate(options.date)

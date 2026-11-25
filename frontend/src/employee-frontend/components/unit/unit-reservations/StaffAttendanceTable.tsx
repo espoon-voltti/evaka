@@ -703,10 +703,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
           )
           const day = FiniteDateTimeRange.ofDate(date)
           const plannedAttendancesForToday = (plannedAttendances ?? []).filter(
-            (attendance) =>
-              day.overlaps(
-                new FiniteDateTimeRange(attendance.start, attendance.end)
-              )
+            (p) => day.overlaps(p.period)
           )
           return {
             date,
@@ -741,10 +738,10 @@ const AttendanceRow = React.memo(function AttendanceRow({
                     plannedAttendancesForToday.map((plannedAttendance, i) => (
                       <AttendanceCell key={i}>
                         <AttendanceTime data-qa="planned-attendance-start">
-                          {renderTime(plannedAttendance.start, date)}
+                          {renderTime(plannedAttendance.period.start, date)}
                         </AttendanceTime>
                         <AttendanceTime data-qa="planned-attendance-end">
-                          {renderTime(plannedAttendance.end, date)}
+                          {renderTime(plannedAttendance.period.end, date)}
                         </AttendanceTime>
                         <DetailsCell />
                       </AttendanceCell>
@@ -960,10 +957,8 @@ function computeModalAttendances(
     const plannedAttendances: ModalPlannedAttendance[] = uniq(
       combined.flatMap((employee) => employee.plannedAttendances)
     )
-      .filter(({ start, end }) =>
-        day.overlaps(new FiniteDateTimeRange(start, end))
-      )
-      .map(({ start, end, description }) => ({ start, end, description }))
+      .filter(({ period }) => day.overlaps(period))
+      .map(({ period, description }) => ({ period, description }))
     const sameUnitAttendancesOnLaterDays: ModalOtherAttendance[] = uniqBy(
       combined.flatMap((employee) => employee.attendances),
       (attendance) => attendance.id

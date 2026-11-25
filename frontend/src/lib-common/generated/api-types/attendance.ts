@@ -323,8 +323,7 @@ export interface OtherUnitStaffAttendance {
 */
 export interface PlannedStaffAttendance {
   description: string | null
-  end: HelsinkiDateTime
-  start: HelsinkiDateTime
+  period: FiniteDateTimeRange
   type: StaffAttendanceType
 }
 
@@ -676,8 +675,7 @@ export function deserializeJsonOtherUnitStaffAttendance(json: JsonOf<OtherUnitSt
 export function deserializeJsonPlannedStaffAttendance(json: JsonOf<PlannedStaffAttendance>): PlannedStaffAttendance {
   return {
     ...json,
-    end: HelsinkiDateTime.parseIso(json.end),
-    start: HelsinkiDateTime.parseIso(json.start)
+    period: FiniteDateTimeRange.parseJson(json.period)
   }
 }
 

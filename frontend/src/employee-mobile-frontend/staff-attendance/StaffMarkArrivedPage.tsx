@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { differenceInMinutes } from 'date-fns'
+import minBy from 'lodash/minBy'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
@@ -96,12 +97,8 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
 
   const firstPlannedStartOfTheDay = useMemo(
     () =>
-      staffMember && staffMember.plannedAttendances.length > 0
-        ? staffMember.plannedAttendances.reduce(
-            (prev, curr) => (prev.start.isBefore(curr.start) ? prev : curr),
-            staffMember.plannedAttendances[0]
-          ).start
-        : null,
+      minBy(staffMember?.plannedAttendances, (p) => p.period.start)?.period
+        .start ?? null,
     [staffMember]
   )
 

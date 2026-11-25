@@ -567,7 +567,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             )
         }
 
-        val planStart = plans.minOf { it.start }
+        val planStart = plans.minOf { it.period.start }
         if (arrivalTime < planStart.minusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (arrival.type) {
                 StaffAttendanceType.OVERTIME -> {
@@ -683,7 +683,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             )
         }
 
-        val planEnd = plans.maxOf { it.end }
+        val planEnd = plans.maxOf { it.period.end }
         if (departureTime < planEnd.minusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (departure.type) {
                 StaffAttendanceType.TRAINING,
