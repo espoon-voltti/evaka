@@ -160,7 +160,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
 
   const latestCurrentDayDepartureTime =
-    staffMember.latestCurrentDayAttendance?.departed?.toLocalTime()
+    staffMember.latestCurrentDayAttendance?.period.end?.toLocalTime()
   const timeBeforeLastDeparture =
     latestCurrentDayDepartureTime !== undefined &&
     time !== undefined &&
@@ -169,8 +169,8 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
       : undefined
 
   const ongoingAttendanceStart = staffMember.attendances.find(
-    (attendance) => attendance.departed === null
-  )?.arrived
+    ({ period }) => period.end === null
+  )?.period.start
   const timeNotAfterOngoingAttendanceStart =
     ongoingAttendanceStart !== undefined &&
     time !== undefined &&
@@ -199,9 +199,9 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
 
   const hasFutureCurrentDay =
     staffMember.latestCurrentDayAttendance &&
-    (!staffMember.latestCurrentDayAttendance.departed ||
+    (!staffMember.latestCurrentDayAttendance.period.end ||
       (time !== undefined &&
-        staffMember.latestCurrentDayAttendance.arrived.isAfter(
+        staffMember.latestCurrentDayAttendance.period.start.isAfter(
           HelsinkiDateTime.now().withTime(time)
         )))
 

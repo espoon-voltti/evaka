@@ -537,11 +537,7 @@ fun getAttendanceReservationReport(
                             } else {
                                 staffAttendancesMap.values.flatten()
                             }
-                            .filter {
-                                if (it.departed != null)
-                                    FiniteDateTimeRange(it.arrived, it.departed).overlaps(interval)
-                                else it.arrived < interval.end
-                            }
+                            .filter { it.period.overlaps(interval) }
 
                     AttendanceReservationReportRow(
                         groupId = group.id,

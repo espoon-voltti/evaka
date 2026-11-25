@@ -114,8 +114,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             Attendance(
                                                 att.id,
                                                 att.groupId,
-                                                att.arrived,
-                                                att.departed,
+                                                att.period,
                                                 att.occupancyCoefficient,
                                                 type =
                                                     if (
@@ -159,8 +158,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             Attendance(
                                                 att.id,
                                                 att.groupId,
-                                                att.arrived,
-                                                att.departed,
+                                                att.period,
                                                 att.occupancyCoefficient,
                                                 att.type,
                                                 att.departedAutomatically,

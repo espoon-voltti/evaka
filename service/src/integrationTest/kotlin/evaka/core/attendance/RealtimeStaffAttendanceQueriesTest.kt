@@ -234,9 +234,12 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(2, staffAttendances.size)
             assertEquals(
                 arrivalTime.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
-            assertEquals(null, staffAttendances.first { it.employeeId == employee2.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee2.id }.period.end,
+            )
         }
     }
 
@@ -271,7 +274,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 plannedDeparture,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -309,7 +312,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 expectedAddedDepartureTime,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -345,7 +348,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 arrival.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -381,7 +384,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 plannedDeparture,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -417,7 +420,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 plannedDeparture,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -453,7 +456,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 plannedDeparture,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -489,7 +492,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 arrival.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -521,7 +524,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
-            assertEquals(null, staffAttendances.first { it.employeeId == employee1.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
+            )
         }
     }
 
@@ -542,7 +548,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
-            assertEquals(null, staffAttendances.first { it.employeeId == employee1.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
+            )
         }
     }
 
@@ -567,7 +576,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 arrival.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
             assertTrue(staffAttendances.first().departedAutomatically)
         }
@@ -600,7 +609,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
-            assertEquals(null, staffAttendances.first { it.employeeId == employee1.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
+            )
         }
     }
 
@@ -621,7 +633,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
-            assertEquals(null, staffAttendances.first { it.employeeId == employee1.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
+            )
         }
     }
 
@@ -646,7 +661,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 arrival.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
             assertTrue(staffAttendances.first().departedAutomatically)
         }

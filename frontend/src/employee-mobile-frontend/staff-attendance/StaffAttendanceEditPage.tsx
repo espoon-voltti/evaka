@@ -41,11 +41,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import {
-  attendancesOverlap,
-  isDuringAttendance,
-  presentInGroup
-} from 'lib-common/staff-attendance'
+import { presentInGroup } from 'lib-common/staff-attendance'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
@@ -155,14 +151,8 @@ const staffAttendanceForm = mapped(
 interface OtherAttendance {
   unitName: string | null
   groupId: GroupId | null
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
+  period: DateTimeRange
 }
-
-const attendanceTimes = ({ period }: StaffAttendanceUpsert) => ({
-  arrived: period.start,
-  departed: period.end
-})
 
 const staffAttendancesForm = (otherAttendances: OtherAttendance[]) =>
   object({
@@ -170,14 +160,13 @@ const staffAttendancesForm = (otherAttendances: OtherAttendance[]) =>
       output.some((row, index, array) =>
         array.some(
           (other, otherIndex) =>
-            index !== otherIndex &&
-            attendancesOverlap(attendanceTimes(row), attendanceTimes(other))
+            index !== otherIndex && row.period.overlaps(other.period)
         )
       )
         ? 'overlap'
         : output.some((row) =>
               otherAttendances.some((other) =>
-                attendancesOverlap(attendanceTimes(row), other)
+                row.period.overlaps(other.period)
               )
             )
           ? 'overlapWithOtherAttendance'
@@ -192,25 +181,19 @@ const getOtherAttendances = (
   attendances: StaffMemberAttendance[],
   otherUnitAttendances: OtherUnitStaffAttendance[]
 ): OtherAttendance[] => {
-  const dayStart = date.startOfDay()
-  const nextDayStart = date.addDays(1).startOfDay()
+  const day = FiniteDateTimeRange.ofDate(date)
   return [
-    ...otherUnitAttendances.map(({ unitName, arrived, departed }) => ({
+    ...otherUnitAttendances.map(({ unitName, period }) => ({
       unitName,
       groupId: null,
-      arrived,
-      departed
+      period
     })),
     ...attendances
-      .filter(
-        ({ arrived }) =>
-          arrived.isBefore(dayStart) || !arrived.isBefore(nextDayStart)
-      )
-      .map(({ groupId, arrived, departed }) => ({
+      .filter(({ period }) => !day.includes(period.start))
+      .map(({ groupId, period }) => ({
         unitName: null,
         groupId,
-        arrived,
-        departed
+        period
       }))
   ]
 }
@@ -228,8 +211,8 @@ const initialFormState = (
   attendances: StaffMemberAttendance[]
 ): StateOf<StaffAttendancesForm> => ({
   rows: sortBy(
-    attendances.filter((a) => a.arrived.toLocalDate().isEqual(date)),
-    (attendance) => attendance.arrived
+    attendances.filter((a) => a.period.start.toLocalDate().isEqual(date)),
+    (attendance) => attendance.period.start
   ).map((attendance) => initialRowState(i18n, groups, attendance))
 })
 
@@ -243,44 +226,39 @@ const initialRowState = (
   i18n: Translations,
   groups: GroupInfo[],
   attendance: StaffMemberAttendance | StaffAttendanceUpsert
-): StateOf<typeof staffAttendanceForm> => {
-  const { arrived, departed } = isUpsert(attendance)
-    ? attendanceTimes(attendance)
-    : attendance
-  return {
-    id: attendance.id,
-    type: {
-      domValue: attendance.type,
-      options: staffAttendanceTypes.map((type) => ({
-        domValue: type,
-        value: type,
-        label: i18n.attendances.staffTypes[type]
+): StateOf<typeof staffAttendanceForm> => ({
+  id: attendance.id,
+  type: {
+    domValue: attendance.type,
+    options: staffAttendanceTypes.map((type) => ({
+      domValue: type,
+      value: type,
+      label: i18n.attendances.staffTypes[type]
+    }))
+  },
+  groupEditMode: false,
+  groupId: {
+    domValue: attendance.groupId || emptyGroupIdDomValue,
+    options: [
+      {
+        domValue: emptyGroupIdDomValue,
+        value: null,
+        label: i18n.attendances.noGroup
+      },
+      ...groups.map((group) => ({
+        domValue: group.id,
+        value: group.id,
+        label: group.name
       }))
-    },
-    groupEditMode: false,
-    groupId: {
-      domValue: attendance.groupId || emptyGroupIdDomValue,
-      options: [
-        {
-          domValue: emptyGroupIdDomValue,
-          value: null,
-          label: i18n.attendances.noGroup
-        },
-        ...groups.map((group) => ({
-          domValue: group.id,
-          value: group.id,
-          label: group.name
-        }))
-      ]
-    },
-    arrivedDate: localDate.fromDate(arrived.toLocalDate()),
-    arrivedTime: arrived.toLocalTime().format(),
-    departedTime: departed?.toLocalTime().format() ?? '',
-    occupancyEffect: isUpsert(attendance)
-      ? attendance.hasStaffOccupancyEffect
-      : attendance.occupancyCoefficient > 0
-  }
-}
+    ]
+  },
+  arrivedDate: localDate.fromDate(attendance.period.start.toLocalDate()),
+  arrivedTime: attendance.period.start.toLocalTime().format(),
+  departedTime: attendance.period.end?.toLocalTime().format() ?? '',
+  occupancyEffect: isUpsert(attendance)
+    ? attendance.hasStaffOccupancyEffect
+    : attendance.occupancyCoefficient > 0
+})
 
 const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
   pinCode: EMPTY_PIN
@@ -420,9 +398,7 @@ const StaffAttendancesEditor = ({
   const otherUnitAttendancesOnDate = useMemo(() => {
     const day = FiniteDateTimeRange.ofDate(date)
     return otherAttendances.filter(
-      (a) =>
-        a.unitName !== null &&
-        day.overlaps(new DateTimeRange(a.arrived, a.departed))
+      (a) => a.unitName !== null && day.overlaps(a.period)
     )
   }, [otherAttendances, date])
 
@@ -432,18 +408,16 @@ const StaffAttendancesEditor = ({
   const nextDayStart = date.addDays(1).startOfDay()
   const overlappingAttendancesOnNextDay = otherAttendances.filter(
     (other) =>
-      !other.arrived.isBefore(nextDayStart) &&
-      rowValues.some((row) => attendancesOverlap(attendanceTimes(row), other))
+      !other.period.start.isBefore(nextDayStart) &&
+      rowValues.some((row) => row.period.overlaps(other.period))
   )
 
   const continuationAttendance = useMemo(
     () =>
       staffMember.attendances.find(
         (a) =>
-          a.arrived.toLocalDate().isEqual(date.subDays(1)) &&
-          FiniteDateTimeRange.ofDate(date).overlaps(
-            new DateTimeRange(a.arrived, a.departed)
-          )
+          a.period.start.toLocalDate().isEqual(date.subDays(1)) &&
+          FiniteDateTimeRange.ofDate(date).overlaps(a.period)
       ),
     [staffMember, date]
   )
@@ -536,9 +510,9 @@ const StaffAttendancesEditor = ({
           <div>
             {staffMember.attendances
               .map(
-                ({ arrived, departed }) =>
-                  `${arrived.toLocalTime().format()}–${
-                    departed !== null ? departed.toLocalTime().format() : ''
+                ({ period }) =>
+                  `${period.start.toLocalTime().format()}–${
+                    period.end !== null ? period.end.toLocalTime().format() : ''
                   }`
               )
               .join(', ')}
@@ -576,13 +550,13 @@ const StaffAttendancesEditor = ({
               <TimesDiv>
                 <FixedSpaceRow $justifyContent="space-between">
                   <DateInfoDiv>
-                    {continuationAttendance.arrived
+                    {continuationAttendance.period.start
                       .toLocalDate()
                       .format('dd.MM.')}
                   </DateInfoDiv>
                   <div />
                   <DateInfoDiv>
-                    {continuationAttendance.departed
+                    {continuationAttendance.period.end
                       ?.toLocalDate()
                       ?.format('dd.MM.')}
                   </DateInfoDiv>
@@ -597,11 +571,12 @@ const StaffAttendancesEditor = ({
                   $justifyContent="space-between"
                 >
                   <TimeDiv>
-                    {continuationAttendance.arrived.toLocalTime().format()}
+                    {continuationAttendance.period.start.toLocalTime().format()}
                   </TimeDiv>
                   <div>–</div>
                   <TimeDiv>
-                    {continuationAttendance.departed?.toLocalTime()?.format()}*
+                    {continuationAttendance.period.end?.toLocalTime()?.format()}
+                    *
                   </TimeDiv>
                 </FixedSpaceRow>
               </TimesDiv>
@@ -620,7 +595,7 @@ const StaffAttendancesEditor = ({
                   routes.staffAttendanceEdit(
                     unitOrGroup,
                     staffMember.employeeId,
-                    continuationAttendance?.arrived.toLocalDate()
+                    continuationAttendance?.period.start.toLocalDate()
                   ).value
                 )
               }
@@ -770,25 +745,25 @@ const StaffAttendanceEditor = ({
   const groupIdDomValue = groupId.state.domValue
   const groupIdInputInfo = groupId.inputInfo()
   const arrivedDateValue = arrivedDate.value()
-  const departed =
+  const attendance =
     arrivedTime.isValid() && departedTime.isValid()
-      ? getDeparted(arrivedDateValue, arrivedTime.value(), departedTime.value())
+      ? new DateTimeRange(
+          HelsinkiDateTime.fromLocal(arrivedDateValue, arrivedTime.value()),
+          getDeparted(
+            arrivedDateValue,
+            arrivedTime.value(),
+            departedTime.value()
+          )
+        )
       : null
   const dateLabelVisible =
-    departed && !departed.toLocalDate().isEqual(arrivedDateValue)
-
-  const arrived =
-    arrivedTime.isValid() && departedTime.isValid()
-      ? HelsinkiDateTime.fromLocal(arrivedDateValue, arrivedTime.value())
-      : null
-  const overlapping = arrived
-    ? otherAttendances.filter((other) =>
-        attendancesOverlap({ arrived, departed }, other)
-      )
+    attendance?.end && !attendance.end.toLocalDate().isEqual(arrivedDateValue)
+  const overlapping = attendance
+    ? otherAttendances.filter((other) => attendance.overlaps(other.period))
     : []
   const arrivalOverlaps =
-    arrived !== null &&
-    overlapping.some((other) => isDuringAttendance(arrived, other))
+    attendance !== null &&
+    overlapping.some((other) => other.period.includes(attendance.start))
   const overlapInfo = {
     text: i18n.attendances.staff.validationErrors.timeFormat,
     status: 'warning' as const
@@ -844,8 +819,10 @@ const StaffAttendanceEditor = ({
           </div>
           <span>–</span>
           <div>
-            {departed && dateLabelVisible && (
-              <DateLabel>{departed.toLocalDate().format('d.M.')}</DateLabel>
+            {attendance?.end && dateLabelVisible && (
+              <DateLabel>
+                {attendance.end.toLocalDate().format('d.M.')}
+              </DateLabel>
             )}
             <TimeInputF
               bind={departedTime}
@@ -894,8 +871,8 @@ const OtherAttendanceList = React.memo(function OtherAttendanceList({
   const { i18n } = useTranslation()
   return (
     <OtherAttendanceUl>
-      {attendances.map(({ unitName, groupId, arrived, departed }, i) => {
-        const currentDate = date ?? arrived.toLocalDate()
+      {attendances.map(({ unitName, groupId, period }, i) => {
+        const currentDate = date ?? period.start.toLocalDate()
         return (
           <li key={i}>
             {unitName ??
@@ -903,13 +880,13 @@ const OtherAttendanceList = React.memo(function OtherAttendanceList({
               i18n.attendances.noGroup}
             :{' '}
             <strong>
-              {arrived.toLocalDate().isBefore(currentDate)
+              {period.start.toLocalDate().isBefore(currentDate)
                 ? LocalTime.MIN.format()
-                : arrived.toLocalTime().format()}{' '}
+                : period.start.toLocalTime().format()}{' '}
               –{' '}
-              {departed
-                ? departed.toLocalDate().isEqual(currentDate)
-                  ? departed.toLocalTime().format()
+              {period.end
+                ? period.end.toLocalDate().isEqual(currentDate)
+                  ? period.end.toLocalTime().format()
                   : '→'
                 : ''}
             </strong>

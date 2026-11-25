@@ -101,8 +101,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(1, attendance.attendances.size)
             assertEquals(0, attendance.plannedAttendances.size)
             attendance.attendances.first().let { attendanceEntry ->
-                assertEquals(now.minusHours(3), attendanceEntry.arrived)
-                assertEquals(now.minusHours(2), attendanceEntry.departed)
+                assertEquals(
+                    DateTimeRange(now.minusHours(3), now.minusHours(2)),
+                    attendanceEntry.period,
+                )
                 assertEquals(StaffAttendanceType.PRESENT, attendanceEntry.type)
                 assertEquals(
                     occupancyCoefficientSeven.stripTrailingZeros(),
@@ -123,8 +125,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(1, attendance.attendances.size)
             assertEquals(0, attendance.plannedAttendances.size)
             attendance.attendances.first().let { attendanceEntry ->
-                assertEquals(now.minusHours(1), attendanceEntry.arrived)
-                assertEquals(null, attendanceEntry.departed)
+                assertEquals(DateTimeRange(now.minusHours(1), null), attendanceEntry.period)
                 assertEquals(StaffAttendanceType.PRESENT, attendanceEntry.type)
                 assertEquals(
                     BigDecimal.ZERO,
@@ -226,8 +227,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                     staff.id,
                     daycare2.id,
                     daycare2.name,
-                    now.minusHours(5),
-                    now.minusHours(3),
+                    DateTimeRange(now.minusHours(5), now.minusHours(3)),
                 ),
             ),
             attendance.otherUnitAttendances,
@@ -342,7 +342,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
 
         assertEquals(
             listOf(HelsinkiDateTime.of(tomorrow, LocalTime.of(0, 0))),
-            getAttendances(daycare.id).staff.single().otherUnitAttendances.map { it.arrived },
+            getAttendances(daycare.id).staff.single().otherUnitAttendances.map { it.period.start },
         )
     }
 
@@ -578,7 +578,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
 
         assertEquals(
             now.minusHours(2),
-            getAttendances(daycare.id).staff.single().attendances.single().departed,
+            getAttendances(daycare.id).staff.single().attendances.single().period.end,
         )
     }
 
@@ -614,8 +614,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(1, attendance.attendances.size)
             assertEquals(0, attendance.plannedAttendances.size)
             attendance.attendances.first().let { attendanceEntry ->
-                assertEquals(now.minusHours(3), attendanceEntry.arrived)
-                assertEquals(now.minusHours(2), attendanceEntry.departed)
+                assertEquals(
+                    DateTimeRange(now.minusHours(3), now.minusHours(2)),
+                    attendanceEntry.period,
+                )
                 assertEquals(StaffAttendanceType.TRAINING, attendanceEntry.type)
             }
         }

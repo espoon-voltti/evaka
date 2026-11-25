@@ -163,8 +163,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(group.id, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(null, it.attendances.first().departed)
+            assertEquals(DateTimeRange(arrivalTime, null), it.attendances.first().period)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.first().type)
             assertEquals(
                 occupancyCoefficientZero,
@@ -230,8 +229,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(departureTime, it.attendances.first().departed)
+            assertEquals(
+                DateTimeRange(arrivalTime, departureTime),
+                it.attendances.first().period,
+            )
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.last().type)
         }
     }
@@ -262,8 +263,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(group.id, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(plannedStart, it.attendances.first().arrived)
-            assertEquals(null, it.attendances.first().departed)
+            assertEquals(DateTimeRange(plannedStart, null), it.attendances.first().period)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.last().type)
         }
     }
@@ -295,8 +295,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(plannedStart, it.attendances.first().arrived)
-            assertEquals(plannedEnd, it.attendances.first().departed)
+            assertEquals(DateTimeRange(plannedStart, plannedEnd), it.attendances.first().period)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.last().type)
         }
     }
@@ -328,8 +327,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(group.id, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(null, it.attendances.first().departed)
+            assertEquals(DateTimeRange(arrivalTime, null), it.attendances.first().period)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.last().type)
         }
     }
@@ -370,8 +368,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(departureTime, it.attendances.first().departed)
+            assertEquals(
+                DateTimeRange(arrivalTime, departureTime),
+                it.attendances.first().period,
+            )
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.last().type)
         }
     }
@@ -461,8 +461,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(group.id, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(null, it.attendances.first().departed)
+            assertEquals(DateTimeRange(arrivalTime, null), it.attendances.first().period)
             assertEquals(type, it.attendances.first().type)
         }
     }
@@ -561,8 +560,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(group.id, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(null, it.attendances.first().departed)
+            assertEquals(DateTimeRange(arrivalTime, null), it.attendances.first().period)
             assertEquals(StaffAttendanceType.JUSTIFIED_CHANGE, it.attendances.first().type)
         }
     }
@@ -597,11 +595,12 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(group.id, it.present)
             assertEquals(2, it.attendances.size)
-            assertEquals(plannedStart, it.attendances.first().arrived)
-            assertEquals(arrivalTime, it.attendances.first().departed)
+            assertEquals(
+                DateTimeRange(plannedStart, arrivalTime),
+                it.attendances.first().period,
+            )
             assertEquals(type, it.attendances.first().type)
-            assertEquals(arrivalTime, it.attendances.last().arrived)
-            assertEquals(null, it.attendances.last().departed)
+            assertEquals(DateTimeRange(arrivalTime, null), it.attendances.last().period)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.last().type)
         }
     }
@@ -711,8 +710,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(departureTime, it.attendances.first().departed)
+            assertEquals(
+                DateTimeRange(arrivalTime, departureTime),
+                it.attendances.first().period,
+            )
             assertEquals(StaffAttendanceType.JUSTIFIED_CHANGE, it.attendances.first().type)
         }
     }
@@ -745,8 +746,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(group.id, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(null, it.attendances.first().departed)
+            assertEquals(DateTimeRange(arrivalTime, null), it.attendances.first().period)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.first().type)
         }
     }
@@ -790,11 +790,12 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(2, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(departureTime, it.attendances.first().departed)
+            assertEquals(
+                DateTimeRange(arrivalTime, departureTime),
+                it.attendances.first().period,
+            )
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.first().type)
-            assertEquals(departureTime, it.attendances.last().arrived)
-            assertEquals(null, it.attendances.last().departed)
+            assertEquals(DateTimeRange(departureTime, null), it.attendances.last().period)
             assertEquals(type, it.attendances.last().type)
         }
     }
@@ -910,8 +911,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
-            assertEquals(arrivalTime, it.attendances.first().arrived)
-            assertEquals(departureTime, it.attendances.first().departed)
+            assertEquals(
+                DateTimeRange(arrivalTime, departureTime),
+                it.attendances.first().period,
+            )
             assertEquals(type, it.attendances.first().type)
         }
     }
@@ -1053,23 +1056,35 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(6, it.attendances.size)
-            assertEquals(firstArrivalTime, it.attendances[0].arrived)
-            assertEquals(firstDepartureTime, it.attendances[0].departed)
+            assertEquals(
+                DateTimeRange(firstArrivalTime, firstDepartureTime),
+                it.attendances[0].period,
+            )
             assertEquals(StaffAttendanceType.OVERTIME, it.attendances[0].type)
-            assertEquals(firstDepartureTime, it.attendances[1].arrived)
-            assertEquals(secondArrivalTime, it.attendances[1].departed)
+            assertEquals(
+                DateTimeRange(firstDepartureTime, secondArrivalTime),
+                it.attendances[1].period,
+            )
             assertEquals(StaffAttendanceType.OTHER_WORK, it.attendances[1].type)
-            assertEquals(secondArrivalTime, it.attendances[2].arrived)
-            assertEquals(secondDepartureTime, it.attendances[2].departed)
+            assertEquals(
+                DateTimeRange(secondArrivalTime, secondDepartureTime),
+                it.attendances[2].period,
+            )
             assertEquals(StaffAttendanceType.PRESENT, it.attendances[2].type)
-            assertEquals(secondDepartureTime, it.attendances[3].arrived)
-            assertEquals(thirdArrivalTime, it.attendances[3].departed)
+            assertEquals(
+                DateTimeRange(secondDepartureTime, thirdArrivalTime),
+                it.attendances[3].period,
+            )
             assertEquals(StaffAttendanceType.TRAINING, it.attendances[3].type)
-            assertEquals(thirdArrivalTime, it.attendances[4].arrived)
-            assertEquals(thirdDepartureTime, it.attendances[4].departed)
+            assertEquals(
+                DateTimeRange(thirdArrivalTime, thirdDepartureTime),
+                it.attendances[4].period,
+            )
             assertEquals(StaffAttendanceType.PRESENT, it.attendances[4].type)
-            assertEquals(fourthArrivalTime, it.attendances[5].arrived)
-            assertEquals(fourthDepartureTime, it.attendances[5].departed)
+            assertEquals(
+                DateTimeRange(fourthArrivalTime, fourthDepartureTime),
+                it.attendances[5].period,
+            )
             assertEquals(StaffAttendanceType.PRESENT, it.attendances[5].type)
         }
     }
@@ -1132,8 +1147,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         attendances.staff.first().let {
             assertEquals(null, it.present)
             assertEquals(2, it.attendances.size)
-            assertEquals(otherWorkStart, it.attendances.last().arrived)
-            assertEquals(null, it.attendances.last().departed)
+            assertEquals(DateTimeRange(otherWorkStart, null), it.attendances.last().period)
             assertEquals(StaffAttendanceType.OTHER_WORK, it.attendances.last().type)
         }
     }
@@ -1190,8 +1204,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 occupancyCoefficientSeven.stripTrailingZeros(),
                 it.occupancyCoefficient.stripTrailingZeros(),
             )
-            assertEquals(now, it.arrived)
-            assertEquals(null, it.departed)
+            assertEquals(DateTimeRange(now, null), it.period)
             assertEquals(StaffAttendanceType.PRESENT, it.type)
             assertEquals(group.id, it.groupId)
         }
@@ -1233,8 +1246,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         assertThat(attendances2.staff.first().attendances).hasSize(1)
         attendances2.staff.first().attendances.first().also {
             assertEquals(occupancyCoefficientZero, it.occupancyCoefficient.stripTrailingZeros())
-            assertEquals(now.minusHours(1), it.arrived)
-            assertEquals(now, it.departed)
+            assertEquals(DateTimeRange(now.minusHours(1), now), it.period)
             assertEquals(StaffAttendanceType.JUSTIFIED_CHANGE, it.type)
             assertEquals(group.id, it.groupId)
         }
@@ -1811,8 +1823,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId,
                     daycare2.id,
                     daycare2.name,
-                    now.minusHours(5),
-                    now.minusHours(3),
+                    DateTimeRange(now.minusHours(5), now.minusHours(3)),
                 ),
             ),
             response.otherUnitAttendances,

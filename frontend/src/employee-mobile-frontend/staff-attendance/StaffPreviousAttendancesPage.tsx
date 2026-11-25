@@ -75,7 +75,7 @@ export default React.memo(function StaffPreviousAttendancesPage({
                   key={`attendances-${date.formatIso()}`}
                   date={date}
                   attendances={staffMemberWithOperationalDays.staffMember.attendances.filter(
-                    (a) => a.arrived.toLocalDate().isEqual(date)
+                    (a) => a.period.start.toLocalDate().isEqual(date)
                   )}
                   groups={unitInfo.groups}
                   onEdit={() =>
@@ -122,8 +122,8 @@ const DateAttendances = React.memo(function DateAttendances({
               : i18n.attendances.staffTypes[a.type]}
           </div>
           <div data-qa="times">
-            {a.arrived.toLocalTime().format()} -{' '}
-            {a.departed?.toLocalTime()?.format()}
+            {a.period.start.toLocalTime().format()} -{' '}
+            {a.period.end?.toLocalTime()?.format()}
           </div>
         </FixedSpaceRow>
       ))}

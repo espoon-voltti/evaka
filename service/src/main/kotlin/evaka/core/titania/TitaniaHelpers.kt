@@ -10,12 +10,12 @@ import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalTime
 
-fun splitOvernight(attendance: RawAttendance): Iterable<RawAttendance> {
-    if (attendance.departed == null) {
+fun splitOvernight(attendance: RawAttendance): List<RawAttendance> {
+    if (attendance.period.end == null) {
         return listOf(attendance)
     }
-    val arrivedDate = attendance.arrived.toLocalDate()
-    val departedDate = attendance.departed.toLocalDate()
+    val arrivedDate = attendance.period.start.toLocalDate()
+    val departedDate = attendance.period.end.toLocalDate()
     if (arrivedDate == departedDate) {
         return listOf(attendance)
     }
@@ -23,12 +23,15 @@ fun splitOvernight(attendance: RawAttendance): Iterable<RawAttendance> {
         .dates()
         .map { date ->
             attendance.copy(
-                arrived =
-                    if (date == arrivedDate) attendance.arrived
-                    else HelsinkiDateTime.of(date, LocalTime.MIN),
-                departed =
-                    if (date == departedDate) attendance.departed
-                    else HelsinkiDateTime.of(date, LocalTime.MAX),
+                period =
+                    attendance.period.copy(
+                        start =
+                            if (date == arrivedDate) attendance.period.start
+                            else HelsinkiDateTime.of(date, LocalTime.MIN),
+                        end =
+                            if (date == departedDate) attendance.period.end
+                            else HelsinkiDateTime.of(date, LocalTime.MAX),
+                    ),
             )
         }
         .toList()

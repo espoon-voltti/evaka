@@ -164,16 +164,16 @@ export default React.memo(function StaffMemberPage({
                     </TimeInfo>
                   )}
                   {staffMember.attendances.length > 0 &&
-                    sortBy(staffMember.attendances, (a) => a.arrived).map(
-                      ({ arrived, departed, type }, index, attendances) => (
+                    sortBy(staffMember.attendances, (a) => a.period.start).map(
+                      ({ period, type }, index, attendances) => (
                         <TimeInfo
-                          key={arrived.formatIso()}
+                          key={period.start.formatIso()}
                           data-qa="attendance-time"
                         >
                           <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
                           <span>
-                            {arrived.toLocalTime().format()}–
-                            {departed?.toLocalTime().format() ?? ''}
+                            {period.start.toLocalTime().format()}–
+                            {period.end?.toLocalTime().format() ?? ''}
                             {index === attendances.length - 1 && (
                               <InlineIconButton
                                 icon={faEdit}
@@ -200,17 +200,17 @@ export default React.memo(function StaffMemberPage({
                     <TimeInfo>
                       <Label>{i18n.attendances.arrivalTime}</Label>{' '}
                       <span data-qa="arrival-time">
-                        {staffMember.latestCurrentDayAttendance.arrived
+                        {staffMember.latestCurrentDayAttendance.period.start
                           .toLocalTime()
                           .format()}
                       </span>
                     </TimeInfo>
                     <TimeInfo>
-                      {staffMember.latestCurrentDayAttendance.departed && (
+                      {staffMember.latestCurrentDayAttendance.period.end && (
                         <>
                           <Label>{i18n.attendances.departureTime}</Label>{' '}
                           <span data-qa="departure-time">
-                            {staffMember.latestCurrentDayAttendance.departed
+                            {staffMember.latestCurrentDayAttendance.period.end
                               ?.toLocalTime()
                               .format()}
                           </span>

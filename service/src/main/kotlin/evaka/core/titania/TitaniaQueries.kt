@@ -32,8 +32,7 @@ fun Database.Read.findStaffAttendancesBy(
 SELECT
     sa.id,
     sa.employee_id,
-    sa.arrived,
-    sa.departed,
+    tstzrange(sa.arrived, sa.departed) AS period,
     sa.group_id,
     sa.occupancy_coefficient,
     sa.type,

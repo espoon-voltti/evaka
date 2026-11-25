@@ -54,12 +54,10 @@ export interface ArrivalsRequest {
 * Generated from evaka.core.attendance.Attendance
 */
 export interface Attendance {
-  arrived: HelsinkiDateTime
   arrivedAddedAt: HelsinkiDateTime | null
   arrivedAddedBy: EvakaUser | null
   arrivedModifiedAt: HelsinkiDateTime | null
   arrivedModifiedBy: EvakaUser | null
-  departed: HelsinkiDateTime | null
   departedAddedAt: HelsinkiDateTime | null
   departedAddedBy: EvakaUser | null
   departedAutomatically: boolean
@@ -68,6 +66,7 @@ export interface Attendance {
   groupId: GroupId | null
   id: StaffAttendanceRealtimeId
   occupancyCoefficient: number
+  period: DateTimeRange
   type: StaffAttendanceType | null
 }
 
@@ -203,13 +202,12 @@ export interface ExpectedAbsencesOnDeparturesResponse {
 * Generated from evaka.core.attendance.ExternalAttendance
 */
 export interface ExternalAttendance {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   departedAutomatically: boolean
   groupId: GroupId
   id: StaffAttendanceExternalId
   name: string
   occupancyCoefficient: number
+  period: DateTimeRange
   type: StaffAttendanceType
 }
 
@@ -311,9 +309,8 @@ export interface OpenGroupAttendanceResponse {
 * Generated from evaka.core.attendance.OtherUnitStaffAttendance
 */
 export interface OtherUnitStaffAttendance {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   employeeId: EmployeeId
+  period: DateTimeRange
   unitId: DaycareId
   unitName: string
 }
@@ -446,13 +443,12 @@ export interface StaffMember {
 * Generated from evaka.core.attendance.StaffMemberAttendance
 */
 export interface StaffMemberAttendance {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   departedAutomatically: boolean
   employeeId: EmployeeId
   groupId: GroupId | null
   id: StaffAttendanceRealtimeId
   occupancyCoefficient: number
+  period: DateTimeRange
   type: StaffAttendanceType
 }
 
@@ -511,12 +507,11 @@ export function deserializeJsonArrivalsRequest(json: JsonOf<ArrivalsRequest>): A
 export function deserializeJsonAttendance(json: JsonOf<Attendance>): Attendance {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
     arrivedAddedAt: (json.arrivedAddedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedAddedAt) : null,
     arrivedModifiedAt: (json.arrivedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedModifiedAt) : null,
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null,
     departedAddedAt: (json.departedAddedAt != null) ? HelsinkiDateTime.parseIso(json.departedAddedAt) : null,
-    departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null
+    departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null,
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -591,8 +586,7 @@ export function deserializeJsonExpectedAbsencesOnDeparturesRequest(json: JsonOf<
 export function deserializeJsonExternalAttendance(json: JsonOf<ExternalAttendance>): ExternalAttendance {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -666,8 +660,7 @@ export function deserializeJsonOpenGroupAttendanceResponse(json: JsonOf<OpenGrou
 export function deserializeJsonOtherUnitStaffAttendance(json: JsonOf<OtherUnitStaffAttendance>): OtherUnitStaffAttendance {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -745,8 +738,7 @@ export function deserializeJsonStaffMember(json: JsonOf<StaffMember>): StaffMemb
 export function deserializeJsonStaffMemberAttendance(json: JsonOf<StaffMemberAttendance>): StaffMemberAttendance {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 

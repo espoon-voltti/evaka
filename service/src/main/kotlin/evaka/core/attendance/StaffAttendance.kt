@@ -12,6 +12,7 @@ import evaka.core.shared.StaffAttendanceExternalId
 import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.data.DateTimeSet
 import evaka.core.shared.db.DatabaseEnum
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.user.EvakaUser
@@ -77,7 +78,7 @@ data class StaffMember(
     val present: GroupId?
         get() =
             latestCurrentDayAttendance
-                ?.takeIf { it.departed == null && it.type.presentInGroup() }
+                ?.takeIf { it.period.end == null && it.type.presentInGroup() }
                 ?.groupId
 
     val spanningPlans: List<FiniteDateTimeRange>
@@ -99,8 +100,7 @@ data class StaffMemberAttendance(
     @PropagateNull val id: StaffAttendanceRealtimeId,
     val employeeId: EmployeeId,
     val groupId: GroupId?,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?,
+    val period: DateTimeRange,
     val type: StaffAttendanceType,
     val departedAutomatically: Boolean,
     val occupancyCoefficient: BigDecimal,
@@ -110,8 +110,7 @@ data class ExternalAttendance(
     val id: StaffAttendanceExternalId,
     val name: String,
     val groupId: GroupId,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?,
+    val period: DateTimeRange,
     val occupancyCoefficient: BigDecimal,
     val departedAutomatically: Boolean,
 ) {
@@ -121,8 +120,7 @@ data class ExternalAttendance(
 data class Attendance(
     val id: StaffAttendanceRealtimeId,
     val groupId: GroupId?,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?,
+    val period: DateTimeRange,
     val occupancyCoefficient: BigDecimal,
     val type: StaffAttendanceType?,
     val departedAutomatically: Boolean,
@@ -152,8 +150,7 @@ data class OtherUnitStaffAttendance(
     val employeeId: EmployeeId,
     val unitId: DaycareId,
     val unitName: String,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?,
+    val period: DateTimeRange,
 )
 
 data class StaffAttendanceResponse(

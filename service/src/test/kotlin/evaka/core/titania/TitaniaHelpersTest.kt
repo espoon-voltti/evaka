@@ -9,6 +9,7 @@ import evaka.core.attendance.StaffAttendanceType
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.GroupId
 import evaka.core.shared.StaffAttendanceRealtimeId
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -21,7 +22,7 @@ class TitaniaHelpersTest {
 
     @Test
     fun `splitOvernight should return attendance is as when departed is null`() {
-        val attendance = testAttendance.copy(departed = null)
+        val attendance = testAttendance.copy(period = DateTimeRange(testArrived, null))
 
         Assertions.assertThat(splitOvernight(attendance)).containsExactly(attendance)
     }
@@ -30,7 +31,11 @@ class TitaniaHelpersTest {
     fun `splitOvernight should return attendance as is when departed is same date as arrived`() {
         val attendance =
             testAttendance.copy(
-                departed = HelsinkiDateTime.of(LocalDate.of(2022, 6, 6), LocalTime.of(16, 27)),
+                period =
+                    DateTimeRange(
+                        testArrived,
+                        HelsinkiDateTime.of(LocalDate.of(2022, 6, 6), LocalTime.of(16, 27)),
+                    ),
             )
 
         Assertions.assertThat(splitOvernight(attendance)).containsExactly(attendance)
@@ -38,29 +43,33 @@ class TitaniaHelpersTest {
 
     @Test
     fun `splitOvernight should return multiple attendances when departed is different date as arrived`() {
-        val attendance =
-            testAttendance.copy(
-                departed = HelsinkiDateTime.of(LocalDate.of(2022, 6, 8), LocalTime.of(10, 15)),
-            )
+        val departed = HelsinkiDateTime.of(LocalDate.of(2022, 6, 8), LocalTime.of(10, 15))
+        val attendance = testAttendance.copy(period = DateTimeRange(testArrived, departed))
 
         Assertions.assertThat(splitOvernight(attendance))
             .containsExactly(
-                attendance.copy(departed = attendance.arrived.atEndOfDay()),
+                attendance.copy(period = DateTimeRange(testArrived, testArrived.atEndOfDay())),
                 attendance.copy(
-                    arrived = attendance.arrived.plusDays(1).atStartOfDay(),
-                    departed = attendance.arrived.plusDays(1).atEndOfDay(),
+                    period =
+                        DateTimeRange(
+                            testArrived.plusDays(1).atStartOfDay(),
+                            testArrived.plusDays(1).atEndOfDay(),
+                        ),
                 ),
-                attendance.copy(arrived = attendance.arrived.plusDays(2).atStartOfDay()),
+                attendance.copy(
+                    period = DateTimeRange(testArrived.plusDays(2).atStartOfDay(), departed),
+                ),
             )
     }
 }
+
+private val testArrived = HelsinkiDateTime.of(LocalDate.of(2022, 6, 6), LocalTime.of(7, 31))
 
 private val testAttendance =
     RawAttendance(
         id = StaffAttendanceRealtimeId(UUID.randomUUID()),
         groupId = GroupId(UUID.randomUUID()),
-        arrived = HelsinkiDateTime.of(LocalDate.of(2022, 6, 6), LocalTime.of(7, 31)),
-        departed = null,
+        period = DateTimeRange(testArrived, null),
         occupancyCoefficient = BigDecimal("1.21"),
         currentOccupancyCoefficient = null,
         type = StaffAttendanceType.PRESENT,

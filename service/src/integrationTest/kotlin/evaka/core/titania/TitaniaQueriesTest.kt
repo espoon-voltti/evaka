@@ -209,7 +209,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(LocalDate.of(2023, 11, 1), LocalDate.of(2023, 11, 7)),
                 )
             assertThat(attendances)
-                .extracting<Int> { it.arrived.dayOfMonth }
+                .extracting<Int> { it.period.start.dayOfMonth }
                 .containsExactlyInAnyOrder(1, 6)
         }
     }
@@ -220,7 +220,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val employeeIds = tx.insertRealtimeStaffAttendanceTestData()
             val attendances = tx.findStaffAttendancesBy(listOf(employeeIds[0]), null)
             assertThat(attendances)
-                .extracting<Int> { it.arrived.dayOfMonth }
+                .extracting<Int> { it.period.start.dayOfMonth }
                 .containsExactlyInAnyOrder(1, 10)
         }
     }
@@ -234,7 +234,9 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(employeeIds[0]),
                     FiniteDateRange(LocalDate.of(2023, 11, 1), LocalDate.of(2023, 11, 7)),
                 )
-            assertThat(attendances).extracting<Int> { it.arrived.dayOfMonth }.containsExactly(1)
+            assertThat(attendances)
+                .extracting<Int> { it.period.start.dayOfMonth }
+                .containsExactly(1)
         }
     }
 

@@ -211,7 +211,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 attendance.id,
                                 attendance.employeeId,
                                 attendance.groupId,
-                                DateTimeRange(attendance.arrived, attendance.departed),
+                                attendance.period,
                                 occupancyCoefficient,
                                 attendance.type,
                                 false,
@@ -283,7 +283,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             attendance.id,
                             attendance.employeeId,
                             attendance.groupId,
-                            DateTimeRange(attendance.arrived, attendance.departed),
+                            attendance.period,
                             occupancyCoefficient,
                             attendance.type,
                             false,
@@ -545,8 +545,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 id = null,
                 employeeId = arrival.employeeId,
                 groupId = if (type.presentInGroup()) arrival.groupId else null,
-                arrived = arrived,
-                departed = departed,
+                period = DateTimeRange(arrived, departed),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = type,
             )
@@ -593,13 +592,17 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}",
                         )
                     }
-                    if (ongoingAttendance != null && arrivalTime <= ongoingAttendance.arrived) {
+                    if (
+                        ongoingAttendance != null && arrivalTime <= ongoingAttendance.period.start
+                    ) {
                         throw BadRequest(
                             "Arrival time must be after the start of the ongoing attendance",
                         )
                     }
                     listOfNotNull(
-                        ongoingAttendance?.copy(departed = arrivalTime)
+                        ongoingAttendance?.copy(
+                            period = ongoingAttendance.period.copy(end = arrivalTime),
+                        )
                             ?: if (arrival.type == null || latestDepartureToday != null) null
                             else createNewAttendance(planStart, arrivalTime, arrival.type),
                         createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT),
@@ -633,9 +636,14 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             now.withTime(departure.time).takeIf { it <= now }
                 ?: throw BadRequest("Departure time cannot be in the future")
 
-        if (departureTime <= ongoingAttendance.arrived) {
+        if (departureTime <= ongoingAttendance.period.start) {
             throw BadRequest("Departure time must be after arrival time")
         }
+
+        val endedAttendance =
+            ongoingAttendance.copy(
+                period = ongoingAttendance.period.copy(end = departureTime),
+            )
 
         fun createNewAttendance(
             arrived: HelsinkiDateTime,
@@ -646,14 +654,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 id = null,
                 employeeId = departure.employeeId,
                 groupId = null,
-                arrived = arrived,
-                departed = departed,
+                period = DateTimeRange(arrived, departed),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = type,
             )
 
         if (plans.isEmpty()) {
-            return listOf(ongoingAttendance.copy(departed = departureTime))
+            return listOf(endedAttendance)
         }
 
         if (!ongoingAttendance.type.presentInGroup()) {
@@ -664,13 +671,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
         // If no reason is given, just end whatever is going on
         if (departure.type == null) {
-            return listOf(ongoingAttendance.copy(departed = departureTime))
+            return listOf(endedAttendance)
         }
 
         if (departure.type == StaffAttendanceType.JUSTIFIED_CHANGE) {
             return listOf(
-                ongoingAttendance.copy(
-                    departed = departureTime,
+                endedAttendance.copy(
                     type =
                         if (ongoingAttendance.type == StaffAttendanceType.PRESENT) {
                             StaffAttendanceType.JUSTIFIED_CHANGE
@@ -689,7 +695,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 StaffAttendanceType.SICKNESS,
                 StaffAttendanceType.CHILD_SICKNESS -> {
                     listOf(
-                        ongoingAttendance.copy(departed = departureTime),
+                        endedAttendance,
                         createNewAttendance(departureTime, null, departure.type),
                     )
                 }
@@ -705,7 +711,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         if (departureTime > planEnd.plusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (departure.type) {
                 StaffAttendanceType.OVERTIME -> {
-                    listOf(ongoingAttendance.copy(departed = departureTime, type = departure.type))
+                    listOf(endedAttendance.copy(type = departure.type))
                 }
 
                 else -> {
@@ -716,7 +722,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
         }
 
-        return listOf(ongoingAttendance.copy(departed = departureTime))
+        return listOf(endedAttendance)
     }
 
     @GetMapping("open-attendance")
