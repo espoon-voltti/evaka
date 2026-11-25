@@ -332,21 +332,13 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
         i === 0
           ? continuationAttendance?.period.end
           : requestBody[i - 1]?.period.end
-      const arrived = requestBody[i].period.start
-      if (!previousDeparted || !arrived) return undefined
-
-      if (arrived.isAfter(previousDeparted.addHours(8))) {
-        // gap is so large that it must be a new work day already
-        return undefined
-      }
-
-      if (arrived.isAfter(previousDeparted))
-        return {
-          gapStart: previousDeparted,
-          gapEnd: arrived
-        }
-
-      return undefined
+      if (!previousDeparted) return undefined
+      const gap = FiniteDateTimeRange.tryCreate(
+        previousDeparted,
+        requestBody[i].period.start
+      )
+      // gap is so large that it must be a new work day already
+      return gap && gap.durationInMinutes() <= 8 * 60 ? gap : undefined
     },
     [requestBody, continuationAttendance]
   )
@@ -633,7 +625,7 @@ function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
                         />
                         <div data-qa={`attendance-gap-warning-${index}`}>
                           {i18n.unit.staffAttendance.gapWarning(
-                            `${gap.gapStart.toLocalTime().format()} – ${gap.gapEnd.toLocalTime().format()}`
+                            `${gap.start.toLocalTime().format()} – ${gap.end.toLocalTime().format()}`
                           )}
                         </div>
                       </FixedSpaceRow>
