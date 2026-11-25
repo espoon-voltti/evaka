@@ -6,6 +6,7 @@ import DateTimeRange from './date-time-range'
 import HelsinkiDateTime from './helsinki-date-time'
 import type { JsonOf } from './json'
 import type LocalDate from './local-date'
+import type LocalTime from './local-time'
 import { maxOf, minOf } from './ordered'
 
 /** A datetime range with an inclusive start and an exclusive end */
@@ -65,6 +66,10 @@ export default class FiniteDateTimeRange {
       maxOf(this.start, other.start),
       other.end === null ? this.end : minOf(this.end, other.end)
     )
+  }
+
+  timesOn(date: LocalDate): { start: LocalTime | null; end: LocalTime | null } {
+    return this.asDateTimeRange().timesOn(date)
   }
 
   durationInMinutes(): number {

@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest'
 import DateTimeRange from './date-time-range'
 import FiniteDateTimeRange from './finite-date-time-range'
 import HelsinkiDateTime from './helsinki-date-time'
+import LocalDate from './local-date'
+import LocalTime from './local-time'
 
 const start = HelsinkiDateTime.of(2020, 5, 7, 13, 59)
 const end = HelsinkiDateTime.of(2020, 5, 8, 8, 0)
@@ -148,5 +150,43 @@ describe('DateTimeRange', () => {
     expect(c.contains(a)).toBe(false)
     expect(a.contains(d)).toBe(true)
     expect(d.contains(a)).toBe(false)
+  })
+
+  it('timesOn gives the times of the endpoints that are on the date', () => {
+    const monday = LocalDate.of(2019, 1, 7)
+    const nightShift = new DateTimeRange(
+      monday.toHelsinkiDateTime(LocalTime.of(22, 0)),
+      monday.addDays(1).toHelsinkiDateTime(LocalTime.of(6, 0))
+    )
+    expect(nightShift.timesOn(monday)).toStrictEqual({
+      start: LocalTime.of(22, 0),
+      end: null
+    })
+    expect(nightShift.timesOn(monday.addDays(1))).toStrictEqual({
+      start: null,
+      end: LocalTime.of(6, 0)
+    })
+    expect(
+      new DateTimeRange(
+        monday.toHelsinkiDateTime(LocalTime.of(8, 0)),
+        null
+      ).timesOn(monday)
+    ).toStrictEqual({ start: LocalTime.of(8, 0), end: null })
+  })
+
+  it('timesOn counts an end at the start of the next date as on the date', () => {
+    const monday = LocalDate.of(2019, 1, 7)
+    const untilMidnight = new DateTimeRange(
+      monday.toHelsinkiDateTime(LocalTime.of(16, 0)),
+      monday.addDays(1).startOfDay()
+    )
+    expect(untilMidnight.timesOn(monday)).toStrictEqual({
+      start: LocalTime.of(16, 0),
+      end: LocalTime.of(0, 0)
+    })
+    expect(untilMidnight.timesOn(monday.addDays(1))).toStrictEqual({
+      start: null,
+      end: null
+    })
   })
 })

@@ -874,23 +874,13 @@ function formatRange(options: {
   range: DateTimeRange | FiniteDateTimeRange
   renderEnd?: (value: string) => React.ReactNode
 }): React.ReactNode {
-  const day = FiniteDateTimeRange.ofDate(options.date)
-  const range = options.range
+  const times = options.range.timesOn(options.date)
   const renderEnd = options?.renderEnd ?? ((value) => value)
-
-  const start = day.includes(range.start)
-    ? range.start.toLocalTime().format()
-    : '→'
-  const end =
-    range.end == null
-      ? ''
-      : renderEnd(
-          range.end.isAfter(day.end) ? '→' : range.end.toLocalTime().format()
-        )
 
   return (
     <>
-      {start} – {end}
+      {times.start?.format() ?? '→'} –{' '}
+      {options.range.end === null ? '' : renderEnd(times.end?.format() ?? '→')}
     </>
   )
 }

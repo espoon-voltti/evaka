@@ -354,12 +354,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                   plans: s.plannedAttendances
                     .filter((p) => day.overlaps(p.period))
                     .map((p) => ({
-                      start: p.period.start.toLocalDate().isEqual(date)
-                        ? p.period.start.toLocalTime()
-                        : null,
-                      end: p.period.end.isAfter(day.end)
-                        ? null
-                        : p.period.end.toLocalTime(),
+                      ...p.period.timesOn(date),
                       type: p.type,
                       description: p.description
                     })),

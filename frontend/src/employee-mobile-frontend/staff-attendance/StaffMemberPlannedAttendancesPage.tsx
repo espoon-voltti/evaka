@@ -74,16 +74,15 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
             const attendances =
               staffMemberWithOperationalDays.staffMember.plannedAttendances
                 .filter((a) => day.overlaps(a.period))
-                .map((a) => ({
-                  start: a.period.start.toLocalDate().isEqual(date)
-                    ? a.period.start.toLocalTime().format()
-                    : '→',
-                  end: a.period.end.isAfter(day.end)
-                    ? '→'
-                    : a.period.end.toLocalTime().format(),
-                  type: i18n.attendances.staffTypes[a.type],
-                  description: a.description
-                }))
+                .map((a) => {
+                  const times = a.period.timesOn(date)
+                  return {
+                    start: times.start?.format() ?? '→',
+                    end: times.end?.format() ?? '→',
+                    type: i18n.attendances.staffTypes[a.type],
+                    description: a.description
+                  }
+                })
             return (
               <DayPlan
                 key={date.formatIso()}

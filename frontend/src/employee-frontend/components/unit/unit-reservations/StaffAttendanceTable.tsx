@@ -729,21 +729,28 @@ const AttendanceRow = React.memo(function AttendanceRow({
               <DayCell data-qa={`attendance-${date.formatIso()}-${rowIndex}`}>
                 <PlannedAttendanceTimes data-qa="planned-attendance-day">
                   {plannedAttendancesForToday.length > 0 ? (
-                    plannedAttendancesForToday.map((plannedAttendance, i) => (
-                      <AttendanceCell key={i}>
-                        <AttendanceTime data-qa="planned-attendance-start">
-                          {renderTime(plannedAttendance.period.start, date)}
-                        </AttendanceTime>
-                        <AttendanceTime data-qa="planned-attendance-end">
-                          {renderTime(plannedAttendance.period.end, date)}
-                        </AttendanceTime>
-                        <DetailsCell />
-                      </AttendanceCell>
-                    ))
+                    plannedAttendancesForToday.map((plannedAttendance, i) => {
+                      const times = plannedAttendance.period.timesOn(date)
+                      return (
+                        <AttendanceCell key={i}>
+                          <AttendanceTime data-qa="planned-attendance-start">
+                            {renderTime(times.start)}
+                          </AttendanceTime>
+                          <AttendanceTime data-qa="planned-attendance-end">
+                            {renderTime(times.end)}
+                          </AttendanceTime>
+                          <DetailsCell />
+                        </AttendanceCell>
+                      )
+                    })
                   ) : (
                     <AttendanceCell>
-                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
-                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
+                      <AttendanceTime>
+                        <NoTime>–</NoTime>
+                      </AttendanceTime>
+                      <AttendanceTime>
+                        <NoTime>–</NoTime>
+                      </AttendanceTime>
                       <DetailsCell />
                     </AttendanceCell>
                   )}
@@ -752,6 +759,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                   {attendancesForToday.length > 0 ? (
                     attendancesForToday.map((attendance, i) => {
                       const isLast = i === attendancesForToday.length - 1
+                      const times = attendance.period.timesOn(date)
                       return (
                         <AttendanceCell
                           key={i}
@@ -767,7 +775,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                               })}
                               data-qa="arrival-time-tooltip"
                             >
-                              {renderTime(attendance.period.start, date)}
+                              {renderTime(times.start)}
                             </Tooltip>
                           </AttendanceTime>
                           <AttendanceTime data-qa="departure-time">
@@ -775,10 +783,13 @@ const AttendanceRow = React.memo(function AttendanceRow({
                               tooltip={departureTooltipText(attendance)}
                               data-qa="departure-time-tooltip"
                             >
-                              {renderTime(
-                                attendance.period.end,
-                                date,
-                                attendance.departedAutomatically
+                              {attendance.period.end === null ? (
+                                <NoTime>–</NoTime>
+                              ) : (
+                                renderTime(
+                                  times.end,
+                                  attendance.departedAutomatically
+                                )
                               )}
                             </Tooltip>
                           </AttendanceTime>
@@ -799,8 +810,12 @@ const AttendanceRow = React.memo(function AttendanceRow({
                     })
                   ) : (
                     <AttendanceCell>
-                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
-                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
+                      <AttendanceTime>
+                        <NoTime>–</NoTime>
+                      </AttendanceTime>
+                      <AttendanceTime>
+                        <NoTime>–</NoTime>
+                      </AttendanceTime>
                       <DetailsToggle
                         onOpen={() => openDetails(date)}
                         hovered={isHovered(date)}
@@ -892,15 +907,13 @@ function getAttendancesForGroupAndDate(
     )
 }
 
+/** A null time means that the endpoint is on another date */
 function renderTime(
-  timestamp: HelsinkiDateTime | null,
-  today: LocalDate,
+  time: LocalTime | null,
   automaticDeparture = false
 ): JSX.Element | string {
-  if (timestamp === null) return <NoTime>–</NoTime>
-  const day = FiniteDateTimeRange.ofDate(today)
-  if (!day.includes(timestamp) && !timestamp.isEqual(day.end)) return '→'
-  const formatted = timestamp.toLocalTime().format()
+  if (time === null) return '→'
+  const formatted = time.format()
   return automaticDeparture ? <Warning>{formatted}</Warning> : formatted
 }
 
