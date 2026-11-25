@@ -210,6 +210,7 @@ export interface ChildDocumentDetails {
   archivedAt: HelsinkiDateTime | null
   child: ChildBasics
   content: DocumentContent
+  contentVersion: number
   decision: ChildDocumentDecision | null
   decisionMaker: EmployeeId | null
   id: ChildDocumentId
@@ -315,6 +316,14 @@ export const documentDeletionBases = [
 ] as const
 
 export type DocumentDeletionBasis = typeof documentDeletionBases[number]
+
+/**
+* Generated from evaka.core.document.childdocument.ChildDocumentController.DocumentEditStatus
+*/
+export interface DocumentEditStatus {
+  activeLockByOther: DocumentWriteLock | null
+  contentVersion: number
+}
 
 /**
 * Generated from evaka.core.document.childdocument.ChildDocumentController.DocumentLockResponse
@@ -588,6 +597,21 @@ export interface StatusChangeRequest {
 }
 
 /**
+* Generated from evaka.core.document.childdocument.ChildDocumentController.UpdateChildDocumentContentRequest
+*/
+export interface UpdateChildDocumentContentRequest {
+  content: DocumentContent
+  expectedContentVersion: number
+}
+
+/**
+* Generated from evaka.core.document.childdocument.ChildDocumentController.UpdateChildDocumentContentResponse
+*/
+export interface UpdateChildDocumentContentResponse {
+  contentVersion: number
+}
+
+/**
 * Generated from evaka.core.document.childdocument.ChildDocumentController.UpdateChildDocumentDecisionValidityRequest
 */
 export interface UpdateChildDocumentDecisionValidityRequest {
@@ -724,6 +748,14 @@ export function deserializeJsonDocumentContent(json: JsonOf<DocumentContent>): D
 }
 
 
+export function deserializeJsonDocumentEditStatus(json: JsonOf<DocumentEditStatus>): DocumentEditStatus {
+  return {
+    ...json,
+    activeLockByOther: (json.activeLockByOther != null) ? deserializeJsonDocumentWriteLock(json.activeLockByOther) : null
+  }
+}
+
+
 export function deserializeJsonDocumentLockResponse(json: JsonOf<DocumentLockResponse>): DocumentLockResponse {
   return {
     ...json,
@@ -783,6 +815,14 @@ export function deserializeJsonExportedDocumentTemplate(json: JsonOf<ExportedDoc
   return {
     ...json,
     validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
+export function deserializeJsonUpdateChildDocumentContentRequest(json: JsonOf<UpdateChildDocumentContentRequest>): UpdateChildDocumentContentRequest {
+  return {
+    ...json,
+    content: deserializeJsonDocumentContent(json.content)
   }
 }
 

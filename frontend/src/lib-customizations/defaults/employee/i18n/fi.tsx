@@ -1022,6 +1022,8 @@ export const fi = {
         saveError: 'Asiakirjan tallentaminen epäonnistui.',
         unsavedChangesWarning:
           'Kaikkia muutoksia ei ole tallennettu. Haluatko varmasti poistua?',
+        documentModifiedTitle: 'Asiakirjaan on tehty muutoksia',
+        documentModifiedText: 'Voit avata asiakirjan muokattavaksi uudelleen.',
         preview: 'Esikatsele',
         publish: 'Julkaise huoltajalle',
         publishConfirmTitle: 'Haluatko varmasti julkaista huoltajalle?',

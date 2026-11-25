@@ -340,16 +340,23 @@ class ChildDocumentController(
             .also { audit.log(Audit.ChildDocumentReadDecisionMakers, clock) }
     }
 
+    data class UpdateChildDocumentContentRequest(
+        val content: DocumentContent,
+        val expectedContentVersion: Int,
+    )
+
+    data class UpdateChildDocumentContentResponse(val contentVersion: Int)
+
     @PutMapping("/{documentId}/content")
     fun updateDocumentContent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
-        @RequestBody body: DocumentContent,
-    ) {
+        @RequestBody body: UpdateChildDocumentContentRequest,
+    ): UpdateChildDocumentContentResponse {
         val audit = AuditContext().add(documentId)
-        db.connect { dbc ->
+        return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -368,7 +375,7 @@ class ChildDocumentController(
 
                     assertTemplateValidityNotEnded(document, clock.today())
 
-                    validateContentAgainstTemplate(body, document.template.content)
+                    validateContentAgainstTemplate(body.content, document.template.content)
 
                     tx.getCurrentWriteLock(documentId, clock.now())?.also { lock ->
                         if (lock.lockedBy != user.id) {
@@ -379,12 +386,16 @@ class ChildDocumentController(
                         }
                     }
 
-                    tx.updateChildDocumentContent(
-                        documentId,
-                        document.status,
-                        body,
-                        clock.now(),
-                        user.evakaUserId,
+                    UpdateChildDocumentContentResponse(
+                        contentVersion =
+                            tx.updateChildDocumentContent(
+                                documentId,
+                                document.status,
+                                body.content,
+                                body.expectedContentVersion,
+                                clock.now(),
+                                user.evakaUserId,
+                            ),
                     )
                 }
             }
@@ -395,6 +406,44 @@ class ChildDocumentController(
         val lockTakenSuccessfully: Boolean,
         val currentLock: DocumentWriteLock,
     )
+
+    data class DocumentEditStatus(
+        val activeLockByOther: DocumentWriteLock?,
+        val contentVersion: Int,
+    )
+
+    @GetMapping("/{documentId}/edit-status")
+    fun getDocumentEditStatus(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ): DocumentEditStatus {
+        val audit = AuditContext().add(documentId)
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.UPDATE,
+                        documentId,
+                    )
+                    audit.add(
+                        tx.getChildDocumentChildId(documentId)
+                            ?: throw NotFound("Document $documentId not found"),
+                    )
+                    DocumentEditStatus(
+                        activeLockByOther =
+                            tx.getCurrentWriteLock(documentId, clock.now())?.takeIf {
+                                it.lockedBy != user.evakaUserId
+                            },
+                        contentVersion = tx.getChildDocumentContentVersion(documentId),
+                    )
+                }
+            }
+            .also { audit.log(Audit.ChildDocumentReadEditStatus, clock) }
+    }
 
     @PutMapping("/{documentId}/lock")
     fun takeDocumentWriteLock(

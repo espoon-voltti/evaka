@@ -31,6 +31,8 @@ export class ChildDocumentPage {
   acceptDecisionButton: Element
   rejectDecisionButton: Element
   sendingConfirmationModal: Modal
+  concurrentEditErrorModal: Modal
+  documentModifiedModal: Modal
   confirmOtherDecisionsButton: Element
   documentSection: Element
   annulReason: Element
@@ -53,6 +55,12 @@ export class ChildDocumentPage {
     this.acceptDecisionButton = page.findByDataQa('accept-decision-button')
     this.rejectDecisionButton = page.findByDataQa('reject-decision-button')
     this.sendingConfirmationModal = new Modal(page.findByDataQa('modal'))
+    this.concurrentEditErrorModal = new Modal(
+      page.findByDataQa('concurrent-edit-error-modal')
+    )
+    this.documentModifiedModal = new Modal(
+      page.findByDataQa('document-modified-modal')
+    )
     this.confirmOtherDecisionsButton = page.findByDataQa(
       'confirm-other-decisions-button'
     )

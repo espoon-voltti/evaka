@@ -503,6 +503,7 @@ enum class Audit(
     ChildDocumentRead,
     ChildDocumentReadAcceptedDecisions,
     ChildDocumentReadDecisionMakers,
+    ChildDocumentReadEditStatus,
     ChildDocumentReadMetadata,
     ChildDocumentRejectDecision,
     ChildDocumentTryTakeLockOnContent,

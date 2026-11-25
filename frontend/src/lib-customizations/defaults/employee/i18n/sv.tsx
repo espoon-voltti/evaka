@@ -1026,6 +1026,8 @@ export const sv: typeof fi = {
         saveError: 'Det gick inte att spara dokumentet.',
         unsavedChangesWarning:
           'Alla ändringar har inte sparats. Vill du verkligen lämna sidan?',
+        documentModifiedTitle: 'Dokumentet har ändrats',
+        documentModifiedText: 'Du kan öppna dokumentet för redigering igen.',
         preview: 'Förhandsgranska',
         publish: 'Publicera för vårdnadshavare',
         publishConfirmTitle: 'Vill du verkligen publicera för vårdnadshavaren?',

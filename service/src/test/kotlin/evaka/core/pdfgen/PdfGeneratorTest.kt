@@ -305,6 +305,7 @@ class PdfGeneratorTest {
                             ),
                     ),
                 content = content,
+                contentVersion = 0,
                 publishedContent = content,
                 archivedAt = null,
             )

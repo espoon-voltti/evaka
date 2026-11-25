@@ -220,6 +220,7 @@ data class ChildDocumentDetails(
     val archivedAt: HelsinkiDateTime?,
     val pdfAvailable: Boolean,
     @Json val content: DocumentContent,
+    val contentVersion: Int,
     @Json val publishedContent: DocumentContent?,
     @Nested("child") val child: ChildBasics,
     @Nested("template") val template: DocumentTemplate,

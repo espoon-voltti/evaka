@@ -320,6 +320,36 @@ test.describe('Employee - Child documents', () => {
     await expect(childDocument.editButton).toBeVisible()
   })
 
+  test('Opening and leaving the edit view does not change the modification time', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+    const modifiedAt = now.subHours(24)
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id,
+      content: { answers: [] },
+      modifiedAt
+    }).save()
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-documents/${document.id}/edit`)
+    const childDocument = new ChildDocumentPage(page)
+    await childDocument.previewButton.click()
+    await childDocument.returnButton.click()
+
+    const childDocumentsSection = await new ChildInformationPage(
+      page
+    ).openCollapsible('childDocuments')
+    await expect(
+      childDocumentsSection.internalChildDocuments(0).modified
+    ).toHaveText(modifiedAt.format())
+  })
+
   test('Leaving the edit view after a failed save asks for confirmation', async ({
     newEvakaPage
   }) => {
@@ -871,6 +901,220 @@ test.describe('Employee - Child documents', () => {
     childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
     await childDocument.previewButton.click()
+  })
+
+  async function editLaterInAnotherPage(
+    newEvakaPage: NewEvakaPage,
+    editUrl: string,
+    user: DevEmployee,
+    answer: string
+  ) {
+    const page = await newEvakaPage({ mockedTime: now.addMinutes(6) })
+    await employeeLogin(page, user)
+    await page.goto(editUrl)
+    const childDocument = new ChildDocumentPage(page)
+    await childDocument.getTextQuestion('osio 1', 'kysymys 1').fill(answer)
+    await expect(childDocument.savingIndicator).toBeHidden()
+  }
+
+  test('Switching back to an open edit view after another user has changed the document tells that it has changed', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id,
+      content: { answers: [] }
+    }).save()
+    const editUrl = `${config.employeeUrl}/child-documents/${document.id}/edit`
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(editUrl)
+    const childDocument = new ChildDocumentPage(page)
+    const answer = childDocument.getTextQuestion('osio 1', 'kysymys 1')
+    await expect(answer.locator).toHaveValue('')
+
+    await editLaterInAnotherPage(
+      newEvakaPage,
+      editUrl,
+      unitSupervisor,
+      'Toisen vastaus'
+    )
+
+    // The user returns after the other user's lock has expired
+    await page.page.evaluate((later) => {
+      ;(window as unknown as { evaka: { mockedTime: Date } }).evaka.mockedTime =
+        new Date(later)
+      window.dispatchEvent(new Event('focus'))
+    }, now.addMinutes(12).formatIso())
+    await childDocument.documentModifiedModal.submit()
+    await expect(childDocument.getTextAnswer('osio 1', 'kysymys 1')).toHaveText(
+      'Toisen vastaus'
+    )
+  })
+
+  test('Switching back to an open edit view shows who is editing the document now', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id,
+      content: { answers: [] }
+    }).save()
+    const editUrl = `${config.employeeUrl}/child-documents/${document.id}/edit`
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(editUrl)
+    const childDocument = new ChildDocumentPage(page)
+    await expect(
+      childDocument.getTextQuestion('osio 1', 'kysymys 1').locator
+    ).toHaveValue('')
+
+    await editLaterInAnotherPage(
+      newEvakaPage,
+      editUrl,
+      unitSupervisor,
+      'Toisen vastaus'
+    )
+
+    await page.page.evaluate(() => window.dispatchEvent(new Event('focus')))
+    await expect(childDocument.concurrentEditErrorModal).toContainText(
+      `${unitSupervisor.lastName} ${unitSupervisor.firstName}`
+    )
+    await childDocument.closeConcurrentEditErrorModal()
+    await expect(childDocument.getTextAnswer('osio 1', 'kysymys 1')).toHaveText(
+      'Toisen vastaus'
+    )
+  })
+
+  test('Typing in an open edit view after another user has changed the document tells that it has changed', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id,
+      content: { answers: [] }
+    }).save()
+    const editUrl = `${config.employeeUrl}/child-documents/${document.id}/edit`
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(editUrl)
+    const childDocument = new ChildDocumentPage(page)
+    const answer = childDocument.getTextQuestion('osio 1', 'kysymys 1')
+    await expect(answer.locator).toHaveValue('')
+
+    await editLaterInAnotherPage(
+      newEvakaPage,
+      editUrl,
+      unitSupervisor,
+      'Toisen vastaus'
+    )
+
+    // The user returns after the other user's lock has expired
+    await page.page.evaluate((later) => {
+      ;(window as unknown as { evaka: { mockedTime: Date } }).evaka.mockedTime =
+        new Date(later)
+    }, now.addMinutes(12).formatIso())
+    await answer.fill('Oma vastaus')
+
+    await childDocument.documentModifiedModal.submit()
+    await expect(childDocument.getTextAnswer('osio 1', 'kysymys 1')).toHaveText(
+      'Toisen vastaus'
+    )
+  })
+
+  test('Typing in an open edit view shows who is editing the document now', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id,
+      content: { answers: [] }
+    }).save()
+    const editUrl = `${config.employeeUrl}/child-documents/${document.id}/edit`
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(editUrl)
+    const childDocument = new ChildDocumentPage(page)
+    const answer = childDocument.getTextQuestion('osio 1', 'kysymys 1')
+    await expect(answer.locator).toHaveValue('')
+
+    await editLaterInAnotherPage(
+      newEvakaPage,
+      editUrl,
+      unitSupervisor,
+      'Toisen vastaus'
+    )
+
+    // The user returns while the other user still holds the lock
+    await page.page.evaluate((later) => {
+      ;(window as unknown as { evaka: { mockedTime: Date } }).evaka.mockedTime =
+        new Date(later)
+    }, now.addMinutes(7).formatIso())
+    await answer.fill('Oma vastaus')
+
+    await expect(childDocument.concurrentEditErrorModal).toContainText(
+      `${unitSupervisor.lastName} ${unitSupervisor.firstName}`
+    )
+    await childDocument.closeConcurrentEditErrorModal()
+    await expect(childDocument.getTextAnswer('osio 1', 'kysymys 1')).toHaveText(
+      'Toisen vastaus'
+    )
+  })
+
+  test('Typing in an open edit view after the same user has changed the document on another computer tells that it has changed', async ({
+    newEvakaPage
+  }) => {
+    const template = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+    const document = await Fixture.childDocument({
+      childId: testChild2.id,
+      templateId: template.id,
+      content: { answers: [] }
+    }).save()
+    const editUrl = `${config.employeeUrl}/child-documents/${document.id}/edit`
+
+    const page = await newEvakaPage()
+    await employeeLogin(page, admin)
+    await page.goto(editUrl)
+    const childDocument = new ChildDocumentPage(page)
+    const answer = childDocument.getTextQuestion('osio 1', 'kysymys 1')
+    await expect(answer.locator).toHaveValue('')
+
+    await editLaterInAnotherPage(
+      newEvakaPage,
+      editUrl,
+      admin,
+      'Toisen tietokoneen vastaus'
+    )
+
+    await answer.fill('Oma vastaus')
+
+    await childDocument.documentModifiedModal.submit()
+    await expect(childDocument.getTextAnswer('osio 1', 'kysymys 1')).toHaveText(
+      'Toisen tietokoneen vastaus'
+    )
   })
 
   test('Child documents report shows document status', async ({

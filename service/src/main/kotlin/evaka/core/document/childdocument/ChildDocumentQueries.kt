@@ -23,6 +23,7 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.Predicate
 import evaka.core.shared.db.PredicateSql
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
@@ -189,6 +190,7 @@ SELECT
     cd.archived_at,
     latest_version.document_key IS NOT NULL as pdf_available,
     cd.content,
+    cd.content_version,
     latest_version.published_content,
     p.id as child_id,
     p.first_name as child_first_name,
@@ -364,6 +366,11 @@ fun Database.Read.getCurrentWriteLock(
 }
     .exactlyOneOrNull()
 
+fun Database.Read.getChildDocumentContentVersion(id: ChildDocumentId): Int = createQuery {
+    sql("SELECT content_version FROM child_document WHERE id = ${bind(id)}")
+}
+    .exactlyOne<Int>()
+
 fun Database.Transaction.tryTakeWriteLock(
     id: ChildDocumentId,
     now: HelsinkiDateTime,
@@ -387,29 +394,36 @@ fun Database.Transaction.updateChildDocumentContent(
     id: ChildDocumentId,
     status: DocumentStatus,
     content: DocumentContent,
+    expectedContentVersion: Int,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
-) {
-    createUpdate {
+): Int =
+    createQuery {
         sql(
             """
                 UPDATE child_document
                 SET 
                     content = ${bind(content)},
+                    content_version = content_version + 1,
                     modified_at = ${bind(now)}, 
                     modified_by = ${bind(userId)},
                     content_locked_at = ${bind(now)}, 
                     content_locked_by = ${bind(userId)}
-                WHERE id = ${bind(id)} AND status = ${bind(status)} AND (
+                WHERE id = ${bind(id)} AND status = ${bind(status)} AND
+                    content_version = ${bind(expectedContentVersion)} AND (
                     content_locked_by IS NULL OR 
                     content_locked_by = ${bind(userId)} OR 
                     content_locked_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
                 )
+                RETURNING content_version
                 """,
         )
     }
-        .updateExactlyOne()
-}
+        .exactlyOneOrNull<Int>()
+        ?: throw Conflict(
+            message = "The document has been modified",
+            errorCode = "document-modified",
+        )
 
 fun Database.Transaction.updateChildDocument(
     id: ChildDocumentId,
@@ -425,6 +439,7 @@ fun Database.Transaction.updateChildDocument(
                 SET
                     status = ${bind(statusTransition.newStatus)},
                     content = ${bind(content)},
+                    content_version = content_version + 1,
                     modified_at = ${bind(now)},
                     modified_by = ${bind(userId)},
                     status_modified_at = CASE WHEN status = ${bind(statusTransition.newStatus)} THEN status_modified_at ELSE ${bind(now)} END,

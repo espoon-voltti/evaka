@@ -896,6 +896,7 @@ private val testVasuDetails =
         archivedAt = null,
         pdfAvailable = true,
         content = DocumentContent(answers = emptyList()),
+        contentVersion = 0,
         publishedContent = DocumentContent(answers = emptyList()),
         child = testChildInfo.toChildBasics(),
         template =
@@ -934,6 +935,7 @@ private val testChildDocumentDecisionDetails =
         archivedAt = null,
         pdfAvailable = true,
         content = DocumentContent(answers = emptyList()),
+        contentVersion = 0,
         publishedContent = DocumentContent(answers = emptyList()),
         child = testChildInfo.toChildBasics(),
         template =
