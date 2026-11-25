@@ -38,6 +38,7 @@ import evaka.core.placement.getPlacementsForChildDuring
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.serviceneed.getChildServiceNeedInfos
 import evaka.core.serviceneed.getServiceNeedOptions
+import evaka.core.shared.ChildAttendanceId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.FeatureConfig
@@ -64,6 +65,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -1064,6 +1066,64 @@ WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterang
     .toList<ChildBackupPlacement>()
     .groupBy { it.childId }
 
+private fun Database.Read.getAttendanceTimes(
+    childIds: Set<ChildId>,
+    dateRange: FiniteDateRange,
+): Map<ChildId, List<AttendanceTimesForDate>> = createQuery {
+    sql(
+        """
+WITH RECURSIVE overnight AS (
+    SELECT id AS first_id, child_id, date, end_time
+    FROM child_attendance
+    WHERE child_id = ANY(${bind(childIds)}) AND between_start_and_end(${bind(dateRange)}, date) AND end_time = '23:59'
+    UNION ALL
+    SELECT overnight.first_id, next.child_id, next.date, next.end_time
+    FROM overnight
+    JOIN child_attendance next ON next.child_id = overnight.child_id AND next.date = overnight.date + 1 AND next.start_time = '00:00'
+    WHERE overnight.end_time = '23:59'
+)
+SELECT
+    att.child_id,
+    att.id,
+    att.date,
+    coalesce(chain.end_date, att.date) AS end_date,
+    att.start_time,
+    att.end_time,
+    att.modified_at,
+    modified_by.id AS modified_by_id,
+    modified_by.name AS modified_by_name,
+    modified_by.type AS modified_by_type,
+    att.arrived_added_at,
+    arrived_added_by.id AS arrived_added_by_id,
+    arrived_added_by.name AS arrived_added_by_name,
+    arrived_added_by.type AS arrived_added_by_type,
+    att.arrived_modified_at,
+    arrived_modified_by.id AS arrived_modified_by_id,
+    arrived_modified_by.name AS arrived_modified_by_name,
+    arrived_modified_by.type AS arrived_modified_by_type,
+    att.departed_added_at,
+    departed_added_by.id AS departed_added_by_id,
+    departed_added_by.name AS departed_added_by_name,
+    departed_added_by.type AS departed_added_by_type,
+    att.departed_modified_at,
+    departed_modified_by.id AS departed_modified_by_id,
+    departed_modified_by.name AS departed_modified_by_name,
+    departed_modified_by.type AS departed_modified_by_type
+FROM child_attendance att
+JOIN evaka_user modified_by ON modified_by.id = att.modified_by
+LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = att.arrived_added_by
+LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = att.arrived_modified_by
+LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = att.departed_added_by
+LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = att.departed_modified_by
+LEFT JOIN (SELECT first_id, max(date) AS end_date FROM overnight GROUP BY first_id) chain ON chain.first_id = att.id
+WHERE att.child_id = ANY(${bind(childIds)}) AND between_start_and_end(${bind(dateRange)}, att.date)
+ORDER BY att.date, att.start_time
+""",
+    )
+}
+    .toList<ChildAttendanceForDateRow>()
+    .groupBy({ it.childId }, { it.toAttendanceTimesForDate() })
+
 data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<ReservationResponse>>,
@@ -1079,7 +1139,6 @@ private data class ChildDataQueryResult(
     val preferredName: String,
     val dateOfBirth: LocalDate,
     @Json val reservations: List<ReservationTimesForDate>,
-    @Json val attendances: List<AttendanceTimesForDate>,
     @Json val absences: List<AbsenceForDate>,
 )
 
@@ -1109,11 +1168,58 @@ private data class ReservationTimesForDate(
 }
 
 data class AttendanceTimesForDate(
+    val id: ChildAttendanceId,
     val date: LocalDate,
     val interval: TimeInterval,
     val modifiedAt: HelsinkiDateTime,
     val modifiedBy: EvakaUser,
+    val arrivedAddedAt: HelsinkiDateTime?,
+    val arrivedAddedBy: EvakaUser?,
+    val arrivedModifiedAt: HelsinkiDateTime?,
+    val arrivedModifiedBy: EvakaUser?,
+    val departedAddedAt: HelsinkiDateTime?,
+    val departedAddedBy: EvakaUser?,
+    val departedModifiedAt: HelsinkiDateTime?,
+    val departedModifiedBy: EvakaUser?,
+    val endDate: LocalDate,
 )
+
+private data class ChildAttendanceForDateRow(
+    val childId: ChildId,
+    val id: ChildAttendanceId,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime?,
+    val modifiedAt: HelsinkiDateTime,
+    @Nested("modified_by") val modifiedBy: EvakaUser,
+    val arrivedAddedAt: HelsinkiDateTime?,
+    @Nested("arrived_added_by") val arrivedAddedBy: EvakaUser?,
+    val arrivedModifiedAt: HelsinkiDateTime?,
+    @Nested("arrived_modified_by") val arrivedModifiedBy: EvakaUser?,
+    val departedAddedAt: HelsinkiDateTime?,
+    @Nested("departed_added_by") val departedAddedBy: EvakaUser?,
+    val departedModifiedAt: HelsinkiDateTime?,
+    @Nested("departed_modified_by") val departedModifiedBy: EvakaUser?,
+    val endDate: LocalDate,
+) {
+    fun toAttendanceTimesForDate() =
+        AttendanceTimesForDate(
+            id = id,
+            date = date,
+            interval = TimeInterval(startTime, endTime),
+            modifiedAt = modifiedAt,
+            modifiedBy = modifiedBy,
+            arrivedAddedAt = arrivedAddedAt,
+            arrivedAddedBy = arrivedAddedBy,
+            arrivedModifiedAt = arrivedModifiedAt,
+            arrivedModifiedBy = arrivedModifiedBy,
+            departedAddedAt = departedAddedAt,
+            departedAddedBy = departedAddedBy,
+            departedModifiedAt = departedModifiedAt,
+            departedModifiedBy = departedModifiedBy,
+            endDate = endDate,
+        )
+}
 
 private data class AbsenceForDate(
     val date: LocalDate,
@@ -1128,6 +1234,7 @@ fun Database.Read.getChildData(
 ): Map<ChildId, ChildData> {
     val operationalDays = getOperationalDatesForChildren(dateRange, childIds)
     val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
+    val attendances = getAttendanceTimes(childIds, dateRange)
 
     return createQuery {
         sql(
@@ -1155,24 +1262,6 @@ SELECT
         JOIN evaka_user eu ON ar.created_by = eu.id
         WHERE ar.child_id = p.id AND between_start_and_end(${bind(dateRange)}, ar.date)
     ), '[]'::jsonb) AS reservations,
-    coalesce((
-        SELECT jsonb_agg(jsonb_build_object(
-            'date', att.date,
-            'interval', jsonb_build_object(
-                'start', att.start_time,
-                'end', att.end_time
-            ),
-            'modifiedAt', att.modified_at,
-            'modifiedBy', jsonb_build_object(
-                'id', eu.id,
-                'name', eu.name,
-                'type', eu.type
-            )
-        ) ORDER BY att.date, att.start_time)
-        FROM child_attendance att
-        JOIN evaka_user eu ON att.modified_by = eu.id
-        WHERE att.child_id = p.id AND between_start_and_end(${bind(dateRange)}, att.date)
-    ), '[]'::jsonb) AS attendances,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
             'date', a.date,
@@ -1213,7 +1302,7 @@ WHERE p.id = ANY(${bind(childIds)})
                         keySelector = { it.date },
                         valueTransform = { it.toReservationTimes() },
                     ),
-                attendances = row.attendances.groupBy(keySelector = { it.date }),
+                attendances = attendances[row.id].orEmpty().groupBy(keySelector = { it.date }),
                 absences =
                     row.absences
                         .groupBy(

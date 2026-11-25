@@ -1917,6 +1917,14 @@ data class DevChildAttendance(
     val departed: LocalTime?,
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val arrivedAddedAt: HelsinkiDateTime? = null,
+    val arrivedAddedBy: EvakaUserId? = null,
+    val arrivedModifiedAt: HelsinkiDateTime? = null,
+    val arrivedModifiedBy: EvakaUserId? = null,
+    val departedAddedAt: HelsinkiDateTime? = null,
+    val departedAddedBy: EvakaUserId? = null,
+    val departedModifiedAt: HelsinkiDateTime? = null,
+    val departedModifiedBy: EvakaUserId? = null,
 )
 
 data class DevAssistanceAction(

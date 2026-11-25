@@ -21,7 +21,12 @@ import {
   value
 } from 'lib-common/form/form'
 import type { BoundForm } from 'lib-common/form/hooks'
-import { useForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
+import {
+  useForm,
+  useFormElems,
+  useFormField,
+  useFormFields
+} from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import type {
   AbsenceCategory,
@@ -34,7 +39,11 @@ import type {
   ReservationResponse,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
+import type {
+  ChildAttendanceId,
+  ChildId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -72,7 +81,12 @@ export interface ChildDateEditorTarget {
 
 const reservationForm = required(localTimeRange({ allowMidnightEnd: false }))
 
-const attendanceForm = required(openEndedLocalTimeRange())
+const attendanceRangeForm = required(openEndedLocalTimeRange())
+
+const attendanceForm = object({
+  id: value<ChildAttendanceId | null>(),
+  range: attendanceRangeForm
+})
 
 const absenceForm = oneOf<AbsenceType>()
 
@@ -111,8 +125,8 @@ const form = transformed(
       }
     }
     for (let i = 1; i < attendances.length; i++) {
-      const prev = attendances[i - 1]
-      if (prev.overlaps(attendances[i])) {
+      const prev = attendances[i - 1].range
+      if (prev.overlaps(attendances[i].range)) {
         return ValidationError.field('attendances', 'timeFormat')
       }
     }
@@ -124,7 +138,10 @@ const form = transformed(
       reservations: reservationNoTimes
         ? [{ type: 'NO_TIMES' }]
         : reservations.map((range) => ({ type: 'TIMES', range })),
-      attendances,
+      attendances: attendances.map(({ id, range }) => ({
+        id,
+        interval: range
+      })),
       absenceBillable: billableAbsence ?? null,
       absenceNonbillable: nonBillableAbsence ?? null
     }
@@ -190,8 +207,11 @@ export default React.memo(function ChildDateModal({
       attendances: editingFuture
         ? []
         : childDayRecord.attendances.map((a) => ({
-            startTime: a.interval.formatStart(),
-            endTime: a.interval.formatEnd()
+            id: a.id,
+            range: {
+              startTime: a.interval.formatStart(),
+              endTime: a.interval.formatEnd()
+            }
           })),
       billableAbsence: childDayRecord.possibleAbsenceCategories.includes(
         'BILLABLE'
@@ -248,12 +268,14 @@ export default React.memo(function ChildDateModal({
   const expectedAbsences = useQueryResult(
     date.isBefore(LocalDate.todayInHelsinkiTz()) &&
       attendances.isValid() &&
-      attendances.value().every((a) => a.end !== null)
+      attendances.value().every((a) => a.range.end !== null)
       ? childDateExpectedAbsencesQuery({
           body: {
             childId: child.id,
             date,
-            attendances: attendances.value().flatMap((a) => a.asTimeRange()!)
+            attendances: attendances
+              .value()
+              .flatMap((a) => a.range.asTimeRange()!)
           }
         })
       : constantQuery(null)
@@ -351,7 +373,7 @@ export default React.memo(function ChildDateModal({
           </H4>
           <FixedSpaceColumn>
             {attendanceElems.map((a, i) => (
-              <TimesForm
+              <AttendanceTimesForm
                 key={`attendance-${i}`}
                 data-qa={`attendance-${i}`}
                 bind={a}
@@ -373,7 +395,7 @@ export default React.memo(function ChildDateModal({
               onClick={() =>
                 attendances.update((s) => [
                   ...s,
-                  { startTime: '', endTime: '' }
+                  { id: null, range: { startTime: '', endTime: '' } }
                 ])
               }
             />
@@ -465,7 +487,7 @@ const TimesForm = React.memo(function TimesForm({
   onRemove,
   'data-qa': dataQa
 }: {
-  bind: BoundForm<typeof reservationForm | typeof attendanceForm>
+  bind: BoundForm<typeof reservationForm | typeof attendanceRangeForm>
   onRemove: () => void
   'data-qa': string
 }) {
@@ -490,6 +512,19 @@ const TimesForm = React.memo(function TimesForm({
       )}
     </FixedSpaceRow>
   )
+})
+
+const AttendanceTimesForm = React.memo(function AttendanceTimesForm({
+  bind,
+  onRemove,
+  'data-qa': dataQa
+}: {
+  bind: BoundForm<typeof attendanceForm>
+  onRemove: () => void
+  'data-qa': string
+}) {
+  const range = useFormField(bind, 'range')
+  return <TimesForm bind={range} onRemove={onRemove} data-qa={dataQa} />
 })
 
 const AbsenceForm = React.memo(function AbsenceForm({

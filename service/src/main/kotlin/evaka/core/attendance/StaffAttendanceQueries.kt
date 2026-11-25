@@ -243,8 +243,8 @@ SET group_id = ${bind(groupId)},
     departed_automatically = ${bind(departedAutomatically)},
     arrived_modified_at = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE old.arrived_modified_at END,
     arrived_modified_by = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE old.arrived_modified_by END,
-    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_at, ${bind(modifiedAt)}) ELSE old.departed_added_at END,
-    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_by, ${bind(modifiedBy)}) ELSE old.departed_added_by END,
+    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN CASE WHEN old.departed IS NULL THEN ${bind(modifiedAt)} ELSE coalesce(old.departed_added_at, old.departed_modified_at, ${bind(modifiedAt)}) END ELSE old.departed_added_at END,
+    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN CASE WHEN old.departed IS NULL THEN ${bind(modifiedBy)} ELSE coalesce(old.departed_added_by, old.departed_modified_by, ${bind(modifiedBy)}) END ELSE old.departed_added_by END,
     departed_modified_at = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE old.departed_modified_at END,
     departed_modified_by = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE old.departed_modified_by END
 FROM staff_attendance_realtime old
@@ -305,6 +305,8 @@ data class ExternalStaffArrival(
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
     val occupancyCoefficient: BigDecimal,
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUserId,
 )
 
 fun Database.Transaction.markExternalStaffArrival(
@@ -312,8 +314,8 @@ fun Database.Transaction.markExternalStaffArrival(
 ): StaffAttendanceExternalId = createUpdate {
     sql(
         """
-INSERT INTO staff_attendance_external (name, group_id, arrived, occupancy_coefficient) VALUES (
-    ${bind(params.name)}, ${bind(params.groupId)}, ${bind(params.arrived)}, ${bind(params.occupancyCoefficient)}
+INSERT INTO staff_attendance_external (name, group_id, arrived, occupancy_coefficient, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by) VALUES (
+    ${bind(params.name)}, ${bind(params.groupId)}, ${bind(params.arrived)}, ${bind(params.occupancyCoefficient)}, ${bind(params.modifiedAt)}, ${bind(params.modifiedBy)}, ${bind(params.modifiedAt)}, ${bind(params.modifiedBy)}
 ) RETURNING id
 """,
     )
@@ -321,13 +323,23 @@ INSERT INTO staff_attendance_external (name, group_id, arrived, occupancy_coeffi
     .executeAndReturnGeneratedKeys()
     .exactlyOne<StaffAttendanceExternalId>()
 
-data class ExternalStaffDeparture(val id: StaffAttendanceExternalId, val departed: HelsinkiDateTime)
+data class ExternalStaffDeparture(
+    val id: StaffAttendanceExternalId,
+    val departed: HelsinkiDateTime,
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUserId,
+)
 
 fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDeparture) = createUpdate {
     sql(
         """
 UPDATE staff_attendance_external 
-SET departed = ${bind(params.departed)}, departed_automatically = false
+SET departed = ${bind(params.departed)},
+    departed_automatically = false,
+    departed_added_at = ${bind(params.modifiedAt)},
+    departed_added_by = ${bind(params.modifiedBy)},
+    departed_modified_at = ${bind(params.modifiedAt)},
+    departed_modified_by = ${bind(params.modifiedBy)}
 WHERE id = ${bind(params.id)} AND departed IS NULL AND arrived < ${bind(params.departed)}
 """,
     )
@@ -342,13 +354,30 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     departureTime: HelsinkiDateTime?,
     occupancyCoefficient: BigDecimal,
     departedAutomatically: Boolean = false,
-): StaffAttendanceExternalId {
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId,
+): StaffAttendanceExternalId? {
     if (attendanceId == null) {
         return createUpdate {
             sql(
                 """
-INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient, departed_automatically)
-VALUES (${bind(name)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(departureTime)}, ${bind(occupancyCoefficient)}, ${bind(departedAutomatically)})
+INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient, departed_automatically, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by, departed_added_at, departed_added_by, departed_modified_at, departed_modified_by)
+VALUES (
+    ${bind(name)},
+    ${bind(groupId)},
+    ${bind(arrivalTime)},
+    ${bind(departureTime)},
+    ${bind(occupancyCoefficient)},
+    ${bind(departedAutomatically)},
+    ${bind(modifiedAt)},
+    ${bind(modifiedBy)},
+    ${bind(modifiedAt)},
+    ${bind(modifiedBy)},
+    ${bind(modifiedAt.takeIf { departureTime != null })},
+    ${bind(modifiedBy.takeIf { departureTime != null })},
+    ${bind(modifiedAt.takeIf { departureTime != null })},
+    ${bind(modifiedBy.takeIf { departureTime != null })}
+)
 RETURNING id
 """,
             )
@@ -361,13 +390,27 @@ RETURNING id
                 """
 UPDATE staff_attendance_external
 SET name = ${bind(name)}, group_id = ${bind(groupId)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, 
-    occupancy_coefficient = ${bind(occupancyCoefficient)}, departed_automatically = ${bind(departedAutomatically)}
+    occupancy_coefficient = ${bind(occupancyCoefficient)}, departed_automatically = ${bind(departedAutomatically)},
+    arrived_modified_at = CASE WHEN arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE arrived_modified_at END,
+    arrived_modified_by = CASE WHEN arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE arrived_modified_by END,
+    departed_added_at = CASE WHEN (arrived_added_at IS NOT NULL OR departed IS NULL) AND departed IS DISTINCT FROM ${bind(departureTime)} THEN CASE WHEN departed IS NULL THEN ${bind(modifiedAt)} ELSE coalesce(departed_added_at, departed_modified_at, ${bind(modifiedAt)}) END ELSE departed_added_at END,
+    departed_added_by = CASE WHEN (arrived_added_by IS NOT NULL OR departed IS NULL) AND departed IS DISTINCT FROM ${bind(departureTime)} THEN CASE WHEN departed IS NULL THEN ${bind(modifiedBy)} ELSE coalesce(departed_added_by, departed_modified_by, ${bind(modifiedBy)}) END ELSE departed_added_by END,
+    departed_modified_at = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE departed_modified_at END,
+    departed_modified_by = CASE WHEN departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE departed_modified_by END
 WHERE id = ${bind(attendanceId)}
+  AND (name IS DISTINCT FROM ${bind(name)}
+    OR group_id IS DISTINCT FROM ${bind(groupId)}
+    OR arrived != ${bind(arrivalTime)}
+    OR departed IS DISTINCT FROM ${bind(departureTime)}
+    OR occupancy_coefficient != ${bind(occupancyCoefficient)}
+    OR departed_automatically != ${bind(departedAutomatically)}
+  )
+RETURNING id
 """,
             )
         }
-            .updateExactlyOne()
-            .let { attendanceId }
+            .executeAndReturnGeneratedKeys()
+            .exactlyOneOrNull<StaffAttendanceExternalId>()
     }
 }
 
@@ -636,9 +679,36 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
     return createQuery {
         sql(
             """
-SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient, sae.departed_automatically
+SELECT
+    sae.id,
+    sae.name,
+    sae.group_id,
+    sae.arrived,
+    sae.departed,
+    sae.occupancy_coefficient,
+    sae.departed_automatically,
+    sae.arrived_added_at,
+    arrived_added_by.id AS arrived_added_by_id,
+    arrived_added_by.name AS arrived_added_by_name,
+    arrived_added_by.type AS arrived_added_by_type,
+    sae.arrived_modified_at,
+    arrived_modified_by.id AS arrived_modified_by_id,
+    arrived_modified_by.name AS arrived_modified_by_name,
+    arrived_modified_by.type AS arrived_modified_by_type,
+    sae.departed_added_at,
+    departed_added_by.id AS departed_added_by_id,
+    departed_added_by.name AS departed_added_by_name,
+    departed_added_by.type AS departed_added_by_type,
+    sae.departed_modified_at,
+    departed_modified_by.id AS departed_modified_by_id,
+    departed_modified_by.name AS departed_modified_by_name,
+    departed_modified_by.type AS departed_modified_by_type
 FROM staff_attendance_external sae
 JOIN daycare_group dg on sae.group_id = dg.id
+LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sae.arrived_added_by
+LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sae.arrived_modified_by
+LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sae.departed_added_by
+LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sae.departed_modified_by
 WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && tstzrange(${bind(start)}, ${bind(end)})
 """,
         )
@@ -682,6 +752,8 @@ WITH missing_planned_departures AS (
 UPDATE staff_attendance_realtime realtime
 SET departed = missing_planned_departures.planned_departure,
     departed_automatically = true,
+    departed_added_at = NULL,
+    departed_added_by = NULL,
     departed_modified_at = ${bind(now)},
     departed_modified_by = ${bind(modifiedBy)}
 FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.id
@@ -695,6 +767,8 @@ FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.i
 UPDATE staff_attendance_realtime a
 SET departed = a.arrived + interval '12 hours',
     departed_automatically = true,
+    departed_added_at = NULL,
+    departed_added_by = NULL,
     departed_modified_at = ${bind(now)},
     departed_modified_by = ${bind(modifiedBy)}
 WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
@@ -707,7 +781,11 @@ WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
             """
 UPDATE staff_attendance_external a
 SET departed = a.arrived + interval '12 hours',
-    departed_automatically = true
+    departed_automatically = true,
+    departed_added_at = NULL,
+    departed_added_by = NULL,
+    departed_modified_at = ${bind(now)},
+    departed_modified_by = ${bind(modifiedBy)}
 WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
 """,
         )
@@ -806,7 +884,7 @@ fun Database.Transaction.deleteExternalAttendancesOnDateExcept(
     name: String,
     arrivalDate: LocalDate,
     exceptIds: List<StaffAttendanceExternalId>,
-) = execute {
+): List<StaffAttendanceExternalId> = createUpdate {
     sql(
         """
 DELETE FROM staff_attendance_external
@@ -815,9 +893,12 @@ WHERE
     name = ${bind(name)} AND 
     between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND 
     NOT id = ANY(${bind(exceptIds)})
+RETURNING id
 """,
     )
 }
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 data class OpenGroupAttendance(
     val unitName: String,

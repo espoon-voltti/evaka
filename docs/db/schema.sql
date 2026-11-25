@@ -2290,6 +2290,14 @@ CREATE TABLE public.child_attendance (
     departed timestamp with time zone GENERATED ALWAYS AS (((date + end_time) AT TIME ZONE 'Europe/Helsinki'::text)) STORED,
     modified_at timestamp with time zone NOT NULL,
     modified_by uuid NOT NULL,
+    arrived_added_at timestamp with time zone,
+    arrived_added_by uuid,
+    arrived_modified_at timestamp with time zone,
+    arrived_modified_by uuid,
+    departed_added_at timestamp with time zone,
+    departed_added_by uuid,
+    departed_modified_at timestamp with time zone,
+    departed_modified_by uuid,
     CONSTRAINT child_attendance_start_before_end CHECK ((start_time < end_time)),
     CONSTRAINT child_attendance_time_resolution CHECK (((EXTRACT(second FROM start_time) = (0)::numeric) AND (EXTRACT(second FROM end_time) = (0)::numeric)))
 );
@@ -4052,6 +4060,14 @@ CREATE TABLE public.staff_attendance_external (
     departed_automatically boolean DEFAULT false NOT NULL,
     created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
     updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
+    arrived_added_at timestamp with time zone,
+    arrived_added_by uuid,
+    arrived_modified_at timestamp with time zone,
+    arrived_modified_by uuid,
+    departed_added_at timestamp with time zone,
+    departed_added_by uuid,
+    departed_modified_at timestamp with time zone,
+    departed_modified_by uuid,
     CONSTRAINT staff_attendance_external_start_before_end CHECK ((arrived < departed))
 );
 
@@ -4393,7 +4409,7 @@ ALTER TABLE ONLY public.daily_service_time
 -- Name: child_attendance child_attendance_no_overlap; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.child_attendance
-    ADD CONSTRAINT child_attendance_no_overlap EXCLUDE USING gist (child_id WITH =, tsrange((date + start_time), (date + end_time)) WITH &&);
+    ADD CONSTRAINT child_attendance_no_overlap EXCLUDE USING gist (child_id WITH =, tsrange((date + start_time), (date + end_time)) WITH &&) DEFERRABLE;
 
 -- Name: child_attendance child_attendance_pkey; Type: CONSTRAINT; Schema: public
 
@@ -5388,6 +5404,22 @@ CREATE INDEX "fk$calendar_event_created_by" ON public.calendar_event USING btree
 
 CREATE INDEX "fk$calendar_event_modified_by" ON public.calendar_event USING btree (modified_by);
 
+-- Name: fk$child_attendance_arrived_added_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$child_attendance_arrived_added_by" ON public.child_attendance USING btree (arrived_added_by) WHERE (arrived_added_by IS NOT NULL);
+
+-- Name: fk$child_attendance_arrived_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$child_attendance_arrived_modified_by" ON public.child_attendance USING btree (arrived_modified_by) WHERE (arrived_modified_by IS NOT NULL);
+
+-- Name: fk$child_attendance_departed_added_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$child_attendance_departed_added_by" ON public.child_attendance USING btree (departed_added_by) WHERE (departed_added_by IS NOT NULL);
+
+-- Name: fk$child_attendance_departed_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$child_attendance_departed_modified_by" ON public.child_attendance USING btree (departed_modified_by) WHERE (departed_modified_by IS NOT NULL);
+
 -- Name: fk$child_attendance_modified_by; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$child_attendance_modified_by" ON public.child_attendance USING btree (modified_by);
@@ -5571,6 +5603,22 @@ CREATE INDEX "fk$sfi_message_guardian_id" ON public.sfi_message USING btree (gua
 -- Name: fk$sfi_message_voucher_value_decision_id_guardian_id; Type: INDEX; Schema: public
 
 CREATE UNIQUE INDEX "fk$sfi_message_voucher_value_decision_id_guardian_id" ON public.sfi_message USING btree (voucher_value_decision_id, guardian_id) WHERE (voucher_value_decision_id IS NOT NULL);
+
+-- Name: fk$staff_attendance_external_arrived_added_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$staff_attendance_external_arrived_added_by" ON public.staff_attendance_external USING btree (arrived_added_by);
+
+-- Name: fk$staff_attendance_external_arrived_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$staff_attendance_external_arrived_modified_by" ON public.staff_attendance_external USING btree (arrived_modified_by);
+
+-- Name: fk$staff_attendance_external_departed_added_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$staff_attendance_external_departed_added_by" ON public.staff_attendance_external USING btree (departed_added_by);
+
+-- Name: fk$staff_attendance_external_departed_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$staff_attendance_external_departed_modified_by" ON public.staff_attendance_external USING btree (departed_modified_by);
 
 -- Name: fk$staff_attendance_realtime_arrived_added_by; Type: INDEX; Schema: public
 
@@ -7211,10 +7259,30 @@ ALTER TABLE ONLY public.calendar_event_time
 ALTER TABLE ONLY public.calendar_event_time
     ADD CONSTRAINT calendar_event_time_modified_by_fkey FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id);
 
+-- Name: child_attendance child_attendance_arrived_added_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.child_attendance
+    ADD CONSTRAINT child_attendance_arrived_added_by_fkey FOREIGN KEY (arrived_added_by) REFERENCES public.evaka_user(id);
+
+-- Name: child_attendance child_attendance_arrived_modified_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.child_attendance
+    ADD CONSTRAINT child_attendance_arrived_modified_by_fkey FOREIGN KEY (arrived_modified_by) REFERENCES public.evaka_user(id);
+
 -- Name: child_attendance child_attendance_child_id_fkey; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.child_attendance
     ADD CONSTRAINT child_attendance_child_id_fkey FOREIGN KEY (child_id) REFERENCES public.child(id) ON DELETE RESTRICT;
+
+-- Name: child_attendance child_attendance_departed_added_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.child_attendance
+    ADD CONSTRAINT child_attendance_departed_added_by_fkey FOREIGN KEY (departed_added_by) REFERENCES public.evaka_user(id);
+
+-- Name: child_attendance child_attendance_departed_modified_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.child_attendance
+    ADD CONSTRAINT child_attendance_departed_modified_by_fkey FOREIGN KEY (departed_modified_by) REFERENCES public.evaka_user(id);
 
 -- Name: child_attendance child_attendance_modified_by_fkey; Type: FK CONSTRAINT; Schema: public
 
@@ -8430,6 +8498,26 @@ ALTER TABLE ONLY public.sfi_message
 
 ALTER TABLE ONLY public.sfi_message
     ADD CONSTRAINT sfi_message_voucher_value_decision_id_fkey FOREIGN KEY (voucher_value_decision_id) REFERENCES public.voucher_value_decision(id) ON DELETE CASCADE;
+
+-- Name: staff_attendance_external staff_attendance_external_arrived_added_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.staff_attendance_external
+    ADD CONSTRAINT staff_attendance_external_arrived_added_by_fkey FOREIGN KEY (arrived_added_by) REFERENCES public.evaka_user(id);
+
+-- Name: staff_attendance_external staff_attendance_external_arrived_modified_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.staff_attendance_external
+    ADD CONSTRAINT staff_attendance_external_arrived_modified_by_fkey FOREIGN KEY (arrived_modified_by) REFERENCES public.evaka_user(id);
+
+-- Name: staff_attendance_external staff_attendance_external_departed_added_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.staff_attendance_external
+    ADD CONSTRAINT staff_attendance_external_departed_added_by_fkey FOREIGN KEY (departed_added_by) REFERENCES public.evaka_user(id);
+
+-- Name: staff_attendance_external staff_attendance_external_departed_modified_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.staff_attendance_external
+    ADD CONSTRAINT staff_attendance_external_departed_modified_by_fkey FOREIGN KEY (departed_modified_by) REFERENCES public.evaka_user(id);
 
 -- Name: staff_attendance_external staff_attendance_external_group_id_fkey; Type: FK CONSTRAINT; Schema: public
 

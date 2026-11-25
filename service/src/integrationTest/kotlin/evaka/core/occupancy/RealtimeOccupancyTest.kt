@@ -177,6 +177,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                         group.id,
                         HelsinkiDateTime.of(date, LocalTime.of(10, 0)),
                         BigDecimal("3.5"),
+                        HelsinkiDateTime.of(date, LocalTime.of(10, 0)),
+                        employee.evakaUserId,
                     ),
                 )
                 .let { extAttendanceId ->
@@ -184,6 +186,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                         ExternalStaffDeparture(
                             extAttendanceId,
                             HelsinkiDateTime.of(date, LocalTime.of(18, 0)),
+                            HelsinkiDateTime.of(date, LocalTime.of(18, 0)),
+                            employee.evakaUserId,
                         ),
                     )
                 }
@@ -195,6 +199,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                         group.id,
                         HelsinkiDateTime.of(date, LocalTime.of(11, 0)),
                         BigDecimal.ZERO,
+                        HelsinkiDateTime.of(date, LocalTime.of(11, 0)),
+                        employee.evakaUserId,
                     ),
                 )
                 .let { extAttendanceId ->
@@ -202,6 +208,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                         ExternalStaffDeparture(
                             extAttendanceId,
                             HelsinkiDateTime.of(date, LocalTime.of(15, 0)),
+                            HelsinkiDateTime.of(date, LocalTime.of(15, 0)),
+                            employee.evakaUserId,
                         ),
                     )
                 }

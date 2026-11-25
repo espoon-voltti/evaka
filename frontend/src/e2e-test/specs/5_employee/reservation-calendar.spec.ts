@@ -824,13 +824,13 @@ test.describe('Unit group calendar for shift care unit', () => {
 
     await expect(
       childReservations.reservationCells(child1Fixture.id, nextFriday).nth(0)
-    ).toHaveText('09:00\n17:00*', { useInnerText: true })
+    ).toHaveText('09:00\n17:00', { useInnerText: true })
     await weekCalendar.nextWeekButton.click()
     await expect(
       childReservations
         .reservationCells(child1Fixture.id, nextWeekMonday)
         .nth(0)
-    ).toHaveText('08:00\n16:00*', { useInnerText: true })
+    ).toHaveText('08:00\n16:00', { useInnerText: true })
   })
 
   test('Employee sees attendances along reservations', async ({ evaka }) => {
@@ -851,7 +851,8 @@ test.describe('Unit group calendar for shift care unit', () => {
       unitId: testDaycare2.id,
       date: startDate,
       arrived,
-      departed
+      departed,
+      modifiedAt: startDate.toHelsinkiDateTime(LocalTime.of(14, 0))
     }).save()
 
     await Fixture.childAttendance({
@@ -887,14 +888,27 @@ test.describe('Unit group calendar for shift care unit', () => {
 
     await expect
       .poll(() => childReservations.getReservation(startDate, 0))
-      .toEqual(['00:00', '12:00*'])
+      .toEqual(['00:00', '12:00'])
+    await childReservations.assertReservationTooltipContains(
+      child1Fixture.id,
+      startDate,
+      0,
+      'Henkilökunnan tekemä merkintä'
+    )
     await expect
       .poll(() => childReservations.getReservation(startDate, 1))
-      .toEqual(['20:00', '23:59*'])
+      .toEqual(['20:00', '23:59'])
 
     await expect
       .poll(() => childReservations.getAttendance(startDate, 0))
       .toEqual(['08:30', '13:30'])
+    // an attendance from before the per-time markings shows its row-level modification
+    await childReservations.assertAttendanceStartTooltip(
+      child1Fixture.id,
+      startDate,
+      0,
+      `Viimeksi muokattu ${startDate.format()} 14:00; muokkaaja: eVaka`
+    )
     await expect
       .poll(() => childReservations.getAttendance(startDate, 1))
       .toEqual(['18:15', '23:59'])
@@ -1048,6 +1062,6 @@ test.describe('Unit group calendar for shift care unit', () => {
     await weekCalendar.changeWeekToDate(saturday)
     await expect(
       childReservations.reservationCells(child.id, saturday).nth(0)
-    ).toHaveText('10:00\n16:00*', { useInnerText: true })
+    ).toHaveText('10:00\n16:00', { useInnerText: true })
   })
 })

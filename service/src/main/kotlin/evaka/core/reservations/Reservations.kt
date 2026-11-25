@@ -17,9 +17,11 @@ import evaka.core.absence.getAbsenceDatesForChildrenInRange
 import evaka.core.absence.setChildDateAbsences
 import evaka.core.absence.upsertAbsences
 import evaka.core.absence.upsertFullDayAbsences
-import evaka.core.attendance.deleteAttendancesByDate
+import evaka.core.attendance.deleteAttendancesOnDateExcept
+import evaka.core.attendance.getChildAttendanceIdsOnDate
 import evaka.core.attendance.getChildPlacementTypes
 import evaka.core.attendance.insertAttendance
+import evaka.core.attendance.updateAttendance
 import evaka.core.daycare.getClubTerms
 import evaka.core.daycare.getPreschoolTerms
 import evaka.core.holidayperiod.HolidayPeriodEffect
@@ -28,6 +30,7 @@ import evaka.core.placement.PlacementType
 import evaka.core.placement.ScheduleType
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.AttendanceReservationId
+import evaka.core.shared.ChildAttendanceId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EvakaUserId
@@ -448,10 +451,12 @@ data class ChildDatePresence(
     val childId: ChildId,
     val unitId: DaycareId,
     val reservations: List<Reservation>,
-    val attendances: List<TimeInterval>,
+    val attendances: List<ChildAttendanceUpsert>,
     val absenceBillable: AbsenceType?,
     val absenceNonbillable: AbsenceType?,
 )
+
+data class ChildAttendanceUpsert(val id: ChildAttendanceId?, val interval: TimeInterval)
 
 fun upsertChildDatePresence(
     tx: Database.Transaction,
@@ -499,18 +504,32 @@ fun upsertChildDatePresence(
             .filter { it.second == null }
             .map { tx.insertReservation(userId, now, input.date, input.childId, it.first) }
 
-    val deletedAttendances = tx.deleteAttendancesByDate(childId = input.childId, date = input.date)
-    val insertedAttendances =
-        input.attendances.map { attendance ->
-            tx.insertAttendance(
-                input.childId,
-                input.unitId,
-                input.date,
-                TimeInterval(attendance.start, attendance.end),
-                now,
-                userId,
-            )
+    // Not unit-scoped: the calendar shows and saves the child's rows of the date from all units
+    val existingAttendanceIds = tx.getChildAttendanceIdsOnDate(input.childId, input.date)
+    val inputAttendanceIds = input.attendances.mapNotNull { it.id }
+    if (!existingAttendanceIds.containsAll(inputAttendanceIds)) {
+        throw BadRequest("Unknown id was given")
+    }
+    tx.execute { sql("SET CONSTRAINTS child_attendance_no_overlap DEFERRED") }
+    val deletedAttendances =
+        tx.deleteAttendancesOnDateExcept(input.childId, input.date, inputAttendanceIds)
+    val updatedAttendances =
+        input.attendances.mapNotNull { attendance ->
+            attendance.id?.let { tx.updateAttendance(it, attendance.interval, now, userId) }
         }
+    val insertedAttendances =
+        input.attendances
+            .filter { it.id == null }
+            .map { attendance ->
+                tx.insertAttendance(
+                    input.childId,
+                    input.unitId,
+                    input.date,
+                    attendance.interval,
+                    now,
+                    userId,
+                )
+            }
 
     val (insertedAbsences, deletedAbsences) =
         setChildDateAbsences(
@@ -529,6 +548,7 @@ fun upsertChildDatePresence(
         .add(insertedReservations)
         .add(deletedReservations)
         .add(insertedAttendances)
+        .add(updatedAttendances)
         .add(deletedAttendances)
         .add(insertedAbsences)
         .add(deletedAbsences)
@@ -543,15 +563,16 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
     }
 
     attendances.zipWithNext().forEach { (a1, a2) ->
-        if (a1.overlaps(a2)) throw BadRequest("Overlapping attendance times")
+        if (a1.interval.overlaps(a2.interval)) throw BadRequest("Overlapping attendance times")
     }
 
     val threshold = now.toLocalTime().plusMinutes(30)
     attendances.forEach {
         if (
             date == now.toLocalDate() &&
-                ((it.end == null && it.startsAfter(threshold)) ||
-                    (it.end != null && it.overlaps(TimeInterval(threshold, null))))
+                ((it.interval.end == null && it.interval.startsAfter(threshold)) ||
+                    (it.interval.end != null &&
+                        it.interval.overlaps(TimeInterval(threshold, null))))
         ) {
             throw BadRequest(
                 "Cannot mark attendances into future",

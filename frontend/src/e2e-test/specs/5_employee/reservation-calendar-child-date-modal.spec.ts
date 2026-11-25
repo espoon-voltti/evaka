@@ -4,6 +4,8 @@
 
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type {
+  DaycareId,
+  PersonId,
   PlacementId,
   ServiceNeedOptionId
 } from 'lib-common/generated/api-types/shared'
@@ -28,9 +30,9 @@ import { employeeLogin } from '../../utils/user'
 const today = LocalDate.of(2023, 9, 13) // Wed
 
 test.describe('Reservation calendar child date modal', () => {
-  let daycareId: UUID
+  let daycareId: DaycareId
   let groupId: UUID
-  let childId: UUID
+  let childId: PersonId
   let placementId: PlacementId
   let unitSupervisor: DevEmployee
   let daycareServiceNeedOptionId: ServiceNeedOptionId
@@ -121,10 +123,10 @@ test.describe('Reservation calendar child date modal', () => {
 
     let reservations = reservationsTable.reservationCells(childId, date)
     await expect(reservations).toHaveCount(2)
-    await expect(reservations.nth(0)).toHaveText('09:00\n16:00*', {
+    await expect(reservations.nth(0)).toHaveText('09:00\n16:00', {
       useInnerText: true
     })
-    await expect(reservations.nth(1)).toHaveText('20:30\n23:59 *', {
+    await expect(reservations.nth(1)).toHaveText('20:30\n23:59', {
       useInnerText: true
     })
     await expect(
@@ -139,7 +141,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     reservations = reservationsTable.reservationCells(childId, date)
     await expect(reservations).toHaveCount(1)
-    await expect(reservations.nth(0)).toHaveText('10:15\n16:00*', {
+    await expect(reservations.nth(0)).toHaveText('10:15\n16:00', {
       useInnerText: true
     })
   })
@@ -161,12 +163,18 @@ test.describe('Reservation calendar child date modal', () => {
 
     let attendances = reservationsTable.attendanceCells(childId, date)
     await expect(attendances).toHaveCount(2)
-    await expect(attendances.nth(0)).toHaveText('09:00\n16:00', {
+    await expect(attendances.nth(0)).toHaveText('09:00*\n16:00*', {
       useInnerText: true
     })
-    await expect(attendances.nth(1)).toHaveText('20:30\n-', {
+    await expect(attendances.nth(1)).toHaveText('20:30*\n-', {
       useInnerText: true
     })
+    await reservationsTable.assertAttendanceStartTooltip(
+      childId,
+      date,
+      0,
+      `*Merkintä luotu 13.09.2023 12:00, ${unitSupervisor.lastName} ${unitSupervisor.firstName}`
+    )
 
     await reservationsTable.openChildDateModal(childId, date)
     await expect(modal.attendanceStart(0)).toHaveValue('09:00')
@@ -176,9 +184,45 @@ test.describe('Reservation calendar child date modal', () => {
 
     attendances = reservationsTable.attendanceCells(childId, date)
     await expect(attendances).toHaveCount(1)
-    await expect(attendances.nth(0)).toHaveText('10:15\n16:00', {
+    await expect(attendances.nth(0)).toHaveText('10:15*\n16:00*', {
       useInnerText: true
     })
+
+    // marked on its own day: editing the arrival leaves the departure unmarked
+    const markedDate = today.subDays(2)
+    const markedAt = markedDate.toHelsinkiDateTime(LocalTime.of(16, 5))
+    const markedBy = evakaUserId(unitSupervisor.id)
+    await Fixture.childAttendance({
+      childId,
+      unitId: daycareId,
+      date: markedDate,
+      arrived: LocalTime.of(8, 0),
+      departed: LocalTime.of(16, 0),
+      arrivedAddedAt: markedAt,
+      arrivedAddedBy: markedBy,
+      arrivedModifiedAt: markedAt,
+      arrivedModifiedBy: markedBy,
+      departedAddedAt: markedAt,
+      departedAddedBy: markedBy,
+      departedModifiedAt: markedAt,
+      departedModifiedBy: markedBy
+    }).save()
+    await page.reload()
+    await reservationsTable.openChildDateModal(childId, markedDate)
+    await modal.attendanceStart(0).fill('08:15')
+    await modal.submit()
+    await expect(
+      reservationsTable.attendanceCells(childId, markedDate).nth(0)
+    ).toHaveText('08:15*\n16:00', { useInnerText: true })
+
+    // marked on the same day: no asterisk
+    await reservationsTable.openChildDateModal(childId, today)
+    await modal.addAttendanceBtn.click()
+    await modal.attendanceStart(0).type('800')
+    await modal.submit()
+    await expect(
+      reservationsTable.attendanceCells(childId, today).nth(0)
+    ).toHaveText('08:00\n-', { useInnerText: true })
   })
 
   test('Add absences for child in preschool daycare for tomorrow then update one and remove other', async () => {
@@ -200,7 +244,7 @@ test.describe('Reservation calendar child date modal', () => {
     // billable absence has precedence
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Sairaus*')
+    ).toHaveText('Sairaus')
 
     await reservationsTable.openChildDateModal(childId, date)
     await modal.nonbillableAbsenceRemove.click()
@@ -209,7 +253,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*')
+    ).toHaveText('Poissaolo')
 
     // reservation times are shown if partially absent
     await reservationsTable.openChildDateModal(childId, date)
@@ -222,10 +266,10 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('09:00\n13:00*', { useInnerText: true })
+    ).toHaveText('09:00\n13:00', { useInnerText: true })
     await expect(
       reservationsTable.reservationCells(childId, date).nth(1)
-    ).toHaveText('14:00\n17:00*', { useInnerText: true })
+    ).toHaveText('14:00\n17:00', { useInnerText: true })
 
     // reservation times are not shown if fully absent
     await reservationsTable.openChildDateModal(childId, date)
@@ -234,7 +278,7 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*')
+    ).toHaveText('Poissaolo')
     await expect(
       reservationsTable.reservationCells(childId, date).nth(1)
     ).toHaveText('')
@@ -255,7 +299,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*')
+    ).toHaveText('Poissaolo')
   })
 
   test('Add absence for child in daycare for yesterday', async () => {
@@ -275,7 +319,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*')
+    ).toHaveText('Poissaolo')
   })
 
   test('Absence warnings for child in daycare', async () => {

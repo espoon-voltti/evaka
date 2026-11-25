@@ -6,6 +6,7 @@
 
 import type { AbsenceCategory } from './absence'
 import type { AbsenceType } from './absence'
+import type { ChildAttendanceId } from './shared'
 import type { ChildImageId } from './shared'
 import type { ChildServiceNeedInfo } from './absence'
 import type { DailyServiceTimesValue } from './dailyservicetimes'
@@ -60,7 +61,17 @@ export interface AbsenceTypeResponse {
 * Generated from evaka.core.reservations.AttendanceTimesForDate
 */
 export interface AttendanceTimesForDate {
+  arrivedAddedAt: HelsinkiDateTime | null
+  arrivedAddedBy: EvakaUser | null
+  arrivedModifiedAt: HelsinkiDateTime | null
+  arrivedModifiedBy: EvakaUser | null
   date: LocalDate
+  departedAddedAt: HelsinkiDateTime | null
+  departedAddedBy: EvakaUser | null
+  departedModifiedAt: HelsinkiDateTime | null
+  departedModifiedBy: EvakaUser | null
+  endDate: LocalDate
+  id: ChildAttendanceId
   interval: TimeInterval
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
@@ -86,12 +97,20 @@ export interface Child {
 }
 
 /**
+* Generated from evaka.core.reservations.ChildAttendanceUpsert
+*/
+export interface ChildAttendanceUpsert {
+  id: ChildAttendanceId | null
+  interval: TimeInterval
+}
+
+/**
 * Generated from evaka.core.reservations.ChildDatePresence
 */
 export interface ChildDatePresence {
   absenceBillable: AbsenceType | null
   absenceNonbillable: AbsenceType | null
-  attendances: TimeInterval[]
+  attendances: ChildAttendanceUpsert[]
   childId: PersonId
   date: LocalDate
   reservations: Reservation[]
@@ -480,7 +499,12 @@ export function deserializeJsonAbsenceTypeResponse(json: JsonOf<AbsenceTypeRespo
 export function deserializeJsonAttendanceTimesForDate(json: JsonOf<AttendanceTimesForDate>): AttendanceTimesForDate {
   return {
     ...json,
+    arrivedAddedAt: (json.arrivedAddedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedAddedAt) : null,
+    arrivedModifiedAt: (json.arrivedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedModifiedAt) : null,
     date: LocalDate.parseIso(json.date),
+    departedAddedAt: (json.departedAddedAt != null) ? HelsinkiDateTime.parseIso(json.departedAddedAt) : null,
+    departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null,
+    endDate: LocalDate.parseIso(json.endDate),
     interval: TimeInterval.parseJson(json.interval),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
@@ -496,10 +520,18 @@ export function deserializeJsonChild(json: JsonOf<Child>): Child {
 }
 
 
+export function deserializeJsonChildAttendanceUpsert(json: JsonOf<ChildAttendanceUpsert>): ChildAttendanceUpsert {
+  return {
+    ...json,
+    interval: TimeInterval.parseJson(json.interval)
+  }
+}
+
+
 export function deserializeJsonChildDatePresence(json: JsonOf<ChildDatePresence>): ChildDatePresence {
   return {
     ...json,
-    attendances: json.attendances.map(e => TimeInterval.parseJson(e)),
+    attendances: json.attendances.map(e => deserializeJsonChildAttendanceUpsert(e)),
     date: LocalDate.parseIso(json.date),
     reservations: json.reservations.map(e => deserializeJsonReservation(e))
   }

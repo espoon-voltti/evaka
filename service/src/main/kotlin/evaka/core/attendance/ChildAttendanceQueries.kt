@@ -39,8 +39,24 @@ fun Database.Transaction.insertAttendance(
     return createUpdate {
         sql(
             """
-                INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by)
-                VALUES (${bind(childId)}, ${bind(unitId)}, ${bind(date)}, ${bind(range.start)}, ${bind(range.end)}, ${bind(now)}, ${bind(createdById)})
+                INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time, modified_at, modified_by, arrived_added_at, arrived_added_by, arrived_modified_at, arrived_modified_by, departed_added_at, departed_added_by, departed_modified_at, departed_modified_by)
+                VALUES (
+                    ${bind(childId)},
+                    ${bind(unitId)},
+                    ${bind(date)},
+                    ${bind(range.start)},
+                    ${bind(range.end)},
+                    ${bind(now)},
+                    ${bind(createdById)},
+                    ${bind(now)},
+                    ${bind(createdById)},
+                    ${bind(now)},
+                    ${bind(createdById)},
+                    ${bind(now.takeIf { range.end != null })},
+                    ${bind(createdById.takeIf { range.end != null })},
+                    ${bind(now.takeIf { range.end != null })},
+                    ${bind(createdById.takeIf { range.end != null })}
+                )
                 RETURNING id
                 """,
         )
@@ -428,7 +444,17 @@ fun Database.Transaction.unsetAttendanceEndTime(
 ) {
     execute {
         sql(
-            "UPDATE child_attendance SET end_time = NULL, modified_at=${bind(now)}, modified_by=${bind(updatedById)} WHERE id = ${bind(attendanceId)}",
+            """
+UPDATE child_attendance
+SET end_time = NULL,
+    modified_at = ${bind(now)},
+    modified_by = ${bind(updatedById)},
+    departed_added_at = NULL,
+    departed_added_by = NULL,
+    departed_modified_at = NULL,
+    departed_modified_by = NULL
+WHERE id = ${bind(attendanceId)}
+""",
         )
     }
 }
@@ -441,7 +467,17 @@ fun Database.Transaction.updateAttendanceEnd(
 ) {
     execute {
         sql(
-            "UPDATE child_attendance SET end_time = ${bind(endTime)}, modified_at = ${bind(now)}, modified_by = ${bind(updatedById)} WHERE id = ${bind(attendanceId)}",
+            """
+UPDATE child_attendance
+SET end_time = ${bind(endTime)},
+    modified_at = ${bind(now)},
+    modified_by = ${bind(updatedById)},
+    departed_added_at = ${bind(now)},
+    departed_added_by = ${bind(updatedById)},
+    departed_modified_at = ${bind(now)},
+    departed_modified_by = ${bind(updatedById)}
+WHERE id = ${bind(attendanceId)}
+""",
         )
     }
 }
@@ -471,17 +507,58 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
     .executeAndReturnGeneratedKeys()
     .toList()
 
-@IgnorableReturnValue
-fun Database.Transaction.deleteAttendancesByDate(
+fun Database.Read.getChildAttendanceIdsOnDate(
     childId: ChildId,
     date: LocalDate,
+): List<ChildAttendanceId> = createQuery {
+    sql(
+        "SELECT id FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)}",
+    )
+}
+    .toList()
+
+fun Database.Transaction.deleteAttendancesOnDateExcept(
+    childId: ChildId,
+    date: LocalDate,
+    exceptIds: List<ChildAttendanceId>,
 ): List<ChildAttendanceId> = createUpdate {
     sql(
-        "DELETE FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)} RETURNING id",
+        "DELETE FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)} AND NOT id = ANY(${bind(exceptIds)}) RETURNING id",
     )
 }
     .executeAndReturnGeneratedKeys()
     .toList()
+
+fun Database.Transaction.updateAttendance(
+    id: ChildAttendanceId,
+    range: TimeInterval,
+    now: HelsinkiDateTime,
+    modifiedById: EvakaUserId,
+): ChildAttendanceId? = createUpdate {
+    sql(
+        """
+UPDATE child_attendance new
+SET start_time = ${bind(range.start)},
+    end_time = ${bind(range.end)},
+    modified_at = ${bind(now)},
+    modified_by = ${bind(modifiedById)},
+    arrived_modified_at = CASE WHEN old.start_time != ${bind(range.start)} THEN ${bind(now)} ELSE old.arrived_modified_at END,
+    arrived_modified_by = CASE WHEN old.start_time != ${bind(range.start)} THEN ${bind(modifiedById)} ELSE old.arrived_modified_by END,
+    -- Unlike in the staff queries, no departed_modified_* fallback: the nightly job sets departed_added_* itself
+    departed_added_at = CASE WHEN old.end_time IS NULL AND old.end_time IS DISTINCT FROM ${bind(range.end)} THEN ${bind(now)} ELSE old.departed_added_at END,
+    departed_added_by = CASE WHEN old.end_time IS NULL AND old.end_time IS DISTINCT FROM ${bind(range.end)} THEN ${bind(modifiedById)} ELSE old.departed_added_by END,
+    departed_modified_at = CASE WHEN old.end_time IS DISTINCT FROM ${bind(range.end)} THEN ${bind(now)} ELSE old.departed_modified_at END,
+    departed_modified_by = CASE WHEN old.end_time IS DISTINCT FROM ${bind(range.end)} THEN ${bind(modifiedById)} ELSE old.departed_modified_by END
+FROM child_attendance old
+WHERE new.id = ${bind(id)}
+  AND new.id = old.id
+  AND (old.start_time != ${bind(range.start)} OR old.end_time IS DISTINCT FROM ${bind(range.end)})
+RETURNING new.id
+""",
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull()
 
 @IgnorableReturnValue
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(

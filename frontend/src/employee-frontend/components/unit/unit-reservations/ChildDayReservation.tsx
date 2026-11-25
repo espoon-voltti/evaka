@@ -22,7 +22,7 @@ import type {
 import type LocalDate from 'lib-common/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { Light } from 'lib-components/typography'
+import { Light, P } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
 import { faCircleEllipsis } from 'lib-icons'
 import { faExclamationTriangle } from 'lib-icons'
@@ -115,12 +115,19 @@ export default React.memo(function ChildDayReservation({
         ) : reservation && reservation.type === 'TIMES' ? (
           <ReservationTooltip
             tooltip={
-              reservation &&
-              i18n.unit.attendanceReservations.lastModified(
-                reservation.modifiedAt?.format() || '',
-                reservation.modifiedBy?.name || ''
-              )
+              <>
+                <P>
+                  {i18n.unit.attendanceReservations.lastModified(
+                    reservation.modifiedAt?.format() || '',
+                    reservation.modifiedBy?.name || ''
+                  )}
+                </P>
+                {reservation.staffCreated && (
+                  <P>{i18n.unit.attendanceReservations.createdByEmployee}</P>
+                )}
+              </>
             }
+            data-qa="reservation-tooltip"
           >
             <TimeCell
               data-qa="reservation-start"
@@ -144,7 +151,6 @@ export default React.memo(function ChildDayReservation({
                   />
                 </>
               )}
-              {reservation.staffCreated && '*'}
             </TimeCell>
           </ReservationTooltip>
         ) : reservationIndex === 0 ? (

@@ -466,6 +466,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             occupancyCoefficient =
                                 if (body.hasStaffOccupancyEffect) occupancyCoefficientSeven
                                 else occupancyCoefficientZero,
+                            modifiedAt = nowHDT,
+                            modifiedBy = user.evakaUserId,
                         ),
                     )
                 }
@@ -515,6 +517,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     ExternalStaffDeparture(
                         id = body.attendanceId,
                         departed = departedTimeOrDefault,
+                        modifiedAt = nowHDT,
+                        modifiedBy = user.evakaUserId,
                     ),
                 )
             }

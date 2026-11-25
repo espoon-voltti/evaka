@@ -396,13 +396,14 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                 if (body.entries.mapNotNull { it.id }.any { id -> !existingIds.contains(id) }) {
                     throw BadRequest("Unknown id was given")
                 }
-                tx.deleteExternalAttendancesOnDateExcept(
-                    body.unitId,
-                    body.name,
-                    body.date,
-                    body.entries.mapNotNull { it.id },
-                )
-                body.entries.map {
+                val deleted =
+                    tx.deleteExternalAttendancesOnDateExcept(
+                        body.unitId,
+                        body.name,
+                        body.date,
+                        body.entries.mapNotNull { it.id },
+                    )
+                body.entries.mapNotNull {
                     tx.upsertExternalStaffAttendance(
                         it.id,
                         body.name,
@@ -412,8 +413,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
                         else occupancyCoefficientZero,
                         false,
+                        clock.now(),
+                        user.evakaUserId,
                     )
-                }
+                } + deleted
             }
         }
         Audit.StaffAttendanceExternalUpdate.log(
