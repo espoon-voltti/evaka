@@ -11,7 +11,6 @@ import { useLocation } from 'wouter'
 import { combine } from 'lib-common/api'
 import type FiniteDateTimeRange from 'lib-common/finite-date-time-range'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
-import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -78,11 +77,11 @@ export default React.memo(function StaffMemberPage({
   const openAttendanceInAnotherUnit =
     !!openAttendance && openAttendance.unitId !== unitId
 
-  function formatTime(time: HelsinkiDateTime) {
-    const today = LocalDate.todayInHelsinkiTz()
-    return time.toLocalDate().isEqual(today)
-      ? time.toLocalTime().format()
-      : time.format('d.M. HH:mm')
+  function formatRange(range: FiniteDateTimeRange) {
+    const times = range.timesOn(LocalDate.todayInHelsinkiTz())
+    const start = times.start?.format() ?? range.start.format('d.M. HH:mm')
+    const end = times.end?.format() ?? range.end.format('d.M. HH:mm')
+    return `${start} – ${end}`
   }
 
   const spanningPlans = useMemo(() => {
@@ -106,7 +105,7 @@ export default React.memo(function StaffMemberPage({
               <li key={plan.period.start.formatIso()}>
                 <div>
                   <div>
-                    {`${i18n.attendances.staffTypes[plan.type]} ${formatTime(plan.period.start)} – ${formatTime(plan.period.end)}`}
+                    {`${i18n.attendances.staffTypes[plan.type]} ${formatRange(plan.period)}`}
                   </div>
                   {plan.description ? <i>({plan.description})</i> : null}
                 </div>
@@ -146,20 +145,16 @@ export default React.memo(function StaffMemberPage({
                     <TimeInfo data-qa="shift-time">
                       <span>{i18n.attendances.staff.plannedAttendance}</span>
                       <PlanContainer>
-                        {spanningPlans.map(({ span, info }, i) => {
-                          const start = formatTime(span.start)
-                          const end = formatTime(span.end)
-                          return (
-                            <ExpandingInfo
-                              info={info}
-                              key={`plan-${i}`}
-                              inlineChildren
-                              data-qa="shift-info"
-                            >
-                              <span>{`${start} – ${end}`}</span>
-                            </ExpandingInfo>
-                          )
-                        })}
+                        {spanningPlans.map(({ span, info }, i) => (
+                          <ExpandingInfo
+                            info={info}
+                            key={`plan-${i}`}
+                            inlineChildren
+                            data-qa="shift-info"
+                          >
+                            <span>{formatRange(span)}</span>
+                          </ExpandingInfo>
+                        ))}
                       </PlanContainer>
                     </TimeInfo>
                   )}

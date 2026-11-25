@@ -670,6 +670,21 @@ test.describe('Realtime staff attendance page', () => {
     await staffAttendancePage.assertShiftDescriptionShownInInfo('SAK-aika')
   })
 
+  test('A plan that ends at midnight is shown with its end time', async () => {
+    await Fixture.staffAttendancePlan({
+      id: randomId<StaffAttendancePlanId>(),
+      employeeId: staffFixture.id,
+      startTime: HelsinkiDateTime.of(2022, 5, 5, 16, 0),
+      endTime: HelsinkiDateTime.of(2022, 5, 6, 0, 0)
+    }).save()
+
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.assertShiftTimeTextShown(
+      'Työvuoro tänään\n16:00 – 00:00'
+    )
+  })
+
   test('Staff departs to non work in the middle of the planned day and comes back later', async () => {
     // Planned attendance 08:00 - 16:00
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
@@ -1177,6 +1192,12 @@ test.describe('Realtime staff attendance edit page', () => {
         arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(7, 0)),
         departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(9, 0))
       }).save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: staffFixture.id,
+        groupId: anotherGroupId,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)),
+        departed: date.addDays(1).startOfDay()
+      }).save()
 
       await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)))
       await staffAttendancePage.openStaffPage(employeeName)
@@ -1188,6 +1209,9 @@ test.describe('Realtime staff attendance edit page', () => {
       const editPage = new StaffAttendanceEditPage(page)
       await expect(editPage.attendancesInOtherUnits).toContainText(
         `${testDaycare.name}: 07:00 – 09:00`
+      )
+      await expect(editPage.attendancesInOtherUnits).toContainText(
+        `${testDaycare.name}: 16:00 – 00:00`
       )
       await editPage.fillArrived(0, '08:00')
       await expect(editPage.arrivedInfo(0)).toHaveText('Tarkista')

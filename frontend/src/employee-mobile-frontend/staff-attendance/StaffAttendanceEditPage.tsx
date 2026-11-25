@@ -494,12 +494,11 @@ const StaffAttendancesEditor = ({
             <Label>{i18n.attendances.staff.plan}</Label>{' '}
             <div>
               {staffMember.spanningPlans.map((range, i) => {
-                const start = range.start.toLocalDate().isEqual(date)
-                  ? range.start.toLocalTime().format()
-                  : range.start.format('d.M. HH:mm')
-                const end = range.end.toLocalDate().isEqual(date)
-                  ? range.end.toLocalTime().format()
-                  : range.end.format('d.M. HH:mm')
+                const times = range.timesOn(date)
+                const start =
+                  times.start?.format() ?? range.start.format('d.M. HH:mm')
+                const end =
+                  times.end?.format() ?? range.end.format('d.M. HH:mm')
                 return <div key={`plan-${i}`}>{`${start} – ${end}`}</div>
               })}
             </div>
@@ -872,7 +871,7 @@ const OtherAttendanceList = React.memo(function OtherAttendanceList({
   return (
     <OtherAttendanceUl>
       {attendances.map(({ unitName, groupId, period }, i) => {
-        const currentDate = date ?? period.start.toLocalDate()
+        const times = period.timesOn(date ?? period.start.toLocalDate())
         return (
           <li key={i}>
             {unitName ??
@@ -880,15 +879,8 @@ const OtherAttendanceList = React.memo(function OtherAttendanceList({
               i18n.attendances.noGroup}
             :{' '}
             <strong>
-              {period.start.toLocalDate().isBefore(currentDate)
-                ? LocalTime.MIN.format()
-                : period.start.toLocalTime().format()}{' '}
-              –{' '}
-              {period.end
-                ? period.end.toLocalDate().isEqual(currentDate)
-                  ? period.end.toLocalTime().format()
-                  : '→'
-                : ''}
+              {(times.start ?? LocalTime.MIN).format()} –{' '}
+              {period.end ? (times.end?.format() ?? '→') : ''}
             </strong>
           </li>
         )
