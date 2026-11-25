@@ -838,12 +838,13 @@ class AttendanceReservationsControllerIntegrationTest :
                     attendances =
                         listOf(
                             attendanceTimes(
-                                child1.id,
-                                mon,
-                                TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59)),
-                                now,
-                                employee.evakaUser,
-                            ),
+                                    child1.id,
+                                    mon,
+                                    TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59)),
+                                    now,
+                                    employee.evakaUser,
+                                )
+                                .copy(endDate = tue),
                         ),
                     absenceBillable = null,
                     absenceNonbillable = null,
@@ -2101,6 +2102,52 @@ class AttendanceReservationsControllerIntegrationTest :
     }
 
     @Test
+    fun `attendance end date follows overnight rows past the requested range`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                ),
+            )
+            tx.insertTestChildAttendance(
+                childId = child1.id,
+                unitId = daycare.id,
+                arrived = HelsinkiDateTime.of(mon, LocalTime.of(8, 0)),
+                departed = HelsinkiDateTime.of(mon, LocalTime.of(16, 0)),
+            )
+            // no row starting at 00:00 on thursday, so the chain ends on wednesday
+            tx.insertTestChildAttendance(
+                childId = child1.id,
+                unitId = daycare.id,
+                arrived = HelsinkiDateTime.of(wed, LocalTime.of(20, 0)),
+                departed = HelsinkiDateTime.of(wed, LocalTime.of(23, 59)),
+            )
+            tx.insertTestChildAttendance(
+                childId = child1.id,
+                unitId = daycare.id,
+                arrived = HelsinkiDateTime.of(fri, LocalTime.of(20, 0)),
+                departed = HelsinkiDateTime.of(fri.plusDays(2), LocalTime.of(7, 0)),
+            )
+        }
+
+        assertEquals(
+            listOf(
+                Triple(mon, LocalTime.of(8, 0), mon),
+                Triple(wed, LocalTime.of(20, 0), wed),
+                Triple(fri, LocalTime.of(20, 0), fri.plusDays(2)),
+            ),
+            getAttendanceReservations().days.flatMap { day ->
+                day.children.flatMap { child ->
+                    child.attendances.map { Triple(it.date, it.interval.start.inner, it.endDate) }
+                }
+            },
+        )
+    }
+
+    @Test
     fun `get non-reservable reservations throws forbidden when child doesn't have placement`() {
         val mobileDeviceId = db.transaction { tx ->
             tx.insert(DevMobileDevice(unitId = daycare.id))
@@ -3129,5 +3176,6 @@ class AttendanceReservationsControllerIntegrationTest :
             departedAddedBy = modifiedBy.takeIf { interval.end != null },
             departedModifiedAt = modifiedAt.takeIf { interval.end != null },
             departedModifiedBy = modifiedBy.takeIf { interval.end != null },
+            endDate = date,
         )
 }

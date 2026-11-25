@@ -70,6 +70,7 @@ export interface AttendanceTimesForDate {
   departedAddedBy: EvakaUser | null
   departedModifiedAt: HelsinkiDateTime | null
   departedModifiedBy: EvakaUser | null
+  endDate: LocalDate
   id: ChildAttendanceId
   interval: TimeInterval
   modifiedAt: HelsinkiDateTime
@@ -503,6 +504,7 @@ export function deserializeJsonAttendanceTimesForDate(json: JsonOf<AttendanceTim
     date: LocalDate.parseIso(json.date),
     departedAddedAt: (json.departedAddedAt != null) ? HelsinkiDateTime.parseIso(json.departedAddedAt) : null,
     departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null,
+    endDate: LocalDate.parseIso(json.endDate),
     interval: TimeInterval.parseJson(json.interval),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }

@@ -1072,10 +1072,21 @@ private fun Database.Read.getAttendanceTimes(
 ): Map<ChildId, List<AttendanceTimesForDate>> = createQuery {
     sql(
         """
+WITH RECURSIVE overnight AS (
+    SELECT id AS first_id, child_id, date, end_time
+    FROM child_attendance
+    WHERE child_id = ANY(${bind(childIds)}) AND between_start_and_end(${bind(dateRange)}, date) AND end_time = '23:59'
+    UNION ALL
+    SELECT overnight.first_id, next.child_id, next.date, next.end_time
+    FROM overnight
+    JOIN child_attendance next ON next.child_id = overnight.child_id AND next.date = overnight.date + 1 AND next.start_time = '00:00'
+    WHERE overnight.end_time = '23:59'
+)
 SELECT
     att.child_id,
     att.id,
     att.date,
+    coalesce(chain.end_date, att.date) AS end_date,
     att.start_time,
     att.end_time,
     att.modified_at,
@@ -1104,6 +1115,7 @@ LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = att.arrived_added
 LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = att.arrived_modified_by
 LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = att.departed_added_by
 LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = att.departed_modified_by
+LEFT JOIN (SELECT first_id, max(date) AS end_date FROM overnight GROUP BY first_id) chain ON chain.first_id = att.id
 WHERE att.child_id = ANY(${bind(childIds)}) AND between_start_and_end(${bind(dateRange)}, att.date)
 ORDER BY att.date, att.start_time
 """,
@@ -1169,6 +1181,7 @@ data class AttendanceTimesForDate(
     val departedAddedBy: EvakaUser?,
     val departedModifiedAt: HelsinkiDateTime?,
     val departedModifiedBy: EvakaUser?,
+    val endDate: LocalDate,
 )
 
 private data class ChildAttendanceForDateRow(
@@ -1187,6 +1200,7 @@ private data class ChildAttendanceForDateRow(
     @Nested("departed_added_by") val departedAddedBy: EvakaUser?,
     val departedModifiedAt: HelsinkiDateTime?,
     @Nested("departed_modified_by") val departedModifiedBy: EvakaUser?,
+    val endDate: LocalDate,
 ) {
     fun toAttendanceTimesForDate() =
         AttendanceTimesForDate(
@@ -1203,6 +1217,7 @@ private data class ChildAttendanceForDateRow(
             departedAddedBy = departedAddedBy,
             departedModifiedAt = departedModifiedAt,
             departedModifiedBy = departedModifiedBy,
+            endDate = endDate,
         )
 }
 
