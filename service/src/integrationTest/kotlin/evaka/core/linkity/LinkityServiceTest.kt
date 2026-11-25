@@ -12,6 +12,7 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.*
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.security.PilotFeature
@@ -225,8 +226,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 null,
                 employee.id,
                 groupId,
-                arrived,
-                departed,
+                DateTimeRange(arrived, departed),
                 "1".toBigDecimal(),
                 type,
                 false,

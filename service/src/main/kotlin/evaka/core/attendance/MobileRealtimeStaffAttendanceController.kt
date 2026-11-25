@@ -20,6 +20,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.mapPSQLException
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -210,8 +211,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 attendance.id,
                                 attendance.employeeId,
                                 attendance.groupId,
-                                attendance.arrived,
-                                attendance.departed,
+                                DateTimeRange(attendance.arrived, attendance.departed),
                                 occupancyCoefficient,
                                 attendance.type,
                                 false,
@@ -283,8 +283,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             attendance.id,
                             attendance.employeeId,
                             attendance.groupId,
-                            attendance.arrived,
-                            attendance.departed,
+                            DateTimeRange(attendance.arrived, attendance.departed),
                             occupancyCoefficient,
                             attendance.type,
                             false,
@@ -378,8 +377,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                     attendanceId = null,
                                     employeeId = body.employeeId,
                                     groupId = row.groupId,
-                                    arrivalTime = row.period.start,
-                                    departureTime = row.period.end,
+                                    period = row.period,
                                     occupancyCoefficient =
                                         if (row.hasStaffOccupancyEffect) occupancyCoefficientSeven
                                         else occupancyCoefficientZero,

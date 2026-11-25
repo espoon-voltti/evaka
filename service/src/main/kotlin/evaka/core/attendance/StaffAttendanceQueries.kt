@@ -197,8 +197,7 @@ fun Database.Transaction.upsertStaffAttendance(
     attendanceId: StaffAttendanceRealtimeId?,
     employeeId: EmployeeId?,
     groupId: GroupId?,
-    arrivalTime: HelsinkiDateTime,
-    departureTime: HelsinkiDateTime?,
+    period: DateTimeRange,
     occupancyCoefficient: BigDecimal?,
     type: StaffAttendanceType,
     departedAutomatically: Boolean = false,
@@ -213,8 +212,8 @@ INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed,
 VALUES (
     ${bind(employeeId)},
     ${bind(groupId)},
-    ${bind(arrivalTime)},
-    ${bind(departureTime)},
+    ${bind(period.start)},
+    ${bind(period.end)},
     ${bind(occupancyCoefficient)},
     ${bind(type)},
     ${bind(departedAutomatically)},
@@ -222,10 +221,10 @@ VALUES (
     ${bind(modifiedBy)},
     ${bind(modifiedAt)},
     ${bind(modifiedBy)},
-    ${bind(modifiedAt.takeIf { departureTime != null })},
-    ${bind(modifiedBy.takeIf { departureTime != null })},
-    ${bind(modifiedAt.takeIf { departureTime != null })},
-    ${bind(modifiedBy.takeIf { departureTime != null })}
+    ${bind(modifiedAt.takeIf { period.end != null })},
+    ${bind(modifiedBy.takeIf { period.end != null })},
+    ${bind(modifiedAt.takeIf { period.end != null })},
+    ${bind(modifiedBy.takeIf { period.end != null })}
 )
 RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 """,
@@ -240,23 +239,23 @@ RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, t
                 """
 UPDATE staff_attendance_realtime new
 SET group_id = ${bind(groupId)},
-    arrived = ${bind(arrivalTime)},
-    departed = ${bind(departureTime)},
+    arrived = ${bind(period.start)},
+    departed = ${bind(period.end)},
     occupancy_coefficient = ${bind(occupancyCoefficient)},
     type = ${bind(type)},
     departed_automatically = ${bind(departedAutomatically)},
-    arrived_modified_at = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE old.arrived_modified_at END,
-    arrived_modified_by = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE old.arrived_modified_by END,
-    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_at, ${bind(modifiedAt)}) ELSE old.departed_added_at END,
-    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_by, ${bind(modifiedBy)}) ELSE old.departed_added_by END,
-    departed_modified_at = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE old.departed_modified_at END,
-    departed_modified_by = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE old.departed_modified_by END
+    arrived_modified_at = CASE WHEN old.arrived != ${bind(period.start)} THEN ${bind(modifiedAt)} ELSE old.arrived_modified_at END,
+    arrived_modified_by = CASE WHEN old.arrived != ${bind(period.start)} THEN ${bind(modifiedBy)} ELSE old.arrived_modified_by END,
+    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(period.end)} THEN coalesce(old.departed_added_at, ${bind(modifiedAt)}) ELSE old.departed_added_at END,
+    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(period.end)} THEN coalesce(old.departed_added_by, ${bind(modifiedBy)}) ELSE old.departed_added_by END,
+    departed_modified_at = CASE WHEN old.departed IS DISTINCT FROM ${bind(period.end)} THEN ${bind(modifiedAt)} ELSE old.departed_modified_at END,
+    departed_modified_by = CASE WHEN old.departed IS DISTINCT FROM ${bind(period.end)} THEN ${bind(modifiedBy)} ELSE old.departed_modified_by END
 FROM staff_attendance_realtime old
 WHERE new.id = ${bind(attendanceId)}
   AND new.id = old.id
   AND (old.group_id IS DISTINCT FROM ${bind(groupId)}
-    OR old.arrived != ${bind(arrivalTime)}
-    OR old.departed IS DISTINCT FROM ${bind(departureTime)}
+    OR old.arrived != ${bind(period.start)}
+    OR old.departed IS DISTINCT FROM ${bind(period.end)}
     OR old.occupancy_coefficient != ${bind(occupancyCoefficient)}
     OR old.type != ${bind(type)}
     OR old.departed_automatically != ${bind(departedAutomatically)}

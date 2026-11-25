@@ -18,6 +18,7 @@ import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -300,8 +301,7 @@ fun Database.Transaction.addAttendance(
         null,
         employeeId,
         groupId,
-        HelsinkiDateTime.of(date, arrival),
-        HelsinkiDateTime.of(date, departure),
+        FiniteDateTimeRange.of(date, arrival, departure).asDateTimeRange(),
         BigDecimal(1.0),
         StaffAttendanceType.PRESENT,
         modifiedAt = modifiedAt,
