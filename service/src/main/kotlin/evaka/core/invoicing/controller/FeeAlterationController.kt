@@ -5,7 +5,7 @@
 package evaka.core.invoicing.controller
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.associateOrphanAttachments
 import evaka.core.invoicing.data.deleteFeeAlteration
@@ -48,6 +48,7 @@ class FeeAlterationController(
         clock: EvakaClock,
         @RequestParam personId: PersonId,
     ): List<FeeAlterationWithPermittedActions> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -57,7 +58,10 @@ class FeeAlterationController(
                         Action.Child.READ_FEE_ALTERATIONS,
                         personId,
                     )
-                    val feeAlterations = tx.getFeeAlterationsForPerson(personId)
+                    val feeAlterations =
+                        tx.getFeeAlterationsForPerson(personId).also { alterations ->
+                            audit.add(alterations.mapNotNull { it.id })
+                        }
                     val permittedActions =
                         accessControl.getPermittedActions<FeeAlterationId, Action.FeeAlteration>(
                             tx,
@@ -70,12 +74,7 @@ class FeeAlterationController(
                     }
                 }
             }
-            .also {
-                Audit.ChildFeeAlterationsRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.ChildFeeAlterationsRead, clock) }
     }
 
     data class FeeAlterationWithPermittedActions(
@@ -91,41 +90,44 @@ class FeeAlterationController(
         @RequestBody feeAlteration: FeeAlteration,
     ) {
         val id = FeeAlterationId(UUID.randomUUID())
+        val audit =
+            AuditContext()
+                .add(feeAlteration.personId)
+                .add(id)
+                .add(feeAlteration.attachments.map { it.id })
+                .observeDate(feeAlteration.validFrom)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Child.CREATE_FEE_ALTERATION,
-                    feeAlteration.personId,
-                )
-                tx.upsertFeeAlteration(
-                    clock = clock,
-                    modifiedBy = user.evakaUserId,
-                    feeAlteration = feeAlteration.copy(id = id),
-                )
-                tx.associateOrphanAttachments(
-                    user.evakaUserId,
-                    AttachmentParent.FeeAlteration(id),
-                    feeAlteration.attachments.map { it.id },
-                )
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            feeAlteration.personId,
-                            DateRange(feeAlteration.validFrom, feeAlteration.validTo),
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_FEE_ALTERATION,
+                        feeAlteration.personId,
+                    )
+                    tx.upsertFeeAlteration(
+                        clock = clock,
+                        modifiedBy = user.evakaUserId,
+                        feeAlteration = feeAlteration.copy(id = id),
+                    )
+                    tx.associateOrphanAttachments(
+                        user.evakaUserId,
+                        AttachmentParent.FeeAlteration(id),
+                        feeAlteration.attachments.map { it.id },
+                    )
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                feeAlteration.personId,
+                                DateRange(feeAlteration.validFrom, feeAlteration.validTo),
+                            ),
                         ),
-                    ),
-                    runAt = clock.now(),
-                )
+                        runAt = clock.now(),
+                    )
+                }
             }
-        }
-        Audit.ChildFeeAlterationsCreate.log(
-            targetId = AuditId(feeAlteration.personId),
-            objectId = AuditId(id),
-        )
+            .also { audit.log(Audit.ChildFeeAlterationsCreate, clock) }
     }
 
     @PutMapping("/{feeAlterationId}")
@@ -136,43 +138,51 @@ class FeeAlterationController(
         @PathVariable feeAlterationId: FeeAlterationId,
         @RequestBody feeAlteration: FeeAlteration,
     ) {
+        val audit =
+            AuditContext()
+                .add(feeAlterationId)
+                .add(feeAlteration.personId)
+                .observeDate(feeAlteration.validFrom)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.FeeAlteration.UPDATE,
-                    feeAlterationId,
-                )
-                val existing = tx.getFeeAlteration(feeAlterationId)
-                tx.upsertFeeAlteration(
-                    clock = clock,
-                    modifiedBy = user.evakaUserId,
-                    feeAlteration = feeAlteration.copy(id = feeAlterationId),
-                )
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.FeeAlteration.UPDATE,
+                        feeAlterationId,
+                    )
+                    val existing =
+                        tx.getFeeAlteration(feeAlterationId)?.also {
+                            audit.add(it.personId).observeDate(it.validFrom)
+                        }
+                    tx.upsertFeeAlteration(
+                        clock = clock,
+                        modifiedBy = user.evakaUserId,
+                        feeAlteration = feeAlteration.copy(id = feeAlterationId),
+                    )
 
-                val expandedPeriod =
-                    existing?.let {
-                        DateRange(
-                            minOf(it.validFrom, feeAlteration.validFrom),
-                            maxEndDate(it.validTo, feeAlteration.validTo),
-                        )
-                    } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
+                    val expandedPeriod =
+                        existing?.let {
+                            DateRange(
+                                minOf(it.validFrom, feeAlteration.validFrom),
+                                maxEndDate(it.validTo, feeAlteration.validTo),
+                            )
+                        } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            feeAlteration.personId,
-                            expandedPeriod,
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                feeAlteration.personId,
+                                expandedPeriod,
+                            ),
                         ),
-                    ),
-                    runAt = clock.now(),
-                )
+                        runAt = clock.now(),
+                    )
+                }
             }
-        }
-        Audit.ChildFeeAlterationsUpdate.log(targetId = AuditId(feeAlterationId))
+            .also { audit.log(Audit.ChildFeeAlterationsUpdate, clock) }
     }
 
     @DeleteMapping("/{feeAlterationId}")
@@ -182,32 +192,41 @@ class FeeAlterationController(
         clock: EvakaClock,
         @PathVariable feeAlterationId: FeeAlterationId,
     ) {
+        val audit = AuditContext().add(feeAlterationId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.FeeAlteration.DELETE,
-                    feeAlterationId,
-                )
-                val existing = tx.getFeeAlteration(feeAlterationId)
-                tx.deleteFeeAlteration(feeAlterationId)
-
-                existing?.let {
-                    asyncJobRunner.plan(
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
                         tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forChild(
-                                existing.personId,
-                                DateRange(existing.validFrom, existing.validTo),
-                            ),
-                        ),
-                        runAt = clock.now(),
+                        user,
+                        clock,
+                        Action.FeeAlteration.DELETE,
+                        feeAlterationId,
                     )
+                    val existing =
+                        tx.getFeeAlteration(feeAlterationId)?.also {
+                            audit
+                                .add(it.personId)
+                                .observeDate(it.validFrom)
+                                .addMeta("type", it.type)
+                                .addMeta("startDate", it.validFrom)
+                                .addMeta("endDate", it.validTo)
+                        }
+                    tx.deleteFeeAlteration(feeAlterationId)
+
+                    existing?.let {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forChild(
+                                    existing.personId,
+                                    DateRange(existing.validFrom, existing.validTo),
+                                ),
+                            ),
+                            runAt = clock.now(),
+                        )
+                    }
                 }
             }
-        }
-        Audit.ChildFeeAlterationsDelete.log(targetId = AuditId(feeAlterationId))
+            .also { audit.log(Audit.ChildFeeAlterationsDelete, clock) }
     }
 }
