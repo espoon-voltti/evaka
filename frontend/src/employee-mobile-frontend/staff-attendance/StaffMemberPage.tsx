@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
-import orderBy from 'lodash/orderBy'
+import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
@@ -165,35 +165,35 @@ export default React.memo(function StaffMemberPage({
                     </TimeInfo>
                   )}
                   {staffMember.attendances.length > 0 &&
-                    orderBy(staffMember.attendances, ({ arrived }) =>
-                      arrived.formatIso()
-                    ).map(({ arrived, departed, type }, index, attendances) => (
-                      <TimeInfo
-                        key={arrived.formatIso()}
-                        data-qa="attendance-time"
-                      >
-                        <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
-                        <span>
-                          {arrived.toLocalTime().format()}–
-                          {departed?.toLocalTime().format() ?? ''}
-                          {index === attendances.length - 1 && (
-                            <InlineIconButton
-                              icon={faEdit}
-                              onClick={() =>
-                                navigate(
-                                  routes.staffAttendanceEdit(
-                                    unitOrGroup,
-                                    staffMember.employeeId
-                                  ).value
-                                )
-                              }
-                              aria-label={i18n.common.edit}
-                              data-qa="edit"
-                            />
-                          )}
-                        </span>
-                      </TimeInfo>
-                    ))}
+                    sortBy(staffMember.attendances, (a) => a.arrived).map(
+                      ({ arrived, departed, type }, index, attendances) => (
+                        <TimeInfo
+                          key={arrived.formatIso()}
+                          data-qa="attendance-time"
+                        >
+                          <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
+                          <span>
+                            {arrived.toLocalTime().format()}–
+                            {departed?.toLocalTime().format() ?? ''}
+                            {index === attendances.length - 1 && (
+                              <InlineIconButton
+                                icon={faEdit}
+                                onClick={() =>
+                                  navigate(
+                                    routes.staffAttendanceEdit(
+                                      unitOrGroup,
+                                      staffMember.employeeId
+                                    ).value
+                                  )
+                                }
+                                aria-label={i18n.common.edit}
+                                data-qa="edit"
+                              />
+                            )}
+                          </span>
+                        </TimeInfo>
+                      )
+                    )}
                 </>
               ) : (
                 staffMember.latestCurrentDayAttendance && (
