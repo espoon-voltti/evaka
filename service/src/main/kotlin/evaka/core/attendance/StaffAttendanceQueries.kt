@@ -20,7 +20,6 @@ import evaka.core.user.EvakaUser
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
 import kotlin.reflect.full.memberProperties
 import org.jdbi.v3.core.mapper.Nested
 
@@ -411,8 +410,6 @@ fun Database.Read.getStaffAttendancesForDateRange(
     unitId: DaycareId,
     range: FiniteDateRange,
 ): List<RawAttendance> {
-    val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
-    val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
         sql(
             """ 
@@ -452,7 +449,7 @@ LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sa.arrived_added_
 LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sa.arrived_modified_by
 LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_added_by
 LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
-WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && ${bind(range.asFiniteDateTimeRange())}
 """,
         )
     }
@@ -516,8 +513,6 @@ fun Database.Read.getStaffAttendancesWithoutGroup(
     range: FiniteDateRange,
     employeeIds: Set<EmployeeId>,
 ): List<RawAttendance> {
-    val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
-    val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
         sql(
             """
@@ -555,7 +550,10 @@ LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sa.arrived_added_
 LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sa.arrived_modified_by
 LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_added_by
 LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
-WHERE sa.employee_id = ANY(${bind(employeeIds)}) AND sa.group_id IS NULL AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE
+    sa.employee_id = ANY(${bind(employeeIds)}) AND
+    sa.group_id IS NULL AND
+    tstzrange(sa.arrived, sa.departed) && ${bind(range.asFiniteDateTimeRange())}
 """,
         )
     }
@@ -634,15 +632,13 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
     unitId: DaycareId,
     range: FiniteDateRange,
 ): List<ExternalAttendance> {
-    val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
-    val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
         sql(
             """
 SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient, sae.departed_automatically
 FROM staff_attendance_external sae
 JOIN daycare_group dg on sae.group_id = dg.id
-WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && ${bind(range.asFiniteDateTimeRange())}
 """,
         )
     }
@@ -726,8 +722,6 @@ fun Database.Read.getPlannedStaffAttendances(
     employeeId: EmployeeId,
     now: HelsinkiDateTime,
 ): List<PlannedStaffAttendance> {
-    val start = now.minusHours(8)
-    val end = now.plusHours(8)
     return createQuery {
         sql(
             """
@@ -736,7 +730,9 @@ SELECT
     type,
     description
 FROM staff_attendance_plan
-WHERE employee_id = ${bind(employeeId)} AND tstzrange(start_time, end_time) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE
+    employee_id = ${bind(employeeId)} AND
+    tstzrange(start_time, end_time) && ${bind(FiniteDateTimeRange(now.minusHours(8), now.plusHours(8)))}
 """,
         )
     }
@@ -747,8 +743,6 @@ fun Database.Read.getPlannedStaffAttendanceForDays(
     employeeIds: Collection<EmployeeId>,
     range: FiniteDateRange,
 ): Map<EmployeeId, List<PlannedStaffAttendance>> {
-    val startTime = HelsinkiDateTime.of(range.start, LocalTime.MIDNIGHT)
-    val endTime = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.MIDNIGHT)
     return createQuery {
             sql(
                 """
@@ -758,7 +752,9 @@ SELECT
     employee_id,
     description
 FROM staff_attendance_plan
-WHERE employee_id = ANY(${bind(employeeIds)}) AND (tstzrange(start_time, end_time) && tstzrange(${bind(startTime)}, ${bind(endTime)}))
+WHERE
+    employee_id = ANY(${bind(employeeIds)}) AND
+    tstzrange(start_time, end_time) && ${bind(range.asFiniteDateTimeRange())}
 """,
             )
         }
@@ -784,8 +780,9 @@ fun Database.Read.getLatestDepartureToday(
         """
 SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 FROM staff_attendance_realtime 
-WHERE employee_id = ${bind(employeeId)} 
-    AND ${bind(now.atStartOfDay())} <= departed AND departed < ${bind(now.plusDays(1).atStartOfDay())}
+WHERE
+    employee_id = ${bind(employeeId)} AND
+    ${bind(now.toLocalDate().asFiniteDateTimeRange())} @> departed
 ORDER BY departed DESC LIMIT 1   
 """,
     )
