@@ -63,7 +63,7 @@ type CalendarMode = 'create' | 'reserve'
 
 function dateType(year: number, month: number, date: LocalDate): DateType {
   if (date.year !== year || date.month !== month) return 'otherMonth'
-  const today = LocalDate.todayInSystemTz()
+  const today = LocalDate.todayInHelsinkiTz()
   return date.isBefore(today) ? 'past' : date.isToday() ? 'today' : 'future'
 }
 

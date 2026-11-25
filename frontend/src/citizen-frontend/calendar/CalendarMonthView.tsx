@@ -480,7 +480,7 @@ const Week = React.memo(function Week({
 type DateType = 'past' | 'today' | 'future'
 
 function dateType(date: LocalDate): DateType {
-  const today = LocalDate.todayInSystemTz()
+  const today = LocalDate.todayInHelsinkiTz()
   return date.isBefore(today) ? 'past' : date.isToday() ? 'today' : 'future'
 }
 
