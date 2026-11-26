@@ -5,7 +5,7 @@
 package evaka.core.family
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.shared.ParentshipId
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -38,30 +38,31 @@ class ParentshipController(
         clock: EvakaClock,
         @RequestBody body: ParentshipRequest,
     ) {
-        val parentship = db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Person.CREATE_PARENTSHIP,
-                    body.headOfChildId,
-                )
-                parentshipService.createParentship(
-                    it,
-                    clock,
-                    body.childId,
-                    body.headOfChildId,
-                    body.startDate,
-                    body.endDate,
-                    Creator.User(user.evakaUserId),
-                )
+        val audit =
+            AuditContext().add(body.headOfChildId).add(body.childId).observeDate(body.startDate)
+        db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.CREATE_PARENTSHIP,
+                        body.headOfChildId,
+                    )
+                    parentshipService
+                        .createParentship(
+                            it,
+                            clock,
+                            body.childId,
+                            body.headOfChildId,
+                            body.startDate,
+                            body.endDate,
+                            Creator.User(user.evakaUserId),
+                        )
+                        .also { parentship -> audit.add(parentship.id) }
+                }
             }
-        }
-        Audit.ParentShipsCreate.log(
-            targetId = AuditId(listOf(body.headOfChildId, body.childId)),
-            objectId = AuditId(parentship.id),
-        )
+            .also { audit.log(Audit.ParentShipsCreate, clock) }
     }
 
     @GetMapping
@@ -83,6 +84,7 @@ class ParentshipController(
                     "One of parameters headOfChildId and childId should be validated not to be null",
                 )
 
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -105,17 +107,16 @@ class ParentshipController(
                             clock,
                             parentships.map { it.id },
                         )
+                    audit
+                        .add(parentships.map { it.id })
+                        .add(parentships.map { it.childId })
+                        .add(parentships.map { it.headOfChildId })
                     parentships.map {
                         ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
                     }
                 }
             }
-            .also {
-                Audit.ParentShipsRead.log(
-                    targetId = AuditId(listOfNotNull(headOfChildId, childId)),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.ParentShipsRead, clock) }
     }
 
     @PutMapping("/{id}")
@@ -126,23 +127,33 @@ class ParentshipController(
         @PathVariable id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest,
     ) {
+        val audit =
+            AuditContext()
+                .add(id)
+                .observeDate(body.startDate)
+                .addMeta("startDate", body.startDate)
+                .addMeta("endDate", body.endDate)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Parentship.UPDATE, id)
-                parentshipService.updateParentshipDuration(
-                    tx = it,
-                    clock = clock,
-                    user = user,
-                    id = id,
-                    startDate = body.startDate,
-                    endDate = body.endDate,
-                )
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Parentship.UPDATE,
+                        id,
+                    )
+                    parentshipService.updateParentshipDuration(
+                        tx = it,
+                        clock = clock,
+                        user = user,
+                        id = id,
+                        startDate = body.startDate,
+                        endDate = body.endDate,
+                        audit = audit,
+                    )
+                }
             }
-        }
-        Audit.ParentShipsUpdate.log(
-            targetId = AuditId(id),
-            meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate),
-        )
+            .also { audit.log(Audit.ParentShipsUpdate, clock) }
     }
 
     @PutMapping("/{id}/retry")
@@ -152,13 +163,20 @@ class ParentshipController(
         clock: EvakaClock,
         @PathVariable id: ParentshipId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Parentship.RETRY, id)
-                parentshipService.retryParentship(it, user, clock, id)
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Parentship.RETRY,
+                        id,
+                    )
+                    parentshipService.retryParentship(it, user, clock, id, audit)
+                }
             }
-        }
-        Audit.ParentShipsRetry.log(targetId = AuditId(id))
+            .also { audit.log(Audit.ParentShipsRetry, clock) }
     }
 
     @DeleteMapping("/{id}")
@@ -168,32 +186,33 @@ class ParentshipController(
         clock: EvakaClock,
         @PathVariable id: ParentshipId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                val parentship = tx.getParentship(id)
+                dbc.transaction { tx ->
+                    val parentship = tx.getParentship(id)
 
-                if (parentship?.conflict == false) {
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Parentship.DELETE,
-                        id,
-                    )
-                } else {
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Parentship.DELETE_CONFLICTED_PARENTSHIP,
-                        id,
-                    )
+                    if (parentship?.conflict == false) {
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Parentship.DELETE,
+                            id,
+                        )
+                    } else {
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Parentship.DELETE_CONFLICTED_PARENTSHIP,
+                            id,
+                        )
+                    }
+
+                    parentshipService.deleteParentship(tx, clock, id, audit)
                 }
-
-                parentshipService.deleteParentship(tx, clock, id)
             }
-        }
-        Audit.ParentShipsDelete.log(targetId = AuditId(id))
+            .also { audit.log(Audit.ParentShipsDelete, clock) }
     }
 
     data class ParentshipRequest(

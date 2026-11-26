@@ -5,7 +5,7 @@
 package evaka.core.family
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.person.PersonSummary
 import evaka.core.shared.FosterParentId
 import evaka.core.shared.PersonId
@@ -14,6 +14,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.user.EvakaUser
@@ -36,6 +37,7 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable parentId: PersonId,
     ): List<FosterParentRelationship> {
+        val audit = AuditContext().add(parentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -48,7 +50,12 @@ class FosterParentController(private val accessControl: AccessControl) {
                     tx.getFosterChildren(parentId)
                 }
             }
-            .also { Audit.FosterParentReadChildren.log(targetId = AuditId(parentId)) }
+            .also { relationships ->
+                audit
+                    .add(relationships.map { it.relationshipId })
+                    .add(relationships.map { it.child.id })
+                    .log(Audit.FosterParentReadChildren, clock)
+            }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -58,6 +65,7 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable childId: PersonId,
     ): List<FosterParentRelationship> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -70,7 +78,12 @@ class FosterParentController(private val accessControl: AccessControl) {
                     tx.getFosterParents(childId)
                 }
             }
-            .also { Audit.FosterParentReadParents.log(targetId = AuditId(childId)) }
+            .also { relationships ->
+                audit
+                    .add(relationships.map { it.relationshipId })
+                    .add(relationships.map { it.parent.id })
+                    .log(Audit.FosterParentReadParents, clock)
+            }
     }
 
     @PostMapping
@@ -80,6 +93,8 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: CreateFosterParentRelationshipBody,
     ) {
+        val audit =
+            AuditContext().add(body.parentId).add(body.childId).observeDate(body.validDuring.start)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -89,16 +104,12 @@ class FosterParentController(private val accessControl: AccessControl) {
                         Action.Person.CREATE_FOSTER_PARENT_RELATIONSHIP,
                         body.parentId,
                     )
-                    tx.createFosterParentRelationship(body, user, clock.now())
+                    tx.createFosterParentRelationship(body, user, clock.now()).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { id ->
-                Audit.FosterParentCreateRelationship.log(
-                    targetId = AuditId(body.parentId),
-                    objectId = AuditId(body.childId),
-                    meta = mapOf("fosterParentId" to id),
-                )
-            }
+            .also { audit.log(Audit.FosterParentCreateRelationship, clock) }
     }
 
     @PostMapping("/{id}")
@@ -109,6 +120,11 @@ class FosterParentController(private val accessControl: AccessControl) {
         @PathVariable id: FosterParentId,
         @RequestBody validDuring: DateRange,
     ) {
+        val audit =
+            AuditContext()
+                .add(id)
+                .observeDate(validDuring.start)
+                .addMeta("validDuring", validDuring)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -118,15 +134,14 @@ class FosterParentController(private val accessControl: AccessControl) {
                         Action.FosterParent.UPDATE,
                         id,
                     )
+                    val old =
+                        tx.getFosterParentRelationship(id)
+                            ?: throw NotFound("No foster parent relationship found with id $id")
+                    audit.add(old.parentId).add(old.childId).observeDate(old.validDuring.start)
                     tx.updateFosterParentRelationshipValidity(id, validDuring, user, clock.now())
                 }
             }
-            .also {
-                Audit.FosterParentUpdateRelationship.log(
-                    targetId = AuditId(id),
-                    meta = mapOf("validDuring" to validDuring),
-                )
-            }
+            .also { audit.log(Audit.FosterParentUpdateRelationship, clock) }
     }
 
     @DeleteMapping("/{id}")
@@ -136,6 +151,7 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: FosterParentId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -145,10 +161,18 @@ class FosterParentController(private val accessControl: AccessControl) {
                         Action.FosterParent.DELETE,
                         id,
                     )
+                    val old =
+                        tx.getFosterParentRelationship(id)
+                            ?: throw NotFound("No foster parent relationship found with id $id")
+                    audit
+                        .add(old.parentId)
+                        .add(old.childId)
+                        .observeDate(old.validDuring.start)
+                        .addMeta("validDuring", old.validDuring)
                     tx.deleteFosterParentRelationship(id)
                 }
             }
-            .also { Audit.FosterParentDeleteRelationship.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.FosterParentDeleteRelationship, clock) }
     }
 }
 

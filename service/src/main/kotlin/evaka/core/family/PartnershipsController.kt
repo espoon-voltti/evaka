@@ -5,7 +5,7 @@
 package evaka.core.family
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.shared.PartnershipId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
@@ -43,43 +43,43 @@ class PartnershipsController(
         clock: EvakaClock,
         @RequestBody body: PartnershipRequest,
     ) {
-        val partnership = db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Person.CREATE_PARTNERSHIP,
-                    body.person1Id,
-                )
-                partnershipService
-                    .createPartnership(
+        val audit =
+            AuditContext().add(body.person1Id).add(body.person2Id).observeDate(body.startDate)
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
                         tx,
+                        user,
+                        clock,
+                        Action.Person.CREATE_PARTNERSHIP,
                         body.person1Id,
-                        body.person2Id,
-                        body.startDate,
-                        body.endDate,
-                        user.evakaUserId,
-                        clock.now(),
                     )
-                    .also {
-                        asyncJobRunner.plan(
+                    partnershipService
+                        .createPartnership(
                             tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forAdult(
-                                    body.person1Id,
-                                    DateRange(body.startDate, body.endDate),
-                                ),
-                            ),
-                            runAt = clock.now(),
+                            body.person1Id,
+                            body.person2Id,
+                            body.startDate,
+                            body.endDate,
+                            user.evakaUserId,
+                            clock.now(),
                         )
-                    }
+                        .also { partnership ->
+                            audit.add(partnership.id)
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.GenerateFinanceDecisions.forAdult(
+                                        body.person1Id,
+                                        DateRange(body.startDate, body.endDate),
+                                    ),
+                                ),
+                                runAt = clock.now(),
+                            )
+                        }
+                }
             }
-        }
-        Audit.PartnerShipsCreate.log(
-            targetId = AuditId(listOf(body.person1Id, body.person2Id)),
-            objectId = AuditId(partnership.id),
-        )
+            .also { audit.log(Audit.PartnerShipsCreate, clock) }
     }
 
     @GetMapping
@@ -89,6 +89,7 @@ class PartnershipsController(
         clock: EvakaClock,
         @RequestParam personId: PersonId,
     ): List<PartnershipWithPermittedActions> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -100,6 +101,9 @@ class PartnershipsController(
                     )
                     val partnerships =
                         tx.getPartnershipsForPerson(personId, includeConflicts = true)
+                    audit
+                        .add(partnerships.map { it.id })
+                        .add(partnerships.flatMap { p -> p.partners.map { it.id } })
 
                     val permittedActions =
                         accessControl.getPermittedActions<PartnershipId, Action.Partnership>(
@@ -117,12 +121,7 @@ class PartnershipsController(
                     }
                 }
             }
-            .also {
-                Audit.PartnerShipsRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.PartnerShipsRead, clock) }
     }
 
     @PutMapping("/{partnershipId}")
@@ -133,45 +132,51 @@ class PartnershipsController(
         @PathVariable partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest,
     ) {
+        val audit =
+            AuditContext()
+                .add(partnershipId)
+                .observeDate(body.startDate)
+                .addMeta("startDate", body.startDate)
+                .addMeta("endDate", body.endDate)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Partnership.UPDATE,
-                    partnershipId,
-                )
-                val oldPartnership =
-                    tx.getPartnership(partnershipId)
-                        ?: throw NotFound("No partnership found with id $partnershipId")
-                partnershipService.updatePartnershipDuration(
-                    tx,
-                    partnershipId,
-                    body.startDate,
-                    body.endDate,
-                    user.evakaUserId,
-                    clock.now(),
-                )
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            oldPartnership.partners.first().id,
-                            DateRange(
-                                minOf(oldPartnership.startDate, body.startDate),
-                                maxEndDate(oldPartnership.endDate, body.endDate),
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Partnership.UPDATE,
+                        partnershipId,
+                    )
+                    val oldPartnership =
+                        tx.getPartnership(partnershipId)
+                            ?: throw NotFound("No partnership found with id $partnershipId")
+                    audit
+                        .add(oldPartnership.partners.map { it.id })
+                        .observeDate(oldPartnership.startDate)
+                    partnershipService.updatePartnershipDuration(
+                        tx,
+                        partnershipId,
+                        body.startDate,
+                        body.endDate,
+                        user.evakaUserId,
+                        clock.now(),
+                    )
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forAdult(
+                                oldPartnership.partners.first().id,
+                                DateRange(
+                                    minOf(oldPartnership.startDate, body.startDate),
+                                    maxEndDate(oldPartnership.endDate, body.endDate),
+                                ),
                             ),
                         ),
-                    ),
-                    runAt = clock.now(),
-                )
+                        runAt = clock.now(),
+                    )
+                }
             }
-        }
-        Audit.PartnerShipsUpdate.log(
-            targetId = AuditId(partnershipId),
-            meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate),
-        )
+            .also { audit.log(Audit.PartnerShipsUpdate, clock) }
     }
 
     @PutMapping("/{partnershipId}/retry")
@@ -181,32 +186,34 @@ class PartnershipsController(
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId,
     ) {
+        val audit = AuditContext().add(partnershipId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Partnership.RETRY,
-                    partnershipId,
-                )
-                partnershipService
-                    .retryPartnership(tx, partnershipId, user.evakaUserId, clock.now())
-                    ?.let {
-                        asyncJobRunner.plan(
-                            tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forAdult(
-                                    it.partners.first().id,
-                                    DateRange(it.startDate, it.endDate),
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Partnership.RETRY,
+                        partnershipId,
+                    )
+                    partnershipService
+                        .retryPartnership(tx, partnershipId, user.evakaUserId, clock.now())
+                        ?.let {
+                            audit.add(it.partners.map { p -> p.id }).observeDate(it.startDate)
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.GenerateFinanceDecisions.forAdult(
+                                        it.partners.first().id,
+                                        DateRange(it.startDate, it.endDate),
+                                    ),
                                 ),
-                            ),
-                            runAt = clock.now(),
-                        )
-                    }
+                                runAt = clock.now(),
+                            )
+                        }
+                }
             }
-        }
-        Audit.PartnerShipsRetry.log(targetId = AuditId(partnershipId))
+            .also { audit.log(Audit.PartnerShipsRetry, clock) }
     }
 
     @DeleteMapping("/{partnershipId}")
@@ -216,30 +223,36 @@ class PartnershipsController(
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId,
     ) {
+        val audit = AuditContext().add(partnershipId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Partnership.DELETE,
-                    partnershipId,
-                )
-                partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
-                    asyncJobRunner.plan(
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
                         tx,
-                        partnership.partners.map {
-                            AsyncJob.GenerateFinanceDecisions.forAdult(
-                                it.id,
-                                DateRange(partnership.startDate, partnership.endDate),
-                            )
-                        },
-                        runAt = clock.now(),
+                        user,
+                        clock,
+                        Action.Partnership.DELETE,
+                        partnershipId,
                     )
+                    partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
+                        audit
+                            .add(partnership.partners.map { it.id })
+                            .observeDate(partnership.startDate)
+                            .addMeta("startDate", partnership.startDate)
+                            .addMeta("endDate", partnership.endDate)
+                        asyncJobRunner.plan(
+                            tx,
+                            partnership.partners.map {
+                                AsyncJob.GenerateFinanceDecisions.forAdult(
+                                    it.id,
+                                    DateRange(partnership.startDate, partnership.endDate),
+                                )
+                            },
+                            runAt = clock.now(),
+                        )
+                    }
                 }
             }
-        }
-        Audit.PartnerShipsDelete.log(targetId = AuditId(partnershipId))
+            .also { audit.log(Audit.PartnerShipsDelete, clock) }
     }
 
     data class PartnershipRequest(

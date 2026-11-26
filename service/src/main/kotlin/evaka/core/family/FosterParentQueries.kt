@@ -104,3 +104,16 @@ fun Database.Transaction.deleteFosterParentRelationship(id: FosterParentId) = cr
 }
     .executeAndReturnCount()
     .let { if (it != 1) throw BadRequest("Could not delete foster_parent row with id $id") }
+
+data class FosterParentRow(
+    val childId: PersonId,
+    val parentId: PersonId,
+    val validDuring: DateRange,
+)
+
+fun Database.Read.getFosterParentRelationship(id: FosterParentId): FosterParentRow? = createQuery {
+    sql(
+        "SELECT child_id, parent_id, valid_during FROM foster_parent WHERE id = ${bind(id)}",
+    )
+}
+    .exactlyOneOrNull<FosterParentRow>()
