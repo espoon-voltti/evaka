@@ -6,7 +6,6 @@ package evaka.core.absence
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.CitizenCalendarEnv
 import evaka.core.reservations.clearOldReservations
 import evaka.core.reservations.deleteReservationsFromHolidayPeriodDates
@@ -186,6 +185,7 @@ class AbsenceController(
         if (body.isEmpty()) return
 
         val children = body.map { it.childId }.distinct()
+        val audit = AuditContext().add(groupId).add(children).observeDate(body.minOf { it.date })
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -196,22 +196,11 @@ class AbsenceController(
                         children,
                     )
                     val pairs = body.map { Pair(it.childId, it.date) }
-                    val deletedReservations = tx.deleteReservationsFromHolidayPeriodDates(pairs)
-                    val deletedAbsences = tx.deleteAbsencesFromHolidayPeriodDates(pairs)
-                    Pair(deletedReservations, deletedAbsences)
+                    tx.deleteReservationsFromHolidayPeriodDates(pairs).also { audit.add(it) }
+                    tx.deleteAbsencesFromHolidayPeriodDates(pairs).also { audit.add(it) }
                 }
             }
-            .also { (deletedReservations, deletedAbsences) ->
-                Audit.AttendanceReservationDelete.log(
-                    targetId = AuditId(groupId),
-                    objectId = AuditId(children),
-                    meta =
-                        mapOf(
-                            "deletedReservations" to deletedReservations,
-                            "deletedAbsences" to deletedAbsences,
-                        ),
-                )
-            }
+            .also { audit.log(Audit.AttendanceReservationDelete, clock) }
     }
 
     @GetMapping("/by-child/{childId}")
