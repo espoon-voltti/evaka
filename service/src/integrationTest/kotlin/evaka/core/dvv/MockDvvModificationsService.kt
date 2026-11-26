@@ -221,6 +221,20 @@ val modifications =
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
     """,
+        "020180-998X" to
+            """
+{
+  "henkilotunnus": "020180-998X",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "TURVAKIELTO",
+      "muutosattribuutti": "LISATTY",
+      "turvakieltoAktiivinen": true
+    }
+  ],
+  "muutospv": "2019-09-24T21:00:00.000Z"
+}
+    """,
         "030180-999L" to
             """
 {

@@ -239,6 +239,23 @@ class DvvModificationsServiceIntegrationTest :
     }
 
     @Test
+    fun `person restricted details started without other changes clears the home municipality`() {
+        // The modifications have only the restriction, so no VTJ update overwrites the result
+        createTestPerson(
+            testPerson.copy(
+                ssn = "020180-998X",
+                municipalityOfResidence = "Espoo",
+                municipalityOfResidenceCode = "049",
+            ),
+        )
+        updatePeopleFromDvv(listOf("020180-998X"))
+        val modifiedPerson = db.read { it.getPersonBySSN("020180-998X") }!!
+        assertEquals(true, modifiedPerson.restrictedDetailsEnabled)
+        assertEquals("", modifiedPerson.municipalityOfResidence)
+        assertEquals(null, modifiedPerson.municipalityOfResidenceCode)
+    }
+
+    @Test
     fun `person restricted details ended and address is set`() {
         createTestPerson(
             testPerson.copy(

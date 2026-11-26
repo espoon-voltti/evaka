@@ -42,6 +42,7 @@ val personColumns =
         "mailing_post_office",
         "residence_code",
         "municipality_of_residence",
+        "municipality_of_residence_code",
         "updated_from_vtj",
         "vtj_guardians_queried",
         "vtj_dependants_queried",
@@ -360,6 +361,7 @@ UPDATE person SET
     mailing_post_office = ${bind(p.mailingPostOffice)},
     residence_code = ${bind(p.residenceCode)},
     municipality_of_residence = ${bind(p.municipalityOfResidence)},
+    municipality_of_residence_code = ${bind(p.municipalityOfResidenceCode)},
     restricted_details_enabled = ${bind(p.restrictedDetailsEnabled)},
     restricted_details_end_date = ${bind(p.restrictedDetailsEndDate)},
     updated_from_vtj = ${bind(p.updatedFromVtj)}
@@ -476,6 +478,7 @@ internal val toPerson: Row.() -> Person = {
         mailingPostOffice = column("mailing_post_office"),
         residenceCode = column("residence_code"),
         municipalityOfResidence = column("municipality_of_residence"),
+        municipalityOfResidenceCode = column("municipality_of_residence_code"),
         updatedFromVtj = column("updated_from_vtj"),
         vtjGuardiansQueried = column("vtj_guardians_queried"),
         vtjDependantsQueried = column("vtj_dependants_queried"),

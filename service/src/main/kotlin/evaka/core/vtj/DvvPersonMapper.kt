@@ -68,11 +68,10 @@ fun mapDvvPerson(ssn: Ssn, groups: List<Tietoryhma>, today: LocalDate): VtjPerso
         groups.filterIsInstance<KotimainenOsoite>().filter { it.turvakiellonAlaisetKentat == null }
     // VTJ does not censor the home municipality of a person with restricted details, so eVaka
     // leaves it out itself, like DvvModificationsService.handleRestrictedInfo
-    val municipality =
+    val municipalityCode =
         groups
             .filterIsInstance<Kotikunta>()
             .firstNotNullOfOrNull { it.kuntakoodi }
-            ?.let(::municipalityByCode)
             .takeUnless { restricted }
     return VtjPerson(
         firstNames = name?.etunimi ?: "",
@@ -116,7 +115,8 @@ fun mapDvvPerson(ssn: Ssn, groups: List<Tietoryhma>, today: LocalDate): VtjPerso
                     it.turvakiellonAlaisetKentat == null && isValidOn(it.alkupv, it.loppupv, today)
                 }
                 ?.asuinpaikantunnus,
-        municipalityOfResidence = municipality?.fi,
+        municipalityOfResidence = municipalityCode?.let(::municipalityByCode)?.fi,
+        municipalityOfResidenceCode = municipalityCode,
     )
 }
 

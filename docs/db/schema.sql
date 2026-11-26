@@ -1235,6 +1235,7 @@ CREATE TABLE public.person (
     mailing_postal_code text DEFAULT ''::text NOT NULL,
     mailing_post_office text DEFAULT ''::text NOT NULL,
     freetext_vec_no_address tsvector GENERATED ALWAYS AS ((to_tsvector('public.unaccent'::regconfig, COALESCE(first_name, ''::text)) || to_tsvector('public.unaccent'::regconfig, COALESCE(last_name, ''::text)))) STORED,
+    municipality_of_residence_code text,
     CONSTRAINT person_disabled_ssn_no_ssn CHECK (((NOT ssn_adding_disabled) OR (social_security_number IS NULL))),
     CONSTRAINT person_ssn_not_empty CHECK ((social_security_number <> ''::text)),
     CONSTRAINT ssn_require_vtj_update CHECK (((social_security_number IS NULL) OR (updated_from_vtj IS NOT NULL)))

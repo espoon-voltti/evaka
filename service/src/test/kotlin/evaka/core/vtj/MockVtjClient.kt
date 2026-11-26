@@ -27,6 +27,7 @@ data class MockVtjPerson(
     val dateOfDeath: LocalDate? = null,
     val residenceCode: String? = null,
     val municipalityOfResidence: String? = null,
+    val municipalityOfResidenceCode: String? = null,
 ) {
     fun toVtjPerson(): VtjPerson =
         VtjPerson(
@@ -40,6 +41,7 @@ data class MockVtjPerson(
             dateOfDeath = dateOfDeath,
             residenceCode = residenceCode,
             municipalityOfResidence = municipalityOfResidence,
+            municipalityOfResidenceCode = municipalityOfResidenceCode,
         )
 
     companion object {
@@ -67,6 +69,7 @@ data class MockVtjPerson(
                     },
                 residenceCode = person.residenceCode,
                 municipalityOfResidence = person.municipalityOfResidence,
+                municipalityOfResidenceCode = person.municipalityOfResidenceCode,
                 nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
             )
 
@@ -93,6 +96,7 @@ data class MockVtjPerson(
                 dateOfDeath = person.dateOfDeath,
                 residenceCode = person.residenceCode,
                 municipalityOfResidence = person.municipalityOfResidence,
+                municipalityOfResidenceCode = person.municipalityOfResidenceCode,
             )
     }
 }

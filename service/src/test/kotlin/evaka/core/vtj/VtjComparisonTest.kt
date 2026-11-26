@@ -112,7 +112,12 @@ class VtjComparisonTest {
     @Test
     fun `with restricted details on either side, a difference has only the field name`() {
         val soap = person.copy(restrictedDetails = RestrictedDetails(enabled = true))
-        val dvv = soap.copy(residentialAddress = null, municipalityOfResidence = "Vantaa")
+        val dvv =
+            soap.copy(
+                residentialAddress = null,
+                municipalityOfResidence = "Vantaa",
+                municipalityOfResidenceCode = "092",
+            )
 
         assertEquals(
             listOf(
@@ -120,6 +125,7 @@ class VtjComparisonTest {
                 "residentialAddress.postalCode",
                 "residentialAddress.postOffice",
                 "municipalityOfResidence",
+                "municipalityOfResidenceCode",
             ),
             compareVtjPersons(soap, dvv).map { it.field },
         )

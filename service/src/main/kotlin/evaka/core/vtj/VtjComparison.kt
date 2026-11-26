@@ -40,6 +40,11 @@ fun compareVtjPersons(soap: VtjPerson, dvv: VtjPerson): List<VtjFieldDifference>
         date("dateOfDeath", soap.dateOfDeath, dvv.dateOfDeath)
         text("residenceCode", soap.residenceCode, dvv.residenceCode)
         code("municipalityOfResidence", soap.municipalityOfResidence, dvv.municipalityOfResidence)
+        code(
+            "municipalityOfResidenceCode",
+            soap.municipalityOfResidenceCode,
+            dvv.municipalityOfResidenceCode,
+        )
     }
     return differences.list
 }

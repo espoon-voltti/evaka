@@ -255,6 +255,9 @@ class DvvModificationsService(
                         municipalityOfResidence =
                             if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
                             else it.municipalityOfResidence,
+                        municipalityOfResidenceCode =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) null
+                            else it.municipalityOfResidenceCode,
                     ),
                     now,
                 )

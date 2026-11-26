@@ -51,6 +51,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             restrictedDetails = RestrictedDetails(enabled = false),
             residenceCode = "abc123",
             municipalityOfResidence = "Helsinki",
+            municipalityOfResidenceCode = "091",
         )
 
     private val logAppender = ListAppender<ILoggingEvent>()
@@ -84,6 +85,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("Helsinki", person.postOffice)
         assertEquals("abc123", person.residenceCode)
         assertEquals("Helsinki", person.municipalityOfResidence)
+        assertEquals("091", person.municipalityOfResidenceCode)
         assertEquals("fi", person.language)
         assertEquals(now, person.updatedFromVtj)
         assertEquals(1, countMessageAccounts(result.id))
@@ -144,6 +146,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("Någonvägen 66", updated.streetAddress)
         assertEquals("Helsingfors", updated.postOffice)
         assertEquals("Helsinki", updated.municipalityOfResidence)
+        assertEquals("091", updated.municipalityOfResidenceCode)
     }
 
     @Test
@@ -182,6 +185,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(existing.id, result.id)
         val person = db.read { it.getPersonById(existing.id) }!!
         assertEquals("Virtanen", person.lastName)
+        assertEquals("091", person.municipalityOfResidenceCode)
         assertEquals("matti@example.com", person.email)
         assertEquals("123", person.phone)
         assertEquals(now.plusHours(1), person.updatedFromVtj)

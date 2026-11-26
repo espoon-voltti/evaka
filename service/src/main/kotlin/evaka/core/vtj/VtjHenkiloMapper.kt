@@ -117,6 +117,7 @@ fun Henkilo.mapToVtjPerson(): VtjPerson =
         restrictedDetails = turvakielto.mapToRestrictedDetails(),
         dateOfDeath = parseLocalDateFromString(kuolintiedot.kuolinpvm),
         municipalityOfResidence = kotikunta?.kuntaS,
+        municipalityOfResidenceCode = kotikunta?.kuntanumero?.ifBlank { null },
     )
 
 fun Henkilo.mapDependants(): List<Ssn> = huollettava.mapNotNull { relativeSsn(it.henkilotunnus) }

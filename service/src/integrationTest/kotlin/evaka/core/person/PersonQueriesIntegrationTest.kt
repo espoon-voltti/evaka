@@ -53,6 +53,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 postalCode = "00001",
                 postOffice = "Muula",
                 municipalityOfResidence = "Muukunta",
+                municipalityOfResidenceCode = "091",
                 restrictedDetailsEnabled = false,
                 restrictedDetailsEndDate = null,
             )
@@ -74,6 +75,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(updated.postalCode, actual.postalCode)
         assertEquals(updated.postOffice, actual.postOffice)
         assertEquals(updated.municipalityOfResidence, actual.municipalityOfResidence)
+        assertEquals(updated.municipalityOfResidenceCode, actual.municipalityOfResidenceCode)
 
         assertEquals(updated.restrictedDetailsEndDate, actual.restrictedDetailsEndDate)
     }

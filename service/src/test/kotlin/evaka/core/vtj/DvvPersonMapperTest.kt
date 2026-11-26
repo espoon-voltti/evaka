@@ -40,6 +40,7 @@ class DvvPersonMapperTest {
         )
         assertEquals("900000242V1 000 ", withoutStair.residenceCode)
         assertEquals("Kristiinankaupunki", withoutStair.municipalityOfResidence)
+        assertEquals("287", withoutStair.municipalityOfResidenceCode)
 
         assertEquals(
             "Pohjanpellonkuja 2 C",
@@ -111,6 +112,7 @@ class DvvPersonMapperTest {
 
         assertEquals("98", person.nativeLanguage?.code)
         assertEquals("Ei kotikuntaa Suomessa", person.municipalityOfResidence)
+        assertEquals("198", person.municipalityOfResidenceCode)
     }
 
     @Test
@@ -125,6 +127,7 @@ class DvvPersonMapperTest {
         assertEquals(emptyList(), person.mailingAddressPeriods)
         assertNull(person.residenceCode)
         assertNull(person.municipalityOfResidence)
+        assertNull(person.municipalityOfResidenceCode)
         assertEquals("Sisko Pauliina", person.firstNames)
     }
 
