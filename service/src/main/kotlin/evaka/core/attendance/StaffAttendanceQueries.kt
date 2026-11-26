@@ -804,6 +804,7 @@ WHERE employee_id = ${bind(employeeId)} AND departed IS NULL
 }
     .exactlyOneOrNull()
 
+/** An attendance that ends at midnight belongs to the date before the midnight. */
 fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
     today: LocalDate,
@@ -820,7 +821,8 @@ SELECT
 FROM staff_attendance_realtime 
 WHERE
     employee_id = ${bind(employeeId)} AND
-    ${bind(today.asFiniteDateTimeRange())} @> departed
+    ${bind(HelsinkiDateTime.atStartOfDay(today))} < departed AND
+    departed <= ${bind(HelsinkiDateTime.atStartOfDay(today.plusDays(1)))}
 ORDER BY departed DESC LIMIT 1   
 """,
     )

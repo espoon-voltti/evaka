@@ -605,6 +605,55 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
     }
 
+    @Test
+    fun `Employee arriving after planned time with a type gets an attendance from the plan start when the previous attendance ended at midnight`() {
+        val pinCode = "1212"
+        val employee = DevEmployee()
+        val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
+            tx.syncDaycareGroupAcl(daycare.id, employee.id, listOf(group.id), now)
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd,
+                ),
+            )
+        }
+        insertAttendance(
+            employee.id,
+            group.id,
+            HelsinkiDateTime.of(today.minusDays(1), LocalTime.of(16, 0)),
+            HelsinkiDateTime.atStartOfDay(today),
+        )
+
+        val arrivalTime = plannedStart.plusMinutes(20)
+        markArrival(
+            arrivalTime,
+            employee.id,
+            pinCode,
+            group.id,
+            arrivalTime.toLocalTime(),
+            StaffAttendanceType.TRAINING,
+        )
+        val attendances = fetchRealtimeStaffAttendances(daycare.id, mobileUser)
+        assertEquals(
+            listOf(
+                DateTimeRange(plannedStart, arrivalTime) to StaffAttendanceType.TRAINING,
+                DateTimeRange(arrivalTime, null) to StaffAttendanceType.PRESENT,
+            ),
+            attendances.staff
+                .first()
+                .attendances
+                .filter { it.period.start.toLocalDate() == today }
+                .map { it.period to it.type },
+        )
+    }
+
     @ParameterizedTest(
         name = "Employee arriving 20 minutes after planned time cannot be marked arrived with {0}",
     )
