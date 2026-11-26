@@ -5,7 +5,7 @@
 package evaka.core.assistanceneed.vouchercoefficient
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.shared.AssistanceNeedVoucherCoefficientId
 import evaka.core.shared.ChildId
 import evaka.core.shared.async.AsyncJob
@@ -40,6 +40,7 @@ class AssistanceNeedVoucherCoefficientController(
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest,
     ): AssistanceNeedVoucherCoefficient {
+        val audit = AuditContext().add(childId).observeDate(body.validityPeriod.start)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -56,9 +57,11 @@ class AssistanceNeedVoucherCoefficientController(
                         childId = childId,
                         range = body.validityPeriod,
                         ignoreCoefficientId = null,
+                        audit = audit,
                     )
                     tx.insertAssistanceNeedVoucherCoefficient(user, clock.now(), childId, body)
                         .also {
+                            audit.add(it.id)
                             asyncJobRunner.plan(
                                 tx,
                                 listOf(
@@ -72,12 +75,7 @@ class AssistanceNeedVoucherCoefficientController(
                         }
                 }
             }
-            .also { coefficient ->
-                Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(
-                    targetId = AuditId(childId),
-                    objectId = AuditId(coefficient.id),
-                )
-            }
+            .also { audit.log(Audit.ChildAssistanceNeedVoucherCoefficientCreate, clock) }
     }
 
     @GetMapping("/employee/children/{childId}/assistance-need-voucher-coefficients")
@@ -87,6 +85,7 @@ class AssistanceNeedVoucherCoefficientController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): List<AssistanceNeedVoucherCoefficientResponse> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -96,21 +95,18 @@ class AssistanceNeedVoucherCoefficientController(
                         Action.Child.READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS,
                         childId,
                     )
-                    tx.getAssistanceNeedVoucherCoefficientsForChild(childId).map {
-                        AssistanceNeedVoucherCoefficientResponse(
-                            voucherCoefficient = it,
-                            permittedActions =
-                                accessControl.getPermittedActions(tx, user, clock, it.id),
-                        )
-                    }
+                    tx.getAssistanceNeedVoucherCoefficientsForChild(childId)
+                        .also { coefficients -> audit.add(coefficients.map { it.id }) }
+                        .map {
+                            AssistanceNeedVoucherCoefficientResponse(
+                                voucherCoefficient = it,
+                                permittedActions =
+                                    accessControl.getPermittedActions(tx, user, clock, it.id),
+                            )
+                        }
                 }
             }
-            .also {
-                Audit.ChildAssistanceNeedVoucherCoefficientRead.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.ChildAssistanceNeedVoucherCoefficientRead, clock) }
     }
 
     @PutMapping("/employee/assistance-need-voucher-coefficients/{id}")
@@ -121,6 +117,7 @@ class AssistanceNeedVoucherCoefficientController(
         @PathVariable id: AssistanceNeedVoucherCoefficientId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest,
     ): AssistanceNeedVoucherCoefficient {
+        val audit = AuditContext().add(id).observeDate(body.validityPeriod.start)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -130,7 +127,10 @@ class AssistanceNeedVoucherCoefficientController(
                         Action.AssistanceNeedVoucherCoefficient.UPDATE,
                         id,
                     )
-                    val existing = tx.getAssistanceNeedVoucherCoefficientById(id)
+                    val existing =
+                        tx.getAssistanceNeedVoucherCoefficientById(id).also {
+                            audit.add(it.childId).observeDate(it.validityPeriod.start)
+                        }
                     adjustExistingCoefficients(
                         tx = tx,
                         user = user,
@@ -138,6 +138,7 @@ class AssistanceNeedVoucherCoefficientController(
                         childId = existing.childId,
                         range = body.validityPeriod,
                         ignoreCoefficientId = id,
+                        audit = audit,
                     )
 
                     val combinedRange =
@@ -164,7 +165,7 @@ class AssistanceNeedVoucherCoefficientController(
                         }
                 }
             }
-            .also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.ChildAssistanceNeedVoucherCoefficientUpdate, clock) }
     }
 
     @DeleteMapping("/employee/assistance-need-voucher-coefficients/{id}")
@@ -174,34 +175,40 @@ class AssistanceNeedVoucherCoefficientController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedVoucherCoefficientId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.AssistanceNeedVoucherCoefficient.DELETE,
-                    id,
-                )
-                val existing =
-                    tx.deleteAssistanceNeedVoucherCoefficient(id)
-                        ?: throw NotFound(
-                            "Assistance need voucher coefficient $id cannot found or cannot be deleted",
-                            "VOUCHER_COEFFICIENT_NOT_FOUND",
-                        )
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            existing.childId,
-                            existing.validityPeriod.asDateRange(),
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedVoucherCoefficient.DELETE,
+                        id,
+                    )
+                    val existing =
+                        tx.deleteAssistanceNeedVoucherCoefficient(id)
+                            ?: throw NotFound(
+                                "Assistance need voucher coefficient $id not found or cannot be deleted",
+                                "VOUCHER_COEFFICIENT_NOT_FOUND",
+                            )
+                    audit
+                        .add(existing.childId)
+                        .observeDate(existing.validityPeriod.start)
+                        .addMeta("startDate", existing.validityPeriod.start)
+                        .addMeta("endDate", existing.validityPeriod.end)
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                existing.childId,
+                                existing.validityPeriod.asDateRange(),
+                            ),
                         ),
-                    ),
-                    runAt = clock.now(),
-                )
+                        runAt = clock.now(),
+                    )
+                }
             }
-        }
-        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(targetId = AuditId(id))
+            .also { audit.log(Audit.ChildAssistanceNeedVoucherCoefficientDelete, clock) }
     }
 
     private fun adjustExistingCoefficients(
@@ -211,6 +218,7 @@ class AssistanceNeedVoucherCoefficientController(
         childId: ChildId,
         range: FiniteDateRange,
         ignoreCoefficientId: AssistanceNeedVoucherCoefficientId?,
+        audit: AuditContext,
     ) {
         val overlappingCoefficients =
             tx.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
@@ -218,6 +226,7 @@ class AssistanceNeedVoucherCoefficientController(
                     range = range,
                 )
                 .filterNot { it.id == ignoreCoefficientId }
+                .also { coefficients -> audit.add(coefficients.map { it.id }) }
 
         if (overlappingCoefficients.isNotEmpty()) {
             overlappingCoefficients.forEach {

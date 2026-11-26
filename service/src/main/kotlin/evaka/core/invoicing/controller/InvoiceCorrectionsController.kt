@@ -5,18 +5,22 @@
 package evaka.core.invoicing.controller
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.invoicing.service.InvoiceCorrection
 import evaka.core.invoicing.service.InvoiceCorrectionInsert
+import evaka.core.invoicing.service.ProductKey
 import evaka.core.invoicing.service.getInvoiceCorrectionsForHeadOfFamily
 import evaka.core.invoicing.service.insertInvoiceCorrection
+import evaka.core.shared.ChildId
 import evaka.core.shared.InvoiceCorrectionId
+import evaka.core.shared.InvoiceId
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.psqlCause
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import org.jdbi.v3.core.JdbiException
@@ -39,6 +43,7 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): List<InvoiceCorrectionWithPermittedActions> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -48,7 +53,10 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                         Action.Person.READ_INVOICE_CORRECTIONS,
                         personId,
                     )
-                    val invoiceCorrections = tx.getInvoiceCorrectionsForHeadOfFamily(personId)
+                    val invoiceCorrections =
+                        tx.getInvoiceCorrectionsForHeadOfFamily(personId).also { corrections ->
+                            audit.add(corrections.map { it.id }).add(corrections.map { it.childId })
+                        }
                     val permittedActions =
                         accessControl.getPermittedActions<
                             InvoiceCorrectionId,
@@ -67,12 +75,7 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                     }
                 }
             }
-            .also {
-                Audit.InvoiceCorrectionsRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.InvoiceCorrectionsRead, clock) }
     }
 
     data class InvoiceCorrectionWithPermittedActions(
@@ -87,6 +90,12 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: InvoiceCorrectionInsert,
     ) {
+        val audit =
+            AuditContext()
+                .add(body.headOfFamilyId)
+                .add(body.childId)
+                .add(body.unitId)
+                .observeDate(body.period.start)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -96,15 +105,12 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                         Action.Person.CREATE_INVOICE_CORRECTION,
                         body.headOfFamilyId,
                     )
-                    tx.insertInvoiceCorrection(body, user.evakaUserId, clock.now())
+                    tx.insertInvoiceCorrection(body, user.evakaUserId, clock.now()).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { invoiceCorrectionId ->
-                Audit.InvoiceCorrectionsCreate.log(
-                    targetId = AuditId(listOf(body.headOfFamilyId, body.childId)),
-                    objectId = AuditId(invoiceCorrectionId),
-                )
-            }
+            .also { audit.log(Audit.InvoiceCorrectionsCreate, clock) }
     }
 
     @DeleteMapping("/{id}")
@@ -114,45 +120,72 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: InvoiceCorrectionId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.InvoiceCorrection.DELETE,
-                    id,
-                )
-                try {
-                    tx.execute {
-                        sql(
-                            """
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.InvoiceCorrection.DELETE,
+                        id,
+                    )
+                    try {
+                        tx.createQuery {
+                                sql(
+                                    """
 WITH deleted_invoice_row AS (
     DELETE FROM invoice_row r USING invoice i WHERE r.correction_id = ${bind(id)} AND r.invoice_id = i.id AND i.status = 'DRAFT'
+    RETURNING r.invoice_id
 )
 DELETE FROM invoice_correction
 WHERE id = ${bind(id)}
+RETURNING
+    head_of_family_id,
+    child_id,
+    product,
+    period,
+    (SELECT coalesce(array_agg(DISTINCT invoice_id), '{}') FROM deleted_invoice_row) AS invoice_ids
 """,
-                        )
-                    }
-                } catch (e: JdbiException) {
-                    when (e.psqlCause()?.sqlState) {
-                        PSQLState.FOREIGN_KEY_VIOLATION.state -> {
-                            throw BadRequest(
-                                "Cannot delete an already invoiced correction",
-                                cause = e,
-                            )
-                        }
+                                )
+                            }
+                            .exactlyOneOrNull<DeletedInvoiceCorrection>()
+                            ?.also {
+                                audit
+                                    .add(it.headOfFamilyId)
+                                    .add(it.childId)
+                                    .add(it.invoiceIds)
+                                    .observeDate(it.period.start)
+                                    .addMeta("product", it.product.value)
+                                    .addMeta("startDate", it.period.start)
+                                    .addMeta("endDate", it.period.end)
+                            }
+                    } catch (e: JdbiException) {
+                        when (e.psqlCause()?.sqlState) {
+                            PSQLState.FOREIGN_KEY_VIOLATION.state -> {
+                                throw BadRequest(
+                                    "Cannot delete an already invoiced correction",
+                                    cause = e,
+                                )
+                            }
 
-                        else -> {
-                            throw e
+                            else -> {
+                                throw e
+                            }
                         }
                     }
                 }
             }
-        }
-        Audit.InvoiceCorrectionsDelete.log(targetId = AuditId(id))
+            .also { audit.log(Audit.InvoiceCorrectionsDelete, clock) }
     }
+
+    private data class DeletedInvoiceCorrection(
+        val headOfFamilyId: PersonId,
+        val childId: ChildId,
+        val product: ProductKey,
+        val period: FiniteDateRange,
+        val invoiceIds: List<InvoiceId>,
+    )
 
     data class NoteUpdateBody(val note: String)
 
@@ -164,23 +197,27 @@ WHERE id = ${bind(id)}
         @PathVariable id: InvoiceCorrectionId,
         @RequestBody body: NoteUpdateBody,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.InvoiceCorrection.UPDATE_NOTE,
-                    id,
-                )
-                tx.createUpdate {
-                        sql(
-                            "UPDATE invoice_correction SET note = ${bind(body.note)} WHERE id = ${bind(id)}",
-                        )
-                    }
-                    .execute()
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.InvoiceCorrection.UPDATE_NOTE,
+                        id,
+                    )
+                    tx.createQuery {
+                            sql(
+                                "UPDATE invoice_correction SET note = ${bind(body.note)} WHERE id = ${bind(id)} RETURNING head_of_family_id, child_id",
+                            )
+                        }
+                        .exactlyOneOrNull<InvoiceCorrectionPersons>()
+                        ?.also { audit.add(it.headOfFamilyId).add(it.childId) }
+                }
             }
-        }
-        Audit.InvoiceCorrectionsNoteUpdate.log(targetId = AuditId(id))
+            .also { audit.log(Audit.InvoiceCorrectionsNoteUpdate, clock) }
     }
+
+    private data class InvoiceCorrectionPersons(val headOfFamilyId: PersonId, val childId: ChildId)
 }
