@@ -23,7 +23,7 @@ fun Database.Read.findStaffAttendancesBy(
         else
             Predicate {
                 where(
-                    "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && daterange(${bind(period.start)}, ${bind(period.end)}, '[]')",
+                    "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && ${bind(period)}",
                 )
             }
 

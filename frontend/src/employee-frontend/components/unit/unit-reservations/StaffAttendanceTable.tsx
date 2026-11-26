@@ -1036,12 +1036,15 @@ const staffAttendanceValidator =
       )
       const [groupId, groupIdError] = validateGroupId(item)
 
-      const overlappingAttendances =
+      const period =
         arrived !== undefined && departed !== undefined
-          ? config.otherAttendances.filter((other) =>
-              other.period.overlaps(new DateTimeRange(arrived, departed))
-            )
-          : []
+          ? new DateTimeRange(arrived, departed)
+          : undefined
+      const overlappingAttendances = period
+        ? config.otherAttendances.filter((other) =>
+            other.period.overlaps(period)
+          )
+        : []
       const arrivalOverlaps = overlappingAttendances.some(
         (other) => arrived && other.period.includes(arrived)
       )
@@ -1058,15 +1061,14 @@ const staffAttendanceValidator =
       }
 
       if (
-        arrived !== undefined &&
-        departed !== undefined &&
+        period !== undefined &&
         groupId !== undefined &&
         overlappingAttendances.length === 0
       ) {
         body[i] = {
           id: item.id as StaffAttendanceRealtimeId | null,
           type: item.type,
-          period: new DateTimeRange(arrived, departed),
+          period,
           groupId,
           hasStaffOccupancyEffect: item.hasStaffOccupancyEffect
         }

@@ -395,20 +395,21 @@ const StaffAttendancesEditor = ({
 
   const rowsInputInfo = rows.inputInfo()
 
-  const otherUnitAttendancesOnDate = useMemo(() => {
-    const day = FiniteDateTimeRange.ofDate(date)
-    return otherAttendances.filter(
-      (a) => a.unitName !== null && day.overlaps(a.period)
-    )
-  }, [otherAttendances, date])
+  const day = useMemo(() => FiniteDateTimeRange.ofDate(date), [date])
+  const otherUnitAttendancesOnDate = useMemo(
+    () =>
+      otherAttendances.filter(
+        (a) => a.unitName !== null && day.overlaps(a.period)
+      ),
+    [otherAttendances, day]
+  )
 
   const rowValues = boundRows.flatMap((row) =>
     row.isValid() ? [row.value()] : []
   )
-  const nextDayStart = date.addDays(1).startOfDay()
   const overlappingAttendancesOnNextDay = otherAttendances.filter(
     (other) =>
-      !other.period.start.isBefore(nextDayStart) &&
+      other.period.start.isEqualOrAfter(day.end) &&
       rowValues.some((row) => row.period.overlaps(other.period))
   )
 
@@ -417,9 +418,9 @@ const StaffAttendancesEditor = ({
       staffMember.attendances.find(
         (a) =>
           a.period.start.toLocalDate().isEqual(date.subDays(1)) &&
-          FiniteDateTimeRange.ofDate(date).overlaps(a.period)
+          day.overlaps(a.period)
       ),
-    [staffMember, date]
+    [staffMember, date, day]
   )
 
   if (mode === 'pin') {

@@ -23,6 +23,7 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
@@ -103,7 +104,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         if (from.isAfter(to)) {
             throw BadRequest("Start must be before or equal to the end")
         }
-        if (FiniteDateRange(from, to).durationInDays() > 6 * 7) {
+        val range = FiniteDateRange(from, to)
+        if (range.durationInDays() > 6 * 7) {
             throw BadRequest("Only 6 weeks of staff attendances may be fetched at once")
         }
         return db.connect { dbc ->
@@ -117,15 +119,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     )
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
                     val unitOperationalDays =
-                        FiniteDateRange(from, to)
-                            .dates()
-                            .filter { date -> isOperationalDay(date, unit) }
-                            .toList()
+                        range.dates().filter { date -> isOperationalDay(date, unit) }.toList()
 
                     val staffMember =
                         tx.getStaffAttendances(
                                 unitId = unitId,
-                                dateRange = FiniteDateRange(from, to),
+                                dateRange = range,
                                 now = clock.now(),
                                 employeeId = employeeId,
                             )
@@ -138,7 +137,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             tx.getStaffAttendancesInOtherUnits(
                                 unitId,
                                 setOf(employeeId),
-                                FiniteDateRange(from, to).asFiniteDateTimeRange(),
+                                range.asFiniteDateTimeRange(),
                                 clock.today(),
                             ),
                     )
@@ -188,7 +187,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                         val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
                         val latestDepartureToday =
-                            tx.getLatestDepartureToday(body.employeeId, clock.now())
+                            tx.getLatestDepartureToday(body.employeeId, clock.today())
                         val attendances =
                             createAttendancesFromArrival(
                                 clock.now(),
@@ -636,13 +635,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             now.withTime(departure.time).takeIf { it <= now }
                 ?: throw BadRequest("Departure time cannot be in the future")
 
-        if (departureTime <= ongoingAttendance.period.start) {
-            throw BadRequest("Departure time must be after arrival time")
-        }
-
         val endedAttendance =
             ongoingAttendance.copy(
-                period = ongoingAttendance.period.copy(end = departureTime),
+                period =
+                    FiniteDateTimeRange.tryCreate(ongoingAttendance.period.start, departureTime)
+                        ?.asDateTimeRange()
+                        ?: throw BadRequest("Departure time must be after arrival time"),
             )
 
         fun createNewAttendance(

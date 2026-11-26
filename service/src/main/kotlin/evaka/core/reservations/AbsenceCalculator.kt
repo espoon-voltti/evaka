@@ -16,6 +16,7 @@ import evaka.core.shared.ChildId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateTimeRange
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.TimeRange
 import java.time.Duration
 import java.time.LocalDate
@@ -91,11 +92,7 @@ fun getExpectedAbsenceCategories(
         (dailyPreschoolTime ?: TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)))
             .asFiniteDateTimeRange(date)
     val beforePreschoolTime =
-        FiniteDateTimeRange.of(
-            date = date,
-            startTime = LocalTime.of(0, 0),
-            endTime = preschoolTime.start.toLocalTime(),
-        )
+        FiniteDateTimeRange(HelsinkiDateTime.atStartOfDay(date), preschoolTime.start)
     val afterPreschoolTime =
         FiniteDateTimeRange.of(
             date = date,
@@ -107,11 +104,7 @@ fun getExpectedAbsenceCategories(
         (dailyPreparatoryTime ?: TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)))
             .asFiniteDateTimeRange(date)
     val beforePreparatoryTime =
-        FiniteDateTimeRange.of(
-            date = date,
-            startTime = LocalTime.of(0, 0),
-            endTime = preparatoryTime.start.toLocalTime(),
-        )
+        FiniteDateTimeRange(HelsinkiDateTime.atStartOfDay(date), preparatoryTime.start)
     val afterPreparatoryTime =
         FiniteDateTimeRange.of(
             date = date,

@@ -806,7 +806,7 @@ WHERE employee_id = ${bind(employeeId)} AND departed IS NULL
 
 fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
-    now: HelsinkiDateTime,
+    today: LocalDate,
 ): StaffAttendance? = createQuery {
     sql(
         """
@@ -820,7 +820,7 @@ SELECT
 FROM staff_attendance_realtime 
 WHERE
     employee_id = ${bind(employeeId)} AND
-    ${bind(now.toLocalDate().asFiniteDateTimeRange())} @> departed
+    ${bind(today.asFiniteDateTimeRange())} @> departed
 ORDER BY departed DESC LIMIT 1   
 """,
     )
