@@ -471,22 +471,75 @@ SELECT ${bind(input)} = datemultirange(
             )
         }
         assertTrue(match)
+
+        val output = db.read { it.passThrough(input) }
+        assertEquals(input, output)
+
+        val inputWithoutEnd = DateTimeRange(input.start, null)
+
+        val matchWithoutEnd = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql(
+                        "SELECT ${bind(inputWithoutEnd)} = tstzrange('2020-05-07T10:59Z', NULL, '[)')",
+                    )
+                },
+                inputWithoutEnd,
+            )
+        }
+        assertTrue(matchWithoutEnd)
+
+        val outputWithoutEnd = db.read { it.passThrough(inputWithoutEnd) }
+        assertEquals(inputWithoutEnd, outputWithoutEnd)
     }
 
     @Test
-    fun testDateTimeRangeWithoutEnd() {
+    fun testFiniteDateTimeRange() {
         val input =
-            DateTimeRange(HelsinkiDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59)), null)
+            FiniteDateTimeRange(
+                HelsinkiDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59, 1, 234_567_000)),
+                HelsinkiDateTime.of(LocalDate.of(2020, 5, 8), LocalTime.of(8, 0)),
+            )
 
         val match = db.read {
             it.checkMatch(
                 QuerySql {
-                    sql("SELECT ${bind(input)} = tstzrange('2020-05-07T10:59Z', NULL, '[)')")
+                    sql(
+                        "SELECT ${bind(input)} = tstzrange('2020-05-07T10:59:01.234567Z', '2020-05-08T05:00Z', '[)')",
+                    )
                 },
                 input,
             )
         }
         assertTrue(match)
+
+        val output = db.read { it.passThrough(input) }
+        assertEquals(input, output)
+    }
+
+    @Test
+    fun testDateTimeRangeInSessionTimeZoneWithMinutes() {
+        val input =
+            DateTimeRange(
+                HelsinkiDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59)),
+                HelsinkiDateTime.of(LocalDate.of(2020, 5, 8), LocalTime.of(8, 0)),
+            )
+
+        val output = db.transaction { tx ->
+            tx.execute { sql("SET LOCAL TIME ZONE 'Asia/Kolkata'") }
+            tx.passThrough(input)
+        }
+        assertEquals(input, output)
+    }
+
+    @Test
+    fun testFiniteDateTimeRangeWithoutEnd() {
+        assertFailsWith<IllegalStateException> {
+            db.read {
+                it.createQuery { sql("SELECT tstzrange('2020-05-07T10:59Z', NULL) AS value") }
+                    .exactlyOne { column<FiniteDateTimeRange>("value") }
+            }
+        }
     }
 
     @Test

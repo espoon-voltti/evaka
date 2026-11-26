@@ -91,6 +91,8 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(dateSetArgumentFactory)
     jdbi.register(finiteDateRangeColumnMapper)
     jdbi.register(dateRangeColumnMapper)
+    jdbi.register(finiteDateTimeRangeColumnMapper)
+    jdbi.register(dateTimeRangeColumnMapper)
     jdbi.register(timeRangeColumnMapper)
     jdbi.register(coordinateColumnMapper)
     jdbi.register(externalIdColumnMapper)
