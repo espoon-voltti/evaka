@@ -57,6 +57,7 @@ class DocumentMetadataUtilsTest {
             archivedAt = null,
             pdfAvailable = true,
             content = DocumentContent(answers = listOf()),
+            contentVersion = 0,
             publishedContent = DocumentContent(answers = listOf()),
             child =
                 ChildBasics(

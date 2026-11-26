@@ -1020,6 +1020,10 @@ export const fi = {
         lockedErrorDetailed: (modifiedByName: string, opensAt: string) =>
           `Käyttäjä ${modifiedByName} on muokkaamassa asiakirjaa. Asiakirjan lukitus vapautuu ${opensAt} mikäli muokkaamista ei jatketa. Yritä myöhemmin uudelleen.`,
         saveError: 'Asiakirjan tallentaminen epäonnistui.',
+        unsavedChangesWarning:
+          'Kaikkia muutoksia ei ole tallennettu. Haluatko varmasti poistua?',
+        documentModifiedTitle: 'Asiakirjaan on tehty muutoksia',
+        documentModifiedText: 'Voit avata asiakirjan muokattavaksi uudelleen.',
         preview: 'Esikatsele',
         publish: 'Julkaise huoltajalle',
         publishConfirmTitle: 'Haluatko varmasti julkaista huoltajalle?',

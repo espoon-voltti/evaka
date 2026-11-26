@@ -14,7 +14,7 @@ import type { ChildDocumentType } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentsCreateRequest } from 'lib-common/generated/api-types/document'
 import DateRange from 'lib-common/date-range'
-import type { DocumentContent } from 'lib-common/generated/api-types/document'
+import type { DocumentEditStatus } from 'lib-common/generated/api-types/document'
 import type { DocumentLockResponse } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplate } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateBasicsRequest } from 'lib-common/generated/api-types/document'
@@ -29,6 +29,8 @@ import type { JsonOf } from 'lib-common/json'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { ProposeChildDocumentDecisionRequest } from 'lib-common/generated/api-types/document'
 import type { StatusChangeRequest } from 'lib-common/generated/api-types/document'
+import type { UpdateChildDocumentContentRequest } from 'lib-common/generated/api-types/document'
+import type { UpdateChildDocumentContentResponse } from 'lib-common/generated/api-types/document'
 import type { UpdateChildDocumentDecisionValidityRequest } from 'lib-common/generated/api-types/document'
 import type { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
@@ -36,6 +38,7 @@ import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAcceptedChildDecisions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
+import { deserializeJsonDocumentEditStatus } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentLockResponse } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplateSummary } from 'lib-common/generated/api-types/document'
@@ -455,6 +458,22 @@ export async function getDocument(
 
 
 /**
+* Generated from evaka.core.document.childdocument.ChildDocumentController.getDocumentEditStatus
+*/
+export async function getDocumentEditStatus(
+  request: {
+    documentId: ChildDocumentId
+  }
+): Promise<DocumentEditStatus> {
+  const { data: json } = await client.request<JsonOf<DocumentEditStatus>>({
+    url: uri`/employee/child-documents/${request.documentId}/edit-status`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonDocumentEditStatus(json)
+}
+
+
+/**
 * Generated from evaka.core.document.childdocument.ChildDocumentController.getDocuments
 */
 export async function getDocuments(
@@ -638,13 +657,13 @@ export async function updateChildDocumentDecisionValidity(
 export async function updateDocumentContent(
   request: {
     documentId: ChildDocumentId,
-    body: DocumentContent
+    body: UpdateChildDocumentContentRequest
   }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
+): Promise<UpdateChildDocumentContentResponse> {
+  const { data: json } = await client.request<JsonOf<UpdateChildDocumentContentResponse>>({
     url: uri`/employee/child-documents/${request.documentId}/content`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<DocumentContent>
+    data: request.body satisfies JsonCompatible<UpdateChildDocumentContentRequest>
   })
   return json
 }

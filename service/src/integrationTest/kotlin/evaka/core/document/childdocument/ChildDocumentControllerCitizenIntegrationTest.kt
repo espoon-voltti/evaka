@@ -304,6 +304,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
         )
         assertEquals(clock.now(), getStatusModifiedAt(documentId))
         assertNotEquals(statusModifiedBeforeUpdate, getStatusModifiedAt(documentId))
+        assertEquals(1, db.read { it.getChildDocumentContentVersion(documentId) })
 
         val documents = getDocumentsByChild(child.id)
         assertEquals(
@@ -786,7 +787,16 @@ class ChildDocumentControllerCitizenIntegrationTest :
         employeeController.publishDocument(dbInstance(), employeeUser, clock, id)
 
     private fun updateDocumentContent(id: ChildDocumentId, content: DocumentContent) =
-        employeeController.updateDocumentContent(dbInstance(), employeeUser, clock, id, content)
+        employeeController.updateDocumentContent(
+            dbInstance(),
+            employeeUser,
+            clock,
+            id,
+            ChildDocumentController.UpdateChildDocumentContentRequest(
+                content,
+                expectedContentVersion = 0,
+            ),
+        )
 
     private fun getStatusModifiedAt(id: ChildDocumentId): HelsinkiDateTime = db.read { tx ->
         tx.createQuery {

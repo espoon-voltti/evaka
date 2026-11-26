@@ -2341,6 +2341,7 @@ CREATE TABLE public.child_document (
     created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
     updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     status_modified_at timestamp with time zone NOT NULL,
+    content_version integer DEFAULT 0 NOT NULL,
     CONSTRAINT answerable_document CHECK (((type = 'CITIZEN_BASIC'::public.document_template_type) OR ((answered_at IS NULL) AND (answered_by IS NULL)))),
     CONSTRAINT answered_consistency CHECK (((answered_at IS NULL) = (answered_by IS NULL))),
     CONSTRAINT archived_documents_must_be_completed CHECK (((archived_at IS NULL) OR (status = 'COMPLETED'::public.child_document_status))),

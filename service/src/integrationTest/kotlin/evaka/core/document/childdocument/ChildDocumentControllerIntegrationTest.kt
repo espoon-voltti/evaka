@@ -298,6 +298,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         publishedAt = null,
                         pdfAvailable = false,
                         content = DocumentContent(answers = emptyList()),
+                        contentVersion = 0,
                         publishedContent = null,
                         child =
                             ChildBasics(
@@ -933,10 +934,18 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
 
         val lastValidDay = clock
-        updateDocumentContent(documentId, content, now = lastValidDay)
+        val contentVersion =
+            updateDocumentContent(documentId, content, now = lastValidDay).contentVersion
 
         val dayAfter = MockEvakaClock(lastValidDay.now().plusDays(1))
-        assertTemplateValidityEnded { updateDocumentContent(documentId, content, now = dayAfter) }
+        assertTemplateValidityEnded {
+            updateDocumentContent(
+                documentId,
+                content,
+                expectedContentVersion = contentVersion,
+                now = dayAfter,
+            )
+        }
         assertTemplateValidityEnded { takeDocumentWriteLock(documentId, clockOverride = dayAfter) }
         assertTemplateValidityEnded { publishDocument(documentId, clockOverride = dayAfter) }
         assertTemplateValidityEnded { nextState(documentId, DocumentStatus.PREPARED, dayAfter) }
@@ -1404,19 +1413,24 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         )
 
         // user 1 updates document and re-takes a lock at 11:02
-        updateDocumentContent(
-            documentId,
-            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello"))),
-            now = MockEvakaClock(2022, 1, 1, 11, 2),
-        )
+        val user1FirstVersion =
+            updateDocumentContent(
+                    documentId,
+                    DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello"))),
+                    now = MockEvakaClock(2022, 1, 1, 11, 2),
+                )
+                .contentVersion
 
         // user 1 updates document at 11:20, which extends the expired lock as no one else has taken
         // it in between
-        updateDocumentContent(
-            documentId,
-            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello2"))),
-            now = MockEvakaClock(2022, 1, 1, 11, 20),
-        )
+        val user1LastVersion =
+            updateDocumentContent(
+                    documentId,
+                    DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello2"))),
+                    expectedContentVersion = user1FirstVersion,
+                    now = MockEvakaClock(2022, 1, 1, 11, 20),
+                )
+                .contentVersion
 
         // user 2 tries to take a lock at 11:22, which is not yet possible
         lock =
@@ -1437,6 +1451,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             updateDocumentContent(
                 documentId,
                 DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello3"))),
+                expectedContentVersion = user1LastVersion,
                 now = MockEvakaClock(2022, 1, 1, 11, 22),
                 user = unitSupervisorUser,
             )
@@ -1460,18 +1475,63 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         updateDocumentContent(
             documentId,
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello4"))),
+            expectedContentVersion = user1LastVersion,
             user = unitSupervisorUser,
             now = MockEvakaClock(2022, 1, 1, 11, 28),
         )
 
         // user 1 cannot update the document at 11:30
         assertThrows<Conflict> {
-            updateDocumentContent(
-                documentId,
-                DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello5"))),
-                now = MockEvakaClock(2022, 1, 1, 11, 30),
-            )
-        }
+                updateDocumentContent(
+                    documentId,
+                    DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello5"))),
+                    expectedContentVersion = user1LastVersion,
+                    now = MockEvakaClock(2022, 1, 1, 11, 30),
+                )
+            }
+            .also { assertEquals("invalid-lock", it.errorCode) }
+
+        // user 1 cannot update the document at 11:40 from the content they last saved, although
+        // user 2's lock has expired, because user 2 has changed the content since
+        assertThrows<Conflict> {
+                updateDocumentContent(
+                    documentId,
+                    DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello6"))),
+                    expectedContentVersion = user1LastVersion,
+                    now = MockEvakaClock(2022, 1, 1, 11, 40),
+                )
+            }
+            .also { assertEquals("document-modified", it.errorCode) }
+    }
+
+    @Test
+    fun `edit status tells who else holds an active lock and what the current content version is`() {
+        createPlacement()
+
+        // user 1 creates the document and takes the lock at 10:00
+        val documentId = createDocument(clockOverride = MockEvakaClock(2022, 1, 1, 10, 0))
+        var status = getDocumentEditStatus(documentId, MockEvakaClock(2022, 1, 1, 10, 1))
+        assertNull(status.activeLockByOther)
+        assertEquals(0, status.contentVersion)
+
+        // user 2 updates the document at 10:31 after user 1's lock has expired
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello"))),
+            user = unitSupervisorUser,
+            now = MockEvakaClock(2022, 1, 1, 10, 31),
+        )
+        status = getDocumentEditStatus(documentId, MockEvakaClock(2022, 1, 1, 10, 32))
+        assertEquals(unitSupervisorUser.evakaUserId, status.activeLockByOther?.lockedBy)
+        assertEquals(
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(10, 36)),
+            status.activeLockByOther?.opensAt,
+        )
+        assertEquals(1, status.contentVersion)
+
+        // user 2's lock has expired at 10:40
+        status = getDocumentEditStatus(documentId, MockEvakaClock(2022, 1, 1, 10, 40))
+        assertNull(status.activeLockByOther)
     }
 
     @Test
@@ -1621,9 +1681,20 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     private fun updateDocumentContent(
         id: ChildDocumentId,
         content: DocumentContent,
+        expectedContentVersion: Int = 0,
         now: MockEvakaClock = clock,
         user: AuthenticatedUser.Employee = employeeUser.user,
-    ) = controller.updateDocumentContent(dbInstance(), user, now, id, content)
+    ) =
+        controller.updateDocumentContent(
+            dbInstance(),
+            user,
+            now,
+            id,
+            ChildDocumentController.UpdateChildDocumentContentRequest(
+                content,
+                expectedContentVersion,
+            ),
+        )
 
     private fun nextState(
         id: ChildDocumentId,
@@ -2291,6 +2362,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         user: AuthenticatedUser.Employee = employeeUser.user,
         clockOverride: MockEvakaClock = clock,
     ) = controller.takeDocumentWriteLock(dbInstance(), user, clockOverride, id)
+
+    private fun getDocumentEditStatus(id: ChildDocumentId, clockOverride: MockEvakaClock) =
+        controller.getDocumentEditStatus(dbInstance(), employeeUser.user, clockOverride, id)
 
     private fun planArchiveChildDocument(
         id: ChildDocumentId,

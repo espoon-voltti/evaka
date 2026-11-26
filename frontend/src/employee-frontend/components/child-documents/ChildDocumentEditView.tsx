@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
 import isEqual from 'lodash/isEqual'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Redirect, useSearchParams, useLocation } from 'wouter'
 
@@ -43,8 +43,10 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 
+import { getDocumentEditStatus } from '../../generated/api-clients/document'
 import { useTranslation } from '../../state/i18n'
 import { useTitle } from '../../utils/useTitle'
+import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'
 import { renderResult } from '../async-rendering'
 import {
   childDocumentQuery,
@@ -156,6 +158,42 @@ const ConcurrentEditWarning = React.memo(function ConcurrentEditWarning({
   )
 })
 
+const DocumentModifiedInfo = React.memo(function DocumentModifiedInfo({
+  documentId,
+  childIdFromUrl
+}: {
+  documentId: UUID
+  childIdFromUrl: UUID | null
+}) {
+  const { i18n } = useTranslation()
+  const [, navigate] = useLocation()
+
+  const onClose = useCallback(
+    () =>
+      navigate(
+        `/child-documents/${documentId}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+      ),
+    [navigate, documentId, childIdFromUrl]
+  )
+
+  return (
+    <InfoModal
+      data-qa="document-modified-modal"
+      type="info"
+      title={i18n.childInformation.childDocuments.editor.documentModifiedTitle}
+      text={i18n.childInformation.childDocuments.editor.documentModifiedText}
+      close={onClose}
+      closeLabel={i18n.common.close}
+      resolve={{
+        action: onClose,
+        label: i18n.common.ok
+      }}
+    />
+  )
+})
+
+const idleMinutesBeforeEditStatusCheck = 1
+
 const ChildDocumentEditViewInner = React.memo(
   function ChildDocumentEditViewInner({
     document,
@@ -179,8 +217,25 @@ const ChildDocumentEditViewInner = React.memo(
     )
 
     const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
-    const [lastSavedContent, setLastSavedContent] = useState(document.content)
-    const [error, setError] = useState<'lock' | 'other' | null>(null)
+    const [lastSavedContent, setLastSavedContent] = useState(() =>
+      bind.isValid() ? bind.value() : document.content
+    )
+    // A ref, so that an auto-save starting before the next render still sends the latest version
+    const contentVersion = useRef(document.contentVersion)
+    const saveInProgress = useRef(false)
+    // Used for detecting a save that started during an edit status check
+    const savesStarted = useRef(0)
+    const [saveFailed, setSaveFailed] = useState(false)
+    const [lockLost, setLockLost] = useState<{
+      currentLock: DocumentWriteLock | undefined
+    } | null>(null)
+    const [documentModified, setDocumentModified] = useState(false)
+    const [templateValidityEnded, setTemplateValidityEnded] = useState(false)
+    const editStatusCheckInProgress = useRef(false)
+    const editStatusCheckedAt = useRef(HelsinkiDateTime.now())
+
+    const editingInterrupted =
+      lockLost !== null || documentModified || templateValidityEnded
 
     const { mutateAsync: updateChildDocumentContent, isPending: submitting } =
       useMutationResult(updateChildDocumentContentMutation)
@@ -199,24 +254,31 @@ const ChildDocumentEditViewInner = React.memo(
 
     const save = useCallback(
       async (content: DocumentContent) => {
+        saveInProgress.current = true
+        savesStarted.current += 1
         const result = await updateChildDocumentContent({
           documentId: document.id,
-          body: content
+          body: { content, expectedContentVersion: contentVersion.current }
         })
+        saveInProgress.current = false
         if (result.isSuccess) {
+          contentVersion.current = result.value.contentVersion
           setLastSaved(HelsinkiDateTime.now())
           setLastSavedContent(content)
+          editStatusCheckedAt.current = HelsinkiDateTime.now()
         } else if (result.isFailure) {
           if (result.errorCode === 'template-validity-ended') {
-            navigate(
-              `/child-documents/${document.id}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
-            )
+            setTemplateValidityEnded(true)
+          } else if (result.errorCode === 'invalid-lock') {
+            setLockLost({ currentLock: undefined })
+          } else if (result.errorCode === 'document-modified') {
+            setDocumentModified(true)
           } else {
-            setError(result.errorCode === 'invalid-lock' ? 'lock' : 'other')
+            setSaveFailed(true)
           }
         }
       },
-      [updateChildDocumentContent, document.id, navigate, childIdFromUrl]
+      [updateChildDocumentContent, document.id]
     )
 
     const saved = useMemo(
@@ -231,29 +293,121 @@ const ChildDocumentEditViewInner = React.memo(
 
     useEffect(() => {
       if (
-        error === null &&
+        !saveFailed &&
+        !editingInterrupted &&
         debouncedValidContent !== null &&
         !isEqual(lastSavedContent, debouncedValidContent) &&
         !submitting
       ) {
         void save(debouncedValidContent)
       }
-    }, [error, debouncedValidContent, lastSavedContent, save, submitting])
+    }, [
+      saveFailed,
+      editingInterrupted,
+      debouncedValidContent,
+      lastSavedContent,
+      save,
+      submitting
+    ])
 
+    // Retry a failed auto-save every five seconds
     useEffect(() => {
-      if (error === 'other') {
-        const handle = setTimeout(() => setError(null), 5000)
+      if (saveFailed) {
+        const handle = setTimeout(() => setSaveFailed(false), 5000)
         return () => clearTimeout(handle)
       }
       return undefined
-    }, [error])
+    }, [saveFailed])
+
+    const checkEditStatus = useCallback(async () => {
+      if (
+        editingInterrupted ||
+        saveInProgress.current ||
+        editStatusCheckInProgress.current
+      )
+        return
+      editStatusCheckInProgress.current = true
+      const savesStartedBeforeCheck = savesStarted.current
+      try {
+        const status = await getDocumentEditStatus({ documentId: document.id })
+        editStatusCheckedAt.current = HelsinkiDateTime.now()
+        if (status.activeLockByOther) {
+          setLockLost({ currentLock: status.activeLockByOther })
+        } else if (status.contentVersion !== contentVersion.current) {
+          // Abort the check if a save started during it, since that save may have changed
+          // the version. The server rejects the save if the document has been modified.
+          if (savesStarted.current !== savesStartedBeforeCheck) return
+          setDocumentModified(true)
+        }
+      } catch {
+        // A failed check is harmless, because the server rejects saves to a modified document
+      } finally {
+        editStatusCheckInProgress.current = false
+      }
+    }, [editingInterrupted, document.id])
+
+    // Check the edit status when the user returns to the tab or window
+    useEffect(() => {
+      const onVisibilityChange = () => {
+        if (window.document.visibilityState === 'visible')
+          void checkEditStatus()
+      }
+      const onFocus = () => void checkEditStatus()
+      window.document.addEventListener('visibilitychange', onVisibilityChange)
+      window.addEventListener('focus', onFocus)
+      return () => {
+        window.document.removeEventListener(
+          'visibilitychange',
+          onVisibilityChange
+        )
+        window.removeEventListener('focus', onFocus)
+      }
+    }, [checkEditStatus])
+
+    // Check the edit status when the user starts editing the form after being idle
+    useEffect(() => {
+      if (
+        HelsinkiDateTime.now().isEqualOrAfter(
+          editStatusCheckedAt.current.addMinutes(
+            idleMinutesBeforeEditStatusCheck
+          )
+        )
+      ) {
+        void checkEditStatus()
+      }
+    }, [bind.state, checkEditStatus])
+
+    const hasPendingChanges = !saved && !editingInterrupted
+    useWarnOnUnsavedChanges(
+      hasPendingChanges,
+      i18n.childInformation.childDocuments.editor.unsavedChangesWarning
+    )
+
+    // Navigating from an effect lets the unsaved changes guard be released first
+    useEffect(() => {
+      if (templateValidityEnded) {
+        navigate(
+          `/child-documents/${document.id}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+        )
+      }
+    }, [templateValidityEnded, navigate, document.id, childIdFromUrl])
 
     const goBack = () =>
       navigate(`/child-information/${childIdFromUrl ?? document.child.id}`)
 
-    if (error === 'lock') {
+    if (lockLost) {
       return (
         <ConcurrentEditWarning
+          documentId={document.id}
+          childIdFromUrl={childIdFromUrl}
+          currentLock={lockLost.currentLock}
+        />
+      )
+    }
+
+    if (documentModified) {
+      return (
+        <DocumentModifiedInfo
           documentId={document.id}
           childIdFromUrl={childIdFromUrl}
         />
@@ -277,10 +431,11 @@ const ChildDocumentEditViewInner = React.memo(
                 <Button
                   text={i18n.common.goBack}
                   onClick={goBack}
-                  // disable while debounce is pending to avoid leaving before saving
+                  // disable while debounce or save is pending to avoid leaving before saving
                   disabled={
-                    bind.isValid() &&
-                    !isEqual(bind.value(), debouncedValidContent)
+                    submitting ||
+                    (bind.isValid() &&
+                      !isEqual(bind.value(), debouncedValidContent))
                   }
                   data-qa="return-button"
                 />
@@ -296,8 +451,8 @@ const ChildDocumentEditViewInner = React.memo(
                       data-qa="saving-spinner"
                     />
                   )}
-                  {error === 'other' && (
-                    <span>
+                  {saveFailed && (
+                    <span data-qa="save-error">
                       <FontAwesomeIcon
                         icon={faExclamationTriangle}
                         color={colors.status.warning}
