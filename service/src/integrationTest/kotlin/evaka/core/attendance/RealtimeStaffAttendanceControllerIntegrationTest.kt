@@ -7,6 +7,8 @@ package evaka.core.attendance
 import evaka.core.FullApplicationTest
 import evaka.core.shared.DaycareId
 import evaka.core.shared.GroupId
+import evaka.core.shared.StaffAttendanceExternalId
+import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
@@ -589,6 +591,57 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
+    fun `Adjacent attendances can be shifted in both directions`() {
+        fun save(vararg rows: Triple<StaffAttendanceRealtimeId?, Int, Int>) =
+            realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
+                dbInstance(),
+                unitSupervisor,
+                MockEvakaClock(now),
+                RealtimeStaffAttendanceController.StaffAttendanceBody(
+                    unitId = daycare.id,
+                    date = now.toLocalDate(),
+                    employeeId = staff.id,
+                    entries =
+                        rows.map { (id, arrivalHour, departureHour) ->
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = id,
+                                groupId = group1.id,
+                                arrived = now.withTime(LocalTime.of(arrivalHour, 0)),
+                                departed = now.withTime(LocalTime.of(departureHour, 0)),
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true,
+                            )
+                        },
+                ),
+            )
+
+        save(Triple(null, 7, 9), Triple(null, 9, 11))
+        val (firstId, secondId) =
+            getAttendances(daycare.id)
+                .staff
+                .first()
+                .attendances
+                .sortedBy { it.arrived }
+                .map { it.id }
+
+        save(Triple(firstId, 8, 10), Triple(secondId, 10, 12))
+        save(Triple(firstId, 7, 9), Triple(secondId, 9, 11))
+
+        assertEquals(
+            listOf(
+                firstId to now.withTime(LocalTime.of(7, 0)),
+                secondId to now.withTime(LocalTime.of(9, 0)),
+            ),
+            getAttendances(daycare.id)
+                .staff
+                .first()
+                .attendances
+                .sortedBy { it.arrived }
+                .map { it.id to it.arrived },
+        )
+    }
+
+    @Test
     fun `Staff cannot update other employee's attendances`() {
         // Employee tries to upsert supervisor's attendance which should be forbidden
         assertThrows<Forbidden> {
@@ -614,6 +667,97 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 ),
             )
         }
+    }
+
+    @Test
+    fun `Attendance id must belong to the employee`() {
+        val supervisorAttendanceId = db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = supervisor.id,
+                    groupId = group1.id,
+                    arrived = now.minusHours(3),
+                    departed = now.minusHours(2),
+                    modifiedAt = now,
+                    modifiedBy = unitSupervisor.evakaUserId,
+                ),
+            )
+        }
+
+        val exception =
+            assertThrows<BadRequest> {
+                realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
+                    dbInstance(),
+                    AuthenticatedUser.Employee(staff.id, setOf()),
+                    MockEvakaClock(now),
+                    RealtimeStaffAttendanceController.StaffAttendanceBody(
+                        unitId = daycare.id,
+                        date = now.toLocalDate(),
+                        employeeId = staff.id,
+                        entries =
+                            listOf(
+                                RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                    id = supervisorAttendanceId,
+                                    groupId = group1.id,
+                                    arrived = now.minusHours(1),
+                                    departed = null,
+                                    type = StaffAttendanceType.PRESENT,
+                                    hasStaffOccupancyEffect = true,
+                                ),
+                            ),
+                    ),
+                )
+            }
+        assertEquals("Unknown id was given", exception.message)
+    }
+
+    @Test
+    fun `Attendance group must be in the unit`() {
+        val exception =
+            assertThrows<BadRequest> {
+                upsertDailyStaffAttendances(
+                    daycare.id,
+                    group2.id,
+                    now.minusHours(3),
+                    now.minusHours(2),
+                )
+            }
+        assertEquals("Group is not in unit", exception.message)
+
+        val externalException =
+            assertThrows<BadRequest> {
+                upsertDailyExternalAttendances(
+                    daycare.id,
+                    group2.id,
+                    now.minusHours(3),
+                    now.minusHours(2),
+                )
+            }
+        assertEquals("Group is not in unit", externalException.message)
+    }
+
+    @Test
+    fun `External attendances of another unit are not touched`() {
+        upsertDailyExternalAttendances(daycare2.id, group2.id, now.minusHours(3), now.minusHours(2))
+        val otherUnitAttendanceId = getAttendances(daycare2.id).extraAttendances.single().id
+
+        val exception =
+            assertThrows<BadRequest> {
+                upsertDailyExternalAttendances(
+                    daycare.id,
+                    group1.id,
+                    now.minusHours(1),
+                    null,
+                    id = otherUnitAttendanceId,
+                )
+            }
+        assertEquals("Unknown id was given", exception.message)
+
+        upsertDailyExternalAttendances(daycare.id, group1.id, now.minusHours(1), null)
+        assertEquals(
+            listOf(otherUnitAttendanceId),
+            getAttendances(daycare2.id).extraAttendances.map { it.id },
+        )
     }
 
     @ParameterizedTest
@@ -719,6 +863,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         groupId: GroupId,
         arrived: HelsinkiDateTime,
         departed: HelsinkiDateTime?,
+        id: StaffAttendanceExternalId? = null,
     ) {
         realtimeStaffAttendanceController.upsertDailyExternalRealtimeAttendances(
             dbInstance(),
@@ -731,7 +876,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 entries =
                     listOf(
                         RealtimeStaffAttendanceController.ExternalAttendanceUpsert(
-                            id = null,
+                            id = id,
                             groupId = groupId,
                             hasStaffOccupancyEffect = false,
                             arrived = arrived,

@@ -5108,7 +5108,7 @@ ALTER TABLE ONLY public.staff_attendance
 -- Name: staff_attendance_realtime staff_attendance_no_overlaps; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.staff_attendance_realtime
-    ADD CONSTRAINT staff_attendance_no_overlaps EXCLUDE USING gist (employee_id WITH =, tstzrange(arrived, departed) WITH &&);
+    ADD CONSTRAINT staff_attendance_no_overlaps EXCLUDE USING gist (employee_id WITH =, tstzrange(arrived, departed) WITH &&) DEFERRABLE;
 
 -- Name: staff_attendance_plan staff_attendance_plan_no_overlaps; Type: CONSTRAINT; Schema: public
 
