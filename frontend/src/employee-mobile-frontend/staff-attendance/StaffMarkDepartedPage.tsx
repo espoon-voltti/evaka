@@ -94,16 +94,16 @@ export default React.memo(function StaffMarkDepartedPage({
       staffAttendanceResponse.map((res) => {
         const staffMember = res.staff.find((s) => s.employeeId === employeeId)
         const attendanceId = staffMember?.attendances.find(
-          ({ departed }) => departed === null
+          ({ period }) => period.end === null
         )?.id
         const latestCurrentDayAttendance =
           staffMember?.latestCurrentDayAttendance
         const latestCurrentDayArrival =
           latestCurrentDayAttendance &&
-          latestCurrentDayAttendance.arrived
+          latestCurrentDayAttendance.period.start
             .toLocalDate()
             .isEqual(LocalDate.todayInHelsinkiTz())
-            ? latestCurrentDayAttendance.arrived.toLocalTime()
+            ? latestCurrentDayAttendance.period.start.toLocalTime()
             : undefined
         const groupId = staffMember?.latestCurrentDayAttendance?.groupId
         return {

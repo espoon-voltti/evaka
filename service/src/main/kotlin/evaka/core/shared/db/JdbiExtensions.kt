@@ -12,9 +12,10 @@ import evaka.core.shared.Id
 import evaka.core.shared.data.DateSet
 import evaka.core.shared.domain.Coordinate
 import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.domain.TimeRangeEndpoint
 import java.lang.reflect.Type
@@ -27,6 +28,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 import java.util.Optional
 import java.util.UUID
 import java.util.function.Function
@@ -122,12 +124,22 @@ val helsinkiDateTimeArgumentFactory =
         CustomObjectArgument(it.toZonedDateTime().toOffsetDateTime())
     }
 
-val helsinkiDateTimeRangeArgumentFactory =
-    pgObjectArgumentFactory<HelsinkiDateTimeRange> {
+val finiteDateTimeRangeArgumentFactory =
+    pgObjectArgumentFactory<FiniteDateTimeRange> {
         PGobject().apply {
             type = "tstzrange"
             if (it != null) {
                 value = "[${it.start.toInstant()},${it.end.toInstant()})"
+            }
+        }
+    }
+
+val dateTimeRangeArgumentFactory =
+    pgObjectArgumentFactory<DateTimeRange> {
+        PGobject().apply {
+            type = "tstzrange"
+            if (it != null) {
+                value = "[${it.start.toInstant()},${it.end?.toInstant() ?: ""})"
             }
         }
     }
@@ -159,6 +171,16 @@ val databaseEnumArgumentFactory = ArgumentFactory.Preparable { type, _ ->
     }
 }
 
+// PostgreSQL writes timestamps in the session time zone, so the offset can also have minutes and
+// seconds
+private val timestampTzFormatter =
+    DateTimeFormatterBuilder()
+        .append(DateTimeFormatter.ISO_LOCAL_DATE)
+        .appendLiteral(' ')
+        .append(DateTimeFormatter.ISO_LOCAL_TIME)
+        .appendOffset("+HH:mm:ss", "+00")
+        .toFormatter()
+
 private class Parser(private var text: CharSequence) {
     fun peekChar(): Char? = this.text.firstOrNull()
 
@@ -189,6 +211,21 @@ private class Parser(private var text: CharSequence) {
         } else {
             this.parseDate()
         }
+
+    fun parseQuotedTimestamp(): HelsinkiDateTime {
+        when (val char = parseChar()) {
+            '"' -> {}
+
+            else -> {
+                error("Expected '\"', got $char")
+            }
+        }
+        val end = this.text.indexOf('"')
+        check(end >= 0) { "Expected '\"' at the end of a timestamp" }
+        val timestamp = OffsetDateTime.parse(this.text.substring(0, end), timestampTzFormatter)
+        this.text = this.text.drop(end + 1)
+        return HelsinkiDateTime.from(timestamp.toInstant())
+    }
 
     private data class RawRange<Lower : Any, Upper : Any>(
         val lower: Lower?,
@@ -254,6 +291,25 @@ private class Parser(private var text: CharSequence) {
             )
         }
 
+    fun parseFiniteDateTimeRange(): FiniteDateTimeRange =
+        parseRange({ it.parseQuotedTimestamp() }, { it.parseQuotedTimestamp() }).let { range ->
+            checkNotNull(range.lower) { "FiniteDateTimeRange lower must not be null" }
+            checkNotNull(range.upper) { "FiniteDateTimeRange upper must not be null" }
+            check(range.lowerInclusive && !range.upperInclusive) {
+                "FiniteDateTimeRange bounds must be [)"
+            }
+            FiniteDateTimeRange(range.lower, range.upper)
+        }
+
+    fun parseDateTimeRange(): DateTimeRange =
+        parseRange({ it.parseQuotedTimestamp() }, { it.parseQuotedTimestamp() }).let { range ->
+            checkNotNull(range.lower) { "DateTimeRange lower must not be null" }
+            check(range.lowerInclusive && !range.upperInclusive) {
+                "DateTimeRange bounds must be [)"
+            }
+            DateTimeRange(range.lower, range.upper)
+        }
+
     fun <T : Any> parseMultiRange(parseRange: (parser: Parser) -> T): List<T> {
         when (val char = parseChar()) {
             '{' -> {}
@@ -302,6 +358,16 @@ val finiteDateRangeColumnMapper = PgObjectColumnMapper { obj ->
 val dateRangeColumnMapper = PgObjectColumnMapper { obj ->
     assert(obj.type == "daterange")
     obj.value?.let(::Parser)?.parseDateRange()
+}
+
+val finiteDateTimeRangeColumnMapper = PgObjectColumnMapper { obj ->
+    assert(obj.type == "tstzrange")
+    obj.value?.let(::Parser)?.parseFiniteDateTimeRange()
+}
+
+val dateTimeRangeColumnMapper = PgObjectColumnMapper { obj ->
+    assert(obj.type == "tstzrange")
+    obj.value?.let(::Parser)?.parseDateTimeRange()
 }
 
 val timeRangeColumnMapper = PgObjectColumnMapper {

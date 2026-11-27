@@ -1393,7 +1393,7 @@ export class Fixture {
         LocalDate.of(2020, 1, 1),
         LocalDate.of(2020, 1, 1)
       ),
-      modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
+      modifiedAt: LocalDate.of(2020, 1, 1).startOfDay(),
       modifiedBy: systemInternalUser.id,
       nekkuUnorderedMeals: [],
       eventType: 'DAYCARE_EVENT',
@@ -1434,7 +1434,7 @@ export class Fixture {
       date: LocalDate.of(2020, 1, 1),
       childId: null,
       modifiedBy: systemInternalUser.id,
-      modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
+      modifiedAt: LocalDate.of(2020, 1, 1).startOfDay(),
       start: LocalTime.of(8, 0),
       end: LocalTime.of(8, 30),
       ...initial

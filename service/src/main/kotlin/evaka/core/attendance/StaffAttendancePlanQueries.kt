@@ -30,7 +30,7 @@ fun Database.Read.findStaffAttendancePlansBy(
         else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
     val daterangeFilter: Predicate =
         if (period == null) Predicate.alwaysTrue()
-        else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
+        else Predicate { where("${bind(period.asFiniteDateTimeRange())} @> start_time") }
 
     sql(
         """
@@ -68,7 +68,7 @@ fun Database.Transaction.deleteStaffAttendancePlansBy(
         else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
     val daterangeFilter: Predicate =
         if (period == null) Predicate.alwaysTrue()
-        else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
+        else Predicate { where("${bind(period.asFiniteDateTimeRange())} @> start_time") }
 
     sql(
         """

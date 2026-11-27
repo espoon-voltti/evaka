@@ -15,10 +15,10 @@ import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import java.math.BigDecimal
@@ -89,10 +89,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         )
 
                     val rangeIncludingFollowingDay =
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.atStartOfDay(start),
-                            HelsinkiDateTime.atStartOfDay(end.plusDays(2)),
-                        )
+                        FiniteDateRange(start, end.plusDays(1)).asFiniteDateTimeRange()
                     val otherUnitAttendances =
                         tx.getStaffAttendancesInOtherUnits(
                                 unitId,
@@ -117,8 +114,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             Attendance(
                                                 att.id,
                                                 att.groupId,
-                                                att.arrived,
-                                                att.departed,
+                                                att.period,
                                                 att.occupancyCoefficient,
                                                 type =
                                                     if (
@@ -162,8 +158,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             Attendance(
                                                 att.id,
                                                 att.groupId,
-                                                att.arrived,
-                                                att.departed,
+                                                att.period,
                                                 att.occupancyCoefficient,
                                                 att.type,
                                                 att.departedAutomatically,
@@ -204,16 +199,13 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     data class StaffAttendanceUpsert(
         val id: StaffAttendanceRealtimeId?,
         val groupId: GroupId?,
-        val arrived: HelsinkiDateTime,
-        val departed: HelsinkiDateTime?,
+        val period: DateTimeRange,
         val type: StaffAttendanceType,
         val hasStaffOccupancyEffect: Boolean,
     ) {
-        fun departsAfterArrival(): Boolean = departed == null || departed > arrived
+        fun departsAfterArrival(): Boolean = period.end == null || period.end > period.start
 
-        fun overlaps(other: StaffAttendanceUpsert): Boolean =
-            (departed == null || other.arrived < departed) &&
-                (other.departed == null || arrived < other.departed)
+        fun overlaps(other: StaffAttendanceUpsert): Boolean = period.overlaps(other.period)
     }
 
     data class StaffAttendanceBody(
@@ -222,8 +214,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val date: LocalDate,
         val entries: List<StaffAttendanceUpsert>,
     ) {
-        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean = entries.any {
-            it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
+        fun anyArrivalOrDepartureAfter(timestamp: HelsinkiDateTime): Boolean = entries.any {
+            (it.period.end ?: it.period.start) > timestamp
         }
     }
 
@@ -234,7 +226,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         clock: EvakaClock,
         @RequestBody body: StaffAttendanceBody,
     ) {
-        if (body.anyAttendanceAfter(clock.now())) {
+        if (body.anyArrivalOrDepartureAfter(clock.now())) {
             throw BadRequest("Attendances cannot be in the future")
         }
         if (body.date.isAfter(clock.today())) {
@@ -288,8 +280,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     entry.id,
                                     body.employeeId,
                                     entry.groupId,
-                                    entry.arrived,
-                                    entry.departed,
+                                    entry.period,
                                     occupancyCoefficient,
                                     entry.type,
                                     false,
@@ -321,8 +312,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val id: StaffAttendanceExternalId?,
         val groupId: GroupId,
         val hasStaffOccupancyEffect: Boolean,
-        val arrived: HelsinkiDateTime,
-        val departed: HelsinkiDateTime?,
+        val period: DateTimeRange,
     )
 
     data class ExternalAttendanceBody(
@@ -331,8 +321,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val date: LocalDate,
         val entries: List<ExternalAttendanceUpsert>,
     ) {
-        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean = entries.any {
-            it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
+        fun anyArrivalOrDepartureAfter(timestamp: HelsinkiDateTime): Boolean = entries.any {
+            (it.period.end ?: it.period.start) > timestamp
         }
     }
 
@@ -343,7 +333,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         clock: EvakaClock,
         @RequestBody body: ExternalAttendanceBody,
     ) {
-        if (body.anyAttendanceAfter(clock.now())) {
+        if (body.anyArrivalOrDepartureAfter(clock.now())) {
             throw BadRequest("Attendances cannot be in the future")
         }
         if (body.date.isAfter(clock.today())) {
@@ -369,8 +359,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         it.id,
                         body.name,
                         it.groupId,
-                        it.arrived,
-                        it.departed,
+                        it.period,
                         if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
                         else occupancyCoefficientZero,
                         false,

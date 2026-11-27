@@ -11,15 +11,15 @@ import evaka.core.shared.GroupId
 import evaka.core.shared.StaffAttendanceExternalId
 import evaka.core.shared.StaffAttendanceRealtimeId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
-import evaka.core.shared.domain.asHelsinkiDateTimeRange
+import evaka.core.shared.domain.asFiniteDateTimeRange
 import evaka.core.user.EvakaUser
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
 import kotlin.reflect.full.memberProperties
 import org.jdbi.v3.core.mapper.Nested
 
@@ -29,7 +29,7 @@ fun Database.Read.getStaffAttendances(
     now: HelsinkiDateTime,
     employeeId: EmployeeId? = null,
 ): List<StaffMember> {
-    val range = dateRange.asHelsinkiDateTimeRange()
+    val range = dateRange.asFiniteDateTimeRange()
 
     return createQuery {
         sql(
@@ -41,8 +41,7 @@ SELECT DISTINCT
     att.id AS attendance_id,
     att.employee_id AS attendance_employee_id,
     att.group_id AS attendance_group_id,
-    att.arrived AS attendance_arrived,
-    att.departed AS attendance_departed,
+    CASE WHEN att.id IS NOT NULL THEN tstzrange(att.arrived, att.departed) END AS attendance_period,
     att.type AS attendance_type,
     att.departed_automatically AS attendance_departed_automatically,
     att.occupancy_coefficient AS attendance_occupancy_coefficient,
@@ -57,13 +56,25 @@ SELECT DISTINCT
         WHERE soc.employee_id = dacl.employee_id AND soc.daycare_id = ${bind(unitId)} AND soc.coefficient > 0
     ) AS occupancy_effect,
     coalesce((
-        SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type, 'departedAutomatically', a.departed_automatically, 'occupancyCoefficient', a.occupancy_coefficient) ORDER BY a.arrived)
+        SELECT jsonb_agg(jsonb_build_object(
+            'id', a.id,
+            'employeeId', a.employee_id,
+            'groupId', a.group_id,
+            'period', jsonb_build_object('start', a.arrived, 'end', a.departed),
+            'type', a.type,
+            'departedAutomatically', a.departed_automatically,
+            'occupancyCoefficient', a.occupancy_coefficient
+        ) ORDER BY a.arrived)
         FROM staff_attendance_realtime a
         LEFT JOIN daycare_group dg ON dg.id = a.group_id
         WHERE e.id = a.employee_id AND (dg.daycare_id = ${bind(unitId)} OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && ${bind(range)}
     ), '[]'::jsonb) AS attendances,
     coalesce((
-        SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type, 'description', p.description) ORDER BY p.start_time)
+        SELECT jsonb_agg(jsonb_build_object(
+            'period', jsonb_build_object('start', p.start_time, 'end', p.end_time),
+            'type', p.type,
+            'description', p.description
+        ) ORDER BY p.start_time)
         FROM staff_attendance_plan p
         WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && ${bind(range)}
     ), '[]'::jsonb) AS planned_attendances,
@@ -148,8 +159,7 @@ data class StaffAttendance(
     val id: StaffAttendanceRealtimeId?,
     val employeeId: EmployeeId,
     val groupId: GroupId?,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?,
+    val period: DateTimeRange,
     val occupancyCoefficient: BigDecimal,
     val type: StaffAttendanceType,
 )
@@ -193,8 +203,7 @@ fun Database.Transaction.upsertStaffAttendance(
     attendanceId: StaffAttendanceRealtimeId?,
     employeeId: EmployeeId?,
     groupId: GroupId?,
-    arrivalTime: HelsinkiDateTime,
-    departureTime: HelsinkiDateTime?,
+    period: DateTimeRange,
     occupancyCoefficient: BigDecimal?,
     type: StaffAttendanceType,
     departedAutomatically: Boolean = false,
@@ -209,8 +218,8 @@ INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed,
 VALUES (
     ${bind(employeeId)},
     ${bind(groupId)},
-    ${bind(arrivalTime)},
-    ${bind(departureTime)},
+    ${bind(period.start)},
+    ${bind(period.end)},
     ${bind(occupancyCoefficient)},
     ${bind(type)},
     ${bind(departedAutomatically)},
@@ -218,10 +227,10 @@ VALUES (
     ${bind(modifiedBy)},
     ${bind(modifiedAt)},
     ${bind(modifiedBy)},
-    ${bind(modifiedAt.takeIf { departureTime != null })},
-    ${bind(modifiedBy.takeIf { departureTime != null })},
-    ${bind(modifiedAt.takeIf { departureTime != null })},
-    ${bind(modifiedBy.takeIf { departureTime != null })}
+    ${bind(modifiedAt.takeIf { period.end != null })},
+    ${bind(modifiedBy.takeIf { period.end != null })},
+    ${bind(modifiedAt.takeIf { period.end != null })},
+    ${bind(modifiedBy.takeIf { period.end != null })}
 )
 RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 """,
@@ -236,23 +245,23 @@ RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, t
                 """
 UPDATE staff_attendance_realtime new
 SET group_id = ${bind(groupId)},
-    arrived = ${bind(arrivalTime)},
-    departed = ${bind(departureTime)},
+    arrived = ${bind(period.start)},
+    departed = ${bind(period.end)},
     occupancy_coefficient = ${bind(occupancyCoefficient)},
     type = ${bind(type)},
     departed_automatically = ${bind(departedAutomatically)},
-    arrived_modified_at = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedAt)} ELSE old.arrived_modified_at END,
-    arrived_modified_by = CASE WHEN old.arrived != ${bind(arrivalTime)} THEN ${bind(modifiedBy)} ELSE old.arrived_modified_by END,
-    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_at, ${bind(modifiedAt)}) ELSE old.departed_added_at END,
-    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(departureTime)} THEN coalesce(old.departed_added_by, ${bind(modifiedBy)}) ELSE old.departed_added_by END,
-    departed_modified_at = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedAt)} ELSE old.departed_modified_at END,
-    departed_modified_by = CASE WHEN old.departed IS DISTINCT FROM ${bind(departureTime)} THEN ${bind(modifiedBy)} ELSE old.departed_modified_by END
+    arrived_modified_at = CASE WHEN old.arrived != ${bind(period.start)} THEN ${bind(modifiedAt)} ELSE old.arrived_modified_at END,
+    arrived_modified_by = CASE WHEN old.arrived != ${bind(period.start)} THEN ${bind(modifiedBy)} ELSE old.arrived_modified_by END,
+    departed_added_at = CASE WHEN old.arrived_added_at IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(period.end)} THEN coalesce(old.departed_added_at, ${bind(modifiedAt)}) ELSE old.departed_added_at END,
+    departed_added_by = CASE WHEN old.arrived_added_by IS NOT NULL AND old.departed IS DISTINCT FROM ${bind(period.end)} THEN coalesce(old.departed_added_by, ${bind(modifiedBy)}) ELSE old.departed_added_by END,
+    departed_modified_at = CASE WHEN old.departed IS DISTINCT FROM ${bind(period.end)} THEN ${bind(modifiedAt)} ELSE old.departed_modified_at END,
+    departed_modified_by = CASE WHEN old.departed IS DISTINCT FROM ${bind(period.end)} THEN ${bind(modifiedBy)} ELSE old.departed_modified_by END
 FROM staff_attendance_realtime old
 WHERE new.id = ${bind(attendanceId)}
   AND new.id = old.id
   AND (old.group_id IS DISTINCT FROM ${bind(groupId)}
-    OR old.arrived != ${bind(arrivalTime)}
-    OR old.departed IS DISTINCT FROM ${bind(departureTime)}
+    OR old.arrived != ${bind(period.start)}
+    OR old.departed IS DISTINCT FROM ${bind(period.end)}
     OR old.occupancy_coefficient != ${bind(occupancyCoefficient)}
     OR old.type != ${bind(type)}
     OR old.departed_automatically != ${bind(departedAutomatically)}
@@ -338,8 +347,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     attendanceId: StaffAttendanceExternalId?,
     name: String?,
     groupId: GroupId?,
-    arrivalTime: HelsinkiDateTime,
-    departureTime: HelsinkiDateTime?,
+    period: DateTimeRange,
     occupancyCoefficient: BigDecimal,
     departedAutomatically: Boolean = false,
 ): StaffAttendanceExternalId {
@@ -348,7 +356,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             sql(
                 """
 INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient, departed_automatically)
-VALUES (${bind(name)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(departureTime)}, ${bind(occupancyCoefficient)}, ${bind(departedAutomatically)})
+VALUES (${bind(name)}, ${bind(groupId)}, ${bind(period.start)}, ${bind(period.end)}, ${bind(occupancyCoefficient)}, ${bind(departedAutomatically)})
 RETURNING id
 """,
             )
@@ -360,7 +368,7 @@ RETURNING id
             sql(
                 """
 UPDATE staff_attendance_external
-SET name = ${bind(name)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, 
+SET name = ${bind(name)}, arrived = ${bind(period.start)}, departed = ${bind(period.end)}, 
     occupancy_coefficient = ${bind(occupancyCoefficient)}, departed_automatically = ${bind(departedAutomatically)}
 WHERE id = ${bind(attendanceId)}
 """,
@@ -374,8 +382,7 @@ WHERE id = ${bind(attendanceId)}
 data class RawAttendance(
     val id: StaffAttendanceRealtimeId,
     val groupId: GroupId?,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?,
+    val period: DateTimeRange,
     val occupancyCoefficient: BigDecimal,
     val currentOccupancyCoefficient: BigDecimal?,
     val type: StaffAttendanceType,
@@ -393,30 +400,29 @@ data class RawAttendance(
     @Nested("departed_modified_by") val departedModifiedBy: EvakaUser?,
 ) {
     fun isPrevious(other: RawAttendance) =
-        if (this.departed == null) false
+        if (this.period.end == null) false
         else
-            this.departed.plusMinutes(1).durationSince(other.arrived).abs() <= Duration.ofMinutes(1)
+            this.period.end.plusMinutes(1).durationSince(other.period.start).abs() <=
+                Duration.ofMinutes(1)
 
     fun isNext(other: RawAttendance) =
-        if (other.departed == null) false
+        if (other.period.end == null) false
         else
-            other.departed.plusMinutes(1).durationSince(this.arrived).abs() <= Duration.ofMinutes(1)
+            other.period.end.plusMinutes(1).durationSince(this.period.start).abs() <=
+                Duration.ofMinutes(1)
 }
 
 fun Database.Read.getStaffAttendancesForDateRange(
     unitId: DaycareId,
     range: FiniteDateRange,
 ): List<RawAttendance> {
-    val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
-    val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
         sql(
             """ 
 SELECT
     sa.id,
     sa.employee_id,
-    sa.arrived,
-    sa.departed,
+    tstzrange(sa.arrived, sa.departed) AS period,
     sa.group_id,
     sa.occupancy_coefficient,
     sa.type,
@@ -448,7 +454,7 @@ LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sa.arrived_added_
 LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sa.arrived_modified_by
 LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_added_by
 LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
-WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && ${bind(range.asFiniteDateTimeRange())}
 """,
         )
     }
@@ -466,8 +472,7 @@ fun Database.Read.getEmployeeAttendancesByArrivalDateDate(
 SELECT
     sa.id,
     sa.employee_id,
-    sa.arrived,
-    sa.departed,
+    tstzrange(sa.arrived, sa.departed) AS period,
     sa.group_id,
     sa.occupancy_coefficient,
     sa.type,
@@ -501,7 +506,7 @@ LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_add
 LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
 WHERE (dg.daycare_id IS NULL OR dg.daycare_id = ${bind(unitId)}) 
     AND emp.id = ${bind(employeeId)} 
-    AND between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, sa.arrived)
+    AND ${bind(arrivalDate.asFiniteDateTimeRange())} @> sa.arrived
 """,
         )
     }
@@ -512,16 +517,13 @@ fun Database.Read.getStaffAttendancesWithoutGroup(
     range: FiniteDateRange,
     employeeIds: Set<EmployeeId>,
 ): List<RawAttendance> {
-    val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
-    val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
         sql(
             """
 SELECT
     sa.id,
     sa.employee_id,
-    sa.arrived,
-    sa.departed,
+    tstzrange(sa.arrived, sa.departed) AS period,
     sa.group_id,
     sa.occupancy_coefficient,
     sa.type,
@@ -551,7 +553,10 @@ LEFT JOIN evaka_user arrived_added_by ON arrived_added_by.id = sa.arrived_added_
 LEFT JOIN evaka_user arrived_modified_by ON arrived_modified_by.id = sa.arrived_modified_by
 LEFT JOIN evaka_user departed_added_by ON departed_added_by.id = sa.departed_added_by
 LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.departed_modified_by
-WHERE sa.employee_id = ANY(${bind(employeeIds)}) AND sa.group_id IS NULL AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE
+    sa.employee_id = ANY(${bind(employeeIds)}) AND
+    sa.group_id IS NULL AND
+    tstzrange(sa.arrived, sa.departed) && ${bind(range.asFiniteDateTimeRange())}
 """,
         )
     }
@@ -561,12 +566,16 @@ WHERE sa.employee_id = ANY(${bind(employeeIds)}) AND sa.group_id IS NULL AND tst
 fun Database.Read.getStaffAttendancesInOtherUnits(
     unitId: DaycareId,
     employeeIds: Set<EmployeeId>,
-    range: HelsinkiDateTimeRange,
+    range: FiniteDateTimeRange,
     today: LocalDate,
 ): List<OtherUnitStaffAttendance> = createQuery {
     sql(
         """
-SELECT sa.employee_id, d.id AS unit_id, d.name AS unit_name, sa.arrived, sa.departed
+SELECT
+    sa.employee_id,
+    d.id AS unit_id,
+    d.name AS unit_name,
+    tstzrange(sa.arrived, sa.departed) AS period
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg ON sa.group_id = dg.id
 JOIN daycare d ON dg.daycare_id = d.id
@@ -587,8 +596,7 @@ ORDER BY sa.arrived
 
 fun Database.Read.hasOverlappingStaffAttendance(
     employeeId: EmployeeId,
-    arrived: HelsinkiDateTime,
-    departed: HelsinkiDateTime?,
+    attendances: List<DateTimeRange>,
     excludeIds: Set<StaffAttendanceRealtimeId>,
 ): Boolean = createQuery {
     sql(
@@ -596,7 +604,7 @@ fun Database.Read.hasOverlappingStaffAttendance(
 SELECT EXISTS (
     SELECT FROM staff_attendance_realtime
     WHERE employee_id = ${bind(employeeId)}
-      AND tstzrange(arrived, departed) && tstzrange(${bind(arrived)}, ${bind(departed)})
+      AND tstzrange(arrived, departed) && ANY(${bind(attendances)})
       AND NOT id = ANY(${bind(excludeIds)})
 )
 """,
@@ -631,15 +639,19 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
     unitId: DaycareId,
     range: FiniteDateRange,
 ): List<ExternalAttendance> {
-    val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
-    val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
         sql(
             """
-SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient, sae.departed_automatically
+SELECT
+    sae.id,
+    sae.name,
+    sae.group_id,
+    tstzrange(sae.arrived, sae.departed) AS period,
+    sae.occupancy_coefficient,
+    sae.departed_automatically
 FROM staff_attendance_external sae
 JOIN daycare_group dg on sae.group_id = dg.id
-WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && ${bind(range.asFiniteDateTimeRange())}
 """,
         )
     }
@@ -715,7 +727,19 @@ WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
 }
 
 fun Database.Read.getRealtimeStaffAttendances(): List<StaffMemberAttendance> = createQuery {
-    sql("SELECT * FROM staff_attendance_realtime")
+    sql(
+        """
+SELECT
+    id,
+    employee_id,
+    group_id,
+    tstzrange(arrived, departed) AS period,
+    type,
+    departed_automatically,
+    occupancy_coefficient
+FROM staff_attendance_realtime
+""",
+    )
 }
     .toList()
 
@@ -723,13 +747,17 @@ fun Database.Read.getPlannedStaffAttendances(
     employeeId: EmployeeId,
     now: HelsinkiDateTime,
 ): List<PlannedStaffAttendance> {
-    val start = now.minusHours(8)
-    val end = now.plusHours(8)
     return createQuery {
         sql(
             """
-SELECT start_time AS start, end_time AS end, type, description FROM staff_attendance_plan
-WHERE employee_id = ${bind(employeeId)} AND tstzrange(start_time, end_time) && tstzrange(${bind(start)}, ${bind(end)})
+SELECT
+    tstzrange(start_time, end_time) AS period,
+    type,
+    description
+FROM staff_attendance_plan
+WHERE
+    employee_id = ${bind(employeeId)} AND
+    tstzrange(start_time, end_time) && ${bind(FiniteDateTimeRange(now.minusHours(8), now.plusHours(8)))}
 """,
         )
     }
@@ -740,13 +768,18 @@ fun Database.Read.getPlannedStaffAttendanceForDays(
     employeeIds: Collection<EmployeeId>,
     range: FiniteDateRange,
 ): Map<EmployeeId, List<PlannedStaffAttendance>> {
-    val startTime = HelsinkiDateTime.of(range.start, LocalTime.MIDNIGHT)
-    val endTime = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.MIDNIGHT)
     return createQuery {
             sql(
                 """
-SELECT start_time AS start, end_time AS end, type, employee_id, description FROM staff_attendance_plan
-WHERE employee_id = ANY(${bind(employeeIds)}) AND (tstzrange(start_time, end_time) && tstzrange(${bind(startTime)}, ${bind(endTime)}))
+SELECT
+    tstzrange(start_time, end_time) AS period,
+    type,
+    employee_id,
+    description
+FROM staff_attendance_plan
+WHERE
+    employee_id = ANY(${bind(employeeIds)}) AND
+    tstzrange(start_time, end_time) && ${bind(range.asFiniteDateTimeRange())}
 """,
             )
         }
@@ -757,23 +790,39 @@ WHERE employee_id = ANY(${bind(employeeIds)}) AND (tstzrange(start_time, end_tim
 fun Database.Read.getOngoingAttendance(employeeId: EmployeeId): StaffAttendance? = createQuery {
     sql(
         """
-SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
-FROM staff_attendance_realtime WHERE employee_id = ${bind(employeeId)} AND departed IS NULL
+SELECT
+    id,
+    employee_id,
+    group_id,
+    tstzrange(arrived, departed) AS period,
+    occupancy_coefficient,
+    type
+FROM staff_attendance_realtime
+WHERE employee_id = ${bind(employeeId)} AND departed IS NULL
 """,
     )
 }
     .exactlyOneOrNull()
 
+/** An attendance that ends at midnight belongs to the date before the midnight. */
 fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
-    now: HelsinkiDateTime,
+    today: LocalDate,
 ): StaffAttendance? = createQuery {
     sql(
         """
-SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
+SELECT
+    id,
+    employee_id,
+    group_id,
+    tstzrange(arrived, departed) AS period,
+    occupancy_coefficient,
+    type
 FROM staff_attendance_realtime 
-WHERE employee_id = ${bind(employeeId)} 
-    AND ${bind(now.atStartOfDay())} <= departed AND departed < ${bind(now.plusDays(1).atStartOfDay())}
+WHERE
+    employee_id = ${bind(employeeId)} AND
+    ${bind(HelsinkiDateTime.atStartOfDay(today))} < departed AND
+    departed <= ${bind(HelsinkiDateTime.atStartOfDay(today.plusDays(1)))}
 ORDER BY departed DESC LIMIT 1   
 """,
     )
@@ -792,7 +841,7 @@ DELETE FROM staff_attendance_realtime
 WHERE
     (group_id IS NULL OR group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = ${bind(unitId)})) AND
     employee_id = ${bind(employeeId)} AND
-    between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND
+    ${bind(arrivalDate.asFiniteDateTimeRange())} @> arrived AND
     NOT id = ANY(${bind(exceptIds)})
 RETURNING id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 """,
@@ -811,7 +860,7 @@ fun Database.Transaction.deleteExternalAttendancesOnDateExcept(
 DELETE FROM staff_attendance_external
 WHERE 
     name = ${bind(name)} AND 
-    between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND 
+    ${bind(arrivalDate.asFiniteDateTimeRange())} @> arrived AND 
     NOT id = ANY(${bind(exceptIds)})
 """,
     )

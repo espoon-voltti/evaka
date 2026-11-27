@@ -11,7 +11,7 @@ Quick reference for eVaka's date and time utilities - custom classes that provid
 **Key principles:**
 - Always use these utilities instead of JavaScript Date
 - Date ranges (DateRange, FiniteDateRange) use **inclusive end** semantics (end date is included in the range)
-- Time ranges (TimeRange, TimeInterval, HelsinkiDateTimeRange) use **exclusive end** semantics (end time is not included)
+- Time ranges (TimeRange, TimeInterval, FiniteDateTimeRange, DateTimeRange) use **exclusive end** semantics (end time is not included)
 - All date/time utilities are immutable - operations return new instances
 
 ## Core Types
@@ -22,15 +22,15 @@ Immutable date without timezone (year, month, day). Frontend uses a TypeScript c
 
 **Files:**
 - Frontend: `frontend/src/lib-common/local-date.ts`
-- Backend: `java.time.LocalDate` with extensions in `service/src/main/kotlin/evaka/core/shared/domain/Time.kt`
+- Backend: `java.time.LocalDate` with extensions in `service/src/main/kotlin/evaka/core/shared/domain/DateRange.kt`
 
 ### LocalTime
 
-Time of day (hour:minute:second.nanosecond) without date or timezone. Frontend uses a TypeScript class, backend uses `java.time.LocalTime` with Kotlin extensions.
+Time of day (hour:minute:second.nanosecond) without date or timezone. Frontend uses a TypeScript class, backend uses `java.time.LocalTime`.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/local-time.ts`
-- Backend: `java.time.LocalTime` with extensions in `service/src/main/kotlin/evaka/core/shared/domain/Time.kt`
+- Backend: `java.time.LocalTime`
 
 ### YearMonth
 
@@ -60,7 +60,7 @@ Date range with finite start and nullable end.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/date-range.ts`
-- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateRange.kt` (data class)
 
 **Structure:** `DateRange(start: LocalDate, end: LocalDate | null)`
 
@@ -73,7 +73,7 @@ Date range with both start and end required.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/finite-date-range.ts`
-- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class implementing `BoundedRange`)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateRange.kt` (data class implementing `BoundedRange`)
 
 **Structure:** `FiniteDateRange(start: LocalDate, end: LocalDate)`
 
@@ -118,15 +118,34 @@ Start/End endpoint markers for time ranges. Supports inclusive/exclusive semanti
 - Frontend: `frontend/src/lib-common/time-range-endpoint.ts` (namespace with functions)
 - Backend: `service/src/main/kotlin/evaka/core/shared/domain/TimeRangeEndpoint.kt` (sealed interface)
 
-### HelsinkiDateTimeRange
+### FiniteDateTimeRange
 
 Date and time range with both start and end required.
 
 **Files:**
-- Frontend: `frontend/src/lib-common/generated/api-types/shared.ts` (generated interface)
-- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class)
+- Frontend: `frontend/src/lib-common/finite-date-time-range.ts`
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateTimeRange.kt` (data class implementing `BoundedRange`)
 
-**Structure:** `HelsinkiDateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime)`
+**Structure:** `FiniteDateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime)`
+
+**Type-Specific Methods:**
+- `getDuration()` (backend) or `durationInMinutes()` (frontend) - length of the range
+- `asDateTimeRange()` - converts to DateTimeRange
+- `tryCreate(start, end)` - returns null (backend) or undefined (frontend) if start is not before end
+- `ofDate(date)` (frontend) or `LocalDate.asFiniteDateTimeRange()` (backend) - the range from the start of the date to the start of the next date
+
+### DateTimeRange
+
+Date and time range with finite start and nullable end. A null end means that the range has no end.
+
+**Files:**
+- Frontend: `frontend/src/lib-common/date-time-range.ts`
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/DateTimeRange.kt` (data class)
+
+**Structure:** `DateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime | null)`
+
+**Type-Specific Methods (backend only):**
+- `asFiniteDateTimeRange()` - converts to FiniteDateTimeRange if end is non-null
 
 ## Range Operations
 
@@ -134,11 +153,11 @@ This section documents operations that are shared across multiple range types.
 
 ### includes()
 
-Checks if a single point (date/time/timestamp) is within the range. Not implemented for TimeInterval frontend or HelsinkiDateTimeRange frontend.
+Checks if a single point (date/time/timestamp) is within the range. Not implemented for TimeInterval frontend.
 
 ### overlaps()
 
-Checks if two ranges have any overlap. Not implemented for TimeRange frontend and HelsinkiDateTimeRange frontend.
+Checks if two ranges have any overlap. Not implemented for TimeRange frontend.
 
 **Naming inconsistency:** Frontend `DateRange` uses `overlapsWith()` while other types use `overlaps()`. Backend consistently uses `overlaps()`. This is planned to be fixed.
 
@@ -148,7 +167,7 @@ Checks if one range fully contains another range. Not implemented for TimeInterv
 
 ### intersection()
 
-Returns the overlapping portion of two ranges, or null if no overlap. Not implemented for TimeInterval backend and HelsinkiDateTimeRange frontend.
+Returns the overlapping portion of two ranges, or null if no overlap. Not implemented for TimeInterval backend.
 
 ### Backend-Only Operations
 
@@ -159,7 +178,7 @@ The following operations are only available on the backend and are part of the `
 - `subtract()` - removes one range from another
 - `relationTo()` - determines spatial relationship between ranges
 
-**Available on:** FiniteDateRange, TimeRange, and HelsinkiDateTimeRange (types with required start and end). Not available on DateRange or TimeInterval (types with nullable end).
+**Available on:** FiniteDateRange, TimeRange, and FiniteDateTimeRange (types with required start and end). Not available on DateRange, TimeInterval or DateTimeRange (types with nullable end).
 
 Additionally, `FiniteDateRange` has a `complement()` method that finds the inverse of a range (delegates to `subtract`).
 

@@ -13,19 +13,19 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
-class HelsinkiDateTimeRangeTest {
+class FiniteDateTimeRangeTest {
     @Test
     fun `start is inclusive and end is exclusive, so a range containing just one date is invalid`() {
         // TODO: change constructor semantics
         // assertFailsWith<IllegalArgumentException> { testRange(1, 1) }
-        assertNull(HelsinkiDateTimeRange.tryCreate(testDateTime(1), testDateTime(1)))
+        assertNull(FiniteDateTimeRange.tryCreate(testDateTime(1), testDateTime(1)))
     }
 
     @Test
     fun `start cannot be after end`() {
         // TODO: change constructor to throw IllegalArgumentException instead
         assertFailsWith<IllegalStateException> { testRange(2, 1) }
-        assertNull(HelsinkiDateTimeRange.tryCreate(testDateTime(2), testDateTime(1)))
+        assertNull(FiniteDateTimeRange.tryCreate(testDateTime(2), testDateTime(1)))
     }
 
     @Test
@@ -266,7 +266,7 @@ class HelsinkiDateTimeRangeTest {
         // A -----_
         // X
         val a = testRange(1, 6)
-        val x = emptyList<HelsinkiDateTimeRange>()
+        val x = emptyList<FiniteDateTimeRange>()
         assertEquals(x, a.subtract(a).toList())
     }
 
@@ -370,11 +370,11 @@ class HelsinkiDateTimeRangeTest {
         val a = testRange(1, 3)
         val b = testRange(3, 5)
         assertEquals(
-            BoundedRange.Relation.LeftTo<HelsinkiDateTimeRange>(gap = null),
+            BoundedRange.Relation.LeftTo<FiniteDateTimeRange>(gap = null),
             a.relationTo(b),
         )
         assertEquals(
-            BoundedRange.Relation.RightTo<HelsinkiDateTimeRange>(gap = null),
+            BoundedRange.Relation.RightTo<FiniteDateTimeRange>(gap = null),
             b.relationTo(a),
         )
     }
@@ -419,5 +419,5 @@ class HelsinkiDateTimeRangeTest {
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))
 
     private fun testRange(from: Int, to: Int) =
-        HelsinkiDateTimeRange(testDateTime(from), testDateTime(to))
+        FiniteDateTimeRange(testDateTime(from), testDateTime(to))
 }

@@ -10,8 +10,9 @@ import evaka.core.employee.getEmployeeIdsByNumbers
 import evaka.core.employee.getEmployeeIdsByNumbersMapById
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.DateTimeRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalTime
@@ -70,8 +71,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
             unmergedPlans
                 .filter { it.employeeId == next.employeeId }
                 .filter {
-                    HelsinkiDateTimeRange(next.startTime, next.endTime)
-                        .overlaps(HelsinkiDateTimeRange(it.startTime, it.endTime))
+                    FiniteDateTimeRange(next.startTime, next.endTime)
+                        .overlaps(FiniteDateTimeRange(it.startTime, it.endTime))
                 }
                 .map {
                     TitaniaErrorRow(
@@ -145,7 +146,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                     else -> null
                                 }
                             // a reversed shift cannot be compared for overlaps
-                            // (HelsinkiDateTimeRange requires start <= end);
+                            // (FiniteDateTimeRange requires start <= end);
                             // identical shifts are deduplicated later, ignore them here
                             if (
                                 invalidShiftType != TitaniaErrorType.REVERSED_SHIFT &&
@@ -232,7 +233,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                     val employeePlans = plans[employee.id]
                     val convertedEmployeeNumber = employeeIdToNumber[employee.id]!!
                     val sortedAttendances =
-                        attendances.flatMap(::splitOvernight).sortedBy { it.arrived }
+                        attendances.flatMap(::splitOvernight).sortedBy { it.period.start }
                     TitaniaStampedPersonResponse(
                         employeeId =
                             convertedEmployeeNumbers[convertedEmployeeNumber]
@@ -250,13 +251,19 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                             return@mapIndexedNotNull null
                                         }
                                         val (arrived, arrivedPlan) =
-                                            calculateFromPlans(employeePlans, attendance.arrived)
+                                            calculateFromPlans(
+                                                    employeePlans,
+                                                    attendance.period.start,
+                                                )
                                                 .minBy { it.first }
                                         if (!period.includes(arrived.toLocalDate())) {
                                             return@mapIndexedNotNull null
                                         }
                                         val (departed, departedPlan) =
-                                            calculateFromPlan(employeePlans, attendance.departed)
+                                            calculateFromPlan(
+                                                    employeePlans,
+                                                    attendance.period.end,
+                                                )
                                                 ?.maxBy { it.first } ?: Pair(null, null)
                                         val prev =
                                             if (attendance == sortedAttendances.first()) null
@@ -271,7 +278,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                                                 null
                                             else sortedAttendances[i + 1]
                                         TitaniaStampedWorkingTimeEvent(
-                                            date = attendance.arrived.toLocalDate(),
+                                            date = attendance.period.start.toLocalDate(),
                                             beginTime =
                                                 arrived
                                                     .toLocalTime()
@@ -448,8 +455,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
                 listOf(
                     event to
                         plans?.find { plan ->
-                            HelsinkiDateTimeRange(plan.startTime, plan.endTime)
-                                .contains(HelsinkiDateTimeRange(event, event))
+                            FiniteDateTimeRange(plan.startTime, plan.endTime).includes(event)
                         },
                 )
             }
@@ -459,7 +465,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
         event: HelsinkiDateTime,
         plan: StaffAttendancePlan?,
         attendances: List<RawAttendance>,
-    ) = plan != null && attendances.any { isInPlan(it, plan) && it.arrived < event }
+    ) = plan != null && attendances.any { isInPlan(it, plan) && it.period.start < event }
 
     private fun isNotLastInPlan(
         event: HelsinkiDateTime,
@@ -467,12 +473,10 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
         attendances: List<RawAttendance>,
     ) =
         plan != null &&
-            attendances.any { isInPlan(it, plan) && it.departed != null && it.departed > event }
+            attendances.any { isInPlan(it, plan) && it.period.end != null && it.period.end > event }
 
     private fun isInPlan(attendance: RawAttendance, plan: StaffAttendancePlan) =
-        attendance.departed != null &&
-            HelsinkiDateTimeRange(plan.startTime, plan.endTime)
-                .contains(HelsinkiDateTimeRange(attendance.arrived, attendance.departed))
+        DateTimeRange(plan.startTime, plan.endTime).contains(attendance.period)
 }
 
 data class TitaniaUpdateResponse(

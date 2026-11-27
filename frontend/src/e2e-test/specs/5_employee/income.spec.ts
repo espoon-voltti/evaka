@@ -297,7 +297,7 @@ test.describe('Income', () => {
       validFrom: placementStart,
       validTo: incomeEndDate,
       modifiedBy: evakaUserId(financeAdminId),
-      modifiedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+      modifiedAt: placementStart.startOfDay()
     }).save()
 
     await Fixture.incomeNotification({

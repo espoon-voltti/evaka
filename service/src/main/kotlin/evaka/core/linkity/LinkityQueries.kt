@@ -36,7 +36,7 @@ SELECT
 FROM staff_attendance_realtime sa
 JOIN employee emp ON sa.employee_id = emp.id
 WHERE emp.employee_number IS NOT NULL 
-    AND ${bind(range.asHelsinkiDateTimeRange())} @> arrived 
+    AND ${bind(range.asFiniteDateTimeRange())} @> arrived 
     AND departed IS NOT NULL
     AND EXISTS (
         SELECT

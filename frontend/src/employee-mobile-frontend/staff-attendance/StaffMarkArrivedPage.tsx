@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { differenceInMinutes } from 'date-fns'
+import minBy from 'lodash/minBy'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
@@ -96,12 +97,8 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
 
   const firstPlannedStartOfTheDay = useMemo(
     () =>
-      staffMember && staffMember.plannedAttendances.length > 0
-        ? staffMember.plannedAttendances.reduce(
-            (prev, curr) => (prev.start.isBefore(curr.start) ? prev : curr),
-            staffMember.plannedAttendances[0]
-          ).start
-        : null,
+      minBy(staffMember?.plannedAttendances, (p) => p.period.start)?.period
+        .start ?? null,
     [staffMember]
   )
 
@@ -163,7 +160,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
 
   const latestCurrentDayDepartureTime =
-    staffMember.latestCurrentDayAttendance?.departed?.toLocalTime()
+    staffMember.latestCurrentDayAttendance?.period.end?.toLocalTime()
   const timeBeforeLastDeparture =
     latestCurrentDayDepartureTime !== undefined &&
     time !== undefined &&
@@ -172,8 +169,8 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
       : undefined
 
   const ongoingAttendanceStart = staffMember.attendances.find(
-    (attendance) => attendance.departed === null
-  )?.arrived
+    ({ period }) => period.end === null
+  )?.period.start
   const timeNotAfterOngoingAttendanceStart =
     ongoingAttendanceStart !== undefined &&
     time !== undefined &&
@@ -202,9 +199,9 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
 
   const hasFutureCurrentDay =
     staffMember.latestCurrentDayAttendance &&
-    (!staffMember.latestCurrentDayAttendance.departed ||
+    (!staffMember.latestCurrentDayAttendance.period.end ||
       (time !== undefined &&
-        staffMember.latestCurrentDayAttendance.arrived.isAfter(
+        staffMember.latestCurrentDayAttendance.period.start.isAfter(
           HelsinkiDateTime.now().withTime(time)
         )))
 

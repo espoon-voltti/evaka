@@ -160,14 +160,14 @@ test.beforeEach(async ({ evaka }) => {
     id: eventTimeId,
     calendarEventId: testSurveyId,
     date: mockedToday,
-    modifiedAt: mockedToday.toHelsinkiDateTime(LocalTime.MIN)
+    modifiedAt: mockedToday.startOfDay()
   }).save()
 
   await Fixture.calendarEventTime({
     id: eventTimeId2,
     calendarEventId: testSurveyId,
     date: mockedToday.addDays(1),
-    modifiedAt: mockedToday.toHelsinkiDateTime(LocalTime.MIN),
+    modifiedAt: mockedToday.startOfDay(),
     start: LocalTime.of(16, 30),
     end: LocalTime.of(17, 0)
   }).save()

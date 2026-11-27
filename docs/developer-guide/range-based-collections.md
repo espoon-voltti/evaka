@@ -128,7 +128,7 @@ This is useful for:
 
 The same API is available for time-based collections with different precision:
 
-- **`DateTimeSet` / `DateTimeMap<T>`**: Use `HelsinkiDateTimeRange` instead of `FiniteDateRange`, `HelsinkiDateTime` instead of `LocalDate`
+- **`DateTimeSet` / `DateTimeMap<T>`**: Use `FiniteDateTimeRange` instead of `FiniteDateRange`, `HelsinkiDateTime` instead of `LocalDate`
 - **`TimeSet`**: Use `TimeRange` instead of `FiniteDateRange`, `TimeRangeEndpoint` instead of `LocalDate`
 
 ## Common Patterns

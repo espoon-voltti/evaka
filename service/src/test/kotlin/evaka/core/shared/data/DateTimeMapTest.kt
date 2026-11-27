@@ -4,8 +4,8 @@
 
 package evaka.core.shared.data
 
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -130,7 +130,7 @@ class DateTimeMapTest {
         // +      11_
         // +  111_
         // =  243332_
-        val resolve = { _: HelsinkiDateTimeRange, old: Int, new: Int -> old + new }
+        val resolve = { _: FiniteDateTimeRange, old: Int, new: Int -> old + new }
         val entries =
             listOf(
                     testEntry(1 to 3, 1),
@@ -178,7 +178,7 @@ class DateTimeMapTest {
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))
 
     private fun testRange(range: Pair<Int, Int>) =
-        HelsinkiDateTimeRange(testDateTime(range.first), testDateTime(range.second))
+        FiniteDateTimeRange(testDateTime(range.first), testDateTime(range.second))
 
     private fun <T> testEntry(range: Pair<Int, Int>, value: T) = testRange(range) to value
 }

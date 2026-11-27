@@ -5,7 +5,6 @@
 // GENERATED FILE: no manual modifications
 
 import type { DecisionType } from './decision'
-import HelsinkiDateTime from '../../helsinki-date-time'
 import type { Id } from '../../id-type'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
@@ -190,14 +189,6 @@ export type GroupNoteId = Id<'GroupNote'>
 
 export type GroupPlacementId = Id<'GroupPlacement'>
 
-/**
-* Generated from evaka.core.shared.domain.HelsinkiDateTimeRange
-*/
-export interface HelsinkiDateTimeRange {
-  end: HelsinkiDateTime
-  start: HelsinkiDateTime
-}
-
 export type HolidayPeriodId = Id<'HolidayPeriod'>
 
 export type HolidayQuestionnaireId = Id<'HolidayQuestionnaire'>
@@ -373,15 +364,6 @@ export function deserializeJsonDaycareAclRow(json: JsonOf<DaycareAclRow>): Dayca
   return {
     ...json,
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
-  }
-}
-
-
-export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {
-  return {
-    ...json,
-    end: HelsinkiDateTime.parseIso(json.end),
-    start: HelsinkiDateTime.parseIso(json.start)
   }
 }
 

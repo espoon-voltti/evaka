@@ -17,9 +17,10 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevStaffAttendance
 import evaka.core.shared.dev.DevStaffAttendancePlan
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.domain.toFiniteDateRange
@@ -165,7 +166,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             val occupancyAttendances =
                 it.getStaffOccupancyAttendances(
                     daycare.id,
-                    HelsinkiDateTimeRange(now.atStartOfDay(), now.atEndOfDay()),
+                    FiniteDateTimeRange(now.atStartOfDay(), now.atEndOfDay()),
                 )
             assertEquals(listOf(0.0, 0.0, 3.5, 3.5), occupancyAttendances.map { a -> a.capacity })
         }
@@ -233,9 +234,12 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(2, staffAttendances.size)
             assertEquals(
                 arrivalTime.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
-            assertEquals(null, staffAttendances.first { it.employeeId == employee2.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee2.id }.period.end,
+            )
         }
     }
 
@@ -249,8 +253,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = employee1.id,
                 groupId = group1.id,
-                arrivalTime = arrival,
-                departureTime = null,
+                period = DateTimeRange(arrival, null),
                 occupancyCoefficient = BigDecimal(7.0),
                 type = StaffAttendanceType.TRAINING,
                 modifiedAt = now,
@@ -271,7 +274,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 plannedDeparture,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -288,8 +291,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = employee1.id,
                 groupId = group1.id,
-                arrivalTime = arrival,
-                departureTime = null,
+                period = DateTimeRange(arrival, null),
                 occupancyCoefficient = BigDecimal(7.0),
                 type = StaffAttendanceType.JUSTIFIED_CHANGE,
                 modifiedAt = startOfToday,
@@ -310,7 +312,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 expectedAddedDepartureTime,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -325,8 +327,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = employee1.id,
                 groupId = group1.id,
-                arrivalTime = arrival,
-                departureTime = null,
+                period = DateTimeRange(arrival, null),
                 occupancyCoefficient = BigDecimal(7.0),
                 type = StaffAttendanceType.PRESENT,
                 modifiedAt = now,
@@ -347,7 +348,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 arrival.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -362,8 +363,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = employee1.id,
                 groupId = group1.id,
-                arrivalTime = arrival,
-                departureTime = null,
+                period = DateTimeRange(arrival, null),
                 occupancyCoefficient = BigDecimal(7.0),
                 type = StaffAttendanceType.SICKNESS,
                 modifiedAt = now,
@@ -384,7 +384,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 plannedDeparture,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -399,8 +399,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = employee1.id,
                 groupId = group1.id,
-                arrivalTime = arrival,
-                departureTime = null,
+                period = DateTimeRange(arrival, null),
                 occupancyCoefficient = BigDecimal(7.0),
                 type = StaffAttendanceType.CHILD_SICKNESS,
                 modifiedAt = now,
@@ -421,7 +420,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 plannedDeparture,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -436,8 +435,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = employee1.id,
                 groupId = group1.id,
-                arrivalTime = arrival,
-                departureTime = null,
+                period = DateTimeRange(arrival, null),
                 occupancyCoefficient = BigDecimal(7.0),
                 type = StaffAttendanceType.OTHER_WORK,
                 modifiedAt = now,
@@ -458,7 +456,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 plannedDeparture,
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -473,8 +471,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = employee1.id,
                 groupId = group1.id,
-                arrivalTime = arrival,
-                departureTime = null,
+                period = DateTimeRange(arrival, null),
                 occupancyCoefficient = BigDecimal(7.0),
                 type = StaffAttendanceType.OTHER_WORK,
                 modifiedAt = now,
@@ -495,7 +492,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 arrival.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
         }
     }
@@ -527,7 +524,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
-            assertEquals(null, staffAttendances.first { it.employeeId == employee1.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
+            )
         }
     }
 
@@ -548,7 +548,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
-            assertEquals(null, staffAttendances.first { it.employeeId == employee1.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
+            )
         }
     }
 
@@ -573,7 +576,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 arrival.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
             assertTrue(staffAttendances.first().departedAutomatically)
         }
@@ -606,7 +609,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
-            assertEquals(null, staffAttendances.first { it.employeeId == employee1.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
+            )
         }
     }
 
@@ -627,7 +633,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
-            assertEquals(null, staffAttendances.first { it.employeeId == employee1.id }.departed)
+            assertEquals(
+                null,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
+            )
         }
     }
 
@@ -652,7 +661,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(1, staffAttendances.size)
             assertEquals(
                 arrival.plusHours(12),
-                staffAttendances.first { it.employeeId == employee1.id }.departed,
+                staffAttendances.first { it.employeeId == employee1.id }.period.end,
             )
             assertTrue(staffAttendances.first().departedAutomatically)
         }
@@ -671,8 +680,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = user.id,
                 groupId = groupId,
-                arrivalTime = arrivalTime,
-                departureTime = null,
+                period = DateTimeRange(arrivalTime, null),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = StaffAttendanceType.PRESENT,
                 departedAutomatically = false,
@@ -713,8 +721,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = null,
                 employeeId = user.id,
                 groupId = groupId,
-                arrivalTime = arrivalTime,
-                departureTime = departureTime,
+                period = DateTimeRange(arrivalTime, departureTime),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = StaffAttendanceType.PRESENT,
                 departedAutomatically = false,
@@ -767,8 +774,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = attendanceId,
                 employeeId = user.id,
                 groupId = groupId,
-                arrivalTime = arrivalModifiedAt,
-                departureTime = null,
+                period = DateTimeRange(arrivalModifiedAt, null),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = StaffAttendanceType.PRESENT,
                 departedAutomatically = false,
@@ -822,8 +828,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = attendanceId,
                 employeeId = user.id,
                 groupId = groupId,
-                arrivalTime = arrivalTime,
-                departureTime = departureTime,
+                period = DateTimeRange(arrivalTime, departureTime),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = StaffAttendanceType.PRESENT,
                 departedAutomatically = false,
@@ -885,8 +890,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = attendanceId,
                 employeeId = user.id,
                 groupId = groupId,
-                arrivalTime = arrival,
-                departureTime = null,
+                period = DateTimeRange(arrival, null),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = StaffAttendanceType.PRESENT,
                 departedAutomatically = false,
@@ -939,8 +943,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = attendanceId,
                 employeeId = user.id,
                 groupId = groupId,
-                arrivalTime = arrival,
-                departureTime = departure,
+                period = DateTimeRange(arrival, departure),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = StaffAttendanceType.PRESENT,
                 departedAutomatically = false,
@@ -990,8 +993,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 attendanceId = attendanceId,
                 employeeId = attendance.employeeId,
                 groupId = attendance.groupId,
-                arrivalTime = attendance.arrived,
-                departureTime = attendance.departed,
+                period = DateTimeRange(attendance.arrived, attendance.departed),
                 occupancyCoefficient = attendance.occupancyCoefficient,
                 type = attendance.type,
                 departedAutomatically = attendance.departedAutomatically,

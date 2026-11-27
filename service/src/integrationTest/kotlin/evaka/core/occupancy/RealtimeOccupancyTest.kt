@@ -24,8 +24,8 @@ import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.DevStaffAttendance
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import evaka.core.shared.domain.toFiniteDateRange
 import evaka.core.snDaycareContractDays10
 import java.math.BigDecimal
@@ -360,8 +360,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun getRealtimeOccupancy(
-        timeRange: HelsinkiDateTimeRange =
-            HelsinkiDateTimeRange(
+        timeRange: FiniteDateTimeRange =
+            FiniteDateTimeRange(
                 HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
                 HelsinkiDateTime.of(date, LocalTime.of(23, 59)),
             ),
@@ -455,7 +455,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             getRealtimeOccupancy(
-                HelsinkiDateTimeRange(
+                FiniteDateTimeRange(
                     HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
                     HelsinkiDateTime.of(tomorrow, LocalTime.of(23, 59)),
                 ),

@@ -3,17 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
-import orderBy from 'lodash/orderBy'
+import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
-import type {
-  EmployeeId,
-  HelsinkiDateTimeRange
-} from 'lib-common/generated/api-types/shared'
-import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type FiniteDateTimeRange from 'lib-common/finite-date-time-range'
+import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -80,23 +77,22 @@ export default React.memo(function StaffMemberPage({
   const openAttendanceInAnotherUnit =
     !!openAttendance && openAttendance.unitId !== unitId
 
-  function formatTime(time: HelsinkiDateTime) {
-    const today = LocalDate.todayInHelsinkiTz()
-    return time.toLocalDate().isEqual(today)
-      ? time.toLocalTime().format()
-      : time.format('d.M. HH:mm')
+  function formatRange(range: FiniteDateTimeRange) {
+    const times = range.timesOn(LocalDate.todayInHelsinkiTz())
+    const start = times.start?.format() ?? range.start.format('d.M. HH:mm')
+    const end = times.end?.format() ?? range.end.format('d.M. HH:mm')
+    return `${start} – ${end}`
   }
 
   const spanningPlans = useMemo(() => {
-    function getInfo(range: HelsinkiDateTimeRange) {
+    function getInfo(range: FiniteDateTimeRange) {
       const plans = employeeResponse.isSuccess
-        ? (
+        ? sortBy(
             employeeResponse.value.staffMember?.plannedAttendances.filter(
-              (plan) =>
-                plan.start.isEqualOrAfter(range.start) &&
-                plan.end.isEqualOrBefore(range.end)
-            ) ?? []
-          ).sort((a, b) => a.start.timestamp - b.start.timestamp)
+              (plan) => range.contains(plan.period)
+            ) ?? [],
+            (a) => a.period.start
+          )
         : []
       if (
         plans.length > 1 ||
@@ -106,10 +102,10 @@ export default React.memo(function StaffMemberPage({
         return (
           <InfoListContainer>
             {plans.map((plan) => (
-              <li key={plan.start.formatIso()}>
+              <li key={plan.period.start.formatIso()}>
                 <div>
                   <div>
-                    {`${i18n.attendances.staffTypes[plan.type]} ${formatTime(plan.start)} – ${formatTime(plan.end)}`}
+                    {`${i18n.attendances.staffTypes[plan.type]} ${formatRange(plan.period)}`}
                   </div>
                   {plan.description ? <i>({plan.description})</i> : null}
                 </div>
@@ -149,53 +145,49 @@ export default React.memo(function StaffMemberPage({
                     <TimeInfo data-qa="shift-time">
                       <span>{i18n.attendances.staff.plannedAttendance}</span>
                       <PlanContainer>
-                        {spanningPlans.map(({ span, info }, i) => {
-                          const start = formatTime(span.start)
-                          const end = formatTime(span.end)
-                          return (
-                            <ExpandingInfo
-                              info={info}
-                              key={`plan-${i}`}
-                              inlineChildren
-                              data-qa="shift-info"
-                            >
-                              <span>{`${start} – ${end}`}</span>
-                            </ExpandingInfo>
-                          )
-                        })}
+                        {spanningPlans.map(({ span, info }, i) => (
+                          <ExpandingInfo
+                            info={info}
+                            key={`plan-${i}`}
+                            inlineChildren
+                            data-qa="shift-info"
+                          >
+                            <span>{formatRange(span)}</span>
+                          </ExpandingInfo>
+                        ))}
                       </PlanContainer>
                     </TimeInfo>
                   )}
                   {staffMember.attendances.length > 0 &&
-                    orderBy(staffMember.attendances, ({ arrived }) =>
-                      arrived.formatIso()
-                    ).map(({ arrived, departed, type }, index, attendances) => (
-                      <TimeInfo
-                        key={arrived.formatIso()}
-                        data-qa="attendance-time"
-                      >
-                        <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
-                        <span>
-                          {arrived.toLocalTime().format()}–
-                          {departed?.toLocalTime().format() ?? ''}
-                          {index === attendances.length - 1 && (
-                            <InlineIconButton
-                              icon={faEdit}
-                              onClick={() =>
-                                navigate(
-                                  routes.staffAttendanceEdit(
-                                    unitOrGroup,
-                                    staffMember.employeeId
-                                  ).value
-                                )
-                              }
-                              aria-label={i18n.common.edit}
-                              data-qa="edit"
-                            />
-                          )}
-                        </span>
-                      </TimeInfo>
-                    ))}
+                    sortBy(staffMember.attendances, (a) => a.period.start).map(
+                      ({ period, type }, index, attendances) => (
+                        <TimeInfo
+                          key={period.start.formatIso()}
+                          data-qa="attendance-time"
+                        >
+                          <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
+                          <span>
+                            {period.start.toLocalTime().format()}–
+                            {period.end?.toLocalTime().format() ?? ''}
+                            {index === attendances.length - 1 && (
+                              <InlineIconButton
+                                icon={faEdit}
+                                onClick={() =>
+                                  navigate(
+                                    routes.staffAttendanceEdit(
+                                      unitOrGroup,
+                                      staffMember.employeeId
+                                    ).value
+                                  )
+                                }
+                                aria-label={i18n.common.edit}
+                                data-qa="edit"
+                              />
+                            )}
+                          </span>
+                        </TimeInfo>
+                      )
+                    )}
                 </>
               ) : (
                 staffMember.latestCurrentDayAttendance && (
@@ -203,17 +195,17 @@ export default React.memo(function StaffMemberPage({
                     <TimeInfo>
                       <Label>{i18n.attendances.arrivalTime}</Label>{' '}
                       <span data-qa="arrival-time">
-                        {staffMember.latestCurrentDayAttendance.arrived
+                        {staffMember.latestCurrentDayAttendance.period.start
                           .toLocalTime()
                           .format()}
                       </span>
                     </TimeInfo>
                     <TimeInfo>
-                      {staffMember.latestCurrentDayAttendance.departed && (
+                      {staffMember.latestCurrentDayAttendance.period.end && (
                         <>
                           <Label>{i18n.attendances.departureTime}</Label>{' '}
                           <span data-qa="departure-time">
-                            {staffMember.latestCurrentDayAttendance.departed
+                            {staffMember.latestCurrentDayAttendance.period.end
                               ?.toLocalTime()
                               .format()}
                           </span>

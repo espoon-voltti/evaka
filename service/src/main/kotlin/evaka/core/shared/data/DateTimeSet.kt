@@ -4,25 +4,25 @@
 
 package evaka.core.shared.data
 
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import java.time.Duration
 import java.util.Objects
 
 /**
  * An immutable data structure that is conceptually similar to a `Set<HelsinkiDateTime>` but
- * provides batch operations that use `HelsinkiDateTimeRange` parameters.
+ * provides batch operations that use `FiniteDateTimeRange` parameters.
  */
-class DateTimeSet private constructor(ranges: List<HelsinkiDateTimeRange>) :
-    RangeBasedSet<HelsinkiDateTime, HelsinkiDateTimeRange, DateTimeSet>(ranges) {
-    override fun List<HelsinkiDateTimeRange>.toThis(): DateTimeSet =
+class DateTimeSet private constructor(ranges: List<FiniteDateTimeRange>) :
+    RangeBasedSet<HelsinkiDateTime, FiniteDateTimeRange, DateTimeSet>(ranges) {
+    override fun List<FiniteDateTimeRange>.toThis(): DateTimeSet =
         if (isEmpty()) EMPTY else DateTimeSet(this)
 
-    override fun range(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange =
-        HelsinkiDateTimeRange(start, end)
+    override fun range(start: HelsinkiDateTime, end: HelsinkiDateTime): FiniteDateTimeRange =
+        FiniteDateTimeRange(start, end)
 
-    override fun range(point: HelsinkiDateTime): HelsinkiDateTimeRange =
-        HelsinkiDateTimeRange(point, point.plus(Duration.ofNanos(1000)))
+    override fun range(point: HelsinkiDateTime): FiniteDateTimeRange =
+        FiniteDateTimeRange(point, point.plus(Duration.ofNanos(1000)))
 
     override fun equals(other: Any?): Boolean = other is DateTimeSet && this.ranges == other.ranges
 
@@ -38,13 +38,13 @@ class DateTimeSet private constructor(ranges: List<HelsinkiDateTimeRange>) :
         fun empty(): DateTimeSet = EMPTY
 
         /** Returns a new datetime set containing all the given ranges */
-        fun of(vararg ranges: HelsinkiDateTimeRange): DateTimeSet =
+        fun of(vararg ranges: FiniteDateTimeRange): DateTimeSet =
             empty().addAll(ranges.asSequence())
 
         /** Returns a new datetime set containing all the given ranges */
-        fun of(ranges: Iterable<HelsinkiDateTimeRange>): DateTimeSet = empty().addAll(ranges)
+        fun of(ranges: Iterable<FiniteDateTimeRange>): DateTimeSet = empty().addAll(ranges)
 
         /** Returns a new datetime set containing all the given ranges */
-        fun of(ranges: Sequence<HelsinkiDateTimeRange>): DateTimeSet = empty().addAll(ranges)
+        fun of(ranges: Sequence<FiniteDateTimeRange>): DateTimeSet = empty().addAll(ranges)
     }
 }

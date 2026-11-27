@@ -4,7 +4,6 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { CalendarEventId } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -67,7 +66,7 @@ test.beforeEach(async () => {
     title: 'Group-wide event',
     description: 'Whole group',
     period: new FiniteDateRange(today, today),
-    modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
+    modifiedAt: today.startOfDay()
   }).save()
 
   await Fixture.calendarEventAttendee({
@@ -81,7 +80,7 @@ test.beforeEach(async () => {
     title: 'Individual event',
     description: 'Just Jari',
     period: new FiniteDateRange(today, today),
-    modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
+    modifiedAt: today.startOfDay()
   }).save()
 
   await Fixture.calendarEventAttendee({
@@ -96,7 +95,7 @@ test.beforeEach(async () => {
     title: 'Unit event',
     description: 'For everyone in the unit',
     period: new FiniteDateRange(today.addDays(1), today.addDays(2)),
-    modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
+    modifiedAt: today.startOfDay()
   }).save()
 
   await Fixture.calendarEventAttendee({

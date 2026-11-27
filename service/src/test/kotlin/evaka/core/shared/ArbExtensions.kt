@@ -9,8 +9,8 @@ import evaka.core.shared.data.DateSet
 import evaka.core.shared.data.DateTimeMap
 import evaka.core.shared.data.DateTimeSet
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.HelsinkiDateTimeRange
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.bind
 import io.kotest.property.arbitrary.list
@@ -39,9 +39,7 @@ fun <T> Arb.Companion.dateMap(value: Arb<T>): Arb<DateMap<T>> =
     Arb.list(Arb.pair(Arb.finiteDateRange(), value)).map { entries -> DateMap.of(entries) }
 
 fun <T> Arb.Companion.dateTimeMap(value: Arb<T>): Arb<DateTimeMap<T>> =
-    Arb.list(Arb.pair(Arb.helsinkiDateTimeRange(), value)).map { entries ->
-        DateTimeMap.of(entries)
-    }
+    Arb.list(Arb.pair(Arb.finiteDateTimeRange(), value)).map { entries -> DateTimeMap.of(entries) }
 
 fun Arb.Companion.helsinkiDateTime(
     min: HelsinkiDateTime = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, 12, 0)),
@@ -52,14 +50,14 @@ fun Arb.Companion.helsinkiDateTime(
         min.plus(Duration.ofNanos(nanosSinceMin))
     }
 
-fun Arb.Companion.helsinkiDateTimeRange(
+fun Arb.Companion.finiteDateTimeRange(
     start: Arb<HelsinkiDateTime> = Arb.helsinkiDateTime(),
     duration: Arb<Duration> =
         Arb.positiveLong(max = 48L * 60L * 60L).map { Duration.ofSeconds(it) },
-): Arb<HelsinkiDateTimeRange> =
+): Arb<FiniteDateTimeRange> =
     Arb.bind(start, duration) { startTimestamp, duration ->
-        HelsinkiDateTimeRange(startTimestamp, startTimestamp.plus(duration))
+        FiniteDateTimeRange(startTimestamp, startTimestamp.plus(duration))
     }
 
 fun Arb.Companion.dateTimeSet(): Arb<DateTimeSet> =
-    Arb.list(Arb.helsinkiDateTimeRange()).map { ranges -> DateTimeSet.of(ranges) }
+    Arb.list(Arb.finiteDateTimeRange()).map { ranges -> DateTimeSet.of(ranges) }

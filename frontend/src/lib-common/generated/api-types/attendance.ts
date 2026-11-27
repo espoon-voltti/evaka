@@ -10,13 +10,14 @@ import type { ChildAttendanceId } from './shared'
 import type { ChildDailyNote } from './note'
 import type { ChildStickyNote } from './note'
 import type { DailyServiceTimesValue } from './dailyservicetimes'
+import DateTimeRange from '../../date-time-range'
 import type { DaycareId } from './shared'
 import type { EmployeeId } from './shared'
 import type { EvakaUser } from './user'
 import FiniteDateRange from '../../finite-date-range'
+import FiniteDateTimeRange from '../../finite-date-time-range'
 import type { GroupId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
-import type { HelsinkiDateTimeRange } from './shared'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
@@ -31,7 +32,6 @@ import type { StaffAttendanceRealtimeId } from './shared'
 import { deserializeJsonChildDailyNote } from './note'
 import { deserializeJsonChildStickyNote } from './note'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
-import { deserializeJsonHelsinkiDateTimeRange } from './shared'
 import { deserializeJsonReservationResponse } from './reservations'
 
 /**
@@ -54,12 +54,10 @@ export interface ArrivalsRequest {
 * Generated from evaka.core.attendance.Attendance
 */
 export interface Attendance {
-  arrived: HelsinkiDateTime
   arrivedAddedAt: HelsinkiDateTime | null
   arrivedAddedBy: EvakaUser | null
   arrivedModifiedAt: HelsinkiDateTime | null
   arrivedModifiedBy: EvakaUser | null
-  departed: HelsinkiDateTime | null
   departedAddedAt: HelsinkiDateTime | null
   departedAddedBy: EvakaUser | null
   departedAutomatically: boolean
@@ -68,6 +66,7 @@ export interface Attendance {
   groupId: GroupId | null
   id: StaffAttendanceRealtimeId
   occupancyCoefficient: number
+  period: DateTimeRange
   type: StaffAttendanceType | null
 }
 
@@ -203,13 +202,12 @@ export interface ExpectedAbsencesOnDeparturesResponse {
 * Generated from evaka.core.attendance.ExternalAttendance
 */
 export interface ExternalAttendance {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   departedAutomatically: boolean
   groupId: GroupId
   id: StaffAttendanceExternalId
   name: string
   occupancyCoefficient: number
+  period: DateTimeRange
   type: StaffAttendanceType
 }
 
@@ -227,11 +225,10 @@ export interface ExternalAttendanceBody {
 * Generated from evaka.core.attendance.RealtimeStaffAttendanceController.ExternalAttendanceUpsert
 */
 export interface ExternalAttendanceUpsert {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   groupId: GroupId
   hasStaffOccupancyEffect: boolean
   id: StaffAttendanceExternalId | null
+  period: DateTimeRange
 }
 
 /**
@@ -312,9 +309,8 @@ export interface OpenGroupAttendanceResponse {
 * Generated from evaka.core.attendance.OtherUnitStaffAttendance
 */
 export interface OtherUnitStaffAttendance {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   employeeId: EmployeeId
+  period: DateTimeRange
   unitId: DaycareId
   unitName: string
 }
@@ -324,8 +320,7 @@ export interface OtherUnitStaffAttendance {
 */
 export interface PlannedStaffAttendance {
   description: string | null
-  end: HelsinkiDateTime
-  start: HelsinkiDateTime
+  period: FiniteDateTimeRange
   type: StaffAttendanceType
 }
 
@@ -408,11 +403,10 @@ export interface StaffAttendanceUpdateResponse {
 * Generated from evaka.core.attendance.RealtimeStaffAttendanceController.StaffAttendanceUpsert
 */
 export interface StaffAttendanceUpsert {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   groupId: GroupId | null
   hasStaffOccupancyEffect: boolean
   id: StaffAttendanceRealtimeId | null
+  period: DateTimeRange
   type: StaffAttendanceType
 }
 
@@ -441,7 +435,7 @@ export interface StaffMember {
   occupancyEffect: boolean
   plannedAttendances: PlannedStaffAttendance[]
   present: GroupId | null
-  spanningPlans: HelsinkiDateTimeRange[]
+  spanningPlans: FiniteDateTimeRange[]
   unitIds: DaycareId[]
 }
 
@@ -449,13 +443,12 @@ export interface StaffMember {
 * Generated from evaka.core.attendance.StaffMemberAttendance
 */
 export interface StaffMemberAttendance {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
   departedAutomatically: boolean
   employeeId: EmployeeId
   groupId: GroupId | null
   id: StaffAttendanceRealtimeId
   occupancyCoefficient: number
+  period: DateTimeRange
   type: StaffAttendanceType
 }
 
@@ -514,12 +507,11 @@ export function deserializeJsonArrivalsRequest(json: JsonOf<ArrivalsRequest>): A
 export function deserializeJsonAttendance(json: JsonOf<Attendance>): Attendance {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
     arrivedAddedAt: (json.arrivedAddedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedAddedAt) : null,
     arrivedModifiedAt: (json.arrivedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.arrivedModifiedAt) : null,
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null,
     departedAddedAt: (json.departedAddedAt != null) ? HelsinkiDateTime.parseIso(json.departedAddedAt) : null,
-    departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null
+    departedModifiedAt: (json.departedModifiedAt != null) ? HelsinkiDateTime.parseIso(json.departedModifiedAt) : null,
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -594,8 +586,7 @@ export function deserializeJsonExpectedAbsencesOnDeparturesRequest(json: JsonOf<
 export function deserializeJsonExternalAttendance(json: JsonOf<ExternalAttendance>): ExternalAttendance {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -612,8 +603,7 @@ export function deserializeJsonExternalAttendanceBody(json: JsonOf<ExternalAtten
 export function deserializeJsonExternalAttendanceUpsert(json: JsonOf<ExternalAttendanceUpsert>): ExternalAttendanceUpsert {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -670,8 +660,7 @@ export function deserializeJsonOpenGroupAttendanceResponse(json: JsonOf<OpenGrou
 export function deserializeJsonOtherUnitStaffAttendance(json: JsonOf<OtherUnitStaffAttendance>): OtherUnitStaffAttendance {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -679,8 +668,7 @@ export function deserializeJsonOtherUnitStaffAttendance(json: JsonOf<OtherUnitSt
 export function deserializeJsonPlannedStaffAttendance(json: JsonOf<PlannedStaffAttendance>): PlannedStaffAttendance {
   return {
     ...json,
-    end: HelsinkiDateTime.parseIso(json.end),
-    start: HelsinkiDateTime.parseIso(json.start)
+    period: FiniteDateTimeRange.parseJson(json.period)
   }
 }
 
@@ -723,8 +711,7 @@ export function deserializeJsonStaffAttendanceUpdateRequest(json: JsonOf<StaffAt
 export function deserializeJsonStaffAttendanceUpsert(json: JsonOf<StaffAttendanceUpsert>): StaffAttendanceUpsert {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 
@@ -743,7 +730,7 @@ export function deserializeJsonStaffMember(json: JsonOf<StaffMember>): StaffMemb
     attendances: json.attendances.map(e => deserializeJsonStaffMemberAttendance(e)),
     latestCurrentDayAttendance: (json.latestCurrentDayAttendance != null) ? deserializeJsonStaffMemberAttendance(json.latestCurrentDayAttendance) : null,
     plannedAttendances: json.plannedAttendances.map(e => deserializeJsonPlannedStaffAttendance(e)),
-    spanningPlans: json.spanningPlans.map(e => deserializeJsonHelsinkiDateTimeRange(e))
+    spanningPlans: json.spanningPlans.map(e => FiniteDateTimeRange.parseJson(e))
   }
 }
 
@@ -751,8 +738,7 @@ export function deserializeJsonStaffMember(json: JsonOf<StaffMember>): StaffMemb
 export function deserializeJsonStaffMemberAttendance(json: JsonOf<StaffMemberAttendance>): StaffMemberAttendance {
   return {
     ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+    period: DateTimeRange.parseJson(json.period)
   }
 }
 

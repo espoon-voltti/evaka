@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type DateRange from './date-range'
+import type DateTimeRange from './date-time-range'
 import type FiniteDateRange from './finite-date-range'
+import type FiniteDateTimeRange from './finite-date-time-range'
 import type HelsinkiDateTime from './helsinki-date-time'
 import type LocalDate from './local-date'
 import type LocalTime from './local-time'
@@ -21,29 +23,39 @@ export type JsonOf<T> = T extends string | number | boolean | null | undefined
         ? string
         : T extends HelsinkiDateTime
           ? string
-          : T extends FiniteDateRange
-            ? { start: JsonOf<LocalDate>; end: JsonOf<LocalDate> }
-            : T extends DateRange
-              ? { start: JsonOf<LocalDate>; end: JsonOf<LocalDate> | null }
-              : T extends TimeInterval
-                ? { start: JsonOf<LocalTime>; end: JsonOf<LocalTime> | null }
-                : T extends TimeRange
-                  ? { start: JsonOf<LocalTime>; end: JsonOf<LocalTime> }
-                  : T extends YearMonth
-                    ? string
-                    : T extends Map<string, infer U>
-                      ? { [key: string]: JsonOf<U> }
-                      : T extends Set<infer U>
-                        ? JsonOf<U>[]
-                        : T extends [infer A, infer B]
-                          ? [JsonOf<A>, JsonOf<B>]
-                          : T extends [infer A, infer B, infer C]
-                            ? [JsonOf<A>, JsonOf<B>, JsonOf<C>]
-                            : T extends (infer U)[]
-                              ? JsonOf<U>[]
-                              : T extends object
-                                ? { [P in keyof T]: JsonOf<T[P]> }
-                                : never
+          : T extends FiniteDateTimeRange
+            ? { start: JsonOf<HelsinkiDateTime>; end: JsonOf<HelsinkiDateTime> }
+            : T extends DateTimeRange
+              ? {
+                  start: JsonOf<HelsinkiDateTime>
+                  end: JsonOf<HelsinkiDateTime> | null
+                }
+              : T extends FiniteDateRange
+                ? { start: JsonOf<LocalDate>; end: JsonOf<LocalDate> }
+                : T extends DateRange
+                  ? { start: JsonOf<LocalDate>; end: JsonOf<LocalDate> | null }
+                  : T extends TimeInterval
+                    ? {
+                        start: JsonOf<LocalTime>
+                        end: JsonOf<LocalTime> | null
+                      }
+                    : T extends TimeRange
+                      ? { start: JsonOf<LocalTime>; end: JsonOf<LocalTime> }
+                      : T extends YearMonth
+                        ? string
+                        : T extends Map<string, infer U>
+                          ? { [key: string]: JsonOf<U> }
+                          : T extends Set<infer U>
+                            ? JsonOf<U>[]
+                            : T extends [infer A, infer B]
+                              ? [JsonOf<A>, JsonOf<B>]
+                              : T extends [infer A, infer B, infer C]
+                                ? [JsonOf<A>, JsonOf<B>, JsonOf<C>]
+                                : T extends (infer U)[]
+                                  ? JsonOf<U>[]
+                                  : T extends object
+                                    ? { [P in keyof T]: JsonOf<T[P]> }
+                                    : never
 
 /**
  * Type operator to check if the given type can be converted to reasonable JSON without extra code.

@@ -5,6 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import FiniteDateTimeRange from 'lib-common/finite-date-time-range'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -69,23 +70,19 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
         )}
         <FixedSpaceColumn $spacing="s">
           {staffMemberWithOperationalDays.operationalDays.map((date) => {
+            const day = FiniteDateTimeRange.ofDate(date)
             const attendances =
               staffMemberWithOperationalDays.staffMember.plannedAttendances
-                .filter(
-                  (a) =>
-                    a.start.toLocalDate().isEqual(date) ||
-                    a.end.toLocalDate().isEqual(date)
-                )
-                .map((a) => ({
-                  start: a.start.toLocalDate().isEqual(date)
-                    ? a.start.toLocalTime().format()
-                    : '→',
-                  end: a.end.toLocalDate().isEqual(date)
-                    ? a.end.toLocalTime().format()
-                    : '→',
-                  type: i18n.attendances.staffTypes[a.type],
-                  description: a.description
-                }))
+                .filter((a) => day.overlaps(a.period))
+                .map((a) => {
+                  const times = a.period.timesOn(date)
+                  return {
+                    start: times.start?.format() ?? '→',
+                    end: times.end?.format() ?? '→',
+                    type: i18n.attendances.staffTypes[a.type],
+                    description: a.description
+                  }
+                })
             return (
               <DayPlan
                 key={date.formatIso()}

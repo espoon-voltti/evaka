@@ -12,6 +12,7 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.*
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.security.PilotFeature
@@ -159,14 +160,25 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     ShiftType.PRESENT,
                     "Päällekkäin",
                 ),
+                // Overlaps only the ignored second shift
+                Shift(
+                    sarastiaId,
+                    "WORK_SHIFT_3",
+                    HelsinkiDateTime.of(today.atTime(17, 0)),
+                    HelsinkiDateTime.of(today.atTime(20, 0)),
+                    ShiftType.PRESENT,
+                    "Ilta",
+                ),
             )
         val client = MockLinkityClient(shifts)
         updateStaffAttendancePlansFromLinkity(period, db, client)
 
         val plans = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
-        // Only the first shift will be added
-        assertEquals(1, plans.size)
-        assertTrue { plans.any { it.description == "Uusi" && it.startTime.hour == 8 } }
+        // The second shift is ignored
+        assertEquals(
+            listOf("Uusi" to 8, "Ilta" to 17),
+            plans.sortedBy { it.startTime }.map { it.description to it.startTime.hour },
+        )
     }
 
     @Test
@@ -214,8 +226,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 null,
                 employee.id,
                 groupId,
-                arrived,
-                departed,
+                DateTimeRange(arrived, departed),
                 "1".toBigDecimal(),
                 type,
                 false,

@@ -13,6 +13,8 @@ import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import DateTimeRange from 'lib-common/date-time-range'
+import FiniteDateTimeRange from 'lib-common/finite-date-time-range'
 import type { ErrorKey } from 'lib-common/form-validation'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
@@ -20,7 +22,6 @@ import type { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type { Id } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { presentInGroup } from 'lib-common/staff-attendance'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -63,8 +64,7 @@ import { openAttendanceQuery } from '../queries'
 export interface ModalAttendance {
   id: Id<string>
   groupId: GroupId | null
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
+  period: DateTimeRange
   departedAutomatically: boolean
   type: StaffAttendanceType
   occupancyCoefficient: number
@@ -73,19 +73,15 @@ export interface ModalAttendance {
 export interface ModalOtherAttendance {
   unitName: string | null
   groupId: GroupId | null
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
+  period: DateTimeRange
 }
 
 export interface ModalPlannedAttendance {
-  start: HelsinkiDateTime
-  end: HelsinkiDateTime
+  period: FiniteDateTimeRange
   description: string | null
 }
 
-interface Props<
-  T extends { arrived: HelsinkiDateTime; departed: HelsinkiDateTime | null }
-> {
+interface Props<T extends { period: DateTimeRange }> {
   date: LocalDate
   name: string
   employeeId?: EmployeeId
@@ -124,9 +120,7 @@ export default React.memo(
   StaffAttendanceDetailsModal
 ) as typeof StaffAttendanceDetailsModal
 
-function StaffAttendanceDetailsModal<
-  T extends { arrived: HelsinkiDateTime; departed: HelsinkiDateTime | null }
->({
+function StaffAttendanceDetailsModal<T extends { period: DateTimeRange }>({
   date,
   name,
   employeeId,
@@ -148,7 +142,7 @@ function StaffAttendanceDetailsModal<
   const nameId = useId()
 
   const sortedAttendances = useMemo(
-    () => orderBy(attendances ?? [], ({ arrived }) => arrived),
+    () => orderBy(attendances ?? [], ({ period }) => period.start),
     [attendances]
   )
 
@@ -156,8 +150,8 @@ function StaffAttendanceDetailsModal<
     () =>
       sortedAttendances.find(
         (a) =>
-          a.arrived.toLocalDate().isEqual(date.subDays(1)) &&
-          (a.departed === null || a.departed.toLocalDate().isEqual(date))
+          a.period.start.toLocalDate().isEqual(date.subDays(1)) &&
+          FiniteDateTimeRange.ofDate(date).overlaps(a.period)
       ),
     [sortedAttendances, date]
   )
@@ -165,19 +159,17 @@ function StaffAttendanceDetailsModal<
   const initialEditState = useMemo(
     () =>
       sortedAttendances
-        .filter((a) => a.arrived.toLocalDate().isEqual(date))
-        .map(
-          ({ id, groupId, arrived, departed, type, occupancyCoefficient }) => ({
-            id,
-            groupId,
-            arrived: date.isEqual(arrived.toLocalDate())
-              ? arrived.toLocalTime().format()
-              : '',
-            departed: departed ? departed.toLocalTime().format() : '',
-            type,
-            hasStaffOccupancyEffect: occupancyCoefficient > 0
-          })
-        ),
+        .filter((a) => a.period.start.toLocalDate().isEqual(date))
+        .map(({ id, groupId, period, type, occupancyCoefficient }) => ({
+          id,
+          groupId,
+          arrived: date.isEqual(period.start.toLocalDate())
+            ? period.start.toLocalTime().format()
+            : '',
+          departed: period.end ? period.end.toLocalTime().format() : '',
+          type,
+          hasStaffOccupancyEffect: occupancyCoefficient > 0
+        })),
     [date, sortedAttendances]
   )
   const [{ editState, editStateDate }, setEditState] = useState<{
@@ -251,19 +243,17 @@ function StaffAttendanceDetailsModal<
       sortedAttendances
         .reduce<
           {
-            arrived: HelsinkiDateTime
-            departed: HelsinkiDateTime | null
+            period: DateTimeRange
             departedAutomatically: boolean
           }[][]
-        >((prev, { arrived, departed, departedAutomatically }) => {
+        >((prev, { period, departedAutomatically }) => {
           if (
             prev.length === 0 ||
-            !last(last(prev))?.departed?.isEqual(arrived)
+            !last(last(prev))?.period.end?.isEqual(period.start)
           ) {
             prev.push([
               {
-                arrived,
-                departed,
+                period,
                 departedAutomatically
               }
             ])
@@ -271,17 +261,16 @@ function StaffAttendanceDetailsModal<
           }
           return [
             ...initial(prev),
-            [
-              ...(last(prev) ?? []),
-              { arrived, departed, departedAutomatically }
-            ]
+            [...(last(prev) ?? []), { period, departedAutomatically }]
           ]
         }, [])
         .map((gaplessPeriod) => {
           const lastEntry = last(gaplessPeriod)
           return {
-            arrived: gaplessPeriod[0].arrived,
-            departed: lastEntry?.departed ?? null,
+            period: new DateTimeRange(
+              gaplessPeriod[0].period.start,
+              lastEntry?.period.end ?? null
+            ),
             departedAutomatically: lastEntry?.departedAutomatically ?? false
           }
         }),
@@ -289,37 +278,26 @@ function StaffAttendanceDetailsModal<
   )
 
   const getTotalMinutesWithinDate = useCallback(
-    (
-      attendances: {
-        arrived: HelsinkiDateTime
-        departed: HelsinkiDateTime | null
-      }[]
-    ) =>
-      attendances.reduce((prev, { arrived, departed }) => {
-        const minTime = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
-        const maxTime = date.isToday()
-          ? HelsinkiDateTime.now()
-          : HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
-
-        const arrivedWithinDate = arrived.isBefore(minTime) ? minTime : arrived
-        const departedWithinDate =
-          !departed || departed.isAfter(maxTime) ? maxTime : departed
-
-        return (
-          prev + (departedWithinDate.timestamp - arrivedWithinDate.timestamp)
-        )
-      }, 0) /
-      1000 /
-      60,
+    (attendances: { period: DateTimeRange }[]) => {
+      const wholeDate = FiniteDateTimeRange.ofDate(date)
+      const range = date.isToday()
+        ? new FiniteDateTimeRange(wholeDate.start, HelsinkiDateTime.now())
+        : wholeDate
+      return attendances.reduce(
+        (total, { period }) =>
+          total + (range.intersection(period)?.durationInMinutes() ?? 0),
+        0
+      )
+    },
     [date]
   )
 
   const totalMinutes = useMemo(
     () =>
       gaplessAttendances.some(
-        ({ arrived, departed }) =>
-          !arrived.toLocalDate().isEqual(LocalDate.todayInHelsinkiTz()) &&
-          !departed
+        ({ period }) =>
+          !period.start.toLocalDate().isEqual(LocalDate.todayInHelsinkiTz()) &&
+          !period.end
       )
         ? 'incalculable'
         : getTotalMinutesWithinDate(gaplessAttendances),
@@ -328,33 +306,22 @@ function StaffAttendanceDetailsModal<
 
   const arrivalWithoutDeparture = useMemo(() => {
     const arrivalWithoutDeparture = gaplessAttendances.find(
-      ({ arrived, departed }) =>
-        !arrived.toLocalDate().isEqual(LocalDate.todayInHelsinkiTz()) &&
-        !departed
+      ({ period }) =>
+        !period.start.toLocalDate().isEqual(LocalDate.todayInHelsinkiTz()) &&
+        !period.end
     )
 
     return arrivalWithoutDeparture
-      ? arrivalWithoutDeparture.arrived.format()
+      ? arrivalWithoutDeparture.period.start.format()
       : undefined
   }, [gaplessAttendances])
-
-  const plannedAttendancesToday = useMemo(
-    () =>
-      plannedAttendances
-        .filter(
-          ({ end, start }) =>
-            end.toLocalDate().isEqual(date) || start.toLocalDate().isEqual(date)
-        )
-        .map(({ start, end }) => ({ arrived: start, departed: end })),
-    [plannedAttendances, date]
-  )
 
   const diffPlannedTotalMinutes = useMemo(
     () =>
       totalMinutes === 'incalculable'
         ? 0
-        : totalMinutes - getTotalMinutesWithinDate(plannedAttendancesToday),
-    [totalMinutes, plannedAttendancesToday, getTotalMinutesWithinDate]
+        : totalMinutes - getTotalMinutesWithinDate(plannedAttendances),
+    [totalMinutes, plannedAttendances, getTotalMinutesWithinDate]
   )
 
   const getGapBefore = useCallback(
@@ -363,23 +330,15 @@ function StaffAttendanceDetailsModal<
 
       const previousDeparted =
         i === 0
-          ? continuationAttendance?.departed
-          : requestBody[i - 1]?.departed
-      const arrived = requestBody[i].arrived
-      if (!previousDeparted || !arrived) return undefined
-
-      if (arrived.isAfter(previousDeparted.addHours(8))) {
-        // gap is so large that it must be a new work day already
-        return undefined
-      }
-
-      if (arrived.isAfter(previousDeparted))
-        return {
-          gapStart: previousDeparted,
-          gapEnd: arrived
-        }
-
-      return undefined
+          ? continuationAttendance?.period.end
+          : requestBody[i - 1]?.period.end
+      if (!previousDeparted) return undefined
+      const gap = FiniteDateTimeRange.tryCreate(
+        previousDeparted,
+        requestBody[i].period.start
+      )
+      // gap is so large that it must be a new work day already
+      return gap && gap.durationInMinutes() <= 8 * 60 ? gap : undefined
     },
     [requestBody, continuationAttendance]
   )
@@ -387,16 +346,12 @@ function StaffAttendanceDetailsModal<
   const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
 
   const otherUnitAttendancesOnDate = useMemo(() => {
-    const startOfDay = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
-    const endOfDay = HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
+    const day = FiniteDateTimeRange.ofDate(date)
     return orderBy(
       otherAttendances.filter(
-        (a) =>
-          a.unitName !== null &&
-          a.arrived.isBefore(endOfDay) &&
-          (a.departed === null || a.departed.isAfter(startOfDay))
+        (a) => a.unitName !== null && day.overlaps(a.period)
       ),
-      ({ arrived }) => arrived
+      ({ period }) => period.start
     )
   }, [otherAttendances, date])
 
@@ -406,7 +361,7 @@ function StaffAttendanceDetailsModal<
         uniq(errors.flatMap((e) => e.overlappingAttendances ?? [])).filter(
           (a) => !otherUnitAttendancesOnDate.includes(a)
         ),
-        ({ arrived }) => arrived
+        ({ period }) => period.start
       ),
     [errors, otherUnitAttendancesOnDate]
   )
@@ -451,10 +406,9 @@ function StaffAttendanceDetailsModal<
               <LabelLike>{i18n.unit.staffAttendance.plan}</LabelLike>
               <FixedSpaceColumn data-qa="staff-attendance-summary-plan">
                 {plannedAttendances.length > 0
-                  ? plannedAttendances.map(({ end, start, description }, i) => (
+                  ? plannedAttendances.map(({ period, description }, i) => (
                       <div key={i}>
-                        {formatDate(start, date)} –{' '}
-                        {end ? formatDate(end, date) : ''}
+                        {formatRange({ date, range: period })}
                         {description ? <i> ({description})</i> : null}
                       </div>
                     ))
@@ -464,24 +418,25 @@ function StaffAttendanceDetailsModal<
               <FixedSpaceColumn data-qa="staff-attendance-summary-realized">
                 {gaplessAttendances.length > 0
                   ? gaplessAttendances.map(
-                      ({ arrived, departed, departedAutomatically }, i) => (
+                      ({ period, departedAutomatically }, i) => (
                         <div key={i}>
                           <div>
-                            {arrived ? formatDate(arrived, date) : ''} –{' '}
-                            {departed ? (
-                              <DepartedTime
-                                $automaticDeparture={departedAutomatically}
-                                data-qa={
-                                  departedAutomatically
-                                    ? 'departed-automatically-time'
-                                    : undefined
-                                }
-                              >
-                                {formatDate(departed, date)}
-                              </DepartedTime>
-                            ) : (
-                              ''
-                            )}
+                            {formatRange({
+                              date,
+                              range: period,
+                              renderEnd: (value) => (
+                                <DepartedTime
+                                  $automaticDeparture={departedAutomatically}
+                                  data-qa={
+                                    departedAutomatically
+                                      ? 'departed-automatically-time'
+                                      : undefined
+                                  }
+                                >
+                                  {value}
+                                </DepartedTime>
+                              )
+                            })}
                           </div>
                           {departedAutomatically && (
                             <AutomaticDepartureLabel data-qa="departed-automatically-label">
@@ -577,13 +532,13 @@ function StaffAttendanceDetailsModal<
               <TimesDiv>
                 <FixedSpaceRow $justifyContent="space-between">
                   <DateInfoDiv>
-                    {continuationAttendance.arrived
+                    {continuationAttendance.period.start
                       .toLocalDate()
                       .format('dd.MM.')}
                   </DateInfoDiv>
                   <div />
                   <DateInfoDiv>
-                    {continuationAttendance.departed
+                    {continuationAttendance.period.end
                       ?.toLocalDate()
                       ?.format('dd.MM.')}
                   </DateInfoDiv>
@@ -598,11 +553,12 @@ function StaffAttendanceDetailsModal<
                   $justifyContent="space-between"
                 >
                   <TimeDiv>
-                    {continuationAttendance.arrived.toLocalTime().format()}
+                    {continuationAttendance.period.start.toLocalTime().format()}
                   </TimeDiv>
                   <div>–</div>
                   <TimeDiv>
-                    {continuationAttendance.departed?.toLocalTime()?.format()}*
+                    {continuationAttendance.period.end?.toLocalTime()?.format()}
+                    *
                   </TimeDiv>
                 </FixedSpaceRow>
               </TimesDiv>
@@ -669,7 +625,7 @@ function StaffAttendanceDetailsModal<
                         />
                         <div data-qa={`attendance-gap-warning-${index}`}>
                           {i18n.unit.staffAttendance.gapWarning(
-                            `${gap.gapStart.toLocalTime().format()} – ${gap.gapEnd.toLocalTime().format()}`
+                            `${gap.start.toLocalTime().format()} – ${gap.end.toLocalTime().format()}`
                           )}
                         </div>
                       </FixedSpaceRow>
@@ -874,8 +830,8 @@ const OtherUnitAttendanceList = React.memo(function OtherUnitAttendanceList({
   const { i18n } = useTranslation()
   return (
     <OtherUnitAttendanceUl>
-      {attendances.map(({ unitName, groupId, arrived, departed }, i) => {
-        const currentDate = date ?? arrived.toLocalDate()
+      {attendances.map(({ unitName, groupId, period }, i) => {
+        const currentDate = date ?? period.start.toLocalDate()
         return (
           <li key={i}>
             {unitName ??
@@ -883,10 +839,15 @@ const OtherUnitAttendanceList = React.memo(function OtherUnitAttendanceList({
               i18n.unit.staffAttendance.noGroup}
             :{' '}
             <strong>
-              {arrived.toLocalDate().isBefore(currentDate)
-                ? LocalTime.MIN.format()
-                : arrived.toLocalTime().format()}{' '}
-              – {departed ? formatDate(departed, currentDate) : ''}
+              {formatRange({
+                date: currentDate,
+                range: new DateTimeRange(
+                  period.start.toLocalDate().isBefore(currentDate)
+                    ? currentDate.startOfDay()
+                    : period.start,
+                  period.end
+                )
+              })}
             </strong>
           </li>
         )
@@ -900,8 +861,21 @@ const OtherUnitAttendanceUl = styled.ul`
   padding-left: ${defaultMargins.m};
 `
 
-const formatDate = (time: HelsinkiDateTime, currentDate: LocalDate) =>
-  time.toLocalDate().isEqual(currentDate) ? time.toLocalTime().format() : '→'
+function formatRange(options: {
+  date: LocalDate
+  range: DateTimeRange | FiniteDateTimeRange
+  renderEnd?: (value: string) => React.ReactNode
+}): React.ReactNode {
+  const times = options.range.timesOn(options.date)
+  const renderEnd = options?.renderEnd ?? ((value) => value)
+
+  return (
+    <>
+      {times.start?.format() ?? '→'} –{' '}
+      {options.range.end === null ? '' : renderEnd(times.end?.format() ?? '→')}
+    </>
+  )
+}
 
 function formatMinutes(minutes: number) {
   return `${Math.floor(minutes / 60)}:${Math.floor(minutes % 60)

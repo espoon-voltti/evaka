@@ -4,7 +4,6 @@
 
 package evaka.core.shared.domain
 
-import evaka.core.shared.data.BoundedRange
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.Duration
@@ -137,6 +136,8 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
     override fun toString(): String = toZonedDateTime().toString()
 
     companion object {
+        val MAX = of(LocalDate.MAX, LocalTime.MAX)
+
         /**
          * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time
          * matches the given values
@@ -186,136 +187,3 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
 // Truncate nanoseconds to avoid surprises when serializing to/from PostgreSQL, which only supports
 // microsecond precision
 private fun Instant.truncateNanos() = with(ChronoField.MICRO_OF_SECOND, nano / 1000L)
-
-data class HelsinkiDateTimeRange(
-    override val start: HelsinkiDateTime,
-    override val end: HelsinkiDateTime,
-) : BoundedRange<HelsinkiDateTime, HelsinkiDateTimeRange> {
-    init {
-        check(start <= end) {
-            "Attempting to initialize invalid time range with start: $start, end: $end"
-        }
-    }
-
-    override fun toString(): String = "[$start,$end)"
-
-    override fun overlaps(other: HelsinkiDateTimeRange) =
-        this.start < other.end && other.start < this.end
-
-    override fun leftAdjacentTo(other: HelsinkiDateTimeRange): Boolean = this.end == other.start
-
-    override fun rightAdjacentTo(other: HelsinkiDateTimeRange): Boolean = other.end == this.start
-
-    override fun strictlyLeftTo(other: HelsinkiDateTimeRange): Boolean = this.end <= other.start
-
-    override fun strictlyRightTo(other: HelsinkiDateTimeRange): Boolean = other.end <= this.start
-
-    override fun intersection(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
-        tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
-
-    override fun gap(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
-        tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
-
-    override fun subtract(
-        other: HelsinkiDateTimeRange,
-    ): BoundedRange.SubtractResult<HelsinkiDateTimeRange> =
-        if (this.overlaps(other)) {
-            val left = tryCreate(this.start, other.start)
-            val right = tryCreate(other.end, this.end)
-            if (left != null) {
-                if (right != null) {
-                    BoundedRange.SubtractResult.Split(left, right)
-                } else {
-                    BoundedRange.SubtractResult.LeftRemainder(left)
-                }
-            } else {
-                if (right != null) {
-                    BoundedRange.SubtractResult.RightRemainder(right)
-                } else {
-                    BoundedRange.SubtractResult.None
-                }
-            }
-        } else BoundedRange.SubtractResult.Original(this)
-
-    override fun merge(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange =
-        HelsinkiDateTimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
-
-    override fun includes(point: HelsinkiDateTime): Boolean =
-        this.start <= point && point < this.end
-
-    override fun relationTo(
-        other: HelsinkiDateTimeRange,
-    ): BoundedRange.Relation<HelsinkiDateTimeRange> =
-        when {
-            this.end <= other.start -> {
-                BoundedRange.Relation.LeftTo(gap = tryCreate(this.end, other.start))
-            }
-
-            other.end <= this.start -> {
-                BoundedRange.Relation.RightTo(gap = tryCreate(other.end, this.start))
-            }
-
-            else -> {
-                BoundedRange.Relation.Overlap(
-                    left =
-                        when {
-                            this.start < other.start -> {
-                                BoundedRange.Relation.Remainder(
-                                    range = HelsinkiDateTimeRange(this.start, other.start),
-                                    isFirst = true,
-                                )
-                            }
-
-                            other.start < this.start -> {
-                                BoundedRange.Relation.Remainder(
-                                    range = HelsinkiDateTimeRange(other.start, this.start),
-                                    isFirst = false,
-                                )
-                            }
-
-                            else -> {
-                                null
-                            }
-                        },
-                    overlap =
-                        HelsinkiDateTimeRange(
-                            maxOf(this.start, other.start),
-                            minOf(this.end, other.end),
-                        ),
-                    right =
-                        when {
-                            other.end < this.end -> {
-                                BoundedRange.Relation.Remainder(
-                                    range = HelsinkiDateTimeRange(other.end, this.end),
-                                    isFirst = true,
-                                )
-                            }
-
-                            this.end < other.end -> {
-                                BoundedRange.Relation.Remainder(
-                                    range = HelsinkiDateTimeRange(this.end, other.end),
-                                    isFirst = false,
-                                )
-                            }
-
-                            else -> {
-                                null
-                            }
-                        },
-                )
-            }
-        }
-
-    fun getDuration(): Duration = Duration.between(start.toInstant(), end.toInstant())
-
-    companion object {
-        fun tryCreate(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange? =
-            if (start < end) HelsinkiDateTimeRange(start, end) else null
-
-        fun of(date: LocalDate, startTime: LocalTime, endTime: LocalTime) =
-            HelsinkiDateTimeRange(
-                HelsinkiDateTime.of(date, startTime),
-                HelsinkiDateTime.of(date, endTime),
-            )
-    }
-}

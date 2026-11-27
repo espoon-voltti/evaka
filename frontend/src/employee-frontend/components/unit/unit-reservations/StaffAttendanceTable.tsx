@@ -13,7 +13,8 @@ import React, { useMemo, useState, useCallback } from 'react'
 import type { JSX } from 'react'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
+import DateTimeRange from 'lib-common/date-time-range'
+import FiniteDateTimeRange from 'lib-common/finite-date-time-range'
 import type { ErrorKey } from 'lib-common/form-validation'
 import type {
   Attendance,
@@ -39,11 +40,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { formatPersonName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
-import {
-  attendancesOverlap,
-  isDuringAttendance,
-  presentInGroup
-} from 'lib-common/staff-attendance'
+import { presentInGroup } from 'lib-common/staff-attendance'
 import type { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -208,8 +205,7 @@ export default React.memo(function StaffAttendanceTable({
                           id: a.id,
                           groupId: a.groupId,
                           type: a.type,
-                          arrived: a.arrived,
-                          departed: a.departed,
+                          period: a.period,
                           departedAutomatically: a.departedAutomatically,
                           occupancyCoefficient: a.occupancyCoefficient
                         } satisfies ModalAttendance)
@@ -427,7 +423,7 @@ function getStaffRows(
           entry.attendances.filter(
             (a) => !groupFilter || (a.groupId && groupFilter([a.groupId]))
           ),
-          ({ departed }) => departed?.timestamp ?? Infinity
+          ({ period }) => period.end?.timestamp ?? Infinity
         ),
         plannedAttendances: entry.plannedAttendances,
         employeeGroups: entry.groups,
@@ -460,7 +456,7 @@ function getExternalRows(
         name,
         attendances: sortBy(
           attendances.filter((a) => !groupFilter || groupFilter([a.groupId])),
-          ({ departed }) => departed?.timestamp ?? Infinity
+          ({ period }) => period.end?.timestamp ?? Infinity
         ),
         allowedToEdit: true
       }))
@@ -539,9 +535,11 @@ function getUniqueAttendanceDates(
             type != null &&
             presentInGroup(type))
       )
-      // TODO: What if arrived and departed are > 1 day apart?
-      .flatMap(({ departed, arrived }) =>
-        [arrived.toLocalDate()].concat(departed?.toLocalDate() ?? [])
+      .flatMap(({ period }) =>
+        period.end == null ||
+        period.end.isEqual(period.end.toLocalDate().startOfDay())
+          ? [period.start.toLocalDate()]
+          : [period.start.toLocalDate(), period.end.toLocalDate()]
       ),
     (localDate) => localDate.date
   )
@@ -558,8 +556,7 @@ const BottomSumTd = styled.td<{ $centered?: boolean }>`
 `
 
 interface AttendanceRowAttendance {
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
+  period: DateTimeRange
   groupId: GroupId | null
   departedAutomatically: boolean
   type: StaffAttendanceType | null
@@ -698,9 +695,9 @@ const AttendanceRow = React.memo(function AttendanceRow({
             groupFilter,
             date
           )
-          const plannedAttendancesForToday = getPlannedAttendancesForDate(
-            plannedAttendances ?? [],
-            date
+          const day = FiniteDateTimeRange.ofDate(date)
+          const plannedAttendancesForToday = (plannedAttendances ?? []).filter(
+            (p) => day.overlaps(p.period)
           )
           return {
             date,
@@ -732,21 +729,28 @@ const AttendanceRow = React.memo(function AttendanceRow({
               <DayCell data-qa={`attendance-${date.formatIso()}-${rowIndex}`}>
                 <PlannedAttendanceTimes data-qa="planned-attendance-day">
                   {plannedAttendancesForToday.length > 0 ? (
-                    plannedAttendancesForToday.map((plannedAttendance, i) => (
-                      <AttendanceCell key={i}>
-                        <AttendanceTime data-qa="planned-attendance-start">
-                          {renderTime(plannedAttendance.start, date)}
-                        </AttendanceTime>
-                        <AttendanceTime data-qa="planned-attendance-end">
-                          {renderTime(plannedAttendance.end, date)}
-                        </AttendanceTime>
-                        <DetailsCell />
-                      </AttendanceCell>
-                    ))
+                    plannedAttendancesForToday.map((plannedAttendance, i) => {
+                      const times = plannedAttendance.period.timesOn(date)
+                      return (
+                        <AttendanceCell key={i}>
+                          <AttendanceTime data-qa="planned-attendance-start">
+                            {renderTime(times.start)}
+                          </AttendanceTime>
+                          <AttendanceTime data-qa="planned-attendance-end">
+                            {renderTime(times.end)}
+                          </AttendanceTime>
+                          <DetailsCell />
+                        </AttendanceCell>
+                      )
+                    })
                   ) : (
                     <AttendanceCell>
-                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
-                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
+                      <AttendanceTime>
+                        <NoTime>–</NoTime>
+                      </AttendanceTime>
+                      <AttendanceTime>
+                        <NoTime>–</NoTime>
+                      </AttendanceTime>
                       <DetailsCell />
                     </AttendanceCell>
                   )}
@@ -755,6 +759,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                   {attendancesForToday.length > 0 ? (
                     attendancesForToday.map((attendance, i) => {
                       const isLast = i === attendancesForToday.length - 1
+                      const times = attendance.period.timesOn(date)
                       return (
                         <AttendanceCell
                           key={i}
@@ -770,7 +775,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                               })}
                               data-qa="arrival-time-tooltip"
                             >
-                              {renderTime(attendance.arrived, date)}
+                              {renderTime(times.start)}
                             </Tooltip>
                           </AttendanceTime>
                           <AttendanceTime data-qa="departure-time">
@@ -778,10 +783,13 @@ const AttendanceRow = React.memo(function AttendanceRow({
                               tooltip={departureTooltipText(attendance)}
                               data-qa="departure-time-tooltip"
                             >
-                              {renderTime(
-                                attendance.departed,
-                                date,
-                                attendance.departedAutomatically
+                              {attendance.period.end === null ? (
+                                <NoTime>–</NoTime>
+                              ) : (
+                                renderTime(
+                                  times.end,
+                                  attendance.departedAutomatically
+                                )
                               )}
                             </Tooltip>
                           </AttendanceTime>
@@ -802,8 +810,12 @@ const AttendanceRow = React.memo(function AttendanceRow({
                     })
                   ) : (
                     <AttendanceCell>
-                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
-                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
+                      <AttendanceTime>
+                        <NoTime>–</NoTime>
+                      </AttendanceTime>
+                      <AttendanceTime>
+                        <NoTime>–</NoTime>
+                      </AttendanceTime>
                       <DetailsToggle
                         onOpen={() => openDetails(date)}
                         hovered={isHovered(date)}
@@ -878,15 +890,12 @@ function getAttendancesForGroupAndDate(
   groupFilter: GroupFilter | null,
   date: LocalDate
 ): AttendanceRowAttendance[] {
+  const day = FiniteDateTimeRange.ofDate(date)
   return attendances
-    .filter(
-      (a) =>
-        a.arrived.toLocalDate().isEqual(date) ||
-        (a.departed &&
-          new DateRange(
-            a.arrived.toLocalDate(),
-            a.departed.toLocalDate()
-          ).includes(date))
+    .filter((a) =>
+      a.period.end == null
+        ? day.includes(a.period.start)
+        : day.overlaps(a.period)
     )
     .filter(
       ({ groupId, type }) =>
@@ -898,25 +907,13 @@ function getAttendancesForGroupAndDate(
     )
 }
 
-function getPlannedAttendancesForDate(
-  plannedAttendances: PlannedStaffAttendance[],
-  date: LocalDate
-): PlannedStaffAttendance[] {
-  return (plannedAttendances ?? []).filter(
-    (plannedAttendance) =>
-      plannedAttendance.start.toLocalDate().isEqual(date) ||
-      plannedAttendance.end.toLocalDate().isEqual(date)
-  )
-}
-
+/** A null time means that the endpoint is on another date */
 function renderTime(
-  timestamp: HelsinkiDateTime | null,
-  today: LocalDate,
+  time: LocalTime | null,
   automaticDeparture = false
 ): JSX.Element | string {
-  if (timestamp && !timestamp.toLocalDate().isEqual(today)) return '→'
-  if (timestamp === null) return <NoTime>–</NoTime>
-  const formatted = timestamp.toLocalTime().format()
+  if (time === null) return '→'
+  const formatted = time.format()
   return automaticDeparture ? <Warning>{formatted}</Warning> : formatted
 }
 
@@ -937,14 +934,7 @@ function computeModalAttendances(
   plannedAttendances: ModalPlannedAttendance[]
   otherAttendances: ModalOtherAttendance[]
 } {
-  const startOfDay = HelsinkiDateTime.fromLocal(
-    detailsModalConfig.date,
-    LocalTime.of(0, 0)
-  )
-  const endOfDay = HelsinkiDateTime.fromLocal(
-    detailsModalConfig.date.addDays(1),
-    LocalTime.of(0, 0)
-  )
+  const day = FiniteDateTimeRange.ofDate(detailsModalConfig.date)
   if (detailsModalConfig.target.type === 'employee') {
     const employeeId = detailsModalConfig.target.employeeId
     const combined: EmployeeAttendance[] = staffAttendances.filter(
@@ -954,15 +944,12 @@ function computeModalAttendances(
       combined
         .flatMap((employee) => employee.attendances)
         .flatMap((attendance) =>
-          attendance.type !== null &&
-          attendance.arrived <= endOfDay &&
-          (attendance.departed === null || startOfDay <= attendance.departed)
+          attendance.type !== null && day.overlaps(attendance.period)
             ? ({
                 id: attendance.id,
                 groupId: attendance.groupId,
                 type: attendance.type,
-                arrived: attendance.arrived,
-                departed: attendance.departed,
+                period: attendance.period,
                 departedAutomatically: attendance.departedAutomatically,
                 occupancyCoefficient: attendance.occupancyCoefficient
               } satisfies ModalAttendance)
@@ -973,26 +960,24 @@ function computeModalAttendances(
     const plannedAttendances: ModalPlannedAttendance[] = uniq(
       combined.flatMap((employee) => employee.plannedAttendances)
     )
-      .filter(({ start, end }) => start <= endOfDay && startOfDay <= end)
-      .map(({ start, end, description }) => ({ start, end, description }))
+      .filter(({ period }) => day.overlaps(period))
+      .map(({ period, description }) => ({ period, description }))
     const sameUnitAttendancesOnLaterDays: ModalOtherAttendance[] = uniqBy(
       combined.flatMap((employee) => employee.attendances),
       (attendance) => attendance.id
     )
-      .filter(({ arrived }) => !arrived.isBefore(endOfDay))
-      .map(({ groupId, arrived, departed }) => ({
+      .filter(({ period }) => period.start.isEqualOrAfter(day.end))
+      .map(({ groupId, period }) => ({
         unitName: null,
         groupId,
-        arrived,
-        departed
+        period
       }))
     const otherUnitAttendances: ModalOtherAttendance[] = combined
       .flatMap((employee) => employee.otherUnitAttendances)
-      .map(({ unitName, arrived, departed }) => ({
+      .map(({ unitName, period }) => ({
         unitName,
         groupId: null,
-        arrived,
-        departed
+        period
       }))
     return {
       attendances,
@@ -1006,9 +991,7 @@ function computeModalAttendances(
     const name = detailsModalConfig.target.name
     const attendances: ModalAttendance[] = externalAttendances.filter(
       (attendance) =>
-        attendance.name === name &&
-        attendance.arrived <= endOfDay &&
-        (attendance.departed === null || startOfDay <= attendance.departed)
+        attendance.name === name && day.overlaps(attendance.period)
     )
     return { attendances, plannedAttendances: [], otherAttendances: [] }
   }
@@ -1030,8 +1013,8 @@ const staffAttendanceValidator =
 
     const continuationAttendance = config.attendances.find(
       (a) =>
-        a.arrived.toLocalDate().isBefore(config.date) &&
-        (!a.departed || a.departed.toLocalDate().isEqualOrAfter(config.date))
+        a.period.start.toLocalDate().isEqual(config.date.subDays(1)) &&
+        FiniteDateTimeRange.ofDate(config.date).overlaps(a.period)
     )
 
     for (let i = 0; i < state.length; i++) {
@@ -1039,7 +1022,7 @@ const staffAttendanceValidator =
       const isLastAttendance = i === state.length - 1
 
       const previousDeparted =
-        i === 0 ? continuationAttendance?.departed : body[i - 1]?.departed
+        i === 0 ? continuationAttendance?.period.end : body[i - 1]?.period.end
       const [arrived, arrivedError] = validateArrived(
         config,
         item,
@@ -1053,14 +1036,17 @@ const staffAttendanceValidator =
       )
       const [groupId, groupIdError] = validateGroupId(item)
 
-      const overlappingAttendances =
+      const period =
         arrived !== undefined && departed !== undefined
-          ? config.otherAttendances.filter((other) =>
-              attendancesOverlap({ arrived, departed }, other)
-            )
-          : []
+          ? new DateTimeRange(arrived, departed)
+          : undefined
+      const overlappingAttendances = period
+        ? config.otherAttendances.filter((other) =>
+            other.period.overlaps(period)
+          )
+        : []
       const arrivalOverlaps = overlappingAttendances.some(
-        (other) => arrived && isDuringAttendance(arrived, other)
+        (other) => arrived && other.period.includes(arrived)
       )
 
       errors[i] = {
@@ -1075,16 +1061,14 @@ const staffAttendanceValidator =
       }
 
       if (
-        arrived !== undefined &&
-        departed !== undefined &&
+        period !== undefined &&
         groupId !== undefined &&
         overlappingAttendances.length === 0
       ) {
         body[i] = {
           id: item.id as StaffAttendanceRealtimeId | null,
           type: item.type,
-          arrived,
-          departed,
+          period,
           groupId,
           hasStaffOccupancyEffect: item.hasStaffOccupancyEffect
         }
@@ -1109,8 +1093,8 @@ const externalAttendanceValidator =
 
     const continuationAttendance = config.attendances.find(
       (a) =>
-        a.arrived.toLocalDate().isBefore(config.date) &&
-        (!a.departed || a.departed.toLocalDate().isEqualOrAfter(config.date))
+        a.period.start.toLocalDate().isEqual(config.date.subDays(1)) &&
+        FiniteDateTimeRange.ofDate(config.date).overlaps(a.period)
     )
 
     for (let i = 0; i < state.length; i++) {
@@ -1118,7 +1102,7 @@ const externalAttendanceValidator =
       const isLastAttendance = i === state.length - 1
 
       const previousDeparted =
-        i === 0 ? continuationAttendance?.departed : body[i - 1]?.departed
+        i === 0 ? continuationAttendance?.period.end : body[i - 1]?.period.end
       const [arrived, arrivedError] = validateArrived(
         config,
         item,
@@ -1140,11 +1124,10 @@ const externalAttendanceValidator =
         groupId !== undefined
       ) {
         body[i] = {
-          ...item,
           id: item.id as StaffAttendanceExternalId | null,
-          arrived,
-          departed,
-          groupId
+          period: new DateTimeRange(arrived, departed),
+          groupId,
+          hasStaffOccupancyEffect: item.hasStaffOccupancyEffect
         }
       }
 

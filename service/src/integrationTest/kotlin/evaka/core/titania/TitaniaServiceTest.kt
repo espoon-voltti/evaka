@@ -15,6 +15,8 @@ import evaka.core.employee.getEmployees
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.*
+import evaka.core.shared.domain.DateTimeRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -1124,10 +1126,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(7, 0)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(15, 0)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2014, 3, 3),
+                                    LocalTime.of(7, 0),
+                                    LocalTime.of(15, 0),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -1137,10 +1142,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(6, 30)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(12, 0)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2014, 3, 4),
+                                    LocalTime.of(6, 30),
+                                    LocalTime.of(12, 0),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OVERTIME,
                         modifiedAt = now,
@@ -1154,10 +1162,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(7, 0)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(11, 0)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2014, 3, 3),
+                                    LocalTime.of(7, 0),
+                                    LocalTime.of(11, 0),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -1167,10 +1178,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(12, 5)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(16, 10)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2014, 3, 3),
+                                    LocalTime.of(12, 5),
+                                    LocalTime.of(16, 10),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -1180,10 +1194,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(10, 15)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(17, 15)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2014, 3, 4),
+                                    LocalTime.of(10, 15),
+                                    LocalTime.of(17, 15),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
                         modifiedAt = now,
@@ -1221,10 +1238,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = null,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2023, 2, 6), LocalTime.of(8, 0)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2023, 2, 6), LocalTime.of(15, 39)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2023, 2, 6),
+                                    LocalTime.of(8, 0),
+                                    LocalTime.of(15, 39),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
                         modifiedAt = now,
@@ -1315,10 +1335,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(8, 0),
+                                    LocalTime.of(13, 10),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -1328,10 +1351,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(16, 11)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(13, 10),
+                                    LocalTime.of(16, 11),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OVERTIME,
                         modifiedAt = now,
@@ -1429,10 +1455,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 0)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(8, 0),
+                                    LocalTime.of(13, 10),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -1442,9 +1471,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
-                        departureTime = null,
+                        period =
+                            DateTimeRange(
+                                HelsinkiDateTime.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(13, 10),
+                                ),
+                                null,
+                            ),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OVERTIME,
                         modifiedAt = now,
@@ -1542,10 +1576,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 21)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(8, 21),
+                                    LocalTime.of(9, 52),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
                         modifiedAt = now,
@@ -1555,10 +1592,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = null,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(9, 52),
+                                    LocalTime.of(10, 48),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
                         modifiedAt = now,
@@ -1568,10 +1608,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(15, 21)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(10, 48),
+                                    LocalTime.of(15, 21),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
                         modifiedAt = now,
@@ -1676,10 +1719,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(7, 39)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(7, 39),
+                                    LocalTime.of(9, 52),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
                         modifiedAt = now,
@@ -1689,10 +1735,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = null,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(9, 52),
+                                    LocalTime.of(10, 48),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
                         modifiedAt = now,
@@ -1702,10 +1751,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(16, 39)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(10, 48),
+                                    LocalTime.of(16, 39),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
                         modifiedAt = now,
@@ -1810,9 +1862,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 21)),
-                        departureTime = null,
+                        period =
+                            DateTimeRange(
+                                HelsinkiDateTime.of(
+                                    LocalDate.of(2022, 10, 19),
+                                    LocalTime.of(8, 21),
+                                ),
+                                null,
+                            ),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
                         modifiedAt = now,
@@ -1903,10 +1960,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(20, 5)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(7, 56)),
+                        period =
+                            DateTimeRange(
+                                HelsinkiDateTime.of(
+                                    LocalDate.of(2022, 10, 20),
+                                    LocalTime.of(20, 5),
+                                ),
+                                HelsinkiDateTime.of(
+                                    LocalDate.of(2022, 10, 21),
+                                    LocalTime.of(7, 56),
+                                ),
+                            ),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -1997,10 +2061,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(20, 30)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(21, 15)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 20),
+                                    LocalTime.of(20, 30),
+                                    LocalTime.of(21, 15),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
                         modifiedAt = now,
@@ -2010,10 +2077,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = null,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(21, 15)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(23, 10)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 20),
+                                    LocalTime.of(21, 15),
+                                    LocalTime.of(23, 10),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.OTHER_WORK,
                         modifiedAt = now,
@@ -2023,10 +2093,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(23, 10)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(7, 30)),
+                        period =
+                            DateTimeRange(
+                                HelsinkiDateTime.of(
+                                    LocalDate.of(2022, 10, 20),
+                                    LocalTime.of(23, 10),
+                                ),
+                                HelsinkiDateTime.of(
+                                    LocalDate.of(2022, 10, 21),
+                                    LocalTime.of(7, 30),
+                                ),
+                            ),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.JUSTIFIED_CHANGE,
                         modifiedAt = now,
@@ -2122,10 +2199,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(7, 54)),
-                        departureTime =
-                            HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(16, 6)),
+                        period =
+                            FiniteDateTimeRange.of(
+                                    LocalDate.of(2022, 10, 20),
+                                    LocalTime.of(7, 54),
+                                    LocalTime.of(16, 6),
+                                )
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -2230,8 +2310,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(6, 26)),
-                        departureTime = HelsinkiDateTime.of(date, LocalTime.of(14, 5)),
+                        period =
+                            FiniteDateTimeRange.of(date, LocalTime.of(6, 26), LocalTime.of(14, 5))
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -2315,8 +2396,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
-                        departureTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
+                        period =
+                            FiniteDateTimeRange.of(date, LocalTime.of(6, 30), LocalTime.of(10, 26))
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -2326,8 +2408,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
-                        departureTime = null,
+                        period =
+                            DateTimeRange(HelsinkiDateTime.of(date, LocalTime.of(10, 26)), null),
                         occupancyCoefficient = BigDecimal("0.0"),
                         type = StaffAttendanceType.SICKNESS,
                         modifiedAt = now,
@@ -2350,8 +2432,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
-                        departureTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
+                        period =
+                            FiniteDateTimeRange.of(date, LocalTime.of(6, 30), LocalTime.of(10, 26))
+                                .asDateTimeRange(),
                         occupancyCoefficient = BigDecimal("7.0"),
                         type = StaffAttendanceType.PRESENT,
                         modifiedAt = now,
@@ -2361,8 +2444,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         attendanceId = null,
                         employeeId = employee.id,
                         groupId = groupId,
-                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
-                        departureTime = null,
+                        period =
+                            DateTimeRange(HelsinkiDateTime.of(date, LocalTime.of(10, 26)), null),
                         occupancyCoefficient = BigDecimal("0.0"),
                         type = StaffAttendanceType.CHILD_SICKNESS,
                         modifiedAt = now,

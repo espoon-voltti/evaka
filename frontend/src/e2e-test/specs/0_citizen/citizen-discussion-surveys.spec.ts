@@ -8,7 +8,6 @@ import type {
   CalendarEventTimeId,
   GroupId
 } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -100,7 +99,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         title: 'Group-wide survey',
         description: 'Whole group',
         period: new FiniteDateRange(today.addDays(1), today.addDays(3)),
-        modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+        modifiedAt: today.startOfDay(),
         eventType: 'DISCUSSION_SURVEY'
       }).save()
 
@@ -140,7 +139,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         title: 'Individual survey',
         description: 'Just Jari',
         period: new FiniteDateRange(today.addDays(3), today.addDays(3)),
-        modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+        modifiedAt: today.startOfDay(),
         eventType: 'DISCUSSION_SURVEY'
       }).save()
 
@@ -165,7 +164,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         title: 'Unit event',
         description: 'For everyone in the unit',
         period: new FiniteDateRange(today, today.addDays(4)),
-        modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
+        modifiedAt: today.startOfDay()
       }).save()
 
       await Fixture.calendarEventAttendee({
@@ -178,7 +177,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         title: 'Restricted survey',
         description: 'Too late',
         period: new FiniteDateRange(today.addDays(1), today.addDays(3)),
-        modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+        modifiedAt: today.startOfDay(),
         eventType: 'DISCUSSION_SURVEY'
       }).save()
 
@@ -450,7 +449,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         title: 'Duplication test event',
         description: 'Whole group',
         period: new FiniteDateRange(today, today.addDays(4)),
-        modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+        modifiedAt: today.startOfDay(),
         eventType: 'DISCUSSION_SURVEY'
       }).save()
 

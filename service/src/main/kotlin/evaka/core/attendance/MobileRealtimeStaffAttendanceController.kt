@@ -20,8 +20,10 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.mapPSQLException
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateTimeRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
@@ -102,7 +104,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         if (from.isAfter(to)) {
             throw BadRequest("Start must be before or equal to the end")
         }
-        if (FiniteDateRange(from, to).durationInDays() > 6 * 7) {
+        val range = FiniteDateRange(from, to)
+        if (range.durationInDays() > 6 * 7) {
             throw BadRequest("Only 6 weeks of staff attendances may be fetched at once")
         }
         return db.connect { dbc ->
@@ -116,15 +119,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     )
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
                     val unitOperationalDays =
-                        FiniteDateRange(from, to)
-                            .dates()
-                            .filter { date -> isOperationalDay(date, unit) }
-                            .toList()
+                        range.dates().filter { date -> isOperationalDay(date, unit) }.toList()
 
                     val staffMember =
                         tx.getStaffAttendances(
                                 unitId = unitId,
-                                dateRange = FiniteDateRange(from, to),
+                                dateRange = range,
                                 now = clock.now(),
                                 employeeId = employeeId,
                             )
@@ -137,7 +137,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             tx.getStaffAttendancesInOtherUnits(
                                 unitId,
                                 setOf(employeeId),
-                                FiniteDateRange(from, to).asHelsinkiDateTimeRange(),
+                                range.asFiniteDateTimeRange(),
                                 clock.today(),
                             ),
                     )
@@ -187,7 +187,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                         val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
                         val latestDepartureToday =
-                            tx.getLatestDepartureToday(body.employeeId, clock.now())
+                            tx.getLatestDepartureToday(body.employeeId, clock.today())
                         val attendances =
                             createAttendancesFromArrival(
                                 clock.now(),
@@ -210,8 +210,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 attendance.id,
                                 attendance.employeeId,
                                 attendance.groupId,
-                                attendance.arrived,
-                                attendance.departed,
+                                attendance.period,
                                 occupancyCoefficient,
                                 attendance.type,
                                 false,
@@ -283,8 +282,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             attendance.id,
                             attendance.employeeId,
                             attendance.groupId,
-                            attendance.arrived,
-                            attendance.departed,
+                            attendance.period,
                             occupancyCoefficient,
                             attendance.type,
                             false,
@@ -335,7 +333,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 }
                 ac.verifyPinCodeAndThrow(dbc, unitId, body.employeeId, body.pinCode, clock)
 
-                if (body.rows.any { it.arrived.toLocalDate() != body.date })
+                if (body.rows.any { it.period.start.toLocalDate() != body.date })
                     throw BadRequest("Attendances outside given date")
                 if (body.rows.any { !it.departsAfterArrival() })
                     throw BadRequest("Departure time must be after arrival time")
@@ -373,18 +371,16 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         )
 
                         val updated =
-                            body.rows.mapNotNull { attendance ->
+                            body.rows.mapNotNull { row ->
                                 tx.upsertStaffAttendance(
                                     attendanceId = null,
                                     employeeId = body.employeeId,
-                                    groupId = attendance.groupId,
-                                    arrivalTime = attendance.arrived,
-                                    departureTime = attendance.departed,
+                                    groupId = row.groupId,
+                                    period = row.period,
                                     occupancyCoefficient =
-                                        if (attendance.hasStaffOccupancyEffect)
-                                            occupancyCoefficientSeven
+                                        if (row.hasStaffOccupancyEffect) occupancyCoefficientSeven
                                         else occupancyCoefficientZero,
-                                    type = attendance.type,
+                                    type = row.type,
                                     departedAutomatically = false,
                                     modifiedAt = clock.now(),
                                     modifiedBy = user.evakaUserId,
@@ -548,8 +544,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 id = null,
                 employeeId = arrival.employeeId,
                 groupId = if (type.presentInGroup()) arrival.groupId else null,
-                arrived = arrived,
-                departed = departed,
+                period = DateTimeRange(arrived, departed),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = type,
             )
@@ -568,7 +563,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             )
         }
 
-        val planStart = plans.minOf { it.start }
+        val planStart = plans.minOf { it.period.start }
         if (arrivalTime < planStart.minusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (arrival.type) {
                 StaffAttendanceType.OVERTIME -> {
@@ -596,13 +591,17 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}",
                         )
                     }
-                    if (ongoingAttendance != null && arrivalTime <= ongoingAttendance.arrived) {
+                    if (
+                        ongoingAttendance != null && arrivalTime <= ongoingAttendance.period.start
+                    ) {
                         throw BadRequest(
                             "Arrival time must be after the start of the ongoing attendance",
                         )
                     }
                     listOfNotNull(
-                        ongoingAttendance?.copy(departed = arrivalTime)
+                        ongoingAttendance?.copy(
+                            period = ongoingAttendance.period.copy(end = arrivalTime),
+                        )
                             ?: if (arrival.type == null || latestDepartureToday != null) null
                             else createNewAttendance(planStart, arrivalTime, arrival.type),
                         createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT),
@@ -636,9 +635,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             now.withTime(departure.time).takeIf { it <= now }
                 ?: throw BadRequest("Departure time cannot be in the future")
 
-        if (departureTime <= ongoingAttendance.arrived) {
-            throw BadRequest("Departure time must be after arrival time")
-        }
+        val endedAttendance =
+            ongoingAttendance.copy(
+                period =
+                    FiniteDateTimeRange.tryCreate(ongoingAttendance.period.start, departureTime)
+                        ?.asDateTimeRange()
+                        ?: throw BadRequest("Departure time must be after arrival time"),
+            )
 
         fun createNewAttendance(
             arrived: HelsinkiDateTime,
@@ -649,14 +652,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 id = null,
                 employeeId = departure.employeeId,
                 groupId = null,
-                arrived = arrived,
-                departed = departed,
+                period = DateTimeRange(arrived, departed),
                 occupancyCoefficient = BigDecimal.ZERO,
                 type = type,
             )
 
         if (plans.isEmpty()) {
-            return listOf(ongoingAttendance.copy(departed = departureTime))
+            return listOf(endedAttendance)
         }
 
         if (!ongoingAttendance.type.presentInGroup()) {
@@ -667,13 +669,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
         // If no reason is given, just end whatever is going on
         if (departure.type == null) {
-            return listOf(ongoingAttendance.copy(departed = departureTime))
+            return listOf(endedAttendance)
         }
 
         if (departure.type == StaffAttendanceType.JUSTIFIED_CHANGE) {
             return listOf(
-                ongoingAttendance.copy(
-                    departed = departureTime,
+                endedAttendance.copy(
                     type =
                         if (ongoingAttendance.type == StaffAttendanceType.PRESENT) {
                             StaffAttendanceType.JUSTIFIED_CHANGE
@@ -684,7 +685,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             )
         }
 
-        val planEnd = plans.maxOf { it.end }
+        val planEnd = plans.maxOf { it.period.end }
         if (departureTime < planEnd.minusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (departure.type) {
                 StaffAttendanceType.TRAINING,
@@ -692,7 +693,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 StaffAttendanceType.SICKNESS,
                 StaffAttendanceType.CHILD_SICKNESS -> {
                     listOf(
-                        ongoingAttendance.copy(departed = departureTime),
+                        endedAttendance,
                         createNewAttendance(departureTime, null, departure.type),
                     )
                 }
@@ -708,7 +709,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         if (departureTime > planEnd.plusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (departure.type) {
                 StaffAttendanceType.OVERTIME -> {
-                    listOf(ongoingAttendance.copy(departed = departureTime, type = departure.type))
+                    listOf(endedAttendance.copy(type = departure.type))
                 }
 
                 else -> {
@@ -719,7 +720,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
         }
 
-        return listOf(ongoingAttendance.copy(departed = departureTime))
+        return listOf(endedAttendance)
     }
 
     @GetMapping("open-attendance")

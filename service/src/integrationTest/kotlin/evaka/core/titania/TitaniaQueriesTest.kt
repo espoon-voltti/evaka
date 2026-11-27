@@ -18,6 +18,7 @@ import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -208,7 +209,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(LocalDate.of(2023, 11, 1), LocalDate.of(2023, 11, 7)),
                 )
             assertThat(attendances)
-                .extracting<Int> { it.arrived.dayOfMonth }
+                .extracting<Int> { it.period.start.dayOfMonth }
                 .containsExactlyInAnyOrder(1, 6)
         }
     }
@@ -219,7 +220,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val employeeIds = tx.insertRealtimeStaffAttendanceTestData()
             val attendances = tx.findStaffAttendancesBy(listOf(employeeIds[0]), null)
             assertThat(attendances)
-                .extracting<Int> { it.arrived.dayOfMonth }
+                .extracting<Int> { it.period.start.dayOfMonth }
                 .containsExactlyInAnyOrder(1, 10)
         }
     }
@@ -233,7 +234,9 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(employeeIds[0]),
                     FiniteDateRange(LocalDate.of(2023, 11, 1), LocalDate.of(2023, 11, 7)),
                 )
-            assertThat(attendances).extracting<Int> { it.arrived.dayOfMonth }.containsExactly(1)
+            assertThat(attendances)
+                .extracting<Int> { it.period.start.dayOfMonth }
+                .containsExactly(1)
         }
     }
 
@@ -300,8 +303,7 @@ fun Database.Transaction.addAttendance(
         null,
         employeeId,
         groupId,
-        HelsinkiDateTime.of(date, arrival),
-        HelsinkiDateTime.of(date, departure),
+        FiniteDateTimeRange.of(date, arrival, departure).asDateTimeRange(),
         BigDecimal(1.0),
         StaffAttendanceType.PRESENT,
         modifiedAt = modifiedAt,

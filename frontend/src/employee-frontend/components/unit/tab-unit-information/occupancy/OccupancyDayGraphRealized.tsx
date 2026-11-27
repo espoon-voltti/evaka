@@ -289,11 +289,10 @@ function graphData(
   data: ChartData<'line', DatePoint[]>
   graphOptions: ChartOptions<'line'>
 } {
-  const minTime = queryDate.isEqual(now.toLocalDate())
-    ? shiftCareUnit
+  const minTime =
+    shiftCareUnit && queryDate.isEqual(now.toLocalDate())
       ? now.subHours(16)
-      : now.withTime(LocalTime.of(0, 0))
-    : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(0, 0))
+      : queryDate.startOfDay()
   const filterData = (p: { time: HelsinkiDateTime }) =>
     !p.time.isBefore(minTime)
 
@@ -352,7 +351,7 @@ function graphData(
   const xMin = shiftCareUnit
     ? (queryDateIsCurrent
         ? now.subHours(16)
-        : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(0, 0))
+        : queryDate.startOfDay()
       ).toSystemTzDate()
     : min(
         [

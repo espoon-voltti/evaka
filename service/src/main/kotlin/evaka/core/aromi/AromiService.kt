@@ -16,7 +16,7 @@ import evaka.core.shared.GroupId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
-import evaka.core.shared.domain.HelsinkiDateTimeRange
+import evaka.core.shared.domain.FiniteDateTimeRange
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.domain.getHolidays
 import evaka.core.shared.sftp.SftpClient
@@ -129,8 +129,8 @@ class AromiService(private val aromiEnv: AromiEnv?) {
     private fun printRecord(printer: CSVPrinter, item: AromiAttendanceRow) {
         val age = Period.between(item.dateOfBirth, item.date)
         val reservation =
-            item.attendanceRange?.asHelsinkiDateTimeRange(item.date)
-                ?: HelsinkiDateTimeRange.of(item.date, LocalTime.MIN, LocalTime.MAX)
+            item.attendanceRange?.asFiniteDateTimeRange(item.date)
+                ?: FiniteDateTimeRange.of(item.date, LocalTime.MIN, LocalTime.MAX)
         printer.printRecord(
             "PKPOT", // Tietuetunnus
             "EVAKA", // Ympäristötunnus
