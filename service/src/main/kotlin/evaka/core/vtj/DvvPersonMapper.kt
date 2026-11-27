@@ -68,11 +68,10 @@ fun mapDvvPerson(ssn: Ssn, groups: List<Tietoryhma>, today: LocalDate): VtjPerso
         groups.filterIsInstance<KotimainenOsoite>().filter { it.turvakiellonAlaisetKentat == null }
     // VTJ does not censor the home municipality of a person with restricted details, so eVaka
     // leaves it out itself, like DvvModificationsService.handleRestrictedInfo
-    val municipality =
+    val municipalityCode =
         groups
             .filterIsInstance<Kotikunta>()
             .firstNotNullOfOrNull { it.kuntakoodi }
-            ?.let(::municipalityByCode)
             .takeUnless { restricted }
     return VtjPerson(
         firstNames = name?.etunimi ?: "",
@@ -116,8 +115,8 @@ fun mapDvvPerson(ssn: Ssn, groups: List<Tietoryhma>, today: LocalDate): VtjPerso
                     it.turvakiellonAlaisetKentat == null && isValidOn(it.alkupv, it.loppupv, today)
                 }
                 ?.asuinpaikantunnus,
-        municipalityOfResidence = municipality?.fi,
-        municipalityOfResidenceSe = municipality?.sv,
+        municipalityOfResidence = municipalityCode?.let(::municipalityByCode)?.fi,
+        municipalityOfResidenceCode = municipalityCode,
     )
 }
 
@@ -194,12 +193,16 @@ private fun PersonAddress.isBlank() =
 
 data class MunicipalityName(val fi: String, val sv: String)
 
-/** Null for an artificial code, for example 198 (no home municipality in Finland) */
+/**
+ * Null for a code that is not in the municipality list, for example the code of a municipality that
+ * has merged into another.
+ */
 fun municipalityByCode(code: String): MunicipalityName? = municipalities[code]
 
 /**
- * The municipality classification 2026 of Statistics Finland. When municipalities merge, update
- * `vtj/municipalities.csv` with `bin/update-municipalities.sh`.
+ * The municipality classification 2026 of Statistics Finland, and the artificial municipality codes
+ * of VTJ. When municipalities merge, update `vtj/municipalities.csv` with
+ * `bin/update-municipalities.sh`.
  */
 private val municipalities: Map<String, MunicipalityName> by lazy {
     ClassPathResource("vtj/municipalities.csv").inputStream.bufferedReader().useLines { lines ->

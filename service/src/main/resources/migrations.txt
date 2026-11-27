@@ -624,3 +624,4 @@ V625__person_freetext_vec_no_address.sql
 V626__person_freetext_vec_no_address_index.sql
 V627__echa_increase_to_fee_alterations.sql
 V628__child_document_content_version.sql
+V629__person_municipality_of_residence_code.sql

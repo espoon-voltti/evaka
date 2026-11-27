@@ -41,9 +41,9 @@ fun compareVtjPersons(soap: VtjPerson, dvv: VtjPerson): List<VtjFieldDifference>
         text("residenceCode", soap.residenceCode, dvv.residenceCode)
         code("municipalityOfResidence", soap.municipalityOfResidence, dvv.municipalityOfResidence)
         code(
-            "municipalityOfResidenceSe",
-            soap.municipalityOfResidenceSe,
-            dvv.municipalityOfResidenceSe,
+            "municipalityOfResidenceCode",
+            soap.municipalityOfResidenceCode,
+            dvv.municipalityOfResidenceCode,
         )
     }
     return differences.list

@@ -159,11 +159,6 @@ private class Periods<K, T> {
             ?.value
 }
 
-/** The text in both languages, or only in the stored language */
-private data class LocalizedText(val fi: String, val sv: String?) {
-    fun byLanguage(swedish: Boolean): String = sv?.takeIf { swedish && it.isNotEmpty() } ?: fi
-}
-
 private class DvvChangeState(private val stored: StoredVtjPerson) {
     private var ssn = stored.ssn
     private var dateOfDeath = stored.dateOfDeath
@@ -189,8 +184,8 @@ private class DvvChangeState(private val stored: StoredVtjPerson) {
     private val residenceCodes =
         Periods<Unit, String?>().apply { add(Unit, Period(null, null, stored.residenceCode)) }
     private val municipalities =
-        Periods<Unit, LocalizedText?>().apply {
-            add(Unit, Period(null, null, LocalizedText(stored.municipalityOfResidence, null)))
+        Periods<Unit, String?>().apply {
+            add(Unit, Period(null, null, stored.municipalityOfResidence))
         }
     private val addressPeriods =
         Periods<AddressPeriodType, PersonAddress>().apply {
@@ -287,9 +282,7 @@ private class DvvChangeState(private val stored: StoredVtjPerson) {
                 }
             is Kotikunta ->
                 applyPeriod(municipalities, type, group, { it.kuntaanMuuttopv }, { null }) {
-                    it.kuntakoodi?.let(::municipalityByCode)?.let { name ->
-                        LocalizedText(name.fi, name.sv)
-                    }
+                    it.kuntakoodi?.let(::municipalityByCode)?.fi
                 }
             is VakinainenKotimainenAsuinpaikkatunnus ->
                 applyPeriod(residenceCodes, type, group, { it.alkupv }, { it.loppupv }) {
@@ -324,10 +317,7 @@ private class DvvChangeState(private val stored: StoredVtjPerson) {
                     postOffice = residentialAddress?.postOfficeByLanguage(swedish) ?: "",
                     residenceCode = residenceCodes.current(Unit, today) ?: "",
                     municipalityOfResidence =
-                        municipalities
-                            .current(Unit, today)
-                            ?.takeUnless { restricted }
-                            ?.byLanguage(swedish) ?: "",
+                        municipalities.current(Unit, today)?.takeUnless { restricted } ?: "",
                     addressPeriods =
                         if (restricted) emptySet()
                         else

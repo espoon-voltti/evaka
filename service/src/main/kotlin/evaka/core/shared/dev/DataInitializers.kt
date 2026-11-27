@@ -428,7 +428,7 @@ INSERT INTO person (
     residence_code, restricted_details_enabled,
     restricted_details_end_date, invoicing_street_address, invoicing_postal_code, invoicing_post_office,
     updated_from_vtj, vtj_guardians_queried, vtj_dependants_queried, oph_person_oid, duplicate_of,
-    disabled_email_types, municipality_of_residence
+    disabled_email_types, municipality_of_residence, municipality_of_residence_code
 ) VALUES (
     ${bind(p.id)}, ${bind(p.dateOfBirth)}, ${bind(p.dateOfDeath)}, ${bind(p.firstName)}, ${bind(p.lastName)}, ${bind(p.preferredName)},
     ${bind(p.ssn)}, ${bind(p.email)}, ${bind(p.verifiedEmail)}, ${bind(p.phone)}, ${bind(p.language)}, ${bind(p.streetAddress)},
@@ -436,7 +436,7 @@ INSERT INTO person (
     ${bind(p.residenceCode)}, ${bind(p.restrictedDetailsEnabled)},
     ${bind(p.restrictedDetailsEndDate)}, ${bind(p.invoicingStreetAddress)}, ${bind(p.invoicingPostalCode)}, ${bind(p.invoicingPostOffice)},
     ${bind(p.updatedFromVtj)}, ${bind(p.vtjGuardiansQueried)}, ${bind(p.vtjDependantsQueried)}, ${bind(p.ophPersonOid)}, ${bind(p.duplicateOf)},
-    ${bind(p.disabledEmailTypes)}, ${bind(p.municipalityOfResidence)}
+    ${bind(p.disabledEmailTypes)}, ${bind(p.municipalityOfResidence)}, ${bind(p.municipalityOfResidenceCode)}
 )
 RETURNING id
 """,

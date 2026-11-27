@@ -40,7 +40,7 @@ class DvvPersonMapperTest {
         )
         assertEquals("900000242V1 000 ", withoutStair.residenceCode)
         assertEquals("Kristiinankaupunki", withoutStair.municipalityOfResidence)
-        assertEquals("Kristinestad", withoutStair.municipalityOfResidenceSe)
+        assertEquals("287", withoutStair.municipalityOfResidenceCode)
 
         assertEquals(
             "Pohjanpellonkuja 2 C",
@@ -77,7 +77,6 @@ class DvvPersonMapperTest {
         val swedishSpeaker = person(rows, "150752-999Y")
         assertEquals("sv", swedishSpeaker.nativeLanguage?.code)
         assertEquals("Maringatan 14 C 12", swedishSpeaker.residentialAddress?.streetAddressSe)
-        assertEquals("Helsingfors", swedishSpeaker.municipalityOfResidenceSe)
 
         val swedishStreet = person(rows, "160185-980N").residentialAddress
         assertEquals("Norrbölevägen 1 106t", swedishStreet?.streetAddress)
@@ -108,11 +107,12 @@ class DvvPersonMapperTest {
     }
 
     @Test
-    fun `language code 98 is kept, and an artificial municipality code has no name`() {
+    fun `language code 98 is kept, and an artificial municipality code has the VTJ name`() {
         val person = person(basicInfo("native-language-98.json"), "100349-988C")
 
         assertEquals("98", person.nativeLanguage?.code)
-        assertNull(person.municipalityOfResidence)
+        assertEquals("Ei kotikuntaa Suomessa", person.municipalityOfResidence)
+        assertEquals("198", person.municipalityOfResidenceCode)
     }
 
     @Test
@@ -127,6 +127,7 @@ class DvvPersonMapperTest {
         assertEquals(emptyList(), person.mailingAddressPeriods)
         assertNull(person.residenceCode)
         assertNull(person.municipalityOfResidence)
+        assertNull(person.municipalityOfResidenceCode)
         assertEquals("Sisko Pauliina", person.firstNames)
     }
 

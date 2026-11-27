@@ -887,6 +887,7 @@ export interface DevPerson {
   mailingPostalCode: string
   mailingStreetAddress: string
   municipalityOfResidence: string
+  municipalityOfResidenceCode: string | null
   ophPersonOid: string | null
   phone: string
   postOffice: string

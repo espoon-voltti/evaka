@@ -390,6 +390,7 @@ export class Fixture {
       postOffice,
       residenceCode: `residenceCode_${id}`,
       municipalityOfResidence: `municipalityOfResidence_${id}`,
+      municipalityOfResidenceCode: null,
       restrictedDetailsEnabled: false,
       restrictedDetailsEndDate: null,
       streetAddress,

@@ -51,7 +51,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             restrictedDetails = RestrictedDetails(enabled = false),
             residenceCode = "abc123",
             municipalityOfResidence = "Helsinki",
-            municipalityOfResidenceSe = "Helsingfors",
+            municipalityOfResidenceCode = "091",
         )
 
     private val logAppender = ListAppender<ILoggingEvent>()
@@ -85,6 +85,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("Helsinki", person.postOffice)
         assertEquals("abc123", person.residenceCode)
         assertEquals("Helsinki", person.municipalityOfResidence)
+        assertEquals("091", person.municipalityOfResidenceCode)
         assertEquals("fi", person.language)
         assertEquals(now, person.updatedFromVtj)
         assertEquals(1, countMessageAccounts(result.id))
@@ -99,7 +100,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person = db.read { it.getPersonById(result.id) }!!
         assertEquals("Någonvägen 66", person.streetAddress)
         assertEquals("Helsingfors", person.postOffice)
-        assertEquals("Helsingfors", person.municipalityOfResidence)
+        assertEquals("Helsinki", person.municipalityOfResidence)
     }
 
     @Test
@@ -114,7 +115,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person = db.read { it.getPersonById(existing.id) }!!
         assertEquals("Någonvägen 66", person.streetAddress)
         assertEquals("Helsingfors", person.postOffice)
-        assertEquals("Helsingfors", person.municipalityOfResidence)
+        assertEquals("Helsinki", person.municipalityOfResidence)
     }
 
     @Test
@@ -144,7 +145,8 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val updated = db.read { it.getPersonById(person.id) }!!
         assertEquals("Någonvägen 66", updated.streetAddress)
         assertEquals("Helsingfors", updated.postOffice)
-        assertEquals("Helsingfors", updated.municipalityOfResidence)
+        assertEquals("Helsinki", updated.municipalityOfResidence)
+        assertEquals("091", updated.municipalityOfResidenceCode)
     }
 
     @Test
@@ -154,7 +156,6 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 vtjPerson.copy(
                     nativeLanguage = NativeLanguage(code = "sv"),
                     residentialAddress = PersonAddress("Jokutie 66", "00100", "Helsinki", "", ""),
-                    municipalityOfResidenceSe = "",
                 ),
                 now,
             )
@@ -184,6 +185,7 @@ class VtjPersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(existing.id, result.id)
         val person = db.read { it.getPersonById(existing.id) }!!
         assertEquals("Virtanen", person.lastName)
+        assertEquals("091", person.municipalityOfResidenceCode)
         assertEquals("matti@example.com", person.email)
         assertEquals("123", person.phone)
         assertEquals(now.plusHours(1), person.updatedFromVtj)

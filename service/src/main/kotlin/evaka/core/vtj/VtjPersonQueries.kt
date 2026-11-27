@@ -59,6 +59,7 @@ INSERT INTO person (
     post_office,
     residence_code,
     municipality_of_residence,
+    municipality_of_residence_code,
     restricted_details_enabled,
     restricted_details_end_date,
     updated_from_vtj
@@ -74,7 +75,8 @@ VALUES (
     ${bind(person.residentialAddress?.postalCode ?: "")},
     ${bind(person.residentialAddress?.postOfficeByLanguage(person.prefersSwedish()) ?: "")},
     ${bind(person.residenceCode ?: "")},
-    ${bind(person.municipalityOfResidenceByLanguage())},
+    ${bind(person.municipalityOfResidence ?: "")},
+    ${bind(person.municipalityOfResidenceCode)},
     ${bind(person.restrictedDetails?.enabled ?: false)},
     ${bind(person.restrictedDetails?.endDate)},
     ${bind(now)}
@@ -90,6 +92,7 @@ ON CONFLICT (social_security_number) DO UPDATE SET
     post_office = excluded.post_office,
     residence_code = excluded.residence_code,
     municipality_of_residence = excluded.municipality_of_residence,
+    municipality_of_residence_code = excluded.municipality_of_residence_code,
     restricted_details_enabled = excluded.restricted_details_enabled,
     restricted_details_end_date = excluded.restricted_details_end_date,
     updated_from_vtj = excluded.updated_from_vtj
@@ -137,7 +140,8 @@ UPDATE person SET
     postal_code = ${bind(person.residentialAddress?.postalCode ?: "")},
     post_office = ${bind(person.residentialAddress?.postOfficeByLanguage(person.prefersSwedish()) ?: "")},
     residence_code = ${bind(person.residenceCode ?: "")},
-    municipality_of_residence = ${bind(person.municipalityOfResidenceByLanguage())},
+    municipality_of_residence = ${bind(person.municipalityOfResidence ?: "")},
+    municipality_of_residence_code = ${bind(person.municipalityOfResidenceCode)},
     restricted_details_enabled = ${bind(person.restrictedDetails?.enabled ?: false)},
     restricted_details_end_date = ${bind(person.restrictedDetails?.endDate)},
     updated_from_vtj = ${bind(now)}
@@ -517,8 +521,3 @@ fun PersonAddress.streetAddressByLanguage(swedish: Boolean): String =
 
 fun PersonAddress.postOfficeByLanguage(swedish: Boolean): String =
     postOfficeSe?.takeIf { swedish && it.isNotEmpty() } ?: postOffice ?: ""
-
-private fun VtjPerson.municipalityOfResidenceByLanguage(): String =
-    municipalityOfResidenceSe?.takeIf { prefersSwedish() && it.isNotEmpty() }
-        ?: municipalityOfResidence
-        ?: ""
