@@ -48,11 +48,15 @@ evakaoulu:
     password: pass
     address: address
     path: path
+    host_keys:
+      - AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
   intime_payments:
     username: user
     password: pass
     address: address
     path: path
+    host_keys:
+      - AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
   bucket:
     export: evakaoulu-export-it
   dw_export:
@@ -62,6 +66,8 @@ evakaoulu:
       password: pass
       address: address
       path: path
+      host_keys:
+        - AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
   fabric:
     remote_path: upload/
     sftp:
