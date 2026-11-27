@@ -5,6 +5,7 @@
 package evaka.core.webpush
 
 import evaka.core.EvakaEnv
+import evaka.core.document.childdocument.ChildDocumentNotificationType
 import evaka.core.person.NotificationCategory
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.PersonId
@@ -200,7 +201,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DOCUMENT_NOTIFICATION,
                     messageProvider.childDocumentNotification(language, notification),
-                    path = "/child-documents/${notification.documentId}",
+                    path = childDocumentPath(notification),
                     requiresStrongAuth = true,
                     tag = "document-${notification.documentId}",
                 )
@@ -330,6 +331,12 @@ class CitizenPushNotifications(
         }
     }
 }
+
+internal fun childDocumentPath(notification: CitizenPushNotification.Document): String =
+    "/child-documents/${notification.documentId}" +
+        if (notification.notificationType == ChildDocumentNotificationType.EDITABLE_DOCUMENT)
+            "?readOnly=false"
+        else ""
 
 private fun strongLoginPath(path: String): String =
     "/login/strong?next=${URLEncoder.encode(path, Charsets.UTF_8)}"
