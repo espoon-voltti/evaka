@@ -56,6 +56,8 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
     companion object {
         private val sftpPort = System.getenv("EVAKA_SFTP_PORT")?.toIntOrNull() ?: 2222
         private const val EXPORT_BUCKET = "evakaoulu-export-it"
+        private val sftpHostKeys =
+            listOf("AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq")
     }
 
     @BeforeAll
@@ -67,6 +69,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                         address = "localhost",
                         port = 22,
                         path = "path",
+                        hostKeys = sftpHostKeys,
                         username = Sensitive("user"),
                         password = Sensitive("pass"),
                     ),
@@ -75,6 +78,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                         address = "localhost",
                         port = 22,
                         path = "path",
+                        hostKeys = sftpHostKeys,
                         username = Sensitive("user"),
                         password = Sensitive("pass"),
                     ),
@@ -87,6 +91,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 address = "localhost",
                                 port = sftpPort,
                                 path = "upload",
+                                hostKeys = sftpHostKeys,
                                 username = Sensitive("foo"),
                                 password = Sensitive("pass"),
                             ),
@@ -97,11 +102,10 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                             SftpEnv(
                                 host = "localhost",
                                 port = sftpPort,
-                                hostKeys = emptyList(),
+                                hostKeys = sftpHostKeys,
                                 username = "foo",
                                 password = Sensitive("pass"),
                                 privateKey = null,
-                                skipHostKeyVerification = true,
                             ),
                         remotePath = "upload/",
                     ),

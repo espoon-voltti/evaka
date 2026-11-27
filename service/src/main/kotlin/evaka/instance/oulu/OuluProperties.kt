@@ -36,6 +36,7 @@ data class SftpProperties(
     val address: String,
     val path: String,
     val port: Int,
+    val hostKeys: List<String>,
     val username: Sensitive<String>,
     val password: Sensitive<String>,
 ) {
@@ -43,11 +44,10 @@ data class SftpProperties(
         SftpEnv(
             host = address,
             port = port,
-            hostKeys = emptyList(),
+            hostKeys = hostKeys,
             username = username.value,
             password = password,
             privateKey = null,
-            skipHostKeyVerification = true,
         )
 
     companion object {
@@ -56,6 +56,7 @@ data class SftpProperties(
                 address = env.lookup("$prefix.address"),
                 port = env.lookup<Int?>("$prefix.port") ?: 22,
                 path = env.lookup("$prefix.path"),
+                hostKeys = env.lookup("$prefix.host_keys"),
                 username = Sensitive(env.lookup("$prefix.username")),
                 password = Sensitive(env.lookup("$prefix.password")),
             )

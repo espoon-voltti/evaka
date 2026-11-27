@@ -76,21 +76,6 @@ class SftpClientTest {
     }
 
     @Test
-    fun `skipHostKeyVerification accepts any server key`() {
-        val client =
-            SftpClient(
-                env.copy(
-                    hostKeys = emptyList(),
-                    password = Sensitive(password),
-                    privateKey = null,
-                    skipHostKeyVerification = true,
-                ),
-            )
-        "hello world".byteInputStream(Charsets.UTF_8).use { client.put(it, "upload/test.txt") }
-        assertEquals("hello world", client.getAsString("upload/test.txt", Charsets.UTF_8))
-    }
-
-    @Test
     fun `connecting to a server that accepts the connection but never responds times out`() {
         ServerSocket(0).use { unresponsiveServer ->
             val client =

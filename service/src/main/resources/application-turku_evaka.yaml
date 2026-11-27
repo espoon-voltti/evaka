@@ -40,14 +40,20 @@ evakaturku:
     password: pass
     address: address
     path: path
+    host_keys:
+      - AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
   sap_payments:
     username: user
     password: pass
     address: address
     path: path
+    host_keys:
+      - AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
   dw_export:
     sftp:
       username: user
       password: pass
       address: address
       path: path
+      host_keys:
+        - AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
