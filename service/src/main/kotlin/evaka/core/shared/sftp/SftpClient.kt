@@ -48,14 +48,12 @@ class SftpClient(
         val hostKeyAlias = "${sftpEnv.host}:${sftpEnv.port}"
         val jsch =
             JSch().apply {
-                if (!sftpEnv.skipHostKeyVerification) {
-                    hostKeyRepository =
-                        ReadOnlyHostKeyRepository(
-                            sftpEnv.hostKeys.map {
-                                HostKey(hostKeyAlias, HostKey.GUESS, Base64.getDecoder().decode(it))
-                            },
-                        )
-                }
+                hostKeyRepository =
+                    ReadOnlyHostKeyRepository(
+                        sftpEnv.hostKeys.map {
+                            HostKey(hostKeyAlias, HostKey.GUESS, Base64.getDecoder().decode(it))
+                        },
+                    )
             }
         if (sftpEnv.privateKey != null) {
             jsch.addIdentity(
@@ -70,12 +68,6 @@ class SftpClient(
             session.setPassword(sftpEnv.password.value.toByteArray(Charsets.UTF_8))
         }
         session.hostKeyAlias = hostKeyAlias
-        if (sftpEnv.skipHostKeyVerification) {
-            session.setConfig("StrictHostKeyChecking", "no")
-            logger.warn {
-                "Connecting to ${sftpEnv.host}:${sftpEnv.port} with host key verification disabled"
-            }
-        }
         session.timeout = readTimeout.toMillis().toInt()
         try {
             session.connect(connectTimeout.toMillis().toInt())
