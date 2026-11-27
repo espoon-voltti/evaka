@@ -23,6 +23,7 @@ export class ChildDocumentPage {
   editButton: Element
   publishButton: Element
   nextStatusButton: Element
+  prevStatusButton: Element
   templateValidityEndedInfo: Element
   returnButton: Element
   sendButton: Element
@@ -45,6 +46,7 @@ export class ChildDocumentPage {
     this.editButton = page.findByDataQa('edit-button')
     this.publishButton = page.findByDataQa('publish-button')
     this.nextStatusButton = page.findByDataQa('next-status-button')
+    this.prevStatusButton = page.findByDataQa('prev-status-button')
     this.templateValidityEndedInfo = page.findByDataQa(
       'template-validity-ended-info'
     )

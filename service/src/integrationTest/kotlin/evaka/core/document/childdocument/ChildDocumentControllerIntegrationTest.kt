@@ -975,6 +975,23 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
+    fun `admin cannot move archived document to previous status`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+        nextState(documentId, DocumentStatus.PREPARED)
+        nextState(documentId, DocumentStatus.COMPLETED)
+        db.transaction { tx -> tx.markDocumentAsArchived(documentId, clock.now()) }
+
+        val templateValid = clock
+        val templateEnded = MockEvakaClock(clock.now().plusDays(1))
+        for (now in listOf(templateValid, templateEnded)) {
+            val error =
+                assertThrows<BadRequest> { prevState(documentId, DocumentStatus.PREPARED, now) }
+            assertEquals("document-archived", error.errorCode)
+        }
+        assertEquals(DocumentStatus.COMPLETED, getDocument(documentId).status)
+    }
+
+    @Test
     fun `unpublished draft can be deleted by admin after template validity has ended`() {
         val documentId = createDocument(templateId = templateIdHojks)
         val dayAfter = MockEvakaClock(clock.now().plusDays(1))
@@ -1609,6 +1626,17 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         nextState(documentId2, DocumentStatus.COMPLETED)
 
         planArchiveChildDocument(documentId2)
+    }
+
+    @Test
+    fun `already archived document cannot be archived again`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+        nextState(documentId, DocumentStatus.PREPARED)
+        nextState(documentId, DocumentStatus.COMPLETED)
+        db.transaction { tx -> tx.markDocumentAsArchived(documentId, clock.now()) }
+
+        val error = assertThrows<BadRequest> { planArchiveChildDocument(documentId) }
+        assertEquals("document-archived", error.errorCode)
     }
 
     @Test
