@@ -5,12 +5,16 @@
 package evaka.core.nekku
 
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.isWeekendOrHoliday
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class NekkuServiceTest {
     @Test
@@ -64,5 +68,20 @@ class NekkuServiceTest {
             deliveryDate ->
             assertNotNull(specifiedOn[deliveryDate], "$deliveryDate never specified")
         }
+    }
+
+    @Test
+    fun `an order freeze covers delivery dates before its cutoff once it has started`() {
+        val freeze =
+            NekkuOrderFreeze(
+                startsAt = HelsinkiDateTime.of(LocalDate.of(2026, 12, 17), LocalTime.of(10, 0)),
+                deliveryDatesBefore = LocalDate.of(2027, 1, 1),
+            )
+        val justBeforeStart = freeze.startsAt.minusMinutes(1)
+
+        assertFalse(freeze.isFrozen(justBeforeStart, LocalDate.of(2026, 12, 18)))
+        assertTrue(freeze.isFrozen(freeze.startsAt, LocalDate.of(2026, 12, 18)))
+        assertTrue(freeze.isFrozen(freeze.startsAt, LocalDate.of(2026, 12, 31)))
+        assertFalse(freeze.isFrozen(freeze.startsAt, LocalDate.of(2027, 1, 1)))
     }
 }

@@ -7,8 +7,10 @@ package evaka.core
 import com.fasterxml.jackson.annotation.JsonValue
 import evaka.core.daycare.domain.Language
 import evaka.core.emailclient.FromAddress
+import evaka.core.nekku.NekkuOrderFreeze
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.async.AsyncJobPool
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.Rectangle
 import evaka.core.shared.job.JobSchedule
 import evaka.core.shared.job.Nightly
@@ -20,6 +22,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
+import java.time.ZonedDateTime
 import java.util.Locale
 import java.util.UUID
 import kotlin.reflect.jvm.javaType
@@ -604,13 +607,37 @@ data class JamixEnv(val url: URI, val user: String, val password: Sensitive<Stri
     }
 }
 
-data class NekkuEnv(val url: URI, val apikey: Sensitive<String>) {
+data class NekkuEnv(
+    val url: URI,
+    val apikey: Sensitive<String>,
+    val orderFreeze: NekkuOrderFreeze? = null,
+) {
     companion object {
         fun fromEnvironment(env: Environment): NekkuEnv {
             return NekkuEnv(
                 // URL up to the operation name/
                 url = URI.create(env.lookup("evaka.integration.nekku.url")),
                 apikey = Sensitive(env.lookup("evaka.integration.nekku.apikey")),
+                orderFreeze =
+                    run {
+                        val startsAtKey = "evaka.integration.nekku.order_freeze.starts_at"
+                        val deliveryDatesBeforeKey =
+                            "evaka.integration.nekku.order_freeze.delivery_dates_before"
+                        if (
+                            env.lookup<String?>(startsAtKey) == null &&
+                                env.lookup<String?>(deliveryDatesBeforeKey) == null
+                        )
+                            null
+                        else
+                            NekkuOrderFreeze(
+                                startsAt =
+                                    HelsinkiDateTime.from(
+                                        ZonedDateTime.parse(env.lookup<String>(startsAtKey)),
+                                    ),
+                                deliveryDatesBefore =
+                                    LocalDate.parse(env.lookup<String>(deliveryDatesBeforeKey)),
+                            )
+                    },
             )
         }
     }
