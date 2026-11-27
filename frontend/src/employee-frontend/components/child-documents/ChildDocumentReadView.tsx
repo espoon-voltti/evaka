@@ -188,6 +188,10 @@ const actionsBlockedAfterTemplateValidity = new Set<Action.ChildDocument>([
   'REJECT_DECISION'
 ])
 
+const actionsBlockedAfterArchival = new Set<Action.ChildDocument>([
+  'PREV_STATUS'
+])
+
 const ChildDocumentReadViewInner = React.memo(
   function ChildDocumentReadViewInner({
     documentAndPermissions,
@@ -232,11 +236,17 @@ const ChildDocumentReadViewInner = React.memo(
       document.template.validity,
       LocalDate.todayInHelsinkiTz()
     )
-    const permittedActions = templateValidityEnded
-      ? documentAndPermissions.permittedActions.filter(
-          (action) => !actionsBlockedAfterTemplateValidity.has(action)
-        )
-      : documentAndPermissions.permittedActions
+    const documentArchived = document.archivedAt !== null
+    const isBlocked = (action: Action.ChildDocument) =>
+      (templateValidityEnded &&
+        actionsBlockedAfterTemplateValidity.has(action)) ||
+      (documentArchived && actionsBlockedAfterArchival.has(action))
+    const permittedActions =
+      templateValidityEnded || documentArchived
+        ? documentAndPermissions.permittedActions.filter(
+            (action) => !isBlocked(action)
+          )
+        : documentAndPermissions.permittedActions
     const isEditable = useMemo(
       () => isChildDocumentEditable(document.status),
       [document.status]

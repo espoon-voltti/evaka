@@ -637,6 +637,12 @@ class ChildDocumentController(
                             ?: throw NotFound("Document $documentId not found")
                     audit.add(document.child.id)
 
+                    if (document.archivedAt != null) {
+                        throw BadRequest(
+                            "Archived document cannot be moved to previous status",
+                            errorCode = "document-archived",
+                        )
+                    }
                     assertTemplateValidityNotEnded(document, clock.today())
 
                     val statusTransition =
@@ -741,6 +747,12 @@ class ChildDocumentController(
                     }
                     if (document.status != DocumentStatus.COMPLETED) {
                         throw BadRequest("Document must be in COMPLETED status to be archived")
+                    }
+                    if (document.archivedAt != null) {
+                        throw BadRequest(
+                            "Document is already archived",
+                            errorCode = "document-archived",
+                        )
                     }
 
                     asyncJobRunner.plan(

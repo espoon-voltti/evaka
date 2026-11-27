@@ -1290,6 +1290,7 @@ test.describe('Employee - Child documents', () => {
     const row2 = childDocumentsSection2.internalChildDocuments(0)
     await row2.openLink.click()
     const childDocument2 = new ChildDocumentPage(page)
+    await expect(childDocument2.prevStatusButton).toBeVisible()
     await childDocument2.archiveButton.click()
     await childDocument2.archiveButton.waitUntilIdle()
     await runJobs({ mockedTime: now })
@@ -1300,6 +1301,7 @@ test.describe('Employee - Child documents', () => {
     await childDocument3.archiveTooltip.assertText((text) =>
       text.includes('Asiakirja on arkistoitu ')
     )
+    await expect(childDocument3.prevStatusButton).toBeHidden()
   })
 
   test('Citizen basic can be sent without filling the form', async ({
