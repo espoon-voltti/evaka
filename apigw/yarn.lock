@@ -28,13 +28,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:11.0.3":
-  version: 11.0.3
-  resolution: "@datadog/native-appsec@npm:11.0.3"
+"@datadog/native-appsec@npm:12.0.0":
+  version: 12.0.0
+  resolution: "@datadog/native-appsec@npm:12.0.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/a542c75028559f7dbc1b5d65118e9728bb02a70784833076b6fad63deb364d4ae8fde7ea1896cf4bee10cbaaa83ebabc766b4213d95858e8ec04ab821f7d2b2c
+  checksum: 10/0672d8ce1f6595343c2a0007fa73e99d0595dfe5f28343176fd9b09e88c1fda87c7d90ab82bda0450794215d4bd6abfe4c186d2be9a93d2a12db4258a14f2a4b
   languageName: node
   linkType: hard
 
@@ -1784,13 +1784,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:6.25.0":
-  version: 6.25.0
-  resolution: "dd-trace@npm:6.25.0"
+"dd-trace@npm:6.26.0":
+  version: 6.26.0
+  resolution: "dd-trace@npm:6.26.0"
   dependencies:
     "@datadog/libdatadog": "npm:^0.21.0"
     "@datadog/libdatadog-extras": "npm:^0.21.0"
-    "@datadog/native-appsec": "npm:11.0.3"
+    "@datadog/native-appsec": "npm:12.0.0"
     "@datadog/native-iast-taint-tracking": "npm:4.2.1"
     "@datadog/native-metrics": "npm:4.0.0"
     "@datadog/pprof": "npm:5.20.1"
@@ -1822,7 +1822,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/2e9fa05c881e17832acb2ceeb97d979263ebbcff79eb8e5ff9e1623e2f5859cff984d87daf642f8ffef73d5b973278a8e22f50eec4bae77e1921f03fe80ed7c5
+  checksum: 10/1920e2d438f14731181b92a2d9f3a76958ba0af74dff904d35436ea1e22f11be46a165aa90920284c83e756a437ae4d1d5a739ebdf78ae03dc11ad4246326ff9
   languageName: node
   linkType: hard
 
@@ -2080,7 +2080,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:6.25.0"
+    dd-trace: "npm:6.26.0"
     express: "npm:5.3.0"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
