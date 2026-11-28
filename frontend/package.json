@@ -81,7 +81,7 @@
     "jsdom": "31.0.1",
     "make-error-cause": "2.3.0",
     "oxfmt": "0.79.0",
-    "oxlint": "1.94.0",
+    "oxlint": "1.95.0",
     "oxlint-tsgolint": "7.0.2008",
     "playwright": "1.65.1",
     "postcss": "8.5.33",
