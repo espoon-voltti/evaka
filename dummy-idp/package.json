@@ -24,7 +24,7 @@
     "@types/samlp": "1.0.11",
     "concurrently": "10.0.7",
     "nodemon": "3.1.14",
-    "oxfmt": "0.79.0",
+    "oxfmt": "0.80.0",
     "oxlint": "1.94.0",
     "oxlint-tsgolint": "7.0.2008",
     "prettier": "3.10.1",
