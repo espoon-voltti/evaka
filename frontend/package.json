@@ -80,7 +80,7 @@
     "eslint-plugin-lodash": "8.1.0",
     "jsdom": "31.0.1",
     "make-error-cause": "2.3.0",
-    "oxfmt": "0.79.0",
+    "oxfmt": "0.80.0",
     "oxlint": "1.94.0",
     "oxlint-tsgolint": "7.0.2008",
     "playwright": "1.65.1",
