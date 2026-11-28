@@ -4,7 +4,7 @@
 
 [versions]
 dd-java-agent = "1.69.1"
-flyingsaucer = "10.7.0"
+flyingsaucer = "10.8.0"
 flyway = "13.12.2"
 java = "25"
 kotlin = "2.4.21"
