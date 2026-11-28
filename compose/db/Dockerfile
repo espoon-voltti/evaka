@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM library/postgres:18-alpine
+FROM library/postgres:19-alpine
 
 COPY postgresql.conf /var/lib/postgresql/
 COPY reset-local-db.sh /usr/local/bin/reset-local-db
